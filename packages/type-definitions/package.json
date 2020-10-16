@@ -1,0 +1,8 @@
+{
+  "name": "@sora-neo-substrate/type-definitions",
+  "version": "0.1.0",
+  "main": "index.js",
+  "dependencies": {
+    "@open-web3/orml-type-definitions": "^0.6.0-beta.26"
+  }
+}
