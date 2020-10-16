@@ -10,7 +10,12 @@
     "lint": "eslint '*.ts'",
     "postinstall": "polkadot-dev-yarn-only",
     "test:all": "jest --testPathIgnorePatterns",
+<<<<<<< HEAD
     "pull-metadata": "ts-node --project ./tsconfig.json packages/types/scripts/pullMeta.ts"
+=======
+    "update-metadata": "ts-node --project ./tsconfig.json packages/types/scripts/updateMetadata.ts",
+    "test": "ts-node test/main.ts"
+>>>>>>> ce44f34 (Add test usage)
   },
   "engines": {
     "yarn": "^1.10.1"

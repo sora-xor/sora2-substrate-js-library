@@ -19,12 +19,8 @@ function filterModules(defs: any): string {
   const registry = new TypeRegistry()
   registerDefinitions(registry, defs)
   const metadata = new Metadata(registry, metaHex)
-
-  // https://github.com/polkadot-js/api/issues/2687#issuecomment-705342442
   metadata.asLatest.toJSON()
-
   const filtered = metadata.toJSON() as any
-
   return new Metadata(registry, filtered).toHex()
 }
 
