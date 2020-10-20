@@ -9,7 +9,7 @@
       "@sora-neo-substrate/types": ["packages/types/src"],
       "@sora-neo-substrate/types/*": ["packages/types/src/*"],
       "@sora-neo-substrate/type-definitions": ["packages/type-definitions/src"],
-      "@sora-neo-substrate/type-definitions/*": ["packages/type-definitions/src/*"],
+      "@sora-neo-substrate/type-definitions/*": ["packages/type-definitions/src/*"]
     },
     "skipLibCheck": true,
     "typeRoots": [
