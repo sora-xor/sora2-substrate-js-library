@@ -1,4 +1,5 @@
 import { derive as ormlDerives } from '@open-web3/orml-api-derive'
+import { derive as soraneoDerives } from '@sora-neo-substrate/api-derive'
 
 import {
   rpc as soraneoRpc,
@@ -33,7 +34,8 @@ export const options = ({
     ...typesAlias
   },
   derives: {
-    ...ormlDerives
+    ...ormlDerives,
+    ...soraneoDerives
   },
   typesBundle: {
     ...typesBundle,

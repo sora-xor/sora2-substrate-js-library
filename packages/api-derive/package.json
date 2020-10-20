@@ -1,0 +1,11 @@
+{
+  "name": "@sora-neo-substrate/api-derive",
+  "version": "0.1.0",
+  "main": "index.js",
+  "dependencies": {
+    "@sora-neo-substrate/types": "^0.1.0",
+    "@babel/runtime": "^7.10.2",
+    "@polkadot/api-derive": "^2.1.2-8",
+    "rxjs": "^6.5.5"
+  }
+}

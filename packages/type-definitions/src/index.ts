@@ -4,11 +4,13 @@ import { jsonrpcFromDefs, typesAliasFromDefs, typesFromDefs } from '@open-web3/o
 import runtime from './runtime'
 import dexApi from './dexApi'
 import dexManager from './dexManager'
+import tradingPair from './tradingPair'
 
 const soraneoDefs = {
   runtime,
   dexApi,
-  dexManager
+  dexManager,
+  tradingPair
 }
 
 export const types = {

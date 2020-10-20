@@ -6,6 +6,8 @@
     {
       "@sora-neo-substrate/api": ["packages/api/src"],
       "@sora-neo-substrate/api/*": ["packages/api/src/*"],
+      "@sora-neo-substrate/api-derive": ["packages/api-derive/src"],
+      "@sora-neo-substrate/api-derive/*": ["packages/api-derive/src/*"],
       "@sora-neo-substrate/types": ["packages/types/src"],
       "@sora-neo-substrate/types/*": ["packages/types/src/*"],
       "@sora-neo-substrate/type-definitions": ["packages/type-definitions/src"],

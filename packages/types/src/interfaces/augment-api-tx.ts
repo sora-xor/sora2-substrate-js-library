@@ -6,7 +6,7 @@ import { Compact, Option, Vec } from '@polkadot/types/codec';
 import { u16, u32 } from '@polkadot/types/primitive';
 import { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import { DownwardMessage, ValidationFunctionParams } from '@polkadot/types/interfaces/parachains';
-import { AccountId, AccountIndex, Address, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Call, CurrencyIdOf, DEXId, Fixed, LookupSource, Moment, SwapAction, ValidationFunction, Weight } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AccountIndex, Address, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Call, CurrencyIdOf, DEXId, Fixed, LiquiditySourceType, LookupSource, Moment, SwapAction, ValidationFunction, Weight } from '@sora-neo-substrate/types/interfaces/runtime';
 import { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/submittable' {
@@ -189,6 +189,39 @@ declare module '@polkadot/api/types/submittable' {
        * TODO: add information about weight
        **/
       setProtocolFee: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, protocolFee: BasisPoints | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+    };
+    liquidityProxy: {
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+      /**
+       * Swaps an exact amount of the input asset with as much of output asset as possible.
+       * 
+       * - `origin`: the account on whose behalf the transaction is being executed,
+       * - `dex_id`: DEX ID for which liquidity sources aggregation is being done,
+       * - `input_asset_id`: ID of the asset being sold,
+       * - `output_asset_id`: ID of the asset being bought,
+       * - `amount`: the exact amount to be sold (in input_assed_id units),
+       * - `min_received`: Optional. If the amount of output asset slips below this value the trade is reverted,
+       * - `included_sources`: Optional. A list of liquidity sources to include into aggregation pool,
+       * - `excluded_sources`: Optional. A list of liquidity sources to exclude from aggregation pool; ignored if `included_sources` is specified.
+       * 
+       * TODO: add information about weight
+       **/
+      swapExactInput: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Fixed | AnyNumber | Uint8Array, minReceived: Option<Fixed> | null | object | string | Uint8Array, includedSources: Option<Vec<LiquiditySourceType>> | null | object | string | Uint8Array, excludedSources: Option<Vec<LiquiditySourceType>> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      /**
+       * Swaps as little as possible of the input asset to get a fixed amount of the output asset.
+       * 
+       * - `origin`: the account on whose behalf the transaction is being executed,
+       * - `dex_id`: DEX ID for which liquidity sources aggregation is being done,
+       * - `input_asset_id`: ID of the asset being sold,
+       * - `output_asset_id`: ID of the asset being bought,
+       * - `amount`: the exact amount to be bought (in output_asset_id units),
+       * - `max_spent`: Optional. If the amount of input asset slips above this value the trade is reverted,
+       * - `included_sources`: Optional. A list of liquidity sources to include into aggregation pool,
+       * - `excluded_sources`: Optional. A list of liquidity sources to exclude from aggregation pool; ignored if `included_sources` is specified.
+       * 
+       * TODO: add information about weight
+       **/
+      swapExactOutput: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Fixed | AnyNumber | Uint8Array, maxSpent: Option<Fixed> | null | object | string | Uint8Array, includedSources: Option<Vec<LiquiditySourceType>> | null | object | string | Uint8Array, excludedSources: Option<Vec<LiquiditySourceType>> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
     messageBroker: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;

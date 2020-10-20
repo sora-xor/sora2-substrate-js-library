@@ -3,4 +3,5 @@
 
 export * from './dexApi/types';
 export * from './dexManager/types';
+export * from './tradingPair/types';
 export * from './runtime/types';
