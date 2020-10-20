@@ -8,7 +8,7 @@ import { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import { ParaId, RelayChainBlockNumber } from '@polkadot/types/interfaces/parachains';
 import { AccountInfo, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import { AccountId, AssetId, Balance, BlockNumber, CurrencyId, DEXId, ExtrinsicsWeight, Fixed, Hash, Moment, Releases } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AssetId, Balance, BlockNumber, CurrencyId, DEXId, DEXInfo, ExtrinsicsWeight, Fixed, Hash, Moment, Permission, Releases, TechAccountId, ValidationFunction } from '@sora-neo-substrate/types/interfaces/runtime';
 import { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
@@ -37,16 +37,16 @@ export interface StorageType extends BaseStorageType {
   dexManager: {    dexInfos: StorageMap<DEXId | AnyNumber, DEXInfo>;
   };
   mockLiquiditySource: {    reserves: StorageDoubleMap<DEXId | AnyNumber, AssetId | AnyNumber, ITuple<[Fixed, Fixed]>>;
-    reservesAcc: TechAccountIdPrimitive | null;
+    reservesAcc: TechAccountId | null;
   };
   mockLiquiditySource2: {    reserves: StorageDoubleMap<DEXId | AnyNumber, AssetId | AnyNumber, ITuple<[Fixed, Fixed]>>;
-    reservesAcc: TechAccountIdPrimitive | null;
+    reservesAcc: TechAccountId | null;
   };
   mockLiquiditySource3: {    reserves: StorageDoubleMap<DEXId | AnyNumber, AssetId | AnyNumber, ITuple<[Fixed, Fixed]>>;
-    reservesAcc: TechAccountIdPrimitive | null;
+    reservesAcc: TechAccountId | null;
   };
   mockLiquiditySource4: {    reserves: StorageDoubleMap<DEXId | AnyNumber, AssetId | AnyNumber, ITuple<[Fixed, Fixed]>>;
-    reservesAcc: TechAccountIdPrimitive | null;
+    reservesAcc: TechAccountId | null;
   };
   parachainInfo: {    parachainId: ParaId | null;
   };

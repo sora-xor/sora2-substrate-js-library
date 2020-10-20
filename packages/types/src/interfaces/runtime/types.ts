@@ -2,8 +2,8 @@
 /* eslint-disable */
 
 import { ITuple } from '@polkadot/types/types';
-import { Compact, Enum, Int, Struct, U8aFixed, UInt, Vec } from '@polkadot/types/codec';
-import { GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId } from '@polkadot/types/generic';
+import { Compact, Enum, Int, Option, Struct, U8aFixed, UInt, Vec } from '@polkadot/types/codec';
+import { GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource } from '@polkadot/types/generic';
 import { Bytes, DoNotConstruct, Null, StorageKey, i128, u128, u16, u32, u64, u8 } from '@polkadot/types/primitive';
 import { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import { Signature } from '@polkadot/types/interfaces/extrinsics';
@@ -19,7 +19,7 @@ export interface AccountIdOf extends AccountId {}
 export interface AccountIndex extends GenericAccountIndex {}
 
 /** @name Address */
-export interface Address extends AccountId {}
+export interface Address extends GenericAddress {}
 
 /** @name Amount */
 export interface Amount extends i128 {}
@@ -74,6 +74,13 @@ export interface CurrencyIdOf extends AssetId {}
 
 /** @name DEXId */
 export interface DEXId extends u8 {}
+
+/** @name DEXInfo */
+export interface DEXInfo extends Struct {
+  readonly base_asset_id: AssetId;
+  readonly default_fee: BasisPoints;
+  readonly default_protocol_fee: BasisPoints;
+}
 
 /** @name Digest */
 export interface Digest extends Struct {
@@ -178,7 +185,7 @@ export interface LiquiditySourceType extends Enum {
 export interface LockIdentifier extends U8aFixed {}
 
 /** @name LookupSource */
-export interface LookupSource extends AccountId {}
+export interface LookupSource extends GenericLookupSource {}
 
 /** @name LookupTarget */
 export interface LookupTarget extends AccountId {}
@@ -225,6 +232,12 @@ export interface Percent extends UInt {}
 
 /** @name Permill */
 export interface Permill extends UInt {}
+
+/** @name Permission */
+export interface Permission extends Struct {
+  readonly owner_id: AccountId;
+  readonly params: Option<H512>;
+}
 
 /** @name Perquintill */
 export interface Perquintill extends UInt {}
@@ -276,17 +289,44 @@ export interface SignedBlock extends Struct {
 /** @name StorageData */
 export interface StorageData extends Bytes {}
 
+/** @name SwapAction */
+export interface SwapAction extends u128 {}
+
+/** @name TechAccountId */
+export interface TechAccountId extends u128 {}
+
+/** @name TechAccountIdPrimitive */
+export interface TechAccountIdPrimitive extends u128 {}
+
 /** @name TechAmount */
 export interface TechAmount extends Amount {}
 
 /** @name TechBalance */
 export interface TechBalance extends Balance {}
 
+/** @name TechPurpose */
+export interface TechPurpose extends Enum {
+  readonly isFeeCollector: boolean;
+  readonly isLiquidityKeeper: boolean;
+  readonly asLiquidityKeeper: TradingPair;
+  readonly isIdentifier: boolean;
+  readonly asIdentifier: Bytes;
+}
+
+/** @name TradingPair */
+export interface TradingPair extends Struct {
+  readonly base_asset_id: AssetId;
+  readonly target_asset_id: AssetId;
+}
+
 /** @name TransactionPriority */
 export interface TransactionPriority extends u64 {}
 
 /** @name U32F32 */
 export interface U32F32 extends UInt {}
+
+/** @name ValidationFunction */
+export interface ValidationFunction extends u128 {}
 
 /** @name ValidatorId */
 export interface ValidatorId extends AccountId {}

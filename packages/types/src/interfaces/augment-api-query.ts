@@ -3,12 +3,11 @@
 
 import { AnyNumber, ITuple, Observable } from '@polkadot/types/types';
 import { Option, Vec } from '@polkadot/types/codec';
-import { Bytes, bool, u32 } from '@polkadot/types/primitive';
+import { bool, u32 } from '@polkadot/types/primitive';
 import { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import { ParaId, RelayChainBlockNumber } from '@polkadot/types/interfaces/parachains';
-import { AccountInfo, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import { AccountId, AssetId, Balance, BlockNumber, CurrencyId, DEXId, ExtrinsicsWeight, Fixed, Hash, Moment, Releases } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AssetId, Balance, CurrencyId, DEXId, DEXInfo, Fixed, Hash, Moment, Permission, Releases, TechAccountId, ValidationFunction } from '@sora-neo-substrate/types/interfaces/runtime';
 import { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/storage' {
@@ -44,22 +43,22 @@ declare module '@polkadot/api/types/storage' {
     mockLiquiditySource: {
       [key: string]: QueryableStorageEntry<ApiType>;
       reserves: AugmentedQueryDoubleMap<ApiType, (key1: DEXId | AnyNumber | Uint8Array, key2: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[Fixed, Fixed]>>> & QueryableStorageEntry<ApiType>;
-      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountIdPrimitive>> & QueryableStorageEntry<ApiType>;
+      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountId>> & QueryableStorageEntry<ApiType>;
     };
     mockLiquiditySource2: {
       [key: string]: QueryableStorageEntry<ApiType>;
       reserves: AugmentedQueryDoubleMap<ApiType, (key1: DEXId | AnyNumber | Uint8Array, key2: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[Fixed, Fixed]>>> & QueryableStorageEntry<ApiType>;
-      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountIdPrimitive>> & QueryableStorageEntry<ApiType>;
+      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountId>> & QueryableStorageEntry<ApiType>;
     };
     mockLiquiditySource3: {
       [key: string]: QueryableStorageEntry<ApiType>;
       reserves: AugmentedQueryDoubleMap<ApiType, (key1: DEXId | AnyNumber | Uint8Array, key2: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[Fixed, Fixed]>>> & QueryableStorageEntry<ApiType>;
-      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountIdPrimitive>> & QueryableStorageEntry<ApiType>;
+      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountId>> & QueryableStorageEntry<ApiType>;
     };
     mockLiquiditySource4: {
       [key: string]: QueryableStorageEntry<ApiType>;
       reserves: AugmentedQueryDoubleMap<ApiType, (key1: DEXId | AnyNumber | Uint8Array, key2: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[Fixed, Fixed]>>> & QueryableStorageEntry<ApiType>;
-      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountIdPrimitive>> & QueryableStorageEntry<ApiType>;
+      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountId>> & QueryableStorageEntry<ApiType>;
     };
     parachainInfo: {
       [key: string]: QueryableStorageEntry<ApiType>;
@@ -99,78 +98,6 @@ declare module '@polkadot/api/types/storage' {
        * The `AccountId` of the sudo key.
        **/
       key: AugmentedQuery<ApiType, () => Observable<AccountId>> & QueryableStorageEntry<ApiType>;
-    };
-    system: {
-      [key: string]: QueryableStorageEntry<ApiType>;
-      /**
-       * The full account information for a particular account ID.
-       **/
-      account: AugmentedQuery<ApiType, (arg: AccountId | string | Uint8Array) => Observable<AccountInfo>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Total length (in bytes) for all extrinsics put together, for the current block.
-       **/
-      allExtrinsicsLen: AugmentedQuery<ApiType, () => Observable<Option<u32>>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Map of block numbers to block hashes.
-       **/
-      blockHash: AugmentedQuery<ApiType, (arg: BlockNumber | AnyNumber | Uint8Array) => Observable<Hash>> & QueryableStorageEntry<ApiType>;
-      /**
-       * The current weight for the block.
-       **/
-      blockWeight: AugmentedQuery<ApiType, () => Observable<ExtrinsicsWeight>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Digest of the current block, also part of the block header.
-       **/
-      digest: AugmentedQuery<ApiType, () => Observable<DigestOf>> & QueryableStorageEntry<ApiType>;
-      /**
-       * The number of events in the `Events<T>` list.
-       **/
-      eventCount: AugmentedQuery<ApiType, () => Observable<EventIndex>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Events deposited for the current block.
-       **/
-      events: AugmentedQuery<ApiType, () => Observable<Vec<EventRecord>>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Mapping between a topic (represented by T::Hash) and a vector of indexes
-       * of events in the `<Events<T>>` list.
-       * 
-       * All topic vectors have deterministic storage locations depending on the topic. This
-       * allows light-clients to leverage the changes trie storage tracking mechanism and
-       * in case of changes fetch the list of events of interest.
-       * 
-       * The value has the type `(T::BlockNumber, EventIndex)` because if we used only just
-       * the `EventIndex` then in case if the topic has the same contents on the next block
-       * no notification will be triggered thus the event might be lost.
-       **/
-      eventTopics: AugmentedQuery<ApiType, (arg: Hash | string | Uint8Array) => Observable<Vec<ITuple<[BlockNumber, EventIndex]>>>> & QueryableStorageEntry<ApiType>;
-      /**
-       * The execution phase of the block.
-       **/
-      executionPhase: AugmentedQuery<ApiType, () => Observable<Option<Phase>>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Total extrinsics count for the current block.
-       **/
-      extrinsicCount: AugmentedQuery<ApiType, () => Observable<Option<u32>>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Extrinsics data for the current block (maps an extrinsic's index to its data).
-       **/
-      extrinsicData: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Bytes>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Extrinsics root of the current block, also part of the block header.
-       **/
-      extrinsicsRoot: AugmentedQuery<ApiType, () => Observable<Hash>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Stores the `spec_version` and `spec_name` of when the last runtime upgrade happened.
-       **/
-      lastRuntimeUpgrade: AugmentedQuery<ApiType, () => Observable<Option<LastRuntimeUpgradeInfo>>> & QueryableStorageEntry<ApiType>;
-      /**
-       * The current block number being processed. Set by `execute_block`.
-       **/
-      number: AugmentedQuery<ApiType, () => Observable<BlockNumber>> & QueryableStorageEntry<ApiType>;
-      /**
-       * Hash of the previous block.
-       **/
-      parentHash: AugmentedQuery<ApiType, () => Observable<Hash>> & QueryableStorageEntry<ApiType>;
     };
     templateModule: {
       [key: string]: QueryableStorageEntry<ApiType>;

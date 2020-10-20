@@ -3,11 +3,10 @@
 
 import { AnyNumber } from '@polkadot/types/types';
 import { Compact, Option, Vec } from '@polkadot/types/codec';
-import { Bytes, u16, u32, u64 } from '@polkadot/types/primitive';
+import { u16, u32 } from '@polkadot/types/primitive';
 import { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import { DownwardMessage, ValidationFunctionParams } from '@polkadot/types/interfaces/parachains';
-import { Key } from '@polkadot/types/interfaces/system';
-import { AccountId, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Call, ChangesTrieConfiguration, CurrencyIdOf, DEXId, Fixed, KeyValue, LookupSource, Moment, Perbill, Weight } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AccountIndex, Address, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Call, CurrencyIdOf, DEXId, Fixed, LookupSource, Moment, SwapAction, ValidationFunction, Weight } from '@sora-neo-substrate/types/interfaces/runtime';
 import { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/submittable' {
@@ -32,7 +31,7 @@ declare module '@polkadot/api/types/submittable' {
        * not assumed to be in the overlay.
        * # </weight>
        **/
-      forceTransfer: AugmentedSubmittable<(source: LookupSource | string | Uint8Array, dest: LookupSource | string | Uint8Array, value: Compact<Balance> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      forceTransfer: AugmentedSubmittable<(source: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, dest: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, value: Compact<Balance> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
        * Set the balances of a given account.
        * 
@@ -53,7 +52,7 @@ declare module '@polkadot/api/types/submittable' {
        * - DB Weight: 1 Read, 1 Write to `who`
        * # </weight>
        **/
-      setBalance: AugmentedSubmittable<(who: LookupSource | string | Uint8Array, newFree: Compact<Balance> | AnyNumber | Uint8Array, newReserved: Compact<Balance> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      setBalance: AugmentedSubmittable<(who: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, newFree: Compact<Balance> | AnyNumber | Uint8Array, newReserved: Compact<Balance> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
        * Transfer some liquid free balance to another account.
        * 
@@ -83,7 +82,7 @@ declare module '@polkadot/api/types/submittable' {
        * - Origin account is already in memory, so no DB operations for them.
        * # </weight>
        **/
-      transfer: AugmentedSubmittable<(dest: LookupSource | string | Uint8Array, value: Compact<Balance> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      transfer: AugmentedSubmittable<(dest: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, value: Compact<Balance> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
        * Same as the [`transfer`] call, but with a check that the transfer will not kill the
        * origin account.
@@ -97,7 +96,7 @@ declare module '@polkadot/api/types/submittable' {
        * - DB Weight: 1 Read and 1 Write to dest (sender is in overlay already)
        * #</weight>
        **/
-      transferKeepAlive: AugmentedSubmittable<(dest: LookupSource | string | Uint8Array, value: Compact<Balance> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      transferKeepAlive: AugmentedSubmittable<(dest: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, value: Compact<Balance> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
     currencies: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
@@ -119,7 +118,7 @@ declare module '@polkadot/api/types/submittable' {
        * - native currency in worst case: 70 µs
        * # </weight>
        **/
-      transfer: AugmentedSubmittable<(dest: LookupSource | string | Uint8Array, currencyId: CurrencyIdOf | AnyNumber | Uint8Array, amount: Compact<BalanceOf> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      transfer: AugmentedSubmittable<(dest: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, currencyId: CurrencyIdOf | AnyNumber | Uint8Array, amount: Compact<BalanceOf> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
        * Transfer some native currency to another account.
        * 
@@ -136,7 +135,7 @@ declare module '@polkadot/api/types/submittable' {
        * Base Weight: 70 µs
        * # </weight>
        **/
-      transferNativeCurrency: AugmentedSubmittable<(dest: LookupSource | string | Uint8Array, amount: Compact<BalanceOf> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      transferNativeCurrency: AugmentedSubmittable<(dest: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, amount: Compact<BalanceOf> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
        * update amount of account `who` under `currency_id`.
        * 
@@ -158,7 +157,7 @@ declare module '@polkadot/api/types/submittable' {
        * - native currency and create account: 27.39 µs
        * # </weight>
        **/
-      updateBalance: AugmentedSubmittable<(who: LookupSource | string | Uint8Array, currencyId: CurrencyIdOf | AnyNumber | Uint8Array, amount: AmountOf | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      updateBalance: AugmentedSubmittable<(who: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, currencyId: CurrencyIdOf | AnyNumber | Uint8Array, amount: AmountOf | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
     dexManager: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
@@ -222,7 +221,7 @@ declare module '@polkadot/api/types/submittable' {
     };
     parachainUpgrade: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
-      scheduleUpgrade: AugmentedSubmittable<(validationFunction: ValidationFunction | null) => SubmittableExtrinsic<ApiType>>;
+      scheduleUpgrade: AugmentedSubmittable<(validationFunction: ValidationFunction | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
        * Set the current validation function parameters
        * 
@@ -249,7 +248,7 @@ declare module '@polkadot/api/types/submittable' {
        * - One DB change.
        * # </weight>
        **/
-      setKey: AugmentedSubmittable<(updated: LookupSource | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      setKey: AugmentedSubmittable<(updated: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
        * Authenticates the sudo key and dispatches a function call with `Root` origin.
        * 
@@ -276,7 +275,7 @@ declare module '@polkadot/api/types/submittable' {
        * - Weight of derivative `call` execution + 10,000.
        * # </weight>
        **/
-      sudoAs: AugmentedSubmittable<(who: LookupSource | string | Uint8Array, call: Call | { callIndex?: any; args?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      sudoAs: AugmentedSubmittable<(who: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, call: Call | { callIndex?: any; args?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
        * Authenticates the sudo key and dispatches a function call with `Root` origin.
        * This function does not check the weight of the call, and instead allows the
@@ -291,123 +290,9 @@ declare module '@polkadot/api/types/submittable' {
        **/
       sudoUncheckedWeight: AugmentedSubmittable<(call: Call | { callIndex?: any; args?: any } | string | Uint8Array, weight: Weight | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
-    system: {
-      [key: string]: SubmittableExtrinsicFunction<ApiType>;
-      /**
-       * A dispatch that will fill the block weight up to the given ratio.
-       **/
-      fillBlock: AugmentedSubmittable<(ratio: Perbill | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
-      /**
-       * Kill all storage items with a key that starts with the given prefix.
-       * 
-       * **NOTE:** We rely on the Root origin to provide us the number of subkeys under
-       * the prefix we are removing to accurately calculate the weight of this function.
-       * 
-       * # <weight>
-       * - `O(P)` where `P` amount of keys with prefix `prefix`
-       * - `P` storage deletions.
-       * - Base Weight: 0.834 * P µs
-       * - Writes: Number of subkeys + 1
-       * # </weight>
-       **/
-      killPrefix: AugmentedSubmittable<(prefix: Key | string | Uint8Array, subkeys: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
-      /**
-       * Kill some items from storage.
-       * 
-       * # <weight>
-       * - `O(IK)` where `I` length of `keys` and `K` length of one key
-       * - `I` storage deletions.
-       * - Base Weight: .378 * i µs
-       * - Writes: Number of items
-       * # </weight>
-       **/
-      killStorage: AugmentedSubmittable<(keys: Vec<Key> | (Key | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>>;
-      /**
-       * Make some on-chain remark.
-       * 
-       * # <weight>
-       * - `O(1)`
-       * - Base Weight: 0.665 µs, independent of remark length.
-       * - No DB operations.
-       * # </weight>
-       **/
-      remark: AugmentedSubmittable<(remark: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
-      /**
-       * Set the new changes trie configuration.
-       * 
-       * # <weight>
-       * - `O(1)`
-       * - 1 storage write or delete (codec `O(1)`).
-       * - 1 call to `deposit_log`: Uses `append` API, so O(1)
-       * - Base Weight: 7.218 µs
-       * - DB Weight:
-       * - Writes: Changes Trie, System Digest
-       * # </weight>
-       **/
-      setChangesTrieConfig: AugmentedSubmittable<(changesTrieConfig: Option<ChangesTrieConfiguration> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
-      /**
-       * Set the new runtime code.
-       * 
-       * # <weight>
-       * - `O(C + S)` where `C` length of `code` and `S` complexity of `can_set_code`
-       * - 1 storage write (codec `O(C)`).
-       * - 1 call to `can_set_code`: `O(S)` (calls `sp_io::misc::runtime_version` which is expensive).
-       * - 1 event.
-       * The weight of this function is dependent on the runtime, but generally this is very expensive.
-       * We will treat this as a full block.
-       * # </weight>
-       **/
-      setCode: AugmentedSubmittable<(code: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
-      /**
-       * Set the new runtime code without doing any checks of the given `code`.
-       * 
-       * # <weight>
-       * - `O(C)` where `C` length of `code`
-       * - 1 storage write (codec `O(C)`).
-       * - 1 event.
-       * The weight of this function is dependent on the runtime. We will treat this as a full block.
-       * # </weight>
-       **/
-      setCodeWithoutChecks: AugmentedSubmittable<(code: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
-      /**
-       * Set the number of pages in the WebAssembly environment's heap.
-       * 
-       * # <weight>
-       * - `O(1)`
-       * - 1 storage write.
-       * - Base Weight: 1.405 µs
-       * - 1 write to HEAP_PAGES
-       * # </weight>
-       **/
-      setHeapPages: AugmentedSubmittable<(pages: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
-      /**
-       * Set some items of storage.
-       * 
-       * # <weight>
-       * - `O(I)` where `I` length of `items`
-       * - `I` storage writes (`O(1)`).
-       * - Base Weight: 0.568 * i µs
-       * - Writes: Number of items
-       * # </weight>
-       **/
-      setStorage: AugmentedSubmittable<(items: Vec<KeyValue> | (KeyValue)[]) => SubmittableExtrinsic<ApiType>>;
-      /**
-       * Kill the sending account, assuming there are no references outstanding and the composite
-       * data is equal to its default value.
-       * 
-       * # <weight>
-       * - `O(1)`
-       * - 1 storage read and deletion.
-       * --------------------
-       * Base Weight: 8.626 µs
-       * No DB Read or Write operations because caller is already in overlay
-       * # </weight>
-       **/
-      suicide: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>>;
-    };
     technical: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
-      createSwap: AugmentedSubmittable<(action: SwapAction | null) => SubmittableExtrinsic<ApiType>>;
+      createSwap: AugmentedSubmittable<(action: SwapAction | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
     templateModule: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
