@@ -3,9 +3,8 @@
 
 import { Codec } from '@polkadot/types/types';
 import { Vec } from '@polkadot/types/codec';
-import { u32 } from '@polkadot/types/primitive';
 import { WeightToFeeCoefficient } from '@polkadot/types/interfaces/support';
-import { Balance, BalanceOf, BlockNumber, CurrencyIdOf, Moment, RuntimeDbWeight, Weight } from '@sora-neo-substrate/types/interfaces/runtime';
+import { Balance, BalanceOf, CurrencyIdOf, Moment } from '@sora-neo-substrate/types/interfaces/runtime';
 import { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/consts' {
@@ -20,33 +19,6 @@ declare module '@polkadot/api/types/consts' {
     currencies: {
       [key: string]: Codec;
       nativeCurrencyId: CurrencyIdOf & AugmentedConst<ApiType>;
-    };
-    system: {
-      [key: string]: Codec;
-      /**
-       * The base weight of executing a block, independent of the transactions in the block.
-       **/
-      blockExecutionWeight: Weight & AugmentedConst<ApiType>;
-      /**
-       * The maximum number of blocks to allow in mortal eras.
-       **/
-      blockHashCount: BlockNumber & AugmentedConst<ApiType>;
-      /**
-       * The weight of runtime database operations the runtime can invoke.
-       **/
-      dbWeight: RuntimeDbWeight & AugmentedConst<ApiType>;
-      /**
-       * The base weight of an Extrinsic in the block, independent of the of extrinsic being executed.
-       **/
-      extrinsicBaseWeight: Weight & AugmentedConst<ApiType>;
-      /**
-       * The maximum length of a block (in bytes).
-       **/
-      maximumBlockLength: u32 & AugmentedConst<ApiType>;
-      /**
-       * The maximum weight of a block.
-       **/
-      maximumBlockWeight: Weight & AugmentedConst<ApiType>;
     };
     timestamp: {
       [key: string]: Codec;

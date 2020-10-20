@@ -2,8 +2,8 @@ import { rpc as ormlRpc, types as ormlTypes, typesAlias as ormlAlias } from '@op
 import { jsonrpcFromDefs, typesAliasFromDefs, typesFromDefs } from '@open-web3/orml-type-definitions/utils'
 
 import runtime from './runtime'
-import dexApi from './dex-api'
-import dexManager from './dex-manager'
+import dexApi from './dexApi'
+import dexManager from './dexManager'
 
 const soraneoDefs = {
   runtime,

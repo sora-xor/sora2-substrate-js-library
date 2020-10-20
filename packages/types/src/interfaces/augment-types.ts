@@ -54,7 +54,7 @@ import { Bounty, BountyIndex, BountyStatus, BountyStatusActive, BountyStatusCura
 import { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import { VestingInfo } from '@polkadot/types/interfaces/vesting';
-import { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, Digest, DigestItem, ExtrinsicsWeight, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, GenericAddress, H160, H256, H512, Hash, Header, I32F32, Index, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, ModuleId, Moment, OpaqueCall, Origin, OriginCaller, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, Perquintill, Phantom, PhantomData, PreRuntime, Releases, RuntimeDbWeight, Seal, SealV0, SignedBlock, StorageData, TechAmount, TechBalance, TransactionPriority, U32F32, ValidatorId, Weight, WeightMultiplier } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXInfo, Digest, DigestItem, ExtrinsicsWeight, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, GenericAddress, H160, H256, H512, Hash, Header, I32F32, Index, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, ModuleId, Moment, OpaqueCall, Origin, OriginCaller, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, Permission, Perquintill, Phantom, PhantomData, PreRuntime, Releases, RuntimeDbWeight, Seal, SealV0, SignedBlock, StorageData, SwapAction, TechAccountId, TechAccountIdPrimitive, TechAmount, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, Weight, WeightMultiplier } from '@sora-neo-substrate/types/interfaces/runtime';
 
 declare module '@polkadot/types/types/registry' {
   export interface InterfaceTypes {
@@ -1864,6 +1864,9 @@ declare module '@polkadot/types/types/registry' {
     'Compact<DEXId>': Compact<DEXId>;
     'Option<DEXId>': Option<DEXId>;
     'Vec<DEXId>': Vec<DEXId>;
+    DEXInfo: DEXInfo;
+    'Option<DEXInfo>': Option<DEXInfo>;
+    'Vec<DEXInfo>': Vec<DEXInfo>;
     TechAmount: TechAmount;
     'Option<TechAmount>': Option<TechAmount>;
     'Vec<TechAmount>': Vec<TechAmount>;
@@ -1873,5 +1876,30 @@ declare module '@polkadot/types/types/registry' {
     LiquiditySourceType: LiquiditySourceType;
     'Option<LiquiditySourceType>': Option<LiquiditySourceType>;
     'Vec<LiquiditySourceType>': Vec<LiquiditySourceType>;
+    TradingPair: TradingPair;
+    'Option<TradingPair>': Option<TradingPair>;
+    'Vec<TradingPair>': Vec<TradingPair>;
+    TechPurpose: TechPurpose;
+    'Option<TechPurpose>': Option<TechPurpose>;
+    'Vec<TechPurpose>': Vec<TechPurpose>;
+    TechAccountId: TechAccountId;
+    'Compact<TechAccountId>': Compact<TechAccountId>;
+    'Option<TechAccountId>': Option<TechAccountId>;
+    'Vec<TechAccountId>': Vec<TechAccountId>;
+    TechAccountIdPrimitive: TechAccountIdPrimitive;
+    'Compact<TechAccountIdPrimitive>': Compact<TechAccountIdPrimitive>;
+    'Option<TechAccountIdPrimitive>': Option<TechAccountIdPrimitive>;
+    'Vec<TechAccountIdPrimitive>': Vec<TechAccountIdPrimitive>;
+    SwapAction: SwapAction;
+    'Compact<SwapAction>': Compact<SwapAction>;
+    'Option<SwapAction>': Option<SwapAction>;
+    'Vec<SwapAction>': Vec<SwapAction>;
+    Permission: Permission;
+    'Option<Permission>': Option<Permission>;
+    'Vec<Permission>': Vec<Permission>;
+    ValidationFunction: ValidationFunction;
+    'Compact<ValidationFunction>': Compact<ValidationFunction>;
+    'Option<ValidationFunction>': Option<ValidationFunction>;
+    'Vec<ValidationFunction>': Vec<ValidationFunction>;
   }
 }
