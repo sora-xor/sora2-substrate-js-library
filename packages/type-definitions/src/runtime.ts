@@ -12,7 +12,7 @@ export default {
     CurrencyIdOf: 'AssetId',
     BasisPoints: 'u16',
     Fixed: 'FixedU128',
-    DEXId: 'u8',
+    DEXId: 'u32',
     DEXInfo: {
       base_asset_id: 'AssetId',
       default_fee: 'BasisPoints',
@@ -50,6 +50,7 @@ export default {
     //     WrappedRepr: "AccountId"
     //   }
     // },
+    TechAssetId: "u128", // Dummy value, will fail on decode
     TechAccountId: "u128", // Dummy value, will fail on decode
     TechAccountIdPrimitive: "u128", // Dummy value, will fail on decode
     SwapAction: "u128", //Dummy value, will fail on decode

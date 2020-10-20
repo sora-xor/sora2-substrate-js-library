@@ -3,7 +3,7 @@
   "author": "Stefan Popov <popov@soramitsu.co.jp>",
   "private": true,
   "scripts": {
-    "build": "yarn build:interfaces && polkadot-dev-build-ts",
+    "build": "yarn check-deps && yarn build:interfaces && polkadot-dev-build-ts",
     "build:interfaces": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts",
     "check-deps": "./node_modules/@open-web3/util/scripts/check-deps.js yarn.lock @polkadot/ @open-web3/",
     "clean": "polkadot-dev-clean-build",
@@ -11,7 +11,7 @@
     "postinstall": "polkadot-dev-yarn-only",
     "test:all": "jest --testPathIgnorePatterns",
     "update-metadata": "ts-node --project ./tsconfig.json packages/types/scripts/updateMetadata.ts",
-    "test": "ts-node -r tsconfig-paths/register demo.ts"
+    "test": "node -r ts-node/register -r tsconfig-paths/register demo.js"
   },
   "engines": {
     "yarn": "^1.10.1"
@@ -26,7 +26,7 @@
     "@babel/core": "^7.10.2",
     "@babel/register": "^7.10.1",
     "@babel/runtime": "^7.10.2",
-    "@open-web3/util": "^0.6.0-beta.12",
+    "@open-web3/util": "^0.6.0-beta.26",
     "@polkadot/dev": "^0.32.17",
     "@polkadot/ts": "^0.2.1",
     "ts-node": "^8.6.1",

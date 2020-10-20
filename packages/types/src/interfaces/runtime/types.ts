@@ -73,7 +73,7 @@ export interface CurrencyId extends AssetId {}
 export interface CurrencyIdOf extends AssetId {}
 
 /** @name DEXId */
-export interface DEXId extends u8 {}
+export interface DEXId extends u32 {}
 
 /** @name DEXInfo */
 export interface DEXInfo extends Struct {
@@ -300,6 +300,9 @@ export interface TechAccountIdPrimitive extends u128 {}
 
 /** @name TechAmount */
 export interface TechAmount extends Amount {}
+
+/** @name TechAssetId */
+export interface TechAssetId extends u128 {}
 
 /** @name TechBalance */
 export interface TechBalance extends Balance {}
