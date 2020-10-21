@@ -2,6 +2,7 @@ console.log('TEST IMPORT')
 const { ApiPromise } = require('@polkadot/api');
 const { WsProvider } = require('@polkadot/rpc-provider');
 const { options } = require('@sora-neo-substrate/api');
+const { Keyring } = require('@polkadot/api');
 
 async function main() {
   console.log('TEST MAIN FUNCTION');
@@ -24,14 +25,48 @@ async function main() {
   const ids = await api.rpc.dexManager.listDEXIds();
   console.log(ids.toHuman());
 
-  // Searching for correct attribute names, which are renamed in runtime
-  // for (attr in api.query) {
-  //   console.log(attr);
-  // }
+  const cur = api.consts.currencies.nativeCurrencyId;
+  console.log(cur.toHuman());
 
-  // TODO: signed transaction submit demo
+  // Searching for correct attribute names, which are renamed in runtime
+  // console.log(api.query)
+
+  const keyring = new Keyring({ type: 'sr25519' });
+  const alice = keyring.addFromUri('//Alice', { name: 'Alice default' });
+
+  // this is quick example, refer to https://polkadot.js.org/docs/api/cookbook/tx and https://polkadot.js.org/docs/api/start/api.tx.subs
+  const unsub = await api.tx.mockLiquiditySource.testAccess(0, 2).signAndSend(alice, (result) => {
+    console.log(`Current status is ${result.status}`);
+
+    if (result.status.isInBlock) {
+      console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
+    } else if (result.status.isFinalized) {
+      console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+
+      result.events.forEach(({ phase, event: { data, method, section } }) => {
+        console.log(`\t' ${phase}: ${section}.${method}:: ${data}`);
+        if (section === 'system' && method === 'ExtrinsicFailed') {
+          const [error, info] = data;
+          if (error.isModule) {
+            // for module errors, we have the section indexed, lookup
+            const decoded = api.registry.findMetaError(error.asModule);
+            const { documentation, method, section } = decoded;
+
+            console.log(`${section}.${method}: ${documentation.join(' ')}`);
+          } else {
+            // Other, CannotLookup, BadOrigin, no extra info
+            console.log(error.toString());
+          }
+        } else {
+          console.log("Transaction success.")
+        }
+      });
+
+      unsub();
+    }
+  });
 
   console.log('FINISHED CALLING');
 }
 
-main().catch(console.error).finally(() => process.exit());
+main()//.catch(console.error).finally(() => process.exit()); 
