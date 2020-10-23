@@ -22,8 +22,8 @@ async function main() {
   const info2 = await api.derive.dexManager.dexInfo(0);
   console.log(info2.default_fee.toString());
 
-  const ids = await api.rpc.dexManager.listDEXIds();
-  console.log(ids.toHuman());
+  //const ids = await api.rpc.dexManager.listDEXIds();
+  //console.log(ids.toHuman());
 
   const cur = api.consts.currencies.nativeCurrencyId;
   console.log(cur.toHuman());
