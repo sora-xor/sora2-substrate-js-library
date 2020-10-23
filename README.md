@@ -10,17 +10,16 @@ yarn install
 yarn build
 ```
 
-### Run local test net first
-change dir to SoraNeo-substrate repos dir
-compile parachain
-run local test net
+### Run local test net with parachain first
 
-for example with script
+> This library version is compatible with **modbrin/initial-rpc** branch of **SoraNeo-substrate** parachain (link)
+
+Build & Run local test net, e.g. via script:
 ```
 ./scripts/localtestnet.sh -s
 ```
 
-### Run tests
+### Tests
 ```
 yarn test
 ```
