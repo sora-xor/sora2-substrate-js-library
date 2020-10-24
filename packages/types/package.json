@@ -1,0 +1,18 @@
+{
+  "name": "@sora-neo-substrate/types",
+  "version": "0.1.0",
+  "main": "index.js",
+  "dependencies": {
+    "@sora-neo-substrate/type-definitions": "^0.1.0",
+    "@babel/runtime": "^7.10.2",
+    "@open-web3/api-mobx": "^0.6.0-beta.26",
+    "@open-web3/orml-types": "^0.6.0-beta.26",
+    "@polkadot/api": "^2.1.2-8",
+    "@polkadot/typegen": "^2.1.2-8",
+    "@polkadot/types": "^2.1.2-8"
+  },
+  "devDependencies": {
+    "@types/websocket": "^1.0.0",
+    "websocket": "^1.0.31"
+  }
+}
