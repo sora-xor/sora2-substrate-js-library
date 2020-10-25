@@ -1,0 +1,9 @@
+{
+  "name": "@sora-neo-substrate/app-util",
+  "version": "0.1.0",
+  "main": "index.js",
+  "dependencies": {
+    "@babel/runtime": "^7.10.2",
+    "bignumber.js": "^9.0.0"
+  }
+}

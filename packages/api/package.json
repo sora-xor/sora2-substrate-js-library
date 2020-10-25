@@ -1,0 +1,13 @@
+{
+  "name": "@sora-neo-substrate/api",
+  "version": "0.1.0",
+  "main": "index.js",
+  "dependencies": {
+    "@sora-neo-substrate/types": "^0.1.0",
+    "@sora-neo-substrate/api-derive": "^0.1.0",
+    "@babel/runtime": "^7.10.2",
+    "@open-web3/orml-api-derive": "^0.6.0-beta.26",
+    "@polkadot/api": "^2.1.2-8",
+    "@polkadot/rpc-core": "^2.1.2-8"
+  }
+}
