@@ -6,7 +6,7 @@ import { Compact, Option, Vec } from '@polkadot/types/codec';
 import { u16, u32 } from '@polkadot/types/primitive';
 import { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import { DownwardMessage, ValidationFunctionParams } from '@polkadot/types/interfaces/parachains';
-import { AccountId, AccountIndex, Address, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Call, CurrencyIdOf, DEXId, Fixed, LiquiditySourceType, LookupSource, Moment, SwapAction, ValidationFunction, Weight } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AccountIndex, Address, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Call, CurrencyIdOf, DEXId, Fixed, LiquiditySourceType, LookupSource, Moment, SwapAction, SwapVariant, ValidationFunction, Weight } from '@sora-neo-substrate/types/interfaces/runtime';
 import { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/submittable' {
@@ -159,6 +159,24 @@ declare module '@polkadot/api/types/submittable' {
        **/
       updateBalance: AugmentedSubmittable<(who: LookupSource | Address | AccountId | AccountIndex | LookupSource | string | Uint8Array, currencyId: CurrencyIdOf | AnyNumber | Uint8Array, amount: AmountOf | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
+    dexapi: {
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+      /**
+       * Perform swap with specified parameters. Gateway for invoking liquidity source exchanges.
+       * 
+       * - `dex_id`: ID of the exchange.
+       * - `liquidity_source_type`: Type of liquidity source to perform swap on.
+       * - `input_asset_id`: ID of Asset to be deposited from sender account into pool reserves.
+       * - `output_asset_id`: ID of Asset t0 be withdrawn from pool reserves into receiver account.
+       * - `amount`: Either amount of desired input or output tokens, determined by `swap_variant` parameter.
+       * - `limit`: Either maximum input amount or minimum output amount tolerated for successful swap,
+       * determined by `swap_variant` parameter.
+       * - `swap_variant`: Either 'WithDesiredInput' or 'WithDesiredOutput', indicates amounts purpose.
+       * - `receiver`: Optional value, indicates AccountId for swap receiver. If not set, default is `sender`.
+       * TODO: add information about weight
+       **/
+      swap: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'BondingCurve'|'XYKPool'|'MockPool'|'MockPool2'|'MockPool3'|'MockPool4' | number | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Fixed | AnyNumber | Uint8Array, limit: Fixed | AnyNumber | Uint8Array, swapVariant: SwapVariant | 'WithDesiredInput'|'WithDesiredOutput' | number | Uint8Array, receiver: Option<AccountId> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+    };
     dexManager: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
       /**
@@ -254,7 +272,7 @@ declare module '@polkadot/api/types/submittable' {
     };
     parachainUpgrade: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
-      scheduleUpgrade: AugmentedSubmittable<(validationFunction: ValidationFunction | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      scheduleUpgrade: AugmentedSubmittable<(validationFunction: ValidationFunction | null) => SubmittableExtrinsic<ApiType>>;
       /**
        * Set the current validation function parameters
        * 
@@ -325,7 +343,7 @@ declare module '@polkadot/api/types/submittable' {
     };
     technical: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
-      createSwap: AugmentedSubmittable<(action: SwapAction | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      createSwap: AugmentedSubmittable<(action: SwapAction | null) => SubmittableExtrinsic<ApiType>>;
     };
     templateModule: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;

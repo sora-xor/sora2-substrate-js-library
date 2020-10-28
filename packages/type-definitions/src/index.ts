@@ -5,55 +5,27 @@ import runtime from './runtime'
 import dexApi from './dexApi'
 import dexManager from './dexManager'
 import tradingPair from './tradingPair'
+import template from './template'
 
 const soraneoDefs = {
   runtime,
   dexApi,
   dexManager,
-  tradingPair
+  tradingPair,
+  template
 }
 
-const additionalOverride = {
+const overrides = {
   Address: 'AccountId',
-  LookupSource: 'AccountId'
-  // Keys: 'SessionKeys2', // May be useful in future
-  // PalletsOrigin: {
-  //   _enum: {
-  //     System: 'SystemOrigin',
-  //     Timestamp: 'Null',
-  //     Balances: 'Null',
-  //     Sudo: 'Null',
-  //     RandomnessCollectiveFlip: 'Null',
-  //     ParachainUpgrade: 'Null',
-  //     MessageBroker: 'Null',
-  //     TransactionPayment: 'Null',
-  //     ParachainInfo: 'Null',
-  //     Permissions: 'Null',
-  //     TokenDealer: 'Null',
-  //     TemplateModule: 'Null',
-  //     ReferralSystem: 'Null',
-  //     XorFee: 'Null',
-  //     Tokens: 'Null',
-  //     Currencies: 'Null',
-  //     TradingPair: 'Null',
-  //     Assets: 'Null',
-  //     DEXManager: 'Null',
-  //     BondingCurvePool: 'Null',
-  //     Technical: 'Null',
-  //     LiquidityProxy: 'Null',
-  //     MockLiquiditySource: 'Null',
-  //     MockLiquiditySource2: 'Null',
-  //     MockLiquiditySource3: 'Null',
-  //     MockLiquiditySource4: 'Null',
-  //     DEXAPI: 'Null'
-  //   }
-  // }
+  LookupSource: 'AccountId',
+  AssetId: 'JsonCompatAssetId',
+  Balance: 'FixedU128'
 };
 
 export const types = {
   ...ormlTypes,
   ...typesFromDefs(soraneoDefs),
-  ...additionalOverride
+  ...overrides
 }
 export const typesBundle = {
   spec: {
