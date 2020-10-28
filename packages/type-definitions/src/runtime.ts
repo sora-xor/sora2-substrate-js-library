@@ -2,10 +2,10 @@
 export default {
   rpc: {},
   types: {
-    // Address: 'AccountId', // supposed to be as in defaults
-    // LookupSource: 'AccountId',
-    Balance: 'u128',
-    AssetId: 'u8',
+    WrappedBalance: {
+      fixed: 'Fixed'
+    },
+    AssetIdOf: 'AssetId',
     Amount: 'i128',
     AmountOf: 'Amount',
     CurrencyId: 'AssetId',
@@ -13,16 +13,36 @@ export default {
     BasisPoints: 'u16',
     Fixed: 'FixedU128',
     DEXId: 'u32',
+    DEXIdOf: 'DEXId',
     DEXInfo: {
       base_asset_id: 'AssetId',
       default_fee: 'BasisPoints',
       default_protocol_fee: 'BasisPoints'
     },
+    JsonCompatAssetId: {
+      data: '[u8; 32]',
+      phantom: 'Null'
+    },
+    SwapVariant: {
+      _enum: [
+        'WithDesiredInput',
+        'WithDesiredOutput'
+      ]
+    },
     TechAmount: 'Amount',
     TechBalance: 'Balance',
+    SwapOutcome: {
+      amount: "Balance",
+      fee: "Balance",
+    },
     LiquiditySourceType: {
       _enum: [
-        'BondingCurve', 'XYKPool', 'MockPool', 'MockPool2', 'MockPool3', 'MockPool4'
+        'BondingCurve',
+        'XYKPool',
+        'MockPool',
+        'MockPool2',
+        'MockPool3',
+        'MockPool4'
       ]
     },
     TradingPair: {
@@ -36,28 +56,14 @@ export default {
         Identifier: "Vec<u8>"
       }
     },
-    // TechAccountId: {
-    //   _enum: {
-    //     Pure: {
-    //       _hidden_0: "DEXId",
-    //       _hidden_1: "TechPurpose"
-    //     },
-    //     Generic: {
-    //       _hidden_0: "Vec<u8>",
-    //       _hidden_1: "Vec<u8>"
-    //     },
-    //     Wrapped: "AccountId",
-    //     WrappedRepr: "AccountId"
-    //   }
-    // },
-    TechAssetId: "u128", // Dummy value, will fail on decode
-    TechAccountId: "u128", // Dummy value, will fail on decode
-    TechAccountIdPrimitive: "u128", // Dummy value, will fail on decode
-    SwapAction: "u128", //Dummy value, will fail on decode
     Permission: {
       owner_id: "AccountId",
       params: "Option<H512>"
     },
-    ValidationFunction: "u128" //Dummy value, will fail on decode
+    TechAssetId: "Null",            // define properly if needed
+    TechAccountId: "Null",          // define properly if needed
+    TechAccountIdPrimitive: "Null", // define properly if needed
+    SwapAction: "Null",             // define properly if needed
+    ValidationFunction: "Null"      // define properly if needed
   }
 }

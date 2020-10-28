@@ -4,7 +4,7 @@
 import { ITuple } from '@polkadot/types/types';
 import { Compact, Enum, Int, Option, Struct, U8aFixed, UInt, Vec } from '@polkadot/types/codec';
 import { GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource } from '@polkadot/types/generic';
-import { Bytes, DoNotConstruct, Null, StorageKey, i128, u128, u16, u32, u64, u8 } from '@polkadot/types/primitive';
+import { Bytes, DoNotConstruct, Null, StorageKey, i128, u16, u32, u64, u8 } from '@polkadot/types/primitive';
 import { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import { Signature } from '@polkadot/types/interfaces/extrinsics';
 import { SystemOrigin } from '@polkadot/types/interfaces/system';
@@ -28,10 +28,13 @@ export interface Amount extends i128 {}
 export interface AmountOf extends Amount {}
 
 /** @name AssetId */
-export interface AssetId extends u8 {}
+export interface AssetId extends u32 {}
+
+/** @name AssetIdOf */
+export interface AssetIdOf extends AssetId {}
 
 /** @name Balance */
-export interface Balance extends u128 {}
+export interface Balance extends UInt {}
 
 /** @name BalanceOf */
 export interface BalanceOf extends Balance {}
@@ -74,6 +77,9 @@ export interface CurrencyIdOf extends AssetId {}
 
 /** @name DEXId */
 export interface DEXId extends u32 {}
+
+/** @name DEXIdOf */
+export interface DEXIdOf extends DEXId {}
 
 /** @name DEXInfo */
 export interface DEXInfo extends Struct {
@@ -161,6 +167,12 @@ export interface I32F32 extends Int {}
 
 /** @name Index */
 export interface Index extends u32 {}
+
+/** @name JsonCompatAssetId */
+export interface JsonCompatAssetId extends Struct {
+  readonly data: U8aFixed;
+  readonly phantom: Null;
+}
 
 /** @name Justification */
 export interface Justification extends Bytes {}
@@ -290,19 +302,31 @@ export interface SignedBlock extends Struct {
 export interface StorageData extends Bytes {}
 
 /** @name SwapAction */
-export interface SwapAction extends u128 {}
+export interface SwapAction extends Null {}
+
+/** @name SwapOutcome */
+export interface SwapOutcome extends Struct {
+  readonly amount: Balance;
+  readonly fee: Balance;
+}
+
+/** @name SwapVariant */
+export interface SwapVariant extends Enum {
+  readonly isWithDesiredInput: boolean;
+  readonly isWithDesiredOutput: boolean;
+}
 
 /** @name TechAccountId */
-export interface TechAccountId extends u128 {}
+export interface TechAccountId extends Null {}
 
 /** @name TechAccountIdPrimitive */
-export interface TechAccountIdPrimitive extends u128 {}
+export interface TechAccountIdPrimitive extends Null {}
 
 /** @name TechAmount */
 export interface TechAmount extends Amount {}
 
 /** @name TechAssetId */
-export interface TechAssetId extends u128 {}
+export interface TechAssetId extends Null {}
 
 /** @name TechBalance */
 export interface TechBalance extends Balance {}
@@ -329,7 +353,7 @@ export interface TransactionPriority extends u64 {}
 export interface U32F32 extends UInt {}
 
 /** @name ValidationFunction */
-export interface ValidationFunction extends u128 {}
+export interface ValidationFunction extends Null {}
 
 /** @name ValidatorId */
 export interface ValidatorId extends AccountId {}
@@ -339,5 +363,10 @@ export interface Weight extends u64 {}
 
 /** @name WeightMultiplier */
 export interface WeightMultiplier extends Fixed64 {}
+
+/** @name WrappedBalance */
+export interface WrappedBalance extends Struct {
+  readonly fixed: Fixed;
+}
 
 export type PHANTOM_RUNTIME = 'runtime';

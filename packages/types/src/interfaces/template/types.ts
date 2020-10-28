@@ -4,10 +4,9 @@
 import { Struct } from '@polkadot/types/codec';
 import { Balance } from '@sora-neo-substrate/types/interfaces/runtime';
 
-/** @name SwapOutcomeInfo */
-export interface SwapOutcomeInfo extends Struct {
+/** @name CustomInfo */
+export interface CustomInfo extends Struct {
   readonly amount: Balance;
-  readonly fee: Balance;
 }
 
-export type PHANTOM_DEXAPI = 'dexApi';
+export type PHANTOM_TEMPLATE = 'template';

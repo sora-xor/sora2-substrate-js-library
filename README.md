@@ -12,7 +12,7 @@ yarn build
 
 ### Run local test net with parachain first
 
-> This library version is compatible with **modbrin/initial-rpc** branch of **SoraNeo-substrate** parachain and further will be maintained to be compatible with develop branch.
+> This library version should be compatible with **develop** branch of **SoraNeo-substrate** parachain.
 
 Build & Run local test net, e.g. via script:
 ```
@@ -25,5 +25,5 @@ yarn test
 ```
 or
 ```
-node -r ts-node/register -r tsconfig-paths/register demo.js
+node -r ts-node/register -r tsconfig-paths/register demo.ts
 ```

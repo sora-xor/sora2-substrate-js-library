@@ -1,7 +1,7 @@
 export default {
   rpc: {
-    getPriceWithDesiredInput: {
-      description: 'Get price with indicated input amount',
+    canExchange: {
+      description: 'Query capability to exchange particular tokens on DEX.',
       params: [
         {
           name: 'dexId',
@@ -13,21 +13,22 @@ export default {
         },
         {
           name: 'inputAssetId',
-          type: 'AssetId'
+          type: 'H256'
         },
         {
           name: 'outputAssetId',
-          type: 'AssetId'
-        },
-        {
-          name: 'desiredInputAmount',
-          type: 'Balance'
+          type: 'H256'
         }
       ],
-      type: 'Balance'
+      type: 'bool'
     },
-    getPriceWithDesiredOutput: {
-      description: 'Get price with indicated output amount',
+    listSupportedSources: {
+      description: 'List liquidity source types enabled on chain.',
+      params: [],
+      type: 'Vec<LiquiditySourceTypee>'
+    },
+    quote: {
+      description: 'Get price for a given input or output token amount.',
       params: [
         {
           name: 'dexId',
@@ -39,20 +40,28 @@ export default {
         },
         {
           name: 'inputAssetId',
-          type: 'AssetId'
+          type: 'H256'
         },
         {
           name: 'outputAssetId',
-          type: 'AssetId'
+          type: 'H256'
         },
         {
-          name: 'desiredOutputAmount',
-          type: 'Balance'
+          name: 'amount',
+          type: 'String'
+        },
+        {
+          name: 'swapVariant',
+          type: 'SwapVariant'
         }
       ],
-      type: 'Balance'
+      type: 'Option<SwapOutcomeInfo>'
     }
   },
   types: {
+    SwapOutcomeInfo: {
+      amount: 'Balance',
+      fee: 'Balance',
+    }
   }
 }
