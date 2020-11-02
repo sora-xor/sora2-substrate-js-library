@@ -30,6 +30,11 @@ export interface AmountOf extends Amount {}
 /** @name AssetId */
 export interface AssetId extends u32 {}
 
+/** @name AssetId32 */
+export interface AssetId32 extends Struct {
+  readonly code: U8aFixed;
+}
+
 /** @name AssetIdOf */
 export interface AssetIdOf extends AssetId {}
 
@@ -167,12 +172,6 @@ export interface I32F32 extends Int {}
 
 /** @name Index */
 export interface Index extends u32 {}
-
-/** @name JsonCompatAssetId */
-export interface JsonCompatAssetId extends Struct {
-  readonly data: U8aFixed;
-  readonly phantom: Null;
-}
 
 /** @name Justification */
 export interface Justification extends Bytes {}

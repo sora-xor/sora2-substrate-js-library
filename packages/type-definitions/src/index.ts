@@ -18,7 +18,7 @@ const soraneoDefs = {
 const overrides = {
   Address: 'AccountId',
   LookupSource: 'AccountId',
-  AssetId: 'JsonCompatAssetId',
+  AssetId: 'AssetId32',
   Balance: 'FixedU128'
 };
 
