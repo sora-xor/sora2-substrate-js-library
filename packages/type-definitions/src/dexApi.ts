@@ -13,11 +13,11 @@ export default {
         },
         {
           name: 'inputAssetId',
-          type: 'H256'
+          type: 'AssetId'
         },
         {
           name: 'outputAssetId',
-          type: 'H256'
+          type: 'AssetId'
         }
       ],
       type: 'bool'
@@ -40,11 +40,11 @@ export default {
         },
         {
           name: 'inputAssetId',
-          type: 'H256'
+          type: 'AssetId'
         },
         {
           name: 'outputAssetId',
-          type: 'H256'
+          type: 'AssetId'
         },
         {
           name: 'amount',

@@ -9,6 +9,11 @@ SoraNeo-substrate-js-library (This repository is managed by Terraform!)
 yarn install
 yarn build
 ```
+also to get latest definitions for extrinsics, state queries and consts:\
+(local test net should be running)
+```
+yarn pull-metadata
+```
 
 ### Run local test net with parachain first
 

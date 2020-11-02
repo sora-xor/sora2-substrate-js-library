@@ -56,7 +56,7 @@ import { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import { SwapOutcomeInfo } from '@sora-neo-substrate/types/interfaces/dexApi';
-import { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetIdOf, Balance, BalanceOf, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, ExtrinsicsWeight, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, GenericAddress, H160, H256, H512, Hash, Header, I32F32, Index, JsonCompatAssetId, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, ModuleId, Moment, OpaqueCall, Origin, OriginCaller, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, Permission, Perquintill, Phantom, PhantomData, PreRuntime, Releases, RuntimeDbWeight, Seal, SealV0, SignedBlock, StorageData, SwapAction, SwapOutcome, SwapVariant, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, Weight, WeightMultiplier, WrappedBalance } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, Balance, BalanceOf, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, ExtrinsicsWeight, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, GenericAddress, H160, H256, H512, Hash, Header, I32F32, Index, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, ModuleId, Moment, OpaqueCall, Origin, OriginCaller, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, Permission, Perquintill, Phantom, PhantomData, PreRuntime, Releases, RuntimeDbWeight, Seal, SealV0, SignedBlock, StorageData, SwapAction, SwapOutcome, SwapVariant, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, Weight, WeightMultiplier, WrappedBalance } from '@sora-neo-substrate/types/interfaces/runtime';
 import { CustomInfo } from '@sora-neo-substrate/types/interfaces/template';
 import { TP } from '@sora-neo-substrate/types/interfaces/tradingPair';
 
@@ -1886,9 +1886,9 @@ declare module '@polkadot/types/types/registry' {
     DEXInfo: DEXInfo;
     'Option<DEXInfo>': Option<DEXInfo>;
     'Vec<DEXInfo>': Vec<DEXInfo>;
-    JsonCompatAssetId: JsonCompatAssetId;
-    'Option<JsonCompatAssetId>': Option<JsonCompatAssetId>;
-    'Vec<JsonCompatAssetId>': Vec<JsonCompatAssetId>;
+    AssetId32: AssetId32;
+    'Option<AssetId32>': Option<AssetId32>;
+    'Vec<AssetId32>': Vec<AssetId32>;
     SwapVariant: SwapVariant;
     'Option<SwapVariant>': Option<SwapVariant>;
     'Vec<SwapVariant>': Vec<SwapVariant>;

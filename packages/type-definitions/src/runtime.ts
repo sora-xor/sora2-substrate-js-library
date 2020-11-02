@@ -19,9 +19,9 @@ export default {
       default_fee: 'BasisPoints',
       default_protocol_fee: 'BasisPoints'
     },
-    JsonCompatAssetId: {
-      data: '[u8; 32]',
-      phantom: 'Null'
+    AssetId32: {
+      code: '[u8; 32]'
+      // phantom: 'Null' // serialization skipped for serde
     },
     SwapVariant: {
       _enum: [

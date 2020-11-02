@@ -46,11 +46,6 @@ async function submitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, deb
   });
 }
 
-function toAssetIdForRPC(assetId: any): string {
-  return assetId.data.toString();
-}
-
-
 async function main(): Promise<void> {
   console.log('TEST MAIN FUNCTION');
   const provider = new WsProvider('ws://localhost:19744/');
@@ -62,6 +57,9 @@ async function main(): Promise<void> {
   const keyring = new Keyring({ type: 'sr25519' });
   const alice = keyring.addFromUri('//Alice', { name: 'Alice default' });
 
+  // Creating types is not necessary, they will be automatically created if string is passed directly into function
+  // HOWEVER: beware, because this asset id is easy to create since it's only one field, there is going to be another
+  // field for symbol, so AssetId creation/passing may be changed. 
   const XORAssetId = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000000');
   const AnotherAssetId = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000001');
 
@@ -101,17 +99,17 @@ async function main(): Promise<void> {
 
   await submitExtrinsic(api, api.tx.mockLiquiditySource.setReserve(0, AnotherAssetId, "5000000000000000000", "7000000000000000000"), alice, "Set Reserves on Mock Pool");
 
-  const price2 = await (api.rpc as any).dexApi.quote(0, "MockPool", toAssetIdForRPC(XORAssetId), toAssetIdForRPC(AnotherAssetId), "1050000000000000000", "WithDesiredInput");
+  const price2 = await (api.rpc as any).dexApi.quote(0, "MockPool", XORAssetId, AnotherAssetId, "1050000000000000000", "WithDesiredInput");
   ok(price2.isSome);
 
-  const res1 = await (api.rpc as any).dexApi.canExchange(0, "MockPool", toAssetIdForRPC(XORAssetId), toAssetIdForRPC(AnotherAssetId));
+  const res1 = await (api.rpc as any).dexApi.canExchange(0, "MockPool", XORAssetId, AnotherAssetId);
   ok(res1);
 
   const res2 = await (api.rpc as any).tradingPair.listEnabledPairs(0);
-  strictEqual(toAssetIdForRPC(res2[0].base_asset_id), toAssetIdForRPC(XORAssetId));
-  strictEqual(toAssetIdForRPC(res2[0].target_asset_id), toAssetIdForRPC(AnotherAssetId));
+  strictEqual(res2[0].base_asset_id.toString(), XORAssetId.toString());
+  strictEqual(res2[0].target_asset_id.toString(), AnotherAssetId.toString());
 
-  const res3 = await (api.rpc as any).tradingPair.isPairEnabled(0, toAssetIdForRPC(XORAssetId), toAssetIdForRPC(AnotherAssetId));
+  const res3 = await (api.rpc as any).tradingPair.isPairEnabled(0, XORAssetId, AnotherAssetId);
   ok(res3.isTrue);
 
   await submitExtrinsic(api, api.tx.dexapi.swap(0, "MockPool", XORAssetId, AnotherAssetId, "1000000000000000000", "0", "WithDesiredInput", api.createType("Option<AccountId>")), alice, "Exchange on Mock Pool");
