@@ -3,7 +3,7 @@ import {
   types as soraneoTypes,
   typesAlias as soraneoTypeAlias,
   rpc as soraneoRpc
-} from '@sora-neo-substrate/type-definitions'
+} from '@sora-substrate/type-definitions'
 import {
   OverrideBundleType,
   OverrideModuleType,

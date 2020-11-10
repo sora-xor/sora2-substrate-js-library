@@ -1,4 +1,4 @@
 import { Definitions } from '@polkadot/types/types'
-import template from '@sora-neo-substrate/type-definitions/template'
+import template from '@sora-substrate/type-definitions/template'
 
 export default template as Definitions

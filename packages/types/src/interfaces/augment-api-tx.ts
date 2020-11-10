@@ -6,7 +6,7 @@ import { Compact, Option, Vec } from '@polkadot/types/codec';
 import { u16, u32 } from '@polkadot/types/primitive';
 import { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import { DownwardMessage, ValidationFunctionParams } from '@polkadot/types/interfaces/parachains';
-import { AccountId, AccountIndex, Address, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Call, CurrencyIdOf, DEXId, Fixed, LiquiditySourceType, LookupSource, Moment, SwapAction, SwapVariant, ValidationFunction, Weight } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AccountIndex, Address, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Call, CurrencyIdOf, DEXId, Fixed, LiquiditySourceType, LookupSource, Moment, SwapAction, SwapVariant, ValidationFunction, Weight } from '@sora-substrate/types/interfaces/runtime';
 import { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/submittable' {

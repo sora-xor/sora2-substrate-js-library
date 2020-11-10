@@ -6,28 +6,28 @@
     "noUnusedLocals": false,
     "baseUrl": ".",
     "paths": {
-      "@sora-neo-substrate/api": [
+      "@sora-substrate/api": [
         "packages/api/src"
       ],
-      "@sora-neo-substrate/api/*": [
+      "@sora-substrate/api/*": [
         "packages/api/src/*"
       ],
-      "@sora-neo-substrate/api-derive": [
+      "@sora-substrate/api-derive": [
         "packages/api-derive/src"
       ],
-      "@sora-neo-substrate/api-derive/*": [
+      "@sora-substrate/api-derive/*": [
         "packages/api-derive/src/*"
       ],
-      "@sora-neo-substrate/types": [
+      "@sora-substrate/types": [
         "packages/types/src"
       ],
-      "@sora-neo-substrate/types/*": [
+      "@sora-substrate/types/*": [
         "packages/types/src/*"
       ],
-      "@sora-neo-substrate/type-definitions": [
+      "@sora-substrate/type-definitions": [
         "packages/type-definitions/src"
       ],
-      "@sora-neo-substrate/type-definitions/*": [
+      "@sora-substrate/type-definitions/*": [
         "packages/type-definitions/src/*"
       ]
     },

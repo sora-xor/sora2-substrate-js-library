@@ -8,7 +8,7 @@ import { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import { ParaId, RelayChainBlockNumber } from '@polkadot/types/interfaces/parachains';
 import { AccountInfo, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import { AccountId, AssetId, Balance, BlockNumber, CurrencyId, DEXId, DEXInfo, ExtrinsicsWeight, Fixed, Hash, Moment, Permission, Releases, TechAccountId, ValidationFunction } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AssetId, Balance, BlockNumber, CurrencyId, DEXId, DEXInfo, ExtrinsicsWeight, Fixed, Hash, Moment, Permission, Releases, TechAccountId, ValidationFunction } from '@sora-substrate/types/interfaces/runtime';
 import { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {

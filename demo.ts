@@ -1,7 +1,7 @@
 console.log('TEST IMPORT')
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
-import { options } from '@sora-neo-substrate/api';
+import { options } from '@sora-substrate/api';
 import { Keyring } from '@polkadot/api';
 import { strictEqual, ok } from 'assert';
 

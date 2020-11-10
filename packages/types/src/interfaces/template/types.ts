@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import { Struct } from '@polkadot/types/codec';
-import { Balance } from '@sora-neo-substrate/types/interfaces/runtime';
+import { Balance } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name CustomInfo */
 export interface CustomInfo extends Struct {

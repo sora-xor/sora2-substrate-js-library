@@ -1,5 +1,5 @@
-# SoraNeo-substrate-js-library
-SoraNeo-substrate-js-library (This repository is managed by Terraform!)
+# sora-substrate-js-library
+sora-substrate-js-library (This repository is managed by Terraform!)
 
 ### Requirements
 * node version at least v14.14.0
