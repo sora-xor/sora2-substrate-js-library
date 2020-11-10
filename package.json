@@ -14,7 +14,8 @@
     "postinstall": "polkadot-dev-yarn-only",
     "test:all": "jest --testPathIgnorePatterns",
     "pull-metadata": "ts-node --project ./tsconfig.json packages/types/scripts/pullMeta.ts",
-    "test": "node -r ts-node/register -r tsconfig-paths/register demo.ts"
+    "test": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
+    "publish-workspaces": "lerna publish"
   },
   "engines": {
     "yarn": "^1.10.1"
@@ -29,6 +30,7 @@
     "@babel/core": "^7.10.2",
     "@babel/register": "^7.10.1",
     "@babel/runtime": "^7.10.2",
+    "@lerna/publish": "^3.22.1",
     "@open-web3/util": "^0.6.0-beta.26",
     "@polkadot/dev": "^0.32.17",
     "@polkadot/ts": "^0.2.1",
