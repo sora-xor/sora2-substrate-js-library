@@ -25,14 +25,12 @@
   "resolutions": {
     "typescript": "3.8.3"
   },
-  "dependencies": {
-    "@polkadot/dev": "^0.32.17"
-  },
   "devDependencies": {
     "@babel/core": "^7.10.2",
     "@babel/register": "^7.10.1",
     "@babel/runtime": "^7.10.2",
     "@open-web3/util": "^0.6.0-beta.26",
+    "@polkadot/dev": "^0.32.17",
     "@polkadot/ts": "^0.2.1",
     "ts-node": "^8.6.1",
     "tsconfig-paths": "^3.9.0"
