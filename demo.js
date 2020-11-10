@@ -1,7 +1,7 @@
 console.log('TEST IMPORT')
 const { ApiPromise } = require('@polkadot/api');
 const { WsProvider } = require('@polkadot/rpc-provider');
-const { options } = require('@sora-neo-substrate/api');
+const { options } = require('@sora-substrate/api');
 const { Keyring } = require('@polkadot/api');
 
 async function main() {

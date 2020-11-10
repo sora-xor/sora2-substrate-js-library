@@ -1,3 +1,3 @@
-# @sora-neo-substrate/app-util
+# @sora-substrate/app-util
 
 Utilities

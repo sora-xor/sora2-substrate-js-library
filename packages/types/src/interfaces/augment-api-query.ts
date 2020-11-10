@@ -7,7 +7,7 @@ import { bool, u32 } from '@polkadot/types/primitive';
 import { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import { ParaId, RelayChainBlockNumber } from '@polkadot/types/interfaces/parachains';
 import { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import { AccountId, AssetId, Balance, CurrencyId, DEXId, DEXInfo, Fixed, Hash, Moment, Permission, Releases, TechAccountId, ValidationFunction } from '@sora-neo-substrate/types/interfaces/runtime';
+import { AccountId, AssetId, Balance, CurrencyId, DEXId, DEXInfo, Fixed, Hash, Moment, Permission, Releases, TechAccountId, ValidationFunction } from '@sora-substrate/types/interfaces/runtime';
 import { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/storage' {

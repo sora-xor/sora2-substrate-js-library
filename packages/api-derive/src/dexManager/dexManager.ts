@@ -2,7 +2,7 @@ import { ApiInterfaceRx } from '@polkadot/api/types';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-import { DEXId, DEXInfo } from '@sora-neo-substrate/types/interfaces';
+import { DEXId, DEXInfo } from '@sora-substrate/types/interfaces';
 import { memo } from '@polkadot/api-derive/util';
 
 import { DEXInfoDerived } from '../types/dexManager';

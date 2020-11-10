@@ -36,7 +36,7 @@ const { runtime: _runtime, ...ormlModulesDefinitions } = ormlDefinitions
 const definitions = {
   '@polkadot/types/interfaces': substrateDefinitions,
   '@open-web3/orml-types/interfaces': ormlModulesDefinitions,
-  '@sora-neo-substrate/types/interfaces': soraneoDefinitions
+  '@sora-substrate/types/interfaces': soraneoDefinitions
 } as any
 
 const metadata = filterModules(
@@ -72,7 +72,7 @@ const metadata = filterModules(
   definitions
 );
 
-generateTsDef(definitions, 'packages/types/src/interfaces', '@sora-neo-substrate/types/interfaces')
+generateTsDef(definitions, 'packages/types/src/interfaces', '@sora-substrate/types/interfaces')
 generateInterfaceTypes(definitions, 'packages/types/src/interfaces/augment-types.ts')
 generateConst('packages/types/src/interfaces/augment-api-consts.ts', metadata, definitions)
 

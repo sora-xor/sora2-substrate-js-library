@@ -4,14 +4,14 @@
     "baseUrl": ".",
     "paths":
     {
-      "@sora-neo-substrate/api": ["packages/api/src"],
-      "@sora-neo-substrate/api/*": ["packages/api/src/*"],
-      "@sora-neo-substrate/api-derive": ["packages/api-derive/src"],
-      "@sora-neo-substrate/api-derive/*": ["packages/api-derive/src/*"],
-      "@sora-neo-substrate/types": ["packages/types/src"],
-      "@sora-neo-substrate/types/*": ["packages/types/src/*"],
-      "@sora-neo-substrate/type-definitions": ["packages/type-definitions/src"],
-      "@sora-neo-substrate/type-definitions/*": ["packages/type-definitions/src/*"]
+      "@sora-substrate/api": ["packages/api/src"],
+      "@sora-substrate/api/*": ["packages/api/src/*"],
+      "@sora-substrate/api-derive": ["packages/api-derive/src"],
+      "@sora-substrate/api-derive/*": ["packages/api-derive/src/*"],
+      "@sora-substrate/types": ["packages/types/src"],
+      "@sora-substrate/types/*": ["packages/types/src/*"],
+      "@sora-substrate/type-definitions": ["packages/type-definitions/src"],
+      "@sora-substrate/type-definitions/*": ["packages/type-definitions/src/*"]
     },
     "skipLibCheck": true,
     "typeRoots": [

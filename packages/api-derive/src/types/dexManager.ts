@@ -1,4 +1,4 @@
-import { AssetId, BasisPoints } from '@sora-neo-substrate/types/interfaces';
+import { AssetId, BasisPoints } from '@sora-substrate/types/interfaces';
 
 export interface DEXInfoDerived {
     base_asset_id: AssetId;
