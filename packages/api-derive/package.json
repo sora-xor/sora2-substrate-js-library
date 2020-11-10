@@ -2,9 +2,6 @@
   "name": "@sora-substrate/api-derive",
   "version": "0.1.0",
   "main": "index.js",
-  "publishConfig": {
-    "registry": "https://nexus.iroha.tech/repository/npm-soramitsu/"
-  },
   "dependencies": {
     "@sora-substrate/types": "^0.1.0",
     "@babel/runtime": "^7.10.2",

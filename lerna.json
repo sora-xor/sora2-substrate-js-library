@@ -7,7 +7,6 @@
   "version": "independent",
   "command": {
     "publish": {
-      "registry": "https://nexus.iroha.tech/repository/npm-soramitsu/",
       "no-git-tag-version": true,
       "no-push": true,
       "yes": true

@@ -2,9 +2,6 @@
   "version": "0.1.0",
   "author": "Stefan Popov <popov@soramitsu.co.jp>",
   "private": true,
-  "publishConfig": {
-    "registry": "https://nexus.iroha.tech/repository/npm-soramitsu/"
-  },
   "scripts": {
     "build": "yarn check-deps && yarn build:interfaces && polkadot-dev-build-ts",
     "build:interfaces": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts",
