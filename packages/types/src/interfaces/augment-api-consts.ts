@@ -4,7 +4,7 @@
 import { Codec } from '@polkadot/types/types';
 import { Vec } from '@polkadot/types/codec';
 import { WeightToFeeCoefficient } from '@polkadot/types/interfaces/support';
-import { Balance, BalanceOf, CurrencyIdOf, Moment } from '@sora-neo-substrate/types/interfaces/runtime';
+import { Balance, BalanceOf, CurrencyIdOf, Moment } from '@sora-substrate/types/interfaces/runtime';
 import { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/consts' {

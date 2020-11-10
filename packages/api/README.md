@@ -1,3 +1,3 @@
-# @sora-neo-substrate/api
+# @sora-substrate/api
 
 Contains necessary options to create a polkadot.js API instance

@@ -1,9 +1,9 @@
 {
-  "name": "@sora-neo-substrate/types",
+  "name": "@sora-substrate/types",
   "version": "0.1.0",
   "main": "index.js",
   "dependencies": {
-    "@sora-neo-substrate/type-definitions": "^0.1.0",
+    "@sora-substrate/type-definitions": "^0.1.0",
     "@babel/runtime": "^7.10.2",
     "@open-web3/api-mobx": "^0.6.0-beta.26",
     "@open-web3/orml-types": "^0.6.0-beta.26",

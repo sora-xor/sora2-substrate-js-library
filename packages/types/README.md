@@ -1,3 +1,3 @@
-# @sora-neo-substrate/types
+# @sora-substrate/types
 
 Polkadot.js type definations
