@@ -2,6 +2,9 @@
   "name": "@sora-substrate/api",
   "version": "0.1.0",
   "main": "index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@sora-substrate/types": "^0.1.0",
     "@sora-substrate/api-derive": "^0.1.0",
