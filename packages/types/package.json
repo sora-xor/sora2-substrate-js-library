@@ -1,9 +1,13 @@
 {
   "name": "@sora-substrate/types",
-  "version": "0.1.0",
-  "main": "index.js",
+  "version": "0.1.1",
+  "main": "./build/index.js",
+  "typings": "./build/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@sora-substrate/type-definitions": "^0.1.0",
+    "@sora-substrate/type-definitions": "^0.1.1",
     "@babel/runtime": "^7.10.2",
     "@open-web3/api-mobx": "^0.6.0-beta.26",
     "@open-web3/orml-types": "^0.6.0-beta.26",
