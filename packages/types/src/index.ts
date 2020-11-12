@@ -1,8 +1,8 @@
 import {
-  typesBundle as soraneoTypesBundle,
-  types as soraneoTypes,
-  typesAlias as soraneoTypeAlias,
-  rpc as soraneoRpc
+  typesBundle as soraTypesBundle,
+  types as soraTypes,
+  typesAlias as soraTypeAlias,
+  rpc as soraRpc
 } from '@sora-substrate/type-definitions'
 import {
   OverrideBundleType,
@@ -20,10 +20,10 @@ import './interfaces/augment-types'
 
 export * from './interfaces/augment-api-mobx'
 
-export const types: RegistryTypes = soraneoTypes
+export const types: RegistryTypes = soraTypes
 
-export const rpc: Record<string, Record<string, DefinitionRpc | DefinitionRpcSub>> = soraneoRpc
+export const rpc: Record<string, Record<string, DefinitionRpc | DefinitionRpcSub>> = soraRpc
 
-export const typesAlias: Record<string, OverrideModuleType> = soraneoTypeAlias
+export const typesAlias: Record<string, OverrideModuleType> = soraTypeAlias
 
-export const typesBundle = soraneoTypesBundle as OverrideBundleType
+export const typesBundle = soraTypesBundle as OverrideBundleType

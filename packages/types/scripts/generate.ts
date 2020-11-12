@@ -13,7 +13,7 @@ import * as defaultDefinitions from '@polkadot/types/interfaces/definitions'
 
 import * as ormlDefinitions from '@open-web3/orml-types/interfaces/definitions'
 
-import * as soraneoDefinitions from '../src/interfaces/definitions'
+import * as soraDefinitions from '../src/interfaces/definitions'
 
 function filterModules(names: string[], defs: any): string {
   const registry = new TypeRegistry();
@@ -36,7 +36,7 @@ const { runtime: _runtime, ...ormlModulesDefinitions } = ormlDefinitions
 const definitions = {
   '@polkadot/types/interfaces': substrateDefinitions,
   '@open-web3/orml-types/interfaces': ormlModulesDefinitions,
-  '@sora-substrate/types/interfaces': soraneoDefinitions
+  '@sora-substrate/types/interfaces': soraDefinitions
 } as any
 
 const metadata = filterModules(
