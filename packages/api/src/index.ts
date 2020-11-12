@@ -1,17 +1,17 @@
 import { derive as ormlDerives } from '@open-web3/orml-api-derive'
-import { derive as soraneoDerives } from '@sora-substrate/api-derive'
+import { derive as soraDerives } from '@sora-substrate/api-derive'
 
 import {
-  rpc as soraneoRpc,
-  types as soraneoTypes,
-  typesAlias as soraneoTypesAlias,
-  typesBundle as soraneoTypesBundle
+  rpc as soraRpc,
+  types as soraTypes,
+  typesAlias as soraTypesAlias,
+  typesBundle as soraTypesBundle
 } from '@sora-substrate/types'
 import { ApiOptions } from '@polkadot/api/types'
 
 export const defaultOptions: ApiOptions = {
-  types: soraneoTypes,
-  rpc: soraneoRpc
+  types: soraTypes,
+  rpc: soraRpc
 }
 
 export const options = ({
@@ -22,28 +22,28 @@ export const options = ({
   ...otherOptions
 }: ApiOptions = {}): ApiOptions => ({
   types: {
-    ...soraneoTypes,
+    ...soraTypes,
     ...types
   },
   rpc: {
-    ...soraneoRpc,
+    ...soraRpc,
     ...rpc
   },
   typesAlias: {
-    ...soraneoTypesAlias,
+    ...soraTypesAlias,
     ...typesAlias
   },
   derives: {
     ...ormlDerives,
-    ...soraneoDerives
+    ...soraDerives
   },
   typesBundle: {
     ...typesBundle,
     spec: {
       ...typesBundle.spec,
-      soraneo: {
-        ...soraneoTypesBundle?.spec?.soraneo,
-        ...typesBundle?.spec?.soraneo
+      sora: {
+        ...soraTypesBundle?.spec?.sora,
+        ...typesBundle?.spec?.sora
       }
     }
   },

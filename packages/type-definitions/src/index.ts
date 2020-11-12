@@ -7,7 +7,7 @@ import dexManager from './dexManager'
 import tradingPair from './tradingPair'
 import template from './template'
 
-const soraneoDefs = {
+const soraDefs = {
   runtime,
   dexApi,
   dexManager,
@@ -24,26 +24,43 @@ const overrides = {
 
 export const types = {
   ...ormlTypes,
-  ...typesFromDefs(soraneoDefs),
+  ...typesFromDefs(soraDefs),
   ...overrides
 }
 export const typesBundle = {
   spec: {
-    soraneo: {
+    sora: {
       types
     } as any
   }
 }
-export const rpc = jsonrpcFromDefs(soraneoDefs, { ...ormlRpc })
-export const typesAlias = typesAliasFromDefs(soraneoDefs, { ...ormlAlias })
+export const rpc = jsonrpcFromDefs(soraDefs, { ...ormlRpc })
+export const typesAlias = typesAliasFromDefs(soraDefs, { ...ormlAlias })
 
-export const typesBundleForPolkadot = {
+export const slimOverrideBundle = {
   spec: {
-    soraneo: {
-      types: {
-        minmax: [0, 499], // TODO
-        types
-      }
+    sora: {
+      types: [
+        {
+          minmax: [0, 499] as any,
+          types
+        }
+      ]
+    }
+  }
+}
+
+export const fullOverrideBundle = {
+  spec: {
+    sora: {
+      alias: typesAlias,
+      rpc,
+      types: [
+        {
+          minmax: [0, 499] as any,
+          types
+        }
+      ]
     }
   }
 }
