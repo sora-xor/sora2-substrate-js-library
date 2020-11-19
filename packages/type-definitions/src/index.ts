@@ -19,7 +19,8 @@ const overrides = {
   Address: 'AccountId',
   LookupSource: 'AccountId',
   AssetId: 'AssetId32',
-  Balance: 'FixedU128'
+  Balance: 'FixedU128',
+  RefCount: "u8"
 };
 
 export const types = {
@@ -42,7 +43,7 @@ export const slimOverrideBundle = {
     sora: {
       types: [
         {
-          minmax: [0, 499] as any,
+          minmax: [0, 99] as any,
           types
         }
       ]
@@ -57,7 +58,7 @@ export const fullOverrideBundle = {
       rpc,
       types: [
         {
-          minmax: [0, 499] as any,
+          minmax: [0, 99] as any,
           types
         }
       ]

@@ -23,6 +23,32 @@ export default {
       code: '[u8; 32]'
       // phantom: 'Null' // serialization skipped for serde
     },
+    SwapWithDesiredInput: {
+      desired_amount_in: "Balance",
+      min_amount_out: "Balance"
+    },
+    SwapWithDesiredOutput: {
+      desired_amount_out: "Balance",
+      max_amount_in: "Balance"
+    },
+    SwapAmount: {
+      _enum: {
+        WithDesiredInput: "SwapWithDesiredInput",
+        WithDesiredOutput: "SwapWithDesiredOutput"
+      }
+    },
+    QuoteWithDesiredInput: {
+      desired_amount_in: "Balance"
+    },
+    QuoteWithDesiredOutput: {
+      desired_amount_out: "Balance"
+    },
+    QuoteAmount: {
+      _enum: {
+        WithDesiredInput: "QuoteWithDesiredInput",
+        WithDesiredOutput: "QuoteWithDesiredOutput"
+      }
+    },
     SwapVariant: {
       _enum: [
         'WithDesiredInput',
