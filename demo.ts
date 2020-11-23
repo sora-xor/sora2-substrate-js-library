@@ -57,9 +57,7 @@ async function main(): Promise<void> {
   const keyring = new Keyring({ type: 'sr25519' });
   const alice = keyring.addFromUri('//Alice', { name: 'Alice default' });
 
-  // Creating types is not necessary, they will be automatically created if string is passed directly into function
-  // HOWEVER: beware, because this asset id is easy to create since it's only one field, there is going to be another
-  // field for symbol, so AssetId creation/passing may be changed. 
+  // Creating types is not necessary, they will be automatically created if string is passed directly into function. 
   const XORAssetId = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000000');
   const AnotherAssetId = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000001');
 

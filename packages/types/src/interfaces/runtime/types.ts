@@ -265,6 +265,24 @@ export interface PhantomData extends Null {}
 /** @name PreRuntime */
 export interface PreRuntime extends ITuple<[ConsensusEngineId, Bytes]> {}
 
+/** @name QuoteAmount */
+export interface QuoteAmount extends Enum {
+  readonly isWithDesiredInput: boolean;
+  readonly asWithDesiredInput: QuoteWithDesiredInput;
+  readonly isWithDesiredOutput: boolean;
+  readonly asWithDesiredOutput: QuoteWithDesiredOutput;
+}
+
+/** @name QuoteWithDesiredInput */
+export interface QuoteWithDesiredInput extends Struct {
+  readonly desired_amount_in: Balance;
+}
+
+/** @name QuoteWithDesiredOutput */
+export interface QuoteWithDesiredOutput extends Struct {
+  readonly desired_amount_out: Balance;
+}
+
 /** @name Releases */
 export interface Releases extends Enum {
   readonly isV1: boolean;
@@ -303,6 +321,14 @@ export interface StorageData extends Bytes {}
 /** @name SwapAction */
 export interface SwapAction extends Null {}
 
+/** @name SwapAmount */
+export interface SwapAmount extends Enum {
+  readonly isWithDesiredInput: boolean;
+  readonly asWithDesiredInput: SwapWithDesiredInput;
+  readonly isWithDesiredOutput: boolean;
+  readonly asWithDesiredOutput: SwapWithDesiredOutput;
+}
+
 /** @name SwapOutcome */
 export interface SwapOutcome extends Struct {
   readonly amount: Balance;
@@ -313,6 +339,18 @@ export interface SwapOutcome extends Struct {
 export interface SwapVariant extends Enum {
   readonly isWithDesiredInput: boolean;
   readonly isWithDesiredOutput: boolean;
+}
+
+/** @name SwapWithDesiredInput */
+export interface SwapWithDesiredInput extends Struct {
+  readonly desired_amount_in: Balance;
+  readonly min_amount_out: Balance;
+}
+
+/** @name SwapWithDesiredOutput */
+export interface SwapWithDesiredOutput extends Struct {
+  readonly desired_amount_out: Balance;
+  readonly max_amount_in: Balance;
 }
 
 /** @name TechAccountId */
