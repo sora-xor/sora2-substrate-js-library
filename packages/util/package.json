@@ -1,0 +1,24 @@
+{
+  "name": "@sora-substrate/util",
+  "version": "0.1.4",
+  "main": "./build/index.js",
+  "typings": "./build/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.10.2",
+    "@open-web3/api-mobx": "^0.6.0-beta.26",
+    "@open-web3/orml-types": "^0.6.0-beta.26",
+    "@polkadot/api": "^2.1.2-8",
+    "@polkadot/keyring": "^4.2.1",
+    "@polkadot/typegen": "^2.1.2-8",
+    "@polkadot/types": "^2.1.2-8",
+    "@polkadot/ui-keyring": "^0.62.1",
+    "@sora-substrate/api": "^0.1.4"
+  },
+  "devDependencies": {
+    "@types/websocket": "^1.0.0",
+    "websocket": "^1.0.31"
+  }
+}
