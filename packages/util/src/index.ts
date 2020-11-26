@@ -1,2 +1,2 @@
 export * from './WalletApi'
-export { Asset, Assets } from './assets'
+export { Asset, KnownAssets } from './assets'

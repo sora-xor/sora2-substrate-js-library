@@ -9,7 +9,7 @@ import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
 import { Codec } from '@polkadot/types/types'
 import { options } from '@sora-substrate/api'
 
-import { Asset, Assets, getAssetInfo } from './assets'
+import { Asset, KnownAssets, getAssetInfo } from './assets'
 
 export class WalletApi {
   public readonly seedLength = 12
@@ -61,7 +61,7 @@ export class WalletApi {
   }
 
   public addAsset (address: string, symbol: string): void {
-    const nativeAsset = Assets.find(asset => asset.address === address)
+    const nativeAsset = KnownAssets.find(asset => asset.address === address)
     this.assets.push(nativeAsset || { address, symbol })
   }
 
