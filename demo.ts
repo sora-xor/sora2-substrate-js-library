@@ -28,8 +28,6 @@ async function inner_submitExtrinsic(api: ApiPromise, extrinsic: any, signer: an
             // Other, CannotLookup, BadOrigin, no extra info
             console.log(error.toString());
           }
-        } else {
-          console.log("Transaction success.")
         }
       });
 
@@ -55,11 +53,17 @@ async function main(): Promise<void> {
   console.log('STARTED CALLING');
 
   const keyring = new Keyring({ type: 'sr25519' });
-  const alice = keyring.addFromUri('//Alice', { name: 'Alice default' });
+  const root = keyring.addFromUri('//Alice', { name: 'Root' });
+  const user_a = keyring.addFromUri('//Bob', { name: 'UserA' });
+  // not a secret, specifically generated mnemonic for this demo
+  const user_b = keyring.addFromMnemonic('shield shed shallow chase peace blade erosion poem health foil federal cushion', { name: 'UserB' });
 
   // Creating types is not necessary, they will be automatically created if string is passed directly into function. 
   const XORAssetId = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000000');
-  const AnotherAssetId = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000001');
+  const DOTAssetId = api.createType('AssetId', '0x0200010000000000000000000000000000000000000000000000000000000000');
+  const KSMAssetId = api.createType('AssetId', '0x0200020000000000000000000000000000000000000000000000000000000000');
+  const USDAssetId = api.createType('AssetId', '0x0200030000000000000000000000000000000000000000000000000000000000');
+  const VALAssetId = api.createType('AssetId', '0x0200040000000000000000000000000000000000000000000000000000000000');
 
   // Check general requests
 
@@ -74,6 +78,64 @@ async function main(): Promise<void> {
   const ids = await (api.rpc as any).dexManager.listDEXIds();
   strictEqual(ids[0].toString(), '0');
 
+  // Assets
+
+  const nativeCurrency = await api.consts.currencies.nativeCurrencyId;
+  console.log("Native Currency: ", nativeCurrency.toString());
+
+  const assetIds = await (api.rpc as any).assets.listAssetIds();
+  console.log("Asset Ids on chain: ", assetIds.toString());
+
+  const assetInfos = await (api.rpc as any).assets.listAssetInfos();
+  console.log("Infos for assets on chain: ", assetInfos.toString());
+
+  const assetInfo = await (api.rpc as any).assets.getAssetInfo('0x0200000000000000000000000000000000000000000000000000000000000000');
+  console.log("Info for particular asset", assetInfo.toString());
+
+  const nativeTotal = await (api.rpc as any).assets.totalBalance(user_a.address, XORAssetId);
+  if (nativeTotal.isSome) { // Option<Type> should be properly checked before unwrapping
+    console.log("UserA XOR TOTAL ", nativeTotal.unwrap().balance.toString());
+  }
+
+  const nativeFreeBBefore = await (api.rpc as any).assets.freeBalance(user_b.address, XORAssetId);
+  console.log("UserB XOR FREE ", nativeFreeBBefore.unwrap().balance.toString());
+
+  const rootXor1 = await (api.rpc as any).assets.freeBalance(root.address, XORAssetId);
+  console.log("Root XOR (System) ", rootXor1.unwrap().balance.toString());
+
+  await submitExtrinsic(api, api.tx.assets.mintTo(DOTAssetId, user_b.address, '3000000000000000000'), root, "Mint 3 DOT to UserB");
+  await submitExtrinsic(api, api.tx.assets.mintTo(XORAssetId, user_b.address, '340282366920938463463374607431768211455'), root, "Mint Max Possible XOR to UserB (for fees)");
+
+  const rootXor2 = await api.query.system.account(root.address);
+  console.log("Root XOR FREE (System) ", rootXor2.data.free.toString());
+
+  const nonNativeFreeBAfter = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
+  console.log("UserB DOT FREE ", nonNativeFreeBAfter.unwrap().balance.toString());
+
+  const nonNativeFreeRootBefore = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
+  console.log("Root DOT FREE ", nonNativeFreeRootBefore.unwrap().balance.toString());
+
+  // currently doesn't work
+  // const payment_info = await api.tx.assets.transferTo(DOTAssetId, root.address, '500000000000000000').paymentInfo(user_b.address);
+  // // log relevant info, partialFee is Balance, estimated for current
+  // console.log(`
+  //   class=${payment_info.class.toString()},
+  //   weight=${payment_info.weight.toString()},
+  //   partialFee=${payment_info.partialFee.toHuman()}
+  // `);
+
+  await submitExtrinsic(api, api.tx.assets.transferTo(DOTAssetId, root.address, '500000000000000000'), user_b, "Transfer 0.5 DOT from UserB to Root");
+
+  const nonNativeFreeBAfter2 = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
+  console.log("UserB DOT FREE ", nonNativeFreeBAfter2.unwrap().balance.toString());
+
+  const nonNativeFreeRootAfter = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
+  console.log("Root DOT FREE ", nonNativeFreeRootAfter.unwrap().balance.toString());
+
+  await submitExtrinsic(api, api.tx.assets.burnFromSelf(DOTAssetId, '300000000000000000'), root, "Burn 0.3 DOT from Root");
+
+  const nonNativeFreeRootAfter2 = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
+  console.log("Root DOT FREE ", nonNativeFreeRootAfter2.unwrap().balance.toString());
 
   // Check client calculations
 
@@ -86,31 +148,48 @@ async function main(): Promise<void> {
 
   // Check Constants
 
-  const cur = api.consts.currencies.nativeCurrencyId;
-  console.assert(cur.toString(), '1050000000000000000');
+  const native_cur = api.consts.currencies.nativeCurrencyId;
+  console.assert(native_cur.toString(), '1050000000000000000');
+  console.log(native_cur.toString());
+
+  const balance = await api.query.balances.account(root.address);
+  console.log(balance.toJSON());
+
+  const updateBalanceExtr = api.tx.balances.setBalance(user_a.address, '1000000000000000000', '0');
+  const updateBalanceSudo = api.tx.sudo.sudo(updateBalanceExtr);
+  await submitExtrinsic(api, updateBalanceSudo, root, 'Update root balance of XOR');
+
+  const native_balance = await api.query.system.account(root.address);
+  const balance_after = await api.query.balances.account(root.address);
+  // const balance_after = await api.query.tokens.accounts(root.address, native_cur);
+  console.log(balance_after.toJSON());
+  console.log(native_balance.data.free.toString());
+
+  api.tx.system.
+    return;
 
   // Check Extrinsics:
 
-  await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, AnotherAssetId), alice, 'Register Trading Pair');
+  await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, DOTAssetId), root, 'Register Trading Pair');
 
-  await submitExtrinsic(api, api.tx.mockLiquiditySource.testAccess(0, AnotherAssetId), alice, 'Mock Pool Test Access');
+  await submitExtrinsic(api, api.tx.mockLiquiditySource.testAccess(0, DOTAssetId), root, 'Mock Pool Test Access');
 
-  await submitExtrinsic(api, api.tx.mockLiquiditySource.setReserve(0, AnotherAssetId, "5000000000000000000", "7000000000000000000"), alice, "Set Reserves on Mock Pool");
+  await submitExtrinsic(api, api.tx.mockLiquiditySource.setReserve(0, DOTAssetId, "5000000000000000000", "7000000000000000000"), root, "Set Reserves on Mock Pool");
 
-  const price2 = await (api.rpc as any).dexApi.quote(0, "MockPool", XORAssetId, AnotherAssetId, "1050000000000000000", "WithDesiredInput");
+  const price2 = await (api.rpc as any).dexApi.quote(0, "MockPool", XORAssetId, DOTAssetId, "1050000000000000000", "WithDesiredInput");
   ok(price2.isSome);
 
-  const res1 = await (api.rpc as any).dexApi.canExchange(0, "MockPool", XORAssetId, AnotherAssetId);
+  const res1 = await (api.rpc as any).dexApi.canExchange(0, "MockPool", XORAssetId, DOTAssetId);
   ok(res1);
 
   const res2 = await (api.rpc as any).tradingPair.listEnabledPairs(0);
   strictEqual(res2[0].base_asset_id.toString(), XORAssetId.toString());
-  strictEqual(res2[0].target_asset_id.toString(), AnotherAssetId.toString());
+  strictEqual(res2[0].target_asset_id.toString(), DOTAssetId.toString());
 
-  const res3 = await (api.rpc as any).tradingPair.isPairEnabled(0, XORAssetId, AnotherAssetId);
+  const res3 = await (api.rpc as any).tradingPair.isPairEnabled(0, XORAssetId, DOTAssetId);
   ok(res3.isTrue);
 
-  await submitExtrinsic(api, api.tx.dexapi.swap(0, "MockPool", XORAssetId, AnotherAssetId, "1000000000000000000", "0", "WithDesiredInput", api.createType("Option<AccountId>")), alice, "Exchange on Mock Pool");
+  await submitExtrinsic(api, api.tx.dexapi.swap(0, "MockPool", XORAssetId, DOTAssetId, "1000000000000000000", "0", "WithDesiredInput", api.createType("Option<AccountId>")), root, "Exchange on Mock Pool");
 
   console.log('\nFINISHED CALLING');
 }

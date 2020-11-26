@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import { ITuple } from '@polkadot/types/types';
-import { Compact, Enum, Int, Option, Struct, U8aFixed, UInt, Vec } from '@polkadot/types/codec';
+import { Compact, Enum, Int, Struct, U8aFixed, UInt, Vec } from '@polkadot/types/codec';
 import { GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource } from '@polkadot/types/generic';
 import { Bytes, DoNotConstruct, Null, StorageKey, i128, u16, u32, u64, u8 } from '@polkadot/types/primitive';
 import { AuthorityId } from '@polkadot/types/interfaces/consensus';
@@ -31,18 +31,22 @@ export interface AmountOf extends Amount {}
 export interface AssetId extends u32 {}
 
 /** @name AssetId32 */
-export interface AssetId32 extends Struct {
-  readonly code: U8aFixed;
-}
+export interface AssetId32 extends U8aFixed {}
 
 /** @name AssetIdOf */
 export interface AssetIdOf extends AssetId {}
+
+/** @name AssetSymbol */
+export interface AssetSymbol extends Bytes {}
 
 /** @name Balance */
 export interface Balance extends UInt {}
 
 /** @name BalanceOf */
 export interface BalanceOf extends Balance {}
+
+/** @name BalancePrecision */
+export interface BalancePrecision extends u8 {}
 
 /** @name BasisPoints */
 export interface BasisPoints extends u16 {}
@@ -167,6 +171,9 @@ export interface Header extends Struct {
   readonly digest: Digest;
 }
 
+/** @name HolderId */
+export interface HolderId extends AccountId {}
+
 /** @name I32F32 */
 export interface I32F32 extends Int {}
 
@@ -201,6 +208,12 @@ export interface LookupSource extends GenericLookupSource {}
 /** @name LookupTarget */
 export interface LookupTarget extends AccountId {}
 
+/** @name Mode */
+export interface Mode extends Enum {
+  readonly isPermit: boolean;
+  readonly isForbid: boolean;
+}
+
 /** @name ModuleId */
 export interface ModuleId extends LockIdentifier {}
 
@@ -218,6 +231,9 @@ export interface OriginCaller extends Enum {
   readonly isSystem: boolean;
   readonly asSystem: SystemOrigin;
 }
+
+/** @name OwnerId */
+export interface OwnerId extends AccountId {}
 
 /** @name PalletsOrigin */
 export interface PalletsOrigin extends OriginCaller {}
@@ -244,11 +260,8 @@ export interface Percent extends UInt {}
 /** @name Permill */
 export interface Permill extends UInt {}
 
-/** @name Permission */
-export interface Permission extends Struct {
-  readonly owner_id: AccountId;
-  readonly params: Option<H512>;
-}
+/** @name PermissionId */
+export interface PermissionId extends u32 {}
 
 /** @name Perquintill */
 export interface Perquintill extends UInt {}
@@ -301,6 +314,13 @@ export interface Releases extends Enum {
 export interface RuntimeDbWeight extends Struct {
   readonly read: Weight;
   readonly write: Weight;
+}
+
+/** @name Scope */
+export interface Scope extends Enum {
+  readonly isLimited: boolean;
+  readonly asLimited: H512;
+  readonly isUnlimited: boolean;
 }
 
 /** @name Seal */

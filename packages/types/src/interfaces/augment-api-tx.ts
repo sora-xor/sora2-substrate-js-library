@@ -6,7 +6,7 @@ import { Compact, Option, Vec } from '@polkadot/types/codec';
 import { u16, u32 } from '@polkadot/types/primitive';
 import { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import { DownwardMessage, ValidationFunctionParams } from '@polkadot/types/interfaces/parachains';
-import { AccountId, AccountIndex, Address, AmountOf, AssetId, Balance, BalanceOf, BasisPoints, Call, CurrencyIdOf, DEXId, Fixed, LiquiditySourceType, LookupSource, Moment, SwapAction, SwapVariant, ValidationFunction, Weight } from '@sora-substrate/types/interfaces/runtime';
+import { AccountId, AccountIndex, Address, AmountOf, AssetId, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Call, CurrencyIdOf, DEXId, Fixed, LiquiditySourceType, LookupSource, Moment, SwapAction, SwapVariant, ValidationFunction, Weight } from '@sora-substrate/types/interfaces/runtime';
 import { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/submittable' {
@@ -14,12 +14,26 @@ declare module '@polkadot/api/types/submittable' {
     assets: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
       /**
+       * Extrinsic to perform checked Asset burn, can only be performed
+       * by corresponding asset owner account on own account.
+       **/
+      burnFromSelf: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, amount: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      /**
+       * Extrinsic to perform checked Asset mint, can only be performed
+       * by corresponding asset owner account.
+       **/
+      mintTo: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, to: AccountId | string | Uint8Array, amount: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      /**
        * Performs an asset registration.
        * 
        * Basically, this function checks the if given `asset_id` has an owner
-       * and if not, inserts it.
+       * and if not, inserts it. AssetSymbol should represent string with only uppercase latin chars with max length of 5.
        **/
-      register: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      register: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, symbol: AssetSymbol | string | Uint8Array, precision: BalancePrecision | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      /**
+       * Extrinsic to perform checked Asset transfer.
+       **/
+      transferTo: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, to: AccountId | string | Uint8Array, amount: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
     balances: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
