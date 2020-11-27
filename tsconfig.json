@@ -29,6 +29,12 @@
       ],
       "@sora-substrate/type-definitions/*": [
         "packages/type-definitions/src/*"
+      ],
+      "@sora-substrate/util": [
+        "packages/util/src"
+      ],
+      "@sora-substrate/util/*": [
+        "packages/util/src/*"
       ]
     },
     "skipLibCheck": true,

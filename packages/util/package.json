@@ -1,0 +1,17 @@
+{
+  "name": "@sora-substrate/util",
+  "version": "0.1.4",
+  "main": "./build/index.js",
+  "typings": "./build/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@sora-substrate/api": "^0.1.4"
+  },
+  "devDependencies": {
+    "@polkadot/ui-keyring": "^0.61.1",
+    "@types/websocket": "^1.0.0",
+    "websocket": "^1.0.31"
+  }
+}
