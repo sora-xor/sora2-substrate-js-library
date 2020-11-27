@@ -6,13 +6,17 @@ import dexApi from './dexApi'
 import dexManager from './dexManager'
 import tradingPair from './tradingPair'
 import template from './template'
+import assets from './assets'
+import liquidityProxy from './liquidityProxy'
 
 const soraDefs = {
   runtime,
   dexApi,
   dexManager,
   tradingPair,
-  template
+  template,
+  assets,
+  liquidityProxy,
 }
 
 const overrides = {

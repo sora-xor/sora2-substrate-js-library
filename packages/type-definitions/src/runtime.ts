@@ -19,10 +19,9 @@ export default {
       default_fee: 'BasisPoints',
       default_protocol_fee: 'BasisPoints'
     },
-    AssetId32: {
-      code: '[u8; 32]'
-      // phantom: 'Null' // serialization skipped for serde
-    },
+    BalancePrecision: "u8",
+    AssetSymbol: "Vec<u8>",
+    AssetId32: '[u8; 32]',
     SwapWithDesiredInput: {
       desired_amount_in: "Balance",
       min_amount_out: "Balance"
@@ -63,7 +62,7 @@ export default {
     },
     LiquiditySourceType: {
       _enum: [
-        'BondingCurve',
+        'BondingCurvePool',
         'XYKPool',
         'MockPool',
         'MockPool2',
@@ -71,9 +70,34 @@ export default {
         'MockPool4'
       ]
     },
+    FilterMode: {
+      _enum: [
+        'Disabled',
+        'ForbidSelected',
+        'AllowSelected',
+      ]
+    },
+    SwapOutcomeInfo: {
+      amount: 'Balance',
+      fee: 'Balance'
+    },
     TradingPair: {
       base_asset_id: "AssetId",
       target_asset_id: "AssetId"
+    },
+    PermissionId: "u32",
+    HolderId: "AccountId",
+    OwnerId: "AccountId",
+    Mode: {
+      _enum: [
+        'Permit', 'Forbid'
+      ]
+    },
+    Scope: {
+      _enum: {
+        Limited: "H512",
+        Unlimited: null
+      }
     },
     TechPurpose: {
       _enum: {
@@ -81,10 +105,6 @@ export default {
         LiquidityKeeper: "TradingPair",
         Identifier: "Vec<u8>"
       }
-    },
-    Permission: {
-      owner_id: "AccountId",
-      params: "Option<H512>"
     },
     TechAssetId: "Null",            // define properly if needed
     TechAccountId: "Null",          // define properly if needed

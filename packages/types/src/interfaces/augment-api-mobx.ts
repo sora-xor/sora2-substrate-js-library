@@ -8,10 +8,13 @@ import { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import { ParaId, RelayChainBlockNumber } from '@polkadot/types/interfaces/parachains';
 import { AccountInfo, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import { AccountId, AssetId, Balance, BlockNumber, CurrencyId, DEXId, DEXInfo, ExtrinsicsWeight, Fixed, Hash, Moment, Permission, Releases, TechAccountId, ValidationFunction } from '@sora-substrate/types/interfaces/runtime';
+import { AccountId, AssetId, AssetSymbol, Balance, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, ExtrinsicsWeight, Fixed, Hash, HolderId, Mode, Moment, OwnerId, PermissionId, Releases, Scope, TechAccountId, ValidationFunction } from '@sora-substrate/types/interfaces/runtime';
 import { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
+  assets: {    assetInfos: StorageMap<AssetId | AnyNumber, ITuple<[AssetSymbol, BalancePrecision]>>;
+    assetOwners: StorageMap<AssetId | AnyNumber, AccountId>;
+  };
   balances: {    /**
      * The balance of an account.
      * 
@@ -56,10 +59,9 @@ export interface StorageType extends BaseStorageType {
     didUpdateVfPs: bool | null;
     pendingValidationFunction: Option<ITuple<[RelayChainBlockNumber, ValidationFunction]>> | null;
   };
-  permissions: {    /**
-     * Storage with double keys (permission_id, holder_id).
-     **/
-    permissions: StorageDoubleMap<u32 | AnyNumber, AccountId | string, Option<Permission>>;
+  permissions: {    modes: StorageMap<PermissionId | AnyNumber, Mode>;
+    owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
+    permissions: StorageDoubleMap<HolderId | string, Scope | { Limited: any } | { Unlimited: any } | string, Vec<PermissionId>>;
   };
   randomnessCollectiveFlip: {    /**
      * Series of block headers from the last 81 blocks that acts as random seed material. This

@@ -55,8 +55,8 @@ import { Bounty, BountyIndex, BountyStatus, BountyStatusActive, BountyStatusCura
 import { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import { VestingInfo } from '@polkadot/types/interfaces/vesting';
-import { SwapOutcomeInfo } from '@sora-substrate/types/interfaces/dexApi';
-import { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, Balance, BalanceOf, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, ExtrinsicsWeight, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, GenericAddress, H160, H256, H512, Hash, Header, I32F32, Index, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, ModuleId, Moment, OpaqueCall, Origin, OriginCaller, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, Permission, Perquintill, Phantom, PhantomData, PreRuntime, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Seal, SealV0, SignedBlock, StorageData, SwapAction, SwapAmount, SwapOutcome, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, Weight, WeightMultiplier, WrappedBalance } from '@sora-substrate/types/interfaces/runtime';
+import { AssetInfo, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
+import { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, ExtrinsicsWeight, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, GenericAddress, H160, H256, H512, Hash, Header, HolderId, I32F32, Index, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, OpaqueCall, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, PermissionId, Perquintill, Phantom, PhantomData, PreRuntime, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, StorageData, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, Weight, WeightMultiplier, WrappedBalance } from '@sora-substrate/types/interfaces/runtime';
 import { CustomInfo } from '@sora-substrate/types/interfaces/template';
 import { TP } from '@sora-substrate/types/interfaces/tradingPair';
 
@@ -1631,9 +1631,6 @@ declare module '@polkadot/types/types/registry' {
     'Compact<Share>': Compact<Share>;
     'Option<Share>': Option<Share>;
     'Vec<Share>': Vec<Share>;
-    SwapOutcomeInfo: SwapOutcomeInfo;
-    'Option<SwapOutcomeInfo>': Option<SwapOutcomeInfo>;
-    'Vec<SwapOutcomeInfo>': Vec<SwapOutcomeInfo>;
     TP: TP;
     'Option<TP>': Option<TP>;
     'Vec<TP>': Vec<TP>;
@@ -1886,6 +1883,13 @@ declare module '@polkadot/types/types/registry' {
     DEXInfo: DEXInfo;
     'Option<DEXInfo>': Option<DEXInfo>;
     'Vec<DEXInfo>': Vec<DEXInfo>;
+    BalancePrecision: BalancePrecision;
+    'Compact<BalancePrecision>': Compact<BalancePrecision>;
+    'Option<BalancePrecision>': Option<BalancePrecision>;
+    'Vec<BalancePrecision>': Vec<BalancePrecision>;
+    AssetSymbol: AssetSymbol;
+    'Option<AssetSymbol>': Option<AssetSymbol>;
+    'Vec<AssetSymbol>': Vec<AssetSymbol>;
     AssetId32: AssetId32;
     'Option<AssetId32>': Option<AssetId32>;
     'Vec<AssetId32>': Vec<AssetId32>;
@@ -1922,15 +1926,34 @@ declare module '@polkadot/types/types/registry' {
     LiquiditySourceType: LiquiditySourceType;
     'Option<LiquiditySourceType>': Option<LiquiditySourceType>;
     'Vec<LiquiditySourceType>': Vec<LiquiditySourceType>;
+    FilterMode: FilterMode;
+    'Option<FilterMode>': Option<FilterMode>;
+    'Vec<FilterMode>': Vec<FilterMode>;
+    SwapOutcomeInfo: SwapOutcomeInfo;
+    'Option<SwapOutcomeInfo>': Option<SwapOutcomeInfo>;
+    'Vec<SwapOutcomeInfo>': Vec<SwapOutcomeInfo>;
     TradingPair: TradingPair;
     'Option<TradingPair>': Option<TradingPair>;
     'Vec<TradingPair>': Vec<TradingPair>;
+    PermissionId: PermissionId;
+    'Compact<PermissionId>': Compact<PermissionId>;
+    'Option<PermissionId>': Option<PermissionId>;
+    'Vec<PermissionId>': Vec<PermissionId>;
+    HolderId: HolderId;
+    'Option<HolderId>': Option<HolderId>;
+    'Vec<HolderId>': Vec<HolderId>;
+    OwnerId: OwnerId;
+    'Option<OwnerId>': Option<OwnerId>;
+    'Vec<OwnerId>': Vec<OwnerId>;
+    Mode: Mode;
+    'Option<Mode>': Option<Mode>;
+    'Vec<Mode>': Vec<Mode>;
+    Scope: Scope;
+    'Option<Scope>': Option<Scope>;
+    'Vec<Scope>': Vec<Scope>;
     TechPurpose: TechPurpose;
     'Option<TechPurpose>': Option<TechPurpose>;
     'Vec<TechPurpose>': Vec<TechPurpose>;
-    Permission: Permission;
-    'Option<Permission>': Option<Permission>;
-    'Vec<Permission>': Vec<Permission>;
     TechAssetId: TechAssetId;
     'Option<TechAssetId>': Option<TechAssetId>;
     'Vec<TechAssetId>': Vec<TechAssetId>;
@@ -1949,5 +1972,14 @@ declare module '@polkadot/types/types/registry' {
     CustomInfo: CustomInfo;
     'Option<CustomInfo>': Option<CustomInfo>;
     'Vec<CustomInfo>': Vec<CustomInfo>;
+    BalanceInfo: BalanceInfo;
+    'Option<BalanceInfo>': Option<BalanceInfo>;
+    'Vec<BalanceInfo>': Vec<BalanceInfo>;
+    AssetInfo: AssetInfo;
+    'Option<AssetInfo>': Option<AssetInfo>;
+    'Vec<AssetInfo>': Vec<AssetInfo>;
+    AssetSymbolStr: AssetSymbolStr;
+    'Option<AssetSymbolStr>': Option<AssetSymbolStr>;
+    'Vec<AssetSymbolStr>': Vec<AssetSymbolStr>;
   }
 }

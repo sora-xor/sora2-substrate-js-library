@@ -1,0 +1,64 @@
+export default {
+    rpc: {
+        freeBalance: {
+            description: 'Get free balance of particular asset for account.',
+            params: [
+                {
+                    name: 'accountId',
+                    type: 'AccountId'
+                },
+                {
+                    name: 'assetId',
+                    type: 'AssetId'
+                },
+            ],
+            type: 'Option<BalanceInfo>'
+        },
+        totalBalance: {
+            description: 'Get total balance (free + reserved) of particular asset for account.',
+            params: [
+                {
+                    name: 'accountId',
+                    type: 'AccountId'
+                },
+                {
+                    name: 'assetId',
+                    type: 'AssetId'
+                },
+            ],
+            type: 'Option<BalanceInfo>'
+        },
+        listAssetIds: {
+            description: 'List Ids of all assets registered on chain.',
+            params: [],
+            type: 'Vec<AssetId>'
+        },
+        listAssetInfos: {
+            description: 'List Infos of all assets registered on chain.',
+            params: [],
+            type: 'Vec<AssetInfo>'
+        },
+        getAssetInfo: {
+            description: 'Get Info for particular asset on chain.',
+            params: [
+                {
+                    name: 'assetId',
+                    type: 'AssetId'
+                },
+            ],
+            type: 'Option<AssetInfo>'
+        },
+    },
+    types: {
+        BalanceInfo: {
+            balance: 'Balance',
+        },
+        AssetInfo: {
+            asset_id: "AssetId",
+            symbol: "AssetSymbolStr",
+            precision: "u8"
+        },
+        AssetSymbolStr: "String",
+
+    }
+}
