@@ -8,16 +8,11 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.10.2",
-    "@polkadot/api": "^2.1.2-8",
-    "@polkadot/keyring": "^3.6.1",
-    "@polkadot/rpc-provider": "^2.1.2-8",
-    "@polkadot/types": "^2.1.2-8",
-    "@polkadot/ui-keyring": "^0.61.1",
-    "@polkadot/util": "^3.6.1",
-    "@polkadot/util-crypto": "^3.6.1",
     "@sora-substrate/api": "^0.1.4"
   },
   "devDependencies": {
+    "@polkadot/api": "^2.1.2-8",
+    "@polkadot/ui-keyring": "^0.61.1",
     "@types/websocket": "^1.0.0",
     "websocket": "^1.0.31"
   }
