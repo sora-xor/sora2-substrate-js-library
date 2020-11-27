@@ -1,4 +1,3 @@
-console.log('TEST IMPORT')
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
@@ -89,7 +88,7 @@ async function main(): Promise<void> {
   const assetInfos = await (api.rpc as any).assets.listAssetInfos();
   console.log("Infos for assets on chain: ", assetInfos.toString());
 
-  const assetInfo = await (api.rpc as any).assets.getAssetInfo('0x0200000000000000000000000000000000000000000000000000000000000000');
+  const assetInfo = await (api.rpc as any).assets.getAssetInfo(DOTAssetId);
   console.log("Info for particular asset", assetInfo.toString());
 
   const nativeTotal = await (api.rpc as any).assets.totalBalance(user_a.address, XORAssetId);
@@ -103,8 +102,8 @@ async function main(): Promise<void> {
   const rootXor1 = await (api.rpc as any).assets.freeBalance(root.address, XORAssetId);
   console.log("Root XOR (System) ", rootXor1.unwrap().balance.toString());
 
-  await submitExtrinsic(api, api.tx.assets.mintTo(DOTAssetId, user_b.address, '3000000000000000000'), root, "Mint 3 DOT to UserB");
-  await submitExtrinsic(api, api.tx.assets.mintTo(XORAssetId, user_b.address, '340282366920938463463374607431768211455'), root, "Mint Max Possible XOR to UserB (for fees)");
+  await submitExtrinsic(api, api.tx.assets.mint(DOTAssetId, user_b.address, '3000000000000000000'), root, "Mint 3 DOT to UserB");
+  await submitExtrinsic(api, api.tx.assets.mint(XORAssetId, user_b.address, '340282366920938463463374607431768211455'), root, "Mint Max Possible XOR to UserB (for fees)");
 
   const rootXor2 = await api.query.system.account(root.address);
   console.log("Root XOR FREE (System) ", rootXor2.data.free.toString());
@@ -124,7 +123,7 @@ async function main(): Promise<void> {
   //   partialFee=${payment_info.partialFee.toHuman()}
   // `);
 
-  await submitExtrinsic(api, api.tx.assets.transferTo(DOTAssetId, root.address, '500000000000000000'), user_b, "Transfer 0.5 DOT from UserB to Root");
+  await submitExtrinsic(api, api.tx.assets.transfer(DOTAssetId, root.address, '500000000000000000'), user_b, "Transfer 0.5 DOT from UserB to Root");
 
   const nonNativeFreeBAfter2 = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
   console.log("UserB DOT FREE ", nonNativeFreeBAfter2.unwrap().balance.toString());
@@ -132,7 +131,7 @@ async function main(): Promise<void> {
   const nonNativeFreeRootAfter = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
   console.log("Root DOT FREE ", nonNativeFreeRootAfter.unwrap().balance.toString());
 
-  await submitExtrinsic(api, api.tx.assets.burnFromSelf(DOTAssetId, '300000000000000000'), root, "Burn 0.3 DOT from Root");
+  await submitExtrinsic(api, api.tx.assets.burn(DOTAssetId, '300000000000000000'), root, "Burn 0.3 DOT from Root");
 
   const nonNativeFreeRootAfter2 = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
   console.log("Root DOT FREE ", nonNativeFreeRootAfter2.unwrap().balance.toString());
@@ -151,22 +150,6 @@ async function main(): Promise<void> {
   const native_cur = api.consts.currencies.nativeCurrencyId;
   console.assert(native_cur.toString(), '1050000000000000000');
   console.log(native_cur.toString());
-
-  const balance = await api.query.balances.account(root.address);
-  console.log(balance.toJSON());
-
-  const updateBalanceExtr = api.tx.balances.setBalance(user_a.address, '1000000000000000000', '0');
-  const updateBalanceSudo = api.tx.sudo.sudo(updateBalanceExtr);
-  await submitExtrinsic(api, updateBalanceSudo, root, 'Update root balance of XOR');
-
-  const native_balance = await api.query.system.account(root.address);
-  const balance_after = await api.query.balances.account(root.address);
-  // const balance_after = await api.query.tokens.accounts(root.address, native_cur);
-  console.log(balance_after.toJSON());
-  console.log(native_balance.data.free.toString());
-
-  api.tx.system.
-    return;
 
   // Check Extrinsics:
 

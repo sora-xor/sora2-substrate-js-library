@@ -14,15 +14,24 @@ declare module '@polkadot/api/types/submittable' {
     assets: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
       /**
-       * Extrinsic to perform checked Asset burn, can only be performed
-       * by corresponding asset owner account on own account.
+       * Performs a checked Asset burn, can only be done
+       * by corresponding asset owner with own account.
+       * 
+       * - `origin`: caller Account, from which Asset amount is burned,
+       * - `asset_id`: Id of burned Asset,
+       * - `amount`: burned Asset amount.
        **/
-      burnFromSelf: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, amount: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      burn: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, amount: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
-       * Extrinsic to perform checked Asset mint, can only be performed
+       * Performs a checked Asset mint, can only be done
        * by corresponding asset owner account.
+       * 
+       * - `origin`: caller Account, which issues Asset minting,
+       * - `asset_id`: Id of minted Asset,
+       * - `to`: Id of Account, to which Asset amount is minted,
+       * - `amount`: minted Asset amount.
        **/
-      mintTo: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, to: AccountId | string | Uint8Array, amount: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      mint: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, to: AccountId | string | Uint8Array, amount: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
        * Performs an asset registration.
        * 
@@ -31,9 +40,14 @@ declare module '@polkadot/api/types/submittable' {
        **/
       register: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, symbol: AssetSymbol | string | Uint8Array, precision: BalancePrecision | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
       /**
-       * Extrinsic to perform checked Asset transfer.
+       * Performs a checked Asset transfer.
+       * 
+       * - `origin`: caller Account, from which Asset amount is withdrawn,
+       * - `asset_id`: Id of transferred Asset,
+       * - `to`: Id of Account, to which Asset amount is deposited,
+       * - `amount`: transferred Asset amount.
        **/
-      transferTo: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, to: AccountId | string | Uint8Array, amount: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      transfer: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array, to: AccountId | string | Uint8Array, amount: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
     balances: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
@@ -189,7 +203,7 @@ declare module '@polkadot/api/types/submittable' {
        * - `receiver`: Optional value, indicates AccountId for swap receiver. If not set, default is `sender`.
        * TODO: add information about weight
        **/
-      swap: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'BondingCurve'|'XYKPool'|'MockPool'|'MockPool2'|'MockPool3'|'MockPool4' | number | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Fixed | AnyNumber | Uint8Array, limit: Fixed | AnyNumber | Uint8Array, swapVariant: SwapVariant | 'WithDesiredInput'|'WithDesiredOutput' | number | Uint8Array, receiver: Option<AccountId> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      swap: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'BondingCurvePool'|'XYKPool'|'MockPool'|'MockPool2'|'MockPool3'|'MockPool4' | number | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Fixed | AnyNumber | Uint8Array, limit: Fixed | AnyNumber | Uint8Array, swapVariant: SwapVariant | 'WithDesiredInput'|'WithDesiredOutput' | number | Uint8Array, receiver: Option<AccountId> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
     dexManager: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;

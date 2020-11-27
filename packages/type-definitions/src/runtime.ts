@@ -62,13 +62,24 @@ export default {
     },
     LiquiditySourceType: {
       _enum: [
-        'BondingCurve',
+        'BondingCurvePool',
         'XYKPool',
         'MockPool',
         'MockPool2',
         'MockPool3',
         'MockPool4'
       ]
+    },
+    FilterMode: {
+      _enum: [
+        'Disabled',
+        'ForbidSelected',
+        'AllowSelected',
+      ]
+    },
+    SwapOutcomeInfo: {
+      amount: 'Balance',
+      fee: 'Balance'
     },
     TradingPair: {
       base_asset_id: "AssetId",

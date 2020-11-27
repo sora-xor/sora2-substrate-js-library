@@ -126,6 +126,13 @@ export interface ExtrinsicsWeight extends Struct {
   readonly operational: Weight;
 }
 
+/** @name FilterMode */
+export interface FilterMode extends Enum {
+  readonly isDisabled: boolean;
+  readonly isForbidSelected: boolean;
+  readonly isAllowSelected: boolean;
+}
+
 /** @name Fixed */
 export interface Fixed extends FixedU128 {}
 
@@ -191,7 +198,7 @@ export interface KeyValue extends ITuple<[StorageKey, StorageData]> {}
 
 /** @name LiquiditySourceType */
 export interface LiquiditySourceType extends Enum {
-  readonly isBondingCurve: boolean;
+  readonly isBondingCurvePool: boolean;
   readonly isXykPool: boolean;
   readonly isMockPool: boolean;
   readonly isMockPool2: boolean;
@@ -351,6 +358,12 @@ export interface SwapAmount extends Enum {
 
 /** @name SwapOutcome */
 export interface SwapOutcome extends Struct {
+  readonly amount: Balance;
+  readonly fee: Balance;
+}
+
+/** @name SwapOutcomeInfo */
+export interface SwapOutcomeInfo extends Struct {
   readonly amount: Balance;
   readonly fee: Balance;
 }
