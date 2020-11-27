@@ -9,7 +9,7 @@
   "dependencies": {
     "@sora-substrate/types": "^0.1.4",
     "@babel/runtime": "^7.10.2",
-    "@polkadot/api-derive": "^2.1.2-8",
+    "@polkadot/api-derive": "^2.8.1",
     "rxjs": "^6.5.5"
   }
 }
