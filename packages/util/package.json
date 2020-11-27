@@ -8,8 +8,6 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.10.2",
-    "@polkadot/api": "^2.1.2-8",
-    "@polkadot/types": "^2.1.2-8",
     "@polkadot/ui-keyring": "^0.60.2-2",
     "@sora-substrate/api": "^0.1.4"
   },
