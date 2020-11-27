@@ -12,7 +12,6 @@
   },
   "devDependencies": {
     "@polkadot/api": "^2.1.2-8",
-    "@polkadot/ui-keyring": "^0.61.1",
     "@types/websocket": "^1.0.0",
     "websocket": "^1.0.31"
   }
