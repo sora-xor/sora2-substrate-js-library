@@ -267,6 +267,9 @@ export interface Percent extends UInt {}
 /** @name Permill */
 export interface Permill extends UInt {}
 
+/** @name Permission */
+export interface Permission extends Null {}
+
 /** @name PermissionId */
 export interface PermissionId extends u32 {}
 

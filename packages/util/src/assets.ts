@@ -53,7 +53,7 @@ export async function getAssetInfo (api: ApiPromise, accountAddress: string, ass
   const xor = KnownAssets.find(asset => asset.symbol === Symbols.XOR)
   const isNative = assetAddress === xor.address
   const asset = await (
-    isNative ? api.query.system.account(accountAddress, assetAddress) : api.query.tokens.accounts(accountAddress, assetAddress)
+    isNative ? api.query.system.account(accountAddress) : api.query.tokens.accounts(accountAddress, assetAddress)
   )
   return asset
 }

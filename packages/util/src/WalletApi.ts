@@ -33,9 +33,10 @@ export class WalletApi {
   }
 
   public async initialize (): Promise<void> {
-    const provider = new WsProvider(this.endpoint);
-    this.api = new ApiPromise(options({ provider }));
+    const provider = new WsProvider(this.endpoint)
+    this.api = new ApiPromise(options({ provider }))
     await this.api.isReady
+    keyring.loadAll({ type: 'sr25519' })
   }
 
   public checkSeed (suri: string): { address: string; suri: string } {
