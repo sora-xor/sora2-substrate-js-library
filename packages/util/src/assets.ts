@@ -7,43 +7,53 @@ export interface Asset {
   decimals: number;
 }
 
+export enum Symbols {
+  XOR = 'XOR',
+  DOT = 'DOT',
+  KSM = 'KSM',
+  USD = 'USD',
+  VAL = 'VAL',
+  PSWAP = 'PSWAP'
+}
+
 export const KnownAssets: Array<Asset> = [
   {
     address: '0x0200000000000000000000000000000000000000000000000000000000000000',
-    symbol: 'XOR',
+    symbol: Symbols.XOR,
     decimals: 18
   },
   {
     address: '0x0200010000000000000000000000000000000000000000000000000000000000',
-    symbol: 'DOT',
+    symbol: Symbols.DOT,
     decimals: 10
   },
   {
     address: '0x0200020000000000000000000000000000000000000000000000000000000000',
-    symbol: 'KSM',
+    symbol: Symbols.KSM,
     decimals: 12
   },
   {
     address: '0x0200030000000000000000000000000000000000000000000000000000000000',
-    symbol: 'USD',
+    symbol: Symbols.USD,
     decimals: 18
   },
   {
     address: '0x0200040000000000000000000000000000000000000000000000000000000000',
-    symbol: 'VAL',
+    symbol: Symbols.VAL,
     decimals: 18
   },
   {
     address: '0x0200050000000000000000000000000000000000000000000000000000000000',
-    symbol: 'PSWAP',
+    symbol: Symbols.PSWAP,
     decimals: 18
   }
 ]
 
 export async function getAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
-  const nativeAsset = KnownAssets.find(asset => asset.address === assetAddress)
+  const xor = KnownAssets.find(asset => asset.symbol === Symbols.XOR)
+  const isNative = assetAddress === xor.address
   const asset = await (
-    nativeAsset ? api.query.system.account(accountAddress, assetAddress) : api.query.tokens.accounts(accountAddress, assetAddress)
+    isNative ? api.query.system.account(accountAddress, assetAddress) : api.query.tokens.accounts(accountAddress, assetAddress)
   )
   return asset
 }

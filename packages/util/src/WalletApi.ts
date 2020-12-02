@@ -61,8 +61,8 @@ export class WalletApi {
   }
 
   public addAsset (address: string, symbol: string): void {
-    const nativeAsset = KnownAssets.find(asset => asset.address === address)
-    this.assets.push(nativeAsset || { address, symbol })
+    const knownAsset = KnownAssets.find(asset => asset.address === address)
+    this.assets.push(knownAsset || { address, symbol })
   }
 
   public async getAssetInfo (address: string): Promise<Codec> {
