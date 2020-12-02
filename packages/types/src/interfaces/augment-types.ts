@@ -56,7 +56,7 @@ import { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import { AssetInfo, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
-import { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, ExtrinsicsWeight, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, GenericAddress, H160, H256, H512, Hash, Header, HolderId, I32F32, Index, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, OpaqueCall, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, PermissionId, Perquintill, Phantom, PhantomData, PreRuntime, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, StorageData, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, Weight, WeightMultiplier, WrappedBalance } from '@sora-substrate/types/interfaces/runtime';
+import { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, ExtrinsicsWeight, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, GenericAddress, H160, H256, H512, Hash, Header, HolderId, I32F32, Index, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, OpaqueCall, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PreRuntime, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, StorageData, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, Weight, WeightMultiplier, WrappedBalance } from '@sora-substrate/types/interfaces/runtime';
 import { CustomInfo } from '@sora-substrate/types/interfaces/template';
 import { TP } from '@sora-substrate/types/interfaces/tradingPair';
 
@@ -1969,6 +1969,9 @@ declare module '@polkadot/types/types/registry' {
     ValidationFunction: ValidationFunction;
     'Option<ValidationFunction>': Option<ValidationFunction>;
     'Vec<ValidationFunction>': Vec<ValidationFunction>;
+    Permission: Permission;
+    'Option<Permission>': Option<Permission>;
+    'Vec<Permission>': Vec<Permission>;
     CustomInfo: CustomInfo;
     'Option<CustomInfo>': Option<CustomInfo>;
     'Vec<CustomInfo>': Vec<CustomInfo>;
