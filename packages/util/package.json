@@ -1,13 +1,13 @@
 {
   "name": "@sora-substrate/util",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@sora-substrate/api": "^0.1.4"
+    "@sora-substrate/api": "^0.1.5"
   },
   "devDependencies": {
     "@polkadot/ui-keyring": "^0.61.1",
