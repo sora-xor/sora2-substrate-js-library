@@ -7,11 +7,16 @@ import { bool, u32 } from '@polkadot/types/primitive';
 import { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import { ParaId, RelayChainBlockNumber } from '@polkadot/types/interfaces/parachains';
 import { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import { AccountId, AssetId, Balance, CurrencyId, DEXId, DEXInfo, Fixed, Hash, Moment, Permission, Releases, TechAccountId, ValidationFunction } from '@sora-substrate/types/interfaces/runtime';
+import { AccountId, AssetId, AssetSymbol, Balance, BalancePrecision, CurrencyId, DEXId, DEXInfo, Fixed, Hash, HolderId, Mode, Moment, OwnerId, PermissionId, Releases, Scope, TechAccountId, ValidationFunction } from '@sora-substrate/types/interfaces/runtime';
 import { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/storage' {
   export interface AugmentedQueries<ApiType> {
+    assets: {
+      [key: string]: QueryableStorageEntry<ApiType>;
+      assetInfos: AugmentedQuery<ApiType, (arg: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[AssetSymbol, BalancePrecision]>>> & QueryableStorageEntry<ApiType>;
+      assetOwners: AugmentedQuery<ApiType, (arg: AssetId | AnyNumber | Uint8Array) => Observable<AccountId>> & QueryableStorageEntry<ApiType>;
+    };
     balances: {
       [key: string]: QueryableStorageEntry<ApiType>;
       /**
@@ -74,10 +79,9 @@ declare module '@polkadot/api/types/storage' {
     };
     permissions: {
       [key: string]: QueryableStorageEntry<ApiType>;
-      /**
-       * Storage with double keys (permission_id, holder_id).
-       **/
-      permissions: AugmentedQueryDoubleMap<ApiType, (key1: u32 | AnyNumber | Uint8Array, key2: AccountId | string | Uint8Array) => Observable<Option<Permission>>> & QueryableStorageEntry<ApiType>;
+      modes: AugmentedQuery<ApiType, (arg: PermissionId | AnyNumber | Uint8Array) => Observable<Mode>> & QueryableStorageEntry<ApiType>;
+      owners: AugmentedQueryDoubleMap<ApiType, (key1: PermissionId | AnyNumber | Uint8Array, key2: Scope | { Limited: any } | { Unlimited: any } | string | Uint8Array) => Observable<Vec<OwnerId>>> & QueryableStorageEntry<ApiType>;
+      permissions: AugmentedQueryDoubleMap<ApiType, (key1: HolderId | string | Uint8Array, key2: Scope | { Limited: any } | { Unlimited: any } | string | Uint8Array) => Observable<Vec<PermissionId>>> & QueryableStorageEntry<ApiType>;
     };
     randomnessCollectiveFlip: {
       [key: string]: QueryableStorageEntry<ApiType>;

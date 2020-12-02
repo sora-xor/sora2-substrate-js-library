@@ -25,7 +25,7 @@ export default {
     listSupportedSources: {
       description: 'List liquidity source types enabled on chain.',
       params: [],
-      type: 'Vec<LiquiditySourceTypee>'
+      type: 'Vec<LiquiditySourceType>'
     },
     quote: {
       description: 'Get price for a given input or output token amount.',
@@ -58,10 +58,5 @@ export default {
       type: 'Option<SwapOutcomeInfo>'
     }
   },
-  types: {
-    SwapOutcomeInfo: {
-      amount: 'Balance',
-      fee: 'Balance',
-    }
-  }
+  types: {}
 }
