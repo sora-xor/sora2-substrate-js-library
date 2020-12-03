@@ -63,6 +63,20 @@ export interface StorageType extends BaseStorageType {
     owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
     permissions: StorageDoubleMap<HolderId | string, Scope | { Limited: any } | { Unlimited: any } | string, Vec<PermissionId>>;
   };
+  poolXyk: {    /**
+     * Collection of all registered marker tokens.
+     **/
+    markerTokensIndex: Vec<AssetId> | null;
+    /**
+     * Updated after last liquidity change operation.
+     * [Base Asset Id (XOR) -> Target Asset Id => (Base Balance, Target Balance)].
+     * This storage records is not used as source of information, but used as quick cache for
+     * information that comes from balances for assets from technical accounts.
+     * For example, communication with technical accounts and their storage is not needed, and this
+     * pair to balance cache can be used quickly.
+     **/
+    reserves: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, ITuple<[Balance, Balance]>>;
+  };
   randomnessCollectiveFlip: {    /**
      * Series of block headers from the last 81 blocks that acts as random seed material. This
      * is arranged as a ring buffer with `block_number % 81` being the index into the `Vec` of

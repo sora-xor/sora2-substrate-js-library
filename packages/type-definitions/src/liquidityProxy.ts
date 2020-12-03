@@ -25,7 +25,7 @@ export default {
                 },
                 {
                     name: 'selectedSourceTypes',
-                    type: 'LiquiditySourceType'
+                    type: 'Vec<LiquiditySourceType>'
                 },
                 {
                     name: 'filterMode',

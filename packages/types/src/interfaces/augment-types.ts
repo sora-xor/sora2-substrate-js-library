@@ -1954,12 +1954,12 @@ declare module '@polkadot/types/types/registry' {
     TechPurpose: TechPurpose;
     'Option<TechPurpose>': Option<TechPurpose>;
     'Vec<TechPurpose>': Vec<TechPurpose>;
-    TechAssetId: TechAssetId;
-    'Option<TechAssetId>': Option<TechAssetId>;
-    'Vec<TechAssetId>': Vec<TechAssetId>;
     TechAccountId: TechAccountId;
     'Option<TechAccountId>': Option<TechAccountId>;
     'Vec<TechAccountId>': Vec<TechAccountId>;
+    TechAssetId: TechAssetId;
+    'Option<TechAssetId>': Option<TechAssetId>;
+    'Vec<TechAssetId>': Vec<TechAssetId>;
     TechAccountIdPrimitive: TechAccountIdPrimitive;
     'Option<TechAccountIdPrimitive>': Option<TechAccountIdPrimitive>;
     'Vec<TechAccountIdPrimitive>': Vec<TechAccountIdPrimitive>;

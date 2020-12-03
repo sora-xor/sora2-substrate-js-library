@@ -96,18 +96,25 @@ export default {
     Scope: {
       _enum: {
         Limited: "H512",
-        Unlimited: null
+        Unlimited: "Null"
       }
     },
     TechPurpose: {
       _enum: {
-        FeeCollector: null,
+        FeeCollector: "Null",
         LiquidityKeeper: "TradingPair",
         Identifier: "Vec<u8>"
       }
     },
+    TechAccountId: {
+      _enum: {
+        Pure: "(DEXId, TechPurpose)",
+        Generic: "(Vec<u8>, Vec<u8>)",
+        Wrapped: "AccountId",
+        WrappedRepr: "AccountId"
+      }
+    },
     TechAssetId: "Null",            // define properly if needed
-    TechAccountId: "Null",          // define properly if needed
     TechAccountIdPrimitive: "Null", // define properly if needed
     SwapAction: "Null",             // define properly if needed
     ValidationFunction: "Null",     // define properly if needed

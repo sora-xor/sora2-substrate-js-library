@@ -390,7 +390,16 @@ export interface SwapWithDesiredOutput extends Struct {
 }
 
 /** @name TechAccountId */
-export interface TechAccountId extends Null {}
+export interface TechAccountId extends Enum {
+  readonly isPure: boolean;
+  readonly asPure: ITuple<[DEXId, TechPurpose]>;
+  readonly isGeneric: boolean;
+  readonly asGeneric: ITuple<[Bytes, Bytes]>;
+  readonly isWrapped: boolean;
+  readonly asWrapped: AccountId;
+  readonly isWrappedRepr: boolean;
+  readonly asWrappedRepr: AccountId;
+}
 
 /** @name TechAccountIdPrimitive */
 export interface TechAccountIdPrimitive extends Null {}
