@@ -181,3 +181,8 @@ export class WalletApi extends BaseApi {
     }
   }
 }
+
+/**
+ * An instance of the wallet api which contains all necessary functions
+ */
+export const walletApi = new WalletApi()
