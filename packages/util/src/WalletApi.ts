@@ -1,29 +1,29 @@
-import { ApiPromise } from '@polkadot/api'
-import { WsProvider } from '@polkadot/rpc-provider'
 import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate } from '@polkadot/util-crypto'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
-import { options } from '@sora-substrate/api'
 
 import { KnownAssets, getAssetInfo, AccountAsset } from './assets'
+import { Storage } from './storage'
+import { formatBalance } from './formatter'
+import { decrypt, encrypt } from './crypto'
+import { BaseApi } from './api'
 
-export class WalletApi {
+/**
+ * Contains all necessary data and functions for the wallet
+ */
+export class WalletApi extends BaseApi {
   private readonly type: KeypairType = 'sr25519'
   public readonly seedLength = 12
 
-  private api: ApiPromise
+  private storage?: Storage
   private account?: CreateResult
   private assets: Array<AccountAsset> = []
 
-  public endpoint: string
-
   constructor (endpoint?: string) {
-    if (endpoint) {
-      this.endpoint = endpoint
-    }
+    super(endpoint)
   }
 
   public get accountPair (): KeyringPair {
@@ -40,18 +40,36 @@ export class WalletApi {
     return this.account.json
   }
 
+  public get accountAssets (): Array<AccountAsset> {
+    return this.assets
+  }
+
+  /**
+   * Set storage if it should be used as data storage
+   * @param storage
+   */
+  public setStorage (storage: Storage): void {
+    this.storage = storage
+  }
+
   /**
    * The first method you should run. Includes initialization process and the connection check
    * @param endpoint Blockchain address, you should set it here or before this step
    */
   public async initialize (endpoint?: string): Promise<void> {
-    if (endpoint) {
-      this.endpoint = endpoint
-    }
-    const provider = new WsProvider(this.endpoint)
-    this.api = new ApiPromise(options({ provider }))
-    await this.api.isReady
+    await this.connect(endpoint)
     keyring.loadAll({ type: 'sr25519' })
+    const address = this.storage?.get('address')
+    const password = this.storage?.get('password')
+    if (!(address || password)) {
+      return
+    }
+    const pair = keyring.getPair(address)
+    this.account = keyring.addPair(pair, decrypt(password))
+    const assets = this.storage?.get('assets')
+    if (assets) {
+      this.assets = JSON.parse(assets)
+    }
   }
 
   /**
@@ -84,6 +102,11 @@ export class WalletApi {
     password: string
   ): void {
     this.account = keyring.addUri(suri, password, { name }, this.type)
+    if (this.storage) {
+      this.storage.set('name', name)
+      this.storage.set('password', encrypt(password))
+      this.storage.set('address', this.account.pair.address)
+    }
   }
 
   private addAsset (asset: AccountAsset): void {
@@ -104,8 +127,12 @@ export class WalletApi {
     }
     assert(this.account, 'You have to add wallet')
     const result = await getAssetInfo(this.api, this.account.pair.address, address) as any
+    // TODO: add formatter for balance
     asset.balance = (result.free || result.data.free).toString()
     this.addAsset(asset)
+    if (this.storage) {
+      this.storage.set('assets', JSON.stringify(this.assets))
+    }
     return asset
   }
 
@@ -117,23 +144,40 @@ export class WalletApi {
     for (const item of KnownAssets) {
       const asset = { ...item } as AccountAsset
       const result = await getAssetInfo(this.api, this.account.pair.address, item.address) as any
-      asset.balance = (result.free || result.data.free).toString()
-      knownAssets.push(asset)
-      this.addAsset(asset)
+      asset.balance = formatBalance((result.free || result.data.free).toString(), asset.decimals)
+      if (!!Number(asset.balance)) {
+        knownAssets.push(asset)
+        this.addAsset(asset)
+      }
+    }
+    if (this.storage) {
+      this.storage.set('assets', JSON.stringify(this.assets))
     }
     return knownAssets
+  }
+
+  public async updateAssets (): Promise<Array<AccountAsset>> {
+    for (const asset of this.assets) {
+      const result = await getAssetInfo(this.api, this.account.pair.address, asset.address) as any
+      asset.balance = formatBalance((result.free || result.data.free).toString(), asset.decimals)
+      this.addAsset(asset)
+    }
+    if (this.storage) {
+      this.storage.set('assets', JSON.stringify(this.assets))
+    }
+    return this.assets
   }
 
   /**
    * Remove all wallet data
    */
   public logout (): void {
+    keyring.forgetAccount(this.account.pair.address)
+    keyring.forgetAddress(this.account.pair.address)
     this.account = null
     this.assets = []
+    if (this.storage) {
+      this.storage.clear()
+    }
   }
 }
-
-/**
- * An instance of the wallet api which contains all necessary functions
- */
-export const walletApi = new WalletApi()

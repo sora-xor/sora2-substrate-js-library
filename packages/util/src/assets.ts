@@ -4,6 +4,7 @@ import { Codec } from '@polkadot/types/types'
 export interface AccountAsset {
   address: string;
   balance: string;
+  usdBalance?: string;
   symbol?: string;
   decimals?: number;
 }
