@@ -17,7 +17,7 @@ export default {
                 },
                 {
                     name: 'amount',
-                    type: 'Balance'
+                    type: 'String'
                 },
                 {
                     name: 'swapVariant',
