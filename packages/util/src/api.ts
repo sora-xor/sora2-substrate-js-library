@@ -12,7 +12,7 @@ export class BaseApi {
     }
   }
 
-  protected async connect (endpoint?: string): Promise<void> {
+  public async connect (endpoint?: string): Promise<void> {
     if (endpoint) {
       this.endpoint = endpoint
     }
@@ -60,7 +60,7 @@ export class BaseApi {
     })
   }
 
-  protected async disconnect (): Promise<void> {
+  public async disconnect (): Promise<void> {
     await this.api.disconnect()
   }
 }
