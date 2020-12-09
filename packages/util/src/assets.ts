@@ -57,11 +57,18 @@ export const KnownAssets: Array<Asset> = [
   }
 ]
 
-export async function getAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
+export async function getAssetInfo (api: ApiPromise, address: string): Promise<Asset> {
+  const asset = { address } as Asset
+  const assetInfo = await (api.rpc as any).assets.getAssetInfo(address)
+  asset.decimals = assetInfo.precision
+  asset.symbol = assetInfo.symbol
+  return asset
+}
+
+export async function getAccountAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
   const xor = KnownAssets.find(asset => asset.symbol === KnownSymbols.XOR)
   const isNative = assetAddress === xor.address
-  const asset = await (
+  return await (
     isNative ? api.query.system.account(accountAddress) : api.query.tokens.accounts(accountAddress, assetAddress)
   )
-  return asset
 }
