@@ -9,6 +9,7 @@
   "dependencies": {
     "@polkadot/ui-keyring": "^0.61.1",
     "@sora-substrate/api": "^0.1.8",
+    "bignumber.js": "^9.0.1",
     "crypto-js": "^4.0.0"
   },
   "devDependencies": {
