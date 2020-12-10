@@ -250,17 +250,27 @@ export class DexApi extends BaseApi {
     } as SwapResult
   }
 
+  /**
+   * Swap operation
+   * @param firstAssetAddress First asset address
+   * @param secondAssetAddress Second asset address
+   * @param amount Amount value
+   * @param resultAmount Result of the swap operation, `getSwapResult().amount`
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   */
   public async swap (
     firstAssetAddress: string,
     secondAssetAddress: string,
     amount: string,
+    resultAmount: string,
     slippageTolerance = this.defaultSlippageTolerancePercent
   ) {
     assert(this.account, 'You should connect wallet')
     const fromAddress = this.account.pair.address
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    // TODO: check why do we use amount as a desired amount
+    const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const desiredAmountIn = new FPNumber(amount, firstAsset.decimals)
+    const resultAmountOut = new FPNumber(resultAmount, secondAsset.decimals)
     const slippage = new FPNumber(slippageTolerance / 100, firstAsset.decimals)
     await this.submitExtrinsic(
       this.api.tx.liquidityProxy.swap(
@@ -270,7 +280,7 @@ export class DexApi extends BaseApi {
         {
           WithDesiredInput: {
             desired_amount_in: desiredAmountIn.toCodecString(),
-            min_amount_out: desiredAmountIn.mul(slippage).toCodecString()
+            min_amount_out: resultAmountOut.sub(resultAmountOut.mul(slippage)).toCodecString()
           }
         },
         [],
