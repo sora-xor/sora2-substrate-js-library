@@ -1,6 +1,8 @@
 import { ApiPromise } from '@polkadot/api'
 import { Codec } from '@polkadot/types/types'
 
+import { FPNumber } from './fp'
+
 export interface AccountAsset {
   address: string;
   balance: string;
@@ -28,7 +30,7 @@ export const KnownAssets: Array<Asset> = [
   {
     address: '0x0200000000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XOR,
-    decimals: 18
+    decimals: FPNumber.DEFAULT_PRECISION
   },
   {
     address: '0x0200010000000000000000000000000000000000000000000000000000000000',
@@ -43,17 +45,17 @@ export const KnownAssets: Array<Asset> = [
   {
     address: '0x0200030000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.USD,
-    decimals: 18
+    decimals: FPNumber.DEFAULT_PRECISION
   },
   {
     address: '0x0200040000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.VAL,
-    decimals: 18
+    decimals: FPNumber.DEFAULT_PRECISION
   },
   {
     address: '0x0200050000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.PSWAP,
-    decimals: 18
+    decimals: FPNumber.DEFAULT_PRECISION
   }
 ]
 

@@ -8,18 +8,19 @@ import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
 import { KnownAssets, getAccountAssetInfo, AccountAsset, KnownSymbols, Asset, getAssetInfo } from './assets'
 import { Storage } from './storage'
 import { decrypt, encrypt } from './crypto'
-import { BaseApi } from './api'
+import { BaseApi, KeyringType } from './api'
 import { SwapResult } from './swap'
 import { FPNumber } from './fp'
+import { Messages } from './logger'
 
 /**
  * Contains all necessary data and functions for the wallet
  */
 export class DexApi extends BaseApi {
-  private readonly type: KeypairType = 'sr25519'
+  private readonly type: KeypairType = KeyringType
   private readonly defaultDEXId = 0
   public readonly defaultSlippageTolerancePercent = 0.5
-  public readonly defaultLiquidityMinPercent = 5
+  public readonly defaultLiquidityMinPercent = 1
   public readonly seedLength = 12
 
   private storage?: Storage
@@ -62,7 +63,7 @@ export class DexApi extends BaseApi {
    */
   public async initialize (endpoint?: string): Promise<void> {
     await this.connect(endpoint)
-    keyring.loadAll({ type: 'sr25519' })
+    keyring.loadAll({ type: KeyringType })
     const address = this.storage?.get('address')
     const password = this.storage?.get('password')
     if (!(address || password)) {
@@ -143,7 +144,7 @@ export class DexApi extends BaseApi {
    * @param address asset address
    */
   public async getAccountAsset (address: string): Promise<AccountAsset> {
-    assert(this.account, 'You should connect wallet')
+    assert(this.account, Messages.connectWallet)
     const asset = { address } as AccountAsset
     const knownAsset = KnownAssets.find(asset => asset.address === address)
     if (knownAsset) {
@@ -177,7 +178,7 @@ export class DexApi extends BaseApi {
    * Get a list of all known assets from `KnownAssets` array
    */
   public async getKnownAccountAssets (): Promise<Array<AccountAsset>> {
-    assert(this.account, 'You should connect wallet')
+    assert(this.account, Messages.connectWallet)
     const knownAssets: Array<AccountAsset> = []
     for (const item of KnownAssets) {
       const asset = { ...item } as AccountAsset
@@ -196,7 +197,7 @@ export class DexApi extends BaseApi {
   }
 
   public async updateAccountAssets (): Promise<Array<AccountAsset>> {
-    assert(this.account, 'You should connect wallet')
+    assert(this.account, Messages.connectWallet)
     for (const asset of this.assets) {
       const result = await getAccountAssetInfo(this.api, this.account.pair.address, asset.address) as any
       asset.balance = new FPNumber(result.free || result.data.free, asset.decimals).toString()
@@ -216,7 +217,7 @@ export class DexApi extends BaseApi {
    * @param amount Amount value
    */
   public async transfer (assetAddress: string, toAddress: string, amount: string): Promise<void> {
-    assert(this.account, 'You should connect wallet')
+    assert(this.account, Messages.connectWallet)
     const asset = await this.getAssetInfo(assetAddress)
     const fromAddress = this.account.pair.address
     await this.submitExtrinsic(
@@ -265,7 +266,7 @@ export class DexApi extends BaseApi {
     resultAmount: string,
     slippageTolerance = this.defaultSlippageTolerancePercent
   ) {
-    assert(this.account, 'You should connect wallet')
+    assert(this.account, Messages.connectWallet)
     const fromAddress = this.account.pair.address
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
@@ -299,7 +300,7 @@ export class DexApi extends BaseApi {
     firstMinCoef = this.defaultLiquidityMinPercent,
     secondMinCoef = this.defaultLiquidityMinPercent
   ) {
-    assert(this.account, 'You should connect wallet')
+    assert(this.account, Messages.connectWallet)
     const fromAddress = this.account.pair.address
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
@@ -330,7 +331,7 @@ export class DexApi extends BaseApi {
     firstMinCoef = this.defaultLiquidityMinPercent,
     secondMinCoef = this.defaultLiquidityMinPercent
   ) {
-    assert(this.account, 'You should connect wallet')
+    assert(this.account, Messages.connectWallet)
     const fromAddress = this.account.pair.address
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)

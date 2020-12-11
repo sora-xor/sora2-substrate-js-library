@@ -10,14 +10,6 @@ const equalizedBN = (target: FPNumber, precision: number) => {
     : target.value.times(10 ** precision).div(10 ** target.precision)
 }
 
-const checkPrecisionEquality = (numbers: Array<FPNumber>) => {
-  if (!numbers || !numbers.length) {
-    return false
-  }
-  const precision = numbers[0].precision
-  return numbers.every(num => num.precision === precision)
-}
-
 export class FPNumber {
   /**
    * Zero value
@@ -25,30 +17,54 @@ export class FPNumber {
   public static ZERO = FPNumber.fromNatural(0)
 
   /**
-   * Default precision
+   * Default precision = `18`
    */
   public static DEFAULT_PRECISION = 18
 
   /**
-   * Return the **max** value, `null` if precision will be different or an array is empty
+   * Default decimal places = `6`
+   */
+  public static DEFAULT_DECIMAL_PLACES = 6
+
+  /**
+   * Default round type = `3`
+   *
+   * `0` Rounds away from zero
+   * `1` Rounds towards zero
+   * `2` Rounds towards Infinity
+   * `3` Rounds towards -Infinity
+   * `4` Rounds towards nearest neighbour. If equidistant, rounds away from zero
+   * `5` Rounds towards nearest neighbour. If equidistant, rounds towards zero
+   * `6` Rounds towards nearest neighbour. If equidistant, rounds towards even neighbour
+   * `7` Rounds towards nearest neighbour. If equidistant, rounds towards Infinity
+   * `8` Rounds towards nearest neighbour. If equidistant, rounds towards -Infinity
+   */
+  public static DEFAULT_ROUND_MODE: BigNumber.RoundingMode = 3
+
+  /**
+   * Return the **max** value, `null` if an array is empty
    * @param {...FPNumber} numbers
    */
   public static max (...numbers: Array<FPNumber>): FPNumber {
-    if (!checkPrecisionEquality(numbers)) {
+    if (!numbers || !numbers.length) {
       return null
     }
-    return new FPNumber(BigNumber.max.apply(null, numbers.map((i) => i.value)))
+    const precision = numbers[0].precision
+    const filtered = numbers.map(item => equalizedBN(item, precision))
+    return new FPNumber(BigNumber.max(...filtered), precision)
   }
 
   /**
-   * Return the **min** value, `null` if precision will be different or an array is empty
+   * Return the **min** value, `null` if an array is empty
    * @param {...FPNumber} numbers
    */
   public static min (...numbers: Array<FPNumber>): FPNumber {
-    if (!checkPrecisionEquality(numbers)) {
+    if (!numbers || !numbers.length) {
       return null
     }
-    return new FPNumber(BigNumber.min.apply(null, numbers.map((i) => i.value)))
+    const precision = numbers[0].precision
+    const filtered = numbers.map(item => equalizedBN(item, precision))
+    return new FPNumber(BigNumber.min(...filtered), precision)
   }
 
   /**
@@ -91,7 +107,7 @@ export class FPNumber {
 
   constructor (
     data: NumberType,
-    public precision = 18
+    public precision = FPNumber.DEFAULT_PRECISION
   ) {
     if (data instanceof BigNumber) {
       this.value = data
@@ -101,7 +117,7 @@ export class FPNumber {
     } else {
       const formatted = () => {
         if (typeof data === 'number') {
-          return data * (10 ** precision)
+          return (data * (10 ** precision)).toFixed()
         }
         if (typeof data === 'string') {
           const [integer, fractional] = data.split('.')
@@ -118,7 +134,7 @@ export class FPNumber {
         }
         return 0
       }
-      this.value = new BigNumber(formatted())
+      this.value = new BigNumber(formatted()).decimalPlaces(0, FPNumber.DEFAULT_ROUND_MODE)
     }
   }
 
@@ -133,9 +149,9 @@ export class FPNumber {
    * Format real number (divided by precision) to string
    * @param {number} [dp=6] Decimal places deafult is 6
    */
-  public toString (dp: number = 6): string {
+  public toString (dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): string {
     let result = this.value.div(10 ** this.precision)
-    result = result.decimalPlaces(dp, 3)
+    result = result.decimalPlaces(dp, FPNumber.DEFAULT_ROUND_MODE)
     return result.toString()
   }
 
@@ -143,9 +159,9 @@ export class FPNumber {
    * Format real number string (divided by precision) to string
    * @param {number} [dp=6] Decimal places deafult is 6
    */
-  public toFixed (dp: number = 6): string {
+  public toFixed (dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): string {
     let result = this.value.div(10 ** this.precision)
-    result = result.decimalPlaces(dp, 3)
+    result = result.decimalPlaces(dp, FPNumber.DEFAULT_ROUND_MODE)
     return result.toFixed()
   }
 
@@ -158,7 +174,7 @@ export class FPNumber {
     if (!this.isFinity()) {
       return '0';
     }
-    return this.value.decimalPlaces(dp, 3).toFixed()
+    return this.value.decimalPlaces(dp, FPNumber.DEFAULT_ROUND_MODE).toFixed()
   }
 
   /**
@@ -170,16 +186,16 @@ export class FPNumber {
     if (!this.isFinity()) {
       return 0
     }
-    return this.value.decimalPlaces(dp, 3).toNumber()
+    return this.value.decimalPlaces(dp, FPNumber.DEFAULT_ROUND_MODE).toNumber()
   }
 
   /**
    * Format real number (divided by precision) to number
    * @param {number} [dp=6] Decimal places
    */
-  public toNumber (dp: number = 6): number {
+  public toNumber (dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): number {
     let result = this.value.div(10 ** this.precision)
-    result = result.decimalPlaces(dp, 3)
+    result = result.decimalPlaces(dp, FPNumber.DEFAULT_ROUND_MODE)
     return result.toNumber()
   }
 
@@ -197,7 +213,7 @@ export class FPNumber {
    */
   public add (target: FPNumber): FPNumber {
     return new FPNumber(
-      this.value.plus(equalizedBN(target, this.precision)).decimalPlaces(0, 3),
+      this.value.plus(equalizedBN(target, this.precision)).decimalPlaces(0, FPNumber.DEFAULT_ROUND_MODE),
       this.precision
     )
   }
@@ -208,7 +224,7 @@ export class FPNumber {
    */
   public sub (target: FPNumber): FPNumber {
     return new FPNumber(
-      this.value.minus(equalizedBN(target, this.precision)).decimalPlaces(0, 3),
+      this.value.minus(equalizedBN(target, this.precision)).decimalPlaces(0, FPNumber.DEFAULT_ROUND_MODE),
       this.precision
     )
   }
@@ -219,7 +235,7 @@ export class FPNumber {
    */
   public mul (target: FPNumber): FPNumber {
     return new FPNumber(
-      this.value.times(equalizedBN(target, this.precision)).div(10 ** this.precision).decimalPlaces(0, 3),
+      this.value.times(equalizedBN(target, this.precision)).div(10 ** this.precision).decimalPlaces(0, FPNumber.DEFAULT_ROUND_MODE),
       this.precision
     )
   }
@@ -230,7 +246,7 @@ export class FPNumber {
    */
   public div (target: FPNumber): FPNumber {
     return new FPNumber(
-      this.value.div(equalizedBN(target, this.precision)).times(10 ** this.precision).decimalPlaces(0, 3),
+      this.value.div(equalizedBN(target, this.precision)).times(10 ** this.precision).decimalPlaces(0, FPNumber.DEFAULT_ROUND_MODE),
       this.precision
     )
   }

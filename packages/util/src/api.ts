@@ -2,8 +2,10 @@ import { ApiPromise } from '@polkadot/api'
 import { WsProvider } from '@polkadot/rpc-provider'
 import { options } from '@sora-substrate/api'
 
+export const KeyringType = 'sr25519'
+
 export class BaseApi {
-  protected api: ApiPromise
+  public api: ApiPromise
   public endpoint: string
 
   constructor (endpoint?: string) {
