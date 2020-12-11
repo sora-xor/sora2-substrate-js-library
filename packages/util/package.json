@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/util",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "publishConfig": {
@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@polkadot/ui-keyring": "^0.61.1",
-    "@sora-substrate/api": "^0.1.8",
+    "@sora-substrate/api": "^0.1.9",
     "bignumber.js": "^9.0.1",
     "crypto-js": "^4.0.0"
   },
