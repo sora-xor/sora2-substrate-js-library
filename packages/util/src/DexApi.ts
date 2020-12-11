@@ -253,31 +253,31 @@ export class DexApi extends BaseApi {
 
   /**
    * Swap operation
-   * @param firstAssetAddress First asset address
-   * @param secondAssetAddress Second asset address
+   * @param inputAssetAddress Input asset address
+   * @param outputAssetAdress Output asset address
    * @param amount Amount value
    * @param resultAmount Result of the swap operation, `getSwapResult().amount`
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
   public async swap (
-    firstAssetAddress: string,
-    secondAssetAddress: string,
+    inputAssetAddress: string,
+    outputAssetAdress: string,
     amount: string,
     resultAmount: string,
     slippageTolerance = this.defaultSlippageTolerancePercent
   ) {
     assert(this.account, Messages.connectWallet)
     const fromAddress = this.account.pair.address
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const desiredAmountIn = new FPNumber(amount, firstAsset.decimals)
-    const resultAmountOut = new FPNumber(resultAmount, secondAsset.decimals)
-    const slippage = new FPNumber(slippageTolerance / 100, firstAsset.decimals)
+    const inputAsset = await this.getAssetInfo(inputAssetAddress)
+    const outputAsset = await this.getAssetInfo(outputAssetAdress)
+    const desiredAmountIn = new FPNumber(amount, inputAsset.decimals)
+    const resultAmountOut = new FPNumber(resultAmount, outputAsset.decimals)
+    const slippage = new FPNumber(slippageTolerance / 100, outputAsset.decimals)
     await this.submitExtrinsic(
       this.api.tx.liquidityProxy.swap(
         this.defaultDEXId,
-        firstAssetAddress,
-        secondAssetAddress,
+        inputAssetAddress,
+        outputAssetAdress,
         {
           WithDesiredInput: {
             desired_amount_in: desiredAmountIn.toCodecString(),
