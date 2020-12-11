@@ -4,6 +4,20 @@ import { Codec } from '@polkadot/types/types'
 
 type NumberType = Codec | string | number | BigNumber | FPNumber
 
+const equalizedBN = (target: FPNumber, precision: number) => {
+  return target.precision === precision
+    ? target.value
+    : target.value.times(10 ** precision).div(10 ** target.precision)
+}
+
+const checkPrecisionEquality = (numbers: Array<FPNumber>) => {
+  if (!numbers || !numbers.length) {
+    return false
+  }
+  const precision = numbers[0].precision
+  return numbers.every(num => num.precision === precision)
+}
+
 export class FPNumber {
   /**
    * Zero value
@@ -11,23 +25,29 @@ export class FPNumber {
   public static ZERO = FPNumber.fromNatural(0)
 
   /**
-   * Default precision (18 decimals)
+   * Default precision
    */
-  public static DEFAULT_PRECISION = 10 ** 18
+  public static DEFAULT_PRECISION = 18
 
   /**
-   * Return the **max** value
+   * Return the **max** value, `null` if precision will be different or an array is empty
    * @param {...FPNumber} numbers
    */
   public static max (...numbers: Array<FPNumber>): FPNumber {
+    if (!checkPrecisionEquality(numbers)) {
+      return null
+    }
     return new FPNumber(BigNumber.max.apply(null, numbers.map((i) => i.value)))
   }
 
   /**
-   * Return the **min** value
+   * Return the **min** value, `null` if precision will be different or an array is empty
    * @param {...FPNumber} numbers
    */
   public static min (...numbers: Array<FPNumber>): FPNumber {
+    if (!checkPrecisionEquality(numbers)) {
+      return null
+    }
     return new FPNumber(BigNumber.min.apply(null, numbers.map((i) => i.value)))
   }
 
@@ -37,7 +57,7 @@ export class FPNumber {
    * @param {FPNumber} second Second number
    */
   public static isLessThan (first: FPNumber, second: FPNumber): boolean {
-    return first.value.isLessThan(second.value)
+    return first.value.isLessThan(equalizedBN(second, first.precision))
   }
 
   /**
@@ -46,7 +66,7 @@ export class FPNumber {
    * @param {FPNumber} second Second number
    */
   public static isGreaterThan (first: FPNumber, second: FPNumber): boolean {
-    return first.value.isGreaterThan(second.value)
+    return first.value.isGreaterThan(equalizedBN(second, first.precision))
   }
 
   /**
@@ -55,7 +75,7 @@ export class FPNumber {
    * @param {FPNumber} second Second number
    */
   public static isEqual (first: FPNumber, second: FPNumber): boolean {
-    return first.value.isEqualTo(second.value)
+    return first.value.isEqualTo(equalizedBN(second, first.precision))
   }
 
   /**
@@ -64,14 +84,14 @@ export class FPNumber {
    * @param {number} precision Precision
    */
   public static fromNatural (value: number | string, precision: number = FPNumber.DEFAULT_PRECISION): FPNumber {
-    return new FPNumber(new BigNumber(value).times(precision))
+    return new FPNumber(new BigNumber(value).times(10 ** precision))
   }
 
   public value: BigNumber
 
   constructor (
     data: NumberType,
-    public precision = FPNumber.DEFAULT_PRECISION
+    public precision = 18
   ) {
     if (data instanceof BigNumber) {
       this.value = data
@@ -80,16 +100,21 @@ export class FPNumber {
       this.precision = data.precision
     } else {
       const formatted = () => {
-        if (data.toString) {
-          return data.toString()
-        }
         if (typeof data === 'number') {
-          return data * precision
+          return data * (10 ** precision)
         }
         if (typeof data === 'string') {
-          const fractional = data.split('.')[1]
-          // TODO: add check for case if fractional.length > precision
-          return `${data}${10 ** (fractional ? precision - fractional.length : precision)}`
+          const [integer, fractional] = data.split('.')
+          let fractionalPart = ''
+          if (fractional) {
+            fractionalPart = fractional.length > precision
+              ? fractional.substring(0, precision)
+              : `${fractional}${Array(fractional ? precision - fractional.length : precision).fill(0).join('')}`
+          }
+          return `${integer}${fractionalPart}`
+        }
+        if ('toString' in (data as any)) {
+          return data.toString()
         }
         return 0
       }
@@ -109,7 +134,7 @@ export class FPNumber {
    * @param {number} [dp=6] Decimal places deafult is 6
    */
   public toString (dp: number = 6): string {
-    let result = this.value.div(this.precision)
+    let result = this.value.div(10 ** this.precision)
     result = result.decimalPlaces(dp, 3)
     return result.toString()
   }
@@ -119,7 +144,7 @@ export class FPNumber {
    * @param {number} [dp=6] Decimal places deafult is 6
    */
   public toFixed (dp: number = 6): string {
-    let result = this.value.div(this.precision)
+    let result = this.value.div(10 ** this.precision)
     result = result.decimalPlaces(dp, 3)
     return result.toFixed()
   }
@@ -153,7 +178,7 @@ export class FPNumber {
    * @param {number} [dp=6] Decimal places
    */
   public toNumber (dp: number = 6): number {
-    let result = this.value.div(this.precision)
+    let result = this.value.div(10 ** this.precision)
     result = result.decimalPlaces(dp, 3)
     return result.toNumber()
   }
@@ -171,7 +196,10 @@ export class FPNumber {
    * @param {FPNumber} target Target number
    */
   public add (target: FPNumber): FPNumber {
-    return new FPNumber(this.value.plus(target.value).decimalPlaces(0, 3))
+    return new FPNumber(
+      this.value.plus(equalizedBN(target, this.precision)).decimalPlaces(0, 3),
+      this.precision
+    )
   }
 
   /**
@@ -179,7 +207,10 @@ export class FPNumber {
    * @param {FPNumber} target Target number
    */
   public sub (target: FPNumber): FPNumber {
-    return new FPNumber(this.value.minus(target.value).decimalPlaces(0, 3))
+    return new FPNumber(
+      this.value.minus(equalizedBN(target, this.precision)).decimalPlaces(0, 3),
+      this.precision
+    )
   }
 
   /**
@@ -187,8 +218,10 @@ export class FPNumber {
    * @param {FPNumber} target Target number
    */
   public mul (target: FPNumber): FPNumber {
-    const value = this.value.times(target.value).div(this.precision).decimalPlaces(0, 3)
-    return new FPNumber(value)
+    return new FPNumber(
+      this.value.times(equalizedBN(target, this.precision)).div(10 ** this.precision).decimalPlaces(0, 3),
+      this.precision
+    )
   }
 
   /**
@@ -196,8 +229,10 @@ export class FPNumber {
    * @param {FPNumber} target Target number
    */
   public div (target: FPNumber): FPNumber {
-    const value = this.value.div(target.value).times(this.precision).decimalPlaces(0, 3)
-    return new FPNumber(value)
+    return new FPNumber(
+      this.value.div(equalizedBN(target, this.precision)).times(10 ** this.precision).decimalPlaces(0, 3),
+      this.precision
+    )
   }
 
   /**
