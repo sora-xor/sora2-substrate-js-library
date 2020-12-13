@@ -10,9 +10,11 @@
     "@polkadot/ui-keyring": "^0.61.1",
     "@sora-substrate/api": "^0.1.9",
     "bignumber.js": "^9.0.1",
-    "crypto-js": "^4.0.0"
+    "crypto-js": "^4.0.0",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.150",
     "@types/websocket": "^1.0.0",
     "websocket": "^1.0.31"
   }

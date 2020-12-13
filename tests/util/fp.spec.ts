@@ -1,6 +1,6 @@
 import { FPNumber, BaseApi } from '@sora-substrate/util'
 
-const TEST_ENDPOINT = 'wss://ws.framenode-1.s1.stg1.sora2.soramitsu.co.jp'
+const TEST_ENDPOINT = 'wss://ws.stage.sora2.soramitsu.co.jp'
 
 describe('FPNumber', () => {
   let baseApi: BaseApi

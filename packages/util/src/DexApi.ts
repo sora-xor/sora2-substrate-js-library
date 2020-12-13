@@ -219,35 +219,36 @@ export class DexApi extends BaseApi {
   public async transfer (assetAddress: string, toAddress: string, amount: string): Promise<void> {
     assert(this.account, Messages.connectWallet)
     const asset = await this.getAssetInfo(assetAddress)
-    const fromAddress = this.account.pair.address
     await this.submitExtrinsic(
       this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
-      fromAddress
+      this.account.pair,
+      'Transfer'
     )
   }
 
   /**
    * Get swap result for the demonstration purposes
-   * @param firstAssetAddress First asset address
-   * @param secondAssetAddress Second asset address
+   * @param inputAssetAddress Input asset address
+   * @param outputAssetAdress Output asset address
    * @param amount Amount value
    */
-  public async getSwapResult (firstAssetAddress: string, secondAssetAddress: string, amount: string): Promise<SwapResult> {
+  public async getSwapResult (inputAssetAddress: string, outputAssetAdress: string, amount: string): Promise<SwapResult> {
     const xor = KnownAssets.find(asset => asset.symbol === KnownSymbols.XOR)
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
+    const inputAsset = await this.getAssetInfo(inputAssetAddress)
+    const outputAsset = await this.getAssetInfo(outputAssetAdress)
     const result = await (this.api.rpc as any).liquidityProxy.quote(
       this.defaultDEXId,
-      firstAssetAddress,
-      secondAssetAddress,
-      new FPNumber(amount, firstAsset.decimals).toCodecString(),
+      inputAssetAddress,
+      outputAssetAdress,
+      new FPNumber(amount, inputAsset.decimals).toCodecString(),
       'WithDesiredInput',
       [],
       'Disabled'
-    ).unwrap()
+    )
+    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0 }
     return {
-      amount: new FPNumber(result.amount, secondAsset.decimals).toString(),
-      fee: new FPNumber(result.fee, xor.decimals).toString()
+      amount: new FPNumber(value.amount, outputAsset.decimals).toString(),
+      fee: new FPNumber(value.fee, xor.decimals).toString()
     } as SwapResult
   }
 
@@ -267,7 +268,6 @@ export class DexApi extends BaseApi {
     slippageTolerance = this.defaultSlippageTolerancePercent
   ) {
     assert(this.account, Messages.connectWallet)
-    const fromAddress = this.account.pair.address
     const inputAsset = await this.getAssetInfo(inputAssetAddress)
     const outputAsset = await this.getAssetInfo(outputAssetAdress)
     const desiredAmountIn = new FPNumber(amount, inputAsset.decimals)
@@ -287,7 +287,7 @@ export class DexApi extends BaseApi {
         [],
         'Disabled'
       ),
-      fromAddress,
+      this.account.pair,
       'Swap'
     )
   }
@@ -301,7 +301,6 @@ export class DexApi extends BaseApi {
     secondMinCoef = this.defaultLiquidityMinPercent
   ) {
     assert(this.account, Messages.connectWallet)
-    const fromAddress = this.account.pair.address
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals)
@@ -319,7 +318,7 @@ export class DexApi extends BaseApi {
         firstAmountNum.sub(firstAmountNum.mul(firstMinCoefNum)).toCodecString(),
         secondAmountNum.sub(secondAmountNum.mul(secondMinCoefNum)).toCodecString()
       ),
-      fromAddress,
+      this.account.pair,
       'Add Liquidity'
     )
   }
@@ -332,7 +331,6 @@ export class DexApi extends BaseApi {
     secondMinCoef = this.defaultLiquidityMinPercent
   ) {
     assert(this.account, Messages.connectWallet)
-    const fromAddress = this.account.pair.address
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const firstAmountNum = new FPNumber(inputAmount, firstAsset.decimals)
@@ -349,7 +347,7 @@ export class DexApi extends BaseApi {
         firstAmountNum.sub(firstAmountNum.mul(firstMinCoefNum)).toCodecString(),
         secondAmountNum.sub(secondAmountNum.mul(secondMinCoefNum)).toCodecString()
       ),
-      fromAddress,
+      this.account.pair,
       'Remove Liquidity'
     )
   }
