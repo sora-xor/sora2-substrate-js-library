@@ -24,7 +24,7 @@ const overrides = {
   LookupSource: 'AccountId',
   AssetId: 'AssetId32',
   Balance: 'FixedU128',
-  RefCount: "u8"
+  RefCount: 'u32'
 };
 
 export const types = {
