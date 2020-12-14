@@ -23,8 +23,12 @@ Build & Run local test net, e.g. via script:
 ```
 ./scripts/localtestnet.sh -s
 ```
-
 ### Tests
+```
+yarn test:all
+```
+
+### Demo
 ```
 yarn test
 ```

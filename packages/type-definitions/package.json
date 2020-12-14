@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/type-definitions",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "publishConfig": {
