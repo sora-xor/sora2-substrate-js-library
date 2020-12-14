@@ -1,11 +1,6 @@
 module.exports = {
-  moduleNameMapper: {
-    '@sora-substrate/api(.*)$': '<rootDir>/packages/api/src/$1',
-    '@sora-substrate/api-derive(.*)$': '<rootDir>/packages/api-derive/src/$1',
-    '@sora-substrate/types(.*)$': '<rootDir>/packages/types/src/$1',
-    '@sora-substrate/type-definitions(.*)$': '<rootDir>/packages/type-definitions/src/$1',
-    '@sora-substrate/util(.*)$': '<rootDir>/packages/util/src/$1',
-  },
+  preset: 'ts-jest',
+  testEnvironment: 'node',
   modulePathIgnorePatterns: [
     '<rootDir>/build',
     '<rootDir>/packages/api/build',

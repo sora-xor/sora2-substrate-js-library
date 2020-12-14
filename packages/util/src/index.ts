@@ -1,2 +1,6 @@
-export * from './WalletApi'
-export { Asset, KnownAssets } from './assets'
+export * from './DexApi'
+export * from './FaucetApi'
+export * from './api'
+export * from './storage'
+export { FPNumber } from './fp'
+export { AccountAsset, Asset, KnownAssets, KnownSymbols } from './assets'

@@ -4,7 +4,6 @@ import { options } from '@sora-substrate/api';
 import { Keyring } from '@polkadot/api';
 import { strictEqual, ok } from 'assert';
 
-
 async function inner_submitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, finishCallback: any): Promise<void> {
   // this is quick example, refer to https://polkadot.js.org/docs/api/cookbook/tx and https://polkadot.js.org/docs/api/start/api.tx.subs
   const unsub = await extrinsic.signAndSend(signer, (result: any) => {
@@ -36,7 +35,7 @@ async function inner_submitExtrinsic(api: ApiPromise, extrinsic: any, signer: an
   });
 }
 
-async function submitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, debugMessage: String = ''): Promise<void> {
+async function submitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, debugMessage = ''): Promise<void> {
   console.log(`\nSubmit extrinsic: ${debugMessage}\n`);
   return new Promise((resolve, _reject) => {
     inner_submitExtrinsic(api, extrinsic, signer, resolve);

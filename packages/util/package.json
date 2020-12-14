@@ -1,16 +1,20 @@
 {
   "name": "@sora-substrate/util",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@sora-substrate/api": "^0.1.8",
-    "@polkadot/ui-keyring": "^0.61.1"
+    "@polkadot/ui-keyring": "^0.61.1",
+    "@sora-substrate/api": "^0.1.9",
+    "bignumber.js": "^9.0.1",
+    "crypto-js": "^4.0.0",
+    "lodash": "^4.17.15"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.150",
     "@types/websocket": "^1.0.0",
     "websocket": "^1.0.31"
   }
