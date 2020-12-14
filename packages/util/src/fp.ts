@@ -2,6 +2,14 @@
 import BigNumber from 'bignumber.js'
 import { Codec } from '@polkadot/types/types'
 
+BigNumber.config({
+  FORMAT: {
+    decimalSeparator: '.',
+    groupSeparator: '',
+    fractionGroupSeparator: ''
+  }
+})
+
 type NumberType = Codec | string | number | BigNumber | FPNumber
 
 const equalizedBN = (target: FPNumber, precision: number) => {
@@ -142,7 +150,7 @@ export class FPNumber {
    * Format number to Codec string
    */
   public toCodecString (): string {
-    return this.value.toString()
+    return this.value.toFormat()
   }
 
   /**
@@ -152,7 +160,7 @@ export class FPNumber {
   public toString (dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): string {
     let result = this.value.div(10 ** this.precision)
     result = result.decimalPlaces(dp, FPNumber.DEFAULT_ROUND_MODE)
-    return result.toString()
+    return result.toFormat()
   }
 
   /**
