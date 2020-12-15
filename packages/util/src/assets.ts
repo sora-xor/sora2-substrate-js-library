@@ -26,7 +26,19 @@ export enum KnownSymbols {
   PSWAP = 'PSWAP'
 }
 
-export const KnownAssets: Array<Asset> = [
+class ArrayLike<T> extends Array<T> {
+  constructor(items?: Array<T>) {
+    super(...items)
+  }
+  public contains (symbol: string): boolean {
+    return !!KnownSymbols[symbol]
+  }
+  public get (symbol: string): T {
+    return this.find((asset: any) => asset.symbol === symbol)
+  }
+}
+
+export const KnownAssets = new ArrayLike<Asset>([
   {
     address: '0x0200000000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XOR,
@@ -57,7 +69,7 @@ export const KnownAssets: Array<Asset> = [
     symbol: KnownSymbols.PSWAP,
     decimals: FPNumber.DEFAULT_PRECISION
   }
-]
+])
 
 export async function getAssetInfo (api: ApiPromise, address: string): Promise<Asset> {
   const asset = { address } as Asset
@@ -68,7 +80,7 @@ export async function getAssetInfo (api: ApiPromise, address: string): Promise<A
 }
 
 export async function getAccountAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
-  const xor = KnownAssets.find(asset => asset.symbol === KnownSymbols.XOR)
+  const xor = KnownAssets.get(KnownSymbols.XOR)
   const isNative = assetAddress === xor.address
   return await (
     isNative ? api.query.system.account(accountAddress) : api.query.tokens.accounts(accountAddress, assetAddress)
