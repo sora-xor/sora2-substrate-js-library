@@ -74,3 +74,11 @@ export async function getAccountAssetInfo (api: ApiPromise, accountAddress: stri
     isNative ? api.query.system.account(accountAddress) : api.query.tokens.accounts(accountAddress, assetAddress)
   )
 }
+
+export async function getAssets (api: ApiPromise): Promise<Array<Asset>> {
+  const assetInfos = (await (api.rpc as any).assets.listAssetInfos()).toString()
+  const assets = JSON.parse(assetInfos).map(({ asset_id, symbol, precision }) => {
+    return { symbol, address: asset_id, decimals: precision } as Asset
+  })
+  return assets
+}
