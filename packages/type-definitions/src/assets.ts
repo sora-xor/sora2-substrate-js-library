@@ -28,6 +28,16 @@ export default {
             ],
             type: 'Option<BalanceInfo>'
         },
+        totalSupply: {
+            description: 'Get total supply of particular asset on chain.',
+            params: [
+                {
+                    name: 'assetId',
+                    type: 'AssetId'
+                },
+            ],
+            type: 'Option<BalanceInfo>'
+        },
         listAssetIds: {
             description: 'List Ids of all assets registered on chain.',
             params: [],
