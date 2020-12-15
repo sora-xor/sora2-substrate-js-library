@@ -5,7 +5,7 @@ import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
 
-import { KnownAssets, getAccountAssetInfo, AccountAsset, KnownSymbols, Asset, getAssetInfo } from './assets'
+import { KnownAssets, getAccountAssetInfo, AccountAsset, KnownSymbols, Asset, getAssetInfo, getAssets } from './assets'
 import { Storage } from './storage'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, KeyringType } from './api'
@@ -350,6 +350,13 @@ export class DexApi extends BaseApi {
       this.account.pair,
       'Remove Liquidity'
     )
+  }
+
+  /**
+   * Get all tokens list registered in the blockchain network
+   */
+  public async getAssets (): Promise<Array<Asset>> {
+    return await getAssets(this.api)
   }
 
   /**
