@@ -9,20 +9,23 @@ sora-substrate-js-library (This repository is managed by Terraform!)
 yarn install
 yarn build
 ```
-also to get latest definitions for extrinsics, state queries and consts:\
+additionally to get latest definitions for extrinsics, state queries and consts:\
 (local test net should be running)
 ```
 yarn pull-metadata
+yarn build
 ```
 
-### Run local test net with parachain first
+### Run local test net with framenode first
 
-> This library version should be compatible with **develop** branch of **SoraNeo-substrate** parachain.
+> This library version should be compatible with **develop** branch of **sora2-substrate** chain.
 
 Build & Run local test net, e.g. via script:
 ```
-./scripts/localtestnet.sh -s
+cargo build --release
+./run_script.sh
 ```
+**or use provided testnet endpoints**
 ### Tests
 ```
 yarn test:all
