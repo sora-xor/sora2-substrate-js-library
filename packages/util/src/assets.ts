@@ -11,10 +11,19 @@ export interface AccountAsset {
   decimals?: number;
 }
 
+export interface AccountLiquidity extends AccountAsset {
+  firstAddress: string;
+  secondAddress: string;
+}
+
 export interface Asset {
   address: string;
   symbol: string;
   decimals: number;
+}
+
+export enum PoolTokens {
+  XYKPOOL = 'XYKPOOL'
 }
 
 export enum KnownSymbols {
@@ -28,7 +37,11 @@ export enum KnownSymbols {
 
 class ArrayLike<T> extends Array<T> {
   constructor(items?: Array<T>) {
-    super(...items)
+    super()
+    items && this.addItems(items)
+  }
+  private addItems (items: Array<T>): void {
+    items.forEach(item => this.push(item))
   }
   public contains (symbol: string): boolean {
     return !!KnownSymbols[symbol]
@@ -73,7 +86,7 @@ export const KnownAssets = new ArrayLike<Asset>([
 
 export async function getAssetInfo (api: ApiPromise, address: string): Promise<Asset> {
   const asset = { address } as Asset
-  const assetInfo = await (api.rpc as any).assets.getAssetInfo(address)
+  const assetInfo = (await (api.rpc as any).assets.getAssetInfo(address)).toJSON()
   asset.decimals = assetInfo.precision
   asset.symbol = assetInfo.symbol
   return asset
