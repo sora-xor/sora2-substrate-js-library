@@ -418,12 +418,12 @@ export class DexApi extends BaseApi {
   }
 
   /**
-   * Check liquidity reserves.
+   * Get liquidity reserves.
    * If the output will be `['0', '0']` then the client is the first liquidity provider
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public async checkLiquidityReserves (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<string>> {
+  public async getLiquidityReserves (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<string>> {
     const result = (await this.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress)).toHuman() as any
     if (!result || result.length !== 2) {
       return ['0', '0']
