@@ -14,4 +14,4 @@ function pullMetadata(api_endpoint: string, target_file: string) {
     process.exit(0)
   }
 }
-pullMetadata('ws://localhost:19744', 'packages/types/src/metadata/latest.ts')
+pullMetadata('ws://localhost:9944', 'packages/types/src/metadata/latest.ts')
