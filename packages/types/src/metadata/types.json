@@ -1,0 +1,135 @@
+{
+    "Address": "AccountId",
+    "Amount": "i128",
+    "AmountOf": "Amount",
+    "AssetId": "AssetId32",
+    "AssetId32": "[u8; 32]",
+    "AssetIdOf": "AssetId",
+    "AssetInfo": {
+        "asset_id": "AssetId",
+        "symbol": "AssetSymbolStr",
+        "precision": "u8"
+    },
+    "AssetSymbol": "Vec<u8>",
+    "AssetSymbolStr": "String",
+    "Balance": "FixedU128",
+    "BalanceInfo": {
+        "balance": "Balance"
+    },
+    "BalancePrecision": "u8",
+    "BasisPoints": "u16",
+    "CurrencyId": "AssetId",
+    "CurrencyIdOf": "AssetId",
+    "CustomInfo": {
+        "amount": "Balance"
+    },
+    "DEXId": "u32",
+    "DEXIdOf": "DEXId",
+    "DEXInfo": {
+        "base_asset_id": "AssetId",
+        "default_fee": "BasisPoints",
+        "default_protocol_fee": "BasisPoints"
+    },
+    "FilterMode": {
+        "_enum": [
+            "Disabled",
+            "ForbidSelected",
+            "AllowSelected"
+        ]
+    },
+    "Fixed": "FixedU128",
+    "HolderId": "AccountId",
+    "LiquiditySourceType": {
+        "_enum": [
+            "BondingCurvePool",
+            "XYKPool",
+            "MockPool",
+            "MockPool2",
+            "MockPool3",
+            "MockPool4"
+        ]
+    },
+    "LookupSource": "AccountId",
+    "Mode": {
+        "_enum": [
+            "Permit",
+            "Forbid"
+        ]
+    },
+    "OwnerId": "AccountId",
+    "Permission": "Null",
+    "PermissionId": "u32",
+    "QuoteAmount": {
+        "_enum": {
+            "WithDesiredInput": "QuoteWithDesiredInput",
+            "WithDesiredOutput": "QuoteWithDesiredOutput"
+        }
+    },
+    "QuoteWithDesiredInput": {
+        "desired_amount_in": "Balance"
+    },
+    "QuoteWithDesiredOutput": {
+        "desired_amount_out": "Balance"
+    },
+    "RefCount": "u32",
+    "Scope": {
+        "_enum": {
+            "Limited": "H512",
+            "Unlimited": "Null"
+        }
+    },
+    "SwapAction": "Null",
+    "SwapAmount": {
+        "_enum": {
+            "WithDesiredInput": "SwapWithDesiredInput",
+            "WithDesiredOutput": "SwapWithDesiredOutput"
+        }
+    },
+    "SwapOutcome": {
+        "amount": "Balance",
+        "fee": "Balance"
+    },
+    "SwapOutcomeInfo": {
+        "amount": "Balance",
+        "fee": "Balance"
+    },
+    "SwapVariant": {
+        "_enum": [
+            "WithDesiredInput",
+            "WithDesiredOutput"
+        ]
+    },
+    "SwapWithDesiredInput": {
+        "desired_amount_in": "Balance",
+        "min_amount_out": "Balance"
+    },
+    "SwapWithDesiredOutput": {
+        "desired_amount_out": "Balance",
+        "max_amount_in": "Balance"
+    },
+    "TP": "TradingPair",
+    "TechAccountId": {
+        "_enum": {
+            "Pure": "(DEXId, TechPurpose)",
+            "Generic": "(Vec<u8>, Vec<u8>)",
+            "Wrapped": "AccountId",
+            "WrappedRepr": "AccountId"
+        }
+    },
+    "TechAccountIdPrimitive": "Null",
+    "TechAmount": "Amount",
+    "TechAssetId": "Null",
+    "TechBalance": "Balance",
+    "TechPurpose": {
+        "_enum": {
+            "FeeCollector": "Null",
+            "LiquidityKeeper": "TradingPair",
+            "Identifier": "Vec<u8>"
+        }
+    },
+    "TradingPair": {
+        "base_asset_id": "AssetId",
+        "target_asset_id": "AssetId"
+    },
+    "ValidationFunction": "Null"
+}

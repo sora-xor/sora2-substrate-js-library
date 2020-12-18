@@ -2,9 +2,6 @@
 export default {
   rpc: {},
   types: {
-    WrappedBalance: {
-      fixed: 'Fixed'
-    },
     AssetIdOf: 'AssetId',
     Amount: 'i128',
     AmountOf: 'Amount',
@@ -118,6 +115,6 @@ export default {
     TechAccountIdPrimitive: "Null", // define properly if needed
     SwapAction: "Null",             // define properly if needed
     ValidationFunction: "Null",     // define properly if needed
-    Permission : "Null"             // define properly if needed
+    Permission: "Null"              // define properly if needed
   }
 }

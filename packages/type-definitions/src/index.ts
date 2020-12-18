@@ -32,6 +32,12 @@ export const types = {
   ...typesFromDefs(soraDefs),
   ...overrides
 }
+
+export const localTypes = {
+  ...typesFromDefs(soraDefs),
+  ...overrides
+}
+
 export const typesBundle = {
   spec: {
     sora: {
