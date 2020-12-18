@@ -446,9 +446,4 @@ export interface Weight extends u64 {}
 /** @name WeightMultiplier */
 export interface WeightMultiplier extends Fixed64 {}
 
-/** @name WrappedBalance */
-export interface WrappedBalance extends Struct {
-  readonly fixed: Fixed;
-}
-
 export type PHANTOM_RUNTIME = 'runtime';
