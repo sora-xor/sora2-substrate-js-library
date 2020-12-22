@@ -2,6 +2,8 @@
 import BigNumber from 'bignumber.js'
 import { Codec } from '@polkadot/types/types'
 
+export type NumberLike = number | string
+
 BigNumber.config({
   FORMAT: {
     decimalSeparator: '.',
@@ -128,12 +130,15 @@ export class FPNumber {
           return (data * (10 ** precision)).toFixed()
         }
         if (typeof data === 'string') {
-          const [integer, fractional] = data.split('.')
+          const withoutFormatting = data.replace(/[, ]/g, '')
+          const [integer, fractional] = withoutFormatting.split('.')
           let fractionalPart = ''
           if (fractional) {
             fractionalPart = fractional.length > precision
               ? fractional.substring(0, precision)
-              : `${fractional}${Array(fractional ? precision - fractional.length : precision).fill(0).join('')}`
+              : `${fractional}${Array(precision - fractional.length).fill(0).join('')}`
+          } else {
+            fractionalPart = `${Array(precision).fill(0).join('')}`
           }
           return `${integer}${fractionalPart}`
         }
@@ -264,6 +269,13 @@ export class FPNumber {
    */
   public negative (): FPNumber {
     return new FPNumber(this.value.negated())
+  }
+
+  /**
+   * Return the sqrt number
+   */
+  public sqrt (): FPNumber {
+    return new FPNumber(this.value.sqrt())
   }
 
   /**
