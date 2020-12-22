@@ -696,6 +696,16 @@ export class DexApi extends BaseApi {
     )
   }
 
+  /**
+   * Remove liquidity
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   * @param desiredMarker
+   * @param firstTotal checkLiquidityReserves()[0]
+   * @param secondTotal checkLiquidityReserves()[1]
+   * @param totalSupply Total supply coefficient, estimateTokensRetrieved()[2]
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   */
   public async removeLiquidity (
     firstAssetAddress: string,
     secondAssetAddress: string,
