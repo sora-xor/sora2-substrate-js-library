@@ -577,7 +577,7 @@ export class DexApi extends BaseApi {
    * @param secondAssetAddress
    */
   public async getLiquidityReserves (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<string>> {
-    const result = (await this.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress)).toHuman() as any
+    const result = await this.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress) as any // Array<Balance>
     if (!result || result.length !== 2) {
       return ['0', '0']
     }
@@ -619,8 +619,8 @@ export class DexApi extends BaseApi {
         : this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
     )
     const pIn = new FPNumber(amount, poolToken.decimals)
-    const totalSupply = (await (this.api.rpc as any).assets.totalSupply(poolToken.address)).toHuman()
-    const pts = new FPNumber((totalSupply || {}).balance || 0, poolToken.decimals)
+    const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
+    const pts = new FPNumber(totalSupply, poolToken.decimals)
     const aOut = pIn.mul(a).div(pts)
     const bOut = pIn.mul(b).div(pts)
     return [aOut.toString(), bOut.toString(), pts.toString()]
@@ -654,8 +654,8 @@ export class DexApi extends BaseApi {
       return aIn.mul(bIn).sqrt().sub(inaccuracy).toString()
     }
     const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    const totalSupply = (await (this.api.rpc as any).assets.totalSupply(poolToken.address)).toHuman()
-    const pts = new FPNumber((totalSupply || {}).balance || 0, poolToken.decimals)
+    const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
+    const pts = new FPNumber(totalSupply.balance, poolToken.decimals)
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b))
     return result.toString()
   }
