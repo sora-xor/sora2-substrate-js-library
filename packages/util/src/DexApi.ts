@@ -276,7 +276,6 @@ export class DexApi extends BaseApi {
       return from.balance
     }
     const usd = KnownAssets.get(KnownSymbols.USD)
-    console.log(from.symbol, from.balance)
     const result = (await this.getSwapResult(from.address, usd.address, from.balance)).amount
     return new FPNumber(result, usd.decimals).toString()
   }
