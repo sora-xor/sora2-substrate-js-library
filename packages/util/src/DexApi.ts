@@ -620,7 +620,7 @@ export class DexApi extends BaseApi {
     )
     const pIn = new FPNumber(amount, poolToken.decimals)
     const totalSupply = (await (this.api.rpc as any).assets.totalSupply(poolToken.address)).toHuman()
-    const pts = new FPNumber((totalSupply || {}).balance, poolToken.decimals)
+    const pts = new FPNumber((totalSupply || {}).balance || 0, poolToken.decimals)
     const aOut = pIn.mul(a).div(pts)
     const bOut = pIn.mul(b).div(pts)
     return [aOut.toString(), bOut.toString(), pts.toString()]
@@ -655,7 +655,7 @@ export class DexApi extends BaseApi {
     }
     const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
     const totalSupply = (await (this.api.rpc as any).assets.totalSupply(poolToken.address)).toHuman()
-    const pts = new FPNumber((totalSupply || {}).balance, poolToken.decimals)
+    const pts = new FPNumber((totalSupply || {}).balance || 0, poolToken.decimals)
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b))
     return result.toString()
   }

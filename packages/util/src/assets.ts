@@ -95,7 +95,7 @@ export async function getAssetInfo (api: ApiPromise, address: string): Promise<A
 
 export async function getAccountAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<string> {
   const result = (await (api.rpc as any).assets.freeBalance(accountAddress, assetAddress)).toHuman()
-  return (result || {}).balance
+  return (result || {}).balance || '0'
 }
 
 export async function getAssets (api: ApiPromise): Promise<Array<Asset>> {
