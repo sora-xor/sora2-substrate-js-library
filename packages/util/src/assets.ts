@@ -1,5 +1,4 @@
 import { ApiPromise } from '@polkadot/api'
-import { Codec } from '@polkadot/types/types'
 
 import { FPNumber } from './fp'
 
@@ -14,6 +13,8 @@ export interface AccountAsset {
 export interface AccountLiquidity extends AccountAsset {
   firstAddress: string;
   secondAddress: string;
+  firstBalance: string;
+  secondBalance: string;
 }
 
 export interface Asset {
@@ -46,8 +47,8 @@ class ArrayLike<T> extends Array<T> {
   public contains (symbol: string): boolean {
     return !!KnownSymbols[symbol]
   }
-  public get (symbol: string): T {
-    return this.find((asset: any) => asset.symbol === symbol)
+  public get (info: string): T {
+    return this.find((asset: any) => [asset.symbol, asset.address].includes(info) )
   }
 }
 
@@ -92,12 +93,9 @@ export async function getAssetInfo (api: ApiPromise, address: string): Promise<A
   return asset
 }
 
-export async function getAccountAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
-  const xor = KnownAssets.get(KnownSymbols.XOR)
-  const isNative = assetAddress === xor.address
-  return await (
-    isNative ? api.query.system.account(accountAddress) : api.query.tokens.accounts(accountAddress, assetAddress)
-  )
+export async function getAccountAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<string> {
+  const result = (await (api.rpc as any).assets.freeBalance(accountAddress, assetAddress)).toHuman()
+  return (result || {}).balance || '0'
 }
 
 export async function getAssets (api: ApiPromise): Promise<Array<Asset>> {

@@ -2,6 +2,7 @@ import last from 'lodash/fp/last'
 import { ApiPromise } from '@polkadot/api'
 import { WsProvider } from '@polkadot/rpc-provider'
 import { KeyringPair } from '@polkadot/keyring/types'
+import { Signer } from '@polkadot/types/types'
 import { options } from '@sora-substrate/api'
 
 export const KeyringType = 'sr25519'
@@ -10,10 +11,21 @@ export class BaseApi {
   public api: ApiPromise
   public endpoint: string
 
+  protected signer?: Signer
+
   constructor (endpoint?: string) {
     if (endpoint) {
       this.endpoint = endpoint
     }
+  }
+
+  /**
+   * Set signer if the pair is locked (For polkadot js extension usage)
+   * @param signer
+   */
+  public setSigner (signer: Signer): void {
+    this.api.setSigner(signer)
+    this.signer = signer
   }
 
   public async connect (endpoint?: string): Promise<void> {
@@ -31,7 +43,7 @@ export class BaseApi {
     debugMessage = ''
   ): Promise<void> {
     console.log(`\nSubmit extrinsic: ${debugMessage}\n`)
-    const unsub = await extrinsic.signAndSend(signer, (result: any) => {
+    const unsub = await extrinsic.signAndSend(signer.isLocked ? signer.address : signer, { signer: this.signer }, (result: any) => {
       console.log(`Current status is ${result.status}`)
       if (result.status.isInBlock) {
         console.log(`Transaction included at blockHash ${result.status.asInBlock}`)
