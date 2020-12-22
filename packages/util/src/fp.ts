@@ -143,7 +143,9 @@ export class FPNumber {
           return `${integer}${fractionalPart}`
         }
         if ('toString' in (data as any)) {
-          return data.toString()
+          const json = data.toJSON() as any
+          // `BalanceInfo` or `Balance` check
+          return (json && json.balance) ? `${json.balance}`.replace(/[, ]/g, '') : data.toString()
         }
         return 0
       }

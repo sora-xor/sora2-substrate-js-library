@@ -1,4 +1,5 @@
 import { ApiPromise } from '@polkadot/api'
+import { Codec } from '@polkadot/types/types'
 
 import { FPNumber } from './fp'
 
@@ -93,9 +94,8 @@ export async function getAssetInfo (api: ApiPromise, address: string): Promise<A
   return asset
 }
 
-export async function getAccountAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<string> {
-  const result = (await (api.rpc as any).assets.freeBalance(accountAddress, assetAddress)).toHuman()
-  return (result || {}).balance || '0'
+export async function getAccountAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
+  return await (api.rpc as any).assets.freeBalance(accountAddress, assetAddress) // BalanceInfo
 }
 
 export async function getAssets (api: ApiPromise): Promise<Array<Asset>> {
