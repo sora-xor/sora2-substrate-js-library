@@ -275,7 +275,10 @@ export class FPNumber {
    * Return the sqrt number
    */
   public sqrt (): FPNumber {
-    return new FPNumber(this.value.sqrt())
+    return new FPNumber(
+      this.value.times(10 ** this.precision).sqrt().decimalPlaces(0, FPNumber.DEFAULT_ROUND_MODE),
+      this.precision
+    )
   }
 
   /**
