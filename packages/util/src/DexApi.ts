@@ -655,7 +655,7 @@ export class DexApi extends BaseApi {
     }
     const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
     const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
-    const pts = new FPNumber(totalSupply.balance, poolToken.decimals)
+    const pts = new FPNumber(totalSupply, poolToken.decimals)
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b))
     return result.toString()
   }
