@@ -152,6 +152,9 @@ export class DexApi extends BaseApi {
       throw new Error('Old password is invalid')
     }
     keyring.encryptAccount(pair, newPassword)
+    if (this.storage) {
+      this.storage.set('password', encrypt(newPassword))
+    }
   }
 
   /**
@@ -161,6 +164,9 @@ export class DexApi extends BaseApi {
   public changeName (name: string): void {
     const pair = this.accountPair
     keyring.saveAccountMeta(pair, { ...pair.meta, name })
+    if (this.storage) {
+      this.storage.set('name', name)
+    }
   }
 
   /**
