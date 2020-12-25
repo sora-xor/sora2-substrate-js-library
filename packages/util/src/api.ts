@@ -1,9 +1,12 @@
 import last from 'lodash/fp/last'
+import first from 'lodash/fp/first'
 import { ApiPromise } from '@polkadot/api'
 import { WsProvider } from '@polkadot/rpc-provider'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import { options } from '@sora-substrate/api'
+
+import { Storage } from './storage'
 
 export const KeyringType = 'sr25519'
 
@@ -12,6 +15,8 @@ export class BaseApi {
   public endpoint: string
 
   protected signer?: Signer
+  protected storage?: Storage
+  protected history: Array<History> = []
 
   constructor (endpoint?: string) {
     if (endpoint) {
@@ -37,37 +42,60 @@ export class BaseApi {
     await this.api.isReady
   }
 
+  public saveHistory (history: History) {
+    if (!history || !history.id) {
+      return
+    }
+    console.log(history)
+    // TODO: add save history
+  }
+
   protected async submitExtrinsic (
     extrinsic: any,
     signer: KeyringPair,
-    debugMessage = ''
+    historyData?: History,
+    unsigned = false
   ): Promise<void> {
-    console.log(`\nSubmit extrinsic: ${debugMessage}\n`)
-    const unsub = await extrinsic.signAndSend(signer.isLocked ? signer.address : signer, { signer: this.signer }, (result: any) => {
-      console.log(`Current status is ${result.status}`)
+    const history = (historyData || {}) as History
+    history.from = signer.address
+    history.startTime = Date.now()
+    const fn = (callbackFn: (result: any) => void) => unsigned
+      ? extrinsic.send(signer, callbackFn)
+      : extrinsic.signAndSend(signer.isLocked ? signer.address : signer, { signer: this.signer }, callbackFn)
+    const unsub = await fn((result: any) => {
+      history.status = first(Object.keys(result.status.toJSON()))
+      this.saveHistory(history)
       if (result.status.isInBlock) {
-        console.log(`Transaction included at blockHash ${result.status.asInBlock}`)
+        history.id = result.status.asInBlock.toString()
+        this.saveHistory(history)
       } else if (result.status.isFinalized) {
-        console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`)
-        result.events.forEach(({ phase, event: { data, method, section } }: any) => {
-          console.log(`\t' ${phase}: ${section}.${method}:: ${data}`)
+        history.endTime = Date.now()
+        this.saveHistory(history)
+        result.events.forEach(({ event: { data, method, section } }: any) => {
           if (section === 'system' && method === 'ExtrinsicFailed') {
+            history.status = TransactionStatus.Error
+            history.endTime = Date.now()
             const [error] = data
             if (error.isModule) {
               const decoded = this.api.registry.findMetaError(error.asModule)
-              const { documentation, name, section } = decoded
-              console.log(`${section}.${name}: ${documentation.join(' ')}`)
+              const { documentation } = decoded
+              history.errorMwssage = documentation.join(' ').trim()
             } else {
               // Other, CannotLookup, BadOrigin, no extra info
-              console.log(error.toString())
+              history.errorMwssage = error.toString()
             }
+            this.saveHistory(history)
           }
         })
         unsub()
       }
     }).catch((e: Error) => {
+      history.status = TransactionStatus.Error
+      history.endTime = Date.now()
       const errorParts = e.message.split(':')
       const errorInfo = last(errorParts).trim()
+      history.errorMwssage = errorInfo
+      this.saveHistory(history)
       throw new Error(errorInfo)
     })
   }
@@ -75,4 +103,34 @@ export class BaseApi {
   public async disconnect (): Promise<void> {
     await this.api.disconnect()
   }
+}
+
+export enum TransactionStatus {
+  Ready = 'Ready',
+  Broadcast = 'Broadcast',
+  InBlock = 'InBlock',
+  Finalized = 'Finalized',
+  Error = 'Error'
+}
+
+export enum HistoryType {
+  Swap = 'Swap',
+  Transfer = 'Transfer',
+  AddLiquidity = 'AddLiquidity',
+  RemoveLiquidity = 'RemoveLiquidity'
+}
+
+export interface History {
+  type: HistoryType;
+  amount: string;
+  symbol: string;
+  id?: string;
+  to?: string;
+  amount2?: string;
+  symbol2?: string;
+  startTime?: number;
+  endTime?: number;
+  from?: string;
+  status?: string;
+  errorMwssage?: string;
 }
