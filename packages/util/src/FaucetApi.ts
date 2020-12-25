@@ -1,6 +1,6 @@
-import { Keyring } from '@polkadot/api'
-
-import { BaseApi, KeyringType } from './api'
+import { BaseApi, History, Operation } from './api'
+import { getAccountAssetInfo, KnownAssets } from './assets'
+import { FPNumber, NumberLike } from './fp'
 
 /**
  * Contains all necessary data and functions for the faucet
@@ -10,13 +10,22 @@ export class FaucetApi extends BaseApi {
     await this.connect(endpoint)
   }
 
-  public async send (assetAddress: string, accountAddress: string, amount: string): Promise<void> {
-    const keyring = new Keyring({ type: KeyringType })
-    const pair = keyring.addFromAddress(accountAddress)
+  public get historyList (): Array<History> {
+    return this.history
+  }
+
+  public async getBalance (assetAddress: string, accountAddress: string): Promise<string> {
+    const asset = KnownAssets.get(assetAddress)
+    const result = await getAccountAssetInfo(this.api, accountAddress, assetAddress)
+    return new FPNumber(result, asset.decimals).toString()
+  }
+
+  public async send (assetAddress: string, accountAddress: string, amount: NumberLike): Promise<void> {
+    const asset = KnownAssets.get(assetAddress)
     await this.submitExtrinsic(
-      this.api.tx.faucet.transfer(assetAddress, accountAddress, amount),
-      pair,
-      null, // TODO: add history obj
+      this.api.tx.faucet.transfer(assetAddress, accountAddress, new FPNumber(amount, asset.decimals).toCodecString()),
+      null,
+      { type: Operation.Faucet, amount: `${amount}`, symbol: asset.symbol, from: accountAddress },
       true
     )
   }
