@@ -332,7 +332,7 @@ export class DexApi extends BaseApi {
    * Get swap result for the demonstration purposes
    * @param assetAAddress Asset A address
    * @param assetBAddress Asset B address
-   * @param amount Amount value
+   * @param amount Amount value (Asset A if Exchange A, else - Asset B)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    */
   public async getSwapResult (
@@ -348,14 +348,14 @@ export class DexApi extends BaseApi {
       this.defaultDEXId,
       assetAAddress,
       assetBAddress,
-      new FPNumber(amount, assetA.decimals).toCodecString(),
+      new FPNumber(amount, (!isExchangeB ? assetA : assetB).decimals).toCodecString(),
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
       [],
       'Disabled'
     )
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0 }
     return {
-      amount: new FPNumber(value.amount, assetB.decimals).toString(),
+      amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toString(),
       fee: new FPNumber(value.fee, xor.decimals).toString()
     } as SwapResult
   }
