@@ -18,7 +18,7 @@ import {
 } from './assets'
 import { Storage } from './storage'
 import { decrypt, encrypt } from './crypto'
-import { BaseApi, KeyringType } from './api'
+import { BaseApi, HistoryType, KeyringType } from './api'
 import { SwapResult } from './swap'
 import { FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
@@ -32,7 +32,6 @@ export class DexApi extends BaseApi {
   public readonly defaultSlippageTolerancePercent = 0.5
   public readonly seedLength = 12
 
-  private storage?: Storage
   private account?: CreateResult
   private assets: Array<AccountAsset> = []
   private liquidity: Array<AccountLiquidity> = []
@@ -61,6 +60,10 @@ export class DexApi extends BaseApi {
 
   public get accountLiquidity (): Array<AccountLiquidity> {
     return this.liquidity
+  }
+
+  public get accountHistory (): Array<any> {
+    return this.history
   }
 
   /**
@@ -263,21 +266,11 @@ export class DexApi extends BaseApi {
     }
     const result = await getAccountAssetInfo(this.api, this.account.pair.address, address)
     asset.balance = new FPNumber(result, asset.decimals).toString()
-    asset.usdBalance = await this.convertToUsd(asset)
     this.addToAssetList(asset)
     if (this.storage) {
       this.storage.set('assets', JSON.stringify(this.assets))
     }
     return asset
-  }
-
-  private async convertToUsd (from: AccountAsset): Promise<string> {
-    if (from.symbol === KnownSymbols.USD) {
-      return from.balance
-    }
-    const usd = KnownAssets.get(KnownSymbols.USD)
-    const result = (await this.getSwapResult(from.address, usd.address, from.balance)).amount
-    return new FPNumber(result, usd.decimals).toString()
   }
 
   /**
@@ -297,7 +290,6 @@ export class DexApi extends BaseApi {
       if (!Number(asset.balance)) {
         continue
       }
-      asset.usdBalance = await this.convertToUsd(asset)
       knownAssets.push(asset)
       this.addToAssetList(asset)
     }
@@ -312,7 +304,6 @@ export class DexApi extends BaseApi {
     for (const asset of this.assets) {
       const result = await getAccountAssetInfo(this.api, this.account.pair.address, asset.address)
       asset.balance = new FPNumber(result, asset.decimals).toString()
-      asset.usdBalance = await this.convertToUsd(asset)
       this.addToAssetList(asset)
     }
     if (this.storage) {
@@ -333,93 +324,93 @@ export class DexApi extends BaseApi {
     await this.submitExtrinsic(
       this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.account.pair,
-      'Transfer'
+      { symbol: asset.symbol, to: toAddress, amount: `${amount}`, type: HistoryType.Transfer }
     )
   }
 
   /**
    * Get swap result for the demonstration purposes
-   * @param inputAssetAddress Input asset address
-   * @param outputAssetAdress Output asset address
-   * @param amount Amount value
-   * @param reversed Exchange A if `reserved=false` else Exchange B. `false` by default
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
+   * @param amount Amount value (Asset A if Exchange A, else - Asset B)
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    */
   public async getSwapResult (
-    inputAssetAddress: string,
-    outputAssetAdress: string,
+    assetAAddress: string,
+    assetBAddress: string,
     amount: NumberLike,
-    reversed = false
+    isExchangeB = false
   ): Promise<SwapResult> {
     const xor = KnownAssets.get(KnownSymbols.XOR)
-    const inputAsset = await this.getAssetInfo(inputAssetAddress)
-    const outputAsset = await this.getAssetInfo(outputAssetAdress)
+    const assetA = await this.getAssetInfo(assetAAddress)
+    const assetB = await this.getAssetInfo(assetBAddress)
     const result = await (this.api.rpc as any).liquidityProxy.quote(
       this.defaultDEXId,
-      inputAssetAddress,
-      outputAssetAdress,
-      new FPNumber(amount, (!reversed ? inputAsset : outputAsset).decimals).toCodecString(),
-      !reversed ? 'WithDesiredInput' : 'WithDesiredOutput',
+      assetAAddress,
+      assetBAddress,
+      new FPNumber(amount, (!isExchangeB ? assetA : assetB).decimals).toCodecString(),
+      !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
       [],
       'Disabled'
     )
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0 }
     return {
-      amount: new FPNumber(value.amount, (!reversed ? outputAsset : inputAsset).decimals).toString(),
+      amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toString(),
       fee: new FPNumber(value.fee, xor.decimals).toString()
     } as SwapResult
   }
 
   /**
-   * Get min or max received value
-   * @param inputAssetAddress Input asset address
-   * @param outputAssetAdress Output asset address
+   * Get min or max value before Swap
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
    * @param resultAmount Result of the swap operation, `getSwapResult().amount`
    * @param slippageTolerance Slippage tolerance coefficient (in %)
-   * @param reversed If `reversed` then Exchange B and it calculates max received,
+   * @param isExchangeB If `isExchangeB` then Exchange B and it calculates max sold,
    * else - Exchange A and it calculates min received. `false` by default
    */
-  public async getMinMaxReceived (
-    inputAssetAddress: string,
-    outputAssetAdress: string,
+  public async getMinMaxValue (
+    assetAAddress: string,
+    assetBAddress: string,
     resultAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
-    reversed = false
+    isExchangeB = false
   ): Promise<string> {
-    const inputAsset = await this.getAssetInfo(inputAssetAddress)
-    const outputAsset = await this.getAssetInfo(outputAssetAdress)
-    const resultDecimals = (!reversed ? outputAsset : inputAsset).decimals
+    const assetA = await this.getAssetInfo(assetAAddress)
+    const assetB = await this.getAssetInfo(assetBAddress)
+    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals
     const result = new FPNumber(resultAmount, resultDecimals)
     const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100, resultDecimals))
-    return (!reversed ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toString()
+    return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toString()
   }
 
   /**
    * Swap operation
-   * @param inputAssetAddress Input asset address
-   * @param outputAssetAdress Output asset address
-   * @param amount Amount value
-   * @param resultAmount Result of the swap operation, `getSwapResult().amount`
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
+   * @param amountA Amount A value
+   * @param amountB Amount B value
    * @param slippageTolerance Slippage tolerance coefficient (in %)
-   * @param reversed Exchange A if `reserved=false` else Exchange B. `false` by default
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    */
   public async swap (
-    inputAssetAddress: string,
-    outputAssetAdress: string,
-    amount: NumberLike,
-    resultAmount: NumberLike,
+    assetAAddress: string,
+    assetBAddress: string,
+    amountA: NumberLike,
+    amountB: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
-    reversed = false
+    isExchangeB = false
   ): Promise<void> {
     assert(this.account, Messages.connectWallet)
-    const inputAsset = await this.getAssetInfo(inputAssetAddress)
-    const outputAsset = await this.getAssetInfo(outputAssetAdress)
-    const desiredDecimals = (!reversed ? inputAsset : outputAsset).decimals
-    const resultDecimals = (!reversed ? outputAsset : inputAsset).decimals
-    const desiredCodecString = (new FPNumber(amount, desiredDecimals)).toCodecString()
-    const result = new FPNumber(resultAmount, resultDecimals)
-    const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100, resultDecimals))
+    const assetA = await this.getAssetInfo(assetAAddress)
+    const assetB = await this.getAssetInfo(assetBAddress)
+    const desiredDecimals = (!isExchangeB ? assetA : assetB).decimals
+    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals
+    const desiredCodecString = (new FPNumber(!isExchangeB ? amountA : amountB, desiredDecimals)).toCodecString()
+    const result = new FPNumber(!isExchangeB ? amountB : amountA, resultDecimals)
+    const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100))
     const params = {} as any
-    if (!reversed) {
+    if (!isExchangeB) {
       params.WithDesiredInput = {
         desired_amount_in: desiredCodecString,
         min_amount_out: result.sub(resultMulSlippage).toCodecString()
@@ -431,16 +422,15 @@ export class DexApi extends BaseApi {
       }
     }
     await this.submitExtrinsic(
-      this.api.tx.liquidityProxy.swap(
-        this.defaultDEXId,
-        inputAssetAddress,
-        outputAssetAdress,
-        params,
-        [],
-        'Disabled'
-      ),
+      this.api.tx.liquidityProxy.swap(this.defaultDEXId, assetAAddress, assetBAddress, params, [], 'Disabled'),
       this.account.pair,
-      'Swap'
+      {
+        symbol: assetA.symbol,
+        amount: `${amountA}`,
+        symbol2: assetB.symbol,
+        amount2: `${amountB}`,
+        type: HistoryType.Swap
+      }
     )
   }
 
@@ -562,7 +552,6 @@ export class DexApi extends BaseApi {
     } as AccountLiquidity
     const result = await getAccountAssetInfo(this.api, this.account.pair.address, address)
     asset.balance = new FPNumber(result, asset.decimals).toString()
-    asset.usdBalance = await this.convertToUsd(asset)
     this.addToLiquidityList(asset)
     if (this.storage) {
       this.storage.set('liquidity', JSON.stringify(this.liquidity))
@@ -692,7 +681,7 @@ export class DexApi extends BaseApi {
         secondAmountNum.sub(secondAmountNum.mul(slippage)).toCodecString()
       ),
       this.account.pair,
-      'Add Liquidity'
+      // TODO: add history obj
     )
   }
 
@@ -736,7 +725,7 @@ export class DexApi extends BaseApi {
         desiredB.sub(desiredB.mul(slippage)).toCodecString()
       ),
       this.account.pair,
-      'Remove Liquidity'
+      // TODO: add history obj
     )
   }
 
@@ -760,6 +749,7 @@ export class DexApi extends BaseApi {
     this.signer = null
     this.assets = []
     this.liquidity = []
+    this.history = []
     if (this.storage) {
       this.storage.clear()
     }
