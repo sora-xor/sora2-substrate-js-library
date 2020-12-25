@@ -13,6 +13,11 @@ export class FaucetApi extends BaseApi {
   public async send (assetAddress: string, accountAddress: string, amount: string): Promise<void> {
     const keyring = new Keyring({ type: KeyringType })
     const pair = keyring.addFromAddress(accountAddress)
-    await this.submitExtrinsic(this.api.tx.faucet.transfer(assetAddress, accountAddress, amount), pair, 'Faucet')
+    await this.submitExtrinsic(
+      this.api.tx.faucet.transfer(assetAddress, accountAddress, amount),
+      pair,
+      null, // TODO: add history obj
+      true
+    )
   }
 }
