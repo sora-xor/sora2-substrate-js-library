@@ -18,7 +18,7 @@ import {
 } from './assets'
 import { Storage } from './storage'
 import { decrypt, encrypt } from './crypto'
-import { BaseApi, HistoryType, KeyringType } from './api'
+import { BaseApi, Operation, KeyringType, History } from './api'
 import { SwapResult } from './swap'
 import { FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
@@ -62,7 +62,7 @@ export class DexApi extends BaseApi {
     return this.liquidity
   }
 
-  public get accountHistory (): Array<any> {
+  public get accountHistory (): Array<History> {
     return this.history
   }
 
@@ -152,6 +152,9 @@ export class DexApi extends BaseApi {
       throw new Error('Old password is invalid')
     }
     keyring.encryptAccount(pair, newPassword)
+    if (this.storage) {
+      this.storage.set('password', encrypt(newPassword))
+    }
   }
 
   /**
@@ -161,6 +164,9 @@ export class DexApi extends BaseApi {
   public changeName (name: string): void {
     const pair = this.accountPair
     keyring.saveAccountMeta(pair, { ...pair.meta, name })
+    if (this.storage) {
+      this.storage.set('name', name)
+    }
   }
 
   /**
@@ -313,6 +319,24 @@ export class DexApi extends BaseApi {
   }
 
   /**
+   * Get transfer network fee in XOR
+   * @param assetAddress Asset address
+   * @param toAddress Account address
+   * @param amount Amount value
+   */
+  public async getTransferNetworkFee (assetAddress: string, toAddress: string, amount: NumberLike): Promise<string> {
+    assert(this.account, Messages.connectWallet)
+    const asset = await this.getAssetInfo(assetAddress)
+    return await this.getNetworkFee(
+      this.accountPair,
+      Operation.Transfer,
+      assetAddress,
+      toAddress,
+      new FPNumber(amount, asset.decimals).toCodecString()
+    )
+  }
+
+  /**
    * Transfer amount from account
    * @param assetAddress Asset address
    * @param toAddress Account address
@@ -324,7 +348,7 @@ export class DexApi extends BaseApi {
     await this.submitExtrinsic(
       this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.account.pair,
-      { symbol: asset.symbol, to: toAddress, amount: `${amount}`, type: HistoryType.Transfer }
+      { symbol: asset.symbol, to: toAddress, amount: `${amount}`, type: Operation.Transfer }
     )
   }
 
@@ -384,23 +408,14 @@ export class DexApi extends BaseApi {
     return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toString()
   }
 
-  /**
-   * Swap operation
-   * @param assetAAddress Asset A address
-   * @param assetBAddress Asset B address
-   * @param amountA Amount A value
-   * @param amountB Amount B value
-   * @param slippageTolerance Slippage tolerance coefficient (in %)
-   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
-   */
-  public async swap (
+  private async calcSwapParams (
     assetAAddress: string,
     assetBAddress: string,
     amountA: NumberLike,
     amountB: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
     isExchangeB = false
-  ): Promise<void> {
+  ) {
     assert(this.account, Messages.connectWallet)
     const assetA = await this.getAssetInfo(assetAAddress)
     const assetB = await this.getAssetInfo(assetBAddress)
@@ -421,15 +436,68 @@ export class DexApi extends BaseApi {
         max_amount_in: result.add(resultMulSlippage).toCodecString()
       }
     }
+    return {
+      args: [
+        this.defaultDEXId,
+        assetAAddress,
+        assetBAddress,
+        params,
+        [],
+        'Disabled'
+      ],
+      assetA,
+      assetB
+    }
+  }
+
+  /**
+   * Get swap network fee
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
+   * @param amountA Amount A value
+   * @param amountB Amount B value
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
+   */
+  public async getSwapNetworkFee (
+    assetAAddress: string,
+    assetBAddress: string,
+    amountA: NumberLike,
+    amountB: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
+    isExchangeB = false
+  ): Promise<string> {
+    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB)
+    return await this.getNetworkFee(this.accountPair, Operation.Swap, ...params.args)
+  }
+
+  /**
+   * Swap operation
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
+   * @param amountA Amount A value
+   * @param amountB Amount B value
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
+   */
+  public async swap (
+    assetAAddress: string,
+    assetBAddress: string,
+    amountA: NumberLike,
+    amountB: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
+    isExchangeB = false
+  ): Promise<void> {
+    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB)
     await this.submitExtrinsic(
-      this.api.tx.liquidityProxy.swap(this.defaultDEXId, assetAAddress, assetBAddress, params, [], 'Disabled'),
+      (this.api.tx.liquidityProxy as any).swap(...params.args),
       this.account.pair,
       {
-        symbol: assetA.symbol,
+        symbol: params.assetA.symbol,
         amount: `${amountA}`,
-        symbol2: assetB.symbol,
+        symbol2: params.assetB.symbol,
         amount2: `${amountB}`,
-        type: HistoryType.Swap
+        type: Operation.Swap
       }
     )
   }
@@ -649,6 +717,49 @@ export class DexApi extends BaseApi {
     return result.toString()
   }
 
+  private async calcAddLiquidityParams (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
+  ): Promise<Array<any>> {
+    assert(this.account, Messages.connectWallet)
+    const firstAsset = await this.getAssetInfo(firstAssetAddress)
+    const secondAsset = await this.getAssetInfo(secondAssetAddress)
+    const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals)
+    const secondAmountNum = new FPNumber(secondAmount, secondAsset.decimals)
+    const slippage = new FPNumber(Number(slippageTolerance) / 100)
+    return [
+      this.defaultDEXId,
+      firstAssetAddress,
+      secondAssetAddress,
+      firstAmountNum.toCodecString(),
+      secondAmountNum.toCodecString(),
+      firstAmountNum.sub(firstAmountNum.mul(slippage)).toCodecString(),
+      secondAmountNum.sub(secondAmountNum.mul(slippage)).toCodecString()
+    ]
+  }
+
+  /**
+   * Get network fee for add liquidity operation
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   * @param firstAmount
+   * @param secondAmount
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   */
+  public async getAddLiquidityNetworkFee (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
+  ): Promise<string> {
+    const params = await this.calcAddLiquidityParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
+    return await this.getNetworkFee(this.accountPair, Operation.AddLiquidity, ...params)
+  }
+
   /**
    * Add liquidity
    * @param firstAssetAddress
@@ -664,25 +775,73 @@ export class DexApi extends BaseApi {
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ): Promise<void> {
-    assert(this.account, Messages.connectWallet)
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals)
-    const secondAmountNum = new FPNumber(secondAmount, secondAsset.decimals)
-    const slippage = new FPNumber(Number(slippageTolerance) / 100)
+    const params = await this.calcAddLiquidityParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
     await this.submitExtrinsic(
-      this.api.tx.poolXyk.depositLiquidity(
-        this.defaultDEXId,
-        firstAssetAddress,
-        secondAssetAddress,
-        firstAmountNum.toCodecString(),
-        secondAmountNum.toCodecString(),
-        firstAmountNum.sub(firstAmountNum.mul(slippage)).toCodecString(),
-        secondAmountNum.sub(secondAmountNum.mul(slippage)).toCodecString()
-      ),
+      this.api.tx.poolXyk.depositLiquidity(...params),
       this.account.pair,
       // TODO: add history obj
     )
+  }
+
+  private async calcRemoveLiquidityParams (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    desiredMarker: NumberLike,
+    firstTotal: NumberLike,
+    secondTotal: NumberLike,
+    totalSupply: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
+  ): Promise<Array<any>> {
+    assert(this.account, Messages.connectWallet)
+    const firstAsset = await this.getAssetInfo(firstAssetAddress)
+    const secondAsset = await this.getAssetInfo(secondAssetAddress)
+    const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
+    const desired = new FPNumber(desiredMarker, poolToken.decimals)
+    const reserveA = new FPNumber(firstTotal, firstAsset.decimals)
+    const reserveB = new FPNumber(secondTotal, secondAsset.decimals)
+    const pts = new FPNumber(totalSupply, poolToken.decimals)
+    const desiredA = desired.mul(reserveA).div(pts)
+    const desiredB = desired.mul(reserveB).div(pts)
+    const slippage = new FPNumber(Number(slippageTolerance) / 100)
+    return [
+      this.defaultDEXId,
+      firstAssetAddress,
+      secondAssetAddress,
+      desired.toCodecString(),
+      desiredA.sub(desiredA.mul(slippage)).toCodecString(),
+      desiredB.sub(desiredB.mul(slippage)).toCodecString()
+    ]
+  }
+
+  /**
+   * Get network fee for remove liquidity operation
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   * @param desiredMarker
+   * @param firstTotal checkLiquidityReserves()[0]
+   * @param secondTotal checkLiquidityReserves()[1]
+   * @param totalSupply Total supply coefficient, estimateTokensRetrieved()[2]
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   */
+  public async getRemoveLiquidityNetworkFee (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    desiredMarker: NumberLike,
+    firstTotal: NumberLike,
+    secondTotal: NumberLike,
+    totalSupply: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
+  ): Promise<string> {
+    const params = await this.calcRemoveLiquidityParams(
+      firstAssetAddress,
+      secondAssetAddress,
+      desiredMarker,
+      firstTotal,
+      secondTotal,
+      totalSupply,
+      slippageTolerance
+    )
+    return await this.getNetworkFee(this.accountPair, Operation.RemoveLiquidity, ...params)
   }
 
   /**
@@ -704,26 +863,17 @@ export class DexApi extends BaseApi {
     totalSupply: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ): Promise<void> {
-    assert(this.account, Messages.connectWallet)
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    const desired = new FPNumber(desiredMarker, poolToken.decimals)
-    const reserveA = new FPNumber(firstTotal, firstAsset.decimals)
-    const reserveB = new FPNumber(secondTotal, secondAsset.decimals)
-    const pts = new FPNumber(totalSupply, poolToken.decimals)
-    const desiredA = desired.mul(reserveA).div(pts)
-    const desiredB = desired.mul(reserveB).div(pts)
-    const slippage = new FPNumber(Number(slippageTolerance) / 100)
+    const params = await this.calcRemoveLiquidityParams(
+      firstAssetAddress,
+      secondAssetAddress,
+      desiredMarker,
+      firstTotal,
+      secondTotal,
+      totalSupply,
+      slippageTolerance
+    )
     await this.submitExtrinsic(
-      this.api.tx.poolXyk.withdrawLiquidity(
-        this.defaultDEXId,
-        firstAssetAddress,
-        secondAssetAddress,
-        desired.toCodecString(),
-        desiredA.sub(desiredA.mul(slippage)).toCodecString(),
-        desiredB.sub(desiredB.mul(slippage)).toCodecString()
-      ),
+      this.api.tx.poolXyk.withdrawLiquidity(...params),
       this.account.pair,
       // TODO: add history obj
     )

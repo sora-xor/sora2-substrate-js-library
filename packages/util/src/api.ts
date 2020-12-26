@@ -5,8 +5,11 @@ import { WsProvider } from '@polkadot/rpc-provider'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import { options } from '@sora-substrate/api'
+import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 
 import { Storage } from './storage'
+import { KnownAssets, KnownSymbols } from './assets'
+import { FPNumber } from './fp'
 
 export const KeyringType = 'sr25519'
 
@@ -42,27 +45,32 @@ export class BaseApi {
     await this.api.isReady
   }
 
-  public saveHistory (history: History) {
+  protected saveHistory (history: History): void {
     if (!history || !history.id) {
       return
     }
-    console.log(history)
-    // TODO: add save history
+    const index = this.history.findIndex(item => item.id === history.id)
+    ~index ? this.history[index] = history : this.history.push(history)
+    if (this.storage) {
+      this.storage.set('history', JSON.stringify(this.history))
+    }
   }
 
   protected async submitExtrinsic (
-    extrinsic: any,
+    extrinsic: SubmittableExtrinsic,
     signer: KeyringPair,
     historyData?: History,
     unsigned = false
   ): Promise<void> {
     const history = (historyData || {}) as History
-    history.from = signer.address
+    if (signer) {
+      history.from = signer.address
+    }
     history.startTime = Date.now()
-    const fn = (callbackFn: (result: any) => void) => unsigned
-      ? extrinsic.send(signer, callbackFn)
+    const extrinsicFn = (callbackFn: (result: any) => void) => unsigned
+      ? extrinsic.send(callbackFn)
       : extrinsic.signAndSend(signer.isLocked ? signer.address : signer, { signer: this.signer }, callbackFn)
-    const unsub = await fn((result: any) => {
+    const unsub = await extrinsicFn((result: any) => {
       history.status = first(Object.keys(result.status.toJSON()))
       this.saveHistory(history)
       if (result.status.isInBlock) {
@@ -100,6 +108,32 @@ export class BaseApi {
     })
   }
 
+  protected async getNetworkFee (signer: KeyringPair, type: Operation, ...params: Array<any>): Promise<string> {
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    let extrinsic = null
+    switch (type) {
+      case Operation.Transfer:
+        extrinsic = this.api.tx.assets.transfer
+        break
+      case Operation.Swap:
+        extrinsic = this.api.tx.liquidityProxy.swap
+        break
+      case Operation.AddLiquidity:
+        extrinsic = this.api.tx.poolXyk.depositLiquidity
+        break
+      case Operation.RemoveLiquidity:
+        extrinsic = this.api.tx.poolXyk.withdrawLiquidity
+        break
+      default:
+        throw new Error('Unknown function')
+    }
+    const res = await (extrinsic(...params) as SubmittableExtrinsic).paymentInfo(
+      signer.isLocked ? signer.address : signer,
+      { signer: this.signer }
+    )
+    return new FPNumber(res.partialFee, xor.decimals).toString()
+  }
+
   public async disconnect (): Promise<void> {
     await this.api.disconnect()
   }
@@ -113,15 +147,16 @@ export enum TransactionStatus {
   Error = 'Error'
 }
 
-export enum HistoryType {
+export enum Operation {
   Swap = 'Swap',
   Transfer = 'Transfer',
   AddLiquidity = 'AddLiquidity',
-  RemoveLiquidity = 'RemoveLiquidity'
+  RemoveLiquidity = 'RemoveLiquidity',
+  Faucet = 'Faucet'
 }
 
 export interface History {
-  type: HistoryType;
+  type: Operation;
   amount: string;
   symbol: string;
   id?: string;
