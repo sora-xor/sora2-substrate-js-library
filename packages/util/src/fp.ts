@@ -1,6 +1,7 @@
 
 import BigNumber from 'bignumber.js'
 import { Codec } from '@polkadot/types/types'
+import isNil from 'lodash/fp/isNil'
 
 export type NumberLike = number | string
 
@@ -171,7 +172,7 @@ export class FPNumber {
         if ('toString' in (data as any)) {
           const json = data.toJSON() as any
           // `BalanceInfo` or `Balance` check
-          return (json && json.balance) ? `${json.balance}`.replace(/[, ]/g, '') : data.toString()
+          return (json && !isNil(json.balance)) ? `${json.balance}`.replace(/[, ]/g, '') : data.toString()
         }
         return 0
       }
