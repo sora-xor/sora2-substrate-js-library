@@ -1,5 +1,5 @@
 import { assert, isHex } from '@polkadot/util'
-import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
+import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, decodeAddress } from '@polkadot/util-crypto'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
@@ -113,6 +113,19 @@ export class DexApi extends BaseApi {
     return {
       address: keyring.createFromUri(suri, {}, this.type).address,
       suri
+    }
+  }
+
+  /**
+   * Check address
+   * @param address
+   */
+  public checkAddress (address: string): boolean {
+    try {
+      decodeAddress(address)
+      return true
+    } catch (error) {
+      return false
     }
   }
 
