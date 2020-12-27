@@ -1,14 +1,14 @@
 {
   "name": "@sora-substrate/api",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@sora-substrate/types": "^0.2.8",
-    "@sora-substrate/api-derive": "^0.2.8",
+    "@sora-substrate/types": "^0.2.9",
+    "@sora-substrate/api-derive": "^0.2.9",
     "@babel/runtime": "^7.10.2",
     "@open-web3/orml-api-derive": "^0.6.0-beta.26",
     "@polkadot/api": "^2.1.2-8",
