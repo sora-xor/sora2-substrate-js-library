@@ -712,7 +712,7 @@ export class DexApi extends BaseApi {
     secondAmount: NumberLike,
     firstTotal: NumberLike,
     secondTotal: NumberLike
-  ): Promise<string> {
+  ): Promise<Array<string>> {
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const aIn = new FPNumber(firstAmount, firstAsset.decimals)
@@ -721,13 +721,13 @@ export class DexApi extends BaseApi {
     const b = new FPNumber(secondTotal, secondAsset.decimals)
     if (a.isZero() && b.isZero()) {
       const inaccuracy = new FPNumber('0.000000000000001')
-      return aIn.mul(bIn).sqrt().sub(inaccuracy).toString()
+      return [aIn.mul(bIn).sqrt().sub(inaccuracy).toString()]
     }
     const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
     const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
     const pts = new FPNumber(totalSupply, poolToken.decimals)
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b))
-    return result.toString()
+    return [result.toString(), pts.toString()]
   }
 
   private async calcAddLiquidityParams (
