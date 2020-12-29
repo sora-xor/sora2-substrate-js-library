@@ -1,5 +1,5 @@
 import { assert, isHex } from '@polkadot/util'
-import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, decodeAddress } from '@polkadot/util-crypto'
+import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
@@ -16,7 +16,6 @@ import {
   PoolTokens,
   AccountLiquidity
 } from './assets'
-import { Storage } from './storage'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, History } from './api'
 import { SwapResult } from './swap'
@@ -67,14 +66,6 @@ export class DexApi extends BaseApi {
   }
 
   /**
-   * Set storage if it should be used as data storage
-   * @param storage
-   */
-  public setStorage (storage: Storage): void {
-    this.storage = storage
-  }
-
-  /**
    * The first method you should run. Includes initialization process and the connection check
    * @param endpoint Blockchain address, you should set it here or before this step
    */
@@ -113,19 +104,6 @@ export class DexApi extends BaseApi {
     return {
       address: keyring.createFromUri(suri, {}, this.type).address,
       suri
-    }
-  }
-
-  /**
-   * Check address
-   * @param address
-   */
-  public checkAddress (address: string): boolean {
-    try {
-      decodeAddress(address)
-      return true
-    } catch (error) {
-      return false
     }
   }
 
