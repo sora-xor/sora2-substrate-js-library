@@ -6,6 +6,7 @@ import { KeyringPair } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import { options } from '@sora-substrate/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import { decodeAddress } from '@polkadot/util-crypto'
 
 import { Storage } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
@@ -36,6 +37,14 @@ export class BaseApi {
     this.signer = signer
   }
 
+  /**
+   * Set storage if it should be used as data storage
+   * @param storage
+   */
+  public setStorage (storage: Storage): void {
+    this.storage = storage
+  }
+
   public async connect (endpoint?: string): Promise<void> {
     if (endpoint) {
       this.endpoint = endpoint
@@ -43,6 +52,10 @@ export class BaseApi {
     const provider = new WsProvider(this.endpoint)
     this.api = new ApiPromise(options({ provider }))
     await this.api.isReady
+    const history = this.storage?.get('history')
+    if (history) {
+      this.history = JSON.parse(history)
+    }
   }
 
   protected saveHistory (history: History): void {
@@ -87,10 +100,10 @@ export class BaseApi {
             if (error.isModule) {
               const decoded = this.api.registry.findMetaError(error.asModule)
               const { documentation } = decoded
-              history.errorMwssage = documentation.join(' ').trim()
+              history.errorMessage = documentation.join(' ').trim()
             } else {
               // Other, CannotLookup, BadOrigin, no extra info
-              history.errorMwssage = error.toString()
+              history.errorMessage = error.toString()
             }
             this.saveHistory(history)
           }
@@ -102,7 +115,7 @@ export class BaseApi {
       history.endTime = Date.now()
       const errorParts = e.message.split(':')
       const errorInfo = last(errorParts).trim()
-      history.errorMwssage = errorInfo
+      history.errorMessage = errorInfo
       this.saveHistory(history)
       throw new Error(errorInfo)
     })
@@ -132,6 +145,19 @@ export class BaseApi {
       { signer: this.signer }
     )
     return new FPNumber(res.partialFee, xor.decimals).toString()
+  }
+
+  /**
+   * Check address
+   * @param address
+   */
+  public checkAddress (address: string): boolean {
+    try {
+      decodeAddress(address)
+      return true
+    } catch (error) {
+      return false
+    }
   }
 
   public async disconnect (): Promise<void> {
@@ -167,5 +193,5 @@ export interface History {
   endTime?: number;
   from?: string;
   status?: string;
-  errorMwssage?: string;
+  errorMessage?: string;
 }
