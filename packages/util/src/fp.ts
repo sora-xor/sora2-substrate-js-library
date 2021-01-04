@@ -97,6 +97,22 @@ export class FPNumber {
   public static isLessThan = FPNumber.lt
 
   /**
+   * Return `true` if the first value is less of equal than the second
+   * @param {FPNumber} first First number
+   * @param {FPNumber} second Second number
+   */
+  public static lte (first: FPNumber, second: FPNumber): boolean {
+    return first.value.lte(equalizedBN(second, first.precision))
+  }
+
+  /**
+   * Return `true` if the first value is less of equal than the second
+   * @param {FPNumber} first First number
+   * @param {FPNumber} second Second number
+   */
+  public static isLessThanOrEqualTo = FPNumber.lte
+
+  /**
    * Return `true` if the first value is greater than the second
    * @param {FPNumber} first First number
    * @param {FPNumber} second Second number
@@ -111,6 +127,22 @@ export class FPNumber {
    * @param {FPNumber} second Second number
    */
   public static isGreaterThan = FPNumber.gt
+
+  /**
+   * Return `true` if the first value is greater or equal than the second
+   * @param {FPNumber} first First number
+   * @param {FPNumber} second Second number
+   */
+  public static gte (first: FPNumber, second: FPNumber): boolean {
+    return first.value.gte(equalizedBN(second, first.precision))
+  }
+
+  /**
+   * Return `true` if the first value is greater or equal than the second
+   * @param {FPNumber} first First number
+   * @param {FPNumber} second Second number
+   */
+  public static isGreaterThanOrEqualTo = FPNumber.gte
 
   /**
    * Return `true` if values are equal
@@ -139,6 +171,12 @@ export class FPNumber {
 
   public value: BigNumber
 
+  /**
+   * Supports `data` as `string`, `number`, `BigNumber`, `FPNumber` and `Codec` data types.
+   * It's better not to use `number` parameter as data if you want the strict rules for rounding
+   * @param data 
+   * @param precision 
+   */
   constructor (
     data: NumberType,
     public precision = FPNumber.DEFAULT_PRECISION
