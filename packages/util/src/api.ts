@@ -11,6 +11,7 @@ import { decodeAddress } from '@polkadot/util-crypto'
 import { Storage } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
 import { FPNumber } from './fp'
+import { encrypt } from './crypto'
 
 export const KeyringType = 'sr25519'
 
@@ -80,6 +81,7 @@ export class BaseApi {
       history.from = signer.address
     }
     history.startTime = Date.now()
+    history.id = encrypt(`${history.startTime}`)
     const extrinsicFn = (callbackFn: (result: any) => void) => unsigned
       ? extrinsic.send(callbackFn)
       : extrinsic.signAndSend(signer.isLocked ? signer.address : signer, { signer: this.signer }, callbackFn)
@@ -87,7 +89,7 @@ export class BaseApi {
       history.status = first(Object.keys(result.status.toJSON()))
       this.saveHistory(history)
       if (result.status.isInBlock) {
-        history.id = result.status.asInBlock.toString()
+        history.blockId = result.status.asInBlock.toString()
         this.saveHistory(history)
       } else if (result.status.isFinalized) {
         history.endTime = Date.now()
@@ -186,6 +188,7 @@ export interface History {
   amount: string;
   symbol: string;
   id?: string;
+  blockId?: string;
   to?: string;
   amount2?: string;
   symbol2?: string;
