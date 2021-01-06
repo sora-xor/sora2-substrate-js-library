@@ -558,7 +558,7 @@ export class DexApi extends BaseApi {
       asset.balance = new FPNumber(result, asset.decimals).toString()
       asset.firstBalance = balanceA
       asset.secondBalance = balanceB
-      this.addToAssetList(asset)
+      this.addToLiquidityList(asset)
     }
     if (this.storage) {
       this.storage.set('liquidity', JSON.stringify(this.liquidity))
