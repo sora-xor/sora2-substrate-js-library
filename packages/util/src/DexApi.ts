@@ -480,6 +480,9 @@ export class DexApi extends BaseApi {
     isExchangeB = false
   ): Promise<void> {
     const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB)
+    if (!this.accountAssets.find(asset => asset.address === params.assetB.address)) {
+      this.addToAssetList({ ...params.assetB, balance: '0' }) // Balance will be updated
+    }
     await this.submitExtrinsic(
       (this.api.tx.liquidityProxy as any).swap(...params.args),
       this.account.pair,
@@ -555,7 +558,7 @@ export class DexApi extends BaseApi {
       asset.balance = new FPNumber(result, asset.decimals).toString()
       asset.firstBalance = balanceA
       asset.secondBalance = balanceB
-      this.addToAssetList(asset)
+      this.addToLiquidityList(asset)
     }
     if (this.storage) {
       this.storage.set('liquidity', JSON.stringify(this.liquidity))
