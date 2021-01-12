@@ -9,6 +9,10 @@ import { FPNumber, NumberLike } from './fp'
  * Contains all necessary data and functions for the faucet
  */
 export class FaucetApi extends BaseApi {
+  private readonly fausetSignerSeed = 'fuel start grant tackle void tree unusual teach grocery jar pulp weird'
+  private readonly faucetSignerName = 'Faucet Signer'
+  private readonly faucetSignerPassword = 'qwaszx'
+
   private faucetSigner?: CreateResult
 
   public async initialize (endpoint?: string): Promise<void> {
@@ -16,9 +20,9 @@ export class FaucetApi extends BaseApi {
     // Fake account initialization
     keyring.loadAll({ type: KeyringType })
     this.faucetSigner = keyring.addUri(
-      'fuel start grant tackle void tree unusual teach grocery jar pulp weird',
-      'qwaszx',
-      { name: 'Faucet Signer' },
+      this.fausetSignerSeed,
+      this.faucetSignerPassword,
+      { name: this.faucetSignerName },
       KeyringType
     )
   }
