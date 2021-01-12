@@ -736,6 +736,45 @@ export class DexApi extends BaseApi {
   }
 
   /**
+   * Create token pair if user is the first liquidity provider.
+   * Before it you should check will user be the first liquidity provider or not
+   * (`getLiquidityReserves()` -> `['0', '0']`).
+   *
+   * Condition: Account **must** have CAN_MANAGE_DEX( DEXId ) permission,
+   * XOR asset **should** be required for any pair
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   * @param firstAmount
+   * @param secondAmount
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   */
+  public async createPair (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
+  ): Promise<void> {
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    assert([firstAssetAddress, secondAssetAddress].includes(xor.address), Messages.xorIsRequired)
+    const baseAssetId = firstAssetAddress === xor.address ? firstAssetAddress : secondAssetAddress
+    const targetAssetId = firstAssetAddress !== xor.address ? firstAssetAddress : secondAssetAddress
+    const baseAssetAmount = baseAssetId === firstAssetAddress ? firstAmount : secondAmount
+    const targetAssetAmount = targetAssetId === secondAssetAddress ? secondAmount : firstAmount
+    const params = await this.calcAddLiquidityParams(baseAssetId, targetAssetId, baseAssetAmount, targetAssetAmount, slippageTolerance)
+    const transactions = [
+      this.api.tx.tradingPair.register(this.defaultDEXId, baseAssetId, targetAssetId),
+      this.api.tx.poolXyk.initializePool(this.defaultDEXId, baseAssetId, targetAssetId),
+      this.api.tx.poolXyk.depositLiquidity(...params)
+    ]
+    await this.submitExtrinsic(
+      this.api.tx.utility.batch(transactions),
+      this.account.pair,
+      // TODO: add history obj
+    )
+  }
+
+  /**
    * Get network fee for add liquidity operation
    * @param firstAssetAddress
    * @param secondAssetAddress
