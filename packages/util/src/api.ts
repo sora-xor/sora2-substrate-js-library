@@ -77,7 +77,7 @@ export class BaseApi {
     unsigned = false
   ): Promise<void> {
     const history = (historyData || {}) as History
-    if (signer) {
+    if ((!historyData || historyData.type !== Operation.Faucet) && signer) {
       history.from = signer.address
     }
     history.startTime = Date.now()
