@@ -9,6 +9,7 @@ export default {
     CurrencyIdOf: 'AssetId',
     BasisPoints: 'u16',
     Fixed: 'FixedU128',
+    FarmID: 'u64',
     DEXId: 'u32',
     DEXIdOf: 'DEXId',
     DEXInfo: {
