@@ -126,6 +126,9 @@ export interface ExtrinsicsWeight extends Struct {
   readonly operational: Weight;
 }
 
+/** @name FarmId */
+export interface FarmId extends u64 {}
+
 /** @name FilterMode */
 export interface FilterMode extends Enum {
   readonly isDisabled: boolean;
