@@ -181,6 +181,7 @@ export enum Operation {
   Transfer = 'Transfer',
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
+  CreatePair = 'CreatePair',
   Faucet = 'Faucet'
 }
 

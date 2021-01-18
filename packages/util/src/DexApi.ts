@@ -573,7 +573,7 @@ export class DexApi extends BaseApi {
    */
   public async checkLiquidity (firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
     const props = (await this.api.query.poolXyk.properties(firstAssetAddress, secondAssetAddress)).toJSON() as Array<string>
-    if (!props && !props.length) {
+    if (!props || !props.length) {
       return false
     }
     return true
@@ -586,7 +586,7 @@ export class DexApi extends BaseApi {
    */
   public async getLiquidityInfo (firstAssetAddress: string, secondAssetAddress: string): Promise<Asset> {
     const props = (await this.api.query.poolXyk.properties(firstAssetAddress, secondAssetAddress)).toJSON() as Array<string>
-    if (!props && !props.length) {
+    if (!props || !props.length) {
       return null
     }
     const poolTokenAddress = props[2]
@@ -717,22 +717,26 @@ export class DexApi extends BaseApi {
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
-  ): Promise<Array<any>> {
+  ) {
     assert(this.account, Messages.connectWallet)
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals)
     const secondAmountNum = new FPNumber(secondAmount, secondAsset.decimals)
     const slippage = new FPNumber(Number(slippageTolerance) / 100)
-    return [
-      this.defaultDEXId,
-      firstAssetAddress,
-      secondAssetAddress,
-      firstAmountNum.toCodecString(),
-      secondAmountNum.toCodecString(),
-      firstAmountNum.sub(firstAmountNum.mul(slippage)).toCodecString(),
-      secondAmountNum.sub(secondAmountNum.mul(slippage)).toCodecString()
-    ]
+    return {
+      args: [
+        this.defaultDEXId,
+        firstAssetAddress,
+        secondAssetAddress,
+        firstAmountNum.toCodecString(),
+        secondAmountNum.toCodecString(),
+        firstAmountNum.sub(firstAmountNum.mul(slippage)).toCodecString(),
+        secondAmountNum.sub(secondAmountNum.mul(slippage)).toCodecString()
+      ],
+      firstAsset,
+      secondAsset
+    }
   }
 
   /**
@@ -765,12 +769,18 @@ export class DexApi extends BaseApi {
     const transactions = [
       this.api.tx.tradingPair.register(this.defaultDEXId, baseAssetId, targetAssetId),
       this.api.tx.poolXyk.initializePool(this.defaultDEXId, baseAssetId, targetAssetId),
-      this.api.tx.poolXyk.depositLiquidity(...params)
+      this.api.tx.poolXyk.depositLiquidity(...params.args)
     ]
     await this.submitExtrinsic(
       this.api.tx.utility.batch(transactions),
       this.account.pair,
-      // TODO: add history obj
+      {
+        type: Operation.CreatePair,
+        symbol: params.firstAsset.symbol,
+        symbol2: params.secondAsset.symbol,
+        amount: `${baseAssetAmount}`,
+        amount2: `${targetAssetAmount}`
+      }
     )
   }
 
@@ -790,7 +800,7 @@ export class DexApi extends BaseApi {
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ): Promise<string> {
     const params = await this.calcAddLiquidityParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
-    return await this.getNetworkFee(this.accountPair, Operation.AddLiquidity, ...params)
+    return await this.getNetworkFee(this.accountPair, Operation.AddLiquidity, ...params.args)
   }
 
   /**
@@ -810,9 +820,15 @@ export class DexApi extends BaseApi {
   ): Promise<void> {
     const params = await this.calcAddLiquidityParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
     await this.submitExtrinsic(
-      this.api.tx.poolXyk.depositLiquidity(...params),
+      this.api.tx.poolXyk.depositLiquidity(...params.args),
       this.account.pair,
-      // TODO: add history obj
+      {
+        type: Operation.AddLiquidity,
+        symbol: params.firstAsset.symbol,
+        symbol2: params.secondAsset.symbol,
+        amount: `${firstAmount}`,
+        amount2: `${secondAmount}`
+      }
     )
   }
 
@@ -824,7 +840,7 @@ export class DexApi extends BaseApi {
     secondTotal: NumberLike,
     totalSupply: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
-  ): Promise<Array<any>> {
+  ) {
     assert(this.account, Messages.connectWallet)
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
@@ -836,14 +852,18 @@ export class DexApi extends BaseApi {
     const desiredA = desired.mul(reserveA).div(pts)
     const desiredB = desired.mul(reserveB).div(pts)
     const slippage = new FPNumber(Number(slippageTolerance) / 100)
-    return [
-      this.defaultDEXId,
-      firstAssetAddress,
-      secondAssetAddress,
-      desired.toCodecString(),
-      desiredA.sub(desiredA.mul(slippage)).toCodecString(),
-      desiredB.sub(desiredB.mul(slippage)).toCodecString()
-    ]
+    return {
+      args: [
+        this.defaultDEXId,
+        firstAssetAddress,
+        secondAssetAddress,
+        desired.toCodecString(),
+        desiredA.sub(desiredA.mul(slippage)).toCodecString(),
+        desiredB.sub(desiredB.mul(slippage)).toCodecString()
+      ],
+      firstAsset,
+      secondAsset
+    }
   }
 
   /**
@@ -874,7 +894,7 @@ export class DexApi extends BaseApi {
       totalSupply,
       slippageTolerance
     )
-    return await this.getNetworkFee(this.accountPair, Operation.RemoveLiquidity, ...params)
+    return await this.getNetworkFee(this.accountPair, Operation.RemoveLiquidity, ...params.args)
   }
 
   /**
@@ -906,9 +926,14 @@ export class DexApi extends BaseApi {
       slippageTolerance
     )
     await this.submitExtrinsic(
-      this.api.tx.poolXyk.withdrawLiquidity(...params),
+      this.api.tx.poolXyk.withdrawLiquidity(...params.args),
       this.account.pair,
-      // TODO: add history obj
+      {
+        type: Operation.RemoveLiquidity,
+        symbol: params.firstAsset.symbol,
+        symbol2: params.secondAsset.symbol,
+        amount: `${desiredMarker}`
+      }
     )
   }
 
