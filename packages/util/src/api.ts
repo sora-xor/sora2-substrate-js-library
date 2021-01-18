@@ -77,7 +77,8 @@ export class BaseApi {
     unsigned = false
   ): Promise<void> {
     const history = (historyData || {}) as History
-    if (signer) {
+    const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet
+    if (isNotFaucetOperation && signer) {
       history.from = signer.address
     }
     history.startTime = Date.now()
@@ -180,6 +181,7 @@ export enum Operation {
   Transfer = 'Transfer',
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
+  CreatePair = 'CreatePair',
   Faucet = 'Faucet'
 }
 
