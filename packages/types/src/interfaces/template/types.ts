@@ -2,11 +2,11 @@
 /* eslint-disable */
 
 import { Struct } from '@polkadot/types/codec';
-import { Balance } from '@sora-substrate/types/interfaces/runtime';
+import { Text } from '@polkadot/types/primitive';
 
 /** @name CustomInfo */
 export interface CustomInfo extends Struct {
-  readonly amount: Balance;
+  readonly amount: Text;
 }
 
 export type PHANTOM_TEMPLATE = 'template';

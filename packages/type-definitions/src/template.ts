@@ -13,7 +13,7 @@ export default {
     },
     types: {
         CustomInfo: {
-            amount: 'Balance'
+            amount: 'String'
         }
     }
 }

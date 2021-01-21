@@ -61,7 +61,7 @@ export default {
     },
     types: {
         BalanceInfo: {
-            balance: 'Balance',
+            balance: 'String',
         },
         AssetInfo: {
             asset_id: "AssetId",

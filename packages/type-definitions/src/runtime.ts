@@ -79,6 +79,10 @@ export default {
       amount: 'Balance',
       fee: 'Balance'
     },
+    SwapOutcomeInfoStr: {
+      amount: 'String',
+      fee: 'String'
+    },
     TradingPair: {
       base_asset_id: "AssetId",
       target_asset_id: "AssetId"

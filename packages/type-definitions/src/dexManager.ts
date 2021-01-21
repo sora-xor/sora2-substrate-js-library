@@ -8,7 +8,7 @@ export default {
     testBalance: {
       description: 'Test type of Balance',
       params: [],
-      type: 'Fixed'
+      type: 'String'
     }
   },
   types: {

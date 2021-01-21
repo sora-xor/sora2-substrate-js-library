@@ -3,7 +3,7 @@
 
 import { Struct } from '@polkadot/types/codec';
 import { Text, u8 } from '@polkadot/types/primitive';
-import { AssetId, Balance } from '@sora-substrate/types/interfaces/runtime';
+import { AssetId } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetInfo */
 export interface AssetInfo extends Struct {
@@ -17,7 +17,7 @@ export interface AssetSymbolStr extends Text {}
 
 /** @name BalanceInfo */
 export interface BalanceInfo extends Struct {
-  readonly balance: Balance;
+  readonly balance: Text;
 }
 
 export type PHANTOM_ASSETS = 'assets';
