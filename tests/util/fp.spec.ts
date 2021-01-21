@@ -1,18 +1,16 @@
-import { FPNumber, BaseApi } from '@sora-substrate/util'
+import { connection, FPNumber } from '@sora-substrate/util'
 
 const TEST_ENDPOINT = 'wss://ws.stage.sora2.soramitsu.co.jp'
 
 describe('FPNumber', () => {
-  let baseApi: BaseApi
 
   beforeAll(async (done) => {
-    baseApi = new BaseApi(TEST_ENDPOINT)
-    await baseApi.connect()
+    await connection.open(TEST_ENDPOINT)
     done()
   })
 
   afterAll(async (done) => {
-    await baseApi.disconnect()
+    await connection.close()
     done()
   })
 
@@ -64,7 +62,7 @@ describe('FPNumber', () => {
     ['1000000000', 9, '1'],
     ['1000000000', 10, '0.1']
   ])('[toString from Codec object] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
-    const codec = baseApi.api.createType("Balance", value)
+    const codec = connection.api.createType('Balance', value)
     const instance = new FPNumber(codec, precision)
     expect(instance.toString()).toBe(result)
   })
