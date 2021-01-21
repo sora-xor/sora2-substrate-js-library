@@ -15,8 +15,8 @@ export class FaucetApi extends BaseApi {
 
   private faucetSigner?: CreateResult
 
-  public async initialize (endpoint?: string): Promise<void> {
-    await this.connect(endpoint)
+  constructor () {
+    super()
     // Fake account initialization
     keyring.loadAll({ type: KeyringType })
     this.faucetSigner = keyring.addUri(
