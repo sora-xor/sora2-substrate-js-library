@@ -116,6 +116,6 @@ export default {
     TechAccountIdPrimitive: "Null", // define properly if needed
     SwapAction: "Null",             // define properly if needed
     ValidationFunction: "Null",     // define properly if needed
-    Permission: "Null"              // define properly if needed
+    Permission: "Null",             // define properly if needed
   }
 }

@@ -8,6 +8,7 @@ import tradingPair from './tradingPair'
 import template from './template'
 import assets from './assets'
 import liquidityProxy from './liquidityProxy'
+import ethBridge from './ethBridge'
 
 const soraDefs = {
   runtime,
@@ -17,6 +18,7 @@ const soraDefs = {
   template,
   assets,
   liquidityProxy,
+  ethBridge,
 }
 
 const overrides = {
