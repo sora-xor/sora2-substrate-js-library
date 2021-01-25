@@ -35,8 +35,8 @@ export class DexApi extends BaseApi {
   private assets: Array<AccountAsset> = []
   private liquidity: Array<AccountLiquidity> = []
 
-  constructor (endpoint?: string) {
-    super(endpoint)
+  constructor () {
+    super()
   }
 
   public get accountPair (): KeyringPair {
@@ -66,11 +66,9 @@ export class DexApi extends BaseApi {
   }
 
   /**
-   * The first method you should run. Includes initialization process and the connection check
-   * @param endpoint Blockchain address, you should set it here or before this step
+   * The first method you should run. Includes initialization process
    */
-  public async initialize (endpoint?: string): Promise<void> {
-    await this.connect(endpoint)
+  public initialize (): void {
     const address = this.storage?.get('address')
     const password = this.storage?.get('password')
     const name = this.storage?.get('name')
@@ -990,3 +988,6 @@ export class DexApi extends BaseApi {
     return result.toString()
   }
 }
+
+/** Api object for DEX and Wallet */
+export const dexApi = new DexApi()

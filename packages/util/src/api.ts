@@ -1,10 +1,8 @@
 import last from 'lodash/fp/last'
 import first from 'lodash/fp/first'
 import { ApiPromise } from '@polkadot/api'
-import { WsProvider } from '@polkadot/rpc-provider'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
-import { options } from '@sora-substrate/api'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { decodeAddress } from '@polkadot/util-crypto'
 
@@ -12,21 +10,24 @@ import { Storage } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
 import { FPNumber } from './fp'
 import { encrypt } from './crypto'
+import { connection } from './connection'
 
 export const KeyringType = 'sr25519'
 
 export class BaseApi {
-  public api: ApiPromise
-  public endpoint: string
-
   protected signer?: Signer
   protected storage?: Storage
   protected history: Array<History> = []
 
-  constructor (endpoint?: string) {
-    if (endpoint) {
-      this.endpoint = endpoint
+  constructor () {
+    const history = this.storage?.get('history')
+    if (history) {
+      this.history = JSON.parse(history)
     }
+  }
+
+  public get api (): ApiPromise {
+    return connection.api
   }
 
   /**
@@ -44,19 +45,6 @@ export class BaseApi {
    */
   public setStorage (storage: Storage): void {
     this.storage = storage
-  }
-
-  public async connect (endpoint?: string): Promise<void> {
-    if (endpoint) {
-      this.endpoint = endpoint
-    }
-    const provider = new WsProvider(this.endpoint)
-    this.api = new ApiPromise(options({ provider }))
-    await this.api.isReady
-    const history = this.storage?.get('history')
-    if (history) {
-      this.history = JSON.parse(history)
-    }
   }
 
   protected saveHistory (history: History): void {
@@ -161,10 +149,6 @@ export class BaseApi {
     } catch (error) {
       return false
     }
-  }
-
-  public async disconnect (): Promise<void> {
-    await this.api.disconnect()
   }
 }
 
