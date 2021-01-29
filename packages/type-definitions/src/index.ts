@@ -24,6 +24,7 @@ const overrides = {
   LookupSource: 'AccountId',
   AssetId: 'AssetId32',
   Balance: 'FixedU128',
+  Keys: 'SessionKeys2',
   RefCount: 'u32'
 };
 
