@@ -1,42 +1,224 @@
-import { KnownAssets, KnownSymbols } from '@sora-substrate/util'
+import { connection, KnownAssets, KnownSymbols } from '@sora-substrate/util'
 import { TestApi } from '../util'
 import { strictEqual } from 'assert'
+import { ENV } from '../env'
 
-const TEST_ENDPOINT = 'wss://ws.framenode-1.s1.dev.sora2.soramitsu.co.jp/'
-//wss://ws.stage.sora2.soramitsu.co.jp/
-//wss://ws.framenode-1.s1.dev.sora2.soramitsu.co.jp/
-
-/*
-Seeds for testnet can found here:
-https://soramitsu.atlassian.net/wiki/spaces/PLS/pages/2224816140/Environments
-*/
-// const sudoSeed = "scissors spread water arrive damp face amazing shrug warfare silk dry prison"
-const sudoSeed = "era actor pluck voice frost club gallery palm moment empower whale flame"
-// const dexSeed = "era actor pluck voice frost club gallery palm moment empower whale flame"
-const dexSeed = "scissors spread water arrive damp face amazing shrug warfare silk dry prison"
-const testUserSeed = "nominee hundred leader math hurt federal limit frozen flag skirt sentence hello"
+const env = ENV.STAGE
+const TEST_ENDPOINT = env.URL
+const sudoSeed = env.SUDO_SEED
+const dexSeed = env.DEX_SEED
+const testUserSeed = env.USER_SEED
 
 describe('Test SWAP function', (): void => {
   let testApi: TestApi
-  jest.setTimeout(1000000)
+  jest.setTimeout(80_000)
   beforeAll(async (done) => {
-    testApi = new TestApi(TEST_ENDPOINT)
+    testApi = new TestApi()
+    await connection.open(TEST_ENDPOINT)
     await testApi.initialize()
-    await testApi.setupEnvironment(sudoSeed, testUserSeed)
+    await testApi.setupEnvironment(sudoSeed, testUserSeed, dexSeed)
     done()
   }, 10_000_000)
   afterAll(async (done) => {
-    await testApi.disconnect()
+    await connection.close()
     done()
   })
-  it.each([
-    [KnownSymbols.XOR, KnownSymbols.VAL, 1, false, "0.381288"],
-    [KnownSymbols.XOR, KnownSymbols.VAL, 10, false, "3.78328"],
-    [KnownSymbols.XOR, KnownSymbols.VAL, 100, false, "35.107074"],
-    [KnownSymbols.XOR, KnownSymbols.VAL, 1000, false, "204.055492"],
-    [KnownSymbols.XOR, KnownSymbols.VAL, 10000, false, "393.350535"],
-  ])('Check liqudityProxyQuote Assets: "%s" to "%s", Amount = %s', async (inputAssetSymbol, outputAssetSymbol, amount, reversed, gettingAsset): Promise<void> => {
+  beforeEach(async (done) => {
+    testApi.logout()
+    done()
+  })
+  it.skip.each([//This case not fixed on backend
+    [KnownSymbols.XOR, KnownSymbols.VAL, 10],
+    [KnownSymbols.XOR, KnownSymbols.PSWAP, 100.01],
+    [KnownSymbols.VAL, KnownSymbols.XOR, 999],
+    [KnownSymbols.PSWAP, KnownSymbols.XOR, 9999.99],
+    [KnownSymbols.PSWAP, KnownSymbols.VAL, 100000],
+    [KnownSymbols.VAL, KnownSymbols.PSWAP, 1000000]
+  ])('Reversed swap result should be same swap result. AssetA = %s, AssetB =%s, Amount =%s', async (inputAssetSymbol, outputAssetSymbol, amount): Promise<void> => {
     //Given
+    const quote = await testApi.getSwapResult(
+      KnownAssets.get(inputAssetSymbol).address,
+      KnownAssets.get(outputAssetSymbol).address,
+      amount,
+      false
+    )
+    //Then
+    const reversedQuote = await testApi.getSwapResult(
+      KnownAssets.get(inputAssetSymbol).address,
+      KnownAssets.get(outputAssetSymbol).address,
+      quote.amount,
+      true
+    )
+    //When
+    expect(reversedQuote.fee).toBe(quote.fee)
+    expect(+reversedQuote.amount).toBe(amount)
+  })
+  it.skip.each([//This case not fixed on backend
+    [KnownSymbols.XOR, KnownSymbols.VAL, 1],
+    [KnownSymbols.XOR, KnownSymbols.PSWAP, 100.01],
+    [KnownSymbols.VAL, KnownSymbols.XOR, 999],
+    [KnownSymbols.PSWAP, KnownSymbols.XOR, 9999.99],
+    [KnownSymbols.PSWAP, KnownSymbols.VAL, 100000],
+    [KnownSymbols.VAL, KnownSymbols.PSWAP, 1000000]
+  ])('Reversed network fee should be equals network fee AssetA=%s, AssetB=%s, Amount=%s', async (inputAssetSymbol, outputAssetSymbol, amount): Promise<void> => {
+    //Given
+    await testApi.importAccount(testUserSeed,"TestUser","1")
+
+    const quote = await testApi.getSwapResult(
+      KnownAssets.get(inputAssetSymbol).address,
+      KnownAssets.get(outputAssetSymbol).address,
+      amount,
+      false
+    )
+    const networkFee = await testApi.getSwapNetworkFee(
+      KnownAssets.get(inputAssetSymbol).address,
+      KnownAssets.get(outputAssetSymbol).address,
+      amount, +quote.amount, 1)
+    //Then
+    const reverseNetworkFee = await testApi.getSwapNetworkFee(
+      KnownAssets.get(inputAssetSymbol).address,
+      KnownAssets.get(outputAssetSymbol).address,
+      amount, +quote.amount, 1, true)
+    //When
+    strictEqual(networkFee, reverseNetworkFee)
+  })
+  it.each([
+    [KnownSymbols.XOR, KnownSymbols.VAL, 1, false, "1"],
+    [KnownSymbols.XOR, KnownSymbols.PSWAP, 1, false, "1"],
+    [KnownSymbols.VAL, KnownSymbols.XOR, 1, false, "1"],
+    [KnownSymbols.PSWAP, KnownSymbols.XOR, 1, false, "1"],
+    [KnownSymbols.XOR, KnownSymbols.VAL, 100, false, "1"],
+    //[KnownSymbols.VAL, KnownSymbols.PSWAP, 100, false, "1"], //Not implemented yet
+    [KnownSymbols.VAL, KnownSymbols.XOR, 100, false, "1"],
+    [KnownSymbols.PSWAP, KnownSymbols.XOR, 100, false, "1"],
+    [KnownSymbols.XOR, KnownSymbols.VAL, 0.0001, false, "1"],
+    [KnownSymbols.VAL, KnownSymbols.XOR, 0.0001, false, "1"],
+    [KnownSymbols.XOR, KnownSymbols.PSWAP, 0.0001, false, "1"],
+    // [KnownSymbols.VAL, KnownSymbols.PSWAP, 0.0001, false, "1"], //Not implemented yet
+    // [KnownSymbols.PSWAP, KnownSymbols.VAL, 0.0001, false, "1"] //Not implemented yet
+  ])('SWAP %s to %s input amount = %s', async (inputAssetSymbol, outputAssetSymbol, amount, reversed, slippageTolerance): Promise<void> => {
+    //Given
+    let expectInputBalance: number
+    let expectOutputBalance: number
+    testApi.importAccount(testUserSeed,"Test","1")
+    await testApi.getKnownAccountAssets()
+    const inputToken = KnownAssets.get(inputAssetSymbol)
+    const outputToken = KnownAssets.get(outputAssetSymbol)
+    const ipBalance = testApi.accountAssets.find(i => i.symbol === inputAssetSymbol).balance
+    const opBalance = testApi.accountAssets.find(i => i.symbol === outputAssetSymbol).balance
+    const quote = await testApi.getSwapResult(
+      inputToken.address,
+      outputToken.address,
+      amount
+    )
+    const networkFee = await testApi.getSwapNetworkFee(
+      inputToken.address,
+      outputToken.address,
+      amount,
+      quote.amount,
+      slippageTolerance
+    )
+
+    //Then
+    const swap = await testApi.swap(
+      inputToken.address,
+      outputToken.address,
+      amount,
+      quote.amount,
+      1,
+      reversed
+    )
+
+    //When
+    await testApi.updateBalance(inputToken, ipBalance)
+    if (inputAssetSymbol == KnownSymbols.XOR){
+      expectInputBalance = +ipBalance - amount - +networkFee
+      expectOutputBalance = +opBalance + +quote.amount
+    } else if (outputAssetSymbol == KnownSymbols.XOR){
+      expectInputBalance = +ipBalance - amount
+      expectOutputBalance = +opBalance + +quote.amount - +networkFee
+    } else {
+      expectInputBalance = +ipBalance - amount
+      expectOutputBalance = +opBalance + +quote.amount
+    }
+    expect(+testApi.accountAssets.find(i => i.symbol === inputAssetSymbol).balance).toBeCloseTo(expectInputBalance, 4)
+    expect(+testApi.accountAssets.find(i => i.symbol === outputAssetSymbol).balance).toBeCloseTo(expectOutputBalance, 4)
+  })
+
+  it.only.each([
+    [KnownSymbols.XOR, KnownSymbols.VAL, 100, false, "1"],
+    [KnownSymbols.XOR, KnownSymbols.PSWAP, 100, false, "1"],
+    [KnownSymbols.VAL, KnownSymbols.XOR, 100, false, "1"],
+    [KnownSymbols.PSWAP, KnownSymbols.XOR, 100, false, "1"],
+    // [KnownSymbols.VAL, KnownSymbols.PSWAP, 0.0001, false, "1"], //Not implemented yet
+    // [KnownSymbols.PSWAP, KnownSymbols.VAL, 0.0001, false, "1"] //Not implemented yet
+  ])('SWAP all %s tokens to %s, input amount = %s', async (inputAssetSymbol, outputAssetSymbol, amount, reversed, slippageTolerance): Promise<void> => {
+    //Given
+    let swapAmount = amount
+    let receiveAmount: number
+    let amountForFee = 1
+    const receiverSeed = testApi.createSeed().seed
+    const dexKeyPair = testApi.createKeyring('sr25519', 'dex', dexSeed)
+    const receiver = testApi.createKeyring('sr25519', 'receiver', await receiverSeed)
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    const inputToken = KnownAssets.get(inputAssetSymbol)
+    const outputToken = KnownAssets.get(outputAssetSymbol)
+
+    testApi.importAccount(receiverSeed,"Test","1")
+    await testApi.mintTokens(dexKeyPair, amount, receiver, inputToken)
+    if (inputAssetSymbol !== xor.symbol){
+      await testApi.mintTokens(dexKeyPair, amountForFee, receiver, xor)
+    } else { amountForFee = 0}
+    await testApi.getKnownAccountAssets()
+
+    const inputAccountToken = testApi.accountAssets.find(i => i.symbol === inputAssetSymbol)
+
+    const quote = await testApi.getSwapResult(
+      inputToken.address,
+      outputToken.address,
+      +inputAccountToken.balance
+    )
+    const networkFee = await testApi.getSwapNetworkFee(
+      inputToken.address,
+      outputToken.address,
+      +inputAccountToken.balance,
+      quote.amount,
+      slippageTolerance
+    )
+    if (inputAssetSymbol == xor.symbol){
+      swapAmount = amount - +networkFee
+    } else if (outputAssetSymbol == xor.symbol) {
+      receiveAmount = +quote.amount - +networkFee
+    } else {
+      receiveAmount = +quote.amount
+    }
+
+    //Then
+    await testApi.swap(
+      inputToken.address,
+      outputToken.address,
+      swapAmount,
+      quote.amount,
+      1,
+      reversed
+    )
+
+    //When
+    await testApi.updateBalance(inputToken, amount.toString())
+    const inputBalance = inputAccountToken.balance
+    const outputBalance = testApi.accountAssets.find(i => i.symbol === outputAssetSymbol).balance
+    expect(+inputBalance).toBe(0)
+    expect(+outputBalance).toBeCloseTo(receiveAmount + amountForFee, 4)
+  })
+  it.each([
+    [KnownSymbols.XOR, KnownSymbols.VAL, 10, false, "1"],
+    [KnownSymbols.XOR, KnownSymbols.VAL, 10, true, "1"],
+    [KnownSymbols.XOR, KnownSymbols.PSWAP, 10, false, "1"],
+    [KnownSymbols.XOR, KnownSymbols.PSWAP, 10, true, "1"]
+  ])('Check liquidity provider fee', async (inputAssetSymbol, outputAssetSymbol, amount, reversed): Promise<void> => {
+    //Given
+
+    testApi.importAccount(testUserSeed,"Test","1")
     //Then
     const quote = await testApi.getSwapResult(
       KnownAssets.get(inputAssetSymbol).address,
@@ -45,77 +227,6 @@ describe('Test SWAP function', (): void => {
       reversed
     )
     //When
-    strictEqual(quote.amount, gettingAsset)
-  })
-  it.each([
-    [KnownSymbols.XOR, KnownSymbols.VAL, 26.61, false, "1"],
-    // ["XOR", "KSM", 10, false, "0.5"],
-    // ["XOR", "DOT", 10, false, "0.5"],
-    // ["XOR", "PSWAP", 10, false, "0.5"],
-    // ["XOR", "USD", 10, false, "0.5"],
-  ])('SWAP Assets', async (inputAssetSymbol, outputAssetSymbol, amount, reversed, slippageTolerance): Promise<void> => {
-    //Given
-    testApi.importAccount(testUserSeed,"Sudo","1")
-    await testApi.getKnownAccountAssets()
-    const inputBalanceBeforeSwap = testApi.accountAssets.find(i => i.symbol === inputAssetSymbol).balance
-    const outputBalanceBeforeSwap = testApi.accountAssets.find(i => i.symbol === outputAssetSymbol).balance
-
-    const quote = await testApi.getSwapResult(
-      KnownAssets.get(inputAssetSymbol).address,
-      KnownAssets.get(outputAssetSymbol).address,
-      inputBalanceBeforeSwap
-    )
-
-    const fee = await testApi.getSwapNetworkFee(
-      KnownAssets.get(inputAssetSymbol).address, KnownAssets.get(outputAssetSymbol).address, inputBalanceBeforeSwap,
-      +quote.amount,
-      1
-    )
-    const liquidityfee = await testApi.getAddLiquidityNetworkFee(
-      KnownAssets.get(inputAssetSymbol).address,
-      KnownAssets.get(outputAssetSymbol).address,
-      inputBalanceBeforeSwap,
-      +quote.amount,
-      1
-    )
-    const receive = +quote.amount - +quote.fee
-    //Then
-    const result = +inputBalanceBeforeSwap - +fee
-    const swap = await testApi.swap(
-      KnownAssets.get(inputAssetSymbol).address,
-      KnownAssets.get(outputAssetSymbol).address,
-      result,
-      receive,
-      1,
-      reversed
-    )
-
-    //When
-    await testApi.updateBalance(inputAssetSymbol, inputBalanceBeforeSwap)
-
-    strictEqual(testApi.accountAssets.find(i => i.symbol === inputAssetSymbol).balance, String(quote.amount))//TODO
-    strictEqual(testApi.accountAssets.find(i => i.symbol === outputAssetSymbol).balance, String(quote.amount))
-  })
-
-  it.each([
-    [KnownSymbols.XOR, "100500"],
-    // [KnownSymbols.DOT, "100500"],
-    // [KnownSymbols.KSM, "100500"],
-    // [KnownSymbols.PSWAP, "100500"],
-    // [KnownSymbols.USD, "100500"],
-    // [KnownSymbols.VAL, "100500"]
-  ])('Transfer "%s", Amount = %s', async (assetSymbol, amount): Promise<void> => {
-    //Given
-    const sudoUser = testApi.createKeyring('sr25519', 'SudoUser', sudoSeed)
-    const receivedUser = testApi.createKeyring('sr25519', 'ReceiveUser')
-    const balanceBeforeSwap = testApi.accountAssets.find(i => i.symbol === assetSymbol).balance
-    //Then
-    const fee = await testApi.getTransferNetworkFee(KnownAssets.get(assetSymbol).address, receivedUser.address, amount)
-    await testApi.transfer(KnownAssets.get(assetSymbol).address, receivedUser.address, amount)
-    //When
-    await testApi.updateBalance(assetSymbol, balanceBeforeSwap)
-    const result = +testApi.accountAssets.find(i => i.symbol === assetSymbol).balance - +balanceBeforeSwap - +fee
-
-    strictEqual(result, amount)
+    strictEqual(+quote.fee, +quote.amount*0.003) //todo need learn this situation
   })
 })
