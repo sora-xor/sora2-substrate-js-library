@@ -13,6 +13,7 @@
     "pull-metadata": "ts-node --project ./tsconfig.json packages/types/scripts/pullMeta.ts",
     "export-types": "ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts",
     "test": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
+    "integration-test": "jest --watchAll --testPathPattern=./tests/integration",
     "publish-workspaces": "lerna publish from-package"
   },
   "engines": {

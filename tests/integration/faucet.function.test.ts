@@ -1,7 +1,5 @@
-import * as delay from 'delay';
-import { TestUtils } from './util';
+import { TestApi } from '../util'
 import { ApiPromise } from '@polkadot/api'
-import { strictEqual, ok } from 'assert';
 
 const TEST_ENDPOINT = 'wss://ws.stage.sora2.soramitsu.co.jp'
 
@@ -12,15 +10,14 @@ https://soramitsu.atlassian.net/wiki/spaces/PLS/pages/2224816140/Environments
 */
 
 describe('Test fauset function', (): void => {
-  let utils: TestUtils
-  let api: ApiPromise
+  let testApi: TestApi
   beforeAll(async (done) => {
-    utils = new TestUtils();
-    api = await utils.createApi(TEST_ENDPOINT);
+    testApi = new TestApi(TEST_ENDPOINT)
+    await testApi.initialize();
     done()
   })
   afterAll(async (done) => {
-    await api.disconnect()
+    await testApi.disconnect()
     done()
   })
   it('Check minimal amount', async (): Promise<void> => {
