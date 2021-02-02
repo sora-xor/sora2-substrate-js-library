@@ -3,7 +3,7 @@ import { TestApi } from '../util'
 import { strictEqual } from 'assert'
 import { ENV } from '../env'
 
-const env = ENV.STAGE
+const env = ENV.DEV
 const TEST_ENDPOINT = env.URL
 const sudoSeed = env.SUDO_SEED
 const dexSeed = env.DEX_SEED
@@ -27,6 +27,7 @@ describe('Test SWAP function', (): void => {
     testApi.logout()
     done()
   })
+  
   it.skip.each([//This case not fixed on backend
     [KnownSymbols.XOR, KnownSymbols.VAL, 10],
     [KnownSymbols.XOR, KnownSymbols.PSWAP, 100.01],
@@ -53,6 +54,7 @@ describe('Test SWAP function', (): void => {
     expect(reversedQuote.fee).toBe(quote.fee)
     expect(+reversedQuote.amount).toBe(amount)
   })
+
   it.skip.each([//This case not fixed on backend
     [KnownSymbols.XOR, KnownSymbols.VAL, 1],
     [KnownSymbols.XOR, KnownSymbols.PSWAP, 100.01],
@@ -60,7 +62,7 @@ describe('Test SWAP function', (): void => {
     [KnownSymbols.PSWAP, KnownSymbols.XOR, 9999.99],
     [KnownSymbols.PSWAP, KnownSymbols.VAL, 100000],
     [KnownSymbols.VAL, KnownSymbols.PSWAP, 1000000]
-  ])('Reversed network fee should be equals network fee AssetA=%s, AssetB=%s, Amount=%s', async (inputAssetSymbol, outputAssetSymbol, amount): Promise<void> => {
+  ])('Reversed network fee should be same network fee AssetA=%s, AssetB=%s, Amount=%s', async (inputAssetSymbol, outputAssetSymbol, amount): Promise<void> => {
     //Given
     await testApi.importAccount(testUserSeed,"TestUser","1")
 
@@ -82,6 +84,7 @@ describe('Test SWAP function', (): void => {
     //When
     strictEqual(networkFee, reverseNetworkFee)
   })
+
   it.each([
     [KnownSymbols.XOR, KnownSymbols.VAL, 1, false, "1"],
     [KnownSymbols.XOR, KnownSymbols.PSWAP, 1, false, "1"],
@@ -145,14 +148,14 @@ describe('Test SWAP function', (): void => {
     expect(+testApi.accountAssets.find(i => i.symbol === outputAssetSymbol).balance).toBeCloseTo(expectOutputBalance, 4)
   })
 
-  it.only.each([
+  it.each([
     [KnownSymbols.XOR, KnownSymbols.VAL, 100, false, "1"],
     [KnownSymbols.XOR, KnownSymbols.PSWAP, 100, false, "1"],
     [KnownSymbols.VAL, KnownSymbols.XOR, 100, false, "1"],
     [KnownSymbols.PSWAP, KnownSymbols.XOR, 100, false, "1"],
     // [KnownSymbols.VAL, KnownSymbols.PSWAP, 0.0001, false, "1"], //Not implemented yet
     // [KnownSymbols.PSWAP, KnownSymbols.VAL, 0.0001, false, "1"] //Not implemented yet
-  ])('SWAP all %s tokens to %s, input amount = %s', async (inputAssetSymbol, outputAssetSymbol, amount, reversed, slippageTolerance): Promise<void> => {
+  ])('SWAP all %s tokens to %s, amount = %s', async (inputAssetSymbol, outputAssetSymbol, amount, reversed, slippageTolerance): Promise<void> => {
     //Given
     let swapAmount = amount
     let receiveAmount: number
@@ -210,6 +213,7 @@ describe('Test SWAP function', (): void => {
     expect(+inputBalance).toBe(0)
     expect(+outputBalance).toBeCloseTo(receiveAmount + amountForFee, 4)
   })
+
   it.each([
     [KnownSymbols.XOR, KnownSymbols.VAL, 10, false, "1"],
     [KnownSymbols.XOR, KnownSymbols.VAL, 10, true, "1"],

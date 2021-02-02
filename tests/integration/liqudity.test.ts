@@ -2,11 +2,10 @@ import { connection, DexApi, KnownAssets, KnownSymbols } from '@sora-substrate/u
 import { TestApi } from '../util'
 import { ENV } from '../env'
 
-const env = ENV.STAGE
+const env = ENV.DEV
 const TEST_ENDPOINT = env.URL
-const sudoSeed = env.SUDO_SEED
 const dexSeed = env.DEX_SEED
-const testUserSeed = env.USER_SEED
+const liquidityUserSeed = env.LIQUIDITY_USER_SEED
 
 describe('Liquidity test functions', (): void => {
   let testApi: TestApi
@@ -22,21 +21,37 @@ describe('Liquidity test functions', (): void => {
     await connection.close()
     done()
   })
-  it('Get liquidity queue', async (): Promise<void> => {
+  it.each([
+    [KnownSymbols.XOR, KnownSymbols.VAL, 100, 100, "1"],
+    [KnownSymbols.XOR, KnownSymbols.PSWAP, 100, 100, "1"]
+  ])('Add liquidity', async (symbolA: KnownSymbols, symbolB: KnownSymbols, amountA: number, amountB: number, slippageTolerance: string): Promise<void> => {
     //Given
-    await testApi.importAccount(testUserSeed,"TestUser","1")
-    const liquidityAsset = await testApi.getLiquidityInfo(KnownAssets.get(KnownSymbols.XOR).address, KnownAssets.get(KnownSymbols.PSWAP).address)
+    const dexKeyPair = testApi.createKeyring('sr25519', 'dex', dexSeed)
+    const liquidityUser = testApi.createKeyring('sr25519', 'liquidityUser', liquidityUserSeed)
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    const tokenA = KnownAssets.get(symbolA)
+    const tokenB = KnownAssets.get(symbolB)
+    await testApi.importAccount(liquidityUserSeed,"liquidityUser","1")
+
+    const liquidityFee = await testApi.getAddLiquidityNetworkFee(tokenA.address, tokenB.address, amountA, amountB, slippageTolerance)
+    await testApi.mintTokens(dexKeyPair, amountA + +liquidityFee, liquidityUser, tokenA)
+    await testApi.mintTokens(dexKeyPair, amountB, liquidityUser, tokenB)
+    await testApi.getKnownAccountAssets()
+    
+    const liquidityInfo = await testApi.getLiquidityInfo(tokenA.address, tokenB.address)
+    const liquidityReserve = await testApi.getLiquidityReserves(tokenA.address, tokenB.address)
+    const accountLiquidity = await testApi.getAccountLiquidity(tokenA.address, tokenB.address)
+    
     //Then
-    const accLiquidity = await testApi.getAccountLiquidity(KnownAssets.get(KnownSymbols.XOR).address, KnownAssets.get(KnownSymbols.PSWAP).address)
-    const x = await testApi.getLiquidityReserves(KnownAssets.get(KnownSymbols.XOR).address, KnownAssets.get(KnownSymbols.PSWAP).address)
-    await testApi.addLiquidity(KnownAssets.get(KnownSymbols.XOR).address, KnownAssets.get(KnownSymbols.PSWAP).address, 100000000000000000000, 100000000000000000000)
+    await testApi.addLiquidity(tokenA.address, tokenB.address, amountA, amountB, slippageTolerance)
+    await testApi.updateAccountLiquidity()
+
     //When
-    const accLiquidityAfter = await testApi.getAccountLiquidity(KnownAssets.get(KnownSymbols.XOR).address, KnownAssets.get(KnownSymbols.PSWAP).address)
-    const y = await testApi.getLiquidityReserves(KnownAssets.get(KnownSymbols.XOR).address, KnownAssets.get(KnownSymbols.PSWAP).address)
-    console.log("liquidityInfo")
+    expect(accountLiquidity.firstBalance).toBe(amountA)
+    expect(accountLiquidity.secondAddress).toBe(amountB)
   })
 
-  it('Delete liquidity', async (): Promise<void> => {
+  it('Remove liquidity', async (): Promise<void> => {
     //Given
 
     //Then

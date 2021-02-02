@@ -1,8 +1,8 @@
-import { connection, FPNumber, KnownAssets, KnownSymbols } from '@sora-substrate/util'
+import { connection, KnownAssets, KnownSymbols } from '@sora-substrate/util'
 import { TestApi } from '../util'
 import { ENV } from '../env'
 
-const env = ENV.STAGE
+const env = ENV.DEV
 const TEST_ENDPOINT = env.URL
 const sudoSeed = env.SUDO_SEED
 const dexSeed = env.DEX_SEED
