@@ -529,8 +529,8 @@ export class DexApi extends BaseApi {
         balance
       } as AccountLiquidity
       knownLiquidity.push(asset)
-      this.addToLiquidityList(asset)
     }
+    this.liquidity = knownLiquidity
     if (this.storage) {
       this.storage.set('liquidity', JSON.stringify(this.liquidity))
     }
