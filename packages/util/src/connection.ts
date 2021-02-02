@@ -45,7 +45,7 @@ class Connection {
   }
 
   public async close (): Promise<void> {
-    await this.withLoading(this.stop)
+    await this.withLoading(async () => await this.stop())
   }
 
   public async restart (endpoint: string): Promise<void> {

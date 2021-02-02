@@ -738,51 +738,6 @@ export class DexApi extends BaseApi {
   }
 
   /**
-   * Create token pair if user is the first liquidity provider.
-   * Before it you should check will user be the first liquidity provider or not
-   * (`getLiquidityReserves()` -> `['0', '0']`).
-   *
-   * Condition: Account **must** have CAN_MANAGE_DEX( DEXId ) permission,
-   * XOR asset **should** be required for any pair
-   * @param firstAssetAddress
-   * @param secondAssetAddress
-   * @param firstAmount
-   * @param secondAmount
-   * @param slippageTolerance Slippage tolerance coefficient (in %)
-   */
-  public async createPair (
-    firstAssetAddress: string,
-    secondAssetAddress: string,
-    firstAmount: NumberLike,
-    secondAmount: NumberLike,
-    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
-  ): Promise<void> {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    assert([firstAssetAddress, secondAssetAddress].includes(xor.address), Messages.xorIsRequired)
-    const baseAssetId = firstAssetAddress === xor.address ? firstAssetAddress : secondAssetAddress
-    const targetAssetId = firstAssetAddress !== xor.address ? firstAssetAddress : secondAssetAddress
-    const baseAssetAmount = baseAssetId === firstAssetAddress ? firstAmount : secondAmount
-    const targetAssetAmount = targetAssetId === secondAssetAddress ? secondAmount : firstAmount
-    const params = await this.calcAddLiquidityParams(baseAssetId, targetAssetId, baseAssetAmount, targetAssetAmount, slippageTolerance)
-    const transactions = [
-      this.api.tx.tradingPair.register(this.defaultDEXId, baseAssetId, targetAssetId),
-      this.api.tx.poolXyk.initializePool(this.defaultDEXId, baseAssetId, targetAssetId),
-      this.api.tx.poolXyk.depositLiquidity(...params.args)
-    ]
-    await this.submitExtrinsic(
-      this.api.tx.utility.batch(transactions),
-      this.account.pair,
-      {
-        type: Operation.CreatePair,
-        symbol: params.firstAsset.symbol,
-        symbol2: params.secondAsset.symbol,
-        amount: `${baseAssetAmount}`,
-        amount2: `${targetAssetAmount}`
-      }
-    )
-  }
-
-  /**
    * Get network fee for add liquidity operation
    * @param firstAssetAddress
    * @param secondAssetAddress
@@ -826,6 +781,94 @@ export class DexApi extends BaseApi {
         symbol2: params.secondAsset.symbol,
         amount: `${firstAmount}`,
         amount2: `${secondAmount}`
+      }
+    )
+  }
+
+  private async calcCreatePairParams (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
+  ) {
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    assert([firstAssetAddress, secondAssetAddress].includes(xor.address), Messages.xorIsRequired)
+    const baseAssetId = firstAssetAddress === xor.address ? firstAssetAddress : secondAssetAddress
+    const targetAssetId = firstAssetAddress !== xor.address ? firstAssetAddress : secondAssetAddress
+    const exists = await this.checkLiquidity(baseAssetId, targetAssetId)
+    assert(!exists, Messages.pairAlreadyCreated)
+    const baseAssetAmount = baseAssetId === firstAssetAddress ? firstAmount : secondAmount
+    const targetAssetAmount = targetAssetId === secondAssetAddress ? secondAmount : firstAmount
+    const params = await this.calcAddLiquidityParams(baseAssetId, targetAssetId, baseAssetAmount, targetAssetAmount, slippageTolerance)
+    return {
+      pairCreationArgs: [
+        this.defaultDEXId,
+        baseAssetId,
+        targetAssetId
+      ],
+      addLiquidityArgs: params.args,
+      firstAsset: params.firstAsset,
+      secondAsset: params.secondAsset,
+      baseAssetAmount,
+      targetAssetAmount
+    }
+  }
+
+  /**
+   * Get network fee for pair creation operation
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   * @param firstAmount
+   * @param secondAmount
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   */
+  public async getCreatePairNetworkFee (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
+  ): Promise<string> {
+    const params = await this.calcCreatePairParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
+    return await this.getNetworkFee(this.accountPair, Operation.CreatePair, params)
+  }
+
+  /**
+   * Create token pair if user is the first liquidity provider and pair is not created.
+   * Before it you should check liquidity
+   * (`checkLiquidity()` -> `false`).
+   *
+   * Condition: Account **must** have CAN_MANAGE_DEX( DEXId ) permission,
+   * XOR asset **should** be required for any pair
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   * @param firstAmount
+   * @param secondAmount
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   */
+  public async createPair (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
+  ): Promise<void> {
+    const params = await this.calcCreatePairParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
+    const transactions = [
+      (this.api.tx.tradingPair as any).register(...params.pairCreationArgs),
+      this.api.tx.poolXyk.initializePool(...params.pairCreationArgs),
+      this.api.tx.poolXyk.depositLiquidity(...params.addLiquidityArgs)
+    ]
+    await this.submitExtrinsic(
+      this.api.tx.utility.batch(transactions),
+      this.account.pair,
+      {
+        type: Operation.CreatePair,
+        symbol: params.firstAsset.symbol,
+        symbol2: params.secondAsset.symbol,
+        amount: `${params.baseAssetAmount}`,
+        amount2: `${params.targetAssetAmount}`
       }
     )
   }
