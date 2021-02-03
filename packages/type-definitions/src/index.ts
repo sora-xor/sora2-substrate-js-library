@@ -23,9 +23,10 @@ const overrides = {
   Address: 'AccountId',
   LookupSource: 'AccountId',
   AssetId: 'AssetId32',
-  Balance: 'FixedU128',
   Keys: 'SessionKeys2',
-  RefCount: 'u32'
+  Balance: 'u128',
+  RefCount: 'u32',
+  TAssetBalance: 'Balance'
 };
 
 export const types = {
