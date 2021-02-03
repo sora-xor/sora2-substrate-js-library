@@ -64,11 +64,10 @@ export default {
             balance: 'Balance',
         },
         AssetInfo: {
-            asset_id: "AssetId",
-            symbol: "AssetSymbolStr",
-            precision: "u8"
+            asset_id: 'AssetId',
+            symbol: 'AssetSymbolStr',
+            precision: 'u8'
         },
-        AssetSymbolStr: "String",
-
+        AssetSymbolStr: 'String',
     }
 }
