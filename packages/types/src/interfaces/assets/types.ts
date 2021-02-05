@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import { Struct } from '@polkadot/types/codec';
-import { Text, u8 } from '@polkadot/types/primitive';
+import { Text, bool, u8 } from '@polkadot/types/primitive';
 import { AssetId, Balance } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetInfo */
@@ -10,6 +10,7 @@ export interface AssetInfo extends Struct {
   readonly asset_id: AssetId;
   readonly symbol: AssetSymbolStr;
   readonly precision: u8;
+  readonly is_mintable: bool;
 }
 
 /** @name AssetSymbolStr */
