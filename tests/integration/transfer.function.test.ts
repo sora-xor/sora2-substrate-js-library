@@ -1,12 +1,11 @@
 import { connection, KnownAssets, KnownSymbols } from '@sora-substrate/util'
 import { TestApi } from '../util'
-import { ENV } from '../env'
+import { config } from '../config'
 
-const env = ENV.DEV
-const TEST_ENDPOINT = env.URL
-const sudoSeed = env.SUDO_SEED
-const dexSeed = env.DEX_SEED
-const testUserSeed = env.USER_SEED
+const TEST_ENDPOINT = config.url
+const sudoSeed = config.sudoSeed
+const dexSeed = config.dexSeed
+const testUserSeed = config.userSeed
 
 describe('Test Transfer function', (): void => {
   let testApi: TestApi

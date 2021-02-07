@@ -1,12 +1,11 @@
 import { TestApi } from '../util'
 import { connection } from '@sora-substrate/util'
-import { ENV } from '../env'
+import { config } from '../config'
 
-const env = ENV.STAGE
-const TEST_ENDPOINT = env.URL
-const sudoSeed = env.SUDO_SEED
-const dexSeed = env.DEX_SEED
-const testUserSeed = env.USER_SEED
+const TEST_ENDPOINT = config.url
+const sudoSeed = config.sudoSeed
+const dexSeed = config.dexSeed
+const testUserSeed = config.userSeed
 
 
 /*
