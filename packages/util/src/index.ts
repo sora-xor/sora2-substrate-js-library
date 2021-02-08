@@ -1,4 +1,4 @@
-export * from './Api'
+export * from './api'
 export * from './FaucetApi'
 export * from './BaseApi'
 export * from './storage'
