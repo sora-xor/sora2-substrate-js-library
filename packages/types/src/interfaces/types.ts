@@ -8,3 +8,4 @@ export * from './runtime/types';
 export * from './template/types';
 export * from './assets/types';
 export * from './liquidityProxy/types';
+export * from './ethBridge/types';
