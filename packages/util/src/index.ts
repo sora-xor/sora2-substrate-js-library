@@ -1,6 +1,6 @@
-export * from './DexApi'
-export * from './FaucetApi'
 export * from './api'
+export * from './FaucetApi'
+export * from './BaseApi'
 export * from './storage'
 export * from './connection'
 export { FPNumber } from './fp'

@@ -1,7 +1,7 @@
 import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 
-import { BaseApi, History, Operation, KeyringType } from './api'
+import { BaseApi, History, Operation, KeyringType } from './BaseApi'
 import { getAccountAssetInfo, KnownAssets } from './assets'
 import { FPNumber, NumberLike } from './fp'
 
