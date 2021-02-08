@@ -5,3 +5,4 @@ export { default as runtime } from './runtime/definitions';
 export { default as template } from './template/definitions';
 export { default as assets } from './assets/definitions';
 export { default as liquidityProxy } from './liquidityProxy/definitions';
+export { default as ethBridge } from './ethBridge/definitions';
