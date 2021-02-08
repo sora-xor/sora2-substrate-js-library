@@ -113,6 +113,7 @@ export class BaseApi {
   }
 
   protected async getNetworkFee (signer: KeyringPair, type: Operation, ...params: Array<any>): Promise<string> {
+    let extrinsicParams = params
     const xor = KnownAssets.get(KnownSymbols.XOR)
     let extrinsic = null
     switch (type) {
@@ -128,10 +129,18 @@ export class BaseApi {
       case Operation.RemoveLiquidity:
         extrinsic = this.api.tx.poolXyk.withdrawLiquidity
         break
+      case Operation.CreatePair:
+        extrinsic = this.api.tx.utility.batch
+        extrinsicParams = [[
+          (this.api.tx.tradingPair as any).register(...params[0].pairCreationArgs),
+          this.api.tx.poolXyk.initializePool(...params[0].pairCreationArgs),
+          this.api.tx.poolXyk.depositLiquidity(...params[0].addLiquidityArgs)
+        ]]
+        break
       default:
         throw new Error('Unknown function')
     }
-    const res = await (extrinsic(...params) as SubmittableExtrinsic).paymentInfo(
+    const res = await (extrinsic(...extrinsicParams) as SubmittableExtrinsic).paymentInfo(
       signer.isLocked ? signer.address : signer,
       { signer: this.signer }
     )

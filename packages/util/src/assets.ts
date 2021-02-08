@@ -31,9 +31,9 @@ export enum PoolTokens {
 
 export enum KnownSymbols {
   XOR = 'XOR',
-  DOT = 'DOT',
-  KSM = 'KSM',
-  USD = 'USD',
+  // DOT = 'DOT',
+  // KSM = 'KSM',
+  // USD = 'USD',
   VAL = 'VAL',
   PSWAP = 'PSWAP'
 }
@@ -60,21 +60,21 @@ export const KnownAssets = new ArrayLike<Asset>([
     symbol: KnownSymbols.XOR,
     decimals: FPNumber.DEFAULT_PRECISION
   },
-  {
-    address: '0x0200010000000000000000000000000000000000000000000000000000000000',
-    symbol: KnownSymbols.DOT,
-    decimals: 10
-  },
-  {
-    address: '0x0200020000000000000000000000000000000000000000000000000000000000',
-    symbol: KnownSymbols.KSM,
-    decimals: 12
-  },
-  {
-    address: '0x0200030000000000000000000000000000000000000000000000000000000000',
-    symbol: KnownSymbols.USD,
-    decimals: FPNumber.DEFAULT_PRECISION
-  },
+  // {
+  //   address: '0x0200010000000000000000000000000000000000000000000000000000000000',
+  //   symbol: KnownSymbols.DOT,
+  //   decimals: 10
+  // },
+  // {
+  //   address: '0x0200020000000000000000000000000000000000000000000000000000000000',
+  //   symbol: KnownSymbols.KSM,
+  //   decimals: 12
+  // },
+  // {
+  //   address: '0x0200030000000000000000000000000000000000000000000000000000000000',
+  //   symbol: KnownSymbols.USD,
+  //   decimals: FPNumber.DEFAULT_PRECISION
+  // },
   {
     address: '0x0200040000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.VAL,
