@@ -8,6 +8,7 @@ import tradingPair from './tradingPair'
 import template from './template'
 import assets from './assets'
 import liquidityProxy from './liquidityProxy'
+import ethBridge from './ethBridge'
 
 const soraDefs = {
   runtime,
@@ -17,15 +18,17 @@ const soraDefs = {
   template,
   assets,
   liquidityProxy,
+  ethBridge,
 }
 
 const overrides = {
   Address: 'AccountId',
   LookupSource: 'AccountId',
   AssetId: 'AssetId32',
-  Balance: 'FixedU128',
   Keys: 'SessionKeys2',
-  RefCount: 'u32'
+  Balance: 'u128',
+  RefCount: 'u32',
+  TAssetBalance: 'Balance'
 };
 
 export const types = {
