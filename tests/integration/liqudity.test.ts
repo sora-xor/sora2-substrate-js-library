@@ -1,4 +1,4 @@
-import { connection, DexApi, KnownAssets, KnownSymbols } from '@sora-substrate/util'
+import { connection, KnownAssets, KnownSymbols } from '@sora-substrate/util'
 import { TestApi } from '../util'
 import { config } from '../config'
 
@@ -41,14 +41,14 @@ describe('Liquidity test functions', (): void => {
     await testApi.getKnownAccountAssets()
     const accountAssetA = testApi.accountAssets.find(i => i.symbol === symbolA)
     const accountAssetB = testApi.accountAssets.find(i => i.symbol === symbolB)
-    
+
     const liquidityReserve = await testApi.getLiquidityReserves(accountAssetA.address, accountAssetB.address)
     const estimate = await testApi.estimateTokensRetrieved(accountAssetA.address, accountAssetB.address, amountA, liquidityReserve[0], liquidityReserve[1])
     accountLiquidity = await testApi.getAccountLiquidity(accountAssetA.address, accountAssetB.address)
     await testApi.updateAccountLiquidity()
     const firstLiquidityBalanceBefore = accountLiquidity.firstBalance
     const secondLiquidityBalanceBefore = accountLiquidity.secondBalance
-    
+
     //Then
     await testApi.addLiquidity(accountAssetA.address, accountAssetB.address, estimate[0], estimate[1], slippageTolerance)
 
@@ -56,13 +56,13 @@ describe('Liquidity test functions', (): void => {
     await testApi.updateBalance(xor, accountAssetA.balance)
     accountLiquidity = await testApi.getAccountLiquidity(accountAssetA.address, accountAssetB.address)
     await testApi.updateAccountLiquidity()
-    
+
     const firstBalanceAfter = +firstLiquidityBalanceBefore + +estimate[0]
     const secondBalanceAfter = +secondLiquidityBalanceBefore + +estimate[1]
     expect(+accountLiquidity.firstBalance).toBeCloseTo(+firstBalanceAfter, 5)
     expect(+accountLiquidity.secondBalance).toBeCloseTo(+secondBalanceAfter, 5)
   })
- 
+
   it.each([
     [KnownSymbols.XOR, KnownSymbols.VAL, 10, "1"],
     [KnownSymbols.XOR, KnownSymbols.PSWAP, 100, "1"],
@@ -162,7 +162,7 @@ describe('Liquidity test functions', (): void => {
 
   it("Remove liquidity during change total supply with swap")
   //TODO
-  
+
   it("Remove liquidity during change total supply with add supply")
   //TODO
 })

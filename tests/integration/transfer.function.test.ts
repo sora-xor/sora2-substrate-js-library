@@ -60,9 +60,9 @@ describe('Test Transfer function', (): void => {
 
     //Then
     await testApi.transfer(inputAsset.address, receiver.address, transferAmount)
-    
+
     //When
-    await testApi.updateBalance(inputAsset, balanceBeforeTransfer)    
+    await testApi.updateBalance(inputAsset, balanceBeforeTransfer)
     const result = +balanceBeforeTransfer - amount
 
     expect(+senderAccountAsset.balance).toBe(result)

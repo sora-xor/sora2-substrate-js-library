@@ -1,11 +1,11 @@
 import * as bip39 from 'bip39'
 import { ApiPromise } from '@polkadot/api'
-import { Asset, DexApi, KnownAssets, KnownSymbols, FPNumber } from '@sora-substrate/util'
+import { Asset, KnownAssets, KnownSymbols, FPNumber, Api } from '@sora-substrate/util'
 import { Keyring } from '@polkadot/api'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import { KeyringPair } from '@polkadot/keyring/types'
 
-export class TestApi extends DexApi {
+export class TestApi extends Api {
 
   private async innerSubmitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, finishCallback: any): Promise<void> {
     // this is quick example, refer to https://polkadot.js.org/docs/api/cookbook/tx and https://polkadot.js.org/docs/api/start/api.tx.subs
@@ -56,7 +56,7 @@ export class TestApi extends DexApi {
         await new Promise((r) => setTimeout(r, 3000))
       }
       else if (i==10 && balanceBefore == this.accountAssets.find(i => i.symbol === asset.symbol).balance) {
-        console.log("Balance is not updated after 10 times") 
+        console.log("Balance is not updated after 10 times")
         Promise.reject
       } else {
         Promise.resolve
@@ -77,7 +77,7 @@ export class TestApi extends DexApi {
     const keyring = new Keyring({ type: cryptoType });
     if (mnemonic) {
       return keyring.addFromMnemonic(mnemonic, { name: userName })
-    } 
+    }
     else {
       const generatedMnemonic = bip39.generateMnemonic(!mnemonicLength ? 12 : mnemonicLength)
       console.log("Generated mnemonic:" + generatedMnemonic)
@@ -86,7 +86,7 @@ export class TestApi extends DexApi {
   }
 
   /**
-   * Mint all assets from KnownAssets on Amount to this.account or receiverKeyring if it passed 
+   * Mint all assets from KnownAssets on Amount to this.account or receiverKeyring if it passed
    * @param dexKeyPair Account with access to mint assets
    * @param amount Amount for mint, keep decimal of asset in mind.
    * @param receiver Receiver KeyringPair
@@ -126,7 +126,7 @@ export class TestApi extends DexApi {
           await this.customSubmitExtrinsic(this.api.tx.assets.mint(token.address, this.accountPair.address, amountString), dexKeyPair, "Mint " + token.symbol)
         } else {
           console.log("=========================================================="+'\n'+
-          "User " +(!receiver ? this.accountPair.address : receiver.address)+ "have: " 
+          "User " +(!receiver ? this.accountPair.address : receiver.address)+ "have: "
           +new FPNumber(receiverBalance, token.decimals).toFixed()+
           " of " +token.symbol+ '\n'+
           "==========================================================")
@@ -179,7 +179,7 @@ export class TestApi extends DexApi {
       ), sender, "Transfer " +asset.symbol+ " amount: " +amount+ " from: " +sender.address+ " to: " +receiver.address)
     } else {
       console.log("=========================================================="+'\n'+
-      "User " +receiver.address+ "have: " 
+      "User " +receiver.address+ "have: "
       +new FPNumber(receiverBalance, asset.decimals).toFixed()+
       " of " +asset.symbol+ '\n'+
       "==========================================================")
@@ -188,7 +188,7 @@ export class TestApi extends DexApi {
 
   /**
    * Checks the total liquidity of PoolTokens with XOR and the asset from KnownAssets, if it is empty makes a deposit.
-   * @param amount 
+   * @param amount
    */
   public async setLiquidity(amount: number): Promise<void>{
     // const ListAsset = await (this.api.rpc as any).assets.listAssetInfos() //TODO make add liquidity for all assets
@@ -229,9 +229,9 @@ export class TestApi extends DexApi {
 
   /**
    * Checks the environment if it needs mint tokens, create trading pairs and add liquidity.
-   * @param sudoSeed 
-   * @param testUserSeed 
-   * @param dexSeed 
+   * @param sudoSeed
+   * @param testUserSeed
+   * @param dexSeed
    */
   public async setupEnvironment(sudoSeed: string, testUserSeed: string, dexSeed: string): Promise<void>{
     console.log('Setup environment')

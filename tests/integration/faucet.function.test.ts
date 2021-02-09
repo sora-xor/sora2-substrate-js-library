@@ -26,7 +26,7 @@ describe('Test fauset function', (): void => {
   })
   it('Check minimal amount', async (): Promise<void> => {
     //Given
-  
+
     //Then
 
     //When

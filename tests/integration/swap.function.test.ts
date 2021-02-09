@@ -26,7 +26,7 @@ describe('Test SWAP function', (): void => {
     testApi.logout()
     done()
   })
-  
+
   it.skip.each([//This case not fixed on backend
     [KnownSymbols.XOR, KnownSymbols.VAL, 10],
     [KnownSymbols.XOR, KnownSymbols.PSWAP, 100.01],
