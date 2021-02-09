@@ -109,7 +109,7 @@ describe('Liquidity test functions', (): void => {
     expect(+accountAssetB.balance).toBeCloseTo(balanceAfterRemoveB, 5)
   })
 
-  it.only.each([
+  it.each([
     [KnownSymbols.XOR, KnownSymbols.VAL, 10, "1"],
     [KnownSymbols.XOR, KnownSymbols.PSWAP, 100, "1"],
     [KnownSymbols.XOR, KnownSymbols.VAL, 300, "1"],
@@ -159,4 +159,10 @@ describe('Liquidity test functions', (): void => {
     expect(+accountLiquidity.firstBalance).toBe(0)
     expect(+accountLiquidity.secondBalance).toBe(0)
   })
+
+  it("Remove liquidity during change total supply with swap")
+  //TODO
+  
+  it("Remove liquidity during change total supply with add supply")
+  //TODO
 })

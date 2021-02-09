@@ -7,7 +7,6 @@ interface Config {
 }
 
 export let config: Config
-process.env.ENV = 'TEST'
 
 if(process.env.ENV === 'DEV') {
   config = {
