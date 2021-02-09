@@ -138,6 +138,12 @@ export class BaseApi {
           this.api.tx.poolXyk.depositLiquidity(...params[0].addLiquidityArgs)
         ]]
         break
+      case Operation.EthBridgeOutgoing:
+        extrinsic = this.api.tx.ethBridge.transferToSidechain
+        break
+      case Operation.EthBridgeIncoming:
+        extrinsic = this.api.tx.ethBridge.requestFromSidechain
+        break
       default:
         throw new Error('Unknown function')
     }
@@ -176,13 +182,15 @@ export enum Operation {
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
   CreatePair = 'CreatePair',
-  Faucet = 'Faucet'
+  Faucet = 'Faucet',
+  EthBridgeOutgoing = 'EthBridgeOutgoing',
+  EthBridgeIncoming = 'EthBridgeIncoming'
 }
 
 export interface History {
   type: Operation;
-  amount: string;
-  symbol: string;
+  amount?: string;
+  symbol?: string;
   id?: string;
   blockId?: string;
   to?: string;
@@ -193,4 +201,5 @@ export interface History {
   from?: string;
   status?: string;
   errorMessage?: string;
+  hash?: string; // For bridge hashes
 }
