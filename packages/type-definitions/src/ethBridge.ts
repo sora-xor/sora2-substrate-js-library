@@ -37,6 +37,10 @@ export default {
           name: 'accountId',
           type: 'AccountId'
         },
+        {
+          name: 'statusFilter',
+          type: 'Option<RequestStatus>'
+        },
       ],
       type: 'Result<Vec<H256>, DispatchError>'
     },
@@ -58,8 +62,9 @@ export default {
       _enum: [
         "Pending",
         "Frozen",
-        "Ready",
-        "Failed"
+        "ApprovesReady",
+        "Failed",
+        "Done"
       ]
     },
     SignatureParams: {
@@ -75,6 +80,7 @@ export default {
         "RemovePeer",
         "ClaimPswap",
         "CancelOutgoingRequest",
+        "MarkAsDone",
       ]
     },
     CurrencyIdEncoded: {
@@ -88,7 +94,7 @@ export default {
       from: "AccountId",
       to: "EthereumAddress",
       asset_id: "AssetId",
-      // amount: "Balance",
+      amount: "Balance",
       nonce: "Index",
     },
     OutgoingTransferEthEncoded: {

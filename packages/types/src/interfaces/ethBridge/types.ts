@@ -141,6 +141,7 @@ export interface IncomingRequestKind extends Enum {
   readonly isRemovePeer: boolean;
   readonly isClaimPswap: boolean;
   readonly isCancelOutgoingRequest: boolean;
+  readonly isMarkAsDone: boolean;
 }
 
 /** @name IncomingTransfer */
@@ -196,6 +197,7 @@ export interface OutgoingTransfer extends Struct {
   readonly from: AccountId;
   readonly to: EthereumAddress;
   readonly asset_id: AssetId;
+  readonly amount: Balance;
   readonly nonce: Index;
 }
 
@@ -228,8 +230,9 @@ export interface RemovePeerOutgoingRequestEncoded extends Struct {
 export interface RequestStatus extends Enum {
   readonly isPending: boolean;
   readonly isFrozen: boolean;
-  readonly isReady: boolean;
+  readonly isApprovesReady: boolean;
   readonly isFailed: boolean;
+  readonly isDone: boolean;
 }
 
 /** @name SignatureParams */
