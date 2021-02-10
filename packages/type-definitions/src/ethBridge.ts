@@ -11,7 +11,7 @@ export default {
       type: 'Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>'
     },
     getApprovedRequests: {
-      description: 'Get approved encoded requests and their approves.',
+      description: 'Get approved encoded requests and their approvals.',
       params: [
         {
           name: 'requestHashes',
@@ -20,8 +20,8 @@ export default {
       ],
       type: 'Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchError>'
     },
-    getApproves: {
-      description: 'Get approves of the given requests.',
+    getApprovals: {
+      description: 'Get approvals of the given requests.',
       params: [
         {
           name: 'requestHashes',
@@ -62,7 +62,7 @@ export default {
       _enum: [
         "Pending",
         "Frozen",
-        "ApprovesReady",
+        "ApprovalsReady",
         "Failed",
         "Done"
       ]
@@ -97,7 +97,7 @@ export default {
       amount: "Balance",
       nonce: "Index",
     },
-    OutgoingTransferEthEncoded: {
+    OutgoingTransferEncoded: {
       currency_id: "CurrencyIdEncoded",
       amount: "U256",
       to: "EthereumAddress",
@@ -105,13 +105,13 @@ export default {
       tx_hash: "H256",
       raw: "Vec<u8>",
     },
-    AddAssetOutgoingRequest: {
+    OutgoingAddAsset: {
       author: "AccountId",
       asset_id: "AssetId",
       supply: "Balance",
       nonce: "Index",
     },
-    AddAssetRequestEncoded: {
+    OutgoingAddAssetEncoded: {
       name: "String",
       symbol: "String",
       decimal: "u8",
@@ -120,7 +120,7 @@ export default {
       hash: "H256",
       raw: "Vec<u8>",
     },
-    AddTokenOutgoingRequest: {
+    OutgoingAddToken: {
       author: "AccountId",
       token_address: "EthereumAddress",
       ticker: "String",
@@ -128,7 +128,7 @@ export default {
       decimals: "u8",
       nonce: "Index",
     },
-    AddTokenRequestEncoded: {
+    OutgoingAddTokenEncoded: {
       token_address: "EthereumAddress",
       ticker: "String",
       name: "String",
@@ -136,44 +136,44 @@ export default {
       hash: "H256",
       raw: "Vec<u8>",
     },
-    AddPeerOutgoingRequest: {
+    OutgoingAddPeer: {
       author: "AccountId",
       peer_address: "EthereumAddress",
       peer_account_id: "AccountId",
       nonce: "Index",
     },
-    AddPeerOutgoingRequestEncoded: {
+    OutgoingAddPeerEncoded: {
       peer_address: "EthereumAddress",
       tx_hash: "H256",
       raw: "Vec<u8>",
     },
-    RemovePeerOutgoingRequest: {
+    OutgoingRemovePeer: {
       author: "AccountId",
       peer_account_id: "AccountId",
       peer_address: "EthereumAddress",
       nonce: "Index",
     },
-    RemovePeerOutgoingRequestEncoded: {
+    OutgoingRemovePeerEncoded: {
       peer_address: "EthereumAddress",
       tx_hash: "H256",
       raw: "Vec<u8>",
     },
     OutgoingRequest: {
       _enum: {
-        OutgoingTransfer: "OutgoingTransfer",
-        AddAsset: "AddAssetOutgoingRequest",
-        AddToken: "AddTokenOutgoingRequest",
-        AddPeer: "AddPeerOutgoingRequest",
-        RemovePeer: "RemovePeerOutgoingRequest",
+        Transfer: "OutgoingTransfer",
+        AddAsset: "OutgoingAddAsset",
+        AddToken: "OutgoingAddToken",
+        AddPeer: "OutgoingAddPeer",
+        RemovePeer: "OutgoingRemovePeer",
       }
     },
     OutgoingRequestEncoded: {
       _enum: {
-        OutgoingTransfer: "OutgoingTransferEthEncoded",
-        AddAsset: "AddAssetRequestEncoded",
-        AddToken: "AddTokenRequestEncoded",
-        AddPeer: "AddPeerOutgoingRequestEncoded",
-        RemovePeer: "RemovePeerOutgoingRequestEncoded",
+        Transfer: "OutgoingTransferEncoded",
+        AddAsset: "OutgoingAddAssetEncoded",
+        AddToken: "OutgoingAddTokenEncoded",
+        AddPeer: "OutgoingAddPeerEncoded",
+        RemovePeer: "OutgoingRemovePeerEncoded",
       }
     },
     IncomingTransfer: {
@@ -210,7 +210,7 @@ export default {
       at_height: "u64",
       timepoint: "Timepoint",
     },
-    CancelOutgoingRequest: {
+    IncomingCancelOutgoingRequest: {
       request: "OutgoingRequest",
       tx_input: "Vec<u8>",
       tx_hash: "H256",
@@ -223,7 +223,7 @@ export default {
         AddAsset: "IncomingAddToken",
         ChangePeers: "IncomingChangePeers",
         ClaimPswap: "IncomingClaimPswap",
-        CancelOutgoingRequest: "CancelOutgoingRequest",
+        CancelOutgoingRequest: "IncomingCancelOutgoingRequest",
       }
     },
     OffchainRequest: {
