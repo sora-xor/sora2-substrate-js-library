@@ -1,13 +1,13 @@
 {
   "name": "@sora-substrate/api-derive",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@sora-substrate/types": "^0.4.0",
+    "@sora-substrate/types": "^0.4.1",
     "@babel/runtime": "^7.10.2",
     "@polkadot/api-derive": "^2.1.2-8",
     "rxjs": "^6.5.5"

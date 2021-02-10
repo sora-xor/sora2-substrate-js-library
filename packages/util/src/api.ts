@@ -4,6 +4,7 @@ import { KeypairType } from '@polkadot/util-crypto/types'
 import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
+import { Signer } from '@polkadot/types/types'
 
 import {
   KnownAssets,
@@ -21,6 +22,7 @@ import { BaseApi, Operation, KeyringType, History } from './BaseApi'
 import { SwapResult } from './swap'
 import { FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
+import { BridgeApi } from './BridgeApi'
 
 /**
  * Contains all necessary data and functions for the wallet
@@ -30,6 +32,7 @@ export class Api extends BaseApi {
   private readonly defaultDEXId = 0
   public readonly defaultSlippageTolerancePercent = 0.5
   public readonly seedLength = 12
+  public readonly bridge?: BridgeApi = new BridgeApi()
 
   private account?: CreateResult
   private assets: Array<AccountAsset> = []
@@ -117,6 +120,7 @@ export class Api extends BaseApi {
     password: string
   ): void {
     this.account = keyring.addUri(suri, password, { name }, this.type)
+    this.bridge.setAccount(this.account)
     if (this.storage) {
       this.storage.set('name', name)
       this.storage.set('password', encrypt(password))
@@ -210,6 +214,15 @@ export class Api extends BaseApi {
       this.storage.set('address', this.account.pair.address)
       this.storage.set('isExternal', true)
     }
+  }
+
+  /**
+   * Set signer if the pair is locked (For polkadot js extension usage)
+   * @param signer
+   */
+  public setSigner (signer: Signer): void {
+    super.setSigner(signer)
+    this.bridge.setAccount(this.account, signer)
   }
 
   private addToAssetList (asset: AccountAsset): void {
