@@ -117,5 +117,49 @@ export default {
     SwapAction: "Null",             // define properly if needed
     ValidationFunction: "Null",     // define properly if needed
     Permission: "Null",             // define properly if needed
+
+    /// Workaround for incompatible Result<T, E> serialization, can be removed when issue is resolved and polkadot-js/api dependency is updated
+    ResultBalanceInfo: {
+      _enum: {
+        Ok: 'BalanceInfo',
+        Err: 'DispatchError'
+      }
+    },
+    ResultAssetInfo: {
+      _enum: {
+        Ok: 'AssetInfo',
+        Err: 'DispatchError'
+      }
+    },
+    ResultBool: {
+      _enum: {
+        Ok: 'bool',
+        Err: 'DispatchError'
+      }
+    },
+    ResultDexApiSwapOutcomeInfo: {
+      _enum: {
+        Ok: 'SwapOutcomeInfo',
+        Err: 'DispatchError'
+      }
+    },
+    ResultVecTradingPair: {
+      _enum: {
+        Ok: 'Vec<TradingPair>',
+        Err: 'DispatchError'
+      }
+    },
+    ResultVecLiquiditySourceType: {
+      _enum: {
+        Ok: 'Vec<LiquiditySourceType>',
+        Err: 'DispatchError'
+      }
+    },
+    ResultSwapOutcomeInfo: {
+      _enum: {
+        Ok: 'SwapOutcomeInfo',
+        Err: 'DispatchError'
+      }
+    },
   }
 }

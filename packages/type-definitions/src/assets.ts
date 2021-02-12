@@ -12,7 +12,21 @@ export default {
                     type: 'AssetId'
                 },
             ],
-            type: 'Option<BalanceInfo>'
+            type: 'ResultBalanceInfo'
+        },
+        usableBalance: {
+            description: 'Get usable (free and non-frozen, except for network fees) balance of particular asset for account.',
+            params: [
+                {
+                    name: 'accountId',
+                    type: 'AccountId'
+                },
+                {
+                    name: 'assetId',
+                    type: 'AssetId'
+                },
+            ],
+            type: 'ResultBalanceInfo'
         },
         totalBalance: {
             description: 'Get total balance (free + reserved) of particular asset for account.',
@@ -26,7 +40,7 @@ export default {
                     type: 'AssetId'
                 },
             ],
-            type: 'Option<BalanceInfo>'
+            type: 'ResultBalanceInfo'
         },
         totalSupply: {
             description: 'Get total supply of particular asset on chain.',
@@ -36,7 +50,7 @@ export default {
                     type: 'AssetId'
                 },
             ],
-            type: 'Option<BalanceInfo>'
+            type: 'ResultBalanceInfo'
         },
         listAssetIds: {
             description: 'List Ids of all assets registered on chain.',
@@ -56,7 +70,7 @@ export default {
                     type: 'AssetId'
                 },
             ],
-            type: 'Option<AssetInfo>'
+            type: 'ResultAssetInfo'
         },
     },
     types: {
@@ -66,7 +80,8 @@ export default {
         AssetInfo: {
             asset_id: 'AssetId',
             symbol: 'AssetSymbolStr',
-            precision: 'u8'
+            precision: 'u8',
+            is_mintable: 'bool'
         },
         AssetSymbolStr: 'String',
     }
