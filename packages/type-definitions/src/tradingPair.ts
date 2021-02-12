@@ -8,7 +8,7 @@ export default {
                     type: 'DEXId'
                 }
             ],
-            type: 'Vec<TradingPair>'
+            type: 'ResultVecTradingPair'
         },
         isPairEnabled: {
             description: 'Query if particular trading pair is enabled for DEX.',
@@ -18,15 +18,55 @@ export default {
                     type: 'DEXId'
                 },
                 {
-                    name: 'inputAssetId',
+                    name: 'AssetIdA',
                     type: 'AssetId'
                 },
                 {
-                    name: 'outputAssetId',
+                    name: 'AssetIdB',
                     type: 'AssetId'
                 }
             ],
-            type: 'bool'
+            type: 'ResultBool'
+        },
+        listEnabledSourcesForPair: {
+            description: '',
+            params: [
+                {
+                    name: 'dexId',
+                    type: 'DEXId'
+                },
+                {
+                    name: 'AssetIdA',
+                    type: 'AssetId'
+                },
+                {
+                    name: 'AssetIdB',
+                    type: 'AssetId'
+                }
+            ],
+            type: 'ResultVecLiquiditySourceType'
+        },
+        isSourceEnabledForPair: {
+            description: '',
+            params: [
+                {
+                    name: 'dexId',
+                    type: 'DEXId'
+                },
+                {
+                    name: 'AssetIdA',
+                    type: 'AssetId'
+                },
+                {
+                    name: 'AssetIdB',
+                    type: 'AssetId'
+                },
+                {
+                    name: 'liquiditySourceType',
+                    type: 'LiquiditySourceType'
+                }
+            ],
+            type: 'ResultBool'
         }
     },
     types: {

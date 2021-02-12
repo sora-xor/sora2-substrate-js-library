@@ -4,10 +4,11 @@
 import { ITuple } from '@polkadot/types/types';
 import { Compact, Enum, Int, Struct, U8aFixed, UInt, Vec } from '@polkadot/types/codec';
 import { GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource } from '@polkadot/types/generic';
-import { Bytes, DoNotConstruct, Null, StorageKey, i128, u16, u32, u64, u8 } from '@polkadot/types/primitive';
+import { Bytes, DoNotConstruct, Null, StorageKey, bool, i128, u16, u32, u64, u8 } from '@polkadot/types/primitive';
 import { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import { Signature } from '@polkadot/types/interfaces/extrinsics';
-import { SystemOrigin } from '@polkadot/types/interfaces/system';
+import { DispatchError, SystemOrigin } from '@polkadot/types/interfaces/system';
+import { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 
 /** @name AccountId */
 export interface AccountId extends GenericAccountId {}
@@ -321,6 +322,62 @@ export interface Releases extends Enum {
   readonly isV8: boolean;
   readonly isV9: boolean;
   readonly isV10: boolean;
+}
+
+/** @name ResultAssetInfo */
+export interface ResultAssetInfo extends Enum {
+  readonly isOk: boolean;
+  readonly asOk: AssetInfo;
+  readonly isErr: boolean;
+  readonly asErr: DispatchError;
+}
+
+/** @name ResultBalanceInfo */
+export interface ResultBalanceInfo extends Enum {
+  readonly isOk: boolean;
+  readonly asOk: BalanceInfo;
+  readonly isErr: boolean;
+  readonly asErr: DispatchError;
+}
+
+/** @name ResultBool */
+export interface ResultBool extends Enum {
+  readonly isOk: boolean;
+  readonly asOk: bool;
+  readonly isErr: boolean;
+  readonly asErr: DispatchError;
+}
+
+/** @name ResultDexApiSwapOutcomeInfo */
+export interface ResultDexApiSwapOutcomeInfo extends Enum {
+  readonly isOk: boolean;
+  readonly asOk: SwapOutcomeInfo;
+  readonly isErr: boolean;
+  readonly asErr: DispatchError;
+}
+
+/** @name ResultSwapOutcomeInfo */
+export interface ResultSwapOutcomeInfo extends Enum {
+  readonly isOk: boolean;
+  readonly asOk: SwapOutcomeInfo;
+  readonly isErr: boolean;
+  readonly asErr: DispatchError;
+}
+
+/** @name ResultVecLiquiditySourceType */
+export interface ResultVecLiquiditySourceType extends Enum {
+  readonly isOk: boolean;
+  readonly asOk: Vec<LiquiditySourceType>;
+  readonly isErr: boolean;
+  readonly asErr: DispatchError;
+}
+
+/** @name ResultVecTradingPair */
+export interface ResultVecTradingPair extends Enum {
+  readonly isOk: boolean;
+  readonly asOk: Vec<TradingPair>;
+  readonly isErr: boolean;
+  readonly asErr: DispatchError;
 }
 
 /** @name RuntimeDbWeight */

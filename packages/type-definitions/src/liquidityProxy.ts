@@ -32,7 +32,7 @@ export default {
                     type: 'FilterMode'
                 },
             ],
-            type: 'Option<SwapOutcomeInfo>'
+            type: 'ResultSwapOutcomeInfo'
         }
     },
     types: {}

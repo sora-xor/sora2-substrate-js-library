@@ -8,7 +8,8 @@ async function demo(): Promise<void> {
   console.log('INITIALIZING API');
 
   // NOTE: replace to use relevant endpoint: 'ws://localhost:9944/' for local, wss://ws.address.of.chain:9944/ for testnet
-  const provider = new WsProvider('ws://localhost:9944/');
+  // const provider = new WsProvider('wss://ws.stage.sora2.soramitsu.co.jp');
+  const provider = new WsProvider('ws://localhost:9944');
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
 
@@ -21,45 +22,62 @@ async function demo(): Promise<void> {
   // not a secret, specifically generated mnemonic for this demo
   const user_b = keyring.addFromMnemonic('shield shed shallow chase peace blade erosion poem health foil federal cushion', { name: 'UserB' });
 
-  console.log(root.address.toString());
-
   // Creating types is not necessary, they will be automatically created if string is passed directly into function.
   const XORAssetId = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000000');
-  const DOTAssetId = api.createType('AssetId', '0x0200010000000000000000000000000000000000000000000000000000000000');
-  const KSMAssetId = api.createType('AssetId', '0x0200020000000000000000000000000000000000000000000000000000000000');
   const USDAssetId = api.createType('AssetId', '0x0200030000000000000000000000000000000000000000000000000000000000');
   const VALAssetId = api.createType('AssetId', '0x0200040000000000000000000000000000000000000000000000000000000000');
+  const PSWAPAssetId = api.createType('AssetId', '0x0200050000000000000000000000000000000000000000000000000000000000');
+
+  // Example to manually look up errors
+  // const decoded = api.registry.findMetaError({ index: api.createType("u8", 2), error: api.createType("u8", 1) });
+  // const { documentation, name, section } = decoded;
+  // console.log(name, section, documentation);
 
   // register pair
-  await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, DOTAssetId), root, "Enable Pair XOR-DOT");
+  await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, VALAssetId), root, "Enable Pair XOR-DOT");
 
   // initialize pool
-  await submitExtrinsic(api, api.tx.poolXyk.initializePool(0, XORAssetId, DOTAssetId), root, "Initialize Pool for Pair XOR-DOT");
+  await submitExtrinsic(api, api.tx.poolXyk.initializePool(0, XORAssetId, VALAssetId), root, "Initialize Pool for Pair XOR-VAL");
+
+  // check source existence
+  let pairs = await (api.rpc as any).tradingPair.listEnabledSourcesForPair(0, XORAssetId, VALAssetId);
+  logResult(api, pairs, "Should fail: ");
+
+  let pairEnabled = await (api.rpc as any).tradingPair.isPairEnabled(0, XORAssetId, VALAssetId);
+  logResult(api, pairEnabled, "IS XOR-VAL pair enabled");
 
   // mint xor and dot for account
   await submitExtrinsic(api, api.tx.assets.mint(XORAssetId, user_b.address, "105000000000000000000000000000000000"), root, "Mint XOR for User B");
-  await submitExtrinsic(api, api.tx.assets.mint(DOTAssetId, user_b.address, "144000000000000000000000000000000000"), root, "Mint DOT for User B");
+  await submitExtrinsic(api, api.tx.assets.mint(VALAssetId, user_b.address, "144000000000000000000000000000000000"), root, "Mint DOT for User B");
 
   // add liquidity
-  await submitExtrinsic(api, api.tx.poolXyk.depositLiquidity(0, XORAssetId, DOTAssetId, "1000000000000000000", "2000000000000000000", "0", "0"), user_b, "Add liquidity from User B");
+  await submitExtrinsic(api, api.tx.poolXyk.depositLiquidity(0, XORAssetId, VALAssetId, "1000000000000000000", "2000000000000000000", "0", "0"), user_b, "Add liquidity from User B");
 
   // check balances
-  let balanceX = await (api.rpc as any).assets.freeBalance(user_b.address, XORAssetId);
-  console.log("User B XOR FREE: ", balanceX.unwrap().balance.toString());
-  let balanceD = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
-  console.log("User B DOT FREE: ", balanceD.unwrap().balance.toString());
+  let balanceX = await (api.rpc as any).assets.usableBalance(user_b.address, XORAssetId);
+  logResult(api, balanceX, "User B XOR USABLE");
+  let balanceD = await (api.rpc as any).assets.usableBalance(user_b.address, VALAssetId);
+  logResult(api, balanceD, "User B DOT USABLE");
 
   // get the price via liquidity proxy
-  let quoted_result = await (api.rpc as any).liquidityProxy.quote(0, XORAssetId, DOTAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
-  console.log("Quoted exchange DOT: ", quoted_result.unwrap().amount.toString());
-  console.log("Quoted exchange FEE: ", quoted_result.unwrap().fee.toString());
+  let quoted_result = await (api.rpc as any).liquidityProxy.quote(0, XORAssetId, VALAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
+  logResult(api, quoted_result, "Quote XOR-VAL 1.0");
+  let quoted_result_2 = await (api.rpc as any).liquidityProxy.quote(0, VALAssetId, XORAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
+  logResult(api, quoted_result_2, "Quote VAL-XOR 1.0");
+
+
+  let quoted_result_inverse = await (api.rpc as any).liquidityProxy.quote(0, XORAssetId, VALAssetId, "998497746619929894", "WithDesiredOutput", [], "Disabled");
+  logResult(api, quoted_result_inverse, "Quote XOR-VAL 1.0");
+  let quoted_result_inverse_2 = await (api.rpc as any).liquidityProxy.quote(0, VALAssetId, XORAssetId, "332333333333333334", "WithDesiredOutput", [], "Disabled");
+  logResult(api, quoted_result_inverse_2, "Quote VAL-XOR 1.0");
 
   // perform swap via liquidity proxy
-  await submitExtrinsic(api, api.tx.liquidityProxy.swap(0, XORAssetId, DOTAssetId, { WithDesiredInput: { desired_amount_in: "1000000000000000000", min_amount_out: "0" } }, [], "Disabled"), user_b, "User B swaps");
+  await submitExtrinsic(api, api.tx.liquidityProxy.swap(0, XORAssetId, VALAssetId, { WithDesiredInput: { desired_amount_in: "1000000000000000000", min_amount_out: "0" } }, [], "Disabled"), user_b, "User B swaps");
 
   // check user_b balance
-  let balance2 = await (api.rpc as any).assets.freeBalance(user_b.address, DOTAssetId);
-  console.log("User B DOT FREE: ", balance2.unwrap().balance.toString());
+  let balance2 = await (api.rpc as any).assets.freeBalance(user_b.address, VALAssetId);
+  logResult(api, balance2, "User B DOT FREE");
+
 }
 
 async function inner_submitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, finishCallback: any): Promise<void> {
@@ -98,6 +116,25 @@ async function submitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, deb
   return new Promise((resolve, _reject) => {
     inner_submitExtrinsic(api, extrinsic, signer, resolve);
   });
+}
+
+function logError(api: ApiPromise, error, message = "", spacer = ": ") {
+  if (error.isModule) {
+    const decoded = api.registry.findMetaError(error.asModule);
+    const { documentation, name, section } = decoded;
+    console.log(`${message}${spacer}${section}.${name}: ${documentation.join(' ')}`);
+  } else {
+    // Other(message), CannotLookup, BadOrigin ...
+    console.log(message + spacer, error.toString());
+  }
+}
+
+function logResult(api: ApiPromise, result, message = "", spacer = ": ") {
+  if (result.isErr) {
+    logError(api, result.asErr, message, spacer);
+  } else {
+    console.log(message + spacer, result.asOk.toHuman());
+  }
 }
 
 demo().catch(console.error).finally(() => process.exit());

@@ -55,7 +55,7 @@ export default {
           type: 'SwapVariant'
         }
       ],
-      type: 'Option<SwapOutcomeInfo>'
+      type: 'ResultSwapOutcomeInfo'
     }
   },
   types: {}
