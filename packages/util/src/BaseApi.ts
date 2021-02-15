@@ -12,6 +12,12 @@ import { FPNumber } from './fp'
 import { encrypt } from './crypto'
 import { connection } from './connection'
 
+const isBridgeOperation = (operation: Operation) => [
+  Operation.EthBridgeIncoming,
+  Operation.EthBridgeOutgoing,
+  Operation.EthBridgeOutgoingMarkDone
+].includes(operation)
+
 export const KeyringType = 'sr25519'
 
 export class BaseApi {
@@ -85,6 +91,9 @@ export class BaseApi {
         history.endTime = Date.now()
         this.saveHistory(history)
         result.events.forEach(({ event: { data, method, section } }: any) => {
+          if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
+            history.hash = first(data.toJSON())
+          }
           if (section === 'system' && method === 'ExtrinsicFailed') {
             history.status = TransactionStatus.Error
             history.endTime = Date.now()
@@ -184,7 +193,8 @@ export enum Operation {
   CreatePair = 'CreatePair',
   Faucet = 'Faucet',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
-  EthBridgeIncoming = 'EthBridgeIncoming'
+  EthBridgeIncoming = 'EthBridgeIncoming',
+  EthBridgeOutgoingMarkDone = 'EthBridgeOutgoingMarkDone' // Maybe we don't need it
 }
 
 export interface History {

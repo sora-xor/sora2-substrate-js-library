@@ -5,12 +5,14 @@ import { Signer } from '@polkadot/types/types'
 
 import { BaseApi, Operation } from './BaseApi'
 import { Messages } from './logger'
-import { getAssetInfo } from './assets'
+import { getAssets } from './assets'
 import { FPNumber } from './fp'
 
 export interface RegisteredAsset {
   soraAddress: string;
   externalAddress: string;
+  symbol: string;
+  decimals: number;
 }
 
 /**
@@ -24,11 +26,11 @@ export enum BridgeDirection {
 }
 
 export enum BridgeTxStatus {
-  Ready = 'Ready',
+  Ready = 'ApprovalsReady',
   Pending = 'Pending',
   Frozen = 'Frozen', // CancelOutgoingRequest
-  Failed = 'Failed'
-  // Done = 'Done' Will be added soon
+  Failed = 'Failed',
+  Done = 'Done'
 }
 
 /**
@@ -48,9 +50,9 @@ export interface BridgeRequest {
   hash: string;
 }
 
+/** Outgoing transfers */
 export interface BridgeApprovedRequest {
   currencyType: BridgeCurrencyType;
-  direction: BridgeDirection;
   amount: string;
   from: string;
   to: string;
@@ -60,21 +62,17 @@ export interface BridgeApprovedRequest {
   v: Array<number>;
 }
 
-export enum BridgeTxDirection {
-  Outgoing = 'OutgoingTransfer',
-  Incoming = 'Incoming'
-}
-
 /**
  * Type of request which we will wait
  */
-export enum IncomingRequestType {
+export enum RequestType {
   Transfer = 'Transfer',
   AddAsset = 'AddAsset',
   AddPeer = 'AddPeer',
   RemovePeer = 'RemovePeer',
   ClaimPswap = 'ClaimPswap',
-  CancelOutgoingRequest = 'CancelOutgoingRequest'
+  CancelOutgoingRequest = 'CancelOutgoingRequest',
+  MarkAsDone = 'MarkAsDone'
 }
 
 /**
@@ -91,10 +89,16 @@ export enum IncomingRequestType {
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
 export class BridgeApi extends BaseApi {
+  public static ETH_NETWORK_ID = '0x0' // TODO: make it `0`
+
   private account: CreateResult
 
   constructor () {
     super()
+  }
+
+  get historyData () {
+    return this.history
   }
 
   public setAccount (account: CreateResult, signer?: Signer): void {
@@ -106,15 +110,15 @@ export class BridgeApi extends BaseApi {
 
   private async calcTransferToEthParams (asset: RegisteredAsset, amount: string | number) {
     assert(this.account, Messages.connectWallet)
-    const assetInfo = await getAssetInfo(this.api, asset.soraAddress) // TODO: make it like it was in Api class
-    const balance = new FPNumber(amount, assetInfo.decimals)
+    const balance = new FPNumber(amount, asset.decimals)
     return {
       args: [
         asset.soraAddress,
         asset.externalAddress,
-        balance.toCodecString()
+        balance.toCodecString(),
+        BridgeApi.ETH_NETWORK_ID
       ],
-      asset: assetInfo
+      asset
     }
   }
 
@@ -153,9 +157,15 @@ export class BridgeApi extends BaseApi {
    * @param type Type of operation, "Transfer" is set by default
    * @returns Network fee
    */
-  public async getRequestFromEthFee (hash: string, type: IncomingRequestType = IncomingRequestType.Transfer) {
+  public async getRequestFromEthFee (hash: string, type: RequestType = RequestType.Transfer): Promise<string> {
     assert(this.account, Messages.connectWallet)
-    return await this.getNetworkFee(this.account.pair, Operation.EthBridgeIncoming, hash, type)
+    return await this.getNetworkFee(
+      this.account.pair,
+      Operation.EthBridgeIncoming,
+      hash,
+      type,
+      BridgeApi.ETH_NETWORK_ID
+    )
   }
 
   /**
@@ -163,13 +173,29 @@ export class BridgeApi extends BaseApi {
    * @param hash Eth hash of transaction
    * @param type Type of operation, "Transfer" is set by default
    */
-  public async requestFromEth (hash: string, type: IncomingRequestType = IncomingRequestType.Transfer) {
+  public async requestFromEth (hash: string, type: RequestType = RequestType.Transfer): Promise<void> {
     assert(this.account, Messages.connectWallet)
     await this.submitExtrinsic(
-      this.api.tx.ethBridge.requestFromSidechain(hash, type),
+      this.api.tx.ethBridge.requestFromSidechain(hash, type, BridgeApi.ETH_NETWORK_ID),
       this.account.pair,
       {
         type: Operation.EthBridgeIncoming,
+        hash
+      }
+    )
+  }
+
+  /**
+   * Mark history data as `Done`
+   * @param hash Eth hash of transaction
+   */
+  public async markAsDone (hash: string): Promise<void> {
+    assert(this.account, Messages.connectWallet)
+    await this.submitExtrinsic(
+      this.api.tx.ethBridge.requestFromSidechain(hash, RequestType.MarkAsDone, BridgeApi.ETH_NETWORK_ID),
+      this.account.pair,
+      {
+        type: Operation.EthBridgeOutgoingMarkDone,
         hash
       }
     )
@@ -180,21 +206,30 @@ export class BridgeApi extends BaseApi {
    * @returns Array with all registered assets
    */
   public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
-    const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets()).toJSON()
-    return data.Ok.map(item => ({ soraAddress: item[1], externalAddress: item[2] } as RegisteredAsset))
+    const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(BridgeApi.ETH_NETWORK_ID)).toJSON()
+    const assets = await getAssets(this.api)
+    return data.Ok.map(([_, soraAddress, externalAddress]) => {
+      const asset = assets.find(a => a.address === soraAddress)
+      return {
+        soraAddress,
+        externalAddress,
+        decimals: asset.decimals,
+        symbol: asset.symbol
+      } as RegisteredAsset
+    })
   }
 
   private formatRequest (item: any): BridgeRequest {
     const formattedItem = {} as BridgeRequest
     formattedItem.status = item[1]
-    let direction = BridgeDirection.Incoming, txDirection = BridgeTxDirection.Incoming
+    let direction = BridgeDirection.Incoming, operation = RequestType.Transfer
     if (BridgeDirection.Outgoing in item[0]) {
       direction = BridgeDirection.Outgoing
-      txDirection = BridgeTxDirection.Outgoing
+      operation = RequestType.Transfer
     }
     formattedItem.direction = direction
     formattedItem.hash = item[0][direction][1]
-    const request = item[0][direction][0][txDirection]
+    const request = item[0][direction][0][operation]
     formattedItem.from = request.from
     formattedItem.soraAssetAddress = request.asset_id
     formattedItem.externalAssetAddress = request.to
@@ -207,7 +242,7 @@ export class BridgeApi extends BaseApi {
    * @returns History of request
    */
   public async getRequest (hash: string): Promise<BridgeRequest> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests([hash])).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], BridgeApi.ETH_NETWORK_ID)).toJSON()
     return first(data.Ok.map(item => this.formatRequest(item)))
   }
 
@@ -217,18 +252,17 @@ export class BridgeApi extends BaseApi {
    * @returns Array with history of requests
    */
   public async getRequests (hashes: Array<string>): Promise<Array<BridgeRequest>> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes)).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
     return data.Ok.map(item => this.formatRequest(item))
   }
 
   private formatApprovedRequest (item: any): BridgeApprovedRequest {
     const formattedItem = {} as BridgeApprovedRequest
-    formattedItem.direction = BridgeTxDirection.Incoming in item[0] ? BridgeDirection.Incoming : BridgeDirection.Outgoing
-    const request = item[0][formattedItem.direction === BridgeDirection.Incoming ? BridgeTxDirection.Incoming : BridgeTxDirection.Outgoing]
+    const request = item[0][RequestType.Transfer]
     formattedItem.hash = request.tx_hash
     formattedItem.from = request.from
     formattedItem.to = request.to
-    formattedItem.amount = request.amount
+    formattedItem.amount = FPNumber.fromCodecValue(request.amount).toString()
     formattedItem.currencyType = BridgeCurrencyType.TokenAddress in request.currency_id ? BridgeCurrencyType.TokenAddress : BridgeCurrencyType.AssetId
     formattedItem.r = []
     formattedItem.s = []
@@ -247,7 +281,7 @@ export class BridgeApi extends BaseApi {
    * @returns Approved request with proofs
    */
   public async getApprovedRequest (hash: string): Promise<BridgeApprovedRequest> {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests([hash])).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests([hash], BridgeApi.ETH_NETWORK_ID)).toHuman()
     return first(data.Ok.map(item => this.formatApprovedRequest(item)))
   }
 
@@ -257,7 +291,7 @@ export class BridgeApi extends BaseApi {
    * @returns Array with approved requests with proofs
    */
   public async getApprovedRequests (hashes: Array<string>): Promise<Array<BridgeApprovedRequest>> {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests(hashes)).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests(hashes, BridgeApi.ETH_NETWORK_ID)).toHuman()
     return data.Ok.map(item => this.formatApprovedRequest(item))
   }
 
@@ -265,10 +299,12 @@ export class BridgeApi extends BaseApi {
    * Get account requests
    * @returns Array with hashes
    */
-  public async getAccountRequests (): Promise<Array<string>> {
+  public async getAccountRequests (status = BridgeTxStatus.Ready): Promise<Array<string>> {
     assert(this.account, Messages.connectWallet)
-    const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address)).toJSON()
-    return data.Ok as Array<string>
+    const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address, status)).toJSON()
+    return data.Ok
+      .filter(([networkId, _]) => networkId === 0) // TODO: replace zero with `BridgeApi.ETH_NETWORK_ID`
+      .map(([_, hash]) => hash) as Array<string>
   }
 
   /**
@@ -277,7 +313,7 @@ export class BridgeApi extends BaseApi {
    * @returns
    */
   public async getApproves (hashes: Array<string>) {
-    const data = (await (this.api.rpc as any).ethBridge.getApproves(hashes)).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getApproves(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
     return data.Ok
   }
 }

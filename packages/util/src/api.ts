@@ -32,7 +32,7 @@ export class Api extends BaseApi {
   private readonly defaultDEXId = 0
   public readonly defaultSlippageTolerancePercent = 0.5
   public readonly seedLength = 12
-  public readonly bridge?: BridgeApi = new BridgeApi()
+  public readonly bridge: BridgeApi = new BridgeApi()
 
   private account?: CreateResult
   private assets: Array<AccountAsset> = []
@@ -65,7 +65,7 @@ export class Api extends BaseApi {
   }
 
   public get accountHistory (): Array<History> {
-    return this.history
+    return [...this.history, ...this.bridge.historyData]
   }
 
   /**
