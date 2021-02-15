@@ -169,6 +169,16 @@ export class FPNumber {
     return new FPNumber(new BigNumber(value).times(10 ** precision))
   }
 
+  /**
+   * Get FPNumber from codec value
+   * @param {(string | number)} value Codec value `(value * 10^precision)`
+   * @param {number} precision Precision
+   */
+  public static fromCodecValue (value: number | string, precision: number = FPNumber.DEFAULT_PRECISION): FPNumber {
+    const filtered = (typeof value === 'string') ? value.replace(/[, ]/g, '') : value
+    return new FPNumber(new BigNumber(filtered), precision)
+  }
+
   public value: BigNumber
 
   /**
