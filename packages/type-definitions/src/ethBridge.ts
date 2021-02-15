@@ -7,6 +7,10 @@ export default {
           name: 'requestHashes',
           type: 'Vec<H256>'
         },
+        {
+          name: 'networkId',
+          type: 'Option<NetworkId>'
+        },
       ],
       type: 'Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>'
     },
@@ -17,6 +21,10 @@ export default {
           name: 'requestHashes',
           type: 'Vec<H256>'
         },
+        {
+          name: 'networkId',
+          type: 'Option<NetworkId>'
+        },
       ],
       type: 'Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchError>'
     },
@@ -26,6 +34,10 @@ export default {
         {
           name: 'requestHashes',
           type: 'Vec<H256>'
+        },
+        {
+          name: 'networkId',
+          type: 'Option<NetworkId>'
         },
       ],
       type: 'Result<Vec<Vec<SignatureParams>>, DispatchError>'
@@ -42,15 +54,21 @@ export default {
           type: 'Option<RequestStatus>'
         },
       ],
-      type: 'Result<Vec<H256>, DispatchError>'
+      type: 'Result<Vec<(NetworkId, H256)>, DispatchError>'
     },
     getRegisteredAssets: {
       description: 'Get registered assets and tokens.',
-      params: [],
+      params: [
+        {
+          name: 'networkId',
+          type: 'Option<NetworkId>'
+        },
+      ],
       type: 'Result<Vec<(AssetKind, AssetId, Option<H160>)>, DispatchError>'
     },
   },
   types: {
+    NetworkId: "u32",
     AssetKind: {
       _enum: [
         "Thischain",
@@ -96,6 +114,7 @@ export default {
       asset_id: "AssetId",
       amount: "Balance",
       nonce: "Index",
+      network_id: "NetworkId",
     },
     OutgoingTransferEncoded: {
       currency_id: "CurrencyIdEncoded",
@@ -103,6 +122,7 @@ export default {
       to: "EthereumAddress",
       from: "EthereumAddress",
       tx_hash: "H256",
+      network_id: "H256",
       raw: "Vec<u8>",
     },
     OutgoingAddAsset: {
@@ -110,6 +130,7 @@ export default {
       asset_id: "AssetId",
       supply: "Balance",
       nonce: "Index",
+      network_id: "NetworkId",
     },
     OutgoingAddAssetEncoded: {
       name: "String",
@@ -118,6 +139,7 @@ export default {
       supply: "U256",
       sidechain_asset_id: "FixedBytes",
       hash: "H256",
+      network_id: "H256",
       raw: "Vec<u8>",
     },
     OutgoingAddToken: {
@@ -127,6 +149,7 @@ export default {
       name: "String",
       decimals: "u8",
       nonce: "Index",
+      network_id: "NetworkId",
     },
     OutgoingAddTokenEncoded: {
       token_address: "EthereumAddress",
@@ -134,6 +157,7 @@ export default {
       name: "String",
       decimals: "u8",
       hash: "H256",
+      network_id: "H256",
       raw: "Vec<u8>",
     },
     OutgoingAddPeer: {
@@ -141,10 +165,12 @@ export default {
       peer_address: "EthereumAddress",
       peer_account_id: "AccountId",
       nonce: "Index",
+      network_id: "NetworkId",
     },
     OutgoingAddPeerEncoded: {
       peer_address: "EthereumAddress",
       tx_hash: "H256",
+      network_id: "H256",
       raw: "Vec<u8>",
     },
     OutgoingRemovePeer: {
@@ -152,10 +178,12 @@ export default {
       peer_account_id: "AccountId",
       peer_address: "EthereumAddress",
       nonce: "Index",
+      network_id: "NetworkId",
     },
     OutgoingRemovePeerEncoded: {
       peer_address: "EthereumAddress",
       tx_hash: "H256",
+      network_id: "H256",
       raw: "Vec<u8>",
     },
     OutgoingRequest: {
@@ -185,6 +213,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
+      network_id: "NetworkId",
     },
     IncomingAddToken: {
       token_address: "EthereumAddress",
@@ -194,6 +223,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
+      network_id: "NetworkId",
     },
     IncomingChangePeers: {
       peer_account_id: "AccountId",
@@ -202,6 +232,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
+      network_id: "NetworkId",
     },
     IncomingClaimPswap: {
       account_id: "AccountId",
@@ -209,6 +240,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
+      network_id: "NetworkId",
     },
     IncomingCancelOutgoingRequest: {
       request: "OutgoingRequest",
@@ -216,6 +248,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
+      network_id: "NetworkId",
     },
     IncomingRequest: {
       _enum: {
@@ -226,10 +259,17 @@ export default {
         CancelOutgoingRequest: "IncomingCancelOutgoingRequest",
       }
     },
+    IncomingPreRequest: {
+      author: "AccountId",
+      hash: "H256",
+      timepoint: "Timepoint",
+      kind: "IncomingRequestKind",
+      network_id: "NetworkId",
+    },
     OffchainRequest: {
       _enum: {
         Outgoing: "(OutgoingRequest, H256)",
-        Incoming: "(AccountId, H256, Timepoint, IncomingRequestKind)",
+        Incoming: "IncomingPreRequest",
       }
     },
   }
