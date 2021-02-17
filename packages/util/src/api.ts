@@ -23,11 +23,14 @@ import { SwapResult } from './swap'
 import { FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
+import { Storage } from './storage'
 
 /**
  * Contains all necessary data and functions for the wallet
  */
 export class Api extends BaseApi {
+  public static NETWORK_ID = '0x0'
+
   private readonly type: KeypairType = KeyringType
   private readonly defaultDEXId = 0
   public readonly defaultSlippageTolerancePercent = 0.5
@@ -66,6 +69,15 @@ export class Api extends BaseApi {
 
   public get accountHistory (): Array<History> {
     return [...this.history, ...this.bridge.historyData]
+  }
+
+  /**
+   * Set storage if it should be used as data storage
+   * @param storage
+   */
+  public setStorage (storage: Storage): void {
+    super.setStorage(storage)
+    this.bridge.setStorage(storage)
   }
 
   /**
@@ -508,13 +520,13 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get account liquidity with pair where the first symbol is `XOR` and the second is from `KnownAssets`
+   * Get account liquidity with pair where the first symbol is `XOR` and the second is from `accountAssets`
    */
   public async getKnownAccountLiquidity (): Promise<Array<AccountLiquidity>> {
     assert(this.account, Messages.connectWallet)
     const xor = KnownAssets.get(KnownSymbols.XOR)
-    const knownLiquidity: Array<AccountLiquidity> = []
-    for (const item of KnownAssets.filter(item => item.symbol !== xor.symbol)) {
+    const accountLiquidity: Array<AccountLiquidity> = []
+    for (const item of this.accountAssets.filter(item => item.symbol !== xor.symbol)) {
       const props = (await this.api.query.poolXyk.properties(xor.address, item.address)).toJSON() as Array<string>
       if (!props || !props.length) {
         continue
@@ -541,13 +553,13 @@ export class Api extends BaseApi {
         decimals,
         balance
       } as AccountLiquidity
-      knownLiquidity.push(asset)
+      accountLiquidity.push(asset)
     }
-    this.liquidity = knownLiquidity
+    this.liquidity = accountLiquidity
     if (this.storage) {
       this.storage.set('liquidity', JSON.stringify(this.liquidity))
     }
-    return knownLiquidity
+    return accountLiquidity
   }
 
   /**
