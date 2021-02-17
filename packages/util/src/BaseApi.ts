@@ -93,6 +93,7 @@ export class BaseApi {
         result.events.forEach(({ event: { data, method, section } }: any) => {
           if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
             history.hash = first(data.toJSON())
+            this.saveHistory(history)
           }
           if (section === 'system' && method === 'ExtrinsicFailed') {
             history.status = TransactionStatus.Error
