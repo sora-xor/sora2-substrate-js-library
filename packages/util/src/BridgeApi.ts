@@ -108,13 +108,13 @@ export class BridgeApi extends BaseApi {
     }
   }
 
-  private async calcTransferToEthParams (asset: RegisteredAsset, amount: string | number) {
+  private async calcTransferToEthParams (asset: RegisteredAsset, to: string, amount: string | number) {
     assert(this.account, Messages.connectWallet)
     const balance = new FPNumber(amount, asset.decimals)
     return {
       args: [
         asset.soraAddress,
-        asset.externalAddress,
+        to,
         balance.toCodecString(),
         BridgeApi.ETH_NETWORK_ID
       ],
@@ -125,21 +125,23 @@ export class BridgeApi extends BaseApi {
   /**
    * Get transfer fee through the bridge
    * @param asset Registered asset
+   * @param to Ethereum account address
    * @param amount
    * @returns Network fee
    */
-  public async getTransferToEthFee (asset: RegisteredAsset, amount: string | number): Promise<string> {
-    const params = await this.calcTransferToEthParams(asset, amount)
+  public async getTransferToEthFee (asset: RegisteredAsset, to: string, amount: string | number): Promise<string> {
+    const params = await this.calcTransferToEthParams(asset, to, amount)
     return await this.getNetworkFee(this.account.pair, Operation.EthBridgeOutgoing, ...params.args)
   }
 
   /**
    * Transfer through the bridge operation
-   * @param asset Registered asset
+   * @param asset RegisteredAsset
+   * @param to Ethereum account address
    * @param amount
    */
-  public async transferToEth (asset: RegisteredAsset, amount: string | number): Promise<void> {
-    const params = await this.calcTransferToEthParams(asset, amount)
+  public async transferToEth (asset: RegisteredAsset, to: string, amount: string | number): Promise<void> {
+    const params = await this.calcTransferToEthParams(asset, to, amount)
     await this.submitExtrinsic(
       this.api.tx.ethBridge.transferToSidechain(...params.args),
       this.account.pair,
