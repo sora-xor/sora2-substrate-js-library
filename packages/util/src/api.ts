@@ -247,6 +247,51 @@ export class Api extends BaseApi {
     ~index ? this.liquidity[index] = asset : this.liquidity.push(asset)
   }
 
+  private async calcRegisterAssetParams (symbol: string, totalSupply: NumberLike, extensibleSupply: boolean) {
+    assert(this.account, Messages.connectWallet)
+    // TODO: add assert for symbol and totalSupply params
+    const precision = FPNumber.DEFAULT_PRECISION
+    const supply = new FPNumber(totalSupply)
+    return {
+      args: [
+        symbol,
+        precision,
+        supply.toCodecString(),
+        extensibleSupply
+      ]
+    }
+  }
+
+  /**
+   * Get register asset network fee
+   * @param symbol string with asset symbol
+   * @param totalSupply
+   * @param extensibleSupply
+   * @returns register asset network fee as a string
+   */
+  public async getRegisterAssetNetworkFee (symbol: string, totalSupply: NumberLike, extensibleSupply = false): Promise<string> {
+    const params = await this.calcRegisterAssetParams(symbol, totalSupply, extensibleSupply)
+    return await this.getNetworkFee(this.accountPair, Operation.RegisterAsset, ...params.args)
+  }
+
+  /**
+   * Register asset
+   * @param symbol string with asset symbol
+   * @param totalSupply
+   * @param extensibleSupply
+   */
+  public async registerAsset (symbol: string, totalSupply: NumberLike, extensibleSupply = false): Promise<void> {
+    const params = await this.calcRegisterAssetParams(symbol, totalSupply, extensibleSupply)
+    await this.submitExtrinsic(
+      (this.api.tx.assets.register as any)(...params.args),
+      this.account.pair,
+      {
+        symbol,
+        type: Operation.RegisterAsset
+      }
+    )
+  }
+
   /**
    * Get asset information
    * @param address asset address
