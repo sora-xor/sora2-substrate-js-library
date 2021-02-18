@@ -154,6 +154,9 @@ export class BaseApi {
       case Operation.EthBridgeIncoming:
         extrinsic = this.api.tx.ethBridge.requestFromSidechain
         break
+      case Operation.RegisterAsset:
+        extrinsic = this.api.tx.assets.register
+        break
       default:
         throw new Error('Unknown function')
     }
@@ -193,6 +196,7 @@ export enum Operation {
   RemoveLiquidity = 'RemoveLiquidity',
   CreatePair = 'CreatePair',
   Faucet = 'Faucet',
+  RegisterAsset = 'RegisterAsset',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
   EthBridgeOutgoingMarkDone = 'EthBridgeOutgoingMarkDone' // Maybe we don't need it
