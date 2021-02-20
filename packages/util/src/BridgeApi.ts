@@ -41,13 +41,27 @@ export enum BridgeCurrencyType {
   TokenAddress = 'TokenAddress' // -> receievByEthereumAssetAddress
 }
 
+/**
+ * Type of request which we will wait
+ */
+ export enum RequestType {
+  Transfer = 'Transfer',
+  AddAsset = 'AddAsset',
+  AddPeer = 'AddPeer',
+  RemovePeer = 'RemovePeer',
+  ClaimPswap = 'ClaimPswap',
+  CancelOutgoingRequest = 'CancelOutgoingRequest',
+  MarkAsDone = 'MarkAsDone'
+}
+
 export interface BridgeRequest {
   direction: BridgeDirection;
   from: string;
-  externalAssetAddress: string;
-  soraAssetAddress: string;
+  externalAssetAddress?: string; // For outgoing TXs
+  soraAssetAddress?: string; // For outgoing TXs
   status: BridgeTxStatus;
   hash: string;
+  kind?: RequestType; // For incoming TXs
 }
 
 /** Outgoing transfers */
@@ -60,19 +74,6 @@ export interface BridgeApprovedRequest {
   r: Array<string>;
   s: Array<string>;
   v: Array<number>;
-}
-
-/**
- * Type of request which we will wait
- */
-export enum RequestType {
-  Transfer = 'Transfer',
-  AddAsset = 'AddAsset',
-  AddPeer = 'AddPeer',
-  RemovePeer = 'RemovePeer',
-  ClaimPswap = 'ClaimPswap',
-  CancelOutgoingRequest = 'CancelOutgoingRequest',
-  MarkAsDone = 'MarkAsDone'
 }
 
 /**
@@ -230,11 +231,18 @@ export class BridgeApi extends BaseApi {
       operation = RequestType.Transfer
     }
     formattedItem.direction = direction
-    formattedItem.hash = item[0][direction][1]
-    const request = item[0][direction][0][operation]
-    formattedItem.from = request.from
-    formattedItem.soraAssetAddress = request.asset_id
-    formattedItem.externalAssetAddress = request.to
+    let request = item[0][direction]
+    if (direction === BridgeDirection.Outgoing) {
+      request = request[0][operation]
+      formattedItem.hash = item[0][direction][1]
+      formattedItem.from = request.from
+      formattedItem.soraAssetAddress = request.asset_id
+      formattedItem.externalAssetAddress = request.to
+    } else {
+      formattedItem.from = request.author
+      formattedItem.kind = request.kind
+      formattedItem.hash = request.hash
+    }
     return formattedItem
   }
 
