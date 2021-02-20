@@ -5,14 +5,11 @@ import { Signer } from '@polkadot/types/types'
 
 import { BaseApi, Operation } from './BaseApi'
 import { Messages } from './logger'
-import { getAssets } from './assets'
+import { getAssets, Asset } from './assets'
 import { FPNumber } from './fp'
 
-export interface RegisteredAsset {
-  soraAddress: string;
+export interface RegisteredAsset extends Asset {
   externalAddress: string;
-  symbol: string;
-  decimals: number;
 }
 
 /**
@@ -41,13 +38,27 @@ export enum BridgeCurrencyType {
   TokenAddress = 'TokenAddress' // -> receievByEthereumAssetAddress
 }
 
+/**
+ * Type of request which we will wait
+ */
+ export enum RequestType {
+  Transfer = 'Transfer',
+  AddAsset = 'AddAsset',
+  AddPeer = 'AddPeer',
+  RemovePeer = 'RemovePeer',
+  ClaimPswap = 'ClaimPswap',
+  CancelOutgoingRequest = 'CancelOutgoingRequest',
+  MarkAsDone = 'MarkAsDone'
+}
+
 export interface BridgeRequest {
   direction: BridgeDirection;
   from: string;
-  externalAssetAddress: string;
-  soraAssetAddress: string;
+  externalAssetAddress?: string; // For outgoing TXs
+  soraAssetAddress?: string; // For outgoing TXs
   status: BridgeTxStatus;
   hash: string;
+  kind?: RequestType; // For incoming TXs
 }
 
 /** Outgoing transfers */
@@ -60,19 +71,6 @@ export interface BridgeApprovedRequest {
   r: Array<string>;
   s: Array<string>;
   v: Array<number>;
-}
-
-/**
- * Type of request which we will wait
- */
-export enum RequestType {
-  Transfer = 'Transfer',
-  AddAsset = 'AddAsset',
-  AddPeer = 'AddPeer',
-  RemovePeer = 'RemovePeer',
-  ClaimPswap = 'ClaimPswap',
-  CancelOutgoingRequest = 'CancelOutgoingRequest',
-  MarkAsDone = 'MarkAsDone'
 }
 
 /**
@@ -113,7 +111,7 @@ export class BridgeApi extends BaseApi {
     const balance = new FPNumber(amount, asset.decimals)
     return {
       args: [
-        asset.soraAddress,
+        asset.address,
         to,
         balance.toCodecString(),
         BridgeApi.ETH_NETWORK_ID
@@ -210,10 +208,10 @@ export class BridgeApi extends BaseApi {
   public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
     const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(BridgeApi.ETH_NETWORK_ID)).toJSON()
     const assets = await getAssets(this.api)
-    return data.Ok.map(([_, soraAddress, externalAddress]) => {
-      const asset = assets.find(a => a.address === soraAddress)
+    return data.Ok.map(([_, address, externalAddress]) => {
+      const asset = assets.find(a => a.address === address)
       return {
-        soraAddress,
+        address,
         externalAddress,
         decimals: asset.decimals,
         symbol: asset.symbol
@@ -230,11 +228,18 @@ export class BridgeApi extends BaseApi {
       operation = RequestType.Transfer
     }
     formattedItem.direction = direction
-    formattedItem.hash = item[0][direction][1]
-    const request = item[0][direction][0][operation]
-    formattedItem.from = request.from
-    formattedItem.soraAssetAddress = request.asset_id
-    formattedItem.externalAssetAddress = request.to
+    let request = item[0][direction]
+    if (direction === BridgeDirection.Outgoing) {
+      request = request[0][operation]
+      formattedItem.hash = item[0][direction][1]
+      formattedItem.from = request.from
+      formattedItem.soraAssetAddress = request.asset_id
+      formattedItem.externalAssetAddress = request.to
+    } else {
+      formattedItem.from = request.author
+      formattedItem.kind = request.kind
+      formattedItem.hash = request.hash
+    }
     return formattedItem
   }
 
