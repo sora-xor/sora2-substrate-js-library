@@ -5,14 +5,11 @@ import { Signer } from '@polkadot/types/types'
 
 import { BaseApi, Operation } from './BaseApi'
 import { Messages } from './logger'
-import { getAssets } from './assets'
+import { getAssets, Asset } from './assets'
 import { FPNumber } from './fp'
 
-export interface RegisteredAsset {
-  soraAddress: string;
+export interface RegisteredAsset extends Asset {
   externalAddress: string;
-  symbol: string;
-  decimals: number;
 }
 
 /**
@@ -114,7 +111,7 @@ export class BridgeApi extends BaseApi {
     const balance = new FPNumber(amount, asset.decimals)
     return {
       args: [
-        asset.soraAddress,
+        asset.address,
         to,
         balance.toCodecString(),
         BridgeApi.ETH_NETWORK_ID
@@ -211,10 +208,10 @@ export class BridgeApi extends BaseApi {
   public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
     const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(BridgeApi.ETH_NETWORK_ID)).toJSON()
     const assets = await getAssets(this.api)
-    return data.Ok.map(([_, soraAddress, externalAddress]) => {
-      const asset = assets.find(a => a.address === soraAddress)
+    return data.Ok.map(([_, address, externalAddress]) => {
+      const asset = assets.find(a => a.address === address)
       return {
-        soraAddress,
+        address,
         externalAddress,
         decimals: asset.decimals,
         symbol: asset.symbol
