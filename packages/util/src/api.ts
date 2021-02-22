@@ -704,7 +704,7 @@ export class Api extends BaseApi {
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const firstValue = new FPNumber(result[0], firstAsset.decimals)
     const secondValue = new FPNumber(result[1], secondAsset.decimals)
-    return [firstValue.toString(), secondValue.toString()]
+    return [firstValue.toString(FPNumber.DEFAULT_PRECISION), secondValue.toString(FPNumber.DEFAULT_PRECISION)]
   }
 
   /**
