@@ -142,6 +142,9 @@ export interface IncomingTransfer extends Struct {
   readonly network_id: BridgeNetworkId;
 }
 
+/** @name NetworkId */
+export interface NetworkId extends BridgeNetworkId {}
+
 /** @name OffchainRequest */
 export interface OffchainRequest extends Enum {
   readonly isOutgoing: boolean;
