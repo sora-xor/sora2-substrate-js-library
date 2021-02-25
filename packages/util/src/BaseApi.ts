@@ -123,6 +123,12 @@ export class BaseApi {
     })
   }
 
+  /**
+   * @param signer
+   * @param type
+   * @param params
+   * @returns value * decimals
+   */
   protected async getNetworkFee (signer: KeyringPair, type: Operation, ...params: Array<any>): Promise<string> {
     let extrinsicParams = params
     const xor = KnownAssets.get(KnownSymbols.XOR)
@@ -164,7 +170,7 @@ export class BaseApi {
       signer.isLocked ? signer.address : signer,
       { signer: this.signer }
     )
-    return new FPNumber(res.partialFee, xor.decimals).toString()
+    return new FPNumber(res.partialFee, xor.decimals).toCodecString()
   }
 
   /**

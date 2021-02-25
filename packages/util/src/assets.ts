@@ -5,7 +5,7 @@ import { FPNumber } from './fp'
 
 export interface AccountAsset {
   address: string;
-  balance: string;
+  balance: string; // value * decimals
   symbol?: string;
   decimals?: number;
   // TODO: add `usdBalance` field (assets from wallet)
@@ -14,8 +14,8 @@ export interface AccountAsset {
 export interface AccountLiquidity extends AccountAsset {
   firstAddress: string;
   secondAddress: string;
-  firstBalance: string;
-  secondBalance: string;
+  firstBalance: string; // value * decimals
+  secondBalance: string; // value * decimals
 }
 
 export interface Asset {

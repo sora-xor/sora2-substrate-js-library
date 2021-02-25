@@ -330,7 +330,7 @@ export class Api extends BaseApi {
       asset.symbol = symbol
     }
     const result = await getAccountAssetInfo(this.api, this.account.pair.address, address)
-    asset.balance = new FPNumber(result, asset.decimals).toString()
+    asset.balance = new FPNumber(result, asset.decimals).toCodecString()
     this.addToAssetList(asset)
     if (this.storage) {
       this.storage.set('assets', JSON.stringify(this.assets))
@@ -351,7 +351,7 @@ export class Api extends BaseApi {
       if (balance.isZero()) {
         continue
       }
-      asset.balance = balance.toString()
+      asset.balance = balance.toCodecString()
       if (!Number(asset.balance)) {
         continue
       }
@@ -368,7 +368,7 @@ export class Api extends BaseApi {
     assert(this.account, Messages.connectWallet)
     for (const asset of this.assets) {
       const result = await getAccountAssetInfo(this.api, this.account.pair.address, asset.address)
-      asset.balance = new FPNumber(result, asset.decimals).toString()
+      asset.balance = new FPNumber(result, asset.decimals).toCodecString()
       this.addToAssetList(asset)
     }
     if (this.storage) {

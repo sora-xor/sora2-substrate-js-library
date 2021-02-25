@@ -31,10 +31,16 @@ export class FaucetApi extends BaseApi {
     return this.history
   }
 
+  /**
+   * **NOT USED** will be removed soon, seems that we don't need it
+   * @param assetAddress
+   * @param accountAddress
+   * @returns balance = value * decimals
+   */
   public async getBalance (assetAddress: string, accountAddress: string): Promise<string> {
     const asset = KnownAssets.get(assetAddress)
     const result = await getAccountAssetInfo(this.api, accountAddress, assetAddress)
-    return new FPNumber(result, asset.decimals).toString()
+    return new FPNumber(result, asset.decimals).toCodecString()
   }
 
   public async send (assetAddress: string, accountAddress: string, amount: NumberLike): Promise<void> {
