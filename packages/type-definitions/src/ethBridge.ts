@@ -69,6 +69,7 @@ export default {
   },
   types: {
     BridgeNetworkId: "u32",
+    NetworkId: "BridgeNetworkId",
     AssetKind: {
       _enum: [
         "Thischain",
