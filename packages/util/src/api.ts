@@ -23,11 +23,14 @@ import { SwapResult } from './swap'
 import { FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
+import { Storage } from './storage'
 
 /**
  * Contains all necessary data and functions for the wallet
  */
 export class Api extends BaseApi {
+  public static NETWORK_ID = '0x0'
+
   private readonly type: KeypairType = KeyringType
   private readonly defaultDEXId = 0
   public readonly defaultSlippageTolerancePercent = 0.5
@@ -66,6 +69,15 @@ export class Api extends BaseApi {
 
   public get accountHistory (): Array<History> {
     return [...this.history, ...this.bridge.historyData]
+  }
+
+  /**
+   * Set storage if it should be used as data storage
+   * @param storage
+   */
+  public setStorage (storage: Storage): void {
+    super.setStorage(storage)
+    this.bridge.setStorage(storage)
   }
 
   /**
@@ -233,6 +245,51 @@ export class Api extends BaseApi {
   private addToLiquidityList (asset: AccountLiquidity): void {
     const index = this.liquidity.findIndex(item => item.address === asset.address)
     ~index ? this.liquidity[index] = asset : this.liquidity.push(asset)
+  }
+
+  private async calcRegisterAssetParams (symbol: string, totalSupply: NumberLike, extensibleSupply: boolean) {
+    assert(this.account, Messages.connectWallet)
+    // TODO: add assert for symbol and totalSupply params
+    const precision = FPNumber.DEFAULT_PRECISION
+    const supply = new FPNumber(totalSupply)
+    return {
+      args: [
+        symbol,
+        precision,
+        supply.toCodecString(),
+        extensibleSupply
+      ]
+    }
+  }
+
+  /**
+   * Get register asset network fee
+   * @param symbol string with asset symbol
+   * @param totalSupply
+   * @param extensibleSupply
+   * @returns register asset network fee as a string
+   */
+  public async getRegisterAssetNetworkFee (symbol: string, totalSupply: NumberLike, extensibleSupply = false): Promise<string> {
+    const params = await this.calcRegisterAssetParams(symbol, totalSupply, extensibleSupply)
+    return await this.getNetworkFee(this.accountPair, Operation.RegisterAsset, ...params.args)
+  }
+
+  /**
+   * Register asset
+   * @param symbol string with asset symbol
+   * @param totalSupply
+   * @param extensibleSupply
+   */
+  public async registerAsset (symbol: string, totalSupply: NumberLike, extensibleSupply = false): Promise<void> {
+    const params = await this.calcRegisterAssetParams(symbol, totalSupply, extensibleSupply)
+    await this.submitExtrinsic(
+      (this.api.tx.assets.register as any)(...params.args),
+      this.account.pair,
+      {
+        symbol,
+        type: Operation.RegisterAsset
+      }
+    )
   }
 
   /**
@@ -508,13 +565,13 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get account liquidity with pair where the first symbol is `XOR` and the second is from `KnownAssets`
+   * Get account liquidity with pair where the first symbol is `XOR` and the second is from `accountAssets`
    */
   public async getKnownAccountLiquidity (): Promise<Array<AccountLiquidity>> {
     assert(this.account, Messages.connectWallet)
     const xor = KnownAssets.get(KnownSymbols.XOR)
-    const knownLiquidity: Array<AccountLiquidity> = []
-    for (const item of KnownAssets.filter(item => item.symbol !== xor.symbol)) {
+    const accountLiquidity: Array<AccountLiquidity> = []
+    for (const item of this.accountAssets.filter(item => item.symbol !== xor.symbol)) {
       const props = (await this.api.query.poolXyk.properties(xor.address, item.address)).toJSON() as Array<string>
       if (!props || !props.length) {
         continue
@@ -541,13 +598,13 @@ export class Api extends BaseApi {
         decimals,
         balance
       } as AccountLiquidity
-      knownLiquidity.push(asset)
+      accountLiquidity.push(asset)
     }
-    this.liquidity = knownLiquidity
+    this.liquidity = accountLiquidity
     if (this.storage) {
       this.storage.set('liquidity', JSON.stringify(this.liquidity))
     }
-    return knownLiquidity
+    return accountLiquidity
   }
 
   /**
@@ -647,7 +704,7 @@ export class Api extends BaseApi {
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const firstValue = new FPNumber(result[0], firstAsset.decimals)
     const secondValue = new FPNumber(result[1], secondAsset.decimals)
-    return [firstValue.toString(), secondValue.toString()]
+    return [firstValue.toString(FPNumber.DEFAULT_PRECISION), secondValue.toString(FPNumber.DEFAULT_PRECISION)]
   }
 
   /**
