@@ -29,8 +29,6 @@ import { Storage } from './storage'
  * Contains all necessary data and functions for the wallet
  */
 export class Api extends BaseApi {
-  public static NETWORK_ID = '0x0'
-
   private readonly type: KeypairType = KeyringType
   private readonly defaultDEXId = 0
   public readonly defaultSlippageTolerancePercent = 0.5
