@@ -310,7 +310,7 @@ export class BridgeApi extends BaseApi {
     assert(this.account, Messages.connectWallet)
     const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address, status)).toJSON()
     return data.Ok
-      .filter(([networkId, _]) => networkId === 0) // TODO: replace zero with `BridgeApi.ETH_NETWORK_ID`
+      .filter(([networkId, _]) => networkId === BridgeApi.ETH_NETWORK_ID)
       .map(([_, hash]) => hash) as Array<string>
   }
 
