@@ -53,7 +53,7 @@ export class BaseApi {
     }
   }
 
-  protected saveHistory (history: History): void {
+  public saveHistory (history: History): void {
     if (!history || !history.id) {
       return
     }
