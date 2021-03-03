@@ -47,5 +47,13 @@ export const options = ({
       }
     }
   },
+  signedExtensions: {
+    ChargeTransactionPayment2: {
+      extrinsic: {
+        charge_fee_info: 'ChargeFeeInfo'
+      },
+      payload: {}
+    }
+  },
   ...otherOptions
 })

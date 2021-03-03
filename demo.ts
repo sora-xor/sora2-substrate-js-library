@@ -4,6 +4,8 @@ import { options } from '@sora-substrate/api';
 import { Keyring } from '@polkadot/api';
 import { strictEqual, ok } from 'assert';
 
+import type { ExtDef } from '@polkadot/types/extrinsic/signedExtensions/types';
+
 async function demo(): Promise<void> {
   console.log('INITIALIZING API');
 
@@ -29,10 +31,24 @@ async function demo(): Promise<void> {
   const KSMAssetId = api.createType('AssetId', '0x0200020000000000000000000000000000000000000000000000000000000000');
   const USDAssetId = api.createType('AssetId', '0x0200030000000000000000000000000000000000000000000000000000000000');
   const VALAssetId = api.createType('AssetId', '0x0200040000000000000000000000000000000000000000000000000000000000');
+  const PSWAPAssetId = api.createType('AssetId', '0x0200050000000000000000000000000000000000000000000000000000000000');
+
+  let balanceA = await (api.rpc as any).assets.freeBalance(root.address, XORAssetId);
+  console.log("User B XOR FREE: ", balanceA.unwrap().balance.toString());
 
   // register pair
-  await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, DOTAssetId), root, "Enable Pair XOR-DOT");
 
+  // const tx = api.tx.tradingPair.register(0, XORAssetId, PSWAPAssetId).signAndSend(root, { charge_fee_info })
+  // await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, PSWAPAssetId), root, "Enable Pair XOR-DOT");
+
+  // let balanceB = await (api.rpc as any).assets.freeBalance(root.address, XORAssetId);
+  // console.log("User B XOR FREE: ", balanceB.unwrap().balance.toString());
+  // let a = api.tx.tradingPair.register(0, XORAssetId, VALAssetId).signAndSend();
+
+  let something = await (api.rpc as any).ethBridge.getRequests("[]", "None");
+  console.log(something);
+
+  return;
   // initialize pool
   await submitExtrinsic(api, api.tx.poolXyk.initializePool(0, XORAssetId, DOTAssetId), root, "Initialize Pool for Pair XOR-DOT");
 
@@ -63,8 +79,9 @@ async function demo(): Promise<void> {
 }
 
 async function inner_submitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, finishCallback: any): Promise<void> {
+  const charge_fee_info = api.createType("ChargeFeeInfo", { tip: "1000000000000000000", target_asset_id: "0x0200040000000000000000000000000000000000000000000000000000000000" });
   // this is quick example, refer to https://polkadot.js.org/docs/api/cookbook/tx and https://polkadot.js.org/docs/api/start/api.tx.subs
-  const unsub = await extrinsic.signAndSend(signer, (result: any) => {
+  const unsub = await extrinsic.signAndSend(signer, { charge_fee_info }, (result: any) => {
     console.log(`Current status is ${result.status}`);
 
     if (result.status.isInBlock) {

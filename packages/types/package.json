@@ -9,11 +9,11 @@
   "dependencies": {
     "@sora-substrate/type-definitions": "^0.4.7",
     "@babel/runtime": "^7.10.2",
-    "@open-web3/api-mobx": "^0.6.0-beta.26",
-    "@open-web3/orml-types": "^0.6.0-beta.26",
-    "@polkadot/api": "^2.1.2-8",
-    "@polkadot/typegen": "^2.1.2-8",
-    "@polkadot/types": "^2.1.2-8"
+    "@open-web3/api-mobx": "^0.8.2-9",
+    "@open-web3/orml-types": "^0.8.2-9",
+    "@polkadot/api": "^3.10.3-2",
+    "@polkadot/typegen": "^3.10.3-2",
+    "@polkadot/types": "^3.10.3-2"
   },
   "devDependencies": {
     "@types/websocket": "^1.0.0",

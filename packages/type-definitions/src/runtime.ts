@@ -112,10 +112,23 @@ export default {
         WrappedRepr: "AccountId"
       }
     },
+    OracleKey: "AssetId",
+    ChargeFeeInfo: {
+      tip: "Compact<Balance>",
+      target_asset_id: "AssetId"
+    },
     TechAssetId: "Null",            // define properly if needed
     TechAccountIdPrimitive: "Null", // define properly if needed
     SwapAction: "Null",             // define properly if needed
     ValidationFunction: "Null",     // define properly if needed
     Permission: "Null",             // define properly if needed
+    DistributionAccounts: "Null",
+    MultisigAccount: "Null",
+    PendingMultisigAccount: "Null",
+    Farmer: "Null",
+    Farm: "Null",
+    SmoothPriceState: "Null",
+    MultiCurrencyBalanceOf: "Null",
+    Duration: "Null",
   }
 }

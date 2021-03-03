@@ -68,7 +68,7 @@ export default {
     },
   },
   types: {
-    NetworkId: "u32",
+    BridgeNetworkId: "u32",
     AssetKind: {
       _enum: [
         "Thischain",
@@ -114,7 +114,7 @@ export default {
       asset_id: "AssetId",
       amount: "Balance",
       nonce: "Index",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     OutgoingTransferEncoded: {
       currency_id: "CurrencyIdEncoded",
@@ -130,7 +130,7 @@ export default {
       asset_id: "AssetId",
       supply: "Balance",
       nonce: "Index",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     OutgoingAddAssetEncoded: {
       name: "String",
@@ -149,7 +149,7 @@ export default {
       name: "String",
       decimals: "u8",
       nonce: "Index",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     OutgoingAddTokenEncoded: {
       token_address: "EthereumAddress",
@@ -165,7 +165,7 @@ export default {
       peer_address: "EthereumAddress",
       peer_account_id: "AccountId",
       nonce: "Index",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     OutgoingAddPeerEncoded: {
       peer_address: "EthereumAddress",
@@ -178,7 +178,7 @@ export default {
       peer_account_id: "AccountId",
       peer_address: "EthereumAddress",
       nonce: "Index",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     OutgoingRemovePeerEncoded: {
       peer_address: "EthereumAddress",
@@ -213,7 +213,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     IncomingAddToken: {
       token_address: "EthereumAddress",
@@ -223,7 +223,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     IncomingChangePeers: {
       peer_account_id: "AccountId",
@@ -232,7 +232,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     IncomingClaimPswap: {
       account_id: "AccountId",
@@ -240,7 +240,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     IncomingCancelOutgoingRequest: {
       request: "OutgoingRequest",
@@ -248,7 +248,7 @@ export default {
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     IncomingRequest: {
       _enum: {
@@ -264,7 +264,7 @@ export default {
       hash: "H256",
       timepoint: "Timepoint",
       kind: "IncomingRequestKind",
-      network_id: "NetworkId",
+      network_id: "BridgeNetworkId",
     },
     OffchainRequest: {
       _enum: {
