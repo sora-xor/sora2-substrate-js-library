@@ -16,6 +16,13 @@ yarn pull-metadata
 yarn build
 ```
 
+### Export types as JSON
+```
+yarn build
+yarn export-types
+```
+Resulting JSON is located in `<repo root>/packages/types/src/metadata/types.json`
+
 ### Run local test net with framenode first
 
 > This library version should be compatible with **develop** branch of **sora2-substrate** chain.
