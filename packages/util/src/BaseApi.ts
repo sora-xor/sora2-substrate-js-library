@@ -26,10 +26,6 @@ export class BaseApi {
   protected history: Array<History> = []
 
   constructor () {
-    const history = this.storage?.get('history')
-    if (history) {
-      this.history = JSON.parse(history)
-    }
   }
 
   public get api (): ApiPromise {
@@ -51,9 +47,13 @@ export class BaseApi {
    */
   public setStorage (storage: Storage): void {
     this.storage = storage
+    const history = this.storage?.get('history')
+    if (history) {
+      this.history = JSON.parse(history)
+    }
   }
 
-  protected saveHistory (history: History): void {
+  public saveHistory (history: History): void {
     if (!history || !history.id) {
       return
     }

@@ -29,8 +29,6 @@ import { Storage } from './storage'
  * Contains all necessary data and functions for the wallet
  */
 export class Api extends BaseApi {
-  public static NETWORK_ID = '0x0'
-
   private readonly type: KeypairType = KeyringType
   private readonly defaultDEXId = 0
   public readonly defaultSlippageTolerancePercent = 0.5
@@ -704,7 +702,7 @@ export class Api extends BaseApi {
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const firstValue = new FPNumber(result[0], firstAsset.decimals)
     const secondValue = new FPNumber(result[1], secondAsset.decimals)
-    return [firstValue.toString(), secondValue.toString()]
+    return [firstValue.toString(FPNumber.DEFAULT_PRECISION), secondValue.toString(FPNumber.DEFAULT_PRECISION)]
   }
 
   /**
