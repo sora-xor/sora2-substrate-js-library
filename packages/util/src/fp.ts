@@ -251,11 +251,9 @@ export class FPNumber {
 
   /**
    * Format real number (divided by precision) to string
-   * @param {number} [dp=6] Decimal places deafult is 6
    */
-  public toString (dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): string {
-    let result = this.value.div(10 ** this.precision)
-    result = result.dp(dp, FPNumber.DEFAULT_ROUND_MODE)
+  public toString (): string {
+    const result = this.value.div(10 ** this.precision)
     return result.toFormat()
   }
 

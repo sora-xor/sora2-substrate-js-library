@@ -433,8 +433,8 @@ export class Api extends BaseApi {
     )
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0 }
     return {
-      amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toString(),
-      fee: new FPNumber(value.fee, xor.decimals).toString()
+      amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
+      fee: new FPNumber(value.fee, xor.decimals).toCodecString()
     } as SwapResult
   }
 
@@ -453,13 +453,13 @@ export class Api extends BaseApi {
     resultAmount: CodecString,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
     isExchangeB = false
-  ): Promise<string> {
+  ): Promise<CodecString> {
     const assetA = await this.getAssetInfo(assetAAddress)
     const assetB = await this.getAssetInfo(assetBAddress)
     const resultDecimals = (!isExchangeB ? assetB : assetA).decimals
     const result = FPNumber.fromCodecValue(resultAmount, resultDecimals)
     const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100, resultDecimals))
-    return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toString()
+    return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toCodecString()
   }
 
   private async calcSwapParams (
@@ -1075,6 +1075,7 @@ export class Api extends BaseApi {
   //_________________________FORMATTER_METHODS_____________________________
   /**
    * Divide the first asset by the second
+   * TODO: maybe we will remove this method
    * @param firstAssetAddress
    * @param secondAssetAddress
    * @param firstAmount
