@@ -1,4 +1,6 @@
+import { CodecString } from './fp'
+
 export interface SwapResult {
-  amount: string;
-  fee: string;
+  amount: CodecString;
+  fee: CodecString;
 }

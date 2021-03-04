@@ -8,7 +8,7 @@ import { decodeAddress } from '@polkadot/util-crypto'
 
 import { Storage } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
-import { FPNumber } from './fp'
+import { CodecString, FPNumber } from './fp'
 import { encrypt } from './crypto'
 import { connection } from './connection'
 
@@ -127,9 +127,9 @@ export class BaseApi {
    * @param signer
    * @param type
    * @param params
-   * @returns value * decimals
+   * @returns value ** decimals
    */
-  protected async getNetworkFee (signer: KeyringPair, type: Operation, ...params: Array<any>): Promise<string> {
+  protected async getNetworkFee (signer: KeyringPair, type: Operation, ...params: Array<any>): Promise<CodecString> {
     let extrinsicParams = params
     const xor = KnownAssets.get(KnownSymbols.XOR)
     let extrinsic = null

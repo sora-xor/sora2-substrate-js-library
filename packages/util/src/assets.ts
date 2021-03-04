@@ -1,11 +1,11 @@
 import { ApiPromise } from '@polkadot/api'
 import { Codec } from '@polkadot/types/types'
 
-import { FPNumber } from './fp'
+import { CodecString, FPNumber } from './fp'
 
 export interface AccountAsset {
   address: string;
-  balance: string; // value * decimals
+  balance: CodecString; // value ** decimals
   symbol?: string;
   decimals?: number;
   // TODO: add `usdBalance` field (assets from wallet)
@@ -14,8 +14,8 @@ export interface AccountAsset {
 export interface AccountLiquidity extends AccountAsset {
   firstAddress: string;
   secondAddress: string;
-  firstBalance: string; // value * decimals
-  secondBalance: string; // value * decimals
+  firstBalance: CodecString; // value ** decimals
+  secondBalance: CodecString; // value ** decimals
 }
 
 export interface Asset {
