@@ -1,41 +1,42 @@
 {
-    "version": "0.4.10",
-    "author": "Stefan Popov <popov@soramitsu.co.jp>",
-    "private": true,
-    "scripts": {
-        "build": "yarn build:interfaces && polkadot-dev-build-ts",
-        "build:interfaces": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts",
-        "check-deps": "./node_modules/@open-web3/util/scripts/check-deps.js yarn.lock @polkadot/ @open-web3/",
-        "clean": "polkadot-dev-clean-build",
-        "lint": "eslint '*.ts'",
-        "postinstall": "polkadot-dev-yarn-only",
-        "test:all": "yarn build && jest --testPathIgnorePatterns",
-        "pull-metadata": "ts-node --project ./tsconfig.json packages/types/scripts/pullMeta.ts",
-        "export-types": "ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts",
-        "test": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
-        "publish-workspaces": "lerna publish from-package"
-    },
-    "engines": {
-        "yarn": "^1.10.1"
-    },
-    "workspaces": [
-        "packages/*"
-    ],
-    "resolutions": {
-        "typescript": "3.8.3"
-    },
-    "devDependencies": {
-        "@babel/core": "^7.10.2",
-        "@babel/register": "^7.10.1",
-        "@babel/runtime": "^7.10.2",
-        "@lerna/publish": "^3.22.1",
-        "@open-web3/util": "^0.6.0-beta.26",
-        "@polkadot/dev": "^0.32.17",
-        "@polkadot/ts": "^0.2.1",
-        "@types/jest": "^26.0.19",
-        "jest": "^26.6.3",
-        "ts-jest": "^26.4.4",
-        "ts-node": "^8.6.1",
-        "tsconfig-paths": "^3.9.0"
-    }
+  "version": "0.4.10",
+  "author": "Stefan Popov <popov@soramitsu.co.jp>",
+  "private": true,
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "yarn build:interfaces && polkadot-dev-build-ts",
+    "build:interfaces": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts",
+    "check-deps": "./node_modules/@open-web3/util/scripts/check-deps.js yarn.lock @polkadot/ @open-web3/",
+    "clean": "polkadot-dev-clean-build",
+    "lint": "eslint '*.ts'",
+    "postinstall": "polkadot-dev-yarn-only",
+    "test:all": "yarn build && jest --testPathIgnorePatterns",
+    "pull-metadata": "ts-node --project ./tsconfig.json packages/types/scripts/pullMeta.ts",
+    "export-types": "ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts",
+    "test": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
+    "publish-workspaces": "lerna publish from-package"
+  },
+  "engines": {
+    "yarn": "^1.10.1"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "resolutions": {
+    "typescript": "3.8.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.10.2",
+    "@babel/register": "^7.10.1",
+    "@babel/runtime": "^7.10.2",
+    "@lerna/publish": "^3.22.1",
+    "@open-web3/util": "^0.6.0-beta.26",
+    "@polkadot/dev": "^0.32.17",
+    "@polkadot/ts": "^0.2.1",
+    "@types/jest": "^26.0.19",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.4.4",
+    "ts-node": "^8.6.1",
+    "tsconfig-paths": "^3.9.0"
+  }
 }
