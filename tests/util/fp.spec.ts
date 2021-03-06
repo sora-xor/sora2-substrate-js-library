@@ -36,6 +36,57 @@ describe('FPNumber', () => {
   })
 
   it.each([
+    ['0', 18, '0'],
+    ['-0', 18, '0'],
+    [0, 18, '0'],
+    ['0.000001', 18, '0.000001'],
+    [0.000001, 18, '0.000001'],
+    ['-123.456', 18, '-123.456'],
+    [-123.456, 18, '-123.456'],
+    ['123456.123456', 1, '123456.1'],
+    [123456.123456, 1, '123456.1'],
+    [0.01, 1, '0'],
+    ['0.01', 1, '0'],
+    [0.0000000123, 10, '0.00000001'],
+    ['0.0000000123', 10, '0.00000001'],
+    [0.123456789, 10, '0.1234567'],
+    ['0.123456789', 10, '0.1234567'],
+    [Number.POSITIVE_INFINITY, 1, 'Infinity'],
+    [Number.NEGATIVE_INFINITY, 1, '-Infinity'],
+    [Number.NaN, 1, 'NaN'],
+    ['Infinity', 1, 'Infinity'],
+    ['-Infinity', 1, '-Infinity'],
+    ['NaN', 1, 'NaN']
+  ])('[format] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
+    const instance = new FPNumber(value, precision)
+    expect(instance.format()).toBe(result)
+  })
+
+  it.each([
+    [1234.5678, 4, '1,234.5678'],
+    ['1234.5678', 4, '1,234.5678'],
+    [-1234.5678, 4, '-1,234.5678'],
+    ['-1234.5678', 4, '-1,234.5678'],
+    [12341234.5678, 5, '12,341,234.5678'],
+    ['12341234.5678', 5, '12,341,234.5678'],
+    [234.5678, 3, '234.567'],
+    ['234.5678', 3, '234.567'],
+    [0.0009, 3, '0.0009'],
+    ['0.0009', 3, '0.0009'],
+    [0.0019, 3, '0.001'],
+    ['0.0019', 3, '0.001']
+  ])('[format with params: dp "%s", custom formatting] instance of "%s" with precision "4" should display "%s"', (value, dp, result) => {
+    const format = {
+      decimalSeparator: '.',
+      groupSeparator: ',',
+      groupSize: 3,
+      fractionGroupSeparator: ''
+    }
+    const instance = new FPNumber(value, 4)
+    expect(instance.format(dp, format)).toBe(result)
+  })
+
+  it.each([
     ['0', 18, '0.000'],
     ['-0', 18, '0.000'],
     [0, 18, '0.000'],
@@ -57,8 +108,8 @@ describe('FPNumber', () => {
   })
 
   it.each([
-    ['1234567890', 8, '12.345678'],
-    ['1234567890', 10, '0.123456'],
+    ['1234567890', 8, '12.3456789'],
+    ['12345678912', 10, '1.2345678912'],
     ['1000000000', 9, '1'],
     ['1000000000', 10, '0.1']
   ])('[toString from Codec object] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
