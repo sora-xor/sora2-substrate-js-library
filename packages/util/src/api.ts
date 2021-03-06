@@ -58,14 +58,24 @@ export class Api extends BaseApi {
   }
 
   public get accountAssets (): Array<AccountAsset> {
+    if (this.storage) {
+      this.assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset>
+    }
     return this.assets
   }
 
   public get accountLiquidity (): Array<AccountLiquidity> {
+    if (this.storage) {
+      this.liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity>
+    }
     return this.liquidity
   }
 
   public get accountHistory (): Array<History> {
+    if (this.storage) {
+      this.history = JSON.parse(this.storage.get('history')) as Array<History>
+      return this.history
+    }
     return [...this.history, ...this.bridge.historyData]
   }
 
@@ -312,21 +322,16 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get account asset information without storage
+   * Get account asset information without storage.
+   * You can just check balance of any asset
    * @param address asset address
    */
   public async getAccountAsset (address: string): Promise<AccountAsset> {
     assert(this.account, Messages.connectWallet)
     const asset = { address } as AccountAsset
-    const knownAsset = KnownAssets.get(address)
-    if (knownAsset) {
-      asset.symbol = knownAsset.symbol
-      asset.decimals = knownAsset.decimals
-    } else {
-      const { decimals, symbol } = await this.getAssetInfo(address)
-      asset.decimals = decimals
-      asset.symbol = symbol
-    }
+    const { decimals, symbol } = await this.getAssetInfo(address)
+    asset.decimals = decimals
+    asset.symbol = symbol
     const result = await getAccountAssetInfo(this.api, this.account.pair.address, address)
     asset.balance = new FPNumber(result, asset.decimals).toCodecString()
     return asset
