@@ -1078,6 +1078,23 @@ export class Api extends BaseApi {
   }
 
   //_________________________FORMATTER_METHODS_____________________________
+  public hasEnoughXor (asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    const xorDecimals = xor.decimals
+    const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals)
+    if (asset.address === xor.address) {
+      const fpBalance = FPNumber.fromCodecValue(asset.balance, xorDecimals)
+      const fpAmount = new FPNumber(amount, xorDecimals)
+      return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
+    }
+    // Here we should be sure that xor value of account was tracked & updated
+    const xorAccountAsset = this.accountAssets.find(asset => asset.symbol === KnownSymbols.XOR)
+    if (!xorAccountAsset) {
+      return false
+    }
+    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance, xorDecimals)
+    return FPNumber.lte(fpFee, xorBalance)
+  }
   /**
    * Divide the first asset by the second
    * TODO: maybe we will remove this method
