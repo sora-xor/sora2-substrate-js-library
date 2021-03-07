@@ -59,21 +59,21 @@ export class Api extends BaseApi {
 
   public get accountAssets (): Array<AccountAsset> {
     if (this.storage) {
-      this.assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset>
+      this.assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset> || []
     }
     return this.assets
   }
 
   public get accountLiquidity (): Array<AccountLiquidity> {
     if (this.storage) {
-      this.liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity>
+      this.liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
     }
     return this.liquidity
   }
 
   public get accountHistory (): Array<History> {
     if (this.storage) {
-      this.history = JSON.parse(this.storage.get('history')) as Array<History>
+      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
       return this.history
     }
     return [...this.history, ...this.bridge.historyData]
@@ -322,11 +322,12 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get account asset information without storage.
+   * Get account asset information.
    * You can just check balance of any asset
    * @param address asset address
+   * @param addToList should asset be added to list or not
    */
-  public async getAccountAsset (address: string): Promise<AccountAsset> {
+  public async getAccountAsset (address: string, addToList = false): Promise<AccountAsset> {
     assert(this.account, Messages.connectWallet)
     const asset = { address } as AccountAsset
     const { decimals, symbol } = await this.getAssetInfo(address)
@@ -334,6 +335,10 @@ export class Api extends BaseApi {
     asset.symbol = symbol
     const result = await getAccountAssetInfo(this.api, this.account.pair.address, address)
     asset.balance = new FPNumber(result, asset.decimals).toCodecString()
+    if (addToList) {
+      this.addToAssetList(asset)
+      this.storage?.set('assets', JSON.stringify(this.assets))
+    }
     return asset
   }
 
@@ -369,6 +374,12 @@ export class Api extends BaseApi {
       const result = await getAccountAssetInfo(this.api, this.account.pair.address, asset.address)
       asset.balance = new FPNumber(result, asset.decimals).toCodecString()
       this.addToAssetList(asset)
+    }
+    // We should track XOR asset because of its importance
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    if (!this.assets.find(asset => asset.address === xor.address)) {
+      const xorAccountAsset = await this.getAccountAsset(xor.address)
+      this.addToAssetList(xorAccountAsset)
     }
     if (this.storage) {
       this.storage.set('assets', JSON.stringify(this.assets))
