@@ -458,7 +458,7 @@ export class Api extends BaseApi {
    * Get min or max value before Swap
    * @param assetAAddress Asset A address
    * @param assetBAddress Asset B address
-   * @param resultAmount Result of the swap operation, `getSwapResult().amount`
+   * @param resultAmount Result of the swap operation, `getSwapResult().amount` (but it's just string)
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    * @param isExchangeB If `isExchangeB` then Exchange B and it calculates max sold,
    * else - Exchange A and it calculates min received. `false` by default
@@ -466,14 +466,14 @@ export class Api extends BaseApi {
   public async getMinMaxValue (
     assetAAddress: string,
     assetBAddress: string,
-    resultAmount: CodecString,
+    resultAmount: string,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
     isExchangeB = false
   ): Promise<CodecString> {
     const assetA = await this.getAssetInfo(assetAAddress)
     const assetB = await this.getAssetInfo(assetBAddress)
     const resultDecimals = (!isExchangeB ? assetB : assetA).decimals
-    const result = FPNumber.fromCodecValue(resultAmount, resultDecimals)
+    const result = new FPNumber(resultAmount, resultDecimals)
     const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100, resultDecimals))
     return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toCodecString()
   }
@@ -960,7 +960,7 @@ export class Api extends BaseApi {
   private async calcRemoveLiquidityParams (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    desiredMarker: CodecString,
+    desiredMarker: string,
     firstTotal: CodecString,
     secondTotal: CodecString,
     totalSupply: CodecString,
@@ -970,7 +970,7 @@ export class Api extends BaseApi {
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    const desired = FPNumber.fromCodecValue(desiredMarker, poolToken.decimals)
+    const desired = new FPNumber(desiredMarker, poolToken.decimals)
     const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
     const reserveB = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
     const pts = FPNumber.fromCodecValue(totalSupply, poolToken.decimals)
@@ -1004,7 +1004,7 @@ export class Api extends BaseApi {
   public async getRemoveLiquidityNetworkFee (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    desiredMarker: CodecString,
+    desiredMarker: string,
     firstTotal: CodecString,
     secondTotal: CodecString,
     totalSupply: CodecString,
@@ -1035,7 +1035,7 @@ export class Api extends BaseApi {
   public async removeLiquidity (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    desiredMarker: CodecString,
+    desiredMarker: string,
     firstTotal: CodecString,
     secondTotal: CodecString,
     totalSupply: CodecString,
@@ -1108,12 +1108,12 @@ export class Api extends BaseApi {
   }
   /**
    * Divide the first asset by the second
-   * TODO: maybe we will remove this method
    * @param firstAssetAddress
    * @param secondAssetAddress
    * @param firstAmount
    * @param secondAmount
    * @param reversed If `true`: the second by the first (`false` by default)
+   * @returns Formatted string
    */
   public async divideAssets (
     firstAssetAddress: string,
@@ -1130,7 +1130,7 @@ export class Api extends BaseApi {
     const result = !reversed
       ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
       : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one)
-    return result.toString()
+    return result.format()
   }
 }
 
