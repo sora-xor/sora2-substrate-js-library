@@ -9,6 +9,7 @@ import template from './template'
 import assets from './assets'
 import liquidityProxy from './liquidityProxy'
 import ethBridge from './ethBridge'
+import pswapDistribution from './pswapDistribution'
 
 const soraDefs = {
   runtime,
@@ -19,6 +20,7 @@ const soraDefs = {
   assets,
   liquidityProxy,
   ethBridge,
+  pswapDistribution,
 }
 
 const overrides = {
@@ -26,9 +28,11 @@ const overrides = {
   LookupSource: 'AccountId',
   AssetId: 'AssetId32',
   Keys: 'SessionKeys2',
-  Balance: 'u128',
   RefCount: 'u32',
-  TAssetBalance: 'Balance'
+  Balance: 'u128',
+  TAssetBalance: 'Balance',
+  MultiCurrencyBalance: 'Balance',
+  MultiCurrencyBalanceOf: 'MultiCurrencyBalance'
 };
 
 export const types = {
