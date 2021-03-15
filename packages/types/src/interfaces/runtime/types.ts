@@ -201,8 +201,9 @@ export interface KeyValue extends ITuple<[StorageKey, StorageData]> {}
 
 /** @name LiquiditySourceType */
 export interface LiquiditySourceType extends Enum {
-  readonly isBondingCurvePool: boolean;
   readonly isXykPool: boolean;
+  readonly isBondingCurvePool: boolean;
+  readonly isMulticollateralBondingCurvePool: boolean;
   readonly isMockPool: boolean;
   readonly isMockPool2: boolean;
   readonly isMockPool3: boolean;
