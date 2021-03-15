@@ -6,7 +6,7 @@ import { Signer } from '@polkadot/types/types'
 import { BaseApi, Operation } from './BaseApi'
 import { Messages } from './logger'
 import { getAssets, Asset } from './assets'
-import { FPNumber } from './fp'
+import { CodecString, FPNumber } from './fp'
 
 export interface RegisteredAsset extends Asset {
   externalAddress: string;
@@ -64,7 +64,7 @@ export interface BridgeRequest {
 /** Outgoing transfers */
 export interface BridgeApprovedRequest {
   currencyType: BridgeCurrencyType;
-  amount: string;
+  amount: CodecString;
   from: string;
   to: string;
   hash: string;
@@ -127,7 +127,7 @@ export class BridgeApi extends BaseApi {
    * @param amount
    * @returns Network fee
    */
-  public async getTransferToEthFee (asset: RegisteredAsset, to: string, amount: string | number): Promise<string> {
+  public async getTransferToEthFee (asset: RegisteredAsset, to: string, amount: string | number): Promise<CodecString> {
     const params = await this.calcTransferToEthParams(asset, to, amount)
     return await this.getNetworkFee(this.account.pair, Operation.EthBridgeOutgoing, ...params.args)
   }
@@ -157,7 +157,7 @@ export class BridgeApi extends BaseApi {
    * @param type Type of operation, "Transfer" is set by default
    * @returns Network fee
    */
-  public async getRequestFromEthFee (hash: string, type: RequestType = RequestType.Transfer): Promise<string> {
+  public async getRequestFromEthFee (hash: string, type: RequestType = RequestType.Transfer): Promise<CodecString> {
     assert(this.account, Messages.connectWallet)
     return await this.getNetworkFee(
       this.account.pair,
@@ -269,7 +269,7 @@ export class BridgeApi extends BaseApi {
     formattedItem.hash = request.tx_hash
     formattedItem.from = request.from
     formattedItem.to = request.to
-    formattedItem.amount = FPNumber.fromCodecValue(request.amount).toString()
+    formattedItem.amount = request.amount
     formattedItem.currencyType = BridgeCurrencyType.TokenAddress in request.currency_id ? BridgeCurrencyType.TokenAddress : BridgeCurrencyType.AssetId
     formattedItem.r = []
     formattedItem.s = []
