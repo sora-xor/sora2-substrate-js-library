@@ -258,12 +258,10 @@ export class Api extends BaseApi {
   private async calcRegisterAssetParams (symbol: string, totalSupply: NumberLike, extensibleSupply: boolean) {
     assert(this.account, Messages.connectWallet)
     // TODO: add assert for symbol and totalSupply params
-    const precision = FPNumber.DEFAULT_PRECISION
     const supply = new FPNumber(totalSupply)
     return {
       args: [
         symbol,
-        precision,
         supply.toCodecString(),
         extensibleSupply
       ]
