@@ -14,6 +14,20 @@ export default {
             ],
             type: 'Option<BalanceInfo>'
         },
+        usableBalance: {
+            description: 'Get usable (free and non-frozen, except for network fees) balance of particular asset for account.',
+            params: [
+                {
+                    name: 'accountId',
+                    type: 'AccountId'
+                },
+                {
+                    name: 'assetId',
+                    type: 'AssetId'
+                },
+            ],
+            type: 'Option<BalanceInfo>'
+        },
         totalBalance: {
             description: 'Get total balance (free + reserved) of particular asset for account.',
             params: [
@@ -66,7 +80,8 @@ export default {
         AssetInfo: {
             asset_id: 'AssetId',
             symbol: 'AssetSymbolStr',
-            precision: 'u8'
+            precision: 'u8',
+            is_mintable: 'bool'
         },
         AssetSymbolStr: 'String',
     }

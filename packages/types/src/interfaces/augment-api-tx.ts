@@ -203,7 +203,7 @@ declare module '@polkadot/api/types/submittable' {
        * - `receiver`: Optional value, indicates AccountId for swap receiver. If not set, default is `sender`.
        * TODO: add information about weight
        **/
-      swap: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'BondingCurvePool'|'XYKPool'|'MockPool'|'MockPool2'|'MockPool3'|'MockPool4' | number | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Fixed | AnyNumber | Uint8Array, limit: Fixed | AnyNumber | Uint8Array, swapVariant: SwapVariant | 'WithDesiredInput'|'WithDesiredOutput' | number | Uint8Array, receiver: Option<AccountId> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      swap: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'XYKPool'|'BondingCurvePool'|'MulticollateralBondingCurvePool'|'MockPool'|'MockPool2'|'MockPool3'|'MockPool4' | number | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Fixed | AnyNumber | Uint8Array, limit: Fixed | AnyNumber | Uint8Array, swapVariant: SwapVariant | 'WithDesiredInput'|'WithDesiredOutput' | number | Uint8Array, receiver: Option<AccountId> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
     dexManager: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
@@ -251,7 +251,7 @@ declare module '@polkadot/api/types/submittable' {
        * 
        * TODO: add information about weight
        **/
-      swap: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, swapAmount: SwapAmount | { WithDesiredInput: any } | { WithDesiredOutput: any } | string | Uint8Array, selectedSourceTypes: Vec<LiquiditySourceType> | (LiquiditySourceType | 'BondingCurvePool' | 'XYKPool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | number | Uint8Array)[], filterMode: FilterMode | 'Disabled'|'ForbidSelected'|'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>>;
+      swap: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, swapAmount: SwapAmount | { WithDesiredInput: any } | { WithDesiredOutput: any } | string | Uint8Array, selectedSourceTypes: Vec<LiquiditySourceType> | (LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | number | Uint8Array)[], filterMode: FilterMode | 'Disabled'|'ForbidSelected'|'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>>;
     };
     messageBroker: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
