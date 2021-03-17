@@ -16,13 +16,12 @@ import type { EthAccount, EthCallRequest, EthFilter, EthFilterChanges, EthLog, E
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import type { EncodedFinalityProofs, JustificationNotification, ReportedRoundStates } from '@polkadot/types/interfaces/grandpa';
 import type { StorageKind } from '@polkadot/types/interfaces/offchain';
-import type { NetworkId } from '@polkadot/types/interfaces/parachains';
 import type { FeeDetails, RuntimeDispatchInfo } from '@polkadot/types/interfaces/payment';
 import type { RpcMethods } from '@polkadot/types/interfaces/rpc';
 import type { ReadProof, RuntimeVersion } from '@polkadot/types/interfaces/state';
 import type { ApplyExtrinsicResult, ChainProperties, ChainType, DispatchError, Health, NetworkState, NodeRole, PeerInfo, SyncState } from '@polkadot/types/interfaces/system';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { AccountId, AssetId, BlockNumber, DEXId, FilterMode, Fixed, H160, H256, H64, Hash, Header, Index, Justification, KeyValue, LiquiditySourceType, OracleKey, SignedBlock, StorageData, SwapOutcomeInfo, SwapVariant, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
 
@@ -53,6 +52,10 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
        * Get total supply of particular asset on chain.
        **/
       totalSupply: AugmentedRpc<(assetId: AssetId | AnyNumber | Uint8Array) => Observable<Option<BalanceInfo>>>;
+      /**
+       * Get usable (free and non-frozen, except for network fees) balance of particular asset for account.
+       **/
+      usableBalance: AugmentedRpc<(accountId: AccountId | string | Uint8Array, assetId: AssetId | AnyNumber | Uint8Array) => Observable<Option<BalanceInfo>>>;
     };
     author: {
       /**
@@ -360,23 +363,23 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
       /**
        * Get account requests hashes.
        **/
-      getAccountRequests: AugmentedRpc<(accountId: AccountId | string | Uint8Array, statusFilter: Option<RequestStatus> | null | object | string | Uint8Array) => Observable<Result<Vec<ITuple<[NetworkId, H256]>>, DispatchError>>>;
+      getAccountRequests: AugmentedRpc<(accountId: AccountId | string | Uint8Array, statusFilter: Option<RequestStatus> | null | object | string | Uint8Array) => Observable<Result<Vec<ITuple<[BridgeNetworkId, H256]>>, DispatchError>>>;
       /**
        * Get approvals of the given requests.
        **/
-      getApprovals: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId: Option<NetworkId> | null | object | string | Uint8Array) => Observable<Result<Vec<Vec<SignatureParams>>, DispatchError>>>;
+      getApprovals: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId: Option<BridgeNetworkId> | null | object | string | Uint8Array) => Observable<Result<Vec<Vec<SignatureParams>>, DispatchError>>>;
       /**
        * Get approved encoded requests and their approvals.
        **/
-      getApprovedRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId: Option<NetworkId> | null | object | string | Uint8Array) => Observable<Result<Vec<ITuple<[OutgoingRequestEncoded, Vec<SignatureParams>]>>, DispatchError>>>;
+      getApprovedRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId: Option<BridgeNetworkId> | null | object | string | Uint8Array) => Observable<Result<Vec<ITuple<[OutgoingRequestEncoded, Vec<SignatureParams>]>>, DispatchError>>>;
       /**
        * Get registered assets and tokens.
        **/
-      getRegisteredAssets: AugmentedRpc<(networkId: Option<NetworkId> | null | object | string | Uint8Array) => Observable<Result<Vec<ITuple<[AssetKind, AssetId, Option<H160>]>>, DispatchError>>>;
+      getRegisteredAssets: AugmentedRpc<(networkId: Option<BridgeNetworkId> | null | object | string | Uint8Array) => Observable<Result<Vec<ITuple<[AssetKind, AssetId, Option<H160>]>>, DispatchError>>>;
       /**
        * Get registered requests and their statuses.
        **/
-      getRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId: Option<NetworkId> | null | object | string | Uint8Array) => Observable<Result<Vec<ITuple<[OffchainRequest, RequestStatus]>>, DispatchError>>>;
+      getRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId: Option<BridgeNetworkId> | null | object | string | Uint8Array) => Observable<Result<Vec<ITuple<[OffchainRequest, RequestStatus]>>, DispatchError>>>;
     };
     grandpa: {
       /**
@@ -441,6 +444,12 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
        * Retrieves the fee information for an encoded extrinsic
        **/
       queryInfo: AugmentedRpc<(extrinsic: Bytes | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<RuntimeDispatchInfo>>;
+    };
+    pswapDistribution: {
+      /**
+       * Get amount of PSWAP claimable by user (liquidity provision reward).
+       **/
+      claimableAmount: AugmentedRpc<(accountId: AccountId | string | Uint8Array) => Observable<BalanceInfo>>;
     };
     rpc: {
       /**

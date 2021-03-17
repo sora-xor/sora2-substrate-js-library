@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Bytes, Enum, Struct, Text, U256, U8aFixed, bool, u32, u64, u8 } from '@polkadot/types';
+import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
 import type { Timepoint } from '@polkadot/types/interfaces/utility';
@@ -71,6 +71,23 @@ export interface IncomingClaimPswap extends Struct {
   readonly network_id: BridgeNetworkId;
 }
 
+/** @name IncomingMigrate */
+export interface IncomingMigrate extends Struct {
+  readonly new_contract_address: EthereumAddress;
+  readonly tx_hash: H256;
+  readonly at_height: u64;
+  readonly timepoint: Timepoint;
+  readonly network_id: BridgeNetworkId;
+}
+
+/** @name IncomingPrepareForMigration */
+export interface IncomingPrepareForMigration extends Struct {
+  readonly tx_hash: H256;
+  readonly at_height: u64;
+  readonly timepoint: Timepoint;
+  readonly network_id: BridgeNetworkId;
+}
+
 /** @name IncomingPreRequest */
 export interface IncomingPreRequest extends Struct {
   readonly author: AccountId;
@@ -92,6 +109,10 @@ export interface IncomingRequest extends Enum {
   readonly asClaimPswap: IncomingClaimPswap;
   readonly isCancelOutgoingRequest: boolean;
   readonly asCancelOutgoingRequest: IncomingCancelOutgoingRequest;
+  readonly isPrepareForMigration: boolean;
+  readonly asPrepareForMigration: IncomingPrepareForMigration;
+  readonly isMigrate: boolean;
+  readonly asMigrate: IncomingMigrate;
 }
 
 /** @name IncomingRequestKind */
@@ -103,6 +124,8 @@ export interface IncomingRequestKind extends Enum {
   readonly isClaimPswap: boolean;
   readonly isCancelOutgoingRequest: boolean;
   readonly isMarkAsDone: boolean;
+  readonly isPrepareForMigration: boolean;
+  readonly isMigrate: boolean;
 }
 
 /** @name IncomingTransfer */
@@ -186,6 +209,40 @@ export interface OutgoingAddTokenEncoded extends Struct {
   readonly raw: Bytes;
 }
 
+/** @name OutgoingMigrate */
+export interface OutgoingMigrate extends Struct {
+  readonly author: AccountId;
+  readonly new_contract_address: EthereumAddress;
+  readonly erc20_native_tokens: Vec<EthereumAddress>;
+  readonly nonce: Index;
+  readonly network_id: BridgeNetworkId;
+}
+
+/** @name OutgoingMigrateEncoded */
+export interface OutgoingMigrateEncoded extends Struct {
+  readonly this_contract_address: EthereumAddress;
+  readonly tx_hash: H256;
+  readonly new_contract_address: EthereumAddress;
+  readonly erc20_native_tokens: Vec<EthereumAddress>;
+  readonly network_id: H256;
+  readonly raw: Bytes;
+}
+
+/** @name OutgoingPrepareForMigration */
+export interface OutgoingPrepareForMigration extends Struct {
+  readonly author: AccountId;
+  readonly nonce: Index;
+  readonly network_id: BridgeNetworkId;
+}
+
+/** @name OutgoingPrepareForMigrationEncoded */
+export interface OutgoingPrepareForMigrationEncoded extends Struct {
+  readonly this_contract_address: EthereumAddress;
+  readonly tx_hash: H256;
+  readonly network_id: H256;
+  readonly raw: Bytes;
+}
+
 /** @name OutgoingRemovePeer */
 export interface OutgoingRemovePeer extends Struct {
   readonly author: AccountId;
@@ -215,6 +272,10 @@ export interface OutgoingRequest extends Enum {
   readonly asAddPeer: OutgoingAddPeer;
   readonly isRemovePeer: boolean;
   readonly asRemovePeer: OutgoingRemovePeer;
+  readonly isPrepareForMigration: boolean;
+  readonly asPrepareForMigration: OutgoingPrepareForMigration;
+  readonly isMigrate: boolean;
+  readonly asMigrate: OutgoingMigrate;
 }
 
 /** @name OutgoingRequestEncoded */
@@ -229,6 +290,10 @@ export interface OutgoingRequestEncoded extends Enum {
   readonly asAddPeer: OutgoingAddPeerEncoded;
   readonly isRemovePeer: boolean;
   readonly asRemovePeer: OutgoingRemovePeerEncoded;
+  readonly isPrepareForMigration: boolean;
+  readonly asPrepareForMigration: OutgoingPrepareForMigrationEncoded;
+  readonly isMigrate: boolean;
+  readonly asMigrate: OutgoingMigrateEncoded;
 }
 
 /** @name OutgoingTransfer */

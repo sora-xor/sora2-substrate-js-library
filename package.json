@@ -1,7 +1,8 @@
 {
-  "version": "0.4.7",
+  "version": "0.5.2",
   "author": "Stefan Popov <popov@soramitsu.co.jp>",
   "private": true,
+  "license": "Apache-2.0",
   "scripts": {
     "build": "yarn build:interfaces && polkadot-dev-build-ts",
     "build:interfaces": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts",
@@ -9,7 +10,7 @@
     "clean": "polkadot-dev-clean-build",
     "lint": "eslint '*.ts'",
     "postinstall": "polkadot-dev-yarn-only",
-    "test:all": "jest --testPathIgnorePatterns",
+    "test:all": "yarn build && jest --testPathIgnorePatterns",
     "pull-metadata": "ts-node --project ./tsconfig.json packages/types/scripts/pullMeta.ts",
     "export-types": "ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts",
     "test": "node -r ts-node/register -r tsconfig-paths/register demo.ts",

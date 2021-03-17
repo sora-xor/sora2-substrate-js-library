@@ -8,7 +8,7 @@ import { decodeAddress } from '@polkadot/util-crypto'
 
 import { Storage } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
-import { FPNumber } from './fp'
+import { CodecString, FPNumber } from './fp'
 import { encrypt } from './crypto'
 import { connection } from './connection'
 
@@ -26,10 +26,6 @@ export class BaseApi {
   protected history: Array<History> = []
 
   constructor () {
-    const history = this.storage?.get('history')
-    if (history) {
-      this.history = JSON.parse(history)
-    }
   }
 
   public get api (): ApiPromise {
@@ -51,9 +47,13 @@ export class BaseApi {
    */
   public setStorage (storage: Storage): void {
     this.storage = storage
+    const history = this.storage?.get('history')
+    if (history) {
+      this.history = JSON.parse(history)
+    }
   }
 
-  protected saveHistory (history: History): void {
+  public saveHistory (history: History): void {
     if (!history || !history.id) {
       return
     }
@@ -123,7 +123,13 @@ export class BaseApi {
     })
   }
 
-  protected async getNetworkFee (signer: KeyringPair, type: Operation, ...params: Array<any>): Promise<string> {
+  /**
+   * @param signer
+   * @param type
+   * @param params
+   * @returns value ** decimals
+   */
+  protected async getNetworkFee (signer: KeyringPair, type: Operation, ...params: Array<any>): Promise<CodecString> {
     let extrinsicParams = params
     const xor = KnownAssets.get(KnownSymbols.XOR)
     let extrinsic = null
@@ -164,7 +170,7 @@ export class BaseApi {
       signer.isLocked ? signer.address : signer,
       { signer: this.signer }
     )
-    return new FPNumber(res.partialFee, xor.decimals).toString()
+    return new FPNumber(res.partialFee, xor.decimals).toCodecString()
   }
 
   /**

@@ -6,7 +6,7 @@ import { Signer } from '@polkadot/types/types'
 import { BaseApi, Operation } from './BaseApi'
 import { Messages } from './logger'
 import { getAssets, Asset } from './assets'
-import { FPNumber } from './fp'
+import { CodecString, FPNumber } from './fp'
 
 export interface RegisteredAsset extends Asset {
   externalAddress: string;
@@ -64,7 +64,7 @@ export interface BridgeRequest {
 /** Outgoing transfers */
 export interface BridgeApprovedRequest {
   currencyType: BridgeCurrencyType;
-  amount: string;
+  amount: CodecString;
   from: string;
   to: string;
   hash: string;
@@ -87,7 +87,7 @@ export interface BridgeApprovedRequest {
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
 export class BridgeApi extends BaseApi {
-  public static ETH_NETWORK_ID = '0x0' // TODO: make it `0`
+  public static ETH_NETWORK_ID = 0
 
   private account: CreateResult
 
@@ -127,7 +127,7 @@ export class BridgeApi extends BaseApi {
    * @param amount
    * @returns Network fee
    */
-  public async getTransferToEthFee (asset: RegisteredAsset, to: string, amount: string | number): Promise<string> {
+  public async getTransferToEthFee (asset: RegisteredAsset, to: string, amount: string | number): Promise<CodecString> {
     const params = await this.calcTransferToEthParams(asset, to, amount)
     return await this.getNetworkFee(this.account.pair, Operation.EthBridgeOutgoing, ...params.args)
   }
@@ -157,7 +157,7 @@ export class BridgeApi extends BaseApi {
    * @param type Type of operation, "Transfer" is set by default
    * @returns Network fee
    */
-  public async getRequestFromEthFee (hash: string, type: RequestType = RequestType.Transfer): Promise<string> {
+  public async getRequestFromEthFee (hash: string, type: RequestType = RequestType.Transfer): Promise<CodecString> {
     assert(this.account, Messages.connectWallet)
     return await this.getNetworkFee(
       this.account.pair,
@@ -269,7 +269,7 @@ export class BridgeApi extends BaseApi {
     formattedItem.hash = request.tx_hash
     formattedItem.from = request.from
     formattedItem.to = request.to
-    formattedItem.amount = FPNumber.fromCodecValue(request.amount).toString()
+    formattedItem.amount = request.amount
     formattedItem.currencyType = BridgeCurrencyType.TokenAddress in request.currency_id ? BridgeCurrencyType.TokenAddress : BridgeCurrencyType.AssetId
     formattedItem.r = []
     formattedItem.s = []
@@ -310,7 +310,7 @@ export class BridgeApi extends BaseApi {
     assert(this.account, Messages.connectWallet)
     const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address, status)).toJSON()
     return data.Ok
-      .filter(([networkId, _]) => networkId === 0) // TODO: replace zero with `BridgeApi.ETH_NETWORK_ID`
+      .filter(([networkId, _]) => networkId === BridgeApi.ETH_NETWORK_ID)
       .map(([_, hash]) => hash) as Array<string>
   }
 

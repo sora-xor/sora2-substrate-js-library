@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js'
 import { Codec } from '@polkadot/types/types'
 import isNil from 'lodash/fp/isNil'
 
+export type CodecString = string
 export type NumberLike = number | string
 
 BigNumber.config({
@@ -35,9 +36,9 @@ export class FPNumber {
   public static DEFAULT_PRECISION = 18
 
   /**
-   * Default decimal places = `6`
+   * Default decimal places = `7`
    */
-  public static DEFAULT_DECIMAL_PLACES = 6
+  public static DEFAULT_DECIMAL_PLACES = 7
 
   /**
    * Default round type = `3`
@@ -235,13 +236,24 @@ export class FPNumber {
     return this.value.toFormat()
   }
 
+  public format (dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format): string {
+    const value = this.value.div(10 ** this.precision)
+    if (value.isZero()) {
+      return value.toFormat(format)
+    }
+    let formatted = value.dp(dp, FPNumber.DEFAULT_ROUND_MODE)
+    if (formatted.isZero()) {
+      // First significant character
+      formatted = new BigNumber(value.toFormat().replace(/(0\.0*[1-9])([0-9]*)/, '$1'))
+    }
+    return formatted.toFormat(format)
+  }
+
   /**
    * Format real number (divided by precision) to string
-   * @param {number} [dp=6] Decimal places deafult is 6
    */
-  public toString (dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): string {
-    let result = this.value.div(10 ** this.precision)
-    result = result.dp(dp, FPNumber.DEFAULT_ROUND_MODE)
+  public toString (): string {
+    const result = this.value.div(10 ** this.precision)
     return result.toFormat()
   }
 

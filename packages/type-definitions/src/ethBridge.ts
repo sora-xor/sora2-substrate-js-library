@@ -9,7 +9,7 @@ export default {
         },
         {
           name: 'networkId',
-          type: 'Option<NetworkId>'
+          type: 'Option<BridgeNetworkId>'
         },
       ],
       type: 'Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>'
@@ -23,7 +23,7 @@ export default {
         },
         {
           name: 'networkId',
-          type: 'Option<NetworkId>'
+          type: 'Option<BridgeNetworkId>'
         },
       ],
       type: 'Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchError>'
@@ -37,7 +37,7 @@ export default {
         },
         {
           name: 'networkId',
-          type: 'Option<NetworkId>'
+          type: 'Option<BridgeNetworkId>'
         },
       ],
       type: 'Result<Vec<Vec<SignatureParams>>, DispatchError>'
@@ -54,14 +54,14 @@ export default {
           type: 'Option<RequestStatus>'
         },
       ],
-      type: 'Result<Vec<(NetworkId, H256)>, DispatchError>'
+      type: 'Result<Vec<(BridgeNetworkId, H256)>, DispatchError>'
     },
     getRegisteredAssets: {
       description: 'Get registered assets and tokens.',
       params: [
         {
           name: 'networkId',
-          type: 'Option<NetworkId>'
+          type: 'Option<BridgeNetworkId>'
         },
       ],
       type: 'Result<Vec<(AssetKind, AssetId, Option<H160>)>, DispatchError>'
@@ -99,6 +99,8 @@ export default {
         "ClaimPswap",
         "CancelOutgoingRequest",
         "MarkAsDone",
+        "PrepareForMigration",
+        "Migrate",
       ]
     },
     CurrencyIdEncoded: {
@@ -186,6 +188,32 @@ export default {
       network_id: "H256",
       raw: "Vec<u8>",
     },
+    OutgoingPrepareForMigration: {
+      author: "AccountId",
+      nonce: "Index",
+      network_id: "BridgeNetworkId",
+    },
+    OutgoingPrepareForMigrationEncoded: {
+      this_contract_address: "EthereumAddress",
+      tx_hash: "H256",
+      network_id: "H256",
+      raw: "Vec<u8>",
+    },
+    OutgoingMigrate: {
+      author: "AccountId",
+      new_contract_address: "EthereumAddress",
+      erc20_native_tokens: "Vec<EthereumAddress>",
+      nonce: "Index",
+      network_id: "BridgeNetworkId",
+    },
+    OutgoingMigrateEncoded: {
+      this_contract_address: "EthereumAddress",
+      tx_hash: "H256",
+      new_contract_address: "EthereumAddress",
+      erc20_native_tokens: "Vec<EthereumAddress>",
+      network_id: "H256",
+      raw: "Vec<u8>",
+    },
     OutgoingRequest: {
       _enum: {
         Transfer: "OutgoingTransfer",
@@ -193,6 +221,8 @@ export default {
         AddToken: "OutgoingAddToken",
         AddPeer: "OutgoingAddPeer",
         RemovePeer: "OutgoingRemovePeer",
+        PrepareForMigration: "OutgoingPrepareForMigration",
+        Migrate: "OutgoingMigrate",
       }
     },
     OutgoingRequestEncoded: {
@@ -202,6 +232,8 @@ export default {
         AddToken: "OutgoingAddTokenEncoded",
         AddPeer: "OutgoingAddPeerEncoded",
         RemovePeer: "OutgoingRemovePeerEncoded",
+        PrepareForMigration: "OutgoingPrepareForMigrationEncoded",
+        Migrate: "OutgoingMigrateEncoded",
       }
     },
     IncomingTransfer: {
@@ -250,6 +282,19 @@ export default {
       timepoint: "Timepoint",
       network_id: "BridgeNetworkId",
     },
+    IncomingPrepareForMigration: {
+      tx_hash: "H256",
+      at_height: "u64",
+      timepoint: "Timepoint",
+      network_id: "BridgeNetworkId",
+    },
+    IncomingMigrate: {
+      new_contract_address: "EthereumAddress",
+      tx_hash: "H256",
+      at_height: "u64",
+      timepoint: "Timepoint",
+      network_id: "BridgeNetworkId",
+    },
     IncomingRequest: {
       _enum: {
         Transfer: "IncomingTransfer",
@@ -257,6 +302,8 @@ export default {
         ChangePeers: "IncomingChangePeers",
         ClaimPswap: "IncomingClaimPswap",
         CancelOutgoingRequest: "IncomingCancelOutgoingRequest",
+        PrepareForMigration: "IncomingPrepareForMigration",
+        Migrate: "IncomingMigrate",
       }
     },
     IncomingPreRequest: {

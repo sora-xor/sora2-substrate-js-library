@@ -20,7 +20,7 @@ import {
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, History } from './BaseApi'
 import { SwapResult } from './swap'
-import { FPNumber, NumberLike } from './fp'
+import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
 import { Storage } from './storage'
@@ -29,8 +29,6 @@ import { Storage } from './storage'
  * Contains all necessary data and functions for the wallet
  */
 export class Api extends BaseApi {
-  public static NETWORK_ID = '0x0'
-
   private readonly type: KeypairType = KeyringType
   private readonly defaultDEXId = 0
   public readonly defaultSlippageTolerancePercent = 0.5
@@ -60,14 +58,24 @@ export class Api extends BaseApi {
   }
 
   public get accountAssets (): Array<AccountAsset> {
+    if (this.storage) {
+      this.assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset> || []
+    }
     return this.assets
   }
 
   public get accountLiquidity (): Array<AccountLiquidity> {
+    if (this.storage) {
+      this.liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
+    }
     return this.liquidity
   }
 
   public get accountHistory (): Array<History> {
+    if (this.storage) {
+      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
+      return this.history
+    }
     return [...this.history, ...this.bridge.historyData]
   }
 
@@ -250,12 +258,10 @@ export class Api extends BaseApi {
   private async calcRegisterAssetParams (symbol: string, totalSupply: NumberLike, extensibleSupply: boolean) {
     assert(this.account, Messages.connectWallet)
     // TODO: add assert for symbol and totalSupply params
-    const precision = FPNumber.DEFAULT_PRECISION
     const supply = new FPNumber(totalSupply)
     return {
       args: [
         symbol,
-        precision,
         supply.toCodecString(),
         extensibleSupply
       ]
@@ -267,9 +273,9 @@ export class Api extends BaseApi {
    * @param symbol string with asset symbol
    * @param totalSupply
    * @param extensibleSupply
-   * @returns register asset network fee as a string
+   * @returns register asset network fee as a string (value ** decimals)
    */
-  public async getRegisterAssetNetworkFee (symbol: string, totalSupply: NumberLike, extensibleSupply = false): Promise<string> {
+  public async getRegisterAssetNetworkFee (symbol: string, totalSupply: NumberLike, extensibleSupply = false): Promise<CodecString> {
     const params = await this.calcRegisterAssetParams(symbol, totalSupply, extensibleSupply)
     return await this.getNetworkFee(this.accountPair, Operation.RegisterAsset, ...params.args)
   }
@@ -314,26 +320,22 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get account asset information
+   * Get account asset information.
+   * You can just check balance of any asset
    * @param address asset address
+   * @param addToList should asset be added to list or not
    */
-  public async getAccountAsset (address: string): Promise<AccountAsset> {
+  public async getAccountAsset (address: string, addToList = false): Promise<AccountAsset> {
     assert(this.account, Messages.connectWallet)
     const asset = { address } as AccountAsset
-    const knownAsset = KnownAssets.get(address)
-    if (knownAsset) {
-      asset.symbol = knownAsset.symbol
-      asset.decimals = knownAsset.decimals
-    } else {
-      const { decimals, symbol } = await this.getAssetInfo(address)
-      asset.decimals = decimals
-      asset.symbol = symbol
-    }
+    const { decimals, symbol } = await this.getAssetInfo(address)
+    asset.decimals = decimals
+    asset.symbol = symbol
     const result = await getAccountAssetInfo(this.api, this.account.pair.address, address)
-    asset.balance = new FPNumber(result, asset.decimals).toString()
-    this.addToAssetList(asset)
-    if (this.storage) {
-      this.storage.set('assets', JSON.stringify(this.assets))
+    asset.balance = new FPNumber(result, asset.decimals).toCodecString()
+    if (addToList) {
+      this.addToAssetList(asset)
+      this.storage?.set('assets', JSON.stringify(this.assets))
     }
     return asset
   }
@@ -351,7 +353,7 @@ export class Api extends BaseApi {
       if (balance.isZero()) {
         continue
       }
-      asset.balance = balance.toString()
+      asset.balance = balance.toCodecString()
       if (!Number(asset.balance)) {
         continue
       }
@@ -368,8 +370,14 @@ export class Api extends BaseApi {
     assert(this.account, Messages.connectWallet)
     for (const asset of this.assets) {
       const result = await getAccountAssetInfo(this.api, this.account.pair.address, asset.address)
-      asset.balance = new FPNumber(result, asset.decimals).toString()
+      asset.balance = new FPNumber(result, asset.decimals).toCodecString()
       this.addToAssetList(asset)
+    }
+    // We should track XOR asset because of its importance
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    if (!this.assets.find(asset => asset.address === xor.address)) {
+      const xorAccountAsset = await this.getAccountAsset(xor.address)
+      this.addToAssetList(xorAccountAsset)
     }
     if (this.storage) {
       this.storage.set('assets', JSON.stringify(this.assets))
@@ -382,8 +390,9 @@ export class Api extends BaseApi {
    * @param assetAddress Asset address
    * @param toAddress Account address
    * @param amount Amount value
+   * @returns fee ** decimals
    */
-  public async getTransferNetworkFee (assetAddress: string, toAddress: string, amount: NumberLike): Promise<string> {
+  public async getTransferNetworkFee (assetAddress: string, toAddress: string, amount: NumberLike): Promise<CodecString> {
     assert(this.account, Messages.connectWallet)
     const asset = await this.getAssetInfo(assetAddress)
     return await this.getNetworkFee(
@@ -438,8 +447,8 @@ export class Api extends BaseApi {
     )
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0 }
     return {
-      amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toString(),
-      fee: new FPNumber(value.fee, xor.decimals).toString()
+      amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
+      fee: new FPNumber(value.fee, xor.decimals).toCodecString()
     } as SwapResult
   }
 
@@ -447,7 +456,7 @@ export class Api extends BaseApi {
    * Get min or max value before Swap
    * @param assetAAddress Asset A address
    * @param assetBAddress Asset B address
-   * @param resultAmount Result of the swap operation, `getSwapResult().amount`
+   * @param resultAmount Result of the swap operation, `getSwapResult().amount` (but it's just string)
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    * @param isExchangeB If `isExchangeB` then Exchange B and it calculates max sold,
    * else - Exchange A and it calculates min received. `false` by default
@@ -455,16 +464,16 @@ export class Api extends BaseApi {
   public async getMinMaxValue (
     assetAAddress: string,
     assetBAddress: string,
-    resultAmount: NumberLike,
+    resultAmount: string,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
     isExchangeB = false
-  ): Promise<string> {
+  ): Promise<CodecString> {
     const assetA = await this.getAssetInfo(assetAAddress)
     const assetB = await this.getAssetInfo(assetBAddress)
     const resultDecimals = (!isExchangeB ? assetB : assetA).decimals
     const result = new FPNumber(resultAmount, resultDecimals)
     const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100, resultDecimals))
-    return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toString()
+    return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toCodecString()
   }
 
   private async calcSwapParams (
@@ -517,6 +526,7 @@ export class Api extends BaseApi {
    * @param amountB Amount B value
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
+   * @returns fee ** decimals
    */
   public async getSwapNetworkFee (
     assetAAddress: string,
@@ -525,7 +535,7 @@ export class Api extends BaseApi {
     amountB: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
     isExchangeB = false
-  ): Promise<string> {
+  ): Promise<CodecString> {
     const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB)
     return await this.getNetworkFee(this.accountPair, Operation.Swap, ...params.args)
   }
@@ -582,7 +592,7 @@ export class Api extends BaseApi {
       if (balanceFP.isZero()) {
         continue
       }
-      const balance = balanceFP.toString()
+      const balance = balanceFP.toCodecString()
       if (!Number(balance)) {
         continue
       }
@@ -623,7 +633,7 @@ export class Api extends BaseApi {
         reserveB,
         asset.address
       )
-      asset.balance = new FPNumber(result, asset.decimals).toString()
+      asset.balance = new FPNumber(result, asset.decimals).toCodecString()
       asset.firstBalance = balanceA
       asset.secondBalance = balanceB
       this.addToLiquidityList(asset)
@@ -680,12 +690,14 @@ export class Api extends BaseApi {
       firstAddress: firstAssetAddress,
       secondAddress: secondAssetAddress
     } as AccountLiquidity
-    const result = await getAccountAssetInfo(this.api, this.account.pair.address, address)
-    asset.balance = new FPNumber(result, asset.decimals).toString()
-    this.addToLiquidityList(asset)
-    if (this.storage) {
-      this.storage.set('liquidity', JSON.stringify(this.liquidity))
-    }
+    const poolTokenBalance = await getAccountAssetInfo(this.api, this.account.pair.address, address)
+    const firstToken = await this.getAssetInfo(firstAssetAddress)
+    const secondToken = await this.getAssetInfo(secondAssetAddress)
+    const firstTokenBalance = await getAccountAssetInfo(this.api, this.account.pair.address, firstAssetAddress)
+    const secondTokenBalance = await getAccountAssetInfo(this.api, this.account.pair.address, secondAssetAddress)
+    asset.balance = new FPNumber(poolTokenBalance, asset.decimals).toCodecString()
+    asset.firstBalance = new FPNumber(firstTokenBalance, firstToken.decimals).toCodecString()
+    asset.secondBalance = new FPNumber(secondTokenBalance, secondToken.decimals).toCodecString()
     return asset
   }
 
@@ -695,7 +707,7 @@ export class Api extends BaseApi {
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public async getLiquidityReserves (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<string>> {
+  public async getLiquidityReserves (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<CodecString>> {
     const result = await this.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress) as any // Array<Balance>
     if (!result || result.length !== 2) {
       return ['0', '0']
@@ -704,7 +716,7 @@ export class Api extends BaseApi {
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const firstValue = new FPNumber(result[0], firstAsset.decimals)
     const secondValue = new FPNumber(result[1], secondAsset.decimals)
-    return [firstValue.toString(FPNumber.DEFAULT_PRECISION), secondValue.toString(FPNumber.DEFAULT_PRECISION)]
+    return [firstValue.toCodecString(), secondValue.toCodecString()]
   }
 
   /**
@@ -720,15 +732,15 @@ export class Api extends BaseApi {
   public async estimateTokensRetrieved (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    amount: NumberLike,
-    firstTotal: NumberLike,
-    secondTotal: NumberLike,
+    amount: CodecString,
+    firstTotal: CodecString,
+    secondTotal: CodecString,
     poolTokenAddress?: string
-  ): Promise<Array<string>> {
+  ): Promise<Array<CodecString>> {
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const a = new FPNumber(firstTotal, firstAsset.decimals)
-    const b = new FPNumber(secondTotal, secondAsset.decimals)
+    const a = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
+    const b = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
     if (a.isZero() && b.isZero()) {
       return ['0', '0']
     }
@@ -737,12 +749,12 @@ export class Api extends BaseApi {
         ? this.getAssetInfo(poolTokenAddress)
         : this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
     )
-    const pIn = new FPNumber(amount, poolToken.decimals)
+    const pIn = FPNumber.fromCodecValue(amount, poolToken.decimals)
     const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
     const pts = new FPNumber(totalSupply, poolToken.decimals)
     const aOut = pIn.mul(a).div(pts)
     const bOut = pIn.mul(b).div(pts)
-    return [aOut.toString(), bOut.toString(), pts.toString()]
+    return [aOut.toCodecString(), bOut.toCodecString(), pts.toCodecString()]
   }
 
   /**
@@ -759,24 +771,24 @@ export class Api extends BaseApi {
     secondAssetAddress: string,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
-    firstTotal: NumberLike,
-    secondTotal: NumberLike
-  ): Promise<Array<string>> {
+    firstTotal: CodecString,
+    secondTotal: CodecString
+  ): Promise<Array<CodecString>> {
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const aIn = new FPNumber(firstAmount, firstAsset.decimals)
     const bIn = new FPNumber(secondAmount, secondAsset.decimals)
-    const a = new FPNumber(firstTotal, firstAsset.decimals)
-    const b = new FPNumber(secondTotal, secondAsset.decimals)
+    const a = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
+    const b = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
     if (a.isZero() && b.isZero()) {
       const inaccuracy = new FPNumber('0.000000000000001')
-      return [aIn.mul(bIn).sqrt().sub(inaccuracy).toString()]
+      return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()]
     }
     const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
     const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
     const pts = new FPNumber(totalSupply, poolToken.decimals)
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b))
-    return [result.toString(), pts.toString()]
+    return [result.toCodecString(), pts.toCodecString()]
   }
 
   private async calcAddLiquidityParams (
@@ -821,7 +833,7 @@ export class Api extends BaseApi {
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
-  ): Promise<string> {
+  ): Promise<CodecString> {
     const params = await this.calcAddLiquidityParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
     return await this.getNetworkFee(this.accountPair, Operation.AddLiquidity, ...params.args)
   }
@@ -899,7 +911,7 @@ export class Api extends BaseApi {
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
-  ): Promise<string> {
+  ): Promise<CodecString> {
     const params = await this.calcCreatePairParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
     return await this.getNetworkFee(this.accountPair, Operation.CreatePair, params)
   }
@@ -946,10 +958,10 @@ export class Api extends BaseApi {
   private async calcRemoveLiquidityParams (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    desiredMarker: NumberLike,
-    firstTotal: NumberLike,
-    secondTotal: NumberLike,
-    totalSupply: NumberLike,
+    desiredMarker: string,
+    firstTotal: CodecString,
+    secondTotal: CodecString,
+    totalSupply: CodecString,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ) {
     assert(this.account, Messages.connectWallet)
@@ -957,9 +969,9 @@ export class Api extends BaseApi {
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
     const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
     const desired = new FPNumber(desiredMarker, poolToken.decimals)
-    const reserveA = new FPNumber(firstTotal, firstAsset.decimals)
-    const reserveB = new FPNumber(secondTotal, secondAsset.decimals)
-    const pts = new FPNumber(totalSupply, poolToken.decimals)
+    const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
+    const reserveB = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
+    const pts = FPNumber.fromCodecValue(totalSupply, poolToken.decimals)
     const desiredA = desired.mul(reserveA).div(pts)
     const desiredB = desired.mul(reserveB).div(pts)
     const slippage = new FPNumber(Number(slippageTolerance) / 100)
@@ -990,12 +1002,12 @@ export class Api extends BaseApi {
   public async getRemoveLiquidityNetworkFee (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    desiredMarker: NumberLike,
-    firstTotal: NumberLike,
-    secondTotal: NumberLike,
-    totalSupply: NumberLike,
+    desiredMarker: string,
+    firstTotal: CodecString,
+    secondTotal: CodecString,
+    totalSupply: CodecString,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
-  ): Promise<string> {
+  ): Promise<CodecString> {
     const params = await this.calcRemoveLiquidityParams(
       firstAssetAddress,
       secondAssetAddress,
@@ -1021,10 +1033,10 @@ export class Api extends BaseApi {
   public async removeLiquidity (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    desiredMarker: NumberLike,
-    firstTotal: NumberLike,
-    secondTotal: NumberLike,
-    totalSupply: NumberLike,
+    desiredMarker: string,
+    firstTotal: CodecString,
+    secondTotal: CodecString,
+    totalSupply: CodecString,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ): Promise<void> {
     const params = await this.calcRemoveLiquidityParams(
@@ -1075,6 +1087,23 @@ export class Api extends BaseApi {
   }
 
   //_________________________FORMATTER_METHODS_____________________________
+  public hasEnoughXor (asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    const xorDecimals = xor.decimals
+    const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals)
+    if (asset.address === xor.address) {
+      const fpBalance = FPNumber.fromCodecValue(asset.balance, xorDecimals)
+      const fpAmount = new FPNumber(amount, xorDecimals)
+      return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
+    }
+    // Here we should be sure that xor value of account was tracked & updated
+    const xorAccountAsset = this.accountAssets.find(asset => asset.symbol === KnownSymbols.XOR)
+    if (!xorAccountAsset) {
+      return false
+    }
+    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance, xorDecimals)
+    return FPNumber.lte(fpFee, xorBalance)
+  }
   /**
    * Divide the first asset by the second
    * @param firstAssetAddress
@@ -1082,6 +1111,7 @@ export class Api extends BaseApi {
    * @param firstAmount
    * @param secondAmount
    * @param reversed If `true`: the second by the first (`false` by default)
+   * @returns Formatted string
    */
   public async divideAssets (
     firstAssetAddress: string,
@@ -1098,7 +1128,7 @@ export class Api extends BaseApi {
     const result = !reversed
       ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
       : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one)
-    return result.toString()
+    return result.format()
   }
 }
 
