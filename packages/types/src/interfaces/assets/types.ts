@@ -12,6 +12,9 @@ export interface AssetInfo extends Struct {
   readonly is_mintable: bool;
 }
 
+/** @name AssetRecord */
+export interface AssetRecord extends Null {}
+
 /** @name AssetSymbolStr */
 export interface AssetSymbolStr extends Text {}
 
@@ -19,8 +22,5 @@ export interface AssetSymbolStr extends Text {}
 export interface BalanceInfo extends Struct {
   readonly balance: Balance;
 }
-
-/** @name TupleB */
-export interface TupleB extends Null {}
 
 export type PHANTOM_ASSETS = 'assets';

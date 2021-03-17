@@ -14,7 +14,7 @@ import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraI
 import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
-import type { TupleB } from '@sora-substrate/types/interfaces/assets';
+import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeStatus, EthPeersSync, IncomingRequest, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { AccountId, Address, AssetId, AssetId32, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Farm, FarmId, Farmer, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, PendingMultisigAccount, Perbill, PermissionId, Releases, Scope, Slot, SmoothPriceState, TechAccountId, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
@@ -29,9 +29,9 @@ export interface StorageType extends BaseStorageType {
      **/
     assetOwners: StorageMap<AssetId | AnyNumber, AccountId>;
     /**
-     * Asset Id -> Tuple<T>
+     * Asset Id -> AssetRecord<T>
      **/
-    tupleAssetId: StorageMap<AssetId | AnyNumber, Option<TupleB>>;
+    assetRecordAssetId: StorageMap<AssetId | AnyNumber, Option<AssetRecord>>;
   };
   authorship: {    /**
      * Author of current block.
