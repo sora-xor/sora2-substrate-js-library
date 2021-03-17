@@ -11,11 +11,12 @@ import type { SetId, StoredPendingChange, StoredState } from '@polkadot/types/in
 import type { NetworkId } from '@polkadot/types/interfaces/parachains';
 import type { Keys, SessionIndex } from '@polkadot/types/interfaces/session';
 import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraIndex, EraRewardPoints, Exposure, Forcing, Nominations, RewardDestination, SlashingSpans, SpanIndex, SpanRecord, StakingLedger, UnappliedSlash, ValidatorPrefs } from '@polkadot/types/interfaces/staking';
-import type { AccountInfo, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
+import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
-import type { AssetKind, IncomingRequest, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
-import type { AccountId, Address, AssetId, AssetId32, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, PendingMultisigAccount, Perbill, PermissionId, Releases, Scope, SmoothPriceState, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { TupleB } from '@sora-substrate/types/interfaces/assets';
+import type { AssetKind, BridgeStatus, EthPeersSync, IncomingRequest, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AccountId, Address, AssetId, AssetId32, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Farm, FarmId, Farmer, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, PendingMultisigAccount, Perbill, PermissionId, Releases, Scope, Slot, SmoothPriceState, TechAccountId, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
@@ -27,6 +28,10 @@ export interface StorageType extends BaseStorageType {
      * Asset Id -> Owner Account Id
      **/
     assetOwners: StorageMap<AssetId | AnyNumber, AccountId>;
+    /**
+     * Asset Id -> Tuple<T>
+     **/
+    tupleAssetId: StorageMap<AssetId | AnyNumber, Option<TupleB>>;
   };
   authorship: {    /**
      * Author of current block.
@@ -46,9 +51,15 @@ export interface StorageType extends BaseStorageType {
      **/
     authorities: Vec<ITuple<[AuthorityId, BabeAuthorityWeight]>> | null;
     /**
+     * Temporary value (cleared at block finalization) that includes the VRF output generated
+     * at this block. This field should always be populated during block processing unless
+     * secondary plain slots are enabled (which don't contain a VRF output).
+     **/
+    authorVrfRandomness: MaybeRandomness | null;
+    /**
      * Current slot number.
      **/
-    currentSlot: u64 | null;
+    currentSlot: Slot | null;
     /**
      * Current epoch index.
      **/
@@ -57,7 +68,7 @@ export interface StorageType extends BaseStorageType {
      * The slot at which the first epoch actually started. This is 0
      * until the first block of the chain.
      **/
-    genesisSlot: u64 | null;
+    genesisSlot: Slot | null;
     /**
      * Temporary value (cleared at block finalization) which is `Some`
      * if per-block initialization has already been called for current block.
@@ -71,6 +82,10 @@ export interface StorageType extends BaseStorageType {
      * execution context should always yield zero.
      **/
     lateness: BlockNumber | null;
+    /**
+     * Next epoch authorities.
+     **/
+    nextAuthorities: Vec<ITuple<[AuthorityId, BabeAuthorityWeight]>> | null;
     /**
      * Next epoch configuration, if changed.
      **/
@@ -112,7 +127,7 @@ export interface StorageType extends BaseStorageType {
   balances: {    /**
      * The balance of an account.
      * 
-     * NOTE: This is only used in the case that this module is used to store balances.
+     * NOTE: This is only used in the case that this pallet is used to store balances.
      **/
     account: StorageMap<AccountId | string, AccountData>;
     /**
@@ -154,29 +169,106 @@ export interface StorageType extends BaseStorageType {
   };
   dexManager: {    dexInfos: StorageMap<DEXId | AnyNumber, Option<DEXInfo>>;
   };
-  ethBridge: {    accountRequests: StorageMap<AccountId | string, Vec<ITuple<[NetworkId, H256]>>>;
+  ethBridge: {    /**
+     * Requests made by an account.
+     **/
+    accountRequests: StorageMap<AccountId | string, Vec<ITuple<[NetworkId, H256]>>>;
+    /**
+     * Thischain authority account.
+     **/
     authorityAccount: AccountId | null;
     /**
-     * Multi-signature bridge peers' account. `None` if there is no network with the given ID.
+     * Multi-signature bridge peers' account. `None` if there is no account and network with the given ID.
      **/
     bridgeAccount: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Option<AccountId>>;
+    /**
+     * Bridge status.
+     **/
+    bridgeBridgeStatus: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, BridgeStatus>;
+    /**
+     * Smart-contract address on Sidechain.
+     **/
     bridgeContractAddress: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Address>;
+    /**
+     * Incoming requests.
+     **/
     incomingRequests: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, Option<IncomingRequest>>;
-    lastNetworkId: NetworkId | null;
+    /**
+     * Next Network ID counter.
+     **/
+    nextNetworkId: NetworkId | null;
+    /**
+     * Peer account ID on Thischain.
+     **/
     peerAccountId: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, AccountId>;
+    /**
+     * Peer address on Sidechain.
+     **/
     peerAddress: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AccountId | string, Address>;
+    /**
+     * Network peers set.
+     **/
     peers: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, BTreeSet<AccountId>>;
+    /**
+     * Used for compatibility with XOR and VAL contracts.
+     **/
+    pendingEthPeersSync: EthPeersSync | null;
+    /**
+     * Registered incoming requests queue handled by off-chain workers.
+     **/
     pendingIncomingRequests: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, BTreeSet<H256>>;
+    /**
+     * Network pending (being added/removed) peer.
+     **/
     pendingPeer: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Option<AccountId>>;
+    /**
+     * Sora PSWAP contract address.
+     **/
+    pswapContractAddress: Address | null;
+    /**
+     * PSWAP owners on Sidechain. `None` - no owner, `Some(0)` - already claimed.
+     **/
     pswapOwners: StorageMap<Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, Option<Balance>>;
+    /**
+     * Registered asset kind.
+     **/
     registeredAsset: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AssetId | AnyNumber, Option<AssetKind>>;
+    /**
+     * Registered token `AssetId` on Thischain.
+     **/
     registeredSidechainAsset: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, Option<AssetId>>;
+    /**
+     * Registered asset address on Sidechain.
+     **/
     registeredSidechainToken: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AssetId | AnyNumber, Option<Address>>;
+    /**
+     * Registered requests.
+     **/
     request: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, Option<OffchainRequest>>;
+    /**
+     * Outgoing requests approvals.
+     **/
     requestApprovals: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, BTreeSet<SignatureParams>>;
+    /**
+     * Registered requests queue handled by off-chain workers.
+     **/
     requestsQueue: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Vec<OffchainRequest>>;
+    /**
+     * Requests statuses.
+     **/
     requestStatuses: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, Option<RequestStatus>>;
+    /**
+     * Requests submission height map (on substrate).
+     **/
     requestSubmissionHeight: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, BlockNumber>;
+    /**
+     * Sora VAL master contract address.
+     **/
+    valMasterContractAddress: Address | null;
+    /**
+     * Sora XOR master contract address.
+     **/
+    xorMasterContractAddress: Address | null;
   };
   farming: {    farmers: StorageDoubleMap<FarmId | AnyNumber, AccountId | string, Option<Farmer>>;
     farms: StorageMap<FarmId | AnyNumber, Option<Farm>>;
@@ -237,15 +329,69 @@ export interface StorageType extends BaseStorageType {
   mockLiquiditySource4: {    reserves: StorageDoubleMap<DEXId | AnyNumber, AssetId | AnyNumber, ITuple<[Fixed, Fixed]>>;
     reservesAcc: TechAccountId | null;
   };
-  multicollateralBondingCurvePool: {    distributionAccountsEntry: DistributionAccounts | null;
-    enabledPairs: BTreeSet<TradingPair> | null;
-    fee: Fixed | null;
+  multicollateralBondingCurvePool: {    /**
+     * Coefficient which determines the fraction of input collateral token to be exchanged to XOR and
+     * be distributed to predefined accounts. Relevant for the Buy function (when a user buys new XOR).
+     **/
+    alwaysDistributeCoefficient: Fixed | null;
+    /**
+     * Reward multipliers for special assets. Asset Id => Reward Multiplier
+     **/
+    assetsWithOptionalRewardMultiplier: StorageMap<AssetId | AnyNumber, Option<Fixed>>;
+    /**
+     * Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
+     **/
+    baseFee: Fixed | null;
+    /**
+     * Accounts that receive 20% buy/sell margin according predefined proportions.
+     **/
+    distributionAccountsEntry: DistributionAccounts | null;
+    /**
+     * Collateral Assets allowed to be sold on bonding curve.
+     **/
+    enabledTargets: BTreeSet<AssetId> | null;
+    /**
+     * Account which stores actual PSWAP intended for rewards.
+     **/
+    incentivesAccountId: AccountId | null;
+    /**
+     * Number of reserve currencies selling which user will get rewards, namely all registered collaterals except PSWAP and VAL.
+     **/
+    incentivisedCurrenciesNum: u32 | null;
+    /**
+     * Buy price starting constant. This is the price users pay for new XOR.
+     **/
     initialPrice: Fixed | null;
+    /**
+     * Amount of PSWAP initially stored in account dedicated for TBC rewards. Actual account balance will deplete over time,
+     * however this constant is not modified.
+     **/
+    initialPswapRewardsSupply: Balance | null;
     priceChangeRate: Fixed | null;
+    /**
+     * Cofficients in buy price function.
+     **/
     priceChangeStep: Fixed | null;
+    /**
+     * Asset that is used to compare collateral assets by value, e.g., DAI.
+     **/
     referenceAssetId: AssetId | null;
+    /**
+     * Technical account used to store collateral tokens.
+     **/
     reservesAcc: TechAccountId | null;
+    /**
+     * Registry to store information about rewards owned by users in PSWAP. (claim_limit, available_rewards)
+     **/
+    rewards: StorageMap<AccountId | string, ITuple<[Balance, Balance]>>;
+    /**
+     * Sets the sell function as a fraction of the buy function, so there is margin between the two functions.
+     **/
     sellPriceCoefficient: Fixed | null;
+    /**
+     * Total amount of PSWAP owned by accounts.
+     **/
+    totalRewards: Balance | null;
   };
   multisig: {    calls: StorageMap<U8aFixed | string, Option<ITuple<[OpaqueCall, AccountId, BalanceOf]>>>;
     /**
@@ -276,11 +422,6 @@ export interface StorageType extends BaseStorageType {
     reserves: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, ITuple<[Balance, Balance]>>;
   };
   pswapDistribution: {    /**
-     * This is needed for farm id 0, now it is hardcoded, in future it will be resolved and
-     * used in a more convenient way.
-     **/
-    burnedPswapDedicatedForOtherPallets: Fixed | null;
-    /**
      * Amount of incentive tokens to be burned on each distribution.
      **/
     burnRate: Fixed | null;
@@ -296,6 +437,10 @@ export interface StorageType extends BaseStorageType {
      * Sum of all shares of incentive token owners.
      **/
     claimableShares: Fixed | null;
+    /**
+     * Fraction of PSWAP that could be reminted for parliament.
+     **/
+    parliamentPswapFraction: Fixed | null;
     /**
      * Information about owned portion of stored incentive tokens. Shareholder -> Owned Fraction
      **/
@@ -351,8 +496,8 @@ export interface StorageType extends BaseStorageType {
   staking: {    /**
      * The active era information, it holds index and start.
      * 
-     * The active era is the era currently rewarded.
-     * Validator set of this era must be equal to `SessionInterface::validators`.
+     * The active era is the era being currently rewarded. Validator set of this era must be
+     * equal to [`SessionInterface::validators`].
      **/
     activeEra: Option<ActiveEraInfo> | null;
     /**
@@ -417,6 +562,9 @@ export interface StorageType extends BaseStorageType {
     erasStakersClipped: StorageDoubleMap<EraIndex | AnyNumber, AccountId | string, Exposure>;
     /**
      * The session index at which the era start for the last `HISTORY_DEPTH` eras.
+     * 
+     * Note: This tracks the starting session (i.e. session index when era start being active)
+     * for the eras in `[CurrentEra - HISTORY_DEPTH, CurrentEra]`.
      **/
     erasStartSessionIndex: StorageMap<EraIndex | AnyNumber, Option<SessionIndex>>;
     /**
@@ -476,6 +624,11 @@ export interface StorageType extends BaseStorageType {
      **/
     minimumValidatorCount: u32 | null;
     /**
+     * Dynamic variable that can be set for each test, this variable is used for dynamic
+     * validators filter struct.
+     **/
+    minStakeDynamic: BalanceOf | null;
+    /**
      * The map from nominator stash key to the set of stash keys of all validators to nominate.
      **/
     nominators: StorageMap<AccountId | string, Option<Nominations>>;
@@ -526,7 +679,7 @@ export interface StorageType extends BaseStorageType {
      * True if network has been upgraded to this version.
      * Storage version of the pallet.
      * 
-     * This is set to v3.0.0 for new networks.
+     * This is set to v5.0.0 for new networks.
      **/
     storageVersion: Releases | null;
     /**
@@ -571,7 +724,7 @@ export interface StorageType extends BaseStorageType {
     /**
      * The current weight for the block.
      **/
-    blockWeight: ExtrinsicsWeight | null;
+    blockWeight: ConsumedWeight | null;
     /**
      * Digest of the current block, also part of the block header.
      **/
@@ -610,10 +763,6 @@ export interface StorageType extends BaseStorageType {
      **/
     extrinsicData: StorageMap<u32 | AnyNumber, Bytes>;
     /**
-     * Extrinsics root of the current block, also part of the block header.
-     **/
-    extrinsicsRoot: Hash | null;
-    /**
      * Stores the `spec_version` and `spec_name` of when the last runtime upgrade happened.
      **/
     lastRuntimeUpgrade: Option<LastRuntimeUpgradeInfo> | null;
@@ -625,6 +774,11 @@ export interface StorageType extends BaseStorageType {
      * Hash of the previous block.
      **/
     parentHash: Hash | null;
+    /**
+     * True if we have upgraded so that AccountInfo contains two types of `RefCount`. False
+     * (default) if not.
+     **/
+    upgradedToDualRefCount: bool | null;
     /**
      * True if we have upgraded so that `type RefCount` is `u32`. False (default) if not.
      **/
@@ -644,7 +798,8 @@ export interface StorageType extends BaseStorageType {
      * 
      * NOTE: If the total is ever zero, decrease account ref account.
      * 
-     * NOTE: This is only used in the case that this module is used to store balances.
+     * NOTE: This is only used in the case that this module is used to store
+     * balances.
      **/
     accounts: StorageDoubleMap<AccountId | string, CurrencyId | AnyNumber, AccountData>;
     /**

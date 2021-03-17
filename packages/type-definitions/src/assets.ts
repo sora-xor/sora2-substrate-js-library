@@ -83,6 +83,7 @@ export default {
             precision: 'u8',
             is_mintable: 'bool'
         },
+        TupleB: "Null",
         AssetSymbolStr: 'String',
     }
 }

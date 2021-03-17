@@ -1,8 +1,10 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
+import type { Vec } from '@polkadot/types';
 import type { Codec } from '@polkadot/types/types';
-import type { Balance, Moment } from '@sora-substrate/types/interfaces/runtime';
+import type { WeightToFeeCoefficient } from '@polkadot/types/interfaces/support';
+import type { Balance, BalanceOf, CurrencyIdOf, Moment } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/consts' {
@@ -14,6 +16,10 @@ declare module '@polkadot/api/types/consts' {
        **/
       existentialDeposit: Balance & AugmentedConst<ApiType>;
     };
+    currencies: {
+      [key: string]: Codec;
+      getNativeCurrencyId: CurrencyIdOf & AugmentedConst<ApiType>;
+    };
     timestamp: {
       [key: string]: Codec;
       /**
@@ -23,6 +29,17 @@ declare module '@polkadot/api/types/consts' {
        * period on default settings.
        **/
       minimumPeriod: Moment & AugmentedConst<ApiType>;
+    };
+    transactionPayment: {
+      [key: string]: Codec;
+      /**
+       * The fee to be paid for making a transaction; the per-byte portion.
+       **/
+      transactionByteFee: BalanceOf & AugmentedConst<ApiType>;
+      /**
+       * The polynomial that is applied in order to derive fee from weight.
+       **/
+      weightToFee: Vec<WeightToFeeCoefficient> & AugmentedConst<ApiType>;
     };
   }
 

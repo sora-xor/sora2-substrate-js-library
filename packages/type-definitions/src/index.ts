@@ -32,7 +32,8 @@ const overrides = {
   Balance: 'u128',
   TAssetBalance: 'Balance',
   MultiCurrencyBalance: 'Balance',
-  MultiCurrencyBalanceOf: 'MultiCurrencyBalance'
+  MultiCurrencyBalanceOf: 'MultiCurrencyBalance',
+  Tuple: "Null"
 };
 
 export const types = {

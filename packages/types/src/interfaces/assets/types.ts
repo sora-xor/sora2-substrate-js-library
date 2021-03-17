@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Struct, Text, bool, u8 } from '@polkadot/types';
+import type { Null, Struct, Text, bool, u8 } from '@polkadot/types';
 import type { AssetId, Balance } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetInfo */
@@ -19,5 +19,8 @@ export interface AssetSymbolStr extends Text {}
 export interface BalanceInfo extends Struct {
   readonly balance: Balance;
 }
+
+/** @name TupleB */
+export interface TupleB extends Null {}
 
 export type PHANTOM_ASSETS = 'assets';

@@ -17,12 +17,25 @@ export interface AssetKind extends Enum {
 /** @name BridgeNetworkId */
 export interface BridgeNetworkId extends u32 {}
 
+/** @name BridgeStatus */
+export interface BridgeStatus extends Enum {
+  readonly isInitialized: boolean;
+  readonly isMigrating: boolean;
+}
+
 /** @name CurrencyIdEncoded */
 export interface CurrencyIdEncoded extends Enum {
   readonly isAssetId: boolean;
   readonly asAssetId: H256;
   readonly isTokenAddress: boolean;
   readonly asTokenAddress: H160;
+}
+
+/** @name EthPeersSync */
+export interface EthPeersSync extends Struct {
+  readonly is_bridge_ready: bool;
+  readonly is_xor_ready: bool;
+  readonly is_val_ready: bool;
 }
 
 /** @name FixedBytes */

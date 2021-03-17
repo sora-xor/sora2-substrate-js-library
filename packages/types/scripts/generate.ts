@@ -23,12 +23,7 @@ function filterModules(names: string[], defs: any): string {
   registerDefinitions(registry, defs);
   const metadata = new Metadata(registry, metaHex);
 
-  // const filtered = metadata.toJSON() as any;
-
-  // console.log("Available modules:\n" + filtered.metadata.V11.modules.map(({ name }: any) => name).join("\n") + "\n");
-  // filtered.metadata.V11.modules = filtered.metadata.V11.modules.filter(({ name }: any) => names.includes(name));
-  // console.log("Enabled modules:\n" + filtered.metadata.V11.modules.map(({ name }: any) => name).join("\n") + "\n");
-
+  // populate registry workaround
   metadata.asLatest.toJSON();
 
   const filtered = metadata.toJSON() as any;
@@ -55,29 +50,29 @@ const metadata = filterModules(
     'Timestamp',
     'Balances',
     // 'Sudo',
-    // 'RandomnessCollectiveFlip',
-    // // 'ParachainUpgrade',
-    // 'MessageBroker',
-    // 'TransactionPayment',
-    // // 'ParachainInfo',
-    // 'Permissions',
-    // 'TokenDealer',
-    // 'TemplateModule',
-    // 'ReferralSystem',
-    // 'XorFee',
-    // 'Tokens',
-    // 'Currencies',
-    // 'TradingPair',
-    // // 'Assets',
-    // 'DEXManager',
-    // 'BondingCurvePool',
-    // 'Technical',
-    // 'LiquidityProxy',
-    // 'MockLiquiditySource',
-    // 'MockLiquiditySource2',
-    // 'MockLiquiditySource3',
-    // 'MockLiquiditySource4',
-    // 'DEXAPI'
+    'RandomnessCollectiveFlip',
+    // 'ParachainUpgrade',
+    'MessageBroker',
+    'TransactionPayment',
+    // 'ParachainInfo',
+    'Permissions',
+    'TokenDealer',
+    'TemplateModule',
+    'ReferralSystem',
+    'XorFee',
+    'Tokens',
+    'Currencies',
+    'TradingPair',
+    // 'Assets',
+    'DEXManager',
+    'BondingCurvePool',
+    'Technical',
+    'LiquidityProxy',
+    'MockLiquiditySource',
+    'MockLiquiditySource2',
+    'MockLiquiditySource3',
+    'MockLiquiditySource4',
+    'DEXAPI'
   ],
   definitions
 );
