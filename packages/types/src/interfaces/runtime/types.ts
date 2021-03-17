@@ -232,8 +232,9 @@ export interface KeyValue extends ITuple<[StorageKey, StorageData]> {}
 
 /** @name LiquiditySourceType */
 export interface LiquiditySourceType extends Enum {
-  readonly isBondingCurvePool: boolean;
   readonly isXykPool: boolean;
+  readonly isBondingCurvePool: boolean;
+  readonly isMulticollateralBondingCurvePool: boolean;
   readonly isMockPool: boolean;
   readonly isMockPool2: boolean;
   readonly isMockPool3: boolean;
@@ -269,6 +270,16 @@ export interface MultiCurrencyBalanceOf extends Null {}
 
 /** @name MultisigAccount */
 export interface MultisigAccount extends Null {}
+
+/** @name MultiSigner */
+export interface MultiSigner extends Enum {
+  readonly isEd25519: boolean;
+  readonly asEd25519: U8aFixed;
+  readonly isSr25519: boolean;
+  readonly asSr25519: U8aFixed;
+  readonly isEcdsa: boolean;
+  readonly asEcdsa: U8aFixed;
+}
 
 /** @name OpaqueCall */
 export interface OpaqueCall extends Bytes {}

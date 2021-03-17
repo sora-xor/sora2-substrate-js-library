@@ -2,11 +2,18 @@
 /* eslint-disable */
 
 import type { Codec } from '@polkadot/types/types';
-import type { Moment } from '@sora-substrate/types/interfaces/runtime';
+import type { Balance, Moment } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/consts' {
   export interface AugmentedConsts<ApiType> {
+    balances: {
+      [key: string]: Codec;
+      /**
+       * The minimum amount required to keep an account open.
+       **/
+      existentialDeposit: Balance & AugmentedConst<ApiType>;
+    };
     timestamp: {
       [key: string]: Codec;
       /**

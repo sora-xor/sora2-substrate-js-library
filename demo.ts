@@ -45,9 +45,6 @@ async function demo(): Promise<void> {
   // console.log("User B XOR FREE: ", balanceB.unwrap().balance.toString());
   // let a = api.tx.tradingPair.register(0, XORAssetId, VALAssetId).signAndSend();
 
-  let something = await (api.rpc as any).ethBridge.getRequests("[]", "None");
-  console.log(something);
-
   return;
   // initialize pool
   await submitExtrinsic(api, api.tx.poolXyk.initializePool(0, XORAssetId, DOTAssetId), root, "Initialize Pool for Pair XOR-DOT");

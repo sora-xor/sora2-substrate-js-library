@@ -60,8 +60,9 @@ export default {
     },
     LiquiditySourceType: {
       _enum: [
-        'BondingCurvePool',
         'XYKPool',
+        'BondingCurvePool',
+        'MulticollateralBondingCurvePool',
         'MockPool',
         'MockPool2',
         'MockPool3',

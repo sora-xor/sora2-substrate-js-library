@@ -33,8 +33,8 @@ function filterModules(names: string[], defs: any): string {
 
   const filtered = metadata.toJSON() as any;
 
-  filtered.metadata.V12.modules = filtered.metadata.V12.modules.filter(({ name }: any) => names.includes(name));
-  console.log("Enabled modules:\n" + filtered.metadata.V12.modules.map(({ name }: any) => name).join("\n") + "\n");
+  filtered.metadata.v12.modules = filtered.metadata.v12.modules.filter(({ name }: any) => names.includes(name));
+  console.log("Enabled modules:\n" + filtered.metadata.v12.modules.map(({ name }: any) => name).join("\n") + "\n");
 
   return new Metadata(registry, filtered).toHex();
 }
@@ -53,7 +53,7 @@ const metadata = filterModules(
   [
     // // 'System', // guaranteed conflict with extensions
     'Timestamp',
-    // 'Balances',
+    'Balances',
     // 'Sudo',
     // 'RandomnessCollectiveFlip',
     // // 'ParachainUpgrade',

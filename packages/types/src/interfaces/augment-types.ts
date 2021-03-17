@@ -14,7 +14,7 @@ import type { BlockAttestations, IncludedBlocks, MoreAttestations } from '@polka
 import type { RawAuraPreDigest } from '@polkadot/types/interfaces/aura';
 import type { ExtrinsicOrHash, ExtrinsicStatus } from '@polkadot/types/interfaces/author';
 import type { UncleEntryItem } from '@polkadot/types/interfaces/authorship';
-import type { AllowedSlots, BabeAuthorityWeight, BabeBlockWeight, BabeEquivocationProof, BabeWeight, EpochAuthorship, MaybeRandomness, MaybeVrf, NextConfigDescriptor, NextConfigDescriptorV1, Randomness, RawBabePreDigest, RawBabePreDigestCompat, RawBabePreDigestPrimary, RawBabePreDigestPrimaryTo159, RawBabePreDigestSecondaryPlain, RawBabePreDigestSecondaryTo159, RawBabePreDigestSecondaryVRF, RawBabePreDigestTo159, SlotNumber, VrfData, VrfOutput, VrfProof } from '@polkadot/types/interfaces/babe';
+import type { AllowedSlots, BabeAuthorityWeight, BabeBlockWeight, BabeEpochConfiguration, BabeEquivocationProof, BabeWeight, EpochAuthorship, MaybeRandomness, MaybeVrf, NextConfigDescriptor, NextConfigDescriptorV1, Randomness, RawBabePreDigest, RawBabePreDigestCompat, RawBabePreDigestPrimary, RawBabePreDigestPrimaryTo159, RawBabePreDigestSecondaryPlain, RawBabePreDigestSecondaryTo159, RawBabePreDigestSecondaryVRF, RawBabePreDigestTo159, SlotNumber, VrfData, VrfOutput, VrfProof } from '@polkadot/types/interfaces/babe';
 import type { AccountData, BalanceLock, BalanceLockTo212, BalanceStatus, Reasons, VestingSchedule, WithdrawReasons } from '@polkadot/types/interfaces/balances';
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import type { PrefixedStorageKey } from '@polkadot/types/interfaces/childstate';
@@ -23,7 +23,7 @@ import type { CollectiveOrigin, MemberCount, ProposalIndex, Votes, VotesTo230 } 
 import type { AuthorityId, RawVRFOutput } from '@polkadot/types/interfaces/consensus';
 import type { AliveContractInfo, CodeHash, ContractCallRequest, ContractExecResult, ContractExecResultErr, ContractExecResultErrModule, ContractExecResultOk, ContractExecResultResult, ContractExecResultSuccessTo255, ContractExecResultSuccessTo260, ContractExecResultTo255, ContractExecResultTo260, ContractInfo, ContractStorageKey, DeletedContract, Gas, HostFnWeights, HostFnWeightsTo264, InstructionWeights, Limits, LimitsTo264, PrefabWasmModule, PrefabWasmModuleReserved, Schedule, ScheduleTo212, ScheduleTo258, ScheduleTo264, SeedOf, TombstoneContractInfo, TrieId } from '@polkadot/types/interfaces/contracts';
 import type { ContractConstructorSpec, ContractContractSpec, ContractCryptoHasher, ContractDiscriminant, ContractDisplayName, ContractEventParamSpec, ContractEventSpec, ContractLayoutArray, ContractLayoutCell, ContractLayoutEnum, ContractLayoutHash, ContractLayoutHashingStrategy, ContractLayoutKey, ContractLayoutStruct, ContractLayoutStructField, ContractMessageParamSpec, ContractMessageSpec, ContractProject, ContractProjectContract, ContractProjectSource, ContractSelector, ContractStorageLayout, ContractTypeSpec } from '@polkadot/types/interfaces/contractsAbi';
-import type { DeployData, FundIndex, FundInfo, LastContribution } from '@polkadot/types/interfaces/crowdloan';
+import type { FundIndex, FundInfo, LastContribution, TrieIndex } from '@polkadot/types/interfaces/crowdloan';
 import type { AccountVote, AccountVoteSplit, AccountVoteStandard, Conviction, Delegations, PreimageStatus, PreimageStatusAvailable, PriorLock, PropIndex, Proposal, ProxyState, ReferendumIndex, ReferendumInfo, ReferendumInfoFinished, ReferendumInfoTo239, ReferendumStatus, Tally, Voting, VotingDelegating, VotingDirect, VotingDirectVote } from '@polkadot/types/interfaces/democracy';
 import type { ApprovalFlag, DefunctVoter, Renouncing, SetIndex, Vote, VoteIndex, VoteThreshold, VoterInfo } from '@polkadot/types/interfaces/elections';
 import type { CreatedBlock, ImportedAux } from '@polkadot/types/interfaces/engine';
@@ -39,7 +39,7 @@ import type { CallIndex, LotteryConfig } from '@polkadot/types/interfaces/lotter
 import type { DoubleMapTypeLatest, DoubleMapTypeV10, DoubleMapTypeV11, DoubleMapTypeV12, DoubleMapTypeV9, ErrorMetadataLatest, ErrorMetadataV10, ErrorMetadataV11, ErrorMetadataV12, ErrorMetadataV9, EventMetadataLatest, EventMetadataV10, EventMetadataV11, EventMetadataV12, EventMetadataV9, ExtrinsicMetadataLatest, ExtrinsicMetadataV11, ExtrinsicMetadataV12, FunctionArgumentMetadataLatest, FunctionArgumentMetadataV10, FunctionArgumentMetadataV11, FunctionArgumentMetadataV12, FunctionArgumentMetadataV9, FunctionMetadataLatest, FunctionMetadataV10, FunctionMetadataV11, FunctionMetadataV12, FunctionMetadataV9, MapTypeLatest, MapTypeV10, MapTypeV11, MapTypeV12, MapTypeV9, MetadataAll, MetadataLatest, MetadataV10, MetadataV11, MetadataV12, MetadataV9, ModuleConstantMetadataLatest, ModuleConstantMetadataV10, ModuleConstantMetadataV11, ModuleConstantMetadataV12, ModuleConstantMetadataV9, ModuleMetadataLatest, ModuleMetadataV10, ModuleMetadataV11, ModuleMetadataV12, ModuleMetadataV9, StorageEntryMetadataLatest, StorageEntryMetadataV10, StorageEntryMetadataV11, StorageEntryMetadataV12, StorageEntryMetadataV9, StorageEntryModifierLatest, StorageEntryModifierV10, StorageEntryModifierV11, StorageEntryModifierV12, StorageEntryModifierV9, StorageEntryTypeLatest, StorageEntryTypeV10, StorageEntryTypeV11, StorageEntryTypeV12, StorageEntryTypeV9, StorageHasher, StorageHasherV10, StorageHasherV11, StorageHasherV12, StorageHasherV9, StorageMetadataLatest, StorageMetadataV10, StorageMetadataV11, StorageMetadataV12, StorageMetadataV9 } from '@polkadot/types/interfaces/metadata';
 import type { StorageKind } from '@polkadot/types/interfaces/offchain';
 import type { DeferredOffenceOf, Kind, OffenceDetails, Offender, OpaqueTimeSlot, ReportIdOf, Reporter } from '@polkadot/types/interfaces/offences';
-import type { AbridgedCandidateReceipt, AbridgedHostConfiguration, AbridgedHrmpChannel, AbstractFungible, AbstractNonFungible, AccountId32Junction, AccountIndex64Junction, AccountKey20Junction, AssetInstance, AssignmentId, AssignmentKind, AttestedCandidate, AuctionIndex, AuthorityDiscoveryId, AvailabilityBitfield, AvailabilityBitfieldRecord, BackedCandidate, Balances, Bidder, BufferedSessionChange, CandidateCommitments, CandidateDescriptor, CandidateHash, CandidatePendingAvailability, CandidateReceipt, CollatorId, CollatorSignature, CommittedCandidateReceipt, ConcreteFungible, ConcreteNonFungible, CoreAssignment, CoreIndex, CoreOccupied, DepositAsset, DepositReserveAsset, DoubleVoteReport, DownwardMessage, ExchangeAsset, GlobalValidationSchedule, GroupIndex, HeadData, HostConfiguration, HrmpChannel, HrmpChannelId, HrmpOpenChannelRequest, InboundDownwardMessage, InboundHrmpMessage, InboundHrmpMessages, IncomingParachain, IncomingParachainDeploy, IncomingParachainFixed, InitiateReserveWithdraw, InitiateTeleport, Junction, LeasePeriod, LeasePeriodOf, LocalValidationData, MessageIngestionType, MessageQueueChain, MessagingStateSnapshot, MessagingStateSnapshotEgressEntry, MultiAsset, MultiLocation, NetworkId, NewBidder, NewBidderOption, Order, OriginKind, OutboundHrmpMessage, ParaGenesisArgs, ParaId, ParaInfo, ParaLifecycle, ParaPastCodeMeta, ParaScheduling, ParaValidatorIndex, ParachainDispatchOrigin, ParachainInherentData, ParachainProposal, ParathreadClaim, ParathreadClaimQueue, ParathreadEntry, PersistedValidationData, QueryHolding, QueuedParathread, RegisteredParachainInfo, RelayChainBlockNumber, RelayChainHash, RelayTo, RelayedFrom, Remark, ReserveAssetDeposit, Retriable, Scheduling, SessionInfo, SessionInfoValidatorGroup, SignedAvailabilityBitfield, SignedAvailabilityBitfields, SigningContext, SlotRange, Statement, SubId, SystemInherentData, TeleportAsset, Transact, TransientValidationData, UpwardMessage, ValidationCode, ValidationData, ValidationDataType, ValidationFunctionParams, ValidatorSignature, ValidityAttestation, VecInboundHrmpMessage, VersionedMultiAsset, VersionedMultiLocation, VersionedXcm, WinnersData, WinnersDataTuple, WinningData, WinningDataEntry, WithdrawAsset, Xcm, XcmError, XcmResult } from '@polkadot/types/interfaces/parachains';
+import type { AbridgedCandidateReceipt, AbridgedHostConfiguration, AbridgedHrmpChannel, AbstractFungible, AbstractNonFungible, AccountId32Junction, AccountIndex64Junction, AccountKey20Junction, AssetInstance, AssignmentId, AssignmentKind, AttestedCandidate, AuctionIndex, AuthorityDiscoveryId, AvailabilityBitfield, AvailabilityBitfieldRecord, BackedCandidate, Balances, Bidder, BufferedSessionChange, CandidateCommitments, CandidateDescriptor, CandidateHash, CandidatePendingAvailability, CandidateReceipt, CollatorId, CollatorSignature, CommittedCandidateReceipt, ConcreteFungible, ConcreteNonFungible, CoreAssignment, CoreIndex, CoreOccupied, DepositAsset, DepositReserveAsset, DoubleVoteReport, DownwardMessage, ExchangeAsset, GlobalValidationSchedule, GroupIndex, HeadData, HostConfiguration, HrmpChannel, HrmpChannelId, HrmpOpenChannelRequest, InboundDownwardMessage, InboundHrmpMessage, InboundHrmpMessages, IncomingParachain, IncomingParachainDeploy, IncomingParachainFixed, InitiateReserveWithdraw, InitiateTeleport, Junction, LeasePeriod, LeasePeriodOf, LocalValidationData, MessageIngestionType, MessageQueueChain, MessagingStateSnapshot, MessagingStateSnapshotEgressEntry, MultiAsset, MultiLocation, NetworkId, NewBidder, Order, OriginKind, OutboundHrmpMessage, ParaGenesisArgs, ParaId, ParaInfo, ParaLifecycle, ParaPastCodeMeta, ParaScheduling, ParaValidatorIndex, ParachainDispatchOrigin, ParachainInherentData, ParachainProposal, ParathreadClaim, ParathreadClaimQueue, ParathreadEntry, PersistedValidationData, QueryHolding, QueuedParathread, RegisteredParachainInfo, RelayChainBlockNumber, RelayChainHash, RelayTo, RelayedFrom, Remark, ReserveAssetDeposit, Retriable, Scheduling, SessionInfo, SessionInfoValidatorGroup, SignedAvailabilityBitfield, SignedAvailabilityBitfields, SigningContext, SlotRange, Statement, SubId, SystemInherentData, TeleportAsset, Transact, TransientValidationData, UpwardMessage, ValidationCode, ValidationData, ValidationDataType, ValidationFunctionParams, ValidatorSignature, ValidityAttestation, VecInboundHrmpMessage, VersionedMultiAsset, VersionedMultiLocation, VersionedXcm, WinnersData, WinnersDataTuple, WinningData, WinningDataEntry, WithdrawAsset, Xcm, XcmError, XcmResult } from '@polkadot/types/interfaces/parachains';
 import type { FeeDetails, InclusionFee, RuntimeDispatchInfo } from '@polkadot/types/interfaces/payment';
 import type { Approvals } from '@polkadot/types/interfaces/poll';
 import type { ProxyAnnouncement, ProxyDefinition, ProxyType } from '@polkadot/types/interfaces/proxy';
@@ -50,17 +50,17 @@ import type { SiField, SiLookupTypeId, SiPath, SiType, SiTypeDef, SiTypeDefArray
 import type { Period, Priority, SchedulePeriod, SchedulePriority, Scheduled, ScheduledTo254, TaskAddress } from '@polkadot/types/interfaces/scheduler';
 import type { FullIdentification, IdentificationTuple, Keys, MembershipProof, SessionIndex, SessionKeys1, SessionKeys2, SessionKeys3, SessionKeys4, SessionKeys5, SessionKeys6, SessionKeys7, SessionKeys8, SessionKeys9, ValidatorCount } from '@polkadot/types/interfaces/session';
 import type { Bid, BidKind, SocietyJudgement, SocietyVote, StrikeCount, VouchingStatus } from '@polkadot/types/interfaces/society';
-import type { ActiveEraInfo, CompactAssignments, CompactAssignmentsTo257, CompactScore, CompactScoreCompact, ElectionCompute, ElectionResult, ElectionScore, ElectionSize, ElectionStatus, EraIndex, EraPoints, EraRewardPoints, EraRewards, Exposure, ExtendedBalance, Forcing, IndividualExposure, KeyType, MomentOf, Nominations, NominatorIndex, NominatorIndexCompact, OffchainAccuracy, OffchainAccuracyCompact, PhragmenScore, Points, RawSolution, ReadySolution, RewardDestination, RewardDestinationTo257, RewardPoint, RoundSnapshot, SeatHolder, SlashJournalEntry, SlashingSpans, SlashingSpansTo204, SolutionOrSnapshotSize, SolutionSupport, SolutionSupports, SpanIndex, SpanRecord, StakingLedger, StakingLedgerTo223, StakingLedgerTo240, UnappliedSlash, UnappliedSlashOther, UnlockChunk, ValidatorIndex, ValidatorIndexCompact, ValidatorPrefs, ValidatorPrefsTo145, ValidatorPrefsTo196, ValidatorPrefsWithBlocked, ValidatorPrefsWithCommission, VoteWeight, Voter } from '@polkadot/types/interfaces/staking';
+import type { ActiveEraInfo, CompactAssignments, CompactAssignmentsTo257, CompactScore, CompactScoreCompact, ElectionCompute, ElectionPhase, ElectionResult, ElectionScore, ElectionSize, ElectionStatus, EraIndex, EraPoints, EraRewardPoints, EraRewards, Exposure, ExtendedBalance, Forcing, IndividualExposure, KeyType, MomentOf, Nominations, NominatorIndex, NominatorIndexCompact, OffchainAccuracy, OffchainAccuracyCompact, PhragmenScore, Points, RawSolution, ReadySolution, RewardDestination, RewardPoint, RoundSnapshot, SeatHolder, SlashJournalEntry, SlashingSpans, SlashingSpansTo204, SolutionOrSnapshotSize, SolutionSupport, SolutionSupports, SpanIndex, SpanRecord, StakingLedger, StakingLedgerTo223, StakingLedgerTo240, UnappliedSlash, UnappliedSlashOther, UnlockChunk, ValidatorIndex, ValidatorIndexCompact, ValidatorPrefs, ValidatorPrefsTo145, ValidatorPrefsTo196, ValidatorPrefsWithBlocked, ValidatorPrefsWithCommission, VoteWeight, Voter } from '@polkadot/types/interfaces/staking';
 import type { ApiId, KeyValueOption, ReadProof, RuntimeVersion, RuntimeVersionApi, StorageChangeSet } from '@polkadot/types/interfaces/state';
 import type { WeightToFeeCoefficient } from '@polkadot/types/interfaces/support';
-import type { AccountInfo, AccountInfoWithProviders, AccountInfoWithRefCount, ApplyExtrinsicResult, BlockLength, BlockWeights, ChainProperties, ChainType, ConsumedWeight, DigestOf, DispatchClass, DispatchError, DispatchErrorModule, DispatchErrorTo198, DispatchInfo, DispatchInfoTo190, DispatchInfoTo244, DispatchOutcome, DispatchResult, DispatchResultOf, DispatchResultTo198, Event, EventId, EventIndex, EventRecord, Health, InvalidTransaction, Key, LastRuntimeUpgradeInfo, NetworkState, NetworkStatePeerset, NetworkStatePeersetInfo, NodeRole, NotConnectedPeer, Peer, PeerEndpoint, PeerEndpointAddr, PeerInfo, PeerPing, PerDispatchClassU32, PerDispatchClassWeight, PerDispatchClassWeightsPerClass, Phase, RawOrigin, RefCount, RefCountTo259, SyncState, SystemOrigin, TransactionValidityError, UnknownTransaction, WeightPerClass } from '@polkadot/types/interfaces/system';
+import type { AccountInfo, AccountInfoWithDualRefCount, AccountInfoWithProviders, AccountInfoWithRefCount, AccountInfoWithTripleRefCount, ApplyExtrinsicResult, BlockLength, BlockWeights, ChainProperties, ChainType, ConsumedWeight, DigestOf, DispatchClass, DispatchError, DispatchErrorModule, DispatchErrorTo198, DispatchInfo, DispatchInfoTo190, DispatchInfoTo244, DispatchOutcome, DispatchResult, DispatchResultOf, DispatchResultTo198, Event, EventId, EventIndex, EventRecord, Health, InvalidTransaction, Key, LastRuntimeUpgradeInfo, NetworkState, NetworkStatePeerset, NetworkStatePeersetInfo, NodeRole, NotConnectedPeer, Peer, PeerEndpoint, PeerEndpointAddr, PeerInfo, PeerPing, PerDispatchClassU32, PerDispatchClassWeight, PerDispatchClassWeightsPerClass, Phase, RawOrigin, RefCount, RefCountTo259, SyncState, SystemOrigin, TransactionValidityError, UnknownTransaction, WeightPerClass } from '@polkadot/types/interfaces/system';
 import type { Bounty, BountyIndex, BountyStatus, BountyStatusActive, BountyStatusCuratorProposed, BountyStatusPendingPayout, OpenTip, OpenTipFinderTo225, OpenTipTip, OpenTipTo225, TreasuryProposal } from '@polkadot/types/interfaces/treasury';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AssetInfo, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeNetworkId, CurrencyIdEncoded, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingClaimPswap, IncomingPreRequest, IncomingRequest, IncomingRequestKind, IncomingTransfer, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingRemovePeer, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
-import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H512, H64, Hash, Header, HolderId, I32F32, Index, IndicesLookupSource, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PreRuntime, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, Slot, SmoothPriceState, StorageData, StorageProof, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H512, H64, Hash, Header, HolderId, I32F32, Index, IndicesLookupSource, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PreRuntime, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, Slot, SmoothPriceState, StorageData, StorageProof, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
 import type { TP } from '@sora-substrate/types/interfaces/tradingPair';
 
@@ -149,6 +149,7 @@ declare module '@polkadot/types/types/registry' {
     'Compact<TAssetDepositBalance>': Compact<TAssetDepositBalance>;
     'Compact<TechBalance>': Compact<TechBalance>;
     'Compact<TransactionPriority>': Compact<TransactionPriority>;
+    'Compact<TrieIndex>': Compact<TrieIndex>;
     'Compact<u128>': Compact<u128>;
     'Compact<U128>': Compact<U128>;
     'Compact<u16>': Compact<u16>;
@@ -181,8 +182,10 @@ declare module '@polkadot/types/types/registry' {
     'Option<AccountIndex>': Option<AccountIndex>;
     'Option<AccountIndex64Junction>': Option<AccountIndex64Junction>;
     'Option<AccountInfo>': Option<AccountInfo>;
+    'Option<AccountInfoWithDualRefCount>': Option<AccountInfoWithDualRefCount>;
     'Option<AccountInfoWithProviders>': Option<AccountInfoWithProviders>;
     'Option<AccountInfoWithRefCount>': Option<AccountInfoWithRefCount>;
+    'Option<AccountInfoWithTripleRefCount>': Option<AccountInfoWithTripleRefCount>;
     'Option<AccountKey20Junction>': Option<AccountKey20Junction>;
     'Option<AccountStatus>': Option<AccountStatus>;
     'Option<AccountValidity>': Option<AccountValidity>;
@@ -232,6 +235,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<AvailabilityBitfieldRecord>': Option<AvailabilityBitfieldRecord>;
     'Option<BabeAuthorityWeight>': Option<BabeAuthorityWeight>;
     'Option<BabeBlockWeight>': Option<BabeBlockWeight>;
+    'Option<BabeEpochConfiguration>': Option<BabeEpochConfiguration>;
     'Option<BabeEquivocationProof>': Option<BabeEquivocationProof>;
     'Option<BabeWeight>': Option<BabeWeight>;
     'Option<BackedCandidate>': Option<BackedCandidate>;
@@ -346,7 +350,6 @@ declare module '@polkadot/types/types/registry' {
     'Option<DelayedOrigin>': Option<DelayedOrigin>;
     'Option<Delegations>': Option<Delegations>;
     'Option<DeletedContract>': Option<DeletedContract>;
-    'Option<DeployData>': Option<DeployData>;
     'Option<DepositAsset>': Option<DepositAsset>;
     'Option<DepositReserveAsset>': Option<DepositReserveAsset>;
     'Option<DEXId>': Option<DEXId>;
@@ -381,6 +384,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<EcdsaSignature>': Option<EcdsaSignature>;
     'Option<Ed25519Signature>': Option<Ed25519Signature>;
     'Option<ElectionCompute>': Option<ElectionCompute>;
+    'Option<ElectionPhase>': Option<ElectionPhase>;
     'Option<ElectionResult>': Option<ElectionResult>;
     'Option<ElectionScore>': Option<ElectionScore>;
     'Option<ElectionSize>': Option<ElectionSize>;
@@ -628,12 +632,12 @@ declare module '@polkadot/types/types/registry' {
     'Option<Multisig>': Option<Multisig>;
     'Option<MultisigAccount>': Option<MultisigAccount>;
     'Option<MultiSignature>': Option<MultiSignature>;
+    'Option<MultiSigner>': Option<MultiSigner>;
     'Option<NetworkId>': Option<NetworkId>;
     'Option<NetworkState>': Option<NetworkState>;
     'Option<NetworkStatePeerset>': Option<NetworkStatePeerset>;
     'Option<NetworkStatePeersetInfo>': Option<NetworkStatePeersetInfo>;
     'Option<NewBidder>': Option<NewBidder>;
-    'Option<NewBidderOption>': Option<NewBidderOption>;
     'Option<NextAuthority>': Option<NextAuthority>;
     'Option<NextConfigDescriptor>': Option<NextConfigDescriptor>;
     'Option<NextConfigDescriptorV1>': Option<NextConfigDescriptorV1>;
@@ -793,7 +797,6 @@ declare module '@polkadot/types/types/registry' {
     'Option<ReserveAssetDeposit>': Option<ReserveAssetDeposit>;
     'Option<Retriable>': Option<Retriable>;
     'Option<RewardDestination>': Option<RewardDestination>;
-    'Option<RewardDestinationTo257>': Option<RewardDestinationTo257>;
     'Option<RewardPoint>': Option<RewardPoint>;
     'Option<RoundSnapshot>': Option<RoundSnapshot>;
     'Option<RoundState>': Option<RoundState>;
@@ -943,6 +946,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<TransientValidationData>': Option<TransientValidationData>;
     'Option<TreasuryProposal>': Option<TreasuryProposal>;
     'Option<TrieId>': Option<TrieId>;
+    'Option<TrieIndex>': Option<TrieIndex>;
     'Option<Type>': Option<Type>;
     'Option<u128>': Option<u128>;
     'Option<U128>': Option<U128>;
@@ -1030,8 +1034,10 @@ declare module '@polkadot/types/types/registry' {
     'Vec<AccountIndex>': Vec<AccountIndex>;
     'Vec<AccountIndex64Junction>': Vec<AccountIndex64Junction>;
     'Vec<AccountInfo>': Vec<AccountInfo>;
+    'Vec<AccountInfoWithDualRefCount>': Vec<AccountInfoWithDualRefCount>;
     'Vec<AccountInfoWithProviders>': Vec<AccountInfoWithProviders>;
     'Vec<AccountInfoWithRefCount>': Vec<AccountInfoWithRefCount>;
+    'Vec<AccountInfoWithTripleRefCount>': Vec<AccountInfoWithTripleRefCount>;
     'Vec<AccountKey20Junction>': Vec<AccountKey20Junction>;
     'Vec<AccountStatus>': Vec<AccountStatus>;
     'Vec<AccountValidity>': Vec<AccountValidity>;
@@ -1081,6 +1087,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<AvailabilityBitfieldRecord>': Vec<AvailabilityBitfieldRecord>;
     'Vec<BabeAuthorityWeight>': Vec<BabeAuthorityWeight>;
     'Vec<BabeBlockWeight>': Vec<BabeBlockWeight>;
+    'Vec<BabeEpochConfiguration>': Vec<BabeEpochConfiguration>;
     'Vec<BabeEquivocationProof>': Vec<BabeEquivocationProof>;
     'Vec<BabeWeight>': Vec<BabeWeight>;
     'Vec<BackedCandidate>': Vec<BackedCandidate>;
@@ -1195,7 +1202,6 @@ declare module '@polkadot/types/types/registry' {
     'Vec<DelayedOrigin>': Vec<DelayedOrigin>;
     'Vec<Delegations>': Vec<Delegations>;
     'Vec<DeletedContract>': Vec<DeletedContract>;
-    'Vec<DeployData>': Vec<DeployData>;
     'Vec<DepositAsset>': Vec<DepositAsset>;
     'Vec<DepositReserveAsset>': Vec<DepositReserveAsset>;
     'Vec<DEXId>': Vec<DEXId>;
@@ -1230,6 +1236,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<EcdsaSignature>': Vec<EcdsaSignature>;
     'Vec<Ed25519Signature>': Vec<Ed25519Signature>;
     'Vec<ElectionCompute>': Vec<ElectionCompute>;
+    'Vec<ElectionPhase>': Vec<ElectionPhase>;
     'Vec<ElectionResult>': Vec<ElectionResult>;
     'Vec<ElectionScore>': Vec<ElectionScore>;
     'Vec<ElectionSize>': Vec<ElectionSize>;
@@ -1477,12 +1484,12 @@ declare module '@polkadot/types/types/registry' {
     'Vec<Multisig>': Vec<Multisig>;
     'Vec<MultisigAccount>': Vec<MultisigAccount>;
     'Vec<MultiSignature>': Vec<MultiSignature>;
+    'Vec<MultiSigner>': Vec<MultiSigner>;
     'Vec<NetworkId>': Vec<NetworkId>;
     'Vec<NetworkState>': Vec<NetworkState>;
     'Vec<NetworkStatePeerset>': Vec<NetworkStatePeerset>;
     'Vec<NetworkStatePeersetInfo>': Vec<NetworkStatePeersetInfo>;
     'Vec<NewBidder>': Vec<NewBidder>;
-    'Vec<NewBidderOption>': Vec<NewBidderOption>;
     'Vec<NextAuthority>': Vec<NextAuthority>;
     'Vec<NextConfigDescriptor>': Vec<NextConfigDescriptor>;
     'Vec<NextConfigDescriptorV1>': Vec<NextConfigDescriptorV1>;
@@ -1642,7 +1649,6 @@ declare module '@polkadot/types/types/registry' {
     'Vec<ReserveAssetDeposit>': Vec<ReserveAssetDeposit>;
     'Vec<Retriable>': Vec<Retriable>;
     'Vec<RewardDestination>': Vec<RewardDestination>;
-    'Vec<RewardDestinationTo257>': Vec<RewardDestinationTo257>;
     'Vec<RewardPoint>': Vec<RewardPoint>;
     'Vec<RoundSnapshot>': Vec<RoundSnapshot>;
     'Vec<RoundState>': Vec<RoundState>;
@@ -1792,6 +1798,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<TransientValidationData>': Vec<TransientValidationData>;
     'Vec<TreasuryProposal>': Vec<TreasuryProposal>;
     'Vec<TrieId>': Vec<TrieId>;
+    'Vec<TrieIndex>': Vec<TrieIndex>;
     'Vec<Type>': Vec<Type>;
     'Vec<u128>': Vec<u128>;
     'Vec<U128>': Vec<U128>;
@@ -1879,8 +1886,10 @@ declare module '@polkadot/types/types/registry' {
     AccountIndex: AccountIndex;
     AccountIndex64Junction: AccountIndex64Junction;
     AccountInfo: AccountInfo;
+    AccountInfoWithDualRefCount: AccountInfoWithDualRefCount;
     AccountInfoWithProviders: AccountInfoWithProviders;
     AccountInfoWithRefCount: AccountInfoWithRefCount;
+    AccountInfoWithTripleRefCount: AccountInfoWithTripleRefCount;
     AccountKey20Junction: AccountKey20Junction;
     AccountStatus: AccountStatus;
     AccountValidity: AccountValidity;
@@ -1930,6 +1939,7 @@ declare module '@polkadot/types/types/registry' {
     AvailabilityBitfieldRecord: AvailabilityBitfieldRecord;
     BabeAuthorityWeight: BabeAuthorityWeight;
     BabeBlockWeight: BabeBlockWeight;
+    BabeEpochConfiguration: BabeEpochConfiguration;
     BabeEquivocationProof: BabeEquivocationProof;
     BabeWeight: BabeWeight;
     BackedCandidate: BackedCandidate;
@@ -2044,7 +2054,6 @@ declare module '@polkadot/types/types/registry' {
     DelayedOrigin: DelayedOrigin;
     Delegations: Delegations;
     DeletedContract: DeletedContract;
-    DeployData: DeployData;
     DepositAsset: DepositAsset;
     DepositReserveAsset: DepositReserveAsset;
     DEXId: DEXId;
@@ -2079,6 +2088,7 @@ declare module '@polkadot/types/types/registry' {
     EcdsaSignature: EcdsaSignature;
     Ed25519Signature: Ed25519Signature;
     ElectionCompute: ElectionCompute;
+    ElectionPhase: ElectionPhase;
     ElectionResult: ElectionResult;
     ElectionScore: ElectionScore;
     ElectionSize: ElectionSize;
@@ -2326,12 +2336,12 @@ declare module '@polkadot/types/types/registry' {
     Multisig: Multisig;
     MultisigAccount: MultisigAccount;
     MultiSignature: MultiSignature;
+    MultiSigner: MultiSigner;
     NetworkId: NetworkId;
     NetworkState: NetworkState;
     NetworkStatePeerset: NetworkStatePeerset;
     NetworkStatePeersetInfo: NetworkStatePeersetInfo;
     NewBidder: NewBidder;
-    NewBidderOption: NewBidderOption;
     NextAuthority: NextAuthority;
     NextConfigDescriptor: NextConfigDescriptor;
     NextConfigDescriptorV1: NextConfigDescriptorV1;
@@ -2491,7 +2501,6 @@ declare module '@polkadot/types/types/registry' {
     ReserveAssetDeposit: ReserveAssetDeposit;
     Retriable: Retriable;
     RewardDestination: RewardDestination;
-    RewardDestinationTo257: RewardDestinationTo257;
     RewardPoint: RewardPoint;
     RoundSnapshot: RoundSnapshot;
     RoundState: RoundState;
@@ -2641,6 +2650,7 @@ declare module '@polkadot/types/types/registry' {
     TransientValidationData: TransientValidationData;
     TreasuryProposal: TreasuryProposal;
     TrieId: TrieId;
+    TrieIndex: TrieIndex;
     Type: Type;
     u128: u128;
     U128: U128;

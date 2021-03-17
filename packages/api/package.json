@@ -11,7 +11,7 @@
     "@sora-substrate/api-derive": "^0.4.7",
     "@babel/runtime": "^7.10.2",
     "@open-web3/orml-api-derive": "^^0.8.2-9",
-    "@polkadot/api": "^3.10.3-2",
-    "@polkadot/rpc-core": "^3.10.3-2"
+    "@polkadot/api": "^4.0.4-11",
+    "@polkadot/rpc-core": "^4.0.4-11"
   }
 }
