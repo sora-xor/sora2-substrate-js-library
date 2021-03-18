@@ -1,4 +1,4 @@
-@Library('jenkins-library@feature/js-prebuild-steps') _
+@Library('jenkins-library') _
 
 def pipeline = new org.js.LibPipeline(
     steps: this,
