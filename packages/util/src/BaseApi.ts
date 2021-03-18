@@ -11,11 +11,11 @@ import { KnownAssets, KnownSymbols } from './assets'
 import { CodecString, FPNumber } from './fp'
 import { encrypt } from './crypto'
 import { connection } from './connection'
+import { BridgeHistory } from './BridgeApi'
 
-const isBridgeOperation = (operation: Operation) => [
+export const isBridgeOperation = (operation: Operation) => [
   Operation.EthBridgeIncoming,
-  Operation.EthBridgeOutgoing,
-  Operation.EthBridgeOutgoingMarkDone
+  Operation.EthBridgeOutgoing
 ].includes(operation)
 
 export const KeyringType = 'sr25519'
@@ -57,6 +57,9 @@ export class BaseApi {
     if (!history || !history.id) {
       return
     }
+    if (this.storage) {
+      this.history = JSON.parse(this.storage.get('history')) as Array<History>
+    }
     const index = this.history.findIndex(item => item.id === history.id)
     ~index ? this.history[index] = history : this.history.push(history)
     if (this.storage) {
@@ -67,21 +70,26 @@ export class BaseApi {
   protected async submitExtrinsic (
     extrinsic: SubmittableExtrinsic,
     signer: KeyringPair,
-    historyData?: History,
+    historyData?: History | BridgeHistory,
     unsigned = false
   ): Promise<void> {
-    const history = (historyData || {}) as History
+    const history = (historyData || {}) as History & BridgeHistory
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet
     if (isNotFaucetOperation && signer) {
       history.from = signer.address
     }
-    history.startTime = Date.now()
-    history.id = encrypt(`${history.startTime}`)
+    if (!history.id) {
+      history.startTime = Date.now()
+      history.id = encrypt(`${history.startTime}`)
+    }
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address)
     const extrinsicFn = (callbackFn: (result: any) => void) => unsigned
       ? extrinsic.send(callbackFn)
       : extrinsic.signAndSend(signer.isLocked ? signer.address : signer, { signer: this.signer, nonce }, callbackFn)
     const unsub = await extrinsicFn((result: any) => {
+      if (isBridgeOperation(history.type)) {
+        history.signed = true
+      }
       history.status = first(Object.keys(result.status.toJSON()))
       this.saveHistory(history)
       if (result.status.isInBlock) {
@@ -204,8 +212,8 @@ export enum Operation {
   Faucet = 'Faucet',
   RegisterAsset = 'RegisterAsset',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
-  EthBridgeIncoming = 'EthBridgeIncoming',
-  EthBridgeOutgoingMarkDone = 'EthBridgeOutgoingMarkDone' // Maybe we don't need it
+  EthBridgeIncoming = 'EthBridgeIncoming'
+  // EthBridgeOutgoingMarkDone = 'EthBridgeOutgoingMarkDone'
 }
 
 export interface History {
@@ -222,5 +230,4 @@ export interface History {
   from?: string;
   status?: string;
   errorMessage?: string;
-  hash?: string; // For bridge hashes
 }
