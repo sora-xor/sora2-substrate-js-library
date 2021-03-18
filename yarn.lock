@@ -2494,7 +2494,7 @@
     mobx "^5.15.4"
     mobx-utils "^5.5.7"
 
-"@open-web3/orml-api-derive@^^0.8.2-9":
+"@open-web3/orml-api-derive@^0.8.2-9":
   version "0.8.2-10"
   resolved "https://registry.yarnpkg.com/@open-web3/orml-api-derive/-/orml-api-derive-0.8.2-10.tgz#d5b8966606818cf99675c3a243fcbb23c37f9b7f"
   integrity "sha1-1biWZgaBjPmWdcOiQ/y7I8N/m38= sha512-8SFSjklDInePpIMZjTgYAqMRCH7jlb1wjXyEut1vgcVaRKw1y2rftHZ/cLPLrKbyA9tiwZuE4WhnDO0eSFoTGw=="
