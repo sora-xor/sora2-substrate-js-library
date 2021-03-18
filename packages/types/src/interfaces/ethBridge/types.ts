@@ -1,12 +1,11 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import { ITuple } from '@polkadot/types/types';
-import { Enum, Struct, U8aFixed, Vec } from '@polkadot/types/codec';
-import { Bytes, Text, U256, bool, u32, u64, u8 } from '@polkadot/types/primitive';
-import { EthereumAddress } from '@polkadot/types/interfaces/claims';
-import { Timepoint } from '@polkadot/types/interfaces/utility';
-import { AccountId, AssetId, AssetSymbol, Balance, BalancePrecision, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
+import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
+import type { ITuple } from '@polkadot/types/types';
+import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
+import type { Timepoint } from '@polkadot/types/interfaces/utility';
+import type { AccountId, AssetId, AssetSymbol, Balance, BalancePrecision, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetKind */
 export interface AssetKind extends Enum {
@@ -18,12 +17,25 @@ export interface AssetKind extends Enum {
 /** @name BridgeNetworkId */
 export interface BridgeNetworkId extends u32 {}
 
+/** @name BridgeStatus */
+export interface BridgeStatus extends Enum {
+  readonly isInitialized: boolean;
+  readonly isMigrating: boolean;
+}
+
 /** @name CurrencyIdEncoded */
 export interface CurrencyIdEncoded extends Enum {
   readonly isAssetId: boolean;
   readonly asAssetId: H256;
   readonly isTokenAddress: boolean;
   readonly asTokenAddress: H160;
+}
+
+/** @name EthPeersSync */
+export interface EthPeersSync extends Struct {
+  readonly is_bridge_ready: bool;
+  readonly is_xor_ready: bool;
+  readonly is_val_ready: bool;
 }
 
 /** @name FixedBytes */
@@ -141,9 +153,6 @@ export interface IncomingTransfer extends Struct {
   readonly timepoint: Timepoint;
   readonly network_id: BridgeNetworkId;
 }
-
-/** @name NetworkId */
-export interface NetworkId extends BridgeNetworkId {}
 
 /** @name OffchainRequest */
 export interface OffchainRequest extends Enum {

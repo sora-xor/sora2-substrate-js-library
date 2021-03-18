@@ -68,8 +68,18 @@ export default {
     },
   },
   types: {
+    EthPeersSync: {
+      is_bridge_ready: "bool",
+      is_xor_ready: "bool",
+      is_val_ready: "bool",
+    },
+    BridgeStatus: {
+      _enum: [
+        "Initialized",
+        "Migrating",
+      ]
+    },
     BridgeNetworkId: "u32",
-    NetworkId: "BridgeNetworkId",
     AssetKind: {
       _enum: [
         "Thischain",

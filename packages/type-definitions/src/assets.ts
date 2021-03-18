@@ -84,5 +84,6 @@ export default {
             is_mintable: 'bool'
         },
         AssetSymbolStr: 'String',
+        AssetRecord: "Null", // large structure, define properly if needed
     }
 }

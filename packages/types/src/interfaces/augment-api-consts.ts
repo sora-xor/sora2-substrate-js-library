@@ -1,11 +1,11 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
-import { Codec } from '@polkadot/types/types';
-import { Vec } from '@polkadot/types/codec';
-import { WeightToFeeCoefficient } from '@polkadot/types/interfaces/support';
-import { Balance, BalanceOf, CurrencyIdOf, Moment } from '@sora-substrate/types/interfaces/runtime';
-import { ApiTypes } from '@polkadot/api/types';
+import type { Vec } from '@polkadot/types';
+import type { Codec } from '@polkadot/types/types';
+import type { WeightToFeeCoefficient } from '@polkadot/types/interfaces/support';
+import type { Balance, BalanceOf, CurrencyIdOf, Moment } from '@sora-substrate/types/interfaces/runtime';
+import type { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/consts' {
   export interface AugmentedConsts<ApiType> {
@@ -18,7 +18,7 @@ declare module '@polkadot/api/types/consts' {
     };
     currencies: {
       [key: string]: Codec;
-      nativeCurrencyId: CurrencyIdOf & AugmentedConst<ApiType>;
+      getNativeCurrencyId: CurrencyIdOf & AugmentedConst<ApiType>;
     };
     timestamp: {
       [key: string]: Codec;

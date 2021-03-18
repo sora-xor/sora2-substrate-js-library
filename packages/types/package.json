@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/types",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -8,13 +8,13 @@
     "access": "public"
   },
   "dependencies": {
-    "@sora-substrate/type-definitions": "^0.5.2",
+    "@sora-substrate/type-definitions": "^0.6.0",
     "@babel/runtime": "^7.10.2",
-    "@open-web3/api-mobx": "^0.6.0-beta.26",
-    "@open-web3/orml-types": "^0.6.0-beta.26",
-    "@polkadot/api": "^2.1.2-8",
-    "@polkadot/typegen": "^2.1.2-8",
-    "@polkadot/types": "^2.1.2-8"
+    "@open-web3/api-mobx": "^0.8.2-9",
+    "@open-web3/orml-types": "^0.8.2-9",
+    "@polkadot/api": "^4.1.1",
+    "@polkadot/typegen": "^4.1.1",
+    "@polkadot/types": "^4.1.1"
   },
   "devDependencies": {
     "@types/websocket": "^1.0.0",

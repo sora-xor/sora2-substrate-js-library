@@ -1,8 +1,8 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import { Struct } from '@polkadot/types/codec';
-import { Balance } from '@sora-substrate/types/interfaces/runtime';
+import type { Struct } from '@polkadot/types';
+import type { Balance } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name CustomInfo */
 export interface CustomInfo extends Struct {

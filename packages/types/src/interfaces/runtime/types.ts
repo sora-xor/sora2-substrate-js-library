@@ -1,13 +1,11 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import { ITuple } from '@polkadot/types/types';
-import { Compact, Enum, Int, Struct, U8aFixed, UInt, Vec } from '@polkadot/types/codec';
-import { GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource } from '@polkadot/types/generic';
-import { Bytes, DoNotConstruct, Null, StorageKey, i128, u16, u32, u64, u8 } from '@polkadot/types/primitive';
-import { AuthorityId } from '@polkadot/types/interfaces/consensus';
-import { Signature } from '@polkadot/types/interfaces/extrinsics';
-import { SystemOrigin } from '@polkadot/types/interfaces/system';
+import type { Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
+import type { ITuple } from '@polkadot/types/types';
+import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
+import type { Signature } from '@polkadot/types/interfaces/extrinsics';
+import type { SystemOrigin } from '@polkadot/types/interfaces/system';
 
 /** @name AccountId */
 export interface AccountId extends GenericAccountId {}
@@ -19,7 +17,7 @@ export interface AccountIdOf extends AccountId {}
 export interface AccountIndex extends GenericAccountIndex {}
 
 /** @name Address */
-export interface Address extends GenericAddress {}
+export interface Address extends MultiAddress {}
 
 /** @name Amount */
 export interface Amount extends i128 {}
@@ -72,6 +70,15 @@ export interface ChangesTrieConfiguration extends Struct {
   readonly digestLevels: u32;
 }
 
+/** @name ChargeFeeInfo */
+export interface ChargeFeeInfo extends Struct {
+  readonly tip: Compact<Balance>;
+  readonly target_asset_id: AssetId;
+}
+
+/** @name CodecHash */
+export interface CodecHash extends Hash {}
+
 /** @name Consensus */
 export interface Consensus extends ITuple<[ConsensusEngineId, Bytes]> {}
 
@@ -120,11 +127,23 @@ export interface DigestItem extends Enum {
   readonly asPreRuntime: PreRuntime;
 }
 
+/** @name DistributionAccounts */
+export interface DistributionAccounts extends Null {}
+
+/** @name Duration */
+export interface Duration extends Null {}
+
 /** @name ExtrinsicsWeight */
 export interface ExtrinsicsWeight extends Struct {
   readonly normal: Weight;
   readonly operational: Weight;
 }
+
+/** @name Farm */
+export interface Farm extends Null {}
+
+/** @name Farmer */
+export interface Farmer extends Null {}
 
 /** @name FarmId */
 export interface FarmId extends u64 {}
@@ -157,17 +176,26 @@ export interface FixedU128 extends UInt {}
 /** @name FixedU64 */
 export interface FixedU64 extends UInt {}
 
-/** @name GenericAddress */
-export interface GenericAddress extends LookupSource {}
+/** @name H1024 */
+export interface H1024 extends U8aFixed {}
+
+/** @name H128 */
+export interface H128 extends U8aFixed {}
 
 /** @name H160 */
 export interface H160 extends U8aFixed {}
+
+/** @name H2048 */
+export interface H2048 extends U8aFixed {}
 
 /** @name H256 */
 export interface H256 extends U8aFixed {}
 
 /** @name H512 */
 export interface H512 extends U8aFixed {}
+
+/** @name H64 */
+export interface H64 extends U8aFixed {}
 
 /** @name Hash */
 export interface Hash extends H256 {}
@@ -189,6 +217,9 @@ export interface I32F32 extends Int {}
 
 /** @name Index */
 export interface Index extends u32 {}
+
+/** @name IndicesLookupSource */
+export interface IndicesLookupSource extends GenericLookupSource {}
 
 /** @name Justification */
 export interface Justification extends Bytes {}
@@ -214,7 +245,7 @@ export interface LiquiditySourceType extends Enum {
 export interface LockIdentifier extends U8aFixed {}
 
 /** @name LookupSource */
-export interface LookupSource extends GenericLookupSource {}
+export interface LookupSource extends MultiAddress {}
 
 /** @name LookupTarget */
 export interface LookupTarget extends AccountId {}
@@ -229,10 +260,32 @@ export interface Mode extends Enum {
 export interface ModuleId extends LockIdentifier {}
 
 /** @name Moment */
-export interface Moment extends u64 {}
+export interface Moment extends UInt {}
+
+/** @name MultiAddress */
+export interface MultiAddress extends GenericMultiAddress {}
+
+/** @name MultiCurrencyBalanceOf */
+export interface MultiCurrencyBalanceOf extends Null {}
+
+/** @name MultisigAccount */
+export interface MultisigAccount extends Null {}
+
+/** @name MultiSigner */
+export interface MultiSigner extends Enum {
+  readonly isEd25519: boolean;
+  readonly asEd25519: U8aFixed;
+  readonly isSr25519: boolean;
+  readonly asSr25519: U8aFixed;
+  readonly isEcdsa: boolean;
+  readonly asEcdsa: U8aFixed;
+}
 
 /** @name OpaqueCall */
 export interface OpaqueCall extends Bytes {}
+
+/** @name OracleKey */
+export interface OracleKey extends AssetId {}
 
 /** @name Origin */
 export interface Origin extends DoNotConstruct {}
@@ -261,6 +314,9 @@ export interface Pays extends Enum {
   readonly isYes: boolean;
   readonly isNo: boolean;
 }
+
+/** @name PendingMultisigAccount */
+export interface PendingMultisigAccount extends Null {}
 
 /** @name Perbill */
 export interface Perbill extends UInt {}
@@ -349,8 +405,19 @@ export interface SignedBlock extends Struct {
   readonly justification: Justification;
 }
 
+/** @name Slot */
+export interface Slot extends u64 {}
+
+/** @name SmoothPriceState */
+export interface SmoothPriceState extends Null {}
+
 /** @name StorageData */
 export interface StorageData extends Bytes {}
+
+/** @name StorageProof */
+export interface StorageProof extends Struct {
+  readonly trieNodes: Vec<Bytes>;
+}
 
 /** @name SwapAction */
 export interface SwapAction extends Null {}
@@ -443,6 +510,9 @@ export interface ValidationFunction extends Null {}
 
 /** @name ValidatorId */
 export interface ValidatorId extends AccountId {}
+
+/** @name ValidatorIdOf */
+export interface ValidatorIdOf extends ValidatorId {}
 
 /** @name Weight */
 export interface Weight extends u64 {}

@@ -1,9 +1,8 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import { Struct } from '@polkadot/types/codec';
-import { Text, bool, u8 } from '@polkadot/types/primitive';
-import { AssetId, Balance } from '@sora-substrate/types/interfaces/runtime';
+import type { Null, Struct, Text, bool, u8 } from '@polkadot/types';
+import type { AssetId, Balance } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetInfo */
 export interface AssetInfo extends Struct {
@@ -12,6 +11,9 @@ export interface AssetInfo extends Struct {
   readonly precision: u8;
   readonly is_mintable: bool;
 }
+
+/** @name AssetRecord */
+export interface AssetRecord extends Null {}
 
 /** @name AssetSymbolStr */
 export interface AssetSymbolStr extends Text {}

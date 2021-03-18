@@ -79,6 +79,14 @@ export class Api extends BaseApi {
     return [...this.history, ...this.bridge.historyData]
   }
 
+  public removeAsset (address: string): void {
+    const filtered = this.accountAssets.filter(item => item.address !== address)
+    this.assets = filtered
+    if (this.storage) {
+      this.storage.set('assets', JSON.stringify(this.assets))
+    }
+  }
+
   /**
    * Set storage if it should be used as data storage
    * @param storage
