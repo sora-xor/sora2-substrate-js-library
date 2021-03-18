@@ -114,6 +114,12 @@ export default {
         "Migrate",
       ]
     },
+    ChangePeersContract: {
+      _enum: [
+        "XOR",
+        "VAL",
+      ]
+    },
     CurrencyIdEncoded: {
       _enum: {
         AssetId: "H256",
@@ -128,6 +134,7 @@ export default {
       amount: "Balance",
       nonce: "Index",
       network_id: "BridgeNetworkId",
+      timepoint: "Timepoint",
     },
     OutgoingTransferEncoded: {
       currency_id: "CurrencyIdEncoded",
@@ -144,6 +151,7 @@ export default {
       supply: "Balance",
       nonce: "Index",
       network_id: "BridgeNetworkId",
+      timepoint: "Timepoint",
     },
     OutgoingAddAssetEncoded: {
       name: "String",
@@ -163,6 +171,7 @@ export default {
       decimals: "u8",
       nonce: "Index",
       network_id: "BridgeNetworkId",
+      timepoint: "Timepoint",
     },
     OutgoingAddTokenEncoded: {
       token_address: "EthereumAddress",
@@ -179,6 +188,15 @@ export default {
       peer_account_id: "AccountId",
       nonce: "Index",
       network_id: "BridgeNetworkId",
+      timepoint: "Timepoint",
+    },
+    OutgoingAddPeerCompat: {
+      author: "AccountId",
+      peer_address: "EthereumAddress",
+      peer_account_id: "AccountId",
+      nonce: "Index",
+      network_id: "BridgeNetworkId",
+      timepoint: "Timepoint",
     },
     OutgoingAddPeerEncoded: {
       peer_address: "EthereumAddress",
@@ -192,6 +210,15 @@ export default {
       peer_address: "EthereumAddress",
       nonce: "Index",
       network_id: "BridgeNetworkId",
+      timepoint: "Timepoint",
+    },
+    OutgoingRemovePeerCompat: {
+      author: "AccountId",
+      peer_account_id: "AccountId",
+      peer_address: "EthereumAddress",
+      nonce: "Index",
+      network_id: "BridgeNetworkId",
+      timepoint: "Timepoint",
     },
     OutgoingRemovePeerEncoded: {
       peer_address: "EthereumAddress",
@@ -203,6 +230,7 @@ export default {
       author: "AccountId",
       nonce: "Index",
       network_id: "BridgeNetworkId",
+      timepoint: "Timepoint",
     },
     OutgoingPrepareForMigrationEncoded: {
       this_contract_address: "EthereumAddress",
@@ -216,6 +244,7 @@ export default {
       erc20_native_tokens: "Vec<EthereumAddress>",
       nonce: "Index",
       network_id: "BridgeNetworkId",
+      timepoint: "Timepoint",
     },
     OutgoingMigrateEncoded: {
       this_contract_address: "EthereumAddress",
@@ -272,6 +301,16 @@ export default {
       peer_account_id: "AccountId",
       peer_address: "EthereumAddress",
       added: "bool",
+      tx_hash: "H256",
+      at_height: "u64",
+      timepoint: "Timepoint",
+      network_id: "BridgeNetworkId",
+    },
+    IncomingChangePeersCompat: {
+      peer_account_id: "AccountId",
+      peer_address: "EthereumAddress",
+      added: "bool",
+      contract: "ChangePeersContract",
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
