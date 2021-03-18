@@ -180,6 +180,7 @@ export class Api extends BaseApi {
 
   /**
    * Change the account name
+   * TODO: check it, polkadot-js extension doesn't change account name
    * @param name New name
    */
   public changeName (name: string): void {
