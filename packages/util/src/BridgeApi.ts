@@ -3,13 +3,30 @@ import { assert } from '@polkadot/util'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { Signer } from '@polkadot/types/types'
 
-import { BaseApi, Operation } from './BaseApi'
+import { BaseApi, Operation, History, isBridgeOperation } from './BaseApi'
 import { Messages } from './logger'
-import { getAssets, Asset } from './assets'
+import { getAssets, Asset, AccountAsset } from './assets'
 import { CodecString, FPNumber } from './fp'
+import { encrypt } from './crypto'
+
+export interface RegisteredAccountAsset extends AccountAsset {
+  externalAddress: string;
+  externalBalance: CodecString;
+}
 
 export interface RegisteredAsset extends Asset {
   externalAddress: string;
+}
+
+export interface BridgeHistory extends History {
+  type: Operation.EthBridgeIncoming | Operation.EthBridgeOutgoing;
+  transactionStep?: 1 | 2;
+  hash?: string;
+  ethereumHash?: string;
+  transactionState?: string;
+  soraNetworkFee?: CodecString;
+  ethereumNetworkFee?: CodecString;
+  signed?: boolean;
 }
 
 /**
@@ -95,8 +112,65 @@ export class BridgeApi extends BaseApi {
     super()
   }
 
-  get historyData () {
-    return this.history
+  public get accountHistory (): Array<BridgeHistory> {
+    const filterHistory = (items) => items.filter(({ type }) => isBridgeOperation(type))
+    if (this.storage) {
+      const allHistory = JSON.parse(this.storage.get('history')) as Array<BridgeHistory> || []
+      this.history = filterHistory(allHistory)
+      return this.history as Array<BridgeHistory>
+    }
+    return filterHistory(this.history)
+  }
+
+  public generateHistoryItem (params: BridgeHistory): BridgeHistory | null {
+    if (!params.type) {
+      return null
+    }
+    const history = (params || {}) as BridgeHistory
+    history.startTime = history.startTime || Date.now()
+    history.id = encrypt(`${history.startTime}`)
+    history.transactionStep = history.transactionStep || 1
+    history.transactionState = history.transactionState || 'INITIAL'
+    this.saveHistory(history)
+    return history
+  }
+
+  public saveHistory (history: BridgeHistory): void {
+    if (!(history && history.id && isBridgeOperation(history.type))) {
+      return
+    }
+    super.saveHistory(history)
+  }
+
+  public getHistory (id: string): BridgeHistory | null {
+    return this.accountHistory.find(item => item.id === id) ?? null
+  }
+
+  public removeHistory (id: string): void {
+    const historyItem = this.accountHistory.find(item => item.id === id)
+    if (!historyItem) {
+      return
+    }
+    this.history = (
+      this.storage
+        ? JSON.parse(this.storage.get('history')) as Array<BridgeHistory> || []
+        : this.history
+    ).filter(item => item.id !== id)
+    if (this.storage) {
+      this.storage.set('history', JSON.stringify(this.history))
+    }
+  }
+
+  public clearHistory (): void {
+    const bridgeHistoryIds = this.accountHistory.map(item => item.id)
+    const allHistory = this.storage
+      ? JSON.parse(this.storage.get('history')) as Array<BridgeHistory> || []
+      : this.history
+    const formattedHistory = allHistory.filter(({ id }) => !bridgeHistoryIds.includes(id))
+    this.history = formattedHistory
+    if (this.storage) {
+      this.storage.set('history', JSON.stringify(this.history))
+    }
   }
 
   public setAccount (account: CreateResult, signer?: Signer): void {
@@ -137,13 +211,15 @@ export class BridgeApi extends BaseApi {
    * @param asset RegisteredAsset
    * @param to Ethereum account address
    * @param amount
+   * @param historyId not required
    */
-  public async transferToEth (asset: RegisteredAsset, to: string, amount: string | number): Promise<void> {
+  public async transferToEth (asset: RegisteredAsset, to: string, amount: string | number, historyId?: string): Promise<void> {
     const params = await this.calcTransferToEthParams(asset, to, amount)
+    const history = this.accountHistory.find(({ id }) => id === historyId)
     await this.submitExtrinsic(
       this.api.tx.ethBridge.transferToSidechain(...params.args),
       this.account.pair,
-      {
+      history || {
         symbol: params.asset.symbol,
         amount: `${amount}`,
         type: Operation.EthBridgeOutgoing
@@ -175,10 +251,11 @@ export class BridgeApi extends BaseApi {
    */
   public async requestFromEth (hash: string, type: RequestType = RequestType.Transfer): Promise<void> {
     assert(this.account, Messages.connectWallet)
+    const history = this.accountHistory.find(item => item.hash === hash)
     await this.submitExtrinsic(
       this.api.tx.ethBridge.requestFromSidechain(hash, type, BridgeApi.ETH_NETWORK_ID),
       this.account.pair,
-      {
+      history || {
         type: Operation.EthBridgeIncoming,
         hash
       }
@@ -189,17 +266,17 @@ export class BridgeApi extends BaseApi {
    * Mark history data as `Done`
    * @param hash Eth hash of transaction
    */
-  public async markAsDone (hash: string): Promise<void> {
-    assert(this.account, Messages.connectWallet)
-    await this.submitExtrinsic(
-      this.api.tx.ethBridge.requestFromSidechain(hash, RequestType.MarkAsDone, BridgeApi.ETH_NETWORK_ID),
-      this.account.pair,
-      {
-        type: Operation.EthBridgeOutgoingMarkDone,
-        hash
-      }
-    )
-  }
+  // public async markAsDone (hash: string): Promise<void> {
+  //   assert(this.account, Messages.connectWallet)
+  //   await this.submitExtrinsic(
+  //     this.api.tx.ethBridge.requestFromSidechain(hash, RequestType.MarkAsDone, BridgeApi.ETH_NETWORK_ID),
+  //     this.account.pair,
+  //     {
+  //       type: Operation.EthBridgeOutgoingMarkDone,
+  //       hash
+  //     }
+  //   )
+  // }
 
   /**
    * Get registered assets for bridge

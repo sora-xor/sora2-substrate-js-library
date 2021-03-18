@@ -18,7 +18,7 @@ import {
   AccountLiquidity
 } from './assets'
 import { decrypt, encrypt } from './crypto'
-import { BaseApi, Operation, KeyringType, History } from './BaseApi'
+import { BaseApi, Operation, KeyringType, History, isBridgeOperation } from './BaseApi'
 import { SwapResult } from './swap'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
@@ -76,7 +76,10 @@ export class Api extends BaseApi {
       this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
       return this.history
     }
-    return [...this.history, ...this.bridge.historyData]
+    return [
+      ...this.history.filter(({ type }) => !isBridgeOperation(type)),
+      ...this.bridge.accountHistory
+    ]
   }
 
   public removeAsset (address: string): void {
@@ -1085,6 +1088,7 @@ export class Api extends BaseApi {
     const address = this.account.pair.address
     keyring.forgetAccount(address)
     keyring.forgetAddress(address)
+    this.bridge.clearHistory()
     this.account = null
     this.signer = null
     this.assets = []
