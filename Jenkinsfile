@@ -1,10 +1,10 @@
-@Library('jenkins-library') _
+@Library('jenkins-library@feature/js-prebuild-steps') _
 
 def pipeline = new org.js.LibPipeline(
     steps: this,
-    // testCmds: ['yarn test:all'],
+    preBuildCmds: ['yarn --update-checksums', 'yarn install'],
     dockerImageName: 'soramitsu/substrate-js-library',
-    buildDockerImage: 'build-tools/node:10-ubuntu',
+    buildDockerImage: 'build-tools/node:14-alpine',
     buildCmds: ['yarn', 'NODE_ENV=production yarn build'],
     pushCmds: ['yarn publish-workspaces'],
     npmRegistries: ['': 'npm-soramitsu-admin'],
