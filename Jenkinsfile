@@ -6,8 +6,8 @@ def pipeline = new org.js.LibPipeline(
     dockerImageName: 'soramitsu/substrate-js-library',
     buildDockerImage: 'build-tools/node:14-alpine',
     buildCmds: ['yarn', 'NODE_ENV=production yarn build'],
+    test: false,
     pushCmds: ['yarn publish-workspaces'],
     npmRegistries: ['': 'npm-soramitsu-admin'],
     npmLoginEmail:'admin@soramitsu.co.jp'),
-    test: false
 pipeline.runPipeline()
