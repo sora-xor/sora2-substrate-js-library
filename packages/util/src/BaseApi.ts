@@ -58,7 +58,7 @@ export class BaseApi {
       return
     }
     if (this.storage) {
-      this.history = JSON.parse(this.storage.get('history')) as Array<History>
+      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
     }
     const index = this.history.findIndex(item => item.id === history.id)
     ~index ? this.history[index] = history : this.history.push(history)
