@@ -60,7 +60,7 @@ import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AssetInfo, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, CurrencyIdEncoded, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingClaimPswap, IncomingMigrate, IncomingPreRequest, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransfer, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, ChangePeersContract, CurrencyIdEncoded, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingClaimPswap, IncomingMigrate, IncomingPreRequest, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransfer, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H512, H64, Hash, Header, HolderId, I32F32, Index, IndicesLookupSource, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PreRuntime, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, Slot, SmoothPriceState, StorageData, StorageProof, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
 import type { TP } from '@sora-substrate/types/interfaces/tradingPair';
@@ -287,6 +287,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<CandidateReceipt>': Option<CandidateReceipt>;
     'Option<ChainProperties>': Option<ChainProperties>;
     'Option<ChainType>': Option<ChainType>;
+    'Option<ChangePeersContract>': Option<ChangePeersContract>;
     'Option<ChangesTrieConfiguration>': Option<ChangesTrieConfiguration>;
     'Option<ChargeFeeInfo>': Option<ChargeFeeInfo>;
     'Option<CodecHash>': Option<CodecHash>;
@@ -557,6 +558,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<IncomingAddToken>': Option<IncomingAddToken>;
     'Option<IncomingCancelOutgoingRequest>': Option<IncomingCancelOutgoingRequest>;
     'Option<IncomingChangePeers>': Option<IncomingChangePeers>;
+    'Option<IncomingChangePeersCompat>': Option<IncomingChangePeersCompat>;
     'Option<IncomingClaimPswap>': Option<IncomingClaimPswap>;
     'Option<IncomingMigrate>': Option<IncomingMigrate>;
     'Option<IncomingParachain>': Option<IncomingParachain>;
@@ -684,6 +686,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<OutgoingAddAsset>': Option<OutgoingAddAsset>;
     'Option<OutgoingAddAssetEncoded>': Option<OutgoingAddAssetEncoded>;
     'Option<OutgoingAddPeer>': Option<OutgoingAddPeer>;
+    'Option<OutgoingAddPeerCompat>': Option<OutgoingAddPeerCompat>;
     'Option<OutgoingAddPeerEncoded>': Option<OutgoingAddPeerEncoded>;
     'Option<OutgoingAddToken>': Option<OutgoingAddToken>;
     'Option<OutgoingAddTokenEncoded>': Option<OutgoingAddTokenEncoded>;
@@ -692,6 +695,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<OutgoingPrepareForMigration>': Option<OutgoingPrepareForMigration>;
     'Option<OutgoingPrepareForMigrationEncoded>': Option<OutgoingPrepareForMigrationEncoded>;
     'Option<OutgoingRemovePeer>': Option<OutgoingRemovePeer>;
+    'Option<OutgoingRemovePeerCompat>': Option<OutgoingRemovePeerCompat>;
     'Option<OutgoingRemovePeerEncoded>': Option<OutgoingRemovePeerEncoded>;
     'Option<OutgoingRequest>': Option<OutgoingRequest>;
     'Option<OutgoingRequestEncoded>': Option<OutgoingRequestEncoded>;
@@ -1151,6 +1155,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<CandidateReceipt>': Vec<CandidateReceipt>;
     'Vec<ChainProperties>': Vec<ChainProperties>;
     'Vec<ChainType>': Vec<ChainType>;
+    'Vec<ChangePeersContract>': Vec<ChangePeersContract>;
     'Vec<ChangesTrieConfiguration>': Vec<ChangesTrieConfiguration>;
     'Vec<ChargeFeeInfo>': Vec<ChargeFeeInfo>;
     'Vec<CodecHash>': Vec<CodecHash>;
@@ -1421,6 +1426,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<IncomingAddToken>': Vec<IncomingAddToken>;
     'Vec<IncomingCancelOutgoingRequest>': Vec<IncomingCancelOutgoingRequest>;
     'Vec<IncomingChangePeers>': Vec<IncomingChangePeers>;
+    'Vec<IncomingChangePeersCompat>': Vec<IncomingChangePeersCompat>;
     'Vec<IncomingClaimPswap>': Vec<IncomingClaimPswap>;
     'Vec<IncomingMigrate>': Vec<IncomingMigrate>;
     'Vec<IncomingParachain>': Vec<IncomingParachain>;
@@ -1548,6 +1554,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<OutgoingAddAsset>': Vec<OutgoingAddAsset>;
     'Vec<OutgoingAddAssetEncoded>': Vec<OutgoingAddAssetEncoded>;
     'Vec<OutgoingAddPeer>': Vec<OutgoingAddPeer>;
+    'Vec<OutgoingAddPeerCompat>': Vec<OutgoingAddPeerCompat>;
     'Vec<OutgoingAddPeerEncoded>': Vec<OutgoingAddPeerEncoded>;
     'Vec<OutgoingAddToken>': Vec<OutgoingAddToken>;
     'Vec<OutgoingAddTokenEncoded>': Vec<OutgoingAddTokenEncoded>;
@@ -1556,6 +1563,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<OutgoingPrepareForMigration>': Vec<OutgoingPrepareForMigration>;
     'Vec<OutgoingPrepareForMigrationEncoded>': Vec<OutgoingPrepareForMigrationEncoded>;
     'Vec<OutgoingRemovePeer>': Vec<OutgoingRemovePeer>;
+    'Vec<OutgoingRemovePeerCompat>': Vec<OutgoingRemovePeerCompat>;
     'Vec<OutgoingRemovePeerEncoded>': Vec<OutgoingRemovePeerEncoded>;
     'Vec<OutgoingRequest>': Vec<OutgoingRequest>;
     'Vec<OutgoingRequestEncoded>': Vec<OutgoingRequestEncoded>;
@@ -2015,6 +2023,7 @@ declare module '@polkadot/types/types/registry' {
     CandidateReceipt: CandidateReceipt;
     ChainProperties: ChainProperties;
     ChainType: ChainType;
+    ChangePeersContract: ChangePeersContract;
     ChangesTrieConfiguration: ChangesTrieConfiguration;
     ChargeFeeInfo: ChargeFeeInfo;
     CodecHash: CodecHash;
@@ -2285,6 +2294,7 @@ declare module '@polkadot/types/types/registry' {
     IncomingAddToken: IncomingAddToken;
     IncomingCancelOutgoingRequest: IncomingCancelOutgoingRequest;
     IncomingChangePeers: IncomingChangePeers;
+    IncomingChangePeersCompat: IncomingChangePeersCompat;
     IncomingClaimPswap: IncomingClaimPswap;
     IncomingMigrate: IncomingMigrate;
     IncomingParachain: IncomingParachain;
@@ -2412,6 +2422,7 @@ declare module '@polkadot/types/types/registry' {
     OutgoingAddAsset: OutgoingAddAsset;
     OutgoingAddAssetEncoded: OutgoingAddAssetEncoded;
     OutgoingAddPeer: OutgoingAddPeer;
+    OutgoingAddPeerCompat: OutgoingAddPeerCompat;
     OutgoingAddPeerEncoded: OutgoingAddPeerEncoded;
     OutgoingAddToken: OutgoingAddToken;
     OutgoingAddTokenEncoded: OutgoingAddTokenEncoded;
@@ -2420,6 +2431,7 @@ declare module '@polkadot/types/types/registry' {
     OutgoingPrepareForMigration: OutgoingPrepareForMigration;
     OutgoingPrepareForMigrationEncoded: OutgoingPrepareForMigrationEncoded;
     OutgoingRemovePeer: OutgoingRemovePeer;
+    OutgoingRemovePeerCompat: OutgoingRemovePeerCompat;
     OutgoingRemovePeerEncoded: OutgoingRemovePeerEncoded;
     OutgoingRequest: OutgoingRequest;
     OutgoingRequestEncoded: OutgoingRequestEncoded;
