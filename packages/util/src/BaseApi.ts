@@ -90,7 +90,7 @@ export class BaseApi {
       if (isBridgeOperation(history.type)) {
         history.signed = true
       }
-      history.status = first(Object.keys(result.status.toJSON()))
+      history.status = first(Object.keys(result.status.toJSON())).toLowerCase()
       this.saveHistory(history)
       if (result.status.isInBlock) {
         history.blockId = result.status.asInBlock.toString()
@@ -196,11 +196,11 @@ export class BaseApi {
 }
 
 export enum TransactionStatus {
-  Ready = 'Ready',
-  Broadcast = 'Broadcast',
-  InBlock = 'InBlock',
-  Finalized = 'Finalized',
-  Error = 'Error'
+  Ready = 'ready',
+  Broadcast = 'broadcast',
+  InBlock = 'inblock',
+  Finalized = 'finalized',
+  Error = 'error'
 }
 
 export enum Operation {
