@@ -285,7 +285,7 @@ export class BridgeApi extends BaseApi {
   public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
     const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(BridgeApi.ETH_NETWORK_ID)).toJSON()
     const assets = await getAssets(this.api)
-    return data.Ok.map(([_, address, externalAddress]) => {
+    return data.ok.map(([_, address, externalAddress]) => {
       const asset = assets.find(a => a.address === address)
       return {
         address,
@@ -327,7 +327,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getRequest (hash: string): Promise<BridgeRequest> {
     const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], BridgeApi.ETH_NETWORK_ID)).toJSON()
-    return first(data.Ok.map(item => this.formatRequest(item)))
+    return first(data.ok.map(item => this.formatRequest(item)))
   }
 
   /**
@@ -337,7 +337,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getRequests (hashes: Array<string>): Promise<Array<BridgeRequest>> {
     const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
-    return data.Ok.map(item => this.formatRequest(item))
+    return data.ok.map(item => this.formatRequest(item))
   }
 
   private formatApprovedRequest (item: any): BridgeApprovedRequest {
@@ -366,7 +366,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getApprovedRequest (hash: string): Promise<BridgeApprovedRequest> {
     const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests([hash], BridgeApi.ETH_NETWORK_ID)).toHuman()
-    return first(data.Ok.map(item => this.formatApprovedRequest(item)))
+    return first(data.ok.map(item => this.formatApprovedRequest(item)))
   }
 
   /**
@@ -376,7 +376,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getApprovedRequests (hashes: Array<string>): Promise<Array<BridgeApprovedRequest>> {
     const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests(hashes, BridgeApi.ETH_NETWORK_ID)).toHuman()
-    return data.Ok.map(item => this.formatApprovedRequest(item))
+    return data.ok.map(item => this.formatApprovedRequest(item))
   }
 
   /**
@@ -386,7 +386,7 @@ export class BridgeApi extends BaseApi {
   public async getAccountRequests (status = BridgeTxStatus.Ready): Promise<Array<string>> {
     assert(this.account, Messages.connectWallet)
     const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address, status)).toJSON()
-    return data.Ok
+    return data.ok
       .filter(([networkId, _]) => networkId === BridgeApi.ETH_NETWORK_ID)
       .map(([_, hash]) => hash) as Array<string>
   }
@@ -398,6 +398,6 @@ export class BridgeApi extends BaseApi {
    */
   public async getApproves (hashes: Array<string>) {
     const data = (await (this.api.rpc as any).ethBridge.getApproves(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
-    return data.Ok
+    return data.ok
   }
 }
