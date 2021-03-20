@@ -48,6 +48,9 @@ async function demo(): Promise<void> {
   let balanceD = await (api.rpc as any).assets.freeBalance(user_b.address, PSWAPAssetId);
   console.log("User B DOT FREE: ", balanceD.unwrap().balance.toString());
 
+  let claimables = await (api.rpc as any).rewards.claimables('21Bc9f4a3d9Dc86f142F802668dB7D908cF0A636')
+  console.log(claimables)
+
   // get the price via liquidity proxy
   let quoted_result = await (api.rpc as any).liquidityProxy.quote(0, XORAssetId, PSWAPAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
   console.log("Quoted exchange DOT: ", quoted_result.unwrap().amount.toString());

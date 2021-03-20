@@ -10,6 +10,7 @@ import assets from './assets'
 import liquidityProxy from './liquidityProxy'
 import ethBridge from './ethBridge'
 import pswapDistribution from './pswapDistribution'
+import rewards from './rewards'
 
 const soraDefs = {
   runtime,
@@ -21,6 +22,7 @@ const soraDefs = {
   liquidityProxy,
   ethBridge,
   pswapDistribution,
+  rewards,
 }
 
 const overrides = {
