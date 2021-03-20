@@ -309,15 +309,15 @@ export class BridgeApi extends BaseApi {
     const formattedItem = {} as BridgeRequest
     formattedItem.status = item[1]
     let direction = BridgeDirection.Incoming, operation = RequestType.Transfer
-    if (BridgeDirection.Outgoing in item[0]) {
+    if (~[BridgeDirection.Outgoing, BridgeDirection.Outgoing.toLowerCase()].findIndex(prop => prop in item[0])) {
       direction = BridgeDirection.Outgoing
       operation = RequestType.Transfer
     }
     formattedItem.direction = direction
-    let request = item[0][direction]
+    let request = item[0][direction] || item[0][direction.toLowerCase()]
     if (direction === BridgeDirection.Outgoing) {
       request = request[0][operation]
-      formattedItem.hash = item[0][direction][1]
+      formattedItem.hash = (item[0][direction] || item[0][direction.toLowerCase()])[1]
       formattedItem.from = request.from
       formattedItem.soraAssetAddress = request.asset_id
       formattedItem.externalAssetAddress = request.to
@@ -351,12 +351,14 @@ export class BridgeApi extends BaseApi {
 
   private formatApprovedRequest (item: any): BridgeApprovedRequest {
     const formattedItem = {} as BridgeApprovedRequest
-    const request = item[0][RequestType.Transfer]
+    const request = item[0][RequestType.Transfer] || item[0][RequestType.Transfer.toLowerCase()]
     formattedItem.hash = request.tx_hash
     formattedItem.from = request.from
     formattedItem.to = request.to
     formattedItem.amount = request.amount
-    formattedItem.currencyType = BridgeCurrencyType.TokenAddress in request.currency_id ? BridgeCurrencyType.TokenAddress : BridgeCurrencyType.AssetId
+    formattedItem.currencyType = [BridgeCurrencyType.TokenAddress, BridgeCurrencyType.TokenAddress.toLowerCase()].includes(request.currency_id)
+      ? BridgeCurrencyType.TokenAddress
+      : BridgeCurrencyType.AssetId
     formattedItem.r = []
     formattedItem.s = []
     formattedItem.v = []
