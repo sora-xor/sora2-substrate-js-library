@@ -74,16 +74,6 @@ export interface IncomingChangePeers extends Struct {
   readonly network_id: BridgeNetworkId;
 }
 
-/** @name IncomingClaimPswap */
-export interface IncomingClaimPswap extends Struct {
-  readonly account_id: AccountId;
-  readonly eth_address: EthereumAddress;
-  readonly tx_hash: H256;
-  readonly at_height: u64;
-  readonly timepoint: Timepoint;
-  readonly network_id: BridgeNetworkId;
-}
-
 /** @name IncomingMigrate */
 export interface IncomingMigrate extends Struct {
   readonly new_contract_address: EthereumAddress;
@@ -118,8 +108,6 @@ export interface IncomingRequest extends Enum {
   readonly asAddAsset: IncomingAddToken;
   readonly isChangePeers: boolean;
   readonly asChangePeers: IncomingChangePeers;
-  readonly isClaimPswap: boolean;
-  readonly asClaimPswap: IncomingClaimPswap;
   readonly isCancelOutgoingRequest: boolean;
   readonly asCancelOutgoingRequest: IncomingCancelOutgoingRequest;
   readonly isPrepareForMigration: boolean;
@@ -134,7 +122,6 @@ export interface IncomingRequestKind extends Enum {
   readonly isAddAsset: boolean;
   readonly isAddPeer: boolean;
   readonly isRemovePeer: boolean;
-  readonly isClaimPswap: boolean;
   readonly isCancelOutgoingRequest: boolean;
   readonly isMarkAsDone: boolean;
   readonly isPrepareForMigration: boolean;

@@ -60,7 +60,7 @@ import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AssetInfo, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, CurrencyIdEncoded, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingClaimPswap, IncomingMigrate, IncomingPreRequest, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransfer, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, CurrencyIdEncoded, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingMigrate, IncomingPreRequest, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransfer, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H512, H64, Hash, Header, HolderId, I32F32, Index, IndicesLookupSource, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PreRuntime, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, Slot, SmoothPriceState, StorageData, StorageProof, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
 import type { TP } from '@sora-substrate/types/interfaces/tradingPair';
@@ -557,7 +557,6 @@ declare module '@polkadot/types/types/registry' {
     'Option<IncomingAddToken>': Option<IncomingAddToken>;
     'Option<IncomingCancelOutgoingRequest>': Option<IncomingCancelOutgoingRequest>;
     'Option<IncomingChangePeers>': Option<IncomingChangePeers>;
-    'Option<IncomingClaimPswap>': Option<IncomingClaimPswap>;
     'Option<IncomingMigrate>': Option<IncomingMigrate>;
     'Option<IncomingParachain>': Option<IncomingParachain>;
     'Option<IncomingParachainDeploy>': Option<IncomingParachainDeploy>;
@@ -1421,7 +1420,6 @@ declare module '@polkadot/types/types/registry' {
     'Vec<IncomingAddToken>': Vec<IncomingAddToken>;
     'Vec<IncomingCancelOutgoingRequest>': Vec<IncomingCancelOutgoingRequest>;
     'Vec<IncomingChangePeers>': Vec<IncomingChangePeers>;
-    'Vec<IncomingClaimPswap>': Vec<IncomingClaimPswap>;
     'Vec<IncomingMigrate>': Vec<IncomingMigrate>;
     'Vec<IncomingParachain>': Vec<IncomingParachain>;
     'Vec<IncomingParachainDeploy>': Vec<IncomingParachainDeploy>;
@@ -2285,7 +2283,6 @@ declare module '@polkadot/types/types/registry' {
     IncomingAddToken: IncomingAddToken;
     IncomingCancelOutgoingRequest: IncomingCancelOutgoingRequest;
     IncomingChangePeers: IncomingChangePeers;
-    IncomingClaimPswap: IncomingClaimPswap;
     IncomingMigrate: IncomingMigrate;
     IncomingParachain: IncomingParachain;
     IncomingParachainDeploy: IncomingParachainDeploy;
