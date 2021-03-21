@@ -230,6 +230,7 @@ export class BridgeApi extends BaseApi {
       this.account.pair,
       history || {
         symbol: params.asset.symbol,
+        assetAddress: params.asset.address,
         amount: `${amount}`,
         type: Operation.EthBridgeOutgoing
       }
@@ -316,7 +317,7 @@ export class BridgeApi extends BaseApi {
     formattedItem.direction = direction
     let request = item[0][direction] || item[0][direction.toLowerCase()]
     if (direction === BridgeDirection.Outgoing) {
-      request = request[0][operation]
+      request = request[0][operation] || request[0][operation.toLowerCase()]
       formattedItem.hash = (item[0][direction] || item[0][direction.toLowerCase()])[1]
       formattedItem.from = request.from
       formattedItem.soraAssetAddress = request.asset_id
