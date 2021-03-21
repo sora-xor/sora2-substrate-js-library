@@ -58,7 +58,7 @@ export class BaseApi {
       return
     }
     if (this.storage) {
-      this.history = JSON.parse(this.storage.get('history')) as Array<History>
+      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
     }
     const index = this.history.findIndex(item => item.id === history.id)
     ~index ? this.history[index] = history : this.history.push(history)
@@ -220,11 +220,13 @@ export interface History {
   type: Operation;
   amount?: string;
   symbol?: string;
+  assetAddress?: string;
   id?: string;
   blockId?: string;
   to?: string;
   amount2?: string;
   symbol2?: string;
+  asset2Address?: string;
   startTime?: number;
   endTime?: number;
   from?: string;

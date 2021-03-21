@@ -112,6 +112,15 @@ export class BridgeApi extends BaseApi {
     super()
   }
 
+  /**
+   * This method will handle error cases.
+   * For now, there is just for camelCase issues with substrate 3
+   * @param data
+   */
+  private getData (data: any): any {
+    return data.ok || data.Ok
+  }
+
   public get accountHistory (): Array<BridgeHistory> {
     const filterHistory = (items) => items.filter(({ type }) => isBridgeOperation(type))
     if (this.storage) {
@@ -221,6 +230,7 @@ export class BridgeApi extends BaseApi {
       this.account.pair,
       history || {
         symbol: params.asset.symbol,
+        assetAddress: params.asset.address,
         amount: `${amount}`,
         type: Operation.EthBridgeOutgoing
       }
@@ -285,7 +295,7 @@ export class BridgeApi extends BaseApi {
   public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
     const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(BridgeApi.ETH_NETWORK_ID)).toJSON()
     const assets = await getAssets(this.api)
-    return data.Ok.map(([_, address, externalAddress]) => {
+    return this.getData(data).map(([_, address, externalAddress]) => {
       const asset = assets.find(a => a.address === address)
       return {
         address,
@@ -300,15 +310,15 @@ export class BridgeApi extends BaseApi {
     const formattedItem = {} as BridgeRequest
     formattedItem.status = item[1]
     let direction = BridgeDirection.Incoming, operation = RequestType.Transfer
-    if (BridgeDirection.Outgoing in item[0]) {
+    if (~[BridgeDirection.Outgoing, BridgeDirection.Outgoing.toLowerCase()].findIndex(prop => prop in item[0])) {
       direction = BridgeDirection.Outgoing
       operation = RequestType.Transfer
     }
     formattedItem.direction = direction
-    let request = item[0][direction]
+    let request = item[0][direction] || item[0][direction.toLowerCase()]
     if (direction === BridgeDirection.Outgoing) {
-      request = request[0][operation]
-      formattedItem.hash = item[0][direction][1]
+      request = request[0][operation] || request[0][operation.toLowerCase()]
+      formattedItem.hash = (item[0][direction] || item[0][direction.toLowerCase()])[1]
       formattedItem.from = request.from
       formattedItem.soraAssetAddress = request.asset_id
       formattedItem.externalAssetAddress = request.to
@@ -327,7 +337,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getRequest (hash: string): Promise<BridgeRequest> {
     const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], BridgeApi.ETH_NETWORK_ID)).toJSON()
-    return first(data.Ok.map(item => this.formatRequest(item)))
+    return first(this.getData(data).map(item => this.formatRequest(item)))
   }
 
   /**
@@ -337,17 +347,19 @@ export class BridgeApi extends BaseApi {
    */
   public async getRequests (hashes: Array<string>): Promise<Array<BridgeRequest>> {
     const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
-    return data.Ok.map(item => this.formatRequest(item))
+    return this.getData(data).map(item => this.formatRequest(item))
   }
 
   private formatApprovedRequest (item: any): BridgeApprovedRequest {
     const formattedItem = {} as BridgeApprovedRequest
-    const request = item[0][RequestType.Transfer]
+    const request = item[0][RequestType.Transfer] || item[0][RequestType.Transfer.toLowerCase()]
     formattedItem.hash = request.tx_hash
     formattedItem.from = request.from
     formattedItem.to = request.to
     formattedItem.amount = request.amount
-    formattedItem.currencyType = BridgeCurrencyType.TokenAddress in request.currency_id ? BridgeCurrencyType.TokenAddress : BridgeCurrencyType.AssetId
+    formattedItem.currencyType = [BridgeCurrencyType.TokenAddress, BridgeCurrencyType.TokenAddress.toLowerCase()].includes(request.currency_id)
+      ? BridgeCurrencyType.TokenAddress
+      : BridgeCurrencyType.AssetId
     formattedItem.r = []
     formattedItem.s = []
     formattedItem.v = []
@@ -366,7 +378,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getApprovedRequest (hash: string): Promise<BridgeApprovedRequest> {
     const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests([hash], BridgeApi.ETH_NETWORK_ID)).toHuman()
-    return first(data.Ok.map(item => this.formatApprovedRequest(item)))
+    return first(this.getData(data).map(item => this.formatApprovedRequest(item)))
   }
 
   /**
@@ -376,7 +388,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getApprovedRequests (hashes: Array<string>): Promise<Array<BridgeApprovedRequest>> {
     const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests(hashes, BridgeApi.ETH_NETWORK_ID)).toHuman()
-    return data.Ok.map(item => this.formatApprovedRequest(item))
+    return this.getData(data).map(item => this.formatApprovedRequest(item))
   }
 
   /**
@@ -386,7 +398,7 @@ export class BridgeApi extends BaseApi {
   public async getAccountRequests (status = BridgeTxStatus.Ready): Promise<Array<string>> {
     assert(this.account, Messages.connectWallet)
     const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address, status)).toJSON()
-    return data.Ok
+    return this.getData(data)
       .filter(([networkId, _]) => networkId === BridgeApi.ETH_NETWORK_ID)
       .map(([_, hash]) => hash) as Array<string>
   }
@@ -398,6 +410,6 @@ export class BridgeApi extends BaseApi {
    */
   public async getApproves (hashes: Array<string>) {
     const data = (await (this.api.rpc as any).ethBridge.getApproves(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
-    return data.Ok
+    return this.getData(data)
   }
 }

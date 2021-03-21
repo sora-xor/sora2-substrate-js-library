@@ -9,6 +9,7 @@ import type { ExtrinsicOrHash, ExtrinsicStatus } from '@polkadot/types/interface
 import type { EpochAuthorship } from '@polkadot/types/interfaces/babe';
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import type { PrefixedStorageKey } from '@polkadot/types/interfaces/childstate';
+import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { ContractCallRequest, ContractExecResult } from '@polkadot/types/interfaces/contracts';
 import type { CreatedBlock } from '@polkadot/types/interfaces/engine';
@@ -457,6 +458,12 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
        * Get amount of PSWAP claimable by user (liquidity provision reward).
        **/
       claimableAmount: AugmentedRpc<(accountId: AccountId | string | Uint8Array) => Observable<BalanceInfo>>;
+    };
+    rewards: {
+      /**
+       * Get claimable rewards
+       **/
+      claimables: AugmentedRpc<(eth_address: EthereumAddress | string | Uint8Array) => Observable<Vec<BalanceInfo>>>;
     };
     rpc: {
       /**

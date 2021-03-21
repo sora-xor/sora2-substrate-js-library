@@ -428,7 +428,7 @@ export class Api extends BaseApi {
     await this.submitExtrinsic(
       this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.account.pair,
-      { symbol: asset.symbol, to: toAddress, amount: `${amount}`, type: Operation.Transfer }
+      { symbol: asset.symbol, to: toAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
     )
   }
 
@@ -578,8 +578,10 @@ export class Api extends BaseApi {
       this.account.pair,
       {
         symbol: params.assetA.symbol,
+        assetAddress: params.assetA.address,
         amount: `${amountA}`,
         symbol2: params.assetB.symbol,
+        asset2Address: params.assetB.address,
         amount2: `${amountB}`,
         type: Operation.Swap
       }
@@ -593,7 +595,7 @@ export class Api extends BaseApi {
     assert(this.account, Messages.connectWallet)
     const xor = KnownAssets.get(KnownSymbols.XOR)
     const accountLiquidity: Array<AccountLiquidity> = []
-    for (const item of this.accountAssets.filter(item => item.symbol !== xor.symbol)) {
+    for (const item of this.accountAssets.filter(item => item.address !== xor.address)) {
       const props = (await this.api.query.poolXyk.properties(xor.address, item.address)).toJSON() as Array<string>
       if (!props || !props.length) {
         continue
@@ -872,7 +874,9 @@ export class Api extends BaseApi {
       {
         type: Operation.AddLiquidity,
         symbol: params.firstAsset.symbol,
+        assetAddress: params.firstAsset.address,
         symbol2: params.secondAsset.symbol,
+        asset2Address: params.secondAsset.address,
         amount: `${firstAmount}`,
         amount2: `${secondAmount}`
       }
@@ -960,7 +964,9 @@ export class Api extends BaseApi {
       {
         type: Operation.CreatePair,
         symbol: params.firstAsset.symbol,
+        assetAddress: params.firstAsset.address,
         symbol2: params.secondAsset.symbol,
+        asset2Address: params.secondAsset.address,
         amount: `${params.baseAssetAmount}`,
         amount2: `${params.targetAssetAmount}`
       }
@@ -1066,7 +1072,9 @@ export class Api extends BaseApi {
       {
         type: Operation.RemoveLiquidity,
         symbol: params.firstAsset.symbol,
+        assetAddress: params.firstAsset.address,
         symbol2: params.secondAsset.symbol,
+        asset2Address: params.secondAsset.address,
         amount: `${desiredMarker}`
       }
     )
@@ -1110,7 +1118,7 @@ export class Api extends BaseApi {
       return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
     }
     // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.accountAssets.find(asset => asset.symbol === KnownSymbols.XOR)
+    const xorAccountAsset = this.accountAssets.find(asset => asset.address === xor.address)
     if (!xorAccountAsset) {
       return false
     }
