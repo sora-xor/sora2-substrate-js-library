@@ -220,11 +220,13 @@ export interface History {
   type: Operation;
   amount?: string;
   symbol?: string;
+  assetAddress?: string;
   id?: string;
   blockId?: string;
   to?: string;
   amount2?: string;
   symbol2?: string;
+  asset2Address?: string;
   startTime?: number;
   endTime?: number;
   from?: string;
