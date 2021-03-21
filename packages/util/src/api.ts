@@ -595,7 +595,7 @@ export class Api extends BaseApi {
     assert(this.account, Messages.connectWallet)
     const xor = KnownAssets.get(KnownSymbols.XOR)
     const accountLiquidity: Array<AccountLiquidity> = []
-    for (const item of this.accountAssets.filter(item => item.symbol !== xor.symbol)) {
+    for (const item of this.accountAssets.filter(item => item.address !== xor.address)) {
       const props = (await this.api.query.poolXyk.properties(xor.address, item.address)).toJSON() as Array<string>
       if (!props || !props.length) {
         continue
@@ -1118,7 +1118,7 @@ export class Api extends BaseApi {
       return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
     }
     // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.accountAssets.find(asset => asset.symbol === KnownSymbols.XOR)
+    const xorAccountAsset = this.accountAssets.find(asset => asset.address === xor.address)
     if (!xorAccountAsset) {
       return false
     }
