@@ -20,6 +20,7 @@ import {
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, History, isBridgeOperation } from './BaseApi'
 import { SwapResult } from './swap'
+import { RewardingEvents, RewardInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
@@ -1078,6 +1079,36 @@ export class Api extends BaseApi {
         amount: `${desiredMarker}`
       }
     )
+  }
+
+  /**
+   * Check rewards for external account
+   * @param externalAddress address of external account (ethereum account address)
+   */
+  public async checkExternalAccountRewards (externalAddress: string): Promise<Array<RewardInfo>> {
+    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (this.api.rpc as any).rewards.claimables(externalAddress)
+
+    const [val, pswap] = [KnownAssets.get(KnownSymbols.VAL), KnownAssets.get(KnownSymbols.PSWAP)]
+
+    const rewards = [
+      {
+        type: RewardingEvents.SoraFarmHarvest,
+        asset: pswap,
+        amount: new FPNumber(soraFarmHarvestAmount, pswap.decimals).toCodecString()
+      } as RewardInfo,
+      {
+        type: RewardingEvents.NtfAirdrop,
+        asset: pswap,
+        amount: new FPNumber(nftAirdropAmount, pswap.decimals).toCodecString()
+      } as RewardInfo,
+      {
+        type: RewardingEvents.XorErc20,
+        asset: val,
+        amount: new FPNumber(xorErc20Amount, val.decimals).toCodecString()
+      } as RewardInfo
+    ]
+
+    return rewards
   }
 
   /**
