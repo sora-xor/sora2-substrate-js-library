@@ -1086,27 +1086,27 @@ export class Api extends BaseApi {
    * @param externalAddress address of external account (ethereum account address)
    */
   public async checkExternalAccountRewards (externalAddress: string): Promise<Array<RewardInfo>> {
-    const [xorERC20, farm, nft] = await (this.api.rpc as any).rewards.claimables(externalAddress)
+    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (this.api.rpc as any).rewards.claimables(externalAddress)
 
     const [val, pswap] = [KnownAssets.get(KnownSymbols.VAL), KnownAssets.get(KnownSymbols.PSWAP)]
 
     const rewards = [
       {
-        type: RewardingEvents.SORA_FARM_HARVEST,
+        type: RewardingEvents.SoraFarmHarvest,
         asset: pswap,
-        amount: new FPNumber(farm, pswap.decimals).toCodecString()
+        amount: new FPNumber(soraFarmHarvestAmount, pswap.decimals).toCodecString()
       } as RewardInfo,
       {
-        type: RewardingEvents.NFT_AIRDROP,
+        type: RewardingEvents.NtfAirdrop,
         asset: pswap,
-        amount: new FPNumber(nft, pswap.decimals).toCodecString()
+        amount: new FPNumber(nftAirdropAmount, pswap.decimals).toCodecString()
       } as RewardInfo,
       {
-        type: RewardingEvents.XOR_ERC_20,
+        type: RewardingEvents.XorErc20,
         asset: val,
-        amount: new FPNumber(xorERC20, val.decimals).toCodecString()
-      } as RewardInfo,
-    ];
+        amount: new FPNumber(xorErc20Amount, val.decimals).toCodecString()
+      } as RewardInfo
+    ]
 
     return rewards
   }
