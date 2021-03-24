@@ -3,9 +3,11 @@ import { Codec } from '@polkadot/types/types'
 
 import { CodecString, FPNumber } from './fp'
 
+export const MaxTotalSupply = '170141183460469231731.687303715884105727'
+
 export interface AccountAsset {
   address: string;
-  balance: CodecString; // value ** decimals
+  balance: CodecString; // value * 10 ^ decimals
   symbol?: string;
   decimals?: number;
   // TODO: add `usdBalance` field (assets from wallet)
@@ -14,14 +16,15 @@ export interface AccountAsset {
 export interface AccountLiquidity extends AccountAsset {
   firstAddress: string;
   secondAddress: string;
-  firstBalance: CodecString; // value ** decimals
-  secondBalance: CodecString; // value ** decimals
+  firstBalance: CodecString; // value * 10 ^ decimals
+  secondBalance: CodecString; // value * 10 ^ decimals
 }
 
 export interface Asset {
   address: string;
   symbol: string;
   decimals: number;
+  totalSupply?: string;
   // TODO: add `usd` field
 }
 
@@ -58,7 +61,8 @@ export const KnownAssets = new ArrayLike<Asset>([
   {
     address: '0x0200000000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XOR,
-    decimals: FPNumber.DEFAULT_PRECISION
+    decimals: FPNumber.DEFAULT_PRECISION,
+    totalSupply: '700000'
   },
   // {
   //   address: '0x0200010000000000000000000000000000000000000000000000000000000000',
@@ -78,12 +82,14 @@ export const KnownAssets = new ArrayLike<Asset>([
   {
     address: '0x0200040000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.VAL,
-    decimals: FPNumber.DEFAULT_PRECISION
+    decimals: FPNumber.DEFAULT_PRECISION,
+    totalSupply: '100000000'
   },
   {
     address: '0x0200050000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.PSWAP,
-    decimals: FPNumber.DEFAULT_PRECISION
+    decimals: FPNumber.DEFAULT_PRECISION,
+    totalSupply: '100000000'
   }
 ])
 

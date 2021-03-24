@@ -35,7 +35,7 @@ export class FaucetApi extends BaseApi {
    * **NOT USED** will be removed soon, seems that we don't need it
    * @param assetAddress
    * @param accountAddress
-   * @returns balance = value ** decimals
+   * @returns balance = value * 10 ^ decimals
    */
   public async getBalance (assetAddress: string, accountAddress: string): Promise<string> {
     const asset = KnownAssets.get(assetAddress)

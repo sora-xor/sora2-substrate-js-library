@@ -135,7 +135,7 @@ export class BaseApi {
    * @param signer
    * @param type
    * @param params
-   * @returns value ** decimals
+   * @returns value * 10 ^ decimals
    */
   protected async getNetworkFee (signer: KeyringPair, type: Operation, ...params: Array<any>): Promise<CodecString> {
     let extrinsicParams = params
