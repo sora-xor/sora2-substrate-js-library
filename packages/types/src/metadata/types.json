@@ -442,6 +442,5 @@
         "base_asset_id": "AssetId",
         "target_asset_id": "AssetId"
     },
-    "Tuple": "Null",
     "ValidationFunction": "Null"
 }
