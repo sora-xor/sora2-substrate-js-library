@@ -35,7 +35,6 @@ const overrides = {
   TAssetBalance: 'Balance',
   MultiCurrencyBalance: 'Balance',
   MultiCurrencyBalanceOf: 'MultiCurrencyBalance',
-  Tuple: "Null"
 };
 
 export const types = {
