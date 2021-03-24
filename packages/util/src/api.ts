@@ -286,7 +286,7 @@ export class Api extends BaseApi {
    * @param symbol string with asset symbol
    * @param totalSupply
    * @param extensibleSupply
-   * @returns register asset network fee as a string (value ** decimals)
+   * @returns register asset network fee as a string (value * 10 ^ decimals)
    */
   public async getRegisterAssetNetworkFee (symbol: string, totalSupply: NumberLike, extensibleSupply = false): Promise<CodecString> {
     const params = await this.calcRegisterAssetParams(symbol, totalSupply, extensibleSupply)
