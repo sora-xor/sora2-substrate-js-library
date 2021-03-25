@@ -12,6 +12,7 @@ import { CodecString, FPNumber } from './fp'
 import { encrypt } from './crypto'
 import { connection } from './connection'
 import { BridgeHistory } from './BridgeApi'
+import { RewardClaimHistory } from './rewards'
 
 export const isBridgeOperation = (operation: Operation) => [
   Operation.EthBridgeIncoming,
@@ -70,10 +71,10 @@ export class BaseApi {
   protected async submitExtrinsic (
     extrinsic: SubmittableExtrinsic,
     signer: KeyringPair,
-    historyData?: History | BridgeHistory,
+    historyData?: History | BridgeHistory | RewardClaimHistory,
     unsigned = false
   ): Promise<void> {
-    const history = (historyData || {}) as History & BridgeHistory
+    const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet
     if (isNotFaucetOperation && signer) {
       history.from = signer.address
