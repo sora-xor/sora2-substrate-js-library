@@ -171,6 +171,9 @@ export class BaseApi {
       case Operation.RegisterAsset:
         extrinsic = this.api.tx.assets.register
         break
+      case Operation.ClaimRewards:
+        extrinsic = this.api.tx.rewards.claim
+        break
       default:
         throw new Error('Unknown function')
     }
@@ -212,7 +215,8 @@ export enum Operation {
   Faucet = 'Faucet',
   RegisterAsset = 'RegisterAsset',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
-  EthBridgeIncoming = 'EthBridgeIncoming'
+  EthBridgeIncoming = 'EthBridgeIncoming',
+  ClaimRewards = 'ClaimRewards'
   // EthBridgeOutgoingMarkDone = 'EthBridgeOutgoingMarkDone'
 }
 

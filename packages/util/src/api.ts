@@ -1112,6 +1112,28 @@ export class Api extends BaseApi {
   }
 
   /**
+   * Get network fee for claim rewards operation
+   * @param signature 
+   */
+  public async getClaimRewardsNetworkFee (signature: string): Promise<CodecString>  {
+    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, signature)
+  }
+
+  /**
+   * Claim rewards
+   * @param signature message signed in external wallet
+   */
+  public async claimRewards (signature: string): Promise<void> {
+    await this.submitExtrinsic(
+      (this.api.tx.rewards.claim as any)(signature),
+      this.account.pair,
+      {
+        type: Operation.ClaimRewards
+      }
+    )
+  }
+
+  /**
    * Get all tokens list registered in the blockchain network
    * @param withPoolTokens `false` by default
    */
