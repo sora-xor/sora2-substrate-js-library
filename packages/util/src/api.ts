@@ -1114,8 +1114,8 @@ export class Api extends BaseApi {
   /**
    * Get network fee for claim rewards operation
    */
-  public async getClaimRewardsNetworkFee (): Promise<CodecString>  {
-    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards)
+  public async getClaimRewardsNetworkFee (signature = ''): Promise<CodecString>  {
+    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, signature)
   }
 
   /**
