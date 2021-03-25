@@ -1111,10 +1111,18 @@ export class Api extends BaseApi {
     return rewards
   }
 
+  /**
+   * Get network fee for claim rewards operation
+   * @param signature 
+   */
   public async getClaimRewardsNetworkFee (signature: string): Promise<CodecString>  {
     return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, signature)
   }
 
+  /**
+   * Claim rewards
+   * @param signature message signed in external wallet
+   */
   public async claimRewards (signature: string): Promise<void> {
     await this.submitExtrinsic(
       (this.api.tx.rewards.claim as any)(signature),
