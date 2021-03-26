@@ -1125,7 +1125,8 @@ export class Api extends BaseApi {
   public async claimRewards (
     signature: string,
     externalAddress: string,
-    fee: CodecString
+    fee: CodecString,
+    rewards: Array<RewardInfo>
   ): Promise<void> {
     await this.submitExtrinsic(
       (this.api.tx.rewards.claim as any)(signature),
@@ -1133,7 +1134,8 @@ export class Api extends BaseApi {
       {
         type: Operation.ClaimRewards,
         externalAddress,
-        soraNetworkFee: fee
+        soraNetworkFee: fee,
+        rewards
       }
     )
   }
