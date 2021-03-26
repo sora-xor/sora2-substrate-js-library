@@ -54,6 +54,7 @@ export interface IncomingAddToken extends Struct {
   readonly precision: BalancePrecision;
   readonly symbol: AssetSymbol;
   readonly name: AssetName;
+  readonly author: AccountId;
   readonly tx_hash: H256;
   readonly at_height: u64;
   readonly timepoint: Timepoint;
@@ -64,6 +65,7 @@ export interface IncomingAddToken extends Struct {
 export interface IncomingCancelOutgoingRequest extends Struct {
   readonly request: OutgoingRequest;
   readonly tx_input: Bytes;
+  readonly author: AccountId;
   readonly tx_hash: H256;
   readonly at_height: u64;
   readonly timepoint: Timepoint;
@@ -75,6 +77,7 @@ export interface IncomingChangePeers extends Struct {
   readonly peer_account_id: AccountId;
   readonly peer_address: EthereumAddress;
   readonly added: bool;
+  readonly author: AccountId;
   readonly tx_hash: H256;
   readonly at_height: u64;
   readonly timepoint: Timepoint;
@@ -87,15 +90,33 @@ export interface IncomingChangePeersCompat extends Struct {
   readonly peer_address: EthereumAddress;
   readonly added: bool;
   readonly contract: ChangePeersContract;
+  readonly author: AccountId;
   readonly tx_hash: H256;
   readonly at_height: u64;
   readonly timepoint: Timepoint;
   readonly network_id: BridgeNetworkId;
 }
 
+/** @name IncomingMarkAsDoneRequest */
+export interface IncomingMarkAsDoneRequest extends Struct {
+  readonly outgoing_request_hash: H256;
+  readonly initial_request_hash: H256;
+  readonly author: AccountId;
+  readonly at_height: u64;
+  readonly timepoint: Timepoint;
+  readonly network_id: BridgeNetworkId;
+}
+
+/** @name IncomingMetaRequestKind */
+export interface IncomingMetaRequestKind extends Enum {
+  readonly isCancelOutgoingRequest: boolean;
+  readonly isMarkAsDone: boolean;
+}
+
 /** @name IncomingMigrate */
 export interface IncomingMigrate extends Struct {
   readonly new_contract_address: EthereumAddress;
+  readonly author: AccountId;
   readonly tx_hash: H256;
   readonly at_height: u64;
   readonly timepoint: Timepoint;
@@ -104,18 +125,10 @@ export interface IncomingMigrate extends Struct {
 
 /** @name IncomingPrepareForMigration */
 export interface IncomingPrepareForMigration extends Struct {
+  readonly author: AccountId;
   readonly tx_hash: H256;
   readonly at_height: u64;
   readonly timepoint: Timepoint;
-  readonly network_id: BridgeNetworkId;
-}
-
-/** @name IncomingPreRequest */
-export interface IncomingPreRequest extends Struct {
-  readonly author: AccountId;
-  readonly hash: H256;
-  readonly timepoint: Timepoint;
-  readonly kind: IncomingRequestKind;
   readonly network_id: BridgeNetworkId;
 }
 
@@ -123,12 +136,14 @@ export interface IncomingPreRequest extends Struct {
 export interface IncomingRequest extends Enum {
   readonly isTransfer: boolean;
   readonly asTransfer: IncomingTransfer;
-  readonly isAddAsset: boolean;
-  readonly asAddAsset: IncomingAddToken;
+  readonly isAddToken: boolean;
+  readonly asAddToken: IncomingAddToken;
   readonly isChangePeers: boolean;
   readonly asChangePeers: IncomingChangePeers;
   readonly isCancelOutgoingRequest: boolean;
   readonly asCancelOutgoingRequest: IncomingCancelOutgoingRequest;
+  readonly isMarkAsDone: boolean;
+  readonly asMarkAsDone: IncomingMarkAsDoneRequest;
   readonly isPrepareForMigration: boolean;
   readonly asPrepareForMigration: IncomingPrepareForMigration;
   readonly isMigrate: boolean;
@@ -137,12 +152,18 @@ export interface IncomingRequest extends Enum {
 
 /** @name IncomingRequestKind */
 export interface IncomingRequestKind extends Enum {
+  readonly isTransaction: boolean;
+  readonly asTransaction: IncomingTransactionRequestKind;
+  readonly isMeta: boolean;
+  readonly asMeta: IncomingMetaRequestKind;
+}
+
+/** @name IncomingTransactionRequestKind */
+export interface IncomingTransactionRequestKind extends Enum {
   readonly isTransfer: boolean;
   readonly isAddAsset: boolean;
   readonly isAddPeer: boolean;
   readonly isRemovePeer: boolean;
-  readonly isCancelOutgoingRequest: boolean;
-  readonly isMarkAsDone: boolean;
   readonly isPrepareForMigration: boolean;
   readonly isMigrate: boolean;
 }
@@ -154,9 +175,36 @@ export interface IncomingTransfer extends Struct {
   readonly asset_id: AssetId;
   readonly asset_kind: AssetKind;
   readonly amount: Balance;
+  readonly author: AccountId;
   readonly tx_hash: H256;
   readonly at_height: u64;
   readonly timepoint: Timepoint;
+  readonly network_id: BridgeNetworkId;
+}
+
+/** @name LoadIncomingMetaRequest */
+export interface LoadIncomingMetaRequest extends Struct {
+  readonly author: AccountId;
+  readonly hash: H256;
+  readonly timepoint: Timepoint;
+  readonly kind: IncomingMetaRequestKind;
+  readonly network_id: BridgeNetworkId;
+}
+
+/** @name LoadIncomingRequest */
+export interface LoadIncomingRequest extends Enum {
+  readonly isTransaction: boolean;
+  readonly asTransaction: LoadIncomingTransactionRequest;
+  readonly isMeta: boolean;
+  readonly asMeta: ITuple<[LoadIncomingMetaRequest, H256]>;
+}
+
+/** @name LoadIncomingTransactionRequest */
+export interface LoadIncomingTransactionRequest extends Struct {
+  readonly author: AccountId;
+  readonly hash: H256;
+  readonly timepoint: Timepoint;
+  readonly kind: IncomingTransactionRequestKind;
   readonly network_id: BridgeNetworkId;
 }
 
@@ -164,8 +212,10 @@ export interface IncomingTransfer extends Struct {
 export interface OffchainRequest extends Enum {
   readonly isOutgoing: boolean;
   readonly asOutgoing: ITuple<[OutgoingRequest, H256]>;
+  readonly isLoadIncoming: boolean;
+  readonly asLoadIncoming: LoadIncomingRequest;
   readonly isIncoming: boolean;
-  readonly asIncoming: IncomingPreRequest;
+  readonly asIncoming: ITuple<[IncomingRequest, H256]>;
 }
 
 /** @name OutgoingAddAsset */

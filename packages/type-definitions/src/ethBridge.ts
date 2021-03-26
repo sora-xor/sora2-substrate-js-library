@@ -11,6 +11,10 @@ export default {
           name: 'networkId',
           type: 'Option<BridgeNetworkId>'
         },
+        {
+          name: 'redirectFinishedLoadRequests',
+          type: 'Option<bool>' // default: true
+        },
       ],
       type: 'Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>'
     },
@@ -101,17 +105,27 @@ export default {
       s: "[u8; 32]",
       v: "u8"
     },
-    IncomingRequestKind: {
+    IncomingTransactionRequestKind: {
       _enum: [
         "Transfer",
         "AddAsset",
         "AddPeer",
         "RemovePeer",
-        "CancelOutgoingRequest",
-        "MarkAsDone",
         "PrepareForMigration",
         "Migrate",
       ]
+    },
+    IncomingMetaRequestKind: {
+      _enum: [
+        "CancelOutgoingRequest",
+        "MarkAsDone",
+      ]
+    },
+    IncomingRequestKind: {
+      _enum: {
+        Transaction: "IncomingTransactionRequestKind",
+        Meta: "IncomingMetaRequestKind",
+      }
     },
     ChangePeersContract: {
       _enum: [
@@ -281,6 +295,7 @@ export default {
       asset_id: "AssetId",
       asset_kind: "AssetKind",
       amount: "Balance",
+      author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
@@ -292,6 +307,7 @@ export default {
       precision: "BalancePrecision",
       symbol: "AssetSymbol",
       name: "AssetName",
+      author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
@@ -301,6 +317,7 @@ export default {
       peer_account_id: "AccountId",
       peer_address: "EthereumAddress",
       added: "bool",
+      author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
@@ -311,6 +328,7 @@ export default {
       peer_address: "EthereumAddress",
       added: "bool",
       contract: "ChangePeersContract",
+      author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
@@ -319,12 +337,22 @@ export default {
     IncomingCancelOutgoingRequest: {
       request: "OutgoingRequest",
       tx_input: "Vec<u8>",
+      author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
       network_id: "BridgeNetworkId",
     },
+    IncomingMarkAsDoneRequest: {
+      outgoing_request_hash: "H256",
+      initial_request_hash: "H256",
+      author: "AccountId",
+      at_height: "u64",
+      timepoint: "Timepoint",
+      network_id: "BridgeNetworkId",
+    },
     IncomingPrepareForMigration: {
+      author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
@@ -332,6 +360,7 @@ export default {
     },
     IncomingMigrate: {
       new_contract_address: "EthereumAddress",
+      author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",
@@ -340,24 +369,39 @@ export default {
     IncomingRequest: {
       _enum: {
         Transfer: "IncomingTransfer",
-        AddAsset: "IncomingAddToken",
+        AddToken: "IncomingAddToken",
         ChangePeers: "IncomingChangePeers",
         CancelOutgoingRequest: "IncomingCancelOutgoingRequest",
+        MarkAsDone: "IncomingMarkAsDoneRequest",
         PrepareForMigration: "IncomingPrepareForMigration",
         Migrate: "IncomingMigrate",
       }
     },
-    IncomingPreRequest: {
+    LoadIncomingTransactionRequest: {
       author: "AccountId",
       hash: "H256",
       timepoint: "Timepoint",
-      kind: "IncomingRequestKind",
+      kind: "IncomingTransactionRequestKind",
       network_id: "BridgeNetworkId",
+    },
+    LoadIncomingMetaRequest: {
+      author: "AccountId",
+      hash: "H256",
+      timepoint: "Timepoint",
+      kind: "IncomingMetaRequestKind",
+      network_id: "BridgeNetworkId",
+    },
+    LoadIncomingRequest: {
+      _enum: {
+        Transaction: "LoadIncomingTransactionRequest",
+        Meta: "(LoadIncomingMetaRequest, H256)",
+      }
     },
     OffchainRequest: {
       _enum: {
         Outgoing: "(OutgoingRequest, H256)",
-        Incoming: "IncomingPreRequest",
+        LoadIncoming: "LoadIncomingRequest",
+        Incoming: "(IncomingRequest, H256)",
       }
     },
   }
