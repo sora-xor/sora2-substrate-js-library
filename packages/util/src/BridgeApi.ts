@@ -357,7 +357,7 @@ export class BridgeApi extends BaseApi {
     formattedItem.from = request.from
     formattedItem.to = request.to
     formattedItem.amount = request.amount
-    formattedItem.currencyType = [BridgeCurrencyType.TokenAddress, BridgeCurrencyType.TokenAddress.toLowerCase()].includes(request.currency_id)
+    formattedItem.currencyType = [BridgeCurrencyType.TokenAddress, BridgeCurrencyType.TokenAddress.toLowerCase()].includes(first(Object.keys(request.currency_id)))
       ? BridgeCurrencyType.TokenAddress
       : BridgeCurrencyType.AssetId
     formattedItem.r = []
