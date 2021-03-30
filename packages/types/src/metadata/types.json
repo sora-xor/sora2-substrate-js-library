@@ -8,6 +8,7 @@
     "AssetInfo": {
         "asset_id": "AssetId",
         "symbol": "AssetSymbolStr",
+        "name": "AssetNameStr",
         "precision": "u8",
         "is_mintable": "bool"
     },
@@ -18,6 +19,8 @@
             "SidechainOwned"
         ]
     },
+    "AssetName": "Vec<u8>",
+    "AssetNameStr": "String",
     "AssetRecord": "Null",
     "AssetSymbol": "Vec<u8>",
     "AssetSymbolStr": "String",
@@ -87,6 +90,7 @@
         "asset_id": "AssetId",
         "precision": "BalancePrecision",
         "symbol": "AssetSymbol",
+        "name": "AssetName",
         "tx_hash": "H256",
         "at_height": "u64",
         "timepoint": "Timepoint",

@@ -80,10 +80,12 @@ export default {
         AssetInfo: {
             asset_id: 'AssetId',
             symbol: 'AssetSymbolStr',
+            name: 'AssetNameStr',
             precision: 'u8',
             is_mintable: 'bool'
         },
         AssetSymbolStr: 'String',
-        AssetRecord: "Null", // large structure, define properly if needed
+        AssetNameStr: 'String',
+        AssetRecord: 'Null', // large structure, define properly if needed
     }
 }

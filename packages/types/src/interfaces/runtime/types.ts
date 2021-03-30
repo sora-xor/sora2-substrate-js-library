@@ -34,6 +34,9 @@ export interface AssetId32 extends U8aFixed {}
 /** @name AssetIdOf */
 export interface AssetIdOf extends AssetId {}
 
+/** @name AssetName */
+export interface AssetName extends Bytes {}
+
 /** @name AssetSymbol */
 export interface AssetSymbol extends Bytes {}
 
