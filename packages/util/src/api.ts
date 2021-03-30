@@ -5,17 +5,19 @@ import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
+import type { Subscription } from '@polkadot/x-rxjs'
 
 import {
   KnownAssets,
-  getAccountAssetInfo,
+  getAssetBalance,
   AccountAsset,
   KnownSymbols,
   Asset,
   getAssetInfo,
   getAssets,
   PoolTokens,
-  AccountLiquidity
+  AccountLiquidity,
+  getAssetBalanceObservable
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, History, isBridgeOperation } from './BaseApi'
@@ -39,10 +41,7 @@ export class Api extends BaseApi {
   private account?: CreateResult
   private assets: Array<AccountAsset> = []
   private liquidity: Array<AccountLiquidity> = []
-
-  constructor () {
-    super()
-  }
+  private balanceSubscriptions: Array<Subscription> = []
 
   public get accountPair (): KeyringPair {
     if (!this.account) {
@@ -89,6 +88,7 @@ export class Api extends BaseApi {
     if (this.storage) {
       this.storage.set('assets', JSON.stringify(this.assets))
     }
+    this.updateAccountAssets()
   }
 
   /**
@@ -268,13 +268,14 @@ export class Api extends BaseApi {
     ~index ? this.liquidity[index] = asset : this.liquidity.push(asset)
   }
 
-  private async calcRegisterAssetParams (symbol: string, totalSupply: NumberLike, extensibleSupply: boolean) {
+  private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean) {
     assert(this.account, Messages.connectWallet)
-    // TODO: add assert for symbol and totalSupply params
+    // TODO: add assert for symbol, name and totalSupply params
     const supply = new FPNumber(totalSupply)
     return {
       args: [
         symbol,
+        name,
         supply.toCodecString(),
         extensibleSupply
       ]
@@ -284,23 +285,25 @@ export class Api extends BaseApi {
   /**
    * Get register asset network fee
    * @param symbol string with asset symbol
+   * @param name string with asset name
    * @param totalSupply
    * @param extensibleSupply
    * @returns register asset network fee as a string (value * 10 ^ decimals)
    */
-  public async getRegisterAssetNetworkFee (symbol: string, totalSupply: NumberLike, extensibleSupply = false): Promise<CodecString> {
-    const params = await this.calcRegisterAssetParams(symbol, totalSupply, extensibleSupply)
+  public async getRegisterAssetNetworkFee (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply = false): Promise<CodecString> {
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply)
     return await this.getNetworkFee(this.accountPair, Operation.RegisterAsset, ...params.args)
   }
 
   /**
    * Register asset
    * @param symbol string with asset symbol
+   * @param name string with asset name
    * @param totalSupply
    * @param extensibleSupply
    */
-  public async registerAsset (symbol: string, totalSupply: NumberLike, extensibleSupply = false): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, totalSupply, extensibleSupply)
+  public async registerAsset (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply = false): Promise<void> {
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply)
     await this.submitExtrinsic(
       (this.api.tx.assets.register as any)(...params.args),
       this.account.pair,
@@ -326,7 +329,8 @@ export class Api extends BaseApi {
       return {
         address: existingAsset.address,
         decimals: existingAsset.decimals,
-        symbol: existingAsset.symbol
+        symbol: existingAsset.symbol,
+        name: existingAsset.name
       } as Asset
     }
     return await getAssetInfo(this.api, address)
@@ -340,15 +344,14 @@ export class Api extends BaseApi {
    */
   public async getAccountAsset (address: string, addToList = false): Promise<AccountAsset> {
     assert(this.account, Messages.connectWallet)
-    const asset = { address } as AccountAsset
-    const { decimals, symbol } = await this.getAssetInfo(address)
-    asset.decimals = decimals
-    asset.symbol = symbol
-    const result = await getAccountAssetInfo(this.api, this.account.pair.address, address)
+    const { decimals, symbol, name } = await this.getAssetInfo(address)
+    const asset = { address, decimals, symbol, name } as AccountAsset
+    const result = await getAssetBalance(this.api, this.account.pair.address, address)
     asset.balance = new FPNumber(result, asset.decimals).toCodecString()
     if (addToList) {
       this.addToAssetList(asset)
       this.storage?.set('assets', JSON.stringify(this.assets))
+      this.updateAccountAssets()
     }
     return asset
   }
@@ -361,13 +364,13 @@ export class Api extends BaseApi {
     const knownAssets: Array<AccountAsset> = []
     for (const item of KnownAssets) {
       const asset = { ...item } as AccountAsset
-      const result = await getAccountAssetInfo(this.api, this.account.pair.address, item.address)
+      const result = await getAssetBalance(this.api, this.account.pair.address, item.address)
       const balance = new FPNumber(result, asset.decimals)
-      if (balance.isZero()) {
+      if (balance.isZero() && item.symbol !== KnownSymbols.XOR) {
         continue
       }
       asset.balance = balance.toCodecString()
-      if (!Number(asset.balance)) {
+      if (!Number(asset.balance) && item.symbol !== KnownSymbols.XOR) {
         continue
       }
       knownAssets.push(asset)
@@ -379,23 +382,24 @@ export class Api extends BaseApi {
     return knownAssets
   }
 
-  public async updateAccountAssets (): Promise<Array<AccountAsset>> {
+  /**
+   * Set subscriptions for balance updates of the account asset list
+   */
+  public updateAccountAssets (): void {
+    for (const subscription of this.balanceSubscriptions) {
+      subscription.unsubscribe()
+    }
     assert(this.account, Messages.connectWallet)
     for (const asset of this.assets) {
-      const result = await getAccountAssetInfo(this.api, this.account.pair.address, asset.address)
-      asset.balance = new FPNumber(result, asset.decimals).toCodecString()
-      this.addToAssetList(asset)
+      const subscription = getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address).subscribe(result => {
+        asset.balance = new FPNumber(result, asset.decimals).toCodecString()
+        this.addToAssetList(asset)
+        if (this.storage) {
+          this.storage.set('assets', JSON.stringify(this.assets))
+        }
+      })
+      this.balanceSubscriptions.push(subscription)
     }
-    // We should track XOR asset because of its importance
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    if (!this.assets.find(asset => asset.address === xor.address)) {
-      const xorAccountAsset = await this.getAccountAsset(xor.address)
-      this.addToAssetList(xorAccountAsset)
-    }
-    if (this.storage) {
-      this.storage.set('assets', JSON.stringify(this.assets))
-    }
-    return this.assets
   }
 
   /**
@@ -572,7 +576,8 @@ export class Api extends BaseApi {
   ): Promise<void> {
     const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB)
     if (!this.accountAssets.find(asset => asset.address === params.assetB.address)) {
-      this.addToAssetList({ ...params.assetB, balance: '0' }) // Balance will be updated
+      this.addToAssetList({ ...params.assetB, balance: '0' })
+      this.updateAccountAssets()
     }
     await this.submitExtrinsic(
       (this.api.tx.liquidityProxy as any).swap(...params.args),
@@ -601,7 +606,7 @@ export class Api extends BaseApi {
       if (!props || !props.length) {
         continue
       }
-      const result = await getAccountAssetInfo(this.api, this.account.pair.address, props[2])
+      const result = await getAssetBalance(this.api, this.account.pair.address, props[2])
       const { decimals, symbol } = await this.getAssetInfo(props[2])
       const balanceFP = new FPNumber(result, decimals)
       if (balanceFP.isZero()) {
@@ -638,7 +643,7 @@ export class Api extends BaseApi {
   public async updateAccountLiquidity (): Promise<Array<AccountLiquidity>> {
     assert(this.account, Messages.connectWallet)
     for (const asset of this.liquidity) {
-      const result = await getAccountAssetInfo(this.api, this.account.pair.address, asset.address)
+      const result = await getAssetBalance(this.api, this.account.pair.address, asset.address)
       const [reserveA, reserveB] = await this.getLiquidityReserves(asset.firstAddress, asset.secondAddress)
       const [balanceA, balanceB] = await this.estimateTokensRetrieved(
         asset.firstAddress,
@@ -705,11 +710,11 @@ export class Api extends BaseApi {
       firstAddress: firstAssetAddress,
       secondAddress: secondAssetAddress
     } as AccountLiquidity
-    const poolTokenBalance = await getAccountAssetInfo(this.api, this.account.pair.address, address)
+    const poolTokenBalance = await getAssetBalance(this.api, this.account.pair.address, address)
     const firstToken = await this.getAssetInfo(firstAssetAddress)
     const secondToken = await this.getAssetInfo(secondAssetAddress)
-    const firstTokenBalance = await getAccountAssetInfo(this.api, this.account.pair.address, firstAssetAddress)
-    const secondTokenBalance = await getAccountAssetInfo(this.api, this.account.pair.address, secondAssetAddress)
+    const firstTokenBalance = await getAssetBalance(this.api, this.account.pair.address, firstAssetAddress)
+    const secondTokenBalance = await getAssetBalance(this.api, this.account.pair.address, secondAssetAddress)
     asset.balance = new FPNumber(poolTokenBalance, asset.decimals).toCodecString()
     asset.firstBalance = new FPNumber(firstTokenBalance, firstToken.decimals).toCodecString()
     asset.secondBalance = new FPNumber(secondTokenBalance, secondToken.decimals).toCodecString()
@@ -1095,18 +1100,18 @@ export class Api extends BaseApi {
         type: RewardingEvents.SoraFarmHarvest,
         asset: pswap,
         amount: new FPNumber(soraFarmHarvestAmount, pswap.decimals).toCodecString()
-      } as RewardInfo,
+      },
       {
         type: RewardingEvents.NtfAirdrop,
         asset: pswap,
         amount: new FPNumber(nftAirdropAmount, pswap.decimals).toCodecString()
-      } as RewardInfo,
+      },
       {
         type: RewardingEvents.XorErc20,
         asset: val,
         amount: new FPNumber(xorErc20Amount, val.decimals).toCodecString()
-      } as RewardInfo
-    ]
+      }
+    ] as Array<RewardInfo>
 
     return rewards
   }
@@ -1162,6 +1167,9 @@ export class Api extends BaseApi {
     this.assets = []
     this.liquidity = []
     this.history = []
+    for (const subscription of this.balanceSubscriptions) {
+      subscription.unsubscribe()
+    }
     if (this.storage) {
       this.storage.clear()
     }

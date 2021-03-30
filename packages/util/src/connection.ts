@@ -1,5 +1,5 @@
 import { assert } from '@polkadot/util'
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, ApiRx } from '@polkadot/api'
 import { WsProvider } from '@polkadot/rpc-provider'
 import { options } from '@sora-substrate/api'
 
@@ -7,6 +7,7 @@ import { Messages } from './logger'
 
 class Connection {
   public api: ApiPromise
+  public apiRx: ApiRx
   public endpoint: string
   public loading = false
 
@@ -24,9 +25,12 @@ class Connection {
   private async run (endpoint: string): Promise<void> {
     const provider = new WsProvider(endpoint)
     const api = new ApiPromise(options({ provider }))
+    const apiRx = new ApiRx(options({ provider }))
     await api.isReady
+    await apiRx.isReady.toPromise()
     this.endpoint = endpoint
     this.api = api
+    this.apiRx = apiRx
   }
 
   private async stop (): Promise<void> {

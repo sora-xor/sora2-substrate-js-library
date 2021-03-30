@@ -1,5 +1,6 @@
-import { ApiPromise } from '@polkadot/api'
-import { Codec } from '@polkadot/types/types'
+import { ApiPromise, ApiRx } from '@polkadot/api'
+import { Codec, Observable } from '@polkadot/types/types'
+import { map } from '@polkadot/x-rxjs/operators'
 
 import { CodecString, FPNumber } from './fp'
 
@@ -9,8 +10,8 @@ export interface AccountAsset {
   address: string;
   balance: CodecString; // value * 10 ^ decimals
   symbol?: string;
+  name?: string;
   decimals?: number;
-  // TODO: add `usdBalance` field (assets from wallet)
 }
 
 export interface AccountLiquidity extends AccountAsset {
@@ -23,9 +24,9 @@ export interface AccountLiquidity extends AccountAsset {
 export interface Asset {
   address: string;
   symbol: string;
+  name: string;
   decimals: number;
   totalSupply?: string;
-  // TODO: add `usd` field
 }
 
 export enum PoolTokens {
@@ -34,9 +35,6 @@ export enum PoolTokens {
 
 export enum KnownSymbols {
   XOR = 'XOR',
-  // DOT = 'DOT',
-  // KSM = 'KSM',
-  // USD = 'USD',
   VAL = 'VAL',
   PSWAP = 'PSWAP'
 }
@@ -49,11 +47,11 @@ class ArrayLike<T> extends Array<T> {
   private addItems (items: Array<T>): void {
     items.forEach(item => this.push(item))
   }
-  public contains (symbol: string): boolean {
-    return !!KnownSymbols[symbol]
+  public contains (info: string): boolean {
+    return !!this.find((asset: any) => [asset.address, asset.symbol].includes(info))
   }
   public get (info: string): T {
-    return this.find((asset: any) => [asset.symbol, asset.address].includes(info) )
+    return this.find((asset: any) => [asset.address, asset.symbol].includes(info))
   }
 }
 
@@ -61,33 +59,21 @@ export const KnownAssets = new ArrayLike<Asset>([
   {
     address: '0x0200000000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XOR,
+    name: 'SORA',
     decimals: FPNumber.DEFAULT_PRECISION,
     totalSupply: '700000'
   },
-  // {
-  //   address: '0x0200010000000000000000000000000000000000000000000000000000000000',
-  //   symbol: KnownSymbols.DOT,
-  //   decimals: 10
-  // },
-  // {
-  //   address: '0x0200020000000000000000000000000000000000000000000000000000000000',
-  //   symbol: KnownSymbols.KSM,
-  //   decimals: 12
-  // },
-  // {
-  //   address: '0x0200030000000000000000000000000000000000000000000000000000000000',
-  //   symbol: KnownSymbols.USD,
-  //   decimals: FPNumber.DEFAULT_PRECISION
-  // },
   {
     address: '0x0200040000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.VAL,
+    name: 'SORA Validator Token',
     decimals: FPNumber.DEFAULT_PRECISION,
     totalSupply: '100000000'
   },
   {
     address: '0x0200050000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.PSWAP,
+    name: 'Polkaswap',
     decimals: FPNumber.DEFAULT_PRECISION,
     totalSupply: '100000000'
   }
@@ -98,16 +84,30 @@ export async function getAssetInfo (api: ApiPromise, address: string): Promise<A
   const assetInfo = (await (api.rpc as any).assets.getAssetInfo(address)).toJSON()
   asset.decimals = assetInfo.precision
   asset.symbol = assetInfo.symbol
+  asset.name = assetInfo.name
   return asset
 }
 
-export async function getAccountAssetInfo (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
+export async function getAssetBalance (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
   return await (api.rpc as any).assets.freeBalance(accountAddress, assetAddress) // BalanceInfo
+}
+
+export function getAssetBalanceObservable (apiRx: ApiRx, accountAddress: string, assetAddress: string): Observable<Codec> {
+  const xorAddress = KnownAssets.get(KnownSymbols.XOR).address
+  if (assetAddress === xorAddress) {
+    return apiRx.query.system.account(accountAddress).pipe(
+      map(accountInfo => accountInfo.data.free)
+    )
+  }
+  return apiRx.query.tokens.accounts(accountAddress, assetAddress).pipe(
+    map(accountData => accountData.free)
+  )
+  // return (apiRx.rpc as any).assets.freeBalance(accountAddress, assetAddress) // BalanceInfo
 }
 
 export async function getAssets (api: ApiPromise): Promise<Array<Asset>> {
   const assetInfos = (await (api.rpc as any).assets.listAssetInfos()).toJSON()
-  return assetInfos.map(({ asset_id, symbol, precision }) => {
-    return { symbol, address: asset_id, decimals: precision } as Asset
+  return assetInfos.map(({ asset_id, symbol, name, precision }) => {
+    return { symbol, name, address: asset_id, decimals: precision } as Asset
   })
 }
