@@ -291,6 +291,7 @@ export default {
       asset_id: "AssetId",
       precision: "BalancePrecision",
       symbol: "AssetSymbol",
+      name: "AssetName",
       tx_hash: "H256",
       at_height: "u64",
       timepoint: "Timepoint",

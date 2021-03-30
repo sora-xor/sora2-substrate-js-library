@@ -5,7 +5,7 @@ import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8
 import type { ITuple } from '@polkadot/types/types';
 import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
 import type { Timepoint } from '@polkadot/types/interfaces/utility';
-import type { AccountId, AssetId, AssetSymbol, Balance, BalancePrecision, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AssetId, AssetName, AssetSymbol, Balance, BalancePrecision, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetKind */
 export interface AssetKind extends Enum {
@@ -53,6 +53,7 @@ export interface IncomingAddToken extends Struct {
   readonly asset_id: AssetId;
   readonly precision: BalancePrecision;
   readonly symbol: AssetSymbol;
+  readonly name: AssetName;
   readonly tx_hash: H256;
   readonly at_height: u64;
   readonly timepoint: Timepoint;

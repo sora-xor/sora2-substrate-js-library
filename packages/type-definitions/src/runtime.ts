@@ -17,8 +17,9 @@ export default {
       default_fee: 'BasisPoints',
       default_protocol_fee: 'BasisPoints'
     },
-    BalancePrecision: "u8",
-    AssetSymbol: "Vec<u8>",
+    BalancePrecision: 'u8',
+    AssetSymbol: 'Vec<u8>',
+    AssetName: 'Vec<u8>',
     AssetId32: '[u8; 32]',
     SwapWithDesiredInput: {
       desired_amount_in: "Balance",

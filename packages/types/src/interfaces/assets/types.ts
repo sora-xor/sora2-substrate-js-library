@@ -8,9 +8,13 @@ import type { AssetId, Balance } from '@sora-substrate/types/interfaces/runtime'
 export interface AssetInfo extends Struct {
   readonly asset_id: AssetId;
   readonly symbol: AssetSymbolStr;
+  readonly name: AssetNameStr;
   readonly precision: u8;
   readonly is_mintable: bool;
 }
+
+/** @name AssetNameStr */
+export interface AssetNameStr extends Text {}
 
 /** @name AssetRecord */
 export interface AssetRecord extends Null {}
