@@ -607,7 +607,7 @@ export class Api extends BaseApi {
         continue
       }
       const result = await getAssetBalance(this.api, this.account.pair.address, props[2])
-      const { decimals, symbol } = await this.getAssetInfo(props[2])
+      const { decimals, symbol, name } = await this.getAssetInfo(props[2])
       const balanceFP = new FPNumber(result, decimals)
       if (balanceFP.isZero()) {
         continue
@@ -626,7 +626,8 @@ export class Api extends BaseApi {
         secondBalance: balanceB,
         symbol,
         decimals,
-        balance
+        balance,
+        name
       } as AccountLiquidity
       accountLiquidity.push(asset)
     }
@@ -702,11 +703,12 @@ export class Api extends BaseApi {
     if (!liquidityInfo) {
       return null
     }
-    const { symbol, address, decimals } = liquidityInfo
+    const { symbol, address, decimals, name } = liquidityInfo
     const asset = {
       decimals,
       symbol,
       address,
+      name,
       firstAddress: firstAssetAddress,
       secondAddress: secondAssetAddress
     } as AccountLiquidity
