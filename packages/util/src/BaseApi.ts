@@ -1,6 +1,6 @@
 import last from 'lodash/fp/last'
 import first from 'lodash/fp/first'
-import { ApiPromise } from '@polkadot/api'
+import { ApiPromise, ApiRx } from '@polkadot/api'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
@@ -31,6 +31,10 @@ export class BaseApi {
 
   public get api (): ApiPromise {
     return connection.api
+  }
+
+  public get apiRx (): ApiRx {
+    return connection.apiRx
   }
 
   /**
@@ -218,7 +222,6 @@ export enum Operation {
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
   ClaimRewards = 'ClaimRewards'
-  // EthBridgeOutgoingMarkDone = 'EthBridgeOutgoingMarkDone'
 }
 
 export interface History {

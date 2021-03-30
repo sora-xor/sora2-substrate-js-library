@@ -2,7 +2,7 @@ import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 
 import { BaseApi, History, Operation, KeyringType } from './BaseApi'
-import { getAccountAssetInfo, KnownAssets } from './assets'
+import { getAssetBalance, KnownAssets } from './assets'
 import { FPNumber, NumberLike } from './fp'
 
 /**
@@ -39,7 +39,7 @@ export class FaucetApi extends BaseApi {
    */
   public async getBalance (assetAddress: string, accountAddress: string): Promise<string> {
     const asset = KnownAssets.get(assetAddress)
-    const result = await getAccountAssetInfo(this.api, accountAddress, assetAddress)
+    const result = await getAssetBalance(this.api, accountAddress, assetAddress)
     return new FPNumber(result, asset.decimals).toCodecString()
   }
 
