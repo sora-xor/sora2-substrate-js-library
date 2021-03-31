@@ -452,18 +452,20 @@ export class Api extends BaseApi {
     assetAAddress: string,
     assetBAddress: string,
     amount: NumberLike,
-    isExchangeB = false
+    isExchangeB = false,
+    liquiditySource = LiquiditySourceTypes.Default
   ): Promise<SwapResult> {
     const xor = KnownAssets.get(KnownSymbols.XOR)
     const assetA = await this.getAssetInfo(assetAAddress)
     const assetB = await this.getAssetInfo(assetBAddress)
+    const liquiditySources = this.prepareLiquiditySources(liquiditySource)
     const result = await (this.api.rpc as any).liquidityProxy.quote(
       this.defaultDEXId,
       assetAAddress,
       assetBAddress,
       new FPNumber(amount, (!isExchangeB ? assetA : assetB).decimals).toCodecString(),
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
-      [],
+      liquiditySources,
       'Disabled'
     )
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0 }
@@ -497,6 +499,10 @@ export class Api extends BaseApi {
     return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toCodecString()
   }
 
+  private prepareLiquiditySources (liquiditySource) {
+    return liquiditySource ? [liquiditySource] : []
+  }
+
   private async calcSwapParams (
     assetAAddress: string,
     assetBAddress: string,
@@ -514,7 +520,7 @@ export class Api extends BaseApi {
     const desiredCodecString = (new FPNumber(!isExchangeB ? amountA : amountB, desiredDecimals)).toCodecString()
     const result = new FPNumber(!isExchangeB ? amountB : amountA, resultDecimals)
     const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100))
-    const liquiditySources = liquiditySource ? [liquiditySource] : [] // don't include default liquidity source type
+    const liquiditySources = this.prepareLiquiditySources(liquiditySource)
     const params = {} as any
     if (!isExchangeB) {
       params.WithDesiredInput = {
