@@ -240,4 +240,5 @@ export interface History {
   from?: string;
   status?: string;
   errorMessage?: string;
+  liquiditySource?: string;
 }
