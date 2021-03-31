@@ -1,7 +1,7 @@
 export class Storage {
   constructor () {}
 
-  public all () {
+  public all (): Array<Array<any>> {
     return Object.entries(localStorage).filter(([key]) => key.startsWith('sora'))
   }
 

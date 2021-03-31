@@ -1,5 +1,6 @@
 import { ApiPromise, ApiRx } from '@polkadot/api'
 import { Codec, Observable } from '@polkadot/types/types'
+import type { AccountData } from '@polkadot/types/interfaces/balances'
 import { map } from '@polkadot/x-rxjs/operators'
 
 import { CodecString, FPNumber } from './fp'
@@ -8,13 +9,47 @@ export const MaxTotalSupply = '170141183460469231731.687303715884105727'
 
 export interface AccountAsset {
   address: string;
-  balance: CodecString; // value * 10 ^ decimals
+  balance: AccountBalance;
   symbol?: string;
   name?: string;
   decimals?: number;
 }
 
-export interface AccountLiquidity extends AccountAsset {
+// Each value === value * 10 ^ decimals
+export interface AccountBalance {
+  total: CodecString; //  = free + reserved.
+  locked: CodecString; // = max(miscFrozen, feeFrozen).
+  transferable: CodecString; // = free - Locked.
+  frozen: CodecString; // = Locked + reserved.
+}
+
+export const ZeroBalance = {
+  frozen: '0',
+  locked: '0',
+  total: '0',
+  transferable: '0'
+} as AccountBalance
+
+function formatBalance (data: AccountData, assetDecimals?: number): AccountBalance {
+  const free = new FPNumber(data.free || 0, assetDecimals)
+  const reserved = new FPNumber(data.reserved || 0, assetDecimals)
+  const miscFrozen = new FPNumber(data.miscFrozen || 0, assetDecimals)
+  const feeFrozen = new FPNumber(data.feeFrozen || 0, assetDecimals)
+  const locked = FPNumber.max(miscFrozen, feeFrozen)
+  const balance = {} as AccountBalance
+  balance.total = free.add(reserved).toCodecString()
+  balance.locked = locked.toCodecString()
+  balance.transferable = free.sub(locked).toCodecString()
+  balance.frozen = locked.add(reserved).toCodecString()
+  return balance
+}
+
+export interface AccountLiquidity {
+  address: string;
+  balance: CodecString; // value * 10 ^ decimals
+  symbol?: string;
+  name?: string;
+  decimals?: number;
   firstAddress: string;
   secondAddress: string;
   firstBalance: CodecString; // value * 10 ^ decimals
@@ -88,21 +123,30 @@ export async function getAssetInfo (api: ApiPromise, address: string): Promise<A
   return asset
 }
 
-export async function getAssetBalance (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
-  return await (api.rpc as any).assets.freeBalance(accountAddress, assetAddress) // BalanceInfo
+export async function getBalance (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
+  return await (api.rpc as any).assets.usableBalance(accountAddress, assetAddress) // BalanceInfo
 }
 
-export function getAssetBalanceObservable (apiRx: ApiRx, accountAddress: string, assetAddress: string): Observable<Codec> {
+export async function getAssetBalance (api: ApiPromise, accountAddress: string, assetAddress: string, assetDecimals: number): Promise<AccountBalance> {
+  const xorAddress = KnownAssets.get(KnownSymbols.XOR).address
+  if (assetAddress === xorAddress) {
+    const accountInfo = await api.query.system.account(accountAddress)
+    return formatBalance(accountInfo.data, assetDecimals)
+  }
+  const accountData = await api.query.tokens.accounts(accountAddress, assetAddress)
+  return formatBalance(accountData, assetDecimals)
+}
+
+export function getAssetBalanceObservable (apiRx: ApiRx, accountAddress: string, assetAddress: string, assetDecimals: number): Observable<AccountBalance> {
   const xorAddress = KnownAssets.get(KnownSymbols.XOR).address
   if (assetAddress === xorAddress) {
     return apiRx.query.system.account(accountAddress).pipe(
-      map(accountInfo => accountInfo.data.free)
+      map(({ data }) => formatBalance(data, assetDecimals))
     )
   }
   return apiRx.query.tokens.accounts(accountAddress, assetAddress).pipe(
-    map(accountData => accountData.free)
+    map(accountData => formatBalance(accountData, assetDecimals))
   )
-  // return (apiRx.rpc as any).assets.freeBalance(accountAddress, assetAddress) // BalanceInfo
 }
 
 export async function getAssets (api: ApiPromise): Promise<Array<Asset>> {
