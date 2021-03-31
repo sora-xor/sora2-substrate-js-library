@@ -285,7 +285,7 @@ export class Api extends BaseApi {
     }
   }
 
-  private prepareLiquiditySources (liquiditySource) {
+  private prepareLiquiditySources (liquiditySource: LiquiditySourceTypes) {
     return liquiditySource ? [liquiditySource] : []
   }
 
