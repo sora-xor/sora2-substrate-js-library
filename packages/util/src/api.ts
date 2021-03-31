@@ -6,6 +6,7 @@ import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
+import { Subject } from '@polkadot/x-rxjs'
 
 import {
   KnownAssets,
@@ -42,6 +43,8 @@ export class Api extends BaseApi {
   private assets: Array<AccountAsset> = []
   private liquidity: Array<AccountLiquidity> = []
   private balanceSubscriptions: Array<Subscription> = []
+  private assetsBalanceSubject = new Subject<void>()
+  public assetsBalanceUpdated = this.assetsBalanceSubject.asObservable()
 
   public get accountPair (): KeyringPair {
     if (!this.account) {
@@ -397,6 +400,7 @@ export class Api extends BaseApi {
         if (this.storage) {
           this.storage.set('assets', JSON.stringify(this.assets))
         }
+        this.assetsBalanceSubject.next()
       })
       this.balanceSubscriptions.push(subscription)
     }
