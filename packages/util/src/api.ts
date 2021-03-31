@@ -22,7 +22,7 @@ import {
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, History, isBridgeOperation } from './BaseApi'
-import { SwapResult } from './swap'
+import { SwapResult, LiquiditySourceTypes } from './swap'
 import { RewardingEvents, RewardInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
@@ -503,7 +503,8 @@ export class Api extends BaseApi {
     amountA: NumberLike,
     amountB: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
-    isExchangeB = false
+    isExchangeB = false,
+    liquiditySource: LiquiditySourceTypes = undefined
   ) {
     assert(this.account, Messages.connectWallet)
     const assetA = await this.getAssetInfo(assetAAddress)
@@ -513,6 +514,7 @@ export class Api extends BaseApi {
     const desiredCodecString = (new FPNumber(!isExchangeB ? amountA : amountB, desiredDecimals)).toCodecString()
     const result = new FPNumber(!isExchangeB ? amountB : amountA, resultDecimals)
     const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100))
+    const liquiditySources = liquiditySource ? [liquiditySource] : []
     const params = {} as any
     if (!isExchangeB) {
       params.WithDesiredInput = {
@@ -531,7 +533,7 @@ export class Api extends BaseApi {
         assetAAddress,
         assetBAddress,
         params,
-        [],
+        liquiditySources,
         'Disabled'
       ],
       assetA,
@@ -555,9 +557,10 @@ export class Api extends BaseApi {
     amountA: NumberLike,
     amountB: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
-    isExchangeB = false
+    isExchangeB = false,
+    liquiditySource: LiquiditySourceTypes = undefined
   ): Promise<CodecString> {
-    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB)
+    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
     return await this.getNetworkFee(this.accountPair, Operation.Swap, ...params.args)
   }
 
@@ -576,9 +579,10 @@ export class Api extends BaseApi {
     amountA: NumberLike,
     amountB: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
-    isExchangeB = false
+    isExchangeB = false,
+    liquiditySource: LiquiditySourceTypes = undefined
   ): Promise<void> {
-    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB)
+    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
     if (!this.accountAssets.find(asset => asset.address === params.assetB.address)) {
       this.addToAssetList({ ...params.assetB, balance: '0' })
       this.updateAccountAssets()
@@ -593,6 +597,7 @@ export class Api extends BaseApi {
         symbol2: params.assetB.symbol,
         asset2Address: params.assetB.address,
         amount2: `${amountB}`,
+        liquiditySource,
         type: Operation.Swap
       }
     )
