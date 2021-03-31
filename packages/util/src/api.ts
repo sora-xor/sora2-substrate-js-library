@@ -285,6 +285,10 @@ export class Api extends BaseApi {
     }
   }
 
+  private prepareLiquiditySources (liquiditySource) {
+    return liquiditySource ? [liquiditySource] : []
+  }
+
   /**
    * Get register asset network fee
    * @param symbol string with asset symbol
@@ -497,10 +501,6 @@ export class Api extends BaseApi {
     const result = new FPNumber(resultAmount, resultDecimals)
     const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100, resultDecimals))
     return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toCodecString()
-  }
-
-  private prepareLiquiditySources (liquiditySource) {
-    return liquiditySource ? [liquiditySource] : []
   }
 
   private async calcSwapParams (
