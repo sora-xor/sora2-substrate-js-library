@@ -1,8 +1,9 @@
 import { CodecString } from './fp'
 
 export enum LiquiditySourceTypes {
-  XYK = 'XYKPool',
-  TBC = 'MulticollateralBondingCurvePool'
+  Default = '',
+  XYKPool = 'XYKPool',
+  MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool'
 }
 
 export interface SwapResult {

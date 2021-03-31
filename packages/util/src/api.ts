@@ -504,7 +504,7 @@ export class Api extends BaseApi {
     amountB: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
     isExchangeB = false,
-    liquiditySource: LiquiditySourceTypes = undefined
+    liquiditySource = LiquiditySourceTypes.Default
   ) {
     assert(this.account, Messages.connectWallet)
     const assetA = await this.getAssetInfo(assetAAddress)
@@ -514,7 +514,7 @@ export class Api extends BaseApi {
     const desiredCodecString = (new FPNumber(!isExchangeB ? amountA : amountB, desiredDecimals)).toCodecString()
     const result = new FPNumber(!isExchangeB ? amountB : amountA, resultDecimals)
     const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100))
-    const liquiditySources = liquiditySource ? [liquiditySource] : []
+    const liquiditySources = liquiditySource ? [liquiditySource] : [] // don't include default liquidity source type
     const params = {} as any
     if (!isExchangeB) {
       params.WithDesiredInput = {
@@ -558,7 +558,7 @@ export class Api extends BaseApi {
     amountB: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
     isExchangeB = false,
-    liquiditySource: LiquiditySourceTypes = undefined
+    liquiditySource = LiquiditySourceTypes.Default
   ): Promise<CodecString> {
     const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
     return await this.getNetworkFee(this.accountPair, Operation.Swap, ...params.args)
@@ -580,7 +580,7 @@ export class Api extends BaseApi {
     amountB: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
     isExchangeB = false,
-    liquiditySource: LiquiditySourceTypes = undefined
+    liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
     const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
     if (!this.accountAssets.find(asset => asset.address === params.assetB.address)) {
