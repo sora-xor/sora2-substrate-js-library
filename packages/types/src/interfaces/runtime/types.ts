@@ -375,6 +375,9 @@ export interface PostDispatchInfo extends Struct {
 /** @name PreRuntime */
 export interface PreRuntime extends ITuple<[ConsensusEngineId, Bytes]> {}
 
+/** @name Public */
+export interface Public extends U8aFixed {}
+
 /** @name QuoteAmount */
 export interface QuoteAmount extends Enum {
   readonly isWithDesiredInput: boolean;

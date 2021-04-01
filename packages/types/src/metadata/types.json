@@ -367,6 +367,7 @@
         "actual_weight": "Option<Weight>",
         "pays_fee": "Pays"
     },
+    "Public": "[u8; 33]",
     "QuoteAmount": {
         "_enum": {
             "WithDesiredInput": "QuoteWithDesiredInput",
