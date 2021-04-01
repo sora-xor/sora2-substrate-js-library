@@ -1,11 +1,11 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
+import type { Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { Signature } from '@polkadot/types/interfaces/extrinsics';
-import type { SystemOrigin } from '@polkadot/types/interfaces/system';
+import type { DispatchError, SystemOrigin } from '@polkadot/types/interfaces/system';
 
 /** @name AccountId */
 export interface AccountId extends GenericAccountId {}
@@ -128,6 +128,24 @@ export interface DigestItem extends Enum {
   readonly asSeal: Seal;
   readonly isPreRuntime: boolean;
   readonly asPreRuntime: PreRuntime;
+}
+
+/** @name DispatchErrorWithPostInfoTPostDispatchInfo */
+export interface DispatchErrorWithPostInfoTPostDispatchInfo extends Struct {
+  readonly post_info: PostDispatchInfo;
+  readonly error: DispatchError;
+}
+
+/** @name DispatchResultWithPostInfo */
+export interface DispatchResultWithPostInfo extends Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo> {
+  readonly isErr: boolean;
+  readonly asErr: DispatchErrorWithPostInfoTPostDispatchInfo;
+  /** @deprecated Use isErr */
+  readonly isError: boolean;
+  /** @deprecated Use asErr */
+  readonly asError: DispatchErrorWithPostInfoTPostDispatchInfo;
+  readonly isOk: boolean;
+  readonly asOk: PostDispatchInfo;
 }
 
 /** @name DistributionAccounts */
@@ -347,6 +365,12 @@ export interface Phantom extends Null {}
 
 /** @name PhantomData */
 export interface PhantomData extends Null {}
+
+/** @name PostDispatchInfo */
+export interface PostDispatchInfo extends Struct {
+  readonly actual_weight: Option<Weight>;
+  readonly pays_fee: Pays;
+}
 
 /** @name PreRuntime */
 export interface PreRuntime extends ITuple<[ConsensusEngineId, Bytes]> {}
