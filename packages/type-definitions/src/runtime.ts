@@ -141,5 +141,6 @@ export default {
       error: "DispatchError",
     },
     DispatchResultWithPostInfo: "Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>",
+    Public: "[u8; 33]",
   }
 }
