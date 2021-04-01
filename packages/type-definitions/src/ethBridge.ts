@@ -68,7 +68,7 @@ export default {
           type: 'Option<BridgeNetworkId>'
         },
       ],
-      type: 'Result<Vec<(AssetKind, AssetId, Option<H160>)>, DispatchError>'
+      type: 'Result<Vec<(AssetKind, (AssetId, BalancePrecision), Option<(H160, BalancePrecision)>)>, DispatchError>'
     },
   },
   types: {
