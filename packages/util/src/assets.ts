@@ -17,6 +17,7 @@ export interface AccountAsset {
 
 // Each value === value * 10 ^ decimals
 export interface AccountBalance {
+  reserved: CodecString;
   total: CodecString; //  = free + reserved.
   locked: CodecString; // = max(miscFrozen, feeFrozen).
   transferable: CodecString; // = free - Locked.
@@ -36,12 +37,13 @@ function formatBalance (data: AccountData, assetDecimals?: number): AccountBalan
   const miscFrozen = new FPNumber(data.miscFrozen || 0, assetDecimals)
   const feeFrozen = new FPNumber(data.feeFrozen || 0, assetDecimals)
   const locked = FPNumber.max(miscFrozen, feeFrozen)
-  const balance = {} as AccountBalance
-  balance.total = free.add(reserved).toCodecString()
-  balance.locked = locked.toCodecString()
-  balance.transferable = free.sub(locked).toCodecString()
-  balance.frozen = locked.add(reserved).toCodecString()
-  return balance
+  return {
+    reserved: reserved.toCodecString(),
+    locked: locked.toCodecString(),
+    total: free.add(reserved).toCodecString(),
+    transferable: free.sub(locked).toCodecString(),
+    frozen: locked.add(reserved).toCodecString()
+  } as AccountBalance
 }
 
 export interface AccountLiquidity {
