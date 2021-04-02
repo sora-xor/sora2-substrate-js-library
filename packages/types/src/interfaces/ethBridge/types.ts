@@ -419,15 +419,11 @@ export interface OutgoingTransferEncoded extends Struct {
 /** @name RequestStatus */
 export interface RequestStatus extends Enum {
   readonly isPending: boolean;
-  readonly asPending: ITuple<[]>;
   readonly isFrozen: boolean;
-  readonly asFrozen: ITuple<[]>;
   readonly isApprovalsReady: boolean;
-  readonly asApprovalsReady: ITuple<[]>;
   readonly isFailed: boolean;
   readonly asFailed: DispatchError;
   readonly isDone: boolean;
-  readonly asDone: ITuple<[]>;
 }
 
 /** @name SignatureParams */

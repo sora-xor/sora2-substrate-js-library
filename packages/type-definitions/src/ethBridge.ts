@@ -93,11 +93,11 @@ export default {
     },
     RequestStatus: {
       _enum: {
-        Pending: "()",
-        Frozen: "()",
-        ApprovalsReady: "()",
+        Pending: "",
+        Frozen: "",
+        ApprovalsReady: "",
         Failed: "DispatchError",
-        Done: "()"
+        Done: ""
       }
     },
     SignatureParams: {
