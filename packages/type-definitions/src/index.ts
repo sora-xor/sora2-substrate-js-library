@@ -29,7 +29,7 @@ const overrides = {
   Address: 'AccountId',
   LookupSource: 'AccountId',
   AssetId: 'AssetId32',
-  Keys: 'SessionKeys2',
+  Keys: 'SessionKeys3',
   RefCount: 'u32',
   Balance: 'u128',
   TAssetBalance: 'Balance',
