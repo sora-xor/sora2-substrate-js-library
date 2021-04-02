@@ -4,6 +4,7 @@
 import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
+import type { DispatchError } from '@polkadot/types/interfaces/system';
 import type { Timepoint } from '@polkadot/types/interfaces/utility';
 import type { AccountId, AssetId, AssetName, AssetSymbol, Balance, BalancePrecision, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
 
@@ -418,10 +419,15 @@ export interface OutgoingTransferEncoded extends Struct {
 /** @name RequestStatus */
 export interface RequestStatus extends Enum {
   readonly isPending: boolean;
+  readonly asPending: ITuple<[]>;
   readonly isFrozen: boolean;
+  readonly asFrozen: ITuple<[]>;
   readonly isApprovalsReady: boolean;
-  readonly isFailedDispatchError: boolean;
+  readonly asApprovalsReady: ITuple<[]>;
+  readonly isFailed: boolean;
+  readonly asFailed: DispatchError;
   readonly isDone: boolean;
+  readonly asDone: ITuple<[]>;
 }
 
 /** @name SignatureParams */

@@ -414,13 +414,13 @@
     },
     "RefCount": "u32",
     "RequestStatus": {
-        "_enum": [
-            "Pending",
-            "Frozen",
-            "ApprovalsReady",
-            "Failed(DispatchError)",
-            "Done"
-        ]
+        "_enum": {
+            "Pending": "()",
+            "Frozen": "()",
+            "ApprovalsReady": "()",
+            "Failed": "DispatchError",
+            "Done": "()"
+        }
     },
     "Scope": {
         "_enum": {
