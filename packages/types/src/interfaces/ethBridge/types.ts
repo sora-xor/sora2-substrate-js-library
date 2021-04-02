@@ -63,7 +63,9 @@ export interface IncomingAddToken extends Struct {
 
 /** @name IncomingCancelOutgoingRequest */
 export interface IncomingCancelOutgoingRequest extends Struct {
-  readonly request: OutgoingRequest;
+  readonly outgoing_request: OutgoingRequest;
+  readonly outgoing_request_hash: H256;
+  readonly initial_request_hash: H256;
   readonly tx_input: Bytes;
   readonly author: AccountId;
   readonly tx_hash: H256;
@@ -418,7 +420,7 @@ export interface RequestStatus extends Enum {
   readonly isPending: boolean;
   readonly isFrozen: boolean;
   readonly isApprovalsReady: boolean;
-  readonly isFailed: boolean;
+  readonly isFailedDispatchError: boolean;
   readonly isDone: boolean;
 }
 

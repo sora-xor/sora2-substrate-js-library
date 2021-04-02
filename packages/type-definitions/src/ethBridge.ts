@@ -96,7 +96,7 @@ export default {
         "Pending",
         "Frozen",
         "ApprovalsReady",
-        "Failed",
+        "Failed(DispatchError)",
         "Done"
       ]
     },
@@ -335,7 +335,9 @@ export default {
       network_id: "BridgeNetworkId",
     },
     IncomingCancelOutgoingRequest: {
-      request: "OutgoingRequest",
+      outgoing_request: "OutgoingRequest",
+      outgoing_request_hash: "H256",
+      initial_request_hash: "H256",
       tx_input: "Vec<u8>",
       author: "AccountId",
       tx_hash: "H256",
