@@ -96,14 +96,18 @@
         "precision": "BalancePrecision",
         "symbol": "AssetSymbol",
         "name": "AssetName",
+        "author": "AccountId",
         "tx_hash": "H256",
         "at_height": "u64",
         "timepoint": "Timepoint",
         "network_id": "BridgeNetworkId"
     },
     "IncomingCancelOutgoingRequest": {
-        "request": "OutgoingRequest",
+        "outgoing_request": "OutgoingRequest",
+        "outgoing_request_hash": "H256",
+        "initial_request_hash": "H256",
         "tx_input": "Vec<u8>",
+        "author": "AccountId",
         "tx_hash": "H256",
         "at_height": "u64",
         "timepoint": "Timepoint",
@@ -113,6 +117,7 @@
         "peer_account_id": "AccountId",
         "peer_address": "EthereumAddress",
         "added": "bool",
+        "author": "AccountId",
         "tx_hash": "H256",
         "at_height": "u64",
         "timepoint": "Timepoint",
@@ -123,26 +128,36 @@
         "peer_address": "EthereumAddress",
         "added": "bool",
         "contract": "ChangePeersContract",
+        "author": "AccountId",
         "tx_hash": "H256",
         "at_height": "u64",
         "timepoint": "Timepoint",
         "network_id": "BridgeNetworkId"
+    },
+    "IncomingMarkAsDoneRequest": {
+        "outgoing_request_hash": "H256",
+        "initial_request_hash": "H256",
+        "author": "AccountId",
+        "at_height": "u64",
+        "timepoint": "Timepoint",
+        "network_id": "BridgeNetworkId"
+    },
+    "IncomingMetaRequestKind": {
+        "_enum": [
+            "CancelOutgoingRequest",
+            "MarkAsDone"
+        ]
     },
     "IncomingMigrate": {
         "new_contract_address": "EthereumAddress",
+        "author": "AccountId",
         "tx_hash": "H256",
         "at_height": "u64",
         "timepoint": "Timepoint",
         "network_id": "BridgeNetworkId"
     },
-    "IncomingPreRequest": {
-        "author": "AccountId",
-        "hash": "H256",
-        "timepoint": "Timepoint",
-        "kind": "IncomingRequestKind",
-        "network_id": "BridgeNetworkId"
-    },
     "IncomingPrepareForMigration": {
+        "author": "AccountId",
         "tx_hash": "H256",
         "at_height": "u64",
         "timepoint": "Timepoint",
@@ -151,21 +166,26 @@
     "IncomingRequest": {
         "_enum": {
             "Transfer": "IncomingTransfer",
-            "AddAsset": "IncomingAddToken",
+            "AddToken": "IncomingAddToken",
             "ChangePeers": "IncomingChangePeers",
             "CancelOutgoingRequest": "IncomingCancelOutgoingRequest",
+            "MarkAsDone": "IncomingMarkAsDoneRequest",
             "PrepareForMigration": "IncomingPrepareForMigration",
             "Migrate": "IncomingMigrate"
         }
     },
     "IncomingRequestKind": {
+        "_enum": {
+            "Transaction": "IncomingTransactionRequestKind",
+            "Meta": "IncomingMetaRequestKind"
+        }
+    },
+    "IncomingTransactionRequestKind": {
         "_enum": [
             "Transfer",
             "AddAsset",
             "AddPeer",
             "RemovePeer",
-            "CancelOutgoingRequest",
-            "MarkAsDone",
             "PrepareForMigration",
             "Migrate"
         ]
@@ -176,6 +196,7 @@
         "asset_id": "AssetId",
         "asset_kind": "AssetKind",
         "amount": "Balance",
+        "author": "AccountId",
         "tx_hash": "H256",
         "at_height": "u64",
         "timepoint": "Timepoint",
@@ -193,6 +214,26 @@
             "MockPool4"
         ]
     },
+    "LoadIncomingMetaRequest": {
+        "author": "AccountId",
+        "hash": "H256",
+        "timepoint": "Timepoint",
+        "kind": "IncomingMetaRequestKind",
+        "network_id": "BridgeNetworkId"
+    },
+    "LoadIncomingRequest": {
+        "_enum": {
+            "Transaction": "LoadIncomingTransactionRequest",
+            "Meta": "(LoadIncomingMetaRequest, H256)"
+        }
+    },
+    "LoadIncomingTransactionRequest": {
+        "author": "AccountId",
+        "hash": "H256",
+        "timepoint": "Timepoint",
+        "kind": "IncomingTransactionRequestKind",
+        "network_id": "BridgeNetworkId"
+    },
     "LookupSource": "AccountId",
     "Mode": {
         "_enum": [
@@ -206,7 +247,8 @@
     "OffchainRequest": {
         "_enum": {
             "Outgoing": "(OutgoingRequest, H256)",
-            "Incoming": "IncomingPreRequest"
+            "LoadIncoming": "LoadIncomingRequest",
+            "Incoming": "(IncomingRequest, H256)"
         }
     },
     "OracleKey": "AssetId",
