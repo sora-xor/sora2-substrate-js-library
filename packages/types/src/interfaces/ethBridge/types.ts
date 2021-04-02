@@ -4,7 +4,6 @@
 import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
-import type { DispatchError } from '@polkadot/types/interfaces/system';
 import type { Timepoint } from '@polkadot/types/interfaces/utility';
 import type { AccountId, AssetId, AssetName, AssetSymbol, Balance, BalancePrecision, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
 
@@ -422,7 +421,6 @@ export interface RequestStatus extends Enum {
   readonly isFrozen: boolean;
   readonly isApprovalsReady: boolean;
   readonly isFailed: boolean;
-  readonly asFailed: DispatchError;
   readonly isDone: boolean;
 }
 
