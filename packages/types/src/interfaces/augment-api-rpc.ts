@@ -637,9 +637,17 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
        **/
       isPairEnabled: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array) => Observable<bool>>;
       /**
+       * Query if particular liquidity source is enabled for pair.
+       **/
+      isSourceEnabledForPair: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, baseAssetId: AssetId | AnyNumber | Uint8Array, targetAssetId: AssetId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | number | Uint8Array) => Observable<bool>>;
+      /**
        * List enabled trading pairs for DEX.
        **/
       listEnabledPairs: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array) => Observable<Vec<TradingPair>>>;
+      /**
+       * List enabled liquidity sources for trading pair.
+       **/
+      listEnabledSourcesForPair: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, baseAssetId: AssetId | AnyNumber | Uint8Array, targetAssetId: AssetId | AnyNumber | Uint8Array) => Observable<Vec<LiquiditySourceType>>>;
     };
     web3: {
       /**

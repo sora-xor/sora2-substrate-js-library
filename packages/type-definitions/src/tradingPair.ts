@@ -27,6 +27,46 @@ export default {
                 }
             ],
             type: 'bool'
+        },
+        listEnabledSourcesForPair: {
+            description: 'List enabled liquidity sources for trading pair.',
+            params: [
+                {
+                    name: 'dexId',
+                    type: 'DEXId'
+                },
+                {
+                    name: 'baseAssetId',
+                    type: 'AssetId'
+                },
+                {
+                    name: 'targetAssetId',
+                    type: 'AssetId'
+                }
+            ],
+            type: 'Vec<LiquiditySourceType>'
+        },
+        isSourceEnabledForPair: {
+            description: 'Query if particular liquidity source is enabled for pair.',
+            params: [
+                {
+                    name: 'dexId',
+                    type: 'DEXId'
+                },
+                {
+                    name: 'baseAssetId',
+                    type: 'AssetId'
+                },
+                {
+                    name: 'targetAssetId',
+                    type: 'AssetId'
+                },
+                {
+                    name: 'liquiditySourceType',
+                    type: 'LiquiditySourceType'
+                },
+            ],
+            type: 'bool'
         }
     },
     types: {
