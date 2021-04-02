@@ -132,5 +132,15 @@ export default {
     SmoothPriceState: "Null",
     MultiCurrencyBalanceOf: "Null",
     Duration: "Null",
+    PostDispatchInfo: {
+      actual_weight: "Option<Weight>",
+      pays_fee: "Pays",
+    },
+    DispatchErrorWithPostInfoTPostDispatchInfo: {
+      post_info: "PostDispatchInfo",
+      error: "DispatchError",
+    },
+    DispatchResultWithPostInfo: "Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>",
+    Public: "[u8; 33]",
   }
 }

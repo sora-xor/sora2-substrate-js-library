@@ -371,6 +371,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<DispatchError>': Option<DispatchError>;
     'Option<DispatchErrorModule>': Option<DispatchErrorModule>;
     'Option<DispatchErrorTo198>': Option<DispatchErrorTo198>;
+    'Option<DispatchErrorWithPostInfoTPostDispatchInfo>': Option<DispatchErrorWithPostInfoTPostDispatchInfo>;
     'Option<DispatchId>': Option<DispatchId>;
     'Option<DispatchInfo>': Option<DispatchInfo>;
     'Option<DispatchInfoTo190>': Option<DispatchInfoTo190>;
@@ -379,6 +380,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<DispatchResult>': Option<DispatchResult>;
     'Option<DispatchResultOf>': Option<DispatchResultOf>;
     'Option<DispatchResultTo198>': Option<DispatchResultTo198>;
+    'Option<DispatchResultWithPostInfo>': Option<DispatchResultWithPostInfo>;
     'Option<DispatchTime>': Option<DispatchTime>;
     'Option<DistributionAccounts>': Option<DistributionAccounts>;
     'Option<DoNotConstruct>': Option<DoNotConstruct>;
@@ -754,6 +756,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<PhragmenScore>': Option<PhragmenScore>;
     'Option<Points>': Option<Points>;
     'Option<PoolInfo>': Option<PoolInfo>;
+    'Option<PostDispatchInfo>': Option<PostDispatchInfo>;
     'Option<Precommits>': Option<Precommits>;
     'Option<PrefabWasmModule>': Option<PrefabWasmModule>;
     'Option<PrefixedStorageKey>': Option<PrefixedStorageKey>;
@@ -771,6 +774,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<ProxyDefinition>': Option<ProxyDefinition>;
     'Option<ProxyState>': Option<ProxyState>;
     'Option<ProxyType>': Option<ProxyType>;
+    'Option<Public>': Option<Public>;
     'Option<QueryHolding>': Option<QueryHolding>;
     'Option<QueuedParathread>': Option<QueuedParathread>;
     'Option<QuoteAmount>': Option<QuoteAmount>;
@@ -1245,6 +1249,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<DispatchError>': Vec<DispatchError>;
     'Vec<DispatchErrorModule>': Vec<DispatchErrorModule>;
     'Vec<DispatchErrorTo198>': Vec<DispatchErrorTo198>;
+    'Vec<DispatchErrorWithPostInfoTPostDispatchInfo>': Vec<DispatchErrorWithPostInfoTPostDispatchInfo>;
     'Vec<DispatchId>': Vec<DispatchId>;
     'Vec<DispatchInfo>': Vec<DispatchInfo>;
     'Vec<DispatchInfoTo190>': Vec<DispatchInfoTo190>;
@@ -1253,6 +1258,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<DispatchResult>': Vec<DispatchResult>;
     'Vec<DispatchResultOf>': Vec<DispatchResultOf>;
     'Vec<DispatchResultTo198>': Vec<DispatchResultTo198>;
+    'Vec<DispatchResultWithPostInfo>': Vec<DispatchResultWithPostInfo>;
     'Vec<DispatchTime>': Vec<DispatchTime>;
     'Vec<DistributionAccounts>': Vec<DistributionAccounts>;
     'Vec<DoNotConstruct>': Vec<DoNotConstruct>;
@@ -1628,6 +1634,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<PhragmenScore>': Vec<PhragmenScore>;
     'Vec<Points>': Vec<Points>;
     'Vec<PoolInfo>': Vec<PoolInfo>;
+    'Vec<PostDispatchInfo>': Vec<PostDispatchInfo>;
     'Vec<Precommits>': Vec<Precommits>;
     'Vec<PrefabWasmModule>': Vec<PrefabWasmModule>;
     'Vec<PrefixedStorageKey>': Vec<PrefixedStorageKey>;
@@ -1645,6 +1652,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<ProxyDefinition>': Vec<ProxyDefinition>;
     'Vec<ProxyState>': Vec<ProxyState>;
     'Vec<ProxyType>': Vec<ProxyType>;
+    'Vec<Public>': Vec<Public>;
     'Vec<QueryHolding>': Vec<QueryHolding>;
     'Vec<QueuedParathread>': Vec<QueuedParathread>;
     'Vec<QuoteAmount>': Vec<QuoteAmount>;
@@ -2119,6 +2127,7 @@ declare module '@polkadot/types/types/registry' {
     DispatchError: DispatchError;
     DispatchErrorModule: DispatchErrorModule;
     DispatchErrorTo198: DispatchErrorTo198;
+    DispatchErrorWithPostInfoTPostDispatchInfo: DispatchErrorWithPostInfoTPostDispatchInfo;
     DispatchId: DispatchId;
     DispatchInfo: DispatchInfo;
     DispatchInfoTo190: DispatchInfoTo190;
@@ -2127,6 +2136,7 @@ declare module '@polkadot/types/types/registry' {
     DispatchResult: DispatchResult;
     DispatchResultOf: DispatchResultOf;
     DispatchResultTo198: DispatchResultTo198;
+    DispatchResultWithPostInfo: DispatchResultWithPostInfo;
     DispatchTime: DispatchTime;
     DistributionAccounts: DistributionAccounts;
     DoNotConstruct: DoNotConstruct;
@@ -2502,6 +2512,7 @@ declare module '@polkadot/types/types/registry' {
     PhragmenScore: PhragmenScore;
     Points: Points;
     PoolInfo: PoolInfo;
+    PostDispatchInfo: PostDispatchInfo;
     Precommits: Precommits;
     PrefabWasmModule: PrefabWasmModule;
     PrefixedStorageKey: PrefixedStorageKey;
@@ -2519,6 +2530,7 @@ declare module '@polkadot/types/types/registry' {
     ProxyDefinition: ProxyDefinition;
     ProxyState: ProxyState;
     ProxyType: ProxyType;
+    Public: Public;
     QueryHolding: QueryHolding;
     QueuedParathread: QueuedParathread;
     QuoteAmount: QuoteAmount;

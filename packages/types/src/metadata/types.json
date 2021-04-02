@@ -65,6 +65,11 @@
         "default_fee": "BasisPoints",
         "default_protocol_fee": "BasisPoints"
     },
+    "DispatchErrorWithPostInfoTPostDispatchInfo": {
+        "post_info": "PostDispatchInfo",
+        "error": "DispatchError"
+    },
+    "DispatchResultWithPostInfo": "Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>",
     "DistributionAccounts": "Null",
     "Duration": "Null",
     "EthPeersSync": {
@@ -400,6 +405,11 @@
     "PendingMultisigAccount": "Null",
     "Permission": "Null",
     "PermissionId": "u32",
+    "PostDispatchInfo": {
+        "actual_weight": "Option<Weight>",
+        "pays_fee": "Pays"
+    },
+    "Public": "[u8; 33]",
     "QuoteAmount": {
         "_enum": {
             "WithDesiredInput": "QuoteWithDesiredInput",
