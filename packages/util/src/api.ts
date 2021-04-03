@@ -87,6 +87,31 @@ export class Api extends BaseApi {
     ]
   }
 
+  public get accountSoraHistory (): Array<History> {
+    if (this.storage) {
+      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
+    }
+    return this.history.filter(({ type }) => !isBridgeOperation(type))
+  }
+
+  /**
+   * Remove all history except bridge history
+   * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
+   */
+  public clearHistory (assetAddress?: string) {
+    const removeHistoryIds = (assetAddress
+      ? this.accountSoraHistory.filter(item => [item.assetAddress, item.asset2Address].includes(assetAddress))
+      : this.accountSoraHistory
+    ).map(item => item.id)
+    if (!removeHistoryIds || !removeHistoryIds.length) {
+      return
+    }
+    this.history = this.history.filter(({ id }) => !removeHistoryIds.includes(id))
+    if (this.storage) {
+      this.storage.set('history', JSON.stringify(this.history))
+    }
+  }
+
   public removeAsset (address: string): void {
     const filtered = this.accountAssets.filter(item => item.address !== address)
     this.assets = filtered

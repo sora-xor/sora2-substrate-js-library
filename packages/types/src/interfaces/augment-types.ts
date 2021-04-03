@@ -60,8 +60,8 @@ import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AssetInfo, AssetNameStr, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, ChangePeersContract, CurrencyIdEncoded, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMigrate, IncomingPreRequest, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransfer, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
-import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H512, H64, Hash, Header, HolderId, I32F32, Index, IndicesLookupSource, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PreRuntime, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, Slot, SmoothPriceState, StorageData, StorageProof, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, ChangePeersContract, CurrencyIdEncoded, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DispatchErrorWithPostInfoTPostDispatchInfo, DispatchResultWithPostInfo, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H512, H64, Hash, Header, HolderId, I32F32, Index, IndicesLookupSource, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PostDispatchInfo, PreRuntime, Public, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, Slot, SmoothPriceState, StorageData, StorageProof, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
 import type { TP } from '@sora-substrate/types/interfaces/tradingPair';
 
@@ -371,6 +371,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<DispatchError>': Option<DispatchError>;
     'Option<DispatchErrorModule>': Option<DispatchErrorModule>;
     'Option<DispatchErrorTo198>': Option<DispatchErrorTo198>;
+    'Option<DispatchErrorWithPostInfoTPostDispatchInfo>': Option<DispatchErrorWithPostInfoTPostDispatchInfo>;
     'Option<DispatchId>': Option<DispatchId>;
     'Option<DispatchInfo>': Option<DispatchInfo>;
     'Option<DispatchInfoTo190>': Option<DispatchInfoTo190>;
@@ -379,6 +380,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<DispatchResult>': Option<DispatchResult>;
     'Option<DispatchResultOf>': Option<DispatchResultOf>;
     'Option<DispatchResultTo198>': Option<DispatchResultTo198>;
+    'Option<DispatchResultWithPostInfo>': Option<DispatchResultWithPostInfo>;
     'Option<DispatchTime>': Option<DispatchTime>;
     'Option<DistributionAccounts>': Option<DistributionAccounts>;
     'Option<DoNotConstruct>': Option<DoNotConstruct>;
@@ -561,14 +563,16 @@ declare module '@polkadot/types/types/registry' {
     'Option<IncomingCancelOutgoingRequest>': Option<IncomingCancelOutgoingRequest>;
     'Option<IncomingChangePeers>': Option<IncomingChangePeers>;
     'Option<IncomingChangePeersCompat>': Option<IncomingChangePeersCompat>;
+    'Option<IncomingMarkAsDoneRequest>': Option<IncomingMarkAsDoneRequest>;
+    'Option<IncomingMetaRequestKind>': Option<IncomingMetaRequestKind>;
     'Option<IncomingMigrate>': Option<IncomingMigrate>;
     'Option<IncomingParachain>': Option<IncomingParachain>;
     'Option<IncomingParachainDeploy>': Option<IncomingParachainDeploy>;
     'Option<IncomingParachainFixed>': Option<IncomingParachainFixed>;
     'Option<IncomingPrepareForMigration>': Option<IncomingPrepareForMigration>;
-    'Option<IncomingPreRequest>': Option<IncomingPreRequest>;
     'Option<IncomingRequest>': Option<IncomingRequest>;
     'Option<IncomingRequestKind>': Option<IncomingRequestKind>;
+    'Option<IncomingTransactionRequestKind>': Option<IncomingTransactionRequestKind>;
     'Option<IncomingTransfer>': Option<IncomingTransfer>;
     'Option<Index>': Option<Index>;
     'Option<IndicesLookupSource>': Option<IndicesLookupSource>;
@@ -596,6 +600,9 @@ declare module '@polkadot/types/types/registry' {
     'Option<Limits>': Option<Limits>;
     'Option<LimitsTo264>': Option<LimitsTo264>;
     'Option<LiquiditySourceType>': Option<LiquiditySourceType>;
+    'Option<LoadIncomingMetaRequest>': Option<LoadIncomingMetaRequest>;
+    'Option<LoadIncomingRequest>': Option<LoadIncomingRequest>;
+    'Option<LoadIncomingTransactionRequest>': Option<LoadIncomingTransactionRequest>;
     'Option<LocalValidationData>': Option<LocalValidationData>;
     'Option<LockIdentifier>': Option<LockIdentifier>;
     'Option<LookupSource>': Option<LookupSource>;
@@ -749,6 +756,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<PhragmenScore>': Option<PhragmenScore>;
     'Option<Points>': Option<Points>;
     'Option<PoolInfo>': Option<PoolInfo>;
+    'Option<PostDispatchInfo>': Option<PostDispatchInfo>;
     'Option<Precommits>': Option<Precommits>;
     'Option<PrefabWasmModule>': Option<PrefabWasmModule>;
     'Option<PrefixedStorageKey>': Option<PrefixedStorageKey>;
@@ -766,6 +774,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<ProxyDefinition>': Option<ProxyDefinition>;
     'Option<ProxyState>': Option<ProxyState>;
     'Option<ProxyType>': Option<ProxyType>;
+    'Option<Public>': Option<Public>;
     'Option<QueryHolding>': Option<QueryHolding>;
     'Option<QueuedParathread>': Option<QueuedParathread>;
     'Option<QuoteAmount>': Option<QuoteAmount>;
@@ -1240,6 +1249,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<DispatchError>': Vec<DispatchError>;
     'Vec<DispatchErrorModule>': Vec<DispatchErrorModule>;
     'Vec<DispatchErrorTo198>': Vec<DispatchErrorTo198>;
+    'Vec<DispatchErrorWithPostInfoTPostDispatchInfo>': Vec<DispatchErrorWithPostInfoTPostDispatchInfo>;
     'Vec<DispatchId>': Vec<DispatchId>;
     'Vec<DispatchInfo>': Vec<DispatchInfo>;
     'Vec<DispatchInfoTo190>': Vec<DispatchInfoTo190>;
@@ -1248,6 +1258,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<DispatchResult>': Vec<DispatchResult>;
     'Vec<DispatchResultOf>': Vec<DispatchResultOf>;
     'Vec<DispatchResultTo198>': Vec<DispatchResultTo198>;
+    'Vec<DispatchResultWithPostInfo>': Vec<DispatchResultWithPostInfo>;
     'Vec<DispatchTime>': Vec<DispatchTime>;
     'Vec<DistributionAccounts>': Vec<DistributionAccounts>;
     'Vec<DoNotConstruct>': Vec<DoNotConstruct>;
@@ -1430,14 +1441,16 @@ declare module '@polkadot/types/types/registry' {
     'Vec<IncomingCancelOutgoingRequest>': Vec<IncomingCancelOutgoingRequest>;
     'Vec<IncomingChangePeers>': Vec<IncomingChangePeers>;
     'Vec<IncomingChangePeersCompat>': Vec<IncomingChangePeersCompat>;
+    'Vec<IncomingMarkAsDoneRequest>': Vec<IncomingMarkAsDoneRequest>;
+    'Vec<IncomingMetaRequestKind>': Vec<IncomingMetaRequestKind>;
     'Vec<IncomingMigrate>': Vec<IncomingMigrate>;
     'Vec<IncomingParachain>': Vec<IncomingParachain>;
     'Vec<IncomingParachainDeploy>': Vec<IncomingParachainDeploy>;
     'Vec<IncomingParachainFixed>': Vec<IncomingParachainFixed>;
     'Vec<IncomingPrepareForMigration>': Vec<IncomingPrepareForMigration>;
-    'Vec<IncomingPreRequest>': Vec<IncomingPreRequest>;
     'Vec<IncomingRequest>': Vec<IncomingRequest>;
     'Vec<IncomingRequestKind>': Vec<IncomingRequestKind>;
+    'Vec<IncomingTransactionRequestKind>': Vec<IncomingTransactionRequestKind>;
     'Vec<IncomingTransfer>': Vec<IncomingTransfer>;
     'Vec<Index>': Vec<Index>;
     'Vec<IndicesLookupSource>': Vec<IndicesLookupSource>;
@@ -1465,6 +1478,9 @@ declare module '@polkadot/types/types/registry' {
     'Vec<Limits>': Vec<Limits>;
     'Vec<LimitsTo264>': Vec<LimitsTo264>;
     'Vec<LiquiditySourceType>': Vec<LiquiditySourceType>;
+    'Vec<LoadIncomingMetaRequest>': Vec<LoadIncomingMetaRequest>;
+    'Vec<LoadIncomingRequest>': Vec<LoadIncomingRequest>;
+    'Vec<LoadIncomingTransactionRequest>': Vec<LoadIncomingTransactionRequest>;
     'Vec<LocalValidationData>': Vec<LocalValidationData>;
     'Vec<LockIdentifier>': Vec<LockIdentifier>;
     'Vec<LookupSource>': Vec<LookupSource>;
@@ -1618,6 +1634,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<PhragmenScore>': Vec<PhragmenScore>;
     'Vec<Points>': Vec<Points>;
     'Vec<PoolInfo>': Vec<PoolInfo>;
+    'Vec<PostDispatchInfo>': Vec<PostDispatchInfo>;
     'Vec<Precommits>': Vec<Precommits>;
     'Vec<PrefabWasmModule>': Vec<PrefabWasmModule>;
     'Vec<PrefixedStorageKey>': Vec<PrefixedStorageKey>;
@@ -1635,6 +1652,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<ProxyDefinition>': Vec<ProxyDefinition>;
     'Vec<ProxyState>': Vec<ProxyState>;
     'Vec<ProxyType>': Vec<ProxyType>;
+    'Vec<Public>': Vec<Public>;
     'Vec<QueryHolding>': Vec<QueryHolding>;
     'Vec<QueuedParathread>': Vec<QueuedParathread>;
     'Vec<QuoteAmount>': Vec<QuoteAmount>;
@@ -2109,6 +2127,7 @@ declare module '@polkadot/types/types/registry' {
     DispatchError: DispatchError;
     DispatchErrorModule: DispatchErrorModule;
     DispatchErrorTo198: DispatchErrorTo198;
+    DispatchErrorWithPostInfoTPostDispatchInfo: DispatchErrorWithPostInfoTPostDispatchInfo;
     DispatchId: DispatchId;
     DispatchInfo: DispatchInfo;
     DispatchInfoTo190: DispatchInfoTo190;
@@ -2117,6 +2136,7 @@ declare module '@polkadot/types/types/registry' {
     DispatchResult: DispatchResult;
     DispatchResultOf: DispatchResultOf;
     DispatchResultTo198: DispatchResultTo198;
+    DispatchResultWithPostInfo: DispatchResultWithPostInfo;
     DispatchTime: DispatchTime;
     DistributionAccounts: DistributionAccounts;
     DoNotConstruct: DoNotConstruct;
@@ -2299,14 +2319,16 @@ declare module '@polkadot/types/types/registry' {
     IncomingCancelOutgoingRequest: IncomingCancelOutgoingRequest;
     IncomingChangePeers: IncomingChangePeers;
     IncomingChangePeersCompat: IncomingChangePeersCompat;
+    IncomingMarkAsDoneRequest: IncomingMarkAsDoneRequest;
+    IncomingMetaRequestKind: IncomingMetaRequestKind;
     IncomingMigrate: IncomingMigrate;
     IncomingParachain: IncomingParachain;
     IncomingParachainDeploy: IncomingParachainDeploy;
     IncomingParachainFixed: IncomingParachainFixed;
     IncomingPrepareForMigration: IncomingPrepareForMigration;
-    IncomingPreRequest: IncomingPreRequest;
     IncomingRequest: IncomingRequest;
     IncomingRequestKind: IncomingRequestKind;
+    IncomingTransactionRequestKind: IncomingTransactionRequestKind;
     IncomingTransfer: IncomingTransfer;
     Index: Index;
     IndicesLookupSource: IndicesLookupSource;
@@ -2334,6 +2356,9 @@ declare module '@polkadot/types/types/registry' {
     Limits: Limits;
     LimitsTo264: LimitsTo264;
     LiquiditySourceType: LiquiditySourceType;
+    LoadIncomingMetaRequest: LoadIncomingMetaRequest;
+    LoadIncomingRequest: LoadIncomingRequest;
+    LoadIncomingTransactionRequest: LoadIncomingTransactionRequest;
     LocalValidationData: LocalValidationData;
     LockIdentifier: LockIdentifier;
     LookupSource: LookupSource;
@@ -2487,6 +2512,7 @@ declare module '@polkadot/types/types/registry' {
     PhragmenScore: PhragmenScore;
     Points: Points;
     PoolInfo: PoolInfo;
+    PostDispatchInfo: PostDispatchInfo;
     Precommits: Precommits;
     PrefabWasmModule: PrefabWasmModule;
     PrefixedStorageKey: PrefixedStorageKey;
@@ -2504,6 +2530,7 @@ declare module '@polkadot/types/types/registry' {
     ProxyDefinition: ProxyDefinition;
     ProxyState: ProxyState;
     ProxyType: ProxyType;
+    Public: Public;
     QueryHolding: QueryHolding;
     QueuedParathread: QueuedParathread;
     QuoteAmount: QuoteAmount;

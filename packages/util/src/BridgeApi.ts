@@ -1,4 +1,5 @@
 import first from 'lodash/fp/first'
+import last from 'lodash/fp/last'
 import { assert } from '@polkadot/util'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { Signer } from '@polkadot/types/types'
@@ -16,6 +17,7 @@ export interface RegisteredAccountAsset extends AccountAsset {
 
 export interface RegisteredAsset extends Asset {
   externalAddress: string;
+  externalDecimals: string;
 }
 
 export interface BridgeHistory extends History {
@@ -66,6 +68,11 @@ export enum BridgeCurrencyType {
   ClaimPswap = 'ClaimPswap',
   CancelOutgoingRequest = 'CancelOutgoingRequest',
   MarkAsDone = 'MarkAsDone'
+}
+
+enum IncomingRequestKind {
+  Transaction = 'Transaction',
+  Meta = 'Meta'
 }
 
 export interface BridgeRequest {
@@ -245,11 +252,12 @@ export class BridgeApi extends BaseApi {
    */
   public async getRequestFromEthFee (hash: string, type: RequestType = RequestType.Transfer): Promise<CodecString> {
     assert(this.account, Messages.connectWallet)
+    const kind = { [IncomingRequestKind.Transaction]: type }
     return await this.getNetworkFee(
       this.account.pair,
       Operation.EthBridgeIncoming,
       hash,
-      type,
+      kind,
       BridgeApi.ETH_NETWORK_ID
     )
   }
@@ -262,8 +270,9 @@ export class BridgeApi extends BaseApi {
   public async requestFromEth (hash: string, type: RequestType = RequestType.Transfer): Promise<void> {
     assert(this.account, Messages.connectWallet)
     const history = this.accountHistory.find(item => item.hash === hash)
+    const kind = { [IncomingRequestKind.Transaction]: type }
     await this.submitExtrinsic(
-      this.api.tx.ethBridge.requestFromSidechain(hash, type, BridgeApi.ETH_NETWORK_ID),
+      this.api.tx.ethBridge.requestFromSidechain(hash, kind, BridgeApi.ETH_NETWORK_ID),
       this.account.pair,
       history || {
         type: Operation.EthBridgeIncoming,
@@ -295,13 +304,15 @@ export class BridgeApi extends BaseApi {
   public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
     const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(BridgeApi.ETH_NETWORK_ID)).toJSON()
     const assets = await getAssets(this.api)
-    return this.getData(data).map(([_, address, externalAddress]) => {
-      const asset = assets.find(a => a.address === address)
+    return this.getData(data).map(([_, soraAsset, externalAsset]) => {
+      const soraAssetId = first(soraAsset)
+      const asset = assets.find(a => a.address === soraAssetId)
       return {
-        address,
-        externalAddress,
+        address: soraAssetId,
+        externalAddress: first(externalAsset),
         decimals: asset.decimals,
-        symbol: asset.symbol
+        symbol: asset.symbol,
+        externalDecimals: last(externalAsset)
       } as RegisteredAsset
     })
   }
@@ -336,7 +347,7 @@ export class BridgeApi extends BaseApi {
    * @returns History of request
    */
   public async getRequest (hash: string): Promise<BridgeRequest> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], BridgeApi.ETH_NETWORK_ID)).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], BridgeApi.ETH_NETWORK_ID, true)).toJSON()
     return first(this.getData(data).map(item => this.formatRequest(item)))
   }
 
@@ -346,7 +357,7 @@ export class BridgeApi extends BaseApi {
    * @returns Array with history of requests
    */
   public async getRequests (hashes: Array<string>): Promise<Array<BridgeRequest>> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, BridgeApi.ETH_NETWORK_ID, true)).toJSON()
     return this.getData(data).map(item => this.formatRequest(item))
   }
 
@@ -356,7 +367,7 @@ export class BridgeApi extends BaseApi {
     formattedItem.hash = request.tx_hash
     formattedItem.from = request.from
     formattedItem.to = request.to
-    formattedItem.amount = request.amount
+    formattedItem.amount = `${request.amount}`.split(',').join('')
     formattedItem.currencyType = [BridgeCurrencyType.TokenAddress, BridgeCurrencyType.TokenAddress.toLowerCase()].includes(first(Object.keys(request.currency_id)))
       ? BridgeCurrencyType.TokenAddress
       : BridgeCurrencyType.AssetId
@@ -408,8 +419,8 @@ export class BridgeApi extends BaseApi {
    * @param hashes
    * @returns
    */
-  public async getApproves (hashes: Array<string>) {
-    const data = (await (this.api.rpc as any).ethBridge.getApproves(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
+  public async getApprovals (hashes: Array<string>) {
+    const data = (await (this.api.rpc as any).ethBridge.getApprovals(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
     return this.getData(data)
   }
 }
