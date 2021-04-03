@@ -18,7 +18,9 @@ import {
   getAssets,
   PoolTokens,
   AccountLiquidity,
-  getAssetBalanceObservable
+  getAssetBalanceObservable,
+  ZeroBalance,
+  getBalance
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, History, isBridgeOperation } from './BaseApi'
@@ -378,8 +380,8 @@ export class Api extends BaseApi {
     assert(this.account, Messages.connectWallet)
     const { decimals, symbol, name } = await this.getAssetInfo(address)
     const asset = { address, decimals, symbol, name } as AccountAsset
-    const result = await getAssetBalance(this.api, this.account.pair.address, address)
-    asset.balance = new FPNumber(result, asset.decimals).toCodecString()
+    const result = await getAssetBalance(this.api, this.account.pair.address, address, decimals)
+    asset.balance = result
     if (addToList) {
       this.addToAssetList(asset)
       this.storage?.set('assets', JSON.stringify(this.assets))
@@ -396,15 +398,12 @@ export class Api extends BaseApi {
     const knownAssets: Array<AccountAsset> = []
     for (const item of KnownAssets) {
       const asset = { ...item } as AccountAsset
-      const result = await getAssetBalance(this.api, this.account.pair.address, item.address)
-      const balance = new FPNumber(result, asset.decimals)
-      if (balance.isZero() && item.symbol !== KnownSymbols.XOR) {
+      const result = await getAssetBalance(this.api, this.account.pair.address, item.address, item.decimals)
+      const balance = result.transferable
+      if (!+balance && item.symbol !== KnownSymbols.XOR) {
         continue
       }
-      asset.balance = balance.toCodecString()
-      if (!Number(asset.balance) && item.symbol !== KnownSymbols.XOR) {
-        continue
-      }
+      asset.balance = result
       knownAssets.push(asset)
       this.addToAssetList(asset)
     }
@@ -423,8 +422,8 @@ export class Api extends BaseApi {
     }
     assert(this.account, Messages.connectWallet)
     for (const asset of this.assets) {
-      const subscription = getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address).subscribe(result => {
-        asset.balance = new FPNumber(result, asset.decimals).toCodecString()
+      const subscription = getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address, asset.decimals).subscribe(result => {
+        asset.balance = result
         this.addToAssetList(asset)
         if (this.storage) {
           this.storage.set('assets', JSON.stringify(this.assets))
@@ -615,7 +614,7 @@ export class Api extends BaseApi {
   ): Promise<void> {
     const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
     if (!this.accountAssets.find(asset => asset.address === params.assetB.address)) {
-      this.addToAssetList({ ...params.assetB, balance: '0' })
+      this.addToAssetList({ ...params.assetB, balance: ZeroBalance })
       this.updateAccountAssets()
     }
     await this.submitExtrinsic(
@@ -646,7 +645,7 @@ export class Api extends BaseApi {
       if (!props || !props.length) {
         continue
       }
-      const result = await getAssetBalance(this.api, this.account.pair.address, props[2])
+      const result = await getBalance(this.api, this.account.pair.address, props[2])
       const { decimals, symbol, name } = await this.getAssetInfo(props[2])
       const balanceFP = new FPNumber(result, decimals)
       if (balanceFP.isZero()) {
@@ -684,7 +683,7 @@ export class Api extends BaseApi {
   public async updateAccountLiquidity (): Promise<Array<AccountLiquidity>> {
     assert(this.account, Messages.connectWallet)
     for (const asset of this.liquidity) {
-      const result = await getAssetBalance(this.api, this.account.pair.address, asset.address)
+      const result = await getBalance(this.api, this.account.pair.address, asset.address)
       const [reserveA, reserveB] = await this.getLiquidityReserves(asset.firstAddress, asset.secondAddress)
       const [balanceA, balanceB] = await this.estimateTokensRetrieved(
         asset.firstAddress,
@@ -752,11 +751,11 @@ export class Api extends BaseApi {
       firstAddress: firstAssetAddress,
       secondAddress: secondAssetAddress
     } as AccountLiquidity
-    const poolTokenBalance = await getAssetBalance(this.api, this.account.pair.address, address)
+    const poolTokenBalance = await getBalance(this.api, this.account.pair.address, address)
     const firstToken = await this.getAssetInfo(firstAssetAddress)
     const secondToken = await this.getAssetInfo(secondAssetAddress)
-    const firstTokenBalance = await getAssetBalance(this.api, this.account.pair.address, firstAssetAddress)
-    const secondTokenBalance = await getAssetBalance(this.api, this.account.pair.address, secondAssetAddress)
+    const firstTokenBalance = await getBalance(this.api, this.account.pair.address, firstAssetAddress)
+    const secondTokenBalance = await getBalance(this.api, this.account.pair.address, secondAssetAddress)
     asset.balance = new FPNumber(poolTokenBalance, asset.decimals).toCodecString()
     asset.firstBalance = new FPNumber(firstTokenBalance, firstToken.decimals).toCodecString()
     asset.secondBalance = new FPNumber(secondTokenBalance, secondToken.decimals).toCodecString()
@@ -1223,7 +1222,7 @@ export class Api extends BaseApi {
     const xorDecimals = xor.decimals
     const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals)
     if (asset.address === xor.address) {
-      const fpBalance = FPNumber.fromCodecValue(asset.balance, xorDecimals)
+      const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals)
       const fpAmount = new FPNumber(amount, xorDecimals)
       return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
     }
@@ -1232,7 +1231,7 @@ export class Api extends BaseApi {
     if (!xorAccountAsset) {
       return false
     }
-    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance, xorDecimals)
+    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance.transferable, xorDecimals)
     return FPNumber.lte(fpFee, xorBalance)
   }
   /**
