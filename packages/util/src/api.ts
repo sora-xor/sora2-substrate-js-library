@@ -1020,6 +1020,34 @@ export class Api extends BaseApi {
     )
   }
 
+  public async getEnabledLiquiditySourcesForPair (
+    firstAssetAddress: string,
+    secondAssetAddress: string
+  ): Promise<Array<LiquiditySourceTypes>> {
+    const list = (await (this.api.rpc as any).tradingPair.listEnabledSourcesForPair(
+      this.defaultDEXId,
+      firstAssetAddress,
+      secondAssetAddress
+    )).toJSON()
+
+    return (list as Array<LiquiditySourceTypes>)
+  }
+
+  public async checkLiquiditySourceIsEnabledForPair (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    liquiditySource: LiquiditySourceTypes
+  ): Promise<boolean> {
+    const isEnabled = (await (this.api.rpc as any).tradingPair.isSourceEnabledForPair(
+      this.defaultDEXId,
+      firstAssetAddress,
+      secondAssetAddress,
+      liquiditySource
+    )).toJSON()
+
+    return isEnabled
+  }
+
   private async calcRemoveLiquidityParams (
     firstAssetAddress: string,
     secondAssetAddress: string,
