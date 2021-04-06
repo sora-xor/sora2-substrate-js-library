@@ -312,6 +312,7 @@ export class BridgeApi extends BaseApi {
         externalAddress: first(externalAsset),
         decimals: asset.decimals,
         symbol: asset.symbol,
+        name: asset.name,
         externalDecimals: last(externalAsset)
       } as RegisteredAsset
     })
