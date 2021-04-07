@@ -321,10 +321,13 @@ export class BridgeApi extends BaseApi {
   private formatRequest (item: any): BridgeRequest {
     const formattedItem = {} as BridgeRequest
     formattedItem.status = item[1]
-    let direction = BridgeDirection.Incoming, operation = RequestType.Transfer
+    let direction: BridgeDirection, operation = RequestType.Transfer
     if (~[BridgeDirection.Outgoing, BridgeDirection.Outgoing.toLowerCase()].findIndex(prop => prop in item[0])) {
       direction = BridgeDirection.Outgoing
-      operation = RequestType.Transfer
+    } else if (~[BridgeDirection.Incoming, BridgeDirection.Incoming.toLowerCase()].findIndex(prop => prop in item[0])) {
+      direction = BridgeDirection.Incoming
+    } else {
+      return null
     }
     formattedItem.direction = direction
     let request = item[0][direction] || item[0][direction.toLowerCase()]
