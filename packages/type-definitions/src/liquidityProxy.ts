@@ -33,6 +33,24 @@ export default {
                 },
             ],
             type: 'Option<SwapOutcomeInfo>'
+        },
+        isPathAvailable: {
+            description: 'Check if given two arbitrary tokens can be exchanged via any liquidity sources',
+            params: [
+                {
+                    name: 'dexId',
+                    type: 'DEXId'
+                },
+                {
+                    name: 'inputAssetId',
+                    type: 'AssetId'
+                },
+                {
+                    name: 'outputAssetId',
+                    type: 'AssetId'
+                },
+            ],
+            type: 'bool'
         }
     },
     types: {}

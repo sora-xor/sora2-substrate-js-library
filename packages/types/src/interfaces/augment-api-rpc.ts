@@ -399,6 +399,10 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
     };
     liquidityProxy: {
       /**
+       * Check if given two arbitrary tokens can be exchanged via any liquidity sources
+       **/
+      isPathAvailable: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array) => Observable<bool>>;
+      /**
        * Get price with indicated Asset amount and direction, filtered by selected_types
        **/
       quote: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Text | string, swapVariant: SwapVariant | 'WithDesiredInput' | 'WithDesiredOutput' | number | Uint8Array, selectedSourceTypes: Vec<LiquiditySourceType> | (LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | number | Uint8Array)[], filterMode: FilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => Observable<Option<SwapOutcomeInfo>>>;

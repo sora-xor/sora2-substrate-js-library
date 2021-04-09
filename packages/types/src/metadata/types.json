@@ -202,7 +202,7 @@
         "timepoint": "Timepoint",
         "network_id": "BridgeNetworkId"
     },
-    "Keys": "SessionKeys2",
+    "Keys": "SessionKeys3",
     "LiquiditySourceType": {
         "_enum": [
             "XYKPool",
