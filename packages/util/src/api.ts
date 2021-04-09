@@ -470,6 +470,16 @@ export class Api extends BaseApi {
   }
 
   /**
+   * Check swap operation
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   * @returns availability of swap operation
+   */
+  async checkSwap (firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
+    return (await (this.api.rpc as any).liquidityProxy.isPathAvailable(this.defaultDEXId, firstAssetAddress, secondAssetAddress)).isTrue
+  }
+
+  /**
    * Get swap result for the demonstration purposes
    * @param assetAAddress Asset A address
    * @param assetBAddress Asset B address
