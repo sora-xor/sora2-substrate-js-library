@@ -168,6 +168,9 @@ export interface IncomingTransactionRequestKind extends Enum {
   readonly isRemovePeer: boolean;
   readonly isPrepareForMigration: boolean;
   readonly isMigrate: boolean;
+  readonly isAddPeerCompat: boolean;
+  readonly isRemovePeerCompat: boolean;
+  readonly isTransferXor: boolean;
 }
 
 /** @name IncomingTransfer */
