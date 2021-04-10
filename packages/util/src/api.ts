@@ -1010,11 +1010,15 @@ export class Api extends BaseApi {
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ): Promise<void> {
     const params = await this.calcCreatePairParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
-    const transactions = [
-      (this.api.tx.tradingPair as any).register(...params.pairCreationArgs),
+    const isPairAlreadyCreated = (await (this.api.rpc.tradingPair as any).isPairEnabled(this.defaultDEXId, firstAssetAddress, secondAssetAddress)).isTrue as boolean
+    const transactions = []
+    if (!isPairAlreadyCreated) {
+      transactions.push((this.api.tx.tradingPair as any).register(...params.pairCreationArgs))
+    }
+    transactions.push(...[
       this.api.tx.poolXyk.initializePool(...params.pairCreationArgs),
       this.api.tx.poolXyk.depositLiquidity(...params.addLiquidityArgs)
-    ]
+    ])
     await this.submitExtrinsic(
       this.api.tx.utility.batch(transactions),
       this.account.pair,
