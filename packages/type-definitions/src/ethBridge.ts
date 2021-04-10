@@ -113,6 +113,9 @@ export default {
         "RemovePeer",
         "PrepareForMigration",
         "Migrate",
+        "AddPeerCompat",
+        "RemovePeerCompat",
+        "TransferXOR",
       ]
     },
     IncomingMetaRequestKind: {
