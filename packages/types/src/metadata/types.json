@@ -187,7 +187,10 @@
             "AddPeer",
             "RemovePeer",
             "PrepareForMigration",
-            "Migrate"
+            "Migrate",
+            "AddPeerCompat",
+            "RemovePeerCompat",
+            "TransferXOR"
         ]
     },
     "IncomingTransfer": {
