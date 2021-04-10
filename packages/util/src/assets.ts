@@ -112,7 +112,7 @@ export const KnownAssets = new ArrayLike<Asset>([
     symbol: KnownSymbols.PSWAP,
     name: 'Polkaswap',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: '100000000'
+    totalSupply: '10000000000'
   }
 ])
 

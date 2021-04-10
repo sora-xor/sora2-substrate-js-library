@@ -62,6 +62,7 @@ export enum BridgeCurrencyType {
  */
  export enum RequestType {
   Transfer = 'Transfer',
+  TransferXOR = 'TransferXOR',
   AddAsset = 'AddAsset',
   AddPeer = 'AddPeer',
   RemovePeer = 'RemovePeer',
@@ -69,6 +70,8 @@ export enum BridgeCurrencyType {
   CancelOutgoingRequest = 'CancelOutgoingRequest',
   MarkAsDone = 'MarkAsDone'
 }
+
+const toCamelCase = (str: string) => str[0].toLowerCase() + str.slice(1)
 
 enum IncomingRequestKind {
   Transaction = 'Transaction',
@@ -332,7 +335,7 @@ export class BridgeApi extends BaseApi {
     formattedItem.direction = direction
     let request = item[0][direction] || item[0][direction.toLowerCase()]
     if (direction === BridgeDirection.Outgoing) {
-      request = request[0][operation] || request[0][operation.toLowerCase()]
+      request = request[0][operation] || request[0][operation.toLowerCase()] || request[0][RequestType.TransferXOR] || request[0][toCamelCase(RequestType.TransferXOR)]
       formattedItem.hash = (item[0][direction] || item[0][direction.toLowerCase()])[1]
       formattedItem.from = request.from
       formattedItem.soraAssetAddress = request.asset_id
@@ -367,7 +370,7 @@ export class BridgeApi extends BaseApi {
 
   private formatApprovedRequest (item: any): BridgeApprovedRequest {
     const formattedItem = {} as BridgeApprovedRequest
-    const request = item[0][RequestType.Transfer] || item[0][RequestType.Transfer.toLowerCase()]
+    const request = item[0][RequestType.Transfer] || item[0][RequestType.Transfer.toLowerCase()] || item[0][RequestType.TransferXOR] || item[0][toCamelCase(RequestType.TransferXOR)]
     formattedItem.hash = request.tx_hash
     formattedItem.from = request.from
     formattedItem.to = request.to
