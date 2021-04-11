@@ -504,7 +504,7 @@ export class Api extends BaseApi {
       new FPNumber(amount, (!isExchangeB ? assetA : assetB).decimals).toCodecString(),
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
       liquiditySources,
-      'Disabled'
+      liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
     )
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0 }
     return {
@@ -574,7 +574,7 @@ export class Api extends BaseApi {
         assetBAddress,
         params,
         liquiditySources,
-        'Disabled'
+        liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
       ],
       assetA,
       assetB
