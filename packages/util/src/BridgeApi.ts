@@ -38,7 +38,8 @@ export interface BridgeHistory extends History {
  */
 export enum BridgeDirection {
   Outgoing = 'Outgoing',
-  Incoming = 'Incoming'
+  Incoming = 'Incoming',
+  LoadIncoming = 'LoadIncoming'
 }
 
 export enum BridgeTxStatus {
@@ -73,6 +74,12 @@ export enum BridgeCurrencyType {
 
 const toCamelCase = (str: string) => str[0].toLowerCase() + str.slice(1)
 
+const stringToCaseInsensitiveArray = (str: string) => [str, toCamelCase(str)]
+
+const arrayToCaseInsensitiveArray = (arr: Array<string>) => arr.flatMap(str => stringToCaseInsensitiveArray(str))
+
+const caseInsensitiveValue = (obj: any, key: string) => obj[key] || obj[toCamelCase(key)]
+
 enum IncomingRequestKind {
   Transaction = 'Transaction',
   Meta = 'Meta'
@@ -80,12 +87,12 @@ enum IncomingRequestKind {
 
 export interface BridgeRequest {
   direction: BridgeDirection;
-  from: string;
-  externalAssetAddress?: string; // For outgoing TXs
-  soraAssetAddress?: string; // For outgoing TXs
+  from?: string;
+  to?: string;
+  soraAssetAddress?: string;
   status: BridgeTxStatus;
   hash: string;
-  kind?: RequestType; // For incoming TXs
+  kind?: RequestType | any; // For incoming TXs TODO: check type
 }
 
 /** Outgoing transfers */
@@ -323,27 +330,34 @@ export class BridgeApi extends BaseApi {
 
   private formatRequest (item: any): BridgeRequest {
     const formattedItem = {} as BridgeRequest
-    formattedItem.status = item[1]
-    let direction: BridgeDirection, operation = RequestType.Transfer
-    if (~[BridgeDirection.Outgoing, BridgeDirection.Outgoing.toLowerCase()].findIndex(prop => prop in item[0])) {
+    formattedItem.status = last(item)
+    const body = first(item) as any
+    const checkDirection = (value: string) => ~stringToCaseInsensitiveArray(value).findIndex(prop => prop in body)
+    let direction: BridgeDirection, operations = [RequestType.Transfer, RequestType.TransferXOR]
+    if (checkDirection(BridgeDirection.Outgoing)) {
       direction = BridgeDirection.Outgoing
-    } else if (~[BridgeDirection.Incoming, BridgeDirection.Incoming.toLowerCase()].findIndex(prop => prop in item[0])) {
+    } else if (checkDirection(BridgeDirection.Incoming)) {
       direction = BridgeDirection.Incoming
+    } else if (checkDirection(BridgeDirection.LoadIncoming)) {
+      direction = BridgeDirection.Incoming
+      operations = ['Transaction'] as any // TODO: check it
     } else {
       return null
     }
     formattedItem.direction = direction
-    let request = item[0][direction] || item[0][direction.toLowerCase()]
+    let request = caseInsensitiveValue(body, direction)
+    const tx = first(request)
+    request = caseInsensitiveValue(tx, first(operations)) || caseInsensitiveValue(tx, last(operations))
+    formattedItem.soraAssetAddress = request.asset_id
     if (direction === BridgeDirection.Outgoing) {
-      request = request[0][operation] || request[0][operation.toLowerCase()] || request[0][RequestType.TransferXOR] || request[0][toCamelCase(RequestType.TransferXOR)]
-      formattedItem.hash = (item[0][direction] || item[0][direction.toLowerCase()])[1]
+      formattedItem.hash = last(caseInsensitiveValue(body, direction))
       formattedItem.from = request.from
-      formattedItem.soraAssetAddress = request.asset_id
-      formattedItem.externalAssetAddress = request.to
+      formattedItem.to = request.to
     } else {
-      formattedItem.from = request.author
-      formattedItem.kind = request.kind
-      formattedItem.hash = request.hash
+      formattedItem.from = request.author // TODO: check it
+      formattedItem.to = this.account.pair.address
+      formattedItem.kind = request.asset_kind || request.kind
+      formattedItem.hash = request.tx_hash || request.hash
     }
     return formattedItem
   }
@@ -370,18 +384,21 @@ export class BridgeApi extends BaseApi {
 
   private formatApprovedRequest (item: any): BridgeApprovedRequest {
     const formattedItem = {} as BridgeApprovedRequest
-    const request = item[0][RequestType.Transfer] || item[0][RequestType.Transfer.toLowerCase()] || item[0][RequestType.TransferXOR] || item[0][toCamelCase(RequestType.TransferXOR)]
+    const operations = [RequestType.Transfer, RequestType.TransferXOR]
+    const body = first(item)
+    const proofs = last(item) as any
+    const request = caseInsensitiveValue(body, first(operations)) || caseInsensitiveValue(body, last(operations))
     formattedItem.hash = request.tx_hash
     formattedItem.from = request.from
     formattedItem.to = request.to
     formattedItem.amount = `${request.amount}`.split(',').join('')
-    formattedItem.currencyType = [BridgeCurrencyType.TokenAddress, BridgeCurrencyType.TokenAddress.toLowerCase()].includes(first(Object.keys(request.currency_id)))
+    formattedItem.currencyType = stringToCaseInsensitiveArray(BridgeCurrencyType.TokenAddress).includes(first(Object.keys(request.currency_id)))
       ? BridgeCurrencyType.TokenAddress
       : BridgeCurrencyType.AssetId
     formattedItem.r = []
     formattedItem.s = []
     formattedItem.v = []
-    item[1].forEach(proof => {
+    proofs.forEach(proof => {
       formattedItem.r.push(proof.r)
       formattedItem.s.push(proof.s)
       formattedItem.v.push(+proof.v + 27) // TODO: remove this hack
