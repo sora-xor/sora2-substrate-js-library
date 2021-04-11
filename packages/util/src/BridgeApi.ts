@@ -339,12 +339,12 @@ export class BridgeApi extends BaseApi {
     } else if (checkDirection(BridgeDirection.Incoming)) {
       direction = BridgeDirection.Incoming
     } else if (checkDirection(BridgeDirection.LoadIncoming)) {
-      direction = BridgeDirection.Incoming
+      direction = BridgeDirection.LoadIncoming
       operations = ['Transaction'] as any // TODO: check it
     } else {
       return null
     }
-    formattedItem.direction = direction
+    formattedItem.direction = direction === BridgeDirection.LoadIncoming ? BridgeDirection.Incoming : direction
     let request = caseInsensitiveValue(body, direction)
     const tx = first(request)
     request = caseInsensitiveValue(tx, first(operations)) || caseInsensitiveValue(tx, last(operations))
