@@ -346,7 +346,7 @@ export class BridgeApi extends BaseApi {
     }
     formattedItem.direction = direction === BridgeDirection.LoadIncoming ? BridgeDirection.Incoming : direction
     let request = caseInsensitiveValue(body, direction)
-    const tx = first(request)
+    const tx = request.length ? first(request) : request
     request = caseInsensitiveValue(tx, first(operations)) || caseInsensitiveValue(tx, last(operations))
     formattedItem.soraAssetAddress = request.asset_id
     if (direction === BridgeDirection.Outgoing) {
