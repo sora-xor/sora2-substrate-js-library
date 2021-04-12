@@ -1038,10 +1038,16 @@ export class Api extends BaseApi {
     firstAssetAddress: string,
     secondAssetAddress: string
   ): Promise<Array<LiquiditySourceTypes>> {
+    const xor = KnownAssets.get(KnownSymbols.XOR)
+    const params = [firstAssetAddress, secondAssetAddress]
+    if (secondAssetAddress === xor.address) {
+      params.reverse()
+    }
+    const [baseAssetId, targetAssetId] = params
     const list = (await (this.api.rpc as any).tradingPair.listEnabledSourcesForPair(
       this.defaultDEXId,
-      firstAssetAddress,
-      secondAssetAddress
+      baseAssetId,
+      targetAssetId
     )).toJSON()
 
     return (list as Array<LiquiditySourceTypes>)
