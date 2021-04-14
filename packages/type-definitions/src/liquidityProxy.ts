@@ -32,7 +32,7 @@ export default {
                     type: 'FilterMode'
                 },
             ],
-            type: 'Option<SwapOutcomeInfo>'
+            type: 'Option<LPSwapOutcomeInfo>'
         },
         isPathAvailable: {
             description: 'Check if given two arbitrary tokens can be exchanged via any liquidity sources',
@@ -51,7 +51,37 @@ export default {
                 },
             ],
             type: 'bool'
+        },
+        listEnabledSourcesForPath: {
+            description: 'Given two arbitrary tokens, list liquidity sources that can be used along the path.',
+            params: [
+                {
+                    name: 'dexId',
+                    type: 'DEXId'
+                },
+                {
+                    name: 'inputAssetId',
+                    type: 'AssetId'
+                },
+                {
+                    name: 'outputAssetId',
+                    type: 'AssetId'
+                },
+            ],
+            type: 'Vec<LiquiditySourceType>'
         }
     },
-    types: {}
+    types: {
+        LPSwapOutcomeInfo: {
+            amount: 'Balance',
+            fee: 'Balance',
+            rewards: 'Vec<LPRewardsInfo>',
+            amount_without_impact: 'Balance'
+        },
+        LPRewardsInfo: {
+            amount: 'Balance',
+            currency: 'AssetId',
+            reason: 'RewardReason'
+        }
+    }
 }

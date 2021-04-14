@@ -142,5 +142,10 @@ export default {
     },
     DispatchResultWithPostInfo: "Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>",
     Public: "[u8; 33]",
+    RewardReason: {
+      _enum: [
+        "Unspecified", "BuyOnBondingCurve"
+      ]
+    },
   }
 }
