@@ -521,11 +521,11 @@ export class Api extends BaseApi {
       liquiditySources,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
     )
-    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 }
+    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amount_without_impact: 0 }
     return {
       amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
       fee: new FPNumber(value.fee, xor.decimals).toCodecString(),
-      rewards: value.rewards.toJSON(),
+      rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
       amountWithoutImpact: new FPNumber(value.amount_without_impact, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
     } as SwapResult
   }
