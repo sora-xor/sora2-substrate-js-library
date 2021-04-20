@@ -484,6 +484,16 @@ export class Api extends BaseApi {
     return (await (this.api.rpc as any).liquidityProxy.isPathAvailable(this.defaultDEXId, firstAssetAddress, secondAssetAddress)).isTrue
   }
 
+  async getListEnabledSourcesForPath (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<LiquiditySourceTypes>> {
+    const list = (await (this.api.rpc as any).liquidityProxy.listEnabledSourcesForPath(
+      this.defaultDEXId,
+      firstAssetAddress,
+      secondAssetAddress
+    )).toJSON()
+
+    return (list as Array<LiquiditySourceTypes>)
+  }
+
   /**
    * Get swap result for the demonstration purposes
    * @param assetAAddress Asset A address
@@ -511,10 +521,12 @@ export class Api extends BaseApi {
       liquiditySources,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
     )
-    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0 }
+    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 }
     return {
       amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
-      fee: new FPNumber(value.fee, xor.decimals).toCodecString()
+      fee: new FPNumber(value.fee, xor.decimals).toCodecString(),
+      rewards: value.rewards.toJSON(),
+      amountWithoutImpact: new FPNumber(value.amount_without_impact, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
     } as SwapResult
   }
 
