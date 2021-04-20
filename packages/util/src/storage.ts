@@ -1,20 +1,24 @@
 export class Storage {
-  constructor () {}
+  private namespace: string
+
+  constructor (namespace = 'sora') {
+    this.namespace = namespace
+  }
 
   public all (): Array<Array<any>> {
-    return Object.entries(localStorage).filter(([key]) => key.startsWith('sora'))
+    return Object.entries(localStorage).filter(([key]) => key.startsWith(this.namespace))
   }
 
   public get (key: string): string {
-    return localStorage.getItem(`sora.${key}`)
+    return localStorage.getItem(`${this.namespace}.${key}`)
   }
 
   public set (key: string, value: any): void {
-    localStorage.setItem(`sora.${key}`, value)
+    localStorage.setItem(`${this.namespace}.${key}`, value)
   }
 
   public remove (key: string): void {
-    localStorage.removeItem(`sora.${key}`)
+    localStorage.removeItem(`${this.namespace}.${key}`)
   }
 
   public clear (): void {

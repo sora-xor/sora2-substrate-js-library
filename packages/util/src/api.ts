@@ -479,6 +479,16 @@ export class Api extends BaseApi {
     return (await (this.api.rpc as any).liquidityProxy.isPathAvailable(this.defaultDEXId, firstAssetAddress, secondAssetAddress)).isTrue
   }
 
+  async getListEnabledSourcesForPath (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<LiquiditySourceTypes>> {
+    const list = (await (this.api.rpc as any).liquidityProxy.listEnabledSourcesForPath(
+      this.defaultDEXId,
+      firstAssetAddress,
+      secondAssetAddress
+    )).toJSON()
+
+    return (list as Array<LiquiditySourceTypes>)
+  }
+
   /**
    * Get swap result for the demonstration purposes
    * @param assetAAddress Asset A address

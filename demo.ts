@@ -51,6 +51,14 @@ async function demo(): Promise<void> {
   let claimables = await (api.rpc as any).rewards.claimables('21Bc9f4a3d9Dc86f142F802668dB7D908cF0A636').toString()
   console.log(claimables)
 
+  // get the liquidity sources list for path via liquidity proxy
+  let listEnabledSourcesForPath = (await (api.rpc as any).liquidityProxy.listEnabledSourcesForPath(
+    0,
+    XORAssetId,
+    VALAssetId
+  )).toJSON()
+  console.log(`listEnabledSourcesForPath ${XORAssetId} -> ${VALAssetId}`, listEnabledSourcesForPath)
+
   // get the price via liquidity proxy
   let quoted_result = await (api.rpc as any).liquidityProxy.quote(0, XORAssetId, PSWAPAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
   console.log("Quoted exchange DOT: ", quoted_result.unwrap().amount.toString());
