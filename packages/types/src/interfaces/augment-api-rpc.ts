@@ -24,6 +24,7 @@ import type { ReadProof, RuntimeVersion } from '@polkadot/types/interfaces/state
 import type { ApplyExtrinsicResult, ChainProperties, ChainType, DispatchError, Health, NetworkState, NodeRole, PeerInfo, SyncState } from '@polkadot/types/interfaces/system';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
 import type { AccountId, AssetId, BalancePrecision, BlockNumber, DEXId, FilterMode, Fixed, H160, H256, H64, Hash, Header, Index, Justification, KeyValue, LiquiditySourceType, OracleKey, SignedBlock, StorageData, SwapOutcomeInfo, SwapVariant, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
 
@@ -403,9 +404,13 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
        **/
       isPathAvailable: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array) => Observable<bool>>;
       /**
+       * Given two arbitrary tokens, list liquidity sources that can be used along the path.
+       **/
+      listEnabledSourcesForPath: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array) => Observable<Vec<LiquiditySourceType>>>;
+      /**
        * Get price with indicated Asset amount and direction, filtered by selected_types
        **/
-      quote: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Text | string, swapVariant: SwapVariant | 'WithDesiredInput' | 'WithDesiredOutput' | number | Uint8Array, selectedSourceTypes: Vec<LiquiditySourceType> | (LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | number | Uint8Array)[], filterMode: FilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => Observable<Option<SwapOutcomeInfo>>>;
+      quote: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Text | string, swapVariant: SwapVariant | 'WithDesiredInput' | 'WithDesiredOutput' | number | Uint8Array, selectedSourceTypes: Vec<LiquiditySourceType> | (LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | number | Uint8Array)[], filterMode: FilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => Observable<Option<LPSwapOutcomeInfo>>>;
     };
     mmr: {
       /**

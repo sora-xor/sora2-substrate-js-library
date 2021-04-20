@@ -206,6 +206,17 @@
         "network_id": "BridgeNetworkId"
     },
     "Keys": "SessionKeys3",
+    "LPRewardsInfo": {
+        "amount": "Balance",
+        "currency": "AssetId",
+        "reason": "RewardReason"
+    },
+    "LPSwapOutcomeInfo": {
+        "amount": "Balance",
+        "fee": "Balance",
+        "rewards": "Vec<LPRewardsInfo>",
+        "amount_without_impact": "Balance"
+    },
     "LiquiditySourceType": {
         "_enum": [
             "XYKPool",
@@ -433,6 +444,12 @@
             "ApprovalsReady",
             "Failed",
             "Done"
+        ]
+    },
+    "RewardReason": {
+        "_enum": [
+            "Unspecified",
+            "BuyOnBondingCurve"
         ]
     },
     "Scope": {

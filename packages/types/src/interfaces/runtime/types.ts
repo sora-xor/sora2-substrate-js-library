@@ -410,6 +410,12 @@ export interface Releases extends Enum {
   readonly isV10: boolean;
 }
 
+/** @name RewardReason */
+export interface RewardReason extends Enum {
+  readonly isUnspecified: boolean;
+  readonly isBuyOnBondingCurve: boolean;
+}
+
 /** @name RuntimeDbWeight */
 export interface RuntimeDbWeight extends Struct {
   readonly read: Weight;

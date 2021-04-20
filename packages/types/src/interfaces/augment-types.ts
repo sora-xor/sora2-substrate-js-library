@@ -61,7 +61,8 @@ import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AssetInfo, AssetNameStr, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, ChangePeersContract, CurrencyIdEncoded, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
-import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DispatchErrorWithPostInfoTPostDispatchInfo, DispatchResultWithPostInfo, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H512, H64, Hash, Header, HolderId, I32F32, Index, IndicesLookupSource, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PostDispatchInfo, PreRuntime, Public, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, Slot, SmoothPriceState, StorageData, StorageProof, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
+import type { LPRewardsInfo, LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
+import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DispatchErrorWithPostInfoTPostDispatchInfo, DispatchResultWithPostInfo, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H512, H64, Hash, Header, HolderId, I32F32, Index, IndicesLookupSource, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PostDispatchInfo, PreRuntime, Public, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RewardReason, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, Slot, SmoothPriceState, StorageData, StorageProof, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
 import type { TP } from '@sora-substrate/types/interfaces/tradingPair';
 
@@ -608,6 +609,8 @@ declare module '@polkadot/types/types/registry' {
     'Option<LookupSource>': Option<LookupSource>;
     'Option<LookupTarget>': Option<LookupTarget>;
     'Option<LotteryConfig>': Option<LotteryConfig>;
+    'Option<LPRewardsInfo>': Option<LPRewardsInfo>;
+    'Option<LPSwapOutcomeInfo>': Option<LPSwapOutcomeInfo>;
     'Option<MapTypeLatest>': Option<MapTypeLatest>;
     'Option<MapTypeV10>': Option<MapTypeV10>;
     'Option<MapTypeV11>': Option<MapTypeV11>;
@@ -825,6 +828,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<Retriable>': Option<Retriable>;
     'Option<RewardDestination>': Option<RewardDestination>;
     'Option<RewardPoint>': Option<RewardPoint>;
+    'Option<RewardReason>': Option<RewardReason>;
     'Option<RoundSnapshot>': Option<RoundSnapshot>;
     'Option<RoundState>': Option<RoundState>;
     'Option<RpcDataProviderId>': Option<RpcDataProviderId>;
@@ -1486,6 +1490,8 @@ declare module '@polkadot/types/types/registry' {
     'Vec<LookupSource>': Vec<LookupSource>;
     'Vec<LookupTarget>': Vec<LookupTarget>;
     'Vec<LotteryConfig>': Vec<LotteryConfig>;
+    'Vec<LPRewardsInfo>': Vec<LPRewardsInfo>;
+    'Vec<LPSwapOutcomeInfo>': Vec<LPSwapOutcomeInfo>;
     'Vec<MapTypeLatest>': Vec<MapTypeLatest>;
     'Vec<MapTypeV10>': Vec<MapTypeV10>;
     'Vec<MapTypeV11>': Vec<MapTypeV11>;
@@ -1703,6 +1709,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<Retriable>': Vec<Retriable>;
     'Vec<RewardDestination>': Vec<RewardDestination>;
     'Vec<RewardPoint>': Vec<RewardPoint>;
+    'Vec<RewardReason>': Vec<RewardReason>;
     'Vec<RoundSnapshot>': Vec<RoundSnapshot>;
     'Vec<RoundState>': Vec<RoundState>;
     'Vec<RpcDataProviderId>': Vec<RpcDataProviderId>;
@@ -2364,6 +2371,8 @@ declare module '@polkadot/types/types/registry' {
     LookupSource: LookupSource;
     LookupTarget: LookupTarget;
     LotteryConfig: LotteryConfig;
+    LPRewardsInfo: LPRewardsInfo;
+    LPSwapOutcomeInfo: LPSwapOutcomeInfo;
     MapTypeLatest: MapTypeLatest;
     MapTypeV10: MapTypeV10;
     MapTypeV11: MapTypeV11;
@@ -2581,6 +2590,7 @@ declare module '@polkadot/types/types/registry' {
     Retriable: Retriable;
     RewardDestination: RewardDestination;
     RewardPoint: RewardPoint;
+    RewardReason: RewardReason;
     RoundSnapshot: RoundSnapshot;
     RoundState: RoundState;
     RpcDataProviderId: RpcDataProviderId;

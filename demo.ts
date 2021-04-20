@@ -28,6 +28,7 @@ async function demo(): Promise<void> {
   const USDAssetId = api.createType('AssetId', '0x0200030000000000000000000000000000000000000000000000000000000000');
   const VALAssetId = api.createType('AssetId', '0x0200040000000000000000000000000000000000000000000000000000000000');
   const PSWAPAssetId = api.createType('AssetId', '0x0200050000000000000000000000000000000000000000000000000000000000');
+  const DAIAssetId = api.createType('AssetId', '0x0200060000000000000000000000000000000000000000000000000000000000');
 
   // register pair
   await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, PSWAPAssetId), root, "Enable Pair XOR-DOT");
@@ -51,10 +52,19 @@ async function demo(): Promise<void> {
   let claimables = await (api.rpc as any).rewards.claimables('21Bc9f4a3d9Dc86f142F802668dB7D908cF0A636').toString()
   console.log(claimables)
 
+  // get the liquidity sources list for path via liquidity proxy
+  let listEnabledSourcesForPath = (await (api.rpc as any).liquidityProxy.listEnabledSourcesForPath(
+    0,
+    XORAssetId,
+    VALAssetId
+  )).toJSON()
+  console.log(`listEnabledSourcesForPath ${XORAssetId} -> ${VALAssetId}`, listEnabledSourcesForPath)
+
   // get the price via liquidity proxy
-  let quoted_result = await (api.rpc as any).liquidityProxy.quote(0, XORAssetId, PSWAPAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
+  let quoted_result = await (api.rpc as any).liquidityProxy.quote(0, DAIAssetId, XORAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
   console.log("Quoted exchange DOT: ", quoted_result.unwrap().amount.toString());
   console.log("Quoted exchange FEE: ", quoted_result.unwrap().fee.toString());
+  console.log("Quoted exchange rewards: ", quoted_result.unwrap().rewards.toJSON())
 
   // perform swap via liquidity proxy
   await submitExtrinsic(api, api.tx.liquidityProxy.swap(0, XORAssetId, PSWAPAssetId, { WithDesiredInput: { desired_amount_in: "1000000000000000000", min_amount_out: "0" } }, [], "Disabled"), user_b, "User B swaps");
