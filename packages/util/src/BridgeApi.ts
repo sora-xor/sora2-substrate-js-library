@@ -139,7 +139,7 @@ export class BridgeApi extends BaseApi {
   }
 
   public get accountHistory (): Array<BridgeHistory> {
-    const filterHistory = (items) => items.filter(({ type }) => isBridgeOperation(type))
+    const filterHistory = (items: Array<any>) => items.filter(({ type }) => isBridgeOperation(type))
     if (this.storage) {
       const allHistory = JSON.parse(this.storage.get('history')) as Array<BridgeHistory> || []
       this.history = filterHistory(allHistory)
@@ -369,7 +369,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getRequest (hash: string): Promise<BridgeRequest> {
     const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], BridgeApi.ETH_NETWORK_ID, true)).toJSON()
-    return first(this.getData(data).map(item => this.formatRequest(item)))
+    return first(this.getData(data).map((item: any) => this.formatRequest(item)))
   }
 
   /**
@@ -379,7 +379,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getRequests (hashes: Array<string>): Promise<Array<BridgeRequest>> {
     const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, BridgeApi.ETH_NETWORK_ID, true)).toJSON()
-    return this.getData(data).map(item => this.formatRequest(item))
+    return this.getData(data).map((item: any) => this.formatRequest(item))
   }
 
   private formatApprovedRequest (item: any): BridgeApprovedRequest {

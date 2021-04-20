@@ -276,6 +276,10 @@ export class Api extends BaseApi {
       this.storage.set('name', name)
       this.storage.set('address', this.account.pair.address)
       this.storage.set('isExternal', true)
+      const assets = this.storage?.get('assets')
+      if (assets) {
+        this.assets = JSON.parse(assets)
+      }
     }
   }
 
@@ -399,10 +403,11 @@ export class Api extends BaseApi {
     for (const item of KnownAssets) {
       const asset = { ...item } as AccountAsset
       const result = await getAssetBalance(this.api, this.account.pair.address, item.address, item.decimals)
-      const balance = result.transferable
-      if (!+balance && item.symbol !== KnownSymbols.XOR) {
-        continue
-      }
+      // We've decided to show all KnownAssets for now
+      // const balance = result.transferable
+      // if (!+balance && item.symbol !== KnownSymbols.XOR) {
+      //   continue
+      // }
       asset.balance = result
       knownAssets.push(asset)
       this.addToAssetList(asset)
