@@ -8,10 +8,21 @@ export enum RewardingEvents {
   NtfAirdrop = 'NtfAirdrop'
 }
 
+export enum RewardReason {
+  Unspecified = 'Unspecified',
+  BuyOnBondingCurve = 'BuyOnBondingCurve'
+}
+
 export interface RewardInfo {
   type: RewardingEvents;
   asset: Asset;
   amount: CodecString;
+}
+
+export interface LPRewardsInfo {
+  amount: CodecString;
+  currency: string;
+  reason: RewardReason;
 }
 
 export interface RewardClaimHistory extends History {
