@@ -28,6 +28,7 @@ async function demo(): Promise<void> {
   const USDAssetId = api.createType('AssetId', '0x0200030000000000000000000000000000000000000000000000000000000000');
   const VALAssetId = api.createType('AssetId', '0x0200040000000000000000000000000000000000000000000000000000000000');
   const PSWAPAssetId = api.createType('AssetId', '0x0200050000000000000000000000000000000000000000000000000000000000');
+  const DAIAssetId = api.createType('AssetId', '0x0200060000000000000000000000000000000000000000000000000000000000');
 
   // register pair
   await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, PSWAPAssetId), root, "Enable Pair XOR-DOT");
@@ -60,9 +61,10 @@ async function demo(): Promise<void> {
   console.log(`listEnabledSourcesForPath ${XORAssetId} -> ${VALAssetId}`, listEnabledSourcesForPath)
 
   // get the price via liquidity proxy
-  let quoted_result = await (api.rpc as any).liquidityProxy.quote(0, XORAssetId, PSWAPAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
+  let quoted_result = await (api.rpc as any).liquidityProxy.quote(0, DAIAssetId, XORAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
   console.log("Quoted exchange DOT: ", quoted_result.unwrap().amount.toString());
   console.log("Quoted exchange FEE: ", quoted_result.unwrap().fee.toString());
+  console.log("Quoted exchange rewards: ", quoted_result.unwrap().rewards.toJSON())
 
   // perform swap via liquidity proxy
   await submitExtrinsic(api, api.tx.liquidityProxy.swap(0, XORAssetId, PSWAPAssetId, { WithDesiredInput: { desired_amount_in: "1000000000000000000", min_amount_out: "0" } }, [], "Disabled"), user_b, "User B swaps");
