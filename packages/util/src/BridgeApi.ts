@@ -147,7 +147,7 @@ export class BridgeApi extends BaseApi {
     return this._externalNetwork
   }
 
-  public set externalNetwork(networkId: BridgeNetworks) {
+  public set externalNetwork (networkId: BridgeNetworks) {
     const key = 'externalNetwork'
     this.storage.set(key, networkId)
     this._externalNetwork = networkId
