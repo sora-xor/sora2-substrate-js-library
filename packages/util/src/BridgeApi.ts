@@ -29,6 +29,12 @@ export interface BridgeHistory extends History {
   soraNetworkFee?: CodecString;
   ethereumNetworkFee?: CodecString;
   signed?: boolean;
+  network?: BrdigeNetworks;
+}
+
+export enum BrdigeNetworks {
+  Ethereum = 'Ethereum',
+  Energy = 'Energy'
 }
 
 /**
