@@ -310,10 +310,10 @@ export class BridgeApi extends BaseApi {
    * Mark history data as `Done`
    * @param hash Eth hash of transaction
    */
-  // public async markAsDone (hash: string, bridgeNetworkId: BridgeNetworks): Promise<void> {
+  // public async markAsDone (hash: string): Promise<void> {
   //   assert(this.account, Messages.connectWallet)
   //   await this.submitExtrinsic(
-  //     this.api.tx.ethBridge.requestFromSidechain(hash, RequestType.MarkAsDone, bridgeNetworkId),
+  //     this.api.tx.ethBridge.requestFromSidechain(hash, RequestType.MarkAsDone, this.externalNetwork),
   //     this.account.pair,
   //     {
   //       type: Operation.EthBridgeOutgoingMarkDone,
