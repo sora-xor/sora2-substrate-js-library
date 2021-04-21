@@ -29,6 +29,12 @@ export interface BridgeHistory extends History {
   soraNetworkFee?: CodecString;
   ethereumNetworkFee?: CodecString;
   signed?: boolean;
+  externalNetwork?: BridgeNetworks;
+}
+
+export enum BridgeNetworks {
+  ETH_NETWORK_ID = 0,
+  ENERGY_NETWORK_ID = 1
 }
 
 /**
@@ -61,7 +67,7 @@ export enum BridgeCurrencyType {
 /**
  * Type of request which we will wait
  */
- export enum RequestType {
+export enum RequestType {
   Transfer = 'Transfer',
   TransferXOR = 'TransferXOR',
   AddAsset = 'AddAsset',
@@ -121,8 +127,7 @@ export interface BridgeApprovedRequest {
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
 export class BridgeApi extends BaseApi {
-  public static ETH_NETWORK_ID = 0
-
+  private _externalNetwork: BridgeNetworks
   private account: CreateResult
 
   constructor () {
@@ -136,6 +141,16 @@ export class BridgeApi extends BaseApi {
    */
   private getData (data: any): any {
     return data.ok || data.Ok
+  }
+
+  public get externalNetwork (): BridgeNetworks {
+    return this._externalNetwork
+  }
+
+  public set externalNetwork (networkId: BridgeNetworks) {
+    const key = 'externalNetwork'
+    this.storage.set(key, networkId)
+    this._externalNetwork = networkId
   }
 
   public get accountHistory (): Array<BridgeHistory> {
@@ -214,7 +229,7 @@ export class BridgeApi extends BaseApi {
         asset.address,
         to,
         balance.toCodecString(),
-        BridgeApi.ETH_NETWORK_ID
+        this.externalNetwork
       ],
       asset
     }
@@ -268,7 +283,7 @@ export class BridgeApi extends BaseApi {
       Operation.EthBridgeIncoming,
       hash,
       kind,
-      BridgeApi.ETH_NETWORK_ID
+      this.externalNetwork
     )
   }
 
@@ -282,7 +297,7 @@ export class BridgeApi extends BaseApi {
     const history = this.accountHistory.find(item => item.hash === hash)
     const kind = { [IncomingRequestKind.Transaction]: type }
     await this.submitExtrinsic(
-      this.api.tx.ethBridge.requestFromSidechain(hash, kind, BridgeApi.ETH_NETWORK_ID),
+      this.api.tx.ethBridge.requestFromSidechain(hash, kind, this.externalNetwork),
       this.account.pair,
       history || {
         type: Operation.EthBridgeIncoming,
@@ -298,7 +313,7 @@ export class BridgeApi extends BaseApi {
   // public async markAsDone (hash: string): Promise<void> {
   //   assert(this.account, Messages.connectWallet)
   //   await this.submitExtrinsic(
-  //     this.api.tx.ethBridge.requestFromSidechain(hash, RequestType.MarkAsDone, BridgeApi.ETH_NETWORK_ID),
+  //     this.api.tx.ethBridge.requestFromSidechain(hash, RequestType.MarkAsDone, this.externalNetwork),
   //     this.account.pair,
   //     {
   //       type: Operation.EthBridgeOutgoingMarkDone,
@@ -312,7 +327,7 @@ export class BridgeApi extends BaseApi {
    * @returns Array with all registered assets
    */
   public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
-    const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(BridgeApi.ETH_NETWORK_ID)).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(this.externalNetwork)).toJSON()
     const assets = await getAssets(this.api)
     return this.getData(data).map(([_, soraAsset, externalAsset]) => {
       const soraAssetId = first(soraAsset)
@@ -368,7 +383,7 @@ export class BridgeApi extends BaseApi {
    * @returns History of request
    */
   public async getRequest (hash: string): Promise<BridgeRequest> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], BridgeApi.ETH_NETWORK_ID, true)).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], this.externalNetwork, true)).toJSON()
     return first(this.getData(data).map((item: any) => this.formatRequest(item)))
   }
 
@@ -378,7 +393,7 @@ export class BridgeApi extends BaseApi {
    * @returns Array with history of requests
    */
   public async getRequests (hashes: Array<string>): Promise<Array<BridgeRequest>> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, BridgeApi.ETH_NETWORK_ID, true)).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, this.externalNetwork, true)).toJSON()
     return this.getData(data).map((item: any) => this.formatRequest(item))
   }
 
@@ -412,7 +427,7 @@ export class BridgeApi extends BaseApi {
    * @returns Approved request with proofs
    */
   public async getApprovedRequest (hash: string): Promise<BridgeApprovedRequest> {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests([hash], BridgeApi.ETH_NETWORK_ID)).toHuman()
+    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests([hash], this.externalNetwork)).toHuman()
     return first(this.getData(data).map(item => this.formatApprovedRequest(item)))
   }
 
@@ -422,7 +437,7 @@ export class BridgeApi extends BaseApi {
    * @returns Array with approved requests with proofs
    */
   public async getApprovedRequests (hashes: Array<string>): Promise<Array<BridgeApprovedRequest>> {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests(hashes, BridgeApi.ETH_NETWORK_ID)).toHuman()
+    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests(hashes, this.externalNetwork)).toHuman()
     return this.getData(data).map(item => this.formatApprovedRequest(item))
   }
 
@@ -434,7 +449,7 @@ export class BridgeApi extends BaseApi {
     assert(this.account, Messages.connectWallet)
     const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address, status)).toJSON()
     return this.getData(data)
-      .filter(([networkId, _]) => networkId === BridgeApi.ETH_NETWORK_ID)
+      .filter(([networkId, _]) => networkId === this.externalNetwork)
       .map(([_, hash]) => hash) as Array<string>
   }
 
@@ -444,7 +459,7 @@ export class BridgeApi extends BaseApi {
    * @returns
    */
   public async getApprovals (hashes: Array<string>) {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovals(hashes, BridgeApi.ETH_NETWORK_ID)).toJSON()
+    const data = (await (this.api.rpc as any).ethBridge.getApprovals(hashes, this.externalNetwork)).toJSON()
     return this.getData(data)
   }
 }
