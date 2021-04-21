@@ -5,7 +5,7 @@ import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8
 import type { ITuple } from '@polkadot/types/types';
 import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
 import type { Timepoint } from '@polkadot/types/interfaces/utility';
-import type { AccountId, AssetId, AssetName, AssetSymbol, Balance, BalancePrecision, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AssetId, AssetName, AssetSymbol, Balance, BalancePrecision, BlockNumber, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetKind */
 export interface AssetKind extends Enum {
@@ -21,6 +21,12 @@ export interface BridgeNetworkId extends u32 {}
 export interface BridgeStatus extends Enum {
   readonly isInitialized: boolean;
   readonly isMigrating: boolean;
+}
+
+/** @name BridgeTimepoint */
+export interface BridgeTimepoint extends Struct {
+  readonly height: MultiChainHeight;
+  readonly index: u32;
 }
 
 /** @name ChangePeersContract */
@@ -211,6 +217,14 @@ export interface LoadIncomingTransactionRequest extends Struct {
   readonly timepoint: Timepoint;
   readonly kind: IncomingTransactionRequestKind;
   readonly network_id: BridgeNetworkId;
+}
+
+/** @name MultiChainHeight */
+export interface MultiChainHeight extends Enum {
+  readonly isThischain: boolean;
+  readonly asThischain: BlockNumber;
+  readonly isSidechain: boolean;
+  readonly asSidechain: u64;
 }
 
 /** @name OffchainRequest */

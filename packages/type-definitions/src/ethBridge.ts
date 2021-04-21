@@ -72,6 +72,16 @@ export default {
     },
   },
   types: {
+    MultiChainHeight: {
+      _enum: {
+        Thischain: "BlockNumber",
+        Sidechain: "u64"
+      }
+    },
+    BridgeTimepoint: {
+      height: "MultiChainHeight",
+      index: "u32",
+    },
     EthPeersSync: {
       is_bridge_ready: "bool",
       is_xor_ready: "bool",
