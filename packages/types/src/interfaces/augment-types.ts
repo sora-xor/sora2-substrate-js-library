@@ -60,7 +60,7 @@ import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AssetInfo, AssetNameStr, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, ChangePeersContract, CurrencyIdEncoded, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { LPRewardsInfo, LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
 import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DispatchErrorWithPostInfoTPostDispatchInfo, DispatchResultWithPostInfo, DistributionAccounts, Duration, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H512, H64, Hash, Header, HolderId, I32F32, Index, IndicesLookupSource, Justification, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PostDispatchInfo, PreRuntime, Public, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RewardReason, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, Slot, SmoothPriceState, StorageData, StorageProof, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
@@ -276,6 +276,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<BountyStatusPendingPayout>': Option<BountyStatusPendingPayout>;
     'Option<BridgeNetworkId>': Option<BridgeNetworkId>;
     'Option<BridgeStatus>': Option<BridgeStatus>;
+    'Option<BridgeTimepoint>': Option<BridgeTimepoint>;
     'Option<BufferedSessionChange>': Option<BufferedSessionChange>;
     'Option<Bytes>': Option<Bytes>;
     'Option<Call>': Option<Call>;
@@ -649,6 +650,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<MortalEra>': Option<MortalEra>;
     'Option<MultiAddress>': Option<MultiAddress>;
     'Option<MultiAsset>': Option<MultiAsset>;
+    'Option<MultiChainHeight>': Option<MultiChainHeight>;
     'Option<MultiCurrencyBalanceOf>': Option<MultiCurrencyBalanceOf>;
     'Option<MultiLocation>': Option<MultiLocation>;
     'Option<Multiplier>': Option<Multiplier>;
@@ -1157,6 +1159,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<BountyStatusPendingPayout>': Vec<BountyStatusPendingPayout>;
     'Vec<BridgeNetworkId>': Vec<BridgeNetworkId>;
     'Vec<BridgeStatus>': Vec<BridgeStatus>;
+    'Vec<BridgeTimepoint>': Vec<BridgeTimepoint>;
     'Vec<BufferedSessionChange>': Vec<BufferedSessionChange>;
     'Vec<Bytes>': Vec<Bytes>;
     'Vec<Call>': Vec<Call>;
@@ -1530,6 +1533,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<MortalEra>': Vec<MortalEra>;
     'Vec<MultiAddress>': Vec<MultiAddress>;
     'Vec<MultiAsset>': Vec<MultiAsset>;
+    'Vec<MultiChainHeight>': Vec<MultiChainHeight>;
     'Vec<MultiCurrencyBalanceOf>': Vec<MultiCurrencyBalanceOf>;
     'Vec<MultiLocation>': Vec<MultiLocation>;
     'Vec<Multiplier>': Vec<Multiplier>;
@@ -2038,6 +2042,7 @@ declare module '@polkadot/types/types/registry' {
     BountyStatusPendingPayout: BountyStatusPendingPayout;
     BridgeNetworkId: BridgeNetworkId;
     BridgeStatus: BridgeStatus;
+    BridgeTimepoint: BridgeTimepoint;
     BufferedSessionChange: BufferedSessionChange;
     Bytes: Bytes;
     Call: Call;
@@ -2411,6 +2416,7 @@ declare module '@polkadot/types/types/registry' {
     MortalEra: MortalEra;
     MultiAddress: MultiAddress;
     MultiAsset: MultiAsset;
+    MultiChainHeight: MultiChainHeight;
     MultiCurrencyBalanceOf: MultiCurrencyBalanceOf;
     MultiLocation: MultiLocation;
     Multiplier: Multiplier;

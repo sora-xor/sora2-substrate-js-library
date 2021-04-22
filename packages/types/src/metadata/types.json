@@ -37,6 +37,10 @@
             "Migrating"
         ]
     },
+    "BridgeTimepoint": {
+        "height": "MultiChainHeight",
+        "index": "u32"
+    },
     "ChangePeersContract": {
         "_enum": [
             "XOR",
@@ -254,6 +258,12 @@
             "Permit",
             "Forbid"
         ]
+    },
+    "MultiChainHeight": {
+        "_enum": {
+            "Thischain": "BlockNumber",
+            "Sidechain": "u64"
+        }
     },
     "MultiCurrencyBalance": "Balance",
     "MultiCurrencyBalanceOf": "MultiCurrencyBalance",
@@ -514,6 +524,7 @@
             "Identifier": "Vec<u8>"
         }
     },
+    "Timepoint": "BridgeTimepoint",
     "TradingPair": {
         "base_asset_id": "AssetId",
         "target_asset_id": "AssetId"
