@@ -127,7 +127,7 @@ export interface BridgeApprovedRequest {
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
 export class BridgeApi extends BaseApi {
-  private _externalNetwork: BridgeNetworks
+  private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID
   private account: CreateResult
 
   constructor () {
