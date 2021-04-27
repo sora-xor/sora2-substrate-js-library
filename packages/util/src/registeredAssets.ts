@@ -832,5 +832,5 @@ export const RegisteredAsset = [{
   'address': '0x0200070000000000000000000000000000000000000000000000000000000000',
   'name': 'Ether',
   'symbol': 'ETH',
-  'icon': `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpolygon fill='%2362678F' points='20,0 32.1,20.1 20,14.9 '/%3E%3Cpolygon fill='%238C92B2' points='7.9,20.1 20,0 20,14.9 '/%3E%3Cpolygon fill='%2362678F' points='20,27.5 7.9,20.1 20,14.9 '/%3E%3Cpolygon fill='%23444971' points='32.1,20.1 20,14.9 20,27.5 '/%3E%3Cpolygon fill='%2362678F' points='20,30.1 32.1,22.9 20,40 '/%3E%3Cpolygon fill='%238C92B2' points='20,30.1 7.9,22.9 20,40 '/%3E%3C/svg%3E`
+  'icon': `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23FFFFFF' d='M40,20c0,11-9,20-20,20S0,31,0,20S9,0,20,0S40,9,40,20z'/%3E%3Cpolygon fill='%2362678F' points='20,5 29.1,20.1 20,16.2 '/%3E%3Cpolygon fill='%238C92B2' points='10.9,20.1 20,5 20,16.2 '/%3E%3Cpolygon fill='%2362678F' points='20,25.7 10.9,20.1 20,16.2 '/%3E%3Cpolygon fill='%23444971' points='29.1,20.1 20,16.2 20,25.7 '/%3E%3Cpolygon fill='%2362678F' points='20,27.6 29.1,22.2 20,35 '/%3E%3Cpolygon fill='%238C92B2' points='20,27.6 10.9,22.2 20,35 '/%3E%3C/svg%3E`
 }]
