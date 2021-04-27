@@ -1,0 +1,836 @@
+export const RegisteredAsset = [{
+  'address': '0x00019977e20516b9f7112cd8cfef1a5be2e5344d2ef1aa5bc92bbb503e81146e',
+  'name': 'FTX Token',
+  'symbol': 'FTT',
+  'icon': ''
+}, {
+  'address': '0x00019b95ac2c945d339e748857b1610e72ae33db52221a9b96e15965afd67b8c',
+  'name': 'Golem',
+  'symbol': 'GLM',
+  'icon': ''
+}, {
+  'address': '0x000268050a977248b641719592e7a0247ce4741839c83ec6aac6a865d3d0ba2c',
+  'name': 'Neutrino USD',
+  'symbol': 'USDN',
+  'icon': ''
+}, {
+  'address': '0x0004d3168f737e96b66b72fbb1949a2a23d4ef87182d1e8bf64096f1bb348e0b',
+  'name': 'Reef Finance',
+  'symbol': 'REEF',
+  'icon': ''
+}, {
+  'address': '0x0004deb98789e1eccec1db09c3ca67b0fca7c676eeb5a9679058483e1751bfae',
+  'name': 'Status',
+  'symbol': 'SNT',
+  'icon': ''
+}, {
+  'address': '0x000527e350ddcc7dc55284b688135a21c72f897d5c5bdb4deb478bf6ef31d872',
+  'name': 'Syntropy',
+  'symbol': 'NOIA',
+  'icon': ''
+}, {
+  'address': '0x0005fc0c409a8f2731d5e8ea028d3f9d64e0c697b9d36874dc6b6090b1ced6ed',
+  'name': 'DODO',
+  'symbol': 'DODO',
+  'icon': ''
+}, {
+  'address': '0x00078a84c8fd40b574fa673db8ae782818b47790627e22b1a496b9a6bd059ff4',
+  'name': 'bZx Protocol',
+  'symbol': 'BZRX',
+  'icon': ''
+}, {
+  'address': '0x0009330642c9125932372aa371d3e228639bc0017231d94dff0e70b9b71d7992',
+  'name': 'Frontier',
+  'symbol': 'FRONT',
+  'icon': ''
+}, {
+  'address': '0x000974185b33df1db9beae5df570d68b8db8b517bb3d5c509eea906a81414c91',
+  'name': 'OMG Network',
+  'symbol': 'OMG',
+  'icon': ''
+}, {
+  'address': '0x0009c08a87923ccab101868cd8a147ede9769f5511b2e8a2ccc2faeec53400c1',
+  'name': 'Reserve Rights Token',
+  'symbol': 'RSR',
+  'icon': ''
+}, {
+  'address': '0x0018886a464d2c7505e71516d57594de4b23db081d11e2cb79fd3a6175b0180f',
+  'name': 'cUNI',
+  'symbol': 'CUNI',
+  'icon': ''
+}, {
+  'address': '0x001da2678bc8b0ff27d17eb4c11cc8e0def6c16a141d93253f3aa51276aa7b45',
+  'name': 'Kyber Network',
+  'symbol': 'KNC',
+  'icon': ''
+}, {
+  'address': '0x001e33196c46c7f4b6f892c059e7f2a2a6f01f831eeb92b9d168229048af0aaf',
+  'name': 'cUSDT',
+  'symbol': 'CUSDT',
+  'icon': ''
+}, {
+  'address': '0x001e5824bbaf972e67b25bcf2f373b9c23ac415f9f5b2460a3e0fb059ea94ca8',
+  'name': 'SKALE',
+  'symbol': 'SKL',
+  'icon': ''
+}, {
+  'address': '0x001ed00f9520b68b98e8fd932822a81c46d1f83fd533406a0a4c1bd2256004fb',
+  'name': 'Chiliz',
+  'symbol': 'CHZ',
+  'icon': ''
+}, {
+  'address': '0x001f7a13792061236adfc93fa3aa8bad1dc8a8e8f889432b3d8d416b986f2c43',
+  'name': 'DIA',
+  'symbol': 'DIA',
+  'icon': ''
+}, {
+  'address': '0x001f92023cd725db7f60124e33b02eb2857c93846c01b7869f54d4160bc65579',
+  'name': 'Terra Virtua Kolect',
+  'symbol': 'TVK',
+  'icon': ''
+}, {
+  'address': '0x002056aa68c440084b6dc6ad31cf157f6d0d76ea0667ac8483c3b2f2cea34089',
+  'name': 'Axie Infinity',
+  'symbol': 'AXS',
+  'icon': ''
+}, {
+  'address': '0x00212f5d373557dd1fe1722d9179bad60c97c8119081390186ceb3ba7ded50ab',
+  'name': 'Fei Protocol',
+  'symbol': 'FEI',
+  'icon': ''
+}, {
+  'address': '0x0021ac9975b31fcadf46bb1f3018e04bde1841a3ac14bb0db8d5e09f6cff25a1',
+  'name': 'Balancer',
+  'symbol': 'BAL',
+  'icon': ''
+}, {
+  'address': '0x0021b650e4cc3b2887148f6c81e10879473a1d5e23fe177e6a4535c17ebc1218',
+  'name': 'Polymath Network',
+  'symbol': 'POLY',
+  'icon': ''
+}, {
+  'address': '0x002353dde90dea7f8441c81f8f042762a0f752fcfcc9db28d0dfad27a73b533a',
+  'name': 'Uquid Coin',
+  'symbol': 'UQC',
+  'icon': ''
+}, {
+  'address': '0x002676c3edea5b08bc0f9b6809a91aa313b7da35e28b190222e9dc032bf1e662',
+  'name': 'yearn finance',
+  'symbol': 'YFI',
+  'icon': ''
+}, {
+  'address': '0x002779e8024cb31ec2c52312823084e0cc0eac7488aac9cbbc60bc9bc449ce3e',
+  'name': 'Ultra',
+  'symbol': 'UOS',
+  'icon': ''
+}, {
+  'address': '0x0027cd1ddb1b8d68d69e8e7577443d9a7f935dff2bf76a617838ec73516df94f',
+  'name': 'pNetwork',
+  'symbol': 'PNT',
+  'icon': ''
+}, {
+  'address': '0x0028e1bca65a7e9b171d27f6ffccf17d6d30f1cf252f90731805385b6e45811e',
+  'name': 'Gnosis',
+  'symbol': 'GNO',
+  'icon': ''
+}, {
+  'address': '0x002c48630dcb8c75cc36162cbdbc8ff27b843973b951ba9b6e260f869d45bcdc',
+  'name': 'Wrapped Bitcoin',
+  'symbol': 'WBTC',
+  'icon': ''
+}, {
+  'address': '0x002ca40397c794e25dba18cf807910eeb69eb8e81b3f07bb54f7c5d1d8ab76b9',
+  'name': 'Ocean Protocol',
+  'symbol': 'OCEAN',
+  'icon': ''
+}, {
+  'address': '0x002ead91a2de57b8855b53d4a62c25277073fd7f65f7e5e79f4936ed747fcad0',
+  'name': 'Curve DAO Token',
+  'symbol': 'CRV',
+  'icon': ''
+}, {
+  'address': '0x002f0c72393bbf7a1b80395493e4052a9521ed1767b4712c401c88f52aeec55d',
+  'name': 'NKN',
+  'symbol': 'NKN',
+  'icon': ''
+}, {
+  'address': '0x002f586ceb43d243527be1b8b17a6cafca011f5ffefd75ac399afd14f1eb47c1',
+  'name': 'Orion Protocol',
+  'symbol': 'ORN',
+  'icon': ''
+}, {
+  'address': '0x002f7ee906ee5487f2eb6ddba33899543459b404922a861a21baf1a79df37f23',
+  'name': 'sETH',
+  'symbol': 'SETH',
+  'icon': ''
+}, {
+  'address': '0x003005b2417b5046455e73f7fc39779a013f1a33b4518bcd83a790900dca49ff',
+  'name': 'NEXO',
+  'symbol': 'NEXO',
+  'icon': ''
+}, {
+  'address': '0x0033271716eec64234a5324506c4558de27b7c23c42f3e3b74801f98bdfeebf7',
+  'name': 'Phala Network',
+  'symbol': 'PHA',
+  'icon': ''
+}, {
+  'address': '0x003ed5ba48decae8e9f69030fb432c6ad1594e932a971945dc9c40fca4b6d17c',
+  'name': 'Unibright',
+  'symbol': 'UBT',
+  'icon': ''
+}, {
+  'address': '0x004249314d526b706a2e71e76a6d81911e4e6d7fb6480051d879fdb8ef1dccc9',
+  'name': 'Paxos Standard',
+  'symbol': 'PAX',
+  'icon': ''
+}, {
+  'address': '0x004305dbd4e0d32a88021cf4e93c1adbca079b3f25fbbdf69bab1f41092493b7',
+  'name': 'Populous',
+  'symbol': 'PPT',
+  'icon': ''
+}, {
+  'address': '0x00438aac3a91cc6cee0c8d2f14e4bf7ec4512ca708b180cc0fda47b0eb1ad538',
+  'name': 'renBTC',
+  'symbol': 'RENBTC',
+  'icon': ''
+}, {
+  'address': '0x00449af28b82575d6ac0e8c6d20e095be0917e1b0eaa63962a1dc2c6b81c2b0d',
+  'name': 'Decentraland',
+  'symbol': 'MANA',
+  'icon': ''
+}, {
+  'address': '0x0046212ec33c6fd84bc994ed57d150dbd73012381ed95adc5b2a6ef00f41e675',
+  'name': 'Storj',
+  'symbol': 'STORJ',
+  'icon': ''
+}, {
+  'address': '0x004765e0572e2d9de54963aef9caed1e9080925e7ca7b24b67a1c6b65e6b2862',
+  'name': 'Bounce',
+  'symbol': 'AUCTION',
+  'icon': ''
+}, {
+  'address': '0x0047b09788a75ea46e94ca95c55f9f58469b750125ac56ab4d1ba2286a2ea787',
+  'name': 'Tellor',
+  'symbol': 'TRB',
+  'icon': ''
+}, {
+  'address': '0x0047e323378d23116261954e67836f350c45625124bbadb35404d9109026feb5',
+  'name': 'Unique One',
+  'symbol': 'RARE',
+  'icon': `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23E4E4E4' d='M40,20c0,11-9,20-20,20S0,31,0,20S9,0,20,0S40,9,40,20z'/%3E%3Cpath fill='%23FF5733' d='M20,2.9C10.6,2.9,2.9,10.6,2.9,20S10.6,37.1,20,37.1S37.1,29.4,37.1,20S29.4,2.9,20,2.9z'/%3E%3Cpath fill='%23FFFFFF' d='M26.2,11.6c-0.1,1.3-0.5,2-1.7,2.5c-0.1-0.1-0.3-0.3-0.4-0.4c1.1-0.5,1.4-1.1,1.5-1.9h-1.5v0.9h-0.5v-1.4 h2.2l0.1,0L26.2,11.6C26.3,11.6,26.2,11.6,26.2,11.6z M26.7,11.4c0.3,0.1,0.8,0.3,1,0.4l-0.3,0.5c-0.2-0.2-0.7-0.4-1-0.5L26.7,11.4z M27,14.1C27,14.1,27,14.2,27,14.1l-0.4-0.4c1.1-0.3,1.9-1,2.3-2c0.2,0.1,0.3,0.2,0.5,0.3C28.9,13,28.1,13.7,27,14.1z M22.7,14.9 c-0.5-0.2-1-0.3-1.4-0.4v-3H19c0,1,0,2.1,0,3.1c-0.4,0.1-0.7,0.2-1.1,0.4c-1.9,0.9-2.8,3.1-2.8,5.5v3.9c-0.1,0-0.2-0.1-0.3-0.1 c-1.2-0.6-1.7-1.8-1.7-3.9v-8.8H11c0,2.9,0,5.9,0,8.8c0,2.5,0.8,4.8,2.8,5.5c0.5,0.2,1,0.3,1.4,0.4v3h2.2c0-1,0-2.1,0-3.1 c0.4-0.1,0.7-0.2,1.1-0.4c1.9-0.9,2.8-3.1,2.8-5.5v-3.9c0.1,0,0.2,0.1,0.3,0.1c1.2,0.6,1.7,1.8,1.7,3.9v8.8h2.2c0-2.9,0-5.9,0-8.8 C25.5,17.9,24.7,15.7,22.7,14.9z M19,20.3c0,1.9-0.6,3.4-1.6,3.9c0-1.2,0-2.5,0-3.7c0-1.9,0.6-3.4,1.6-3.9C19,17.8,19,19.1,19,20.3z '/%3E%3C/svg%3E`
+}, {
+  'address': '0x004baaeb9bf0d5210a51fab72d10c84a34f53bea4e0e102d794d531a45ec50f9',
+  'name': 'Holo',
+  'symbol': 'HOT',
+  'icon': ''
+}, {
+  'address': '0x004c3a657f4be32ac213a2f738b976a122def529302436c5be4f6ff4acfb29d7',
+  'name': 'Dent',
+  'symbol': 'DENT',
+  'icon': ''
+}, {
+  'address': '0x004d9058620eb7aa4ea243dc6cefc4b76c0cf7ad941246066142c871b376bb7e',
+  'name': 'Crypto com Coin',
+  'symbol': 'CRO',
+  'icon': ''
+}, {
+  'address': '0x004df6ecfbdc59839b084df6de0ce7bade2d283c251c1f5650a8d19583ba6c63',
+  'name': 'Audius',
+  'symbol': 'AUDIO',
+  'icon': ''
+}, {
+  'address': '0x0051f23324837de20e7bb503c0ae06854b2929cde1b9fac747b4850f45495272',
+  'name': 'FUNToken',
+  'symbol': 'FUN',
+  'icon': ''
+}, {
+  'address': '0x00521ad5caeadc2e3e04be4d4ebb0b7c8c9b71ba657c2362a3953490ebc81410',
+  'name': 'Cream',
+  'symbol': 'CREAM',
+  'icon': ''
+}, {
+  'address': '0x005476064ff01a847b1c565ce577ad37105c3cd2a2e755da908b87f7eeb4423b',
+  'name': 'xDAI Stake',
+  'symbol': 'STAKE',
+  'icon': ''
+}, {
+  'address': '0x00567d096a736f33bf78cad7b01e33463923b9c933ee13ab7e3fb7b23f5f953a',
+  'name': 'Binance USD',
+  'symbol': 'BUSD',
+  'icon': ''
+}, {
+  'address': '0x005712f942dc421387d5b90f5f489f7f9ec4b4759379cf930660431a2aced902',
+  'name': 'Enjin Coin',
+  'symbol': 'ENJ',
+  'icon': ''
+}, {
+  'address': '0x005dcde1cfe35f81a0dd5bbd8782298e8eac3d640946a2fa2f4cf748773529d8',
+  'name': 'Public Mint',
+  'symbol': 'MINT',
+  'icon': ''
+}, {
+  'address': '0x005e152271f8816d76221c7a0b5c6cafcb54fdfb6954dd8812f0158bfeac900d',
+  'name': 'SingularityNET',
+  'symbol': 'AGI',
+  'icon': ''
+}, {
+  'address': '0x005ff14cc15944d557689ec8d7cfcc1e67893a5bc4a3556f295dfe0daf4e356d',
+  'name': 'QuarkChain',
+  'symbol': 'QKC',
+  'icon': ''
+}, {
+  'address': '0x0060e68a298311047647c918d6255976de79f0345852abc0cd8ae2d3441d7ce7',
+  'name': 'KardiaChain',
+  'symbol': 'KAI',
+  'icon': ''
+}, {
+  'address': '0x00638b912c30c07f9ba4a29216cadbc35f295513817d0fd004adb87e7cdca5b4',
+  'name': 'TitanSwap',
+  'symbol': 'TITAN',
+  'icon': ''
+}, {
+  'address': '0x0064c02f602195e298780323c79a0eb5b4fd0ffcad68d440a7ca7725bc79d912',
+  'name': 'Origin Protocol',
+  'symbol': 'OGN',
+  'icon': ''
+}, {
+  'address': '0x0064ecf5cce7f3001d6b499610540238d5d6d5823b17fc46a7a1185aa5a9f925',
+  'name': 'Litentry',
+  'symbol': 'LIT',
+  'icon': ''
+}, {
+  'address': '0x006773eb09f74896a33cfdc0fd4772d2ad4b8395989d11a50a73e278a186ce20',
+  'name': 'StormX',
+  'symbol': 'STMX',
+  'icon': ''
+}, {
+  'address': '0x006aecf92e7653cad0add529644ea60c13493d8b3625f724173f63e97cada791',
+  'name': 'AdEx',
+  'symbol': 'ADX',
+  'icon': ''
+}, {
+  'address': '0x006cfd2fb06c15cd2c464d1830c0d247e32f36f34233a6a266d6581ea5677582',
+  'name': 'IDEX',
+  'symbol': 'IDEX',
+  'icon': ''
+}, {
+  'address': '0x006d336effe921106f7817e133686bbc4258a4e0d6fed3a9294d8a8b27312cee',
+  'name': 'TrueUSD',
+  'symbol': 'TUSD',
+  'icon': ''
+}, {
+  'address': '0x006f5956d1a8cf5bb655ca460b74324e6078832f1a84b86a6c20f9f81a91ff6b',
+  'name': 'Livepeer',
+  'symbol': 'LPT',
+  'icon': ''
+}, {
+  'address': '0x006f6b6757c5ac0679fe4e37c47dad76d6bb8a53eeb42546e89c0f5801e92af3',
+  'name': 'Wootrade Network',
+  'symbol': 'WOO',
+  'icon': ''
+}, {
+  'address': '0x007348eb8f0f3cec730fbf5eec1b6a842c54d1df8bed75a9df084d5ee013e814',
+  'name': 'Akropolis',
+  'symbol': 'AKRO',
+  'icon': ''
+}, {
+  'address': '0x0073d03a03e1d5fc07b2b3b1ab08424a86e1a408c3a42daaf3055eb4d4660d25',
+  'name': 'Bitmax Token',
+  'symbol': 'BTMX',
+  'icon': ''
+}, {
+  'address': '0x00743ba6f3d06c030d487534cc152b556e4dc8a29703caaa40a42b2545691958',
+  'name': 'STP Network',
+  'symbol': 'STPT',
+  'icon': ''
+}, {
+  'address': '0x0077153fc05cb710486cdd0d8188bb67b12807d5ba4398f34d62e63a40d07dc9',
+  'name': 'SAND',
+  'symbol': 'SAND',
+  'icon': ''
+}, {
+  'address': '0x0078f4e6c5113b3d8c954dff62ece8fc36a8411f86f1cbb48a52527e22e73be2',
+  'name': 'Sushi',
+  'symbol': 'SUSHI',
+  'icon': ''
+}, {
+  'address': '0x00794e9900a50cefde6cc7f0b411814af3c8e5c16e09e4444b10c2356d191caa',
+  'name': 'Keep Network',
+  'symbol': 'KEEP',
+  'icon': ''
+}, {
+  'address': '0x0079f35d1a80fc27fc07a331186e7b31708a665344799e4461c9ac2ceafabd79',
+  'name': 'Robonomics Web Services',
+  'symbol': 'RWS',
+  'icon': ''
+}, {
+  'address': '0x007b1c2e8dc0e7e5e09330c98da8bbacb23a9dfbe996c62b693d6655b926e843',
+  'name': 'Linear',
+  'symbol': 'LINA',
+  'icon': ''
+}, {
+  'address': '0x007d998d3d13fbb74078fb58826e3b7bc154004c9cef6f5bccb27da274f02724',
+  'name': 'SwissBorg',
+  'symbol': 'CHSB',
+  'icon': ''
+}, {
+  'address': '0x007e908e399cc73f3dad9f02f9c5c83a7adcd07e78dd91676ff3c002e245d8e9',
+  'name': 'xFund',
+  'symbol': 'XFUND',
+  'icon': ''
+}, {
+  'address': '0x0080edc40a944d29562b2dea2de42ed27b9047d16eeea27c5bc1b2e02786abe9',
+  'name': 'OKB',
+  'symbol': 'OKB',
+  'icon': ''
+}, {
+  'address': '0x008146909618facff9642fc591925ef91f10263c250cbae5db504b8b0955435a',
+  'name': 'Shabu Shabu',
+  'symbol': 'KOBE',
+  'icon': ''
+}, {
+  'address': '0x00821aff0cb658b4561e6d8d770d317f09f7ef38f1452cc6fdcb3fb45700404b',
+  'name': 'sUSD',
+  'symbol': 'SUSD',
+  'icon': ''
+}, {
+  'address': '0x008278457a164dbb83a5491449bae99bc48718efbe1789e48e9b225ebccc51fe',
+  'name': 'Lido Staked Ether',
+  'symbol': 'STETH',
+  'icon': ''
+}, {
+  'address': '0x008294f7b08f568a661de2b248c34fc574e7e0012a12ef7959eb1a5c6b349e09',
+  'name': 'iExec RLC',
+  'symbol': 'RLC',
+  'icon': ''
+}, {
+  'address': '0x0083a6b3fbc6edae06f115c8953ddd7cbfba0b74579d6ea190f96853073b76f4',
+  'name': 'Tether',
+  'symbol': 'USDT',
+  'icon': ''
+}, {
+  'address': '0x0083d5cbb4b90163b6a003e8f771eb7c0e2b706892cd0cbadb03f55cb9e06919',
+  'name': 'Robonomics Network',
+  'symbol': 'XRT',
+  'icon': ''
+}, {
+  'address': '0x008484148dcf23d1b48908393e7a00d5fdc3bf81029a73eeca62a15ebfb1205a',
+  'name': 'Chainlink',
+  'symbol': 'LINK',
+  'icon': ''
+}, {
+  'address': '0x0087058649ee69350d450a20f3886795f0ec7cae33896a8d96ed80dff6656bb0',
+  'name': 'Function X',
+  'symbol': 'FX',
+  'icon': ''
+}, {
+  'address': '0x00870c271dcad964321c75da07e47d6fde18cce7f3b1f0965fc1b98483bd4f95',
+  'name': 'Zipmex Token',
+  'symbol': 'ZMT',
+  'icon': ''
+}, {
+  'address': '0x0088c8ce4610278a787bced3b0507e770f2d14add2ab5a0aa36758ecae83b69c',
+  'name': 'Metal',
+  'symbol': 'MTL',
+  'icon': ''
+}, {
+  'address': '0x008a5c9b80efc901988db5e6b70c5f6de295713ff762bc8acb136acdaf0b1d80',
+  'name': 'Harvest Finance',
+  'symbol': 'FARM',
+  'icon': ''
+}, {
+  'address': '0x008a99c642c508f4f718598f32fa9ecbeea854e335312fecdbd298b92de26e21',
+  'name': 'Polkadex',
+  'symbol': 'PDEX',
+  'icon': ''
+}, {
+  'address': '0x008aa7ae7f119c8154e56545c060f51eaaffbcb1fb7e1d80b0ee98e47594b0f3',
+  'name': 'Aleph im',
+  'symbol': 'ALEPH',
+  'icon': ''
+}, {
+  'address': '0x008ba21aa988b21e86d5b25ed9ea690d28a6ba6c5ba9037424c215fd5b193c32',
+  'name': 'HUSD',
+  'symbol': 'HUSD',
+  'icon': ''
+}, {
+  'address': '0x008dad7d0b0928fdacc12509ea92a626b6895d5230667de9d829508cf778e8b5',
+  'name': 'Crust Network',
+  'symbol': 'CRU',
+  'icon': ''
+}, {
+  'address': '0x008efe4328cba1012cb9ad97943f09cadfbeea5e692871cd2649f0bf4e718088',
+  'name': 'Unique Photo',
+  'symbol': 'FOTO',
+  'icon': `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23E4E4E4' d='M40,20c0,11-9,20-20,20S0,31,0,20S9,0,20,0S40,9,40,20z'/%3E%3Cpath fill='%23293EF6' d='M20,2.9C10.6,2.9,2.9,10.6,2.9,20S10.6,37.1,20,37.1S37.1,29.4,37.1,20S29.4,2.9,20,2.9z'/%3E%3Cpath fill='%23FFFFFF' d='M22.7,14.9c-0.5-0.2-1-0.3-1.4-0.4v-3H19c0,1,0,2.1,0,3.1c-0.4,0.1-0.7,0.2-1.1,0.4 c-1.9,0.9-2.8,3.1-2.8,5.5v3.9c-0.1,0-0.2-0.1-0.3-0.1c-1.2-0.6-1.7-1.8-1.7-3.9v-8.8H11c0,2.9,0,5.9,0,8.8c0,2.5,0.8,4.8,2.8,5.5 c0.5,0.2,1,0.3,1.4,0.4v3h2.2c0-1,0-2.1,0-3.1c0.4-0.1,0.7-0.2,1.1-0.4c1.9-0.9,2.8-3.1,2.8-5.5v-3.9c0.1,0,0.2,0.1,0.3,0.1 c1.2,0.6,1.7,1.8,1.7,3.9v8.8h2.2c0-2.9,0-5.9,0-8.8C25.5,17.9,24.7,15.7,22.7,14.9z M19,20.3c0,1.9-0.6,3.4-1.6,3.9 c0-1.2,0-2.5,0-3.7c0-1.9,0.6-3.4,1.6-3.9C19,17.8,19,19.1,19,20.3z M25,11.6c-0.1,0.6,0,1-0.3,1.4c-0.4,0.5-1,0.8-1.7,0.8l-0.1-0.4 c0.7,0,1.3-0.5,1.2-0.4c0.2-0.3,0.3-0.6,0.4-1.1h-1.6v-0.3L25,11.6z M27.1,12.5v1.3c0,0.1-0.3,0.1-0.4,0c0,0,0-0.9,0-0.9 c-0.2,0.3-0.5,0.5-1.1,0.9l-0.2-0.3c0.5-0.3,0.9-0.6,1.2-0.9h-0.9v-0.4l1.1,0.1v-0.5l0.4-0.1v0.5h0.4v0.4H27.1z M30.5,12.8l-0.3,0.3 c-0.4-0.2-0.9-0.5-1.2-0.5v1.2h-0.5v-2.4H29v0.7C29.2,12.2,30.1,12.6,30.5,12.8z'/%3E%3C/svg%3E`
+}, {
+  'address': '0x008f925e3e422218604fac1cc2f06f3ef9c1e244e0d2a9a823e5bd8ce9778434',
+  'name': 'Telcoin',
+  'symbol': 'TEL',
+  'icon': ''
+}, {
+  'address': '0x009134d5c7b7fda8863985531f456f89bef5fbd76684a8acdb737b3e451d0877',
+  'name': 'Polygon',
+  'symbol': 'MATIC',
+  'icon': ''
+}, {
+  'address': '0x0091bd8d8295b25cab5a7b8b0e44498e678cfc15d872ede3215f7d4c7635ba36',
+  'name': 'Aave',
+  'symbol': 'AAVE',
+  'icon': ''
+}, {
+  'address': '0x0091f00c7dfdc00e8ed42414b45d839eb989e134aa823ccb182894b7fae622b3',
+  'name': 'cDAI',
+  'symbol': 'CDAI',
+  'icon': ''
+}, {
+  'address': '0x0095432ee2bb410aee1db59448679864162bc5fbcbd49efe072684fd36433a44',
+  'name': 'Swipe',
+  'symbol': 'SXP',
+  'icon': ''
+}, {
+  'address': '0x009749fbd2661866f0151e367365b7c5cc4b2c90070b4f745d0bb84f2ffb3b33',
+  'name': 'Huobi Token',
+  'symbol': 'HT',
+  'icon': ''
+}, {
+  'address': '0x0097e861c7c1cd4e6e97a02b7bc5c8c8f2bb0577bc894c48a43104663badce35',
+  'name': 'KuCoin Token',
+  'symbol': 'KCS',
+  'icon': ''
+}, {
+  'address': '0x0098349d613371dc0ea58281231cf99ea1dc345d495ca9d75b668a4c0ce92351',
+  'name': 'Badger DAO',
+  'symbol': 'BADGER',
+  'icon': ''
+}, {
+  'address': '0x009b72ff44208336b7700dcf85dd4bcce06fe691d875e5d949870337d383b26a',
+  'name': 'xSUSHI',
+  'symbol': 'XSUSHI',
+  'icon': ''
+}, {
+  'address': '0x009be848df92a400da2f217256c88d1a9b1a0304f9b3e90991a67418e1d3b08c',
+  'name': 'Uniswap',
+  'symbol': 'UNI',
+  'icon': ''
+}, {
+  'address': '0x009e114047177344617fd5ea6befbe757d91e85fdd696e63abd72646feec69d1',
+  'name': 'Celsius Network',
+  'symbol': 'CEL',
+  'icon': ''
+}, {
+  'address': '0x009e199267a6a2c8ae075bb8d4c40ee8d05c1b769085ee59ce98e50c2b2d8756',
+  'name': 'LEO Token',
+  'symbol': 'LEO',
+  'icon': ''
+}, {
+  'address': '0x00a044f721c2ab95f3af73dbfa4a7ec599f608cd39eb877beb2dd5906bd9ef31',
+  'name': 'GNY',
+  'symbol': 'GNY',
+  'icon': ''
+}, {
+  'address': '0x00a0637305488d0b5970bbbf4b8f88585000971dfcd973d0cf27a47c6b7af5f8',
+  'name': 'Nexus Mutual',
+  'symbol': 'NXM',
+  'icon': ''
+}, {
+  'address': '0x00a0728e92f65b6baabd0477ef8511257a98a989127ea299b5e46e7c7192f744',
+  'name': 'RedFOX Labs',
+  'symbol': 'RFOX',
+  'icon': ''
+}, {
+  'address': '0x00a360ea04e1cd04b26a6193f5e779284162f8b0f9ea4dd5f8c5cefbc67006e2',
+  'name': 'Ethernity Chain',
+  'symbol': 'ERN',
+  'icon': ''
+}, {
+  'address': '0x00a7243e8e01e4f503b06bc957d57e81edcfb362b44e42be1d09418989c017ba',
+  'name': 'UTRUST',
+  'symbol': 'UTK',
+  'icon': ''
+}, {
+  'address': '0x00a99f39d40faab010fb4164ff617f2d0f10ba34d1ee37f1ae9acd537489c932',
+  'name': 'Alien Worlds',
+  'symbol': 'TLM',
+  'icon': ''
+}, {
+  'address': '0x00aa10b69d584d9309489a755eb3db9099eb17368cf17354168a48274a2aa4eb',
+  'name': 'Augur',
+  'symbol': 'REP',
+  'icon': ''
+}, {
+  'address': '0x00aa40fec73f367a2fa7fca27d7ee22a9c5c1ca14fc9929ec0caeeb97b6bd299',
+  'name': 'Verasity',
+  'symbol': 'VRA',
+  'icon': ''
+}, {
+  'address': '0x00ab8779f02350fecb72a15844ea975de3a30e1e770115e77ccc2520735df27a',
+  'name': 'Bancor Network Token',
+  'symbol': 'BNT',
+  'icon': ''
+}, {
+  'address': '0x00ae6acf6bd90e201a8c9dbdbbd43688fc042c7374241f591f26a0aabc23c35e',
+  'name': 'Orbs',
+  'symbol': 'ORBS',
+  'icon': ''
+}, {
+  'address': '0x00af6393d4d14f9bf7c736e62542b0d3f8f9a3c1f62b3ab632422e79153c0c40',
+  'name': 'SuperFarm',
+  'symbol': 'SUPER',
+  'icon': ''
+}, {
+  'address': '0x00b0afb0e0762b24252dd7457dc6e3bfccfdc7bac35ad81abef31fa9944815f5',
+  'name': 'Unique Fans',
+  'symbol': 'FANS',
+  'icon': `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath fill='%23E4E4E4' d='M40,20c0,11-9,20-20,20S0,31,0,20S9,0,20,0S40,9,40,20z'/%3E%3Cpath fill='%23EC008C' d='M20,2.9C10.6,2.9,2.9,10.6,2.9,20S10.6,37.1,20,37.1S37.1,29.4,37.1,20S29.4,2.9,20,2.9z'/%3E%3Cpath fill='%23FFFFFF' d='M22.7,14.9c-0.5-0.2-1-0.3-1.4-0.4v-3H19c0,1,0,2.1,0,3.1c-0.4,0.1-0.7,0.2-1.1,0.4 c-1.9,0.9-2.8,3.1-2.8,5.5v3.9c-0.1,0-0.2-0.1-0.3-0.1c-1.2-0.6-1.7-1.8-1.7-3.9v-8.8H11c0,2.9,0,5.9,0,8.8c0,2.5,0.8,4.8,2.8,5.5 c0.5,0.2,1,0.3,1.4,0.4v3h2.2c0-1,0-2.1,0-3.1c0.4-0.1,0.7-0.2,1.1-0.4c1.9-0.9,2.8-3.1,2.8-5.5v-3.9c0.1,0,0.2,0.1,0.3,0.1 c1.2,0.6,1.7,1.8,1.7,3.9v8.8h2.2c0-2.9,0-5.9,0-8.8C25.5,17.9,24.7,15.7,22.7,14.9z M19,20.3c0,1.9-0.6,3.4-1.6,3.9 c0-1.2,0-2.5,0-3.7c0-1.9,0.6-3.4,1.6-3.9C19,17.8,19,19.1,19,20.3z M25.3,11.6C25.3,11.6,25.3,11.6,25.3,11.6 c-0.3,1.2-0.9,1.9-1.9,2.3c-0.1-0.1-0.2-0.2-0.3-0.3c0.9-0.3,1.5-1,1.6-1.7h-1.9v-0.4h2l0.1,0L25.3,11.6z M27.7,12 C27.7,12,27.7,12,27.7,12c-0.2,0.3-0.4,0.7-0.6,0.9c-0.1-0.1-0.2-0.1-0.3-0.2c0.2-0.1,0.3-0.3,0.4-0.5h-1.6v-0.3h1.8l0,0L27.7,12z M26.8,12.4C26.8,12.5,26.7,12.5,26.8,12.4c-0.1,0.6-0.3,1.1-0.8,1.4c-0.1-0.1-0.2-0.2-0.3-0.2c0.5-0.3,0.6-0.7,0.7-1.3L26.8,12.4z M28.1,11.4c0.3,0.1,0.7,0.3,0.9,0.4l-0.2,0.4c-0.2-0.1-0.6-0.3-0.9-0.4L28.1,11.4z M28,13.5c1-0.3,1.8-0.9,2.1-1.8 c0.1,0.1,0.2,0.2,0.4,0.2c-0.4,0.8-1.1,1.5-2.2,1.9c0,0,0,0.1-0.1,0.1L28,13.5z'/%3E%3C/svg%3E`
+}, {
+  'address': '0x00b10b1718ecc84aeee61f5133f55b5543861ae17ad3267c43c5cc9069aa5cc1',
+  'name': 'Alpha Finance',
+  'symbol': 'ALPHA',
+  'icon': ''
+}, {
+  'address': '0x00b29b2d5ed340471070a5121c72a9557efe9620313fa2a541534069fbf114b5',
+  'name': 'Quant',
+  'symbol': 'QNT',
+  'icon': ''
+}, {
+  'address': '0x00b493613a4ca5e113cf5e96641687af50a3762b0a236669486f4b712f764ef8',
+  'name': 'Ankr',
+  'symbol': 'ANKR',
+  'icon': ''
+}, {
+  'address': '0x00b5b48ef1e29a6cb57cc10f1821f86f152a07668bf925d4cd87144c6d0adad8',
+  'name': 'HydraDX',
+  'symbol': 'XHDX',
+  'icon': ''
+}, {
+  'address': '0x00b6bc8c69b493bcf470bbbbbbfcc2c8edab11ec2bde456e3e192191e50b29a1',
+  'name': 'Trustswap',
+  'symbol': 'SWAP',
+  'icon': ''
+}, {
+  'address': '0x00b9743e07b0542801c0e1f9294179e1154c121cc1a283e2534346126d0f508c',
+  'name': 'Huobi BTC',
+  'symbol': 'HBTC',
+  'icon': ''
+}, {
+  'address': '0x00b979dffda61c790ddc7b442ce0be0c7af90d81af69d75923f9e440367936a6',
+  'name': 'OptionRoom',
+  'symbol': 'ROOM',
+  'icon': ''
+}, {
+  'address': '0x00bc34f1ea13ca95a875ea1b0e21b3b15cf809951572c17f2fa9115f3e7bd551',
+  'name': 'Fetch ai',
+  'symbol': 'FET',
+  'icon': ''
+}, {
+  'address': '0x00bcd9a8b40b5e06379492c3e93b2cbbbd4230542b4c129a04f50d1f57b5006d',
+  'name': 'GateToken',
+  'symbol': 'GT',
+  'icon': ''
+}, {
+  'address': '0x00bd5e500bf449cd516fa9b0a6f079bfa4301e37c67a66aa991af61c0aa26970',
+  'name': 'Voyager Token',
+  'symbol': 'VGX',
+  'icon': ''
+}, {
+  'address': '0x00be92ad82167f86f6d1028ac8bf78927026655c0c969131f9def5f3016afbfc',
+  'name': 'Bondly',
+  'symbol': 'BONDLY',
+  'icon': ''
+}, {
+  'address': '0x00c05e502bf7809c3d7bbd384755dfd4d6f298f4ad129bef7bdfd04cbcd23744',
+  'name': 'MATH',
+  'symbol': 'MATH',
+  'icon': ''
+}, {
+  'address': '0x00c1334ebcb7cfb41f42beb6d875fb0718599a9428a446fa9e754889a994ea1d',
+  'name': 'Civic',
+  'symbol': 'CVC',
+  'icon': ''
+}, {
+  'address': '0x00c15d255c29bbb0e99d24e6e01361ee91ea806b379f23e9440966ac7bdb95ba',
+  'name': 'Synthetix Network Token',
+  'symbol': 'SNX',
+  'icon': ''
+}, {
+  'address': '0x00c21c6fe322d1f99436f8e16aefe8248fdd815639ee6312c40bf1e13cef4135',
+  'name': 'Alchemix',
+  'symbol': 'ALCX',
+  'icon': ''
+}, {
+  'address': '0x00c2ab52291076bc97149e4186e7a4fe27f003e48b4c507f094bbadaf2d99633',
+  'name': '',
+  'symbol': 'ZRX',
+  'icon': ''
+}, {
+  'address': '0x00c7c753ac1450a525d04e56ea9bf57fbfb006ccbdd238790a9b1a2bd5a43766',
+  'name': 'Bytom',
+  'symbol': 'BTM',
+  'icon': ''
+}, {
+  'address': '0x00c98a5c64bc99972fa35fec26b53ee0c01f461370b3604b1a6b2f8424390e82',
+  'name': 'MXC',
+  'symbol': 'MXC',
+  'icon': ''
+}, {
+  'address': '0x00ca7eb5ab09d16f42db79f801ea973286e77403a434d3161ac3b11bf9d0aee1',
+  'name': 'Tribe',
+  'symbol': 'TRIBE',
+  'icon': ''
+}, {
+  'address': '0x00d0dacf34519d400eb4ac69b15af86b366b509e80aaac29eeda9b267ceba849',
+  'name': 'Celer Network',
+  'symbol': 'CELR',
+  'icon': ''
+}, {
+  'address': '0x00d1fb79bbd1005a678fbf2de9256b3afe260e8eead49bb07bd3a566f9fe8355',
+  'name': 'The Graph',
+  'symbol': 'GRT',
+  'icon': ''
+}, {
+  'address': '0x00d65a6fb0a71e3a8c5752a0a283e2484daa3cc816e50a6479193fbb067fde96',
+  'name': 'aelf',
+  'symbol': 'ELF',
+  'icon': ''
+}, {
+  'address': '0x00d69fbc298e2e27c3deaee4ef0802501e98c338baa11634f08f5c04b9eebdc0',
+  'name': 'cUSDC',
+  'symbol': 'CUSDC',
+  'icon': ''
+}, {
+  'address': '0x00d7584d7d3a472c70b56404a60724bc80c3de11411f1b0da126d88a3b36f092',
+  'name': 'Liquity USD',
+  'symbol': 'LUSD',
+  'icon': ''
+}, {
+  'address': '0x00d80f476cac0f6e8ef246f4d77a2cea6c6fe1b09fc5920d8fd99da1d412e6f0',
+  'name': 'Rocket Pool',
+  'symbol': 'RPL',
+  'icon': ''
+}, {
+  'address': '0x00dacd8e104aee9161d3917e26f3828525cab4e203ac1472daa916e544458edf',
+  'name': 'Amp',
+  'symbol': 'AMP',
+  'icon': ''
+}, {
+  'address': '0x00dbd45af9f2ea406746f9025110297469e9d29efc60df8d88efb9b0179d6c2c',
+  'name': 'Compound',
+  'symbol': 'COMP',
+  'icon': ''
+}, {
+  'address': '0x00dc366b2c4a863476a0a0347e8c51c5dd66525699a516a8436332b1168b4605',
+  'name': 'OriginTrail',
+  'symbol': 'TRAC',
+  'icon': ''
+}, {
+  'address': '0x00dd520ed40552ac5f7ee7d0811a7a3c746df90c94864cfae91eae774f878cef',
+  'name': 'Band Protocol',
+  'symbol': 'BAND',
+  'icon': ''
+}, {
+  'address': '0x00e16b53b05b8a7378f8f3080bef710634f387552b1d1916edc578bda89d49e5',
+  'name': 'Basic Attention Token',
+  'symbol': 'BAT',
+  'icon': ''
+}, {
+  'address': '0x00e40bcd6ee5363d3abbb4603273aa2f6bb89e29323729e884a8ef9c991fe73e',
+  'name': 'UMA',
+  'symbol': 'UMA',
+  'icon': ''
+}, {
+  'address': '0x00e4af0d2aeafcdba14511f7747a49e24ca7e6d9f0d317776465051219341cc2',
+  'name': 'Aragon',
+  'symbol': 'ANT',
+  'icon': ''
+}, {
+  'address': '0x00e4c906df1b288aaa02ce95764bdd428ff6bb65ec218535e13828b738c5849e',
+  'name': 'Numeraire',
+  'symbol': 'NMR',
+  'icon': ''
+}, {
+  'address': '0x00e557c3d322938f1976f6aae94a7fc000a090e09e1fe7d75a222010f5e31548',
+  'name': 'Loopring',
+  'symbol': 'LRC',
+  'icon': ''
+}, {
+  'address': '0x00e6df883c9844e34b354b840e3a527f5fc6bfc937138c67908b1c8f2931f3e9',
+  'name': 'Stafi',
+  'symbol': 'FIS',
+  'icon': ''
+}, {
+  'address': '0x00e7270454ebaeb694d254ad931764a3bf63d9ad12132504b108895b113e02b5',
+  'name': 'Mirror Protocol',
+  'symbol': 'MIR',
+  'icon': ''
+}, {
+  'address': '0x00e8a7823b8207e4cab2e46cd10b54d1be6b82c284037b6ee76afd52c0dceba6',
+  'name': 'REN',
+  'symbol': 'REN',
+  'icon': ''
+}, {
+  'address': '0x00e8ff59be4cc997bb86752ea9be705287483eee95ccdf88e02fa1986ba283ef',
+  'name': 'THORChain',
+  'symbol': 'RUNE',
+  'icon': ''
+}, {
+  'address': '0x00ec184ef0b4bd955db05eea5a8489ae72888ab6e63682a15beca1cd39344c8f',
+  'name': 'Maker',
+  'symbol': 'MKR',
+  'icon': ''
+}, {
+  'address': '0x00ef6658f79d8b560f77b7b20a5d7822f5bc22539c7b4056128258e5829da517',
+  'name': 'USD Coin',
+  'symbol': 'USDC',
+  'icon': ''
+}, {
+  'address': '0x00f05d0bcc7d2c73226a94b107abf34d88972c2a64b0798b36a6c60ad913891a',
+  'name': 'Carry',
+  'symbol': 'CRE',
+  'icon': ''
+}, {
+  'address': '0x00f387e5df1da2c968a18e254e97306bd06991c9e4dab3b286feeb0e00e38418',
+  'name': 'ZKSwap',
+  'symbol': 'ZKS',
+  'icon': ''
+}, {
+  'address': '0x00f58df67a15fe6c45d122767251c8660f33a2c544b5e2b70084c465b7cf84e7',
+  'name': 'KeeperDAO',
+  'symbol': 'ROOK',
+  'icon': ''
+}, {
+  'address': '0x00f6af15c0a83dde93b881d2ab1e9d2daa3c7ab43a1baff6b9bc4c8b6cae48cc',
+  'name': 'cETH',
+  'symbol': 'CETH',
+  'icon': ''
+}, {
+  'address': '0x00f8cfb462a824f37dcea67caae0d7e2f73ed8371e706ea8b1e1a7b0c357d5d4',
+  'name': 'TerraUSD',
+  'symbol': 'UST',
+  'icon': ''
+}, {
+  'address': '0x00f95baab5df9d8dc78c1081d1ffe9ca8a7055a7bc719c61d59cb5957e14feb5',
+  'name': 'Kylin Network',
+  'symbol': 'KYL',
+  'icon': ''
+}, {
+  'address': '0x0200000000000000000000000000000000000000000000000000000000000000',
+  'name': 'SORA',
+  'symbol': 'XOR',
+  'icon': ''
+}, {
+  'address': '0x0200040000000000000000000000000000000000000000000000000000000000',
+  'name': 'SORA Validator Token',
+  'symbol': 'VAL',
+  'icon': ''
+}, {
+  'address': '0x0200060000000000000000000000000000000000000000000000000000000000',
+  'name': 'Dai',
+  'symbol': 'DAI',
+  'icon': `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3ClinearGradient id='SVGID_1_' gradientUnits='userSpaceOnUse' x1='5.857' y1='7.857' x2='34.143' y2='36.143' gradientTransform='matrix(1 0 0 -1 0 42)'%3E%3Cstop offset='0' style='stop-color:%23F9AF1A'/%3E%3Cstop offset='1' style='stop-color:%23FBC349'/%3E%3C/linearGradient%3E%3Cpath fill='url(%23SVGID_1_)' d='M20,0c11,0,20,9,20,20s-9,20-20,20S0,31,0,20S9,0,20,0z'/%3E%3Cpath fill='%23FFFFFF' d='M31.9,16.7h-2.4c-1.3-3.6-4.8-6.2-8.8-6.2h-8.2v6.2H9.8v2.2h2.6v2.3H9.8v2.2h2.6v6.1h8.2 c4,0,7.5-2.5,8.8-6.1h2.4v-2.2H30c0-0.4,0.1-0.8,0.1-1.2l0,0c0-0.4,0-0.7-0.1-1.1h1.9L31.9,16.7L31.9,16.7L31.9,16.7z M14.6,12.6h6 c2.9,0,5.3,1.7,6.5,4.1H14.6V12.6z M20.6,27.4h-6v-4H27C25.9,25.7,23.4,27.4,20.6,27.4z M27.8,19.8v0.3c0,0.4,0,0.7-0.1,1H14.6v-2.3 h13.1C27.8,19.2,27.8,19.5,27.8,19.8z'/%3E%3C/svg%3E`
+}, {
+  'address': '0x0200070000000000000000000000000000000000000000000000000000000000',
+  'name': 'Ether',
+  'symbol': 'ETH',
+  'icon': `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpolygon fill='%2362678F' points='20,0 32.1,20.1 20,14.9 '/%3E%3Cpolygon fill='%238C92B2' points='7.9,20.1 20,0 20,14.9 '/%3E%3Cpolygon fill='%2362678F' points='20,27.5 7.9,20.1 20,14.9 '/%3E%3Cpolygon fill='%23444971' points='32.1,20.1 20,14.9 20,27.5 '/%3E%3Cpolygon fill='%2362678F' points='20,30.1 32.1,22.9 20,40 '/%3E%3Cpolygon fill='%238C92B2' points='20,30.1 7.9,22.9 20,40 '/%3E%3C/svg%3E`
+}]
