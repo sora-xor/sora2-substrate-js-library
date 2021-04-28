@@ -4,6 +4,7 @@ import type { AccountData } from '@polkadot/types/interfaces/balances'
 import { map } from '@polkadot/x-rxjs/operators'
 
 import { CodecString, FPNumber } from './fp'
+import { isRegisteredAsset } from './registeredAssets'
 
 export const MaxTotalSupply = '170141183460469231731.687303715884105727'
 
@@ -151,9 +152,29 @@ export function getAssetBalanceObservable (apiRx: ApiRx, accountAddress: string,
   )
 }
 
+export function isNativeAsset (asset: any): boolean {
+  if (!asset.address) {
+    return false
+  }
+  return !!KnownAssets.get(asset.address)
+}
+
 export async function getAssets (api: ApiPromise): Promise<Array<Asset>> {
   const assetInfos = (await (api.rpc as any).assets.listAssetInfos()).toJSON()
-  return assetInfos.map(({ asset_id, symbol, name, precision }) => {
+  const assets = assetInfos.map(({ asset_id, symbol, name, precision }) => {
     return { symbol, name, address: asset_id, decimals: precision } as Asset
+  }) as Array<Asset>
+  return assets.sort((a, b) => {
+    const isNativeA = isNativeAsset(a)
+    const isNativeB = isNativeAsset(b)
+    const isRegisteredA = isRegisteredAsset(a)
+    const isRegisteredB = isRegisteredAsset(b)
+    if ((isNativeA && !isNativeB) || (isRegisteredA && !isRegisteredB)) {
+      return -1
+    }
+    if ((!isNativeA && isNativeB) || (!isRegisteredA && isRegisteredB)) {
+      return 1
+    }
+    return 0
   })
 }
