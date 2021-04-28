@@ -175,6 +175,12 @@ export async function getAssets (api: ApiPromise): Promise<Array<Asset>> {
     if ((!isNativeA && isNativeB) || (!isRegisteredA && isRegisteredB)) {
       return 1
     }
+    if (a.symbol < b.symbol) {
+      return -1
+    }
+    if (a.symbol > b.symbol) {
+      return 1
+    }
     return 0
   })
 }
