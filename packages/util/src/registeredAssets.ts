@@ -1,4 +1,4 @@
-export const RegisteredAsset = {
+export const RegisteredAssets = {
   // name: 'FTX Token', symbol: 'FTT'
   '0x00019977e20516b9f7112cd8cfef1a5be2e5344d2ef1aa5bc92bbb503e81146e': 'data:image/svg+xml,%3Csvg baseProfile=\'tiny\' xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 40 40\' overflow=\'visible\' xml:space=\'preserve\'%3E%3Ccircle fill=\'%2362D1E5\' cx=\'20\' cy=\'20\' r=\'19.96\'/%3E%3Cg fill=\'%23FFF\'%3E%3Cpath d=\'M14.26 8.63h18.73v6.01H14.26zM14.26 16.99h18.73V23H14.26zM7.01 16.99h6.01V23H7.01zM14.26 25.36h6.01v6.01h-6.01z\'/%3E%3C/g%3E%3C/svg%3E',
   // name: 'Golem', symbol: 'GLM'
@@ -333,4 +333,11 @@ export const RegisteredAsset = {
   '0x0200060000000000000000000000000000000000000000000000000000000000': 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 40 40\'%3E%3ClinearGradient id=\'SVGID_1_\' gradientUnits=\'userSpaceOnUse\' x1=\'5.857\' y1=\'7.857\' x2=\'34.143\' y2=\'36.143\' gradientTransform=\'matrix(1 0 0 -1 0 42)\'%3E%3Cstop offset=\'0\' style=\'stop-color:%23F9AF1A\'/%3E%3Cstop offset=\'1\' style=\'stop-color:%23FBC349\'/%3E%3C/linearGradient%3E%3Cpath fill=\'url(%23SVGID_1_)\' d=\'M20,0c11,0,20,9,20,20s-9,20-20,20S0,31,0,20S9,0,20,0z\'/%3E%3Cpath fill=\'%23FFFFFF\' d=\'M31.9,16.7h-2.4c-1.3-3.6-4.8-6.2-8.8-6.2h-8.2v6.2H9.8v2.2h2.6v2.3H9.8v2.2h2.6v6.1h8.2 c4,0,7.5-2.5,8.8-6.1h2.4v-2.2H30c0-0.4,0.1-0.8,0.1-1.2l0,0c0-0.4,0-0.7-0.1-1.1h1.9L31.9,16.7L31.9,16.7L31.9,16.7z M14.6,12.6h6 c2.9,0,5.3,1.7,6.5,4.1H14.6V12.6z M20.6,27.4h-6v-4H27C25.9,25.7,23.4,27.4,20.6,27.4z M27.8,19.8v0.3c0,0.4,0,0.7-0.1,1H14.6v-2.3 h13.1C27.8,19.2,27.8,19.5,27.8,19.8z\'/%3E%3C/svg%3E',
   // name: 'Ether', symbol: 'ETH'
   '0x0200070000000000000000000000000000000000000000000000000000000000': 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 40 40\'%3E%3Cpath fill=\'%23FFFFFF\' d=\'M40,20c0,11-9,20-20,20S0,31,0,20S9,0,20,0S40,9,40,20z\'/%3E%3Cpolygon fill=\'%2362678F\' points=\'20,5 29.1,20.1 20,16.2 \'/%3E%3Cpolygon fill=\'%238C92B2\' points=\'10.9,20.1 20,5 20,16.2 \'/%3E%3Cpolygon fill=\'%2362678F\' points=\'20,25.7 10.9,20.1 20,16.2 \'/%3E%3Cpolygon fill=\'%23444971\' points=\'29.1,20.1 20,16.2 20,25.7 \'/%3E%3Cpolygon fill=\'%2362678F\' points=\'20,27.6 29.1,22.2 20,35 \'/%3E%3Cpolygon fill=\'%238C92B2\' points=\'20,27.6 10.9,22.2 20,35 \'/%3E%3C/svg%3E'
+}
+
+export function isRegisteredAsset (asset: any): boolean {
+  if (!asset.address) {
+    return false
+  }
+  return !!RegisteredAssets[asset.address]
 }
