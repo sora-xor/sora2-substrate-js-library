@@ -1,8 +1,8 @@
 export class Storage {
-  private namespace: string
+  protected namespace: string
 
   constructor (namespace = 'sora') {
-    this.namespace = namespace
+    this.namespace = namespace 
   }
 
   public all (): Array<Array<any>> {
@@ -23,5 +23,19 @@ export class Storage {
 
   public clear (): void {
     this.all().forEach(([key]) => localStorage.removeItem(key))
+  }
+}
+
+export class AccountStorage extends Storage {
+  constructor (accountAddress: string) {
+    if (!accountAddress) {
+      throw new Error('AccountStorage: accountAddress is required')
+    }
+    super('account')
+    this.setIdentity(accountAddress)
+  }
+
+  public setIdentity (identity: string) {
+    this.namespace = `${this.namespace}:${identity}`
   }
 }

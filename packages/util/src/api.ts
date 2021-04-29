@@ -29,7 +29,7 @@ import { RewardingEvents, RewardInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
-import { Storage } from './storage'
+import { AccountStorage, Storage } from './storage'
 
 /**
  * Contains all necessary data and functions for the wallet
@@ -76,40 +76,14 @@ export class Api extends BaseApi {
     return this.liquidity
   }
 
-  public get accountHistory (): Array<History> {
-    if (this.storage) {
-      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
-      return this.history
-    }
-    return [
-      ...this.history.filter(({ type }) => !isBridgeOperation(type)),
-      ...this.bridge.accountHistory
-    ]
-  }
-
-  public get accountSoraHistory (): Array<History> {
-    if (this.storage) {
-      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
-    }
-    return this.history.filter(({ type }) => !isBridgeOperation(type))
-  }
-
   /**
    * Remove all history except bridge history
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
   public clearHistory (assetAddress?: string) {
-    const removeHistoryIds = (assetAddress
-      ? this.accountSoraHistory.filter(item => [item.assetAddress, item.asset2Address].includes(assetAddress))
-      : this.accountSoraHistory
-    ).map(item => item.id)
-    if (!removeHistoryIds || !removeHistoryIds.length) {
-      return
-    }
-    this.history = this.history.filter(({ id }) => !removeHistoryIds.includes(id))
-    if (this.storage) {
-      this.storage.set('history', JSON.stringify(this.history))
-    }
+    this.history = this.history.filter((item) =>
+      isBridgeOperation(item.type) || (!!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress))
+    )
   }
 
   public removeAsset (address: string): void {
@@ -143,9 +117,13 @@ export class Api extends BaseApi {
       return
     }
     const pair = keyring.getPair(address)
+
     this.account = !isExternal
       ? keyring.addPair(pair, decrypt(password))
       : keyring.addExternal(address, name ? { name } : {})
+
+    this.accountStorage = new AccountStorage(address)
+
     const assets = this.storage?.get('assets')
     if (assets) {
       this.assets = JSON.parse(assets)
@@ -170,6 +148,10 @@ export class Api extends BaseApi {
     }
   }
 
+  private initAccountStorage () {
+    this.accountStorage = new AccountStorage(this.account.pair.address)
+  }
+
   /**
    * Import wallet operation
    * @param suri Seed of the wallet
@@ -188,6 +170,8 @@ export class Api extends BaseApi {
       this.storage.set('password', encrypt(password))
       this.storage.set('address', this.account.pair.address)
     }
+
+    this.initAccountStorage()
   }
 
   /**
@@ -281,6 +265,7 @@ export class Api extends BaseApi {
         this.assets = JSON.parse(assets)
       }
     }
+    this.initAccountStorage()
   }
 
   /**
@@ -1264,7 +1249,7 @@ export class Api extends BaseApi {
     const address = this.account.pair.address
     keyring.forgetAccount(address)
     keyring.forgetAddress(address)
-    this.bridge.clearHistory()
+    this.accountStorage = null
     this.account = null
     this.signer = null
     this.assets = []

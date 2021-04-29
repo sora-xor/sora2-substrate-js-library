@@ -6,7 +6,7 @@ import { Signer } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { decodeAddress } from '@polkadot/util-crypto'
 
-import { Storage } from './storage'
+import { AccountStorage, Storage } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
 import { CodecString, FPNumber } from './fp'
 import { encrypt } from './crypto'
@@ -23,8 +23,9 @@ export const KeyringType = 'sr25519'
 
 export class BaseApi {
   protected signer?: Signer
-  protected storage?: Storage
-  protected history: Array<History> = []
+  protected storage?: Storage // common data storage
+  protected accountStorage?: AccountStorage // account data storage
+  private _history: Array<History> = []
 
   constructor () {
   }
@@ -35,6 +36,48 @@ export class BaseApi {
 
   public get apiRx (): ApiRx {
     return connection.apiRx
+  }
+
+  // methods for working with history
+  public get history (): Array<History> {
+    if (this.accountStorage) {
+      this._history = JSON.parse(this.accountStorage.get('history')) as Array<History> || []
+    }
+    return this._history
+  }
+
+  public set history (value: Array<History>) {
+    if (this.accountStorage) {
+      this.accountStorage.set('history', JSON.stringify(value))
+    }
+    this._history = [...value]
+  }
+
+  public getHistory (id: string): History | null {
+    if (!id) return null
+
+    return this.history.find(item => item.id === id) ?? null
+  }
+
+  public saveHistory (historyItem: History): void {
+    if (!historyItem || !historyItem.id) return
+
+    const historyCopy = [...this.history]
+    const index = historyCopy.findIndex(item => item.id === historyItem.id)
+
+    if (index !== -1) {
+      historyCopy[index] = historyItem
+    } else {
+      historyCopy.push(historyItem)
+    }
+
+    this.history = historyCopy
+  }
+
+  public removeHistory (id: string): void {
+    if (!id) return
+
+    this.history = this.history.filter(item => item.id !== id)
   }
 
   /**
@@ -52,24 +95,6 @@ export class BaseApi {
    */
   public setStorage (storage: Storage): void {
     this.storage = storage
-    const history = this.storage?.get('history')
-    if (history) {
-      this.history = JSON.parse(history)
-    }
-  }
-
-  public saveHistory (history: History): void {
-    if (!history || !history.id) {
-      return
-    }
-    if (this.storage) {
-      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
-    }
-    const index = this.history.findIndex(item => item.id === history.id)
-    ~index ? this.history[index] = history : this.history.push(history)
-    if (this.storage) {
-      this.storage.set('history', JSON.stringify(this.history))
-    }
   }
 
   protected async submitExtrinsic (

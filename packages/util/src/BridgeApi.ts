@@ -154,26 +154,20 @@ export class BridgeApi extends BaseApi {
   }
 
   public get accountHistory (): Array<BridgeHistory> {
-    const filterHistory = (items: Array<any>) => items.filter(({ type }) => isBridgeOperation(type))
-    if (this.storage) {
-      const allHistory = JSON.parse(this.storage.get('history')) as Array<BridgeHistory> || []
-      this.history = filterHistory(allHistory)
-      return this.history as Array<BridgeHistory>
-    }
-    return filterHistory(this.history)
+    return (this.history as Array<BridgeHistory>).filter(({ type }) => isBridgeOperation(type))
   }
 
   public generateHistoryItem (params: BridgeHistory): BridgeHistory | null {
     if (!params.type) {
       return null
     }
-    const history = (params || {}) as BridgeHistory
-    history.startTime = history.startTime || Date.now()
-    history.id = encrypt(`${history.startTime}`)
-    history.transactionStep = history.transactionStep || 1
-    history.transactionState = history.transactionState || 'INITIAL'
-    this.saveHistory(history)
-    return history
+    const historyItem = (params || {}) as BridgeHistory
+    historyItem.startTime = historyItem.startTime || Date.now()
+    historyItem.id = encrypt(`${historyItem.startTime}`)
+    historyItem.transactionStep = historyItem.transactionStep || 1
+    historyItem.transactionState = historyItem.transactionState || 'INITIAL'
+    this.saveHistory(historyItem)
+    return historyItem
   }
 
   public saveHistory (history: BridgeHistory): void {
@@ -187,31 +181,8 @@ export class BridgeApi extends BaseApi {
     return this.accountHistory.find(item => item.id === id) ?? null
   }
 
-  public removeHistory (id: string): void {
-    const historyItem = this.accountHistory.find(item => item.id === id)
-    if (!historyItem) {
-      return
-    }
-    this.history = (
-      this.storage
-        ? JSON.parse(this.storage.get('history')) as Array<BridgeHistory> || []
-        : this.history
-    ).filter(item => item.id !== id)
-    if (this.storage) {
-      this.storage.set('history', JSON.stringify(this.history))
-    }
-  }
-
   public clearHistory (): void {
-    const bridgeHistoryIds = this.accountHistory.map(item => item.id)
-    const allHistory = this.storage
-      ? JSON.parse(this.storage.get('history')) as Array<BridgeHistory> || []
-      : this.history
-    const formattedHistory = allHistory.filter(({ id }) => !bridgeHistoryIds.includes(id))
-    this.history = formattedHistory
-    if (this.storage) {
-      this.storage.set('history', JSON.stringify(this.history))
-    }
+    this.history = this.history.filter(({ type }) => !isBridgeOperation(type))
   }
 
   public setAccount (account: CreateResult, signer?: Signer): void {
@@ -256,11 +227,12 @@ export class BridgeApi extends BaseApi {
    */
   public async transferToEth (asset: RegisteredAsset, to: string, amount: string | number, historyId?: string): Promise<void> {
     const params = await this.calcTransferToEthParams(asset, to, amount)
-    const history = this.accountHistory.find(({ id }) => id === historyId)
+    const historyItem = this.getHistory(historyId)
+
     await this.submitExtrinsic(
       this.api.tx.ethBridge.transferToSidechain(...params.args),
       this.account.pair,
-      history || {
+      historyItem || {
         symbol: params.asset.symbol,
         assetAddress: params.asset.address,
         amount: `${amount}`,
@@ -294,12 +266,12 @@ export class BridgeApi extends BaseApi {
    */
   public async requestFromEth (hash: string, type: RequestType = RequestType.Transfer): Promise<void> {
     assert(this.account, Messages.connectWallet)
-    const history = this.accountHistory.find(item => item.hash === hash)
+    const historyItem = this.accountHistory.find(item => item.hash === hash)
     const kind = { [IncomingRequestKind.Transaction]: type }
     await this.submitExtrinsic(
       this.api.tx.ethBridge.requestFromSidechain(hash, kind, this.externalNetwork),
       this.account.pair,
-      history || {
+      historyItem || {
         type: Operation.EthBridgeIncoming,
         hash
       }
