@@ -122,7 +122,7 @@ export class Api extends BaseApi {
       ? keyring.addPair(pair, decrypt(password))
       : keyring.addExternal(address, name ? { name } : {})
 
-    this.accountStorage = new AccountStorage(address)
+    this.initAccountStorage()
 
     const assets = this.storage?.get('assets')
     if (assets) {

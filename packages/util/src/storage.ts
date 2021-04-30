@@ -2,7 +2,7 @@ export class Storage {
   protected namespace: string
 
   constructor (namespace = 'sora') {
-    this.namespace = namespace 
+    this.namespace = namespace
   }
 
   public all (): Array<Array<any>> {
