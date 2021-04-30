@@ -27,15 +27,10 @@ export class Storage {
 }
 
 export class AccountStorage extends Storage {
-  constructor (accountAddress: string) {
-    if (!accountAddress) {
-      throw new Error('AccountStorage: accountAddress is required')
+  constructor (identity: string) {
+    if (!identity) {
+      throw new Error('AccountStorage: identity is required')
     }
-    super('account')
-    this.setIdentity(accountAddress)
-  }
-
-  public setIdentity (identity: string) {
-    this.namespace = `${this.namespace}:${identity}`
+    super(`account:${identity}`)
   }
 }
