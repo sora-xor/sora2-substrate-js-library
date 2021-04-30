@@ -682,7 +682,14 @@ export class Api extends BaseApi {
         continue
       }
       const [reserveA, reserveB] = await this.getLiquidityReserves(xor.address, item.address, decimals, decimals)
-      const [balanceA, balanceB] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, props[2], decimals, decimals)
+      const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, props[2], decimals, decimals)
+      const fpBalanceA = FPNumber.fromCodecValue(balanceA, decimals)
+      const fpBalanceB = FPNumber.fromCodecValue(balanceB, decimals)
+      const pts = FPNumber.fromCodecValue(totalSupply, decimals)
+      const minted = FPNumber.min(
+        fpBalanceA.mul(pts).div(FPNumber.fromCodecValue(reserveA, decimals)),
+        fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, decimals))
+      )
       const asset = {
         address: props[2],
         firstAddress: xor.address,
@@ -692,7 +699,8 @@ export class Api extends BaseApi {
         symbol,
         decimals,
         balance,
-        name
+        name,
+        poolShare: minted.div(pts).mul(new FPNumber(100)).format() || '0'
       } as AccountLiquidity
       accountLiquidity.push(asset)
     }
@@ -806,8 +814,8 @@ export class Api extends BaseApi {
     if (!result || result.length !== 2) {
       return ['0', '0']
     }
-    firstAssetDecimals = firstAssetDecimals || (await this.getAssetInfo(firstAssetAddress)).decimals
-    secondAssetDecimals = secondAssetDecimals || (await this.getAssetInfo(secondAssetAddress)).decimals
+    firstAssetDecimals = firstAssetDecimals ?? (await this.getAssetInfo(firstAssetAddress)).decimals
+    secondAssetDecimals = secondAssetDecimals ?? (await this.getAssetInfo(secondAssetAddress)).decimals
     const firstValue = new FPNumber(result[0], firstAssetDecimals)
     const secondValue = new FPNumber(result[1], secondAssetDecimals)
     return [firstValue.toCodecString(), secondValue.toCodecString()]
@@ -835,8 +843,8 @@ export class Api extends BaseApi {
     firstAssetDecimals?: number,
     secondAssetDecimals?: number
   ): Promise<Array<CodecString>> {
-    firstAssetDecimals = firstAssetDecimals || (await this.getAssetInfo(firstAssetAddress)).decimals
-    secondAssetDecimals = secondAssetDecimals || (await this.getAssetInfo(secondAssetAddress)).decimals
+    firstAssetDecimals = firstAssetDecimals ?? (await this.getAssetInfo(firstAssetAddress)).decimals
+    secondAssetDecimals = secondAssetDecimals ?? (await this.getAssetInfo(secondAssetAddress)).decimals
     const a = FPNumber.fromCodecValue(firstTotal, firstAssetDecimals)
     const b = FPNumber.fromCodecValue(secondTotal, secondAssetDecimals)
     if (a.isZero() && b.isZero()) {
