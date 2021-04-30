@@ -47,9 +47,7 @@ export class BaseApi {
   }
 
   public set history (value: Array<History>) {
-    if (this.accountStorage) {
-      this.accountStorage.set('history', JSON.stringify(value))
-    }
+    this.accountStorage?.set('history', JSON.stringify(value))
     this._history = [...value]
   }
 

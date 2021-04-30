@@ -42,7 +42,7 @@ export class Api extends BaseApi {
   public readonly bridge: BridgeApi = new BridgeApi()
 
   private account?: CreateResult
-  private assets: Array<AccountAsset> = []
+  private _assets: Array<AccountAsset> = []
   private liquidity: Array<AccountLiquidity> = []
   private balanceSubscriptions: Array<Subscription> = []
   private assetsBalanceSubject = new Subject<void>()
@@ -64,9 +64,14 @@ export class Api extends BaseApi {
 
   public get accountAssets (): Array<AccountAsset> {
     if (this.storage) {
-      this.assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset> || []
+      this._assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset> || []
     }
-    return this.assets
+    return this._assets
+  }
+
+  public set accountAssets (assets: Array<AccountAsset>) {
+    this.storage?.set('assets', JSON.stringify(assets))
+    this._assets = [...assets]
   }
 
   public get accountLiquidity (): Array<AccountLiquidity> {
@@ -74,6 +79,12 @@ export class Api extends BaseApi {
       this.liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
     }
     return this.liquidity
+  }
+
+  private initAccountStorage () {
+    if (!this.account?.pair?.address) return
+
+    this.accountStorage = new AccountStorage(encrypt(this.account.pair.address))
   }
 
   /**
@@ -87,12 +98,12 @@ export class Api extends BaseApi {
   }
 
   public removeAsset (address: string): void {
-    const filtered = this.accountAssets.filter(item => item.address !== address)
-    this.assets = filtered
-    if (this.storage) {
-      this.storage.set('assets', JSON.stringify(this.assets))
-    }
+    this.accountAssets = this.accountAssets.filter(item => item.address !== address)
     this.updateAccountAssets()
+  }
+
+  public getAsset (address: string): AccountAsset | null {
+    return this.accountAssets.find(asset => asset.address === address) ?? null
   }
 
   /**
@@ -123,11 +134,6 @@ export class Api extends BaseApi {
       : keyring.addExternal(address, name ? { name } : {})
 
     this.initAccountStorage()
-
-    const assets = this.storage?.get('assets')
-    if (assets) {
-      this.assets = JSON.parse(assets)
-    }
   }
 
   /**
@@ -146,10 +152,6 @@ export class Api extends BaseApi {
       address: keyring.createFromUri(suri, {}, this.type).address,
       suri
     }
-  }
-
-  private initAccountStorage () {
-    this.accountStorage = new AccountStorage(this.account.pair.address)
   }
 
   /**
@@ -260,10 +262,6 @@ export class Api extends BaseApi {
       this.storage.set('name', name)
       this.storage.set('address', this.account.pair.address)
       this.storage.set('isExternal', true)
-      const assets = this.storage?.get('assets')
-      if (assets) {
-        this.assets = JSON.parse(assets)
-      }
     }
     this.initAccountStorage()
   }
@@ -278,8 +276,16 @@ export class Api extends BaseApi {
   }
 
   private addToAssetList (asset: AccountAsset): void {
-    const index = this.assets.findIndex(item => item.address === asset.address)
-    ~index ? this.assets[index] = asset : this.assets.push(asset)
+    const assetsCopy = [...this.accountAssets]
+    const index = assetsCopy.findIndex(item => item.address === asset.address)
+
+    if (index !== -1) {
+      assetsCopy[index] = asset
+    } else {
+      assetsCopy.push(asset)
+    }
+
+    this.accountAssets = assetsCopy
   }
 
   private addToLiquidityList (asset: AccountLiquidity): void {
@@ -346,8 +352,7 @@ export class Api extends BaseApi {
     if (knownAsset) {
       return knownAsset
     }
-    const existingAsset = this.assets.find(asset => asset.address === address) ||
-      this.liquidity.find(asset => asset.address === address)
+    const existingAsset = this.getAsset(address) || this.liquidity.find(asset => asset.address === address)
     if (existingAsset) {
       return {
         address: existingAsset.address,
@@ -373,7 +378,6 @@ export class Api extends BaseApi {
     asset.balance = result
     if (addToList) {
       this.addToAssetList(asset)
-      this.storage?.set('assets', JSON.stringify(this.assets))
       this.updateAccountAssets()
     }
     return asset
@@ -388,17 +392,9 @@ export class Api extends BaseApi {
     for (const item of KnownAssets) {
       const asset = { ...item } as AccountAsset
       const result = await getAssetBalance(this.api, this.account.pair.address, item.address, item.decimals)
-      // We've decided to show all KnownAssets for now
-      // const balance = result.transferable
-      // if (!+balance && item.symbol !== KnownSymbols.XOR) {
-      //   continue
-      // }
       asset.balance = result
       knownAssets.push(asset)
       this.addToAssetList(asset)
-    }
-    if (this.storage) {
-      this.storage.set('assets', JSON.stringify(this.assets))
     }
     return knownAssets
   }
@@ -411,13 +407,10 @@ export class Api extends BaseApi {
       subscription.unsubscribe()
     }
     assert(this.account, Messages.connectWallet)
-    for (const asset of this.assets) {
+    for (const asset of this.accountAssets) {
       const subscription = getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address, asset.decimals).subscribe(result => {
         asset.balance = result
         this.addToAssetList(asset)
-        if (this.storage) {
-          this.storage.set('assets', JSON.stringify(this.assets))
-        }
         this.assetsBalanceSubject.next()
       })
       this.balanceSubscriptions.push(subscription)
@@ -625,7 +618,7 @@ export class Api extends BaseApi {
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
     const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
-    if (!this.accountAssets.find(asset => asset.address === params.assetB.address)) {
+    if (!this.getAsset(params.assetB.address)) {
       this.addToAssetList({ ...params.assetB, balance: ZeroBalance })
       this.updateAccountAssets()
     }
@@ -1249,10 +1242,10 @@ export class Api extends BaseApi {
     const address = this.account.pair.address
     keyring.forgetAccount(address)
     keyring.forgetAddress(address)
-    this.accountStorage = null
     this.account = null
+    this.accountAssets = []
+    this.accountStorage = null
     this.signer = null
-    this.assets = []
     this.liquidity = []
     this.history = []
     for (const subscription of this.balanceSubscriptions) {
@@ -1274,7 +1267,7 @@ export class Api extends BaseApi {
       return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
     }
     // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.accountAssets.find(asset => asset.address === xor.address)
+    const xorAccountAsset = this.getAsset(xor.address)
     if (!xorAccountAsset) {
       return false
     }
