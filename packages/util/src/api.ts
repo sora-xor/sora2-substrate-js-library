@@ -85,6 +85,17 @@ export class Api extends BaseApi {
     if (!this.account?.pair?.address) return
 
     this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
+
+    // transfer old history to accountStorage
+    if (this.storage) {
+      const oldHistory = JSON.parse(this.storage.get('history')) || []
+
+      if (oldHistory.length) {
+        this.history = oldHistory
+      }
+
+      this.storage.remove('history')
+    }
   }
 
   /**
