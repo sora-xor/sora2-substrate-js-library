@@ -673,17 +673,23 @@ export class Api extends BaseApi {
         continue
       }
       const result = await getBalance(this.api, this.account.pair.address, props[2])
-      const { decimals, symbol, name } = await this.getAssetInfo(props[2])
-      const balanceFP = new FPNumber(result, decimals)
-      if (balanceFP.isZero()) {
+      if (new FPNumber(result).isZero()) {
         continue
       }
-      const balance = balanceFP.toCodecString()
+      const { decimals, symbol, name } = await this.getAssetInfo(props[2])
+      const balance = new FPNumber(result, decimals).toCodecString()
       if (!Number(balance)) {
         continue
       }
-      const [reserveA, reserveB] = await this.getLiquidityReserves(xor.address, item.address)
-      const [balanceA, balanceB] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, props[2])
+      const [reserveA, reserveB] = await this.getLiquidityReserves(xor.address, item.address, decimals, decimals)
+      const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, props[2], decimals, decimals)
+      const fpBalanceA = FPNumber.fromCodecValue(balanceA, decimals)
+      const fpBalanceB = FPNumber.fromCodecValue(balanceB, decimals)
+      const pts = FPNumber.fromCodecValue(totalSupply, decimals)
+      const minted = FPNumber.min(
+        fpBalanceA.mul(pts).div(FPNumber.fromCodecValue(reserveA, decimals)),
+        fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, decimals))
+      )
       const asset = {
         address: props[2],
         firstAddress: xor.address,
@@ -693,7 +699,8 @@ export class Api extends BaseApi {
         symbol,
         decimals,
         balance,
-        name
+        name,
+        poolShare: minted.div(pts).mul(new FPNumber(100)).format() || '0'
       } as AccountLiquidity
       accountLiquidity.push(asset)
     }
@@ -794,16 +801,23 @@ export class Api extends BaseApi {
    * If the output will be `['0', '0']` then the client is the first liquidity provider
    * @param firstAssetAddress
    * @param secondAssetAddress
+   * @param firstAssetDecimals If it's not set then request about asset info will be performed
+   * @param secondAssetDecimals If it's not set then request about asset info will be performed
    */
-  public async getLiquidityReserves (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<CodecString>> {
+  public async getLiquidityReserves (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    firstAssetDecimals?: number,
+    secondAssetDecimals?: number
+  ): Promise<Array<CodecString>> {
     const result = await this.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress) as any // Array<Balance>
     if (!result || result.length !== 2) {
       return ['0', '0']
     }
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const firstValue = new FPNumber(result[0], firstAsset.decimals)
-    const secondValue = new FPNumber(result[1], secondAsset.decimals)
+    firstAssetDecimals = firstAssetDecimals ?? (await this.getAssetInfo(firstAssetAddress)).decimals
+    secondAssetDecimals = secondAssetDecimals ?? (await this.getAssetInfo(secondAssetAddress)).decimals
+    const firstValue = new FPNumber(result[0], firstAssetDecimals)
+    const secondValue = new FPNumber(result[1], secondAssetDecimals)
     return [firstValue.toCodecString(), secondValue.toCodecString()]
   }
 
@@ -816,6 +830,8 @@ export class Api extends BaseApi {
    * @param firstTotal Reserve A from `getLiquidityReserves()[0]`
    * @param secondTotal Reserve B from `getLiquidityReserves()[1]`
    * @param poolTokenAddress If it isn't set then it will be found by the get request
+   * @param firstAssetDecimals If it's not set then request about asset info will be performed
+   * @param secondAssetDecimals If it's not set then request about asset info will be performed
    */
   public async estimateTokensRetrieved (
     firstAssetAddress: string,
@@ -823,12 +839,14 @@ export class Api extends BaseApi {
     amount: CodecString,
     firstTotal: CodecString,
     secondTotal: CodecString,
-    poolTokenAddress?: string
+    poolTokenAddress?: string,
+    firstAssetDecimals?: number,
+    secondAssetDecimals?: number
   ): Promise<Array<CodecString>> {
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const a = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
-    const b = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
+    firstAssetDecimals = firstAssetDecimals ?? (await this.getAssetInfo(firstAssetAddress)).decimals
+    secondAssetDecimals = secondAssetDecimals ?? (await this.getAssetInfo(secondAssetAddress)).decimals
+    const a = FPNumber.fromCodecValue(firstTotal, firstAssetDecimals)
+    const b = FPNumber.fromCodecValue(secondTotal, secondAssetDecimals)
     if (a.isZero() && b.isZero()) {
       return ['0', '0']
     }
