@@ -57,6 +57,7 @@ export interface AccountLiquidity {
   secondAddress: string;
   firstBalance: CodecString; // value * 10 ^ decimals
   secondBalance: CodecString; // value * 10 ^ decimals
+  poolShare: string; // Formatted value
 }
 
 export interface Asset {

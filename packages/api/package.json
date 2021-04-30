@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@sora-substrate/types": "^0.8.15",
-    "@sora-substrate/api-derive": "^0.8.14",
+    "@sora-substrate/api-derive": "^0.8.15",
     "@babel/runtime": "^7.10.2",
     "@open-web3/orml-api-derive": "^0.8.2-9",
     "@polkadot/api": "^4.1.1",
