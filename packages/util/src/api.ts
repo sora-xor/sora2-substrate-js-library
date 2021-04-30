@@ -22,8 +22,8 @@ import {
   ZeroBalance,
   getBalance
 } from './assets'
-import { decrypt, encrypt } from './crypto'
-import { BaseApi, Operation, KeyringType, History, isBridgeOperation } from './BaseApi'
+import { decrypt, encrypt, toHmacSHA256 } from './crypto'
+import { BaseApi, Operation, KeyringType, isBridgeOperation } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
 import { RewardingEvents, RewardInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
@@ -84,7 +84,7 @@ export class Api extends BaseApi {
   private initAccountStorage () {
     if (!this.account?.pair?.address) return
 
-    this.accountStorage = new AccountStorage(encrypt(this.account.pair.address))
+    this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
   }
 
   /**
