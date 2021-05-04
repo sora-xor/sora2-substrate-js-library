@@ -26,6 +26,7 @@ export class BaseApi {
   protected storage?: Storage // common data storage
   protected accountStorage?: AccountStorage // account data storage
   private _history: Array<History> = []
+  private _restored: Boolean = false
 
   constructor () {
   }
@@ -49,6 +50,18 @@ export class BaseApi {
   public set history (value: Array<History>) {
     this.accountStorage?.set('history', JSON.stringify(value))
     this._history = [...value]
+  }
+
+  public get restored (): Boolean {
+    if (this.accountStorage) {
+      this._restored = JSON.parse(this.accountStorage.get('restored')) || false
+    }
+    return this._restored
+  }
+
+  public set restored (value: Boolean) {
+    this.accountStorage?.set('restored', JSON.stringify(value))
+    this._restored = value
   }
 
   public getHistory (id: string): History | null {
