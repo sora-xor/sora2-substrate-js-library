@@ -1,5 +1,5 @@
 export class Storage {
-  private namespace: string
+  protected namespace: string
 
   constructor (namespace = 'sora') {
     this.namespace = namespace
@@ -23,5 +23,14 @@ export class Storage {
 
   public clear (): void {
     this.all().forEach(([key]) => localStorage.removeItem(key))
+  }
+}
+
+export class AccountStorage extends Storage {
+  constructor (identity: string) {
+    if (!identity) {
+      throw new Error('AccountStorage: identity is required')
+    }
+    super(`account:${identity}`)
   }
 }

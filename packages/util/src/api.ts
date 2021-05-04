@@ -22,14 +22,14 @@ import {
   ZeroBalance,
   getBalance
 } from './assets'
-import { decrypt, encrypt } from './crypto'
-import { BaseApi, Operation, KeyringType, History, isBridgeOperation } from './BaseApi'
+import { decrypt, encrypt, toHmacSHA256 } from './crypto'
+import { BaseApi, Operation, KeyringType, isBridgeOperation } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
 import { RewardingEvents, RewardInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
-import { Storage } from './storage'
+import { AccountStorage, Storage } from './storage'
 
 /**
  * Contains all necessary data and functions for the wallet
@@ -42,7 +42,7 @@ export class Api extends BaseApi {
   public readonly bridge: BridgeApi = new BridgeApi()
 
   private account?: CreateResult
-  private assets: Array<AccountAsset> = []
+  private _assets: Array<AccountAsset> = []
   private liquidity: Array<AccountLiquidity> = []
   private balanceSubscriptions: Array<Subscription> = []
   private assetsBalanceSubject = new Subject<void>()
@@ -64,9 +64,14 @@ export class Api extends BaseApi {
 
   public get accountAssets (): Array<AccountAsset> {
     if (this.storage) {
-      this.assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset> || []
+      this._assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset> || []
     }
-    return this.assets
+    return this._assets
+  }
+
+  public set accountAssets (assets: Array<AccountAsset>) {
+    this.storage?.set('assets', JSON.stringify(assets))
+    this._assets = [...assets]
   }
 
   public get accountLiquidity (): Array<AccountLiquidity> {
@@ -76,22 +81,21 @@ export class Api extends BaseApi {
     return this.liquidity
   }
 
-  public get accountHistory (): Array<History> {
-    if (this.storage) {
-      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
-      return this.history
-    }
-    return [
-      ...this.history.filter(({ type }) => !isBridgeOperation(type)),
-      ...this.bridge.accountHistory
-    ]
-  }
+  private initAccountStorage () {
+    if (!this.account?.pair?.address) return
 
-  public get accountSoraHistory (): Array<History> {
+    this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
+
+    // transfer old history to accountStorage
     if (this.storage) {
-      this.history = JSON.parse(this.storage.get('history')) as Array<History> || []
+      const oldHistory = JSON.parse(this.storage.get('history')) || []
+
+      if (oldHistory.length) {
+        this.history = oldHistory
+      }
+
+      this.storage.remove('history')
     }
-    return this.history.filter(({ type }) => !isBridgeOperation(type))
   }
 
   /**
@@ -99,26 +103,18 @@ export class Api extends BaseApi {
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
   public clearHistory (assetAddress?: string) {
-    const removeHistoryIds = (assetAddress
-      ? this.accountSoraHistory.filter(item => [item.assetAddress, item.asset2Address].includes(assetAddress))
-      : this.accountSoraHistory
-    ).map(item => item.id)
-    if (!removeHistoryIds || !removeHistoryIds.length) {
-      return
-    }
-    this.history = this.history.filter(({ id }) => !removeHistoryIds.includes(id))
-    if (this.storage) {
-      this.storage.set('history', JSON.stringify(this.history))
-    }
+    this.history = this.history.filter((item) =>
+      isBridgeOperation(item.type) || (!!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress))
+    )
   }
 
   public removeAsset (address: string): void {
-    const filtered = this.accountAssets.filter(item => item.address !== address)
-    this.assets = filtered
-    if (this.storage) {
-      this.storage.set('assets', JSON.stringify(this.assets))
-    }
+    this.accountAssets = this.accountAssets.filter(item => item.address !== address)
     this.updateAccountAssets()
+  }
+
+  public getAsset (address: string): AccountAsset | null {
+    return this.accountAssets.find(asset => asset.address === address) ?? null
   }
 
   /**
@@ -143,13 +139,12 @@ export class Api extends BaseApi {
       return
     }
     const pair = keyring.getPair(address)
+
     this.account = !isExternal
       ? keyring.addPair(pair, decrypt(password))
       : keyring.addExternal(address, name ? { name } : {})
-    const assets = this.storage?.get('assets')
-    if (assets) {
-      this.assets = JSON.parse(assets)
-    }
+
+    this.initAccountStorage()
   }
 
   /**
@@ -188,6 +183,8 @@ export class Api extends BaseApi {
       this.storage.set('password', encrypt(password))
       this.storage.set('address', this.account.pair.address)
     }
+
+    this.initAccountStorage()
   }
 
   /**
@@ -276,11 +273,8 @@ export class Api extends BaseApi {
       this.storage.set('name', name)
       this.storage.set('address', this.account.pair.address)
       this.storage.set('isExternal', true)
-      const assets = this.storage?.get('assets')
-      if (assets) {
-        this.assets = JSON.parse(assets)
-      }
     }
+    this.initAccountStorage()
   }
 
   /**
@@ -293,8 +287,12 @@ export class Api extends BaseApi {
   }
 
   private addToAssetList (asset: AccountAsset): void {
-    const index = this.assets.findIndex(item => item.address === asset.address)
-    ~index ? this.assets[index] = asset : this.assets.push(asset)
+    const assetsCopy = [...this.accountAssets]
+    const index = assetsCopy.findIndex(item => item.address === asset.address)
+
+    ~index ? assetsCopy[index] = asset : assetsCopy.push(asset)
+
+    this.accountAssets = assetsCopy
   }
 
   private addToLiquidityList (asset: AccountLiquidity): void {
@@ -361,8 +359,7 @@ export class Api extends BaseApi {
     if (knownAsset) {
       return knownAsset
     }
-    const existingAsset = this.assets.find(asset => asset.address === address) ||
-      this.liquidity.find(asset => asset.address === address)
+    const existingAsset = this.getAsset(address) || this.liquidity.find(asset => asset.address === address)
     if (existingAsset) {
       return {
         address: existingAsset.address,
@@ -388,7 +385,6 @@ export class Api extends BaseApi {
     asset.balance = result
     if (addToList) {
       this.addToAssetList(asset)
-      this.storage?.set('assets', JSON.stringify(this.assets))
       this.updateAccountAssets()
     }
     return asset
@@ -403,17 +399,9 @@ export class Api extends BaseApi {
     for (const item of KnownAssets) {
       const asset = { ...item } as AccountAsset
       const result = await getAssetBalance(this.api, this.account.pair.address, item.address, item.decimals)
-      // We've decided to show all KnownAssets for now
-      // const balance = result.transferable
-      // if (!+balance && item.symbol !== KnownSymbols.XOR) {
-      //   continue
-      // }
       asset.balance = result
       knownAssets.push(asset)
       this.addToAssetList(asset)
-    }
-    if (this.storage) {
-      this.storage.set('assets', JSON.stringify(this.assets))
     }
     return knownAssets
   }
@@ -426,13 +414,10 @@ export class Api extends BaseApi {
       subscription.unsubscribe()
     }
     assert(this.account, Messages.connectWallet)
-    for (const asset of this.assets) {
+    for (const asset of this.accountAssets) {
       const subscription = getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address, asset.decimals).subscribe(result => {
         asset.balance = result
         this.addToAssetList(asset)
-        if (this.storage) {
-          this.storage.set('assets', JSON.stringify(this.assets))
-        }
         this.assetsBalanceSubject.next()
       })
       this.balanceSubscriptions.push(subscription)
@@ -640,7 +625,7 @@ export class Api extends BaseApi {
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
     const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
-    if (!this.accountAssets.find(asset => asset.address === params.assetB.address)) {
+    if (!this.getAsset(params.assetB.address)) {
       this.addToAssetList({ ...params.assetB, balance: ZeroBalance })
       this.updateAccountAssets()
     }
@@ -673,17 +658,23 @@ export class Api extends BaseApi {
         continue
       }
       const result = await getBalance(this.api, this.account.pair.address, props[2])
-      const { decimals, symbol, name } = await this.getAssetInfo(props[2])
-      const balanceFP = new FPNumber(result, decimals)
-      if (balanceFP.isZero()) {
+      if (new FPNumber(result).isZero()) {
         continue
       }
-      const balance = balanceFP.toCodecString()
+      const { decimals, symbol, name } = await this.getAssetInfo(props[2])
+      const balance = new FPNumber(result, decimals).toCodecString()
       if (!Number(balance)) {
         continue
       }
-      const [reserveA, reserveB] = await this.getLiquidityReserves(xor.address, item.address)
-      const [balanceA, balanceB] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, props[2])
+      const [reserveA, reserveB] = await this.getLiquidityReserves(xor.address, item.address, decimals, decimals)
+      const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, props[2], decimals, decimals)
+      const fpBalanceA = FPNumber.fromCodecValue(balanceA, decimals)
+      const fpBalanceB = FPNumber.fromCodecValue(balanceB, decimals)
+      const pts = FPNumber.fromCodecValue(totalSupply, decimals)
+      const minted = FPNumber.min(
+        fpBalanceA.mul(pts).div(FPNumber.fromCodecValue(reserveA, decimals)),
+        fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, decimals))
+      )
       const asset = {
         address: props[2],
         firstAddress: xor.address,
@@ -693,7 +684,8 @@ export class Api extends BaseApi {
         symbol,
         decimals,
         balance,
-        name
+        name,
+        poolShare: minted.div(pts).mul(new FPNumber(100)).format() || '0'
       } as AccountLiquidity
       accountLiquidity.push(asset)
     }
@@ -794,16 +786,23 @@ export class Api extends BaseApi {
    * If the output will be `['0', '0']` then the client is the first liquidity provider
    * @param firstAssetAddress
    * @param secondAssetAddress
+   * @param firstAssetDecimals If it's not set then request about asset info will be performed
+   * @param secondAssetDecimals If it's not set then request about asset info will be performed
    */
-  public async getLiquidityReserves (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<CodecString>> {
+  public async getLiquidityReserves (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    firstAssetDecimals?: number,
+    secondAssetDecimals?: number
+  ): Promise<Array<CodecString>> {
     const result = await this.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress) as any // Array<Balance>
     if (!result || result.length !== 2) {
       return ['0', '0']
     }
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const firstValue = new FPNumber(result[0], firstAsset.decimals)
-    const secondValue = new FPNumber(result[1], secondAsset.decimals)
+    firstAssetDecimals = firstAssetDecimals ?? (await this.getAssetInfo(firstAssetAddress)).decimals
+    secondAssetDecimals = secondAssetDecimals ?? (await this.getAssetInfo(secondAssetAddress)).decimals
+    const firstValue = new FPNumber(result[0], firstAssetDecimals)
+    const secondValue = new FPNumber(result[1], secondAssetDecimals)
     return [firstValue.toCodecString(), secondValue.toCodecString()]
   }
 
@@ -816,6 +815,8 @@ export class Api extends BaseApi {
    * @param firstTotal Reserve A from `getLiquidityReserves()[0]`
    * @param secondTotal Reserve B from `getLiquidityReserves()[1]`
    * @param poolTokenAddress If it isn't set then it will be found by the get request
+   * @param firstAssetDecimals If it's not set then request about asset info will be performed
+   * @param secondAssetDecimals If it's not set then request about asset info will be performed
    */
   public async estimateTokensRetrieved (
     firstAssetAddress: string,
@@ -823,12 +824,14 @@ export class Api extends BaseApi {
     amount: CodecString,
     firstTotal: CodecString,
     secondTotal: CodecString,
-    poolTokenAddress?: string
+    poolTokenAddress?: string,
+    firstAssetDecimals?: number,
+    secondAssetDecimals?: number
   ): Promise<Array<CodecString>> {
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const a = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
-    const b = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
+    firstAssetDecimals = firstAssetDecimals ?? (await this.getAssetInfo(firstAssetAddress)).decimals
+    secondAssetDecimals = secondAssetDecimals ?? (await this.getAssetInfo(secondAssetAddress)).decimals
+    const a = FPNumber.fromCodecValue(firstTotal, firstAssetDecimals)
+    const b = FPNumber.fromCodecValue(secondTotal, secondAssetDecimals)
     if (a.isZero() && b.isZero()) {
       return ['0', '0']
     }
@@ -1264,10 +1267,10 @@ export class Api extends BaseApi {
     const address = this.account.pair.address
     keyring.forgetAccount(address)
     keyring.forgetAddress(address)
-    this.bridge.clearHistory()
     this.account = null
+    this.accountAssets = []
+    this.accountStorage = null
     this.signer = null
-    this.assets = []
     this.liquidity = []
     this.history = []
     for (const subscription of this.balanceSubscriptions) {
@@ -1289,7 +1292,7 @@ export class Api extends BaseApi {
       return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
     }
     // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.accountAssets.find(asset => asset.address === xor.address)
+    const xorAccountAsset = this.getAsset(xor.address)
     if (!xorAccountAsset) {
       return false
     }
