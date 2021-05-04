@@ -87,10 +87,6 @@ export class BaseApi {
     this.history = this.history.filter(item => item.id !== id)
   }
 
-  public restoreHistory (): void {
-    this.restored = true
-  }
-
   /**
    * Set signer if the pair is locked (For polkadot js extension usage)
    * @param signer
