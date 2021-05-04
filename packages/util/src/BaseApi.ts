@@ -63,11 +63,7 @@ export class BaseApi {
     const historyCopy = [...this.history]
     const index = historyCopy.findIndex(item => item.id === historyItem.id)
 
-    if (index !== -1) {
-      historyCopy[index] = historyItem
-    } else {
-      historyCopy.push(historyItem)
-    }
+    ~index ? historyCopy[index] = historyItem : historyCopy.push(historyItem)
 
     this.history = historyCopy
   }

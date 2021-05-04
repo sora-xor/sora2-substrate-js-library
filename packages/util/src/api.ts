@@ -290,11 +290,7 @@ export class Api extends BaseApi {
     const assetsCopy = [...this.accountAssets]
     const index = assetsCopy.findIndex(item => item.address === asset.address)
 
-    if (index !== -1) {
-      assetsCopy[index] = asset
-    } else {
-      assetsCopy.push(asset)
-    }
+    ~index ? assetsCopy[index] = asset : assetsCopy.push(asset)
 
     this.accountAssets = assetsCopy
   }
