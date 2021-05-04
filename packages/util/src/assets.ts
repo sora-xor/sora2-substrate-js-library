@@ -160,12 +160,12 @@ export function isNativeAsset (asset: any): boolean {
   return !!KnownAssets.get(asset.address)
 }
 
-export async function getAssets (api: ApiPromise): Promise<Array<Asset>> {
+export async function getAssets (api: ApiPromise, sorted = true): Promise<Array<Asset>> {
   const assetInfos = (await (api.rpc as any).assets.listAssetInfos()).toJSON()
   const assets = assetInfos.map(({ asset_id, symbol, name, precision }) => {
     return { symbol, name, address: asset_id, decimals: precision } as Asset
   }) as Array<Asset>
-  return assets.sort((a, b) => {
+  return !sorted ? assets : assets.sort((a, b) => {
     const isNativeA = isNativeAsset(a)
     const isNativeB = isNativeAsset(b)
     const isRegisteredA = isRegisteredAsset(a)

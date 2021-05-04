@@ -6,7 +6,7 @@ import { Signer } from '@polkadot/types/types'
 
 import { BaseApi, Operation, History, isBridgeOperation } from './BaseApi'
 import { Messages } from './logger'
-import { getAssets, Asset, AccountAsset } from './assets'
+import { getAssets, Asset, AccountAsset, isNativeAsset } from './assets'
 import { CodecString, FPNumber } from './fp'
 import { encrypt } from './crypto'
 
@@ -300,7 +300,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
     const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(this.externalNetwork)).toJSON()
-    const assets = await getAssets(this.api)
+    const assets = await getAssets(this.api, false)
     return this.getData(data).map(([_, soraAsset, externalAsset]) => {
       const soraAssetId = first(soraAsset)
       const asset = assets.find(a => a.address === soraAssetId)
@@ -312,6 +312,22 @@ export class BridgeApi extends BaseApi {
         name: asset.name,
         externalDecimals: last(externalAsset)
       } as RegisteredAsset
+    }).sort((a: RegisteredAsset, b: RegisteredAsset) => {
+      const isNativeA = isNativeAsset(a)
+      const isNativeB = isNativeAsset(b)
+      if (isNativeA && !isNativeB) {
+        return -1
+      }
+      if (!isNativeA && isNativeB) {
+        return 1
+      }
+      if (a.symbol < b.symbol) {
+        return -1
+      }
+      if (a.symbol > b.symbol) {
+        return 1
+      }
+      return 0
     })
   }
 
