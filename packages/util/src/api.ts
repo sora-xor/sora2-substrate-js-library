@@ -23,7 +23,7 @@ import {
   getBalance
 } from './assets'
 import { decrypt, encrypt, toHmacSHA256 } from './crypto'
-import { BaseApi, Operation, KeyringType, isBridgeOperation } from './BaseApi'
+import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
 import { RewardingEvents, RewardInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
@@ -79,6 +79,10 @@ export class Api extends BaseApi {
       this.liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
     }
     return this.liquidity
+  }
+
+  public get accountHistory (): Array<History> {
+    return this.history.filter(({ type }) => !isBridgeOperation(type))
   }
 
   private initAccountStorage () {
