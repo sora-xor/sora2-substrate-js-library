@@ -1,6 +1,7 @@
 import last from 'lodash/fp/last'
 import first from 'lodash/fp/first'
 import { ApiPromise, ApiRx } from '@polkadot/api'
+import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
@@ -9,7 +10,7 @@ import { decodeAddress } from '@polkadot/util-crypto'
 import { AccountStorage, Storage } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
 import { CodecString, FPNumber } from './fp'
-import { encrypt } from './crypto'
+import { encrypt, toHmacSHA256 } from './crypto'
 import { connection } from './connection'
 import { BridgeHistory } from './BridgeApi'
 import { RewardClaimHistory } from './rewards'
@@ -25,6 +26,7 @@ export class BaseApi {
   protected signer?: Signer
   protected storage?: Storage // common data storage
   protected accountStorage?: AccountStorage // account data storage
+  protected account: CreateResult
   private _history: Array<History> = []
   private _restored: Boolean = false
 
@@ -37,6 +39,22 @@ export class BaseApi {
 
   public get apiRx (): ApiRx {
     return connection.apiRx
+  }
+
+  public logout (): void {
+    this.account = null
+    this.accountStorage = null
+    this.signer = null
+    this.history = []
+    if (this.storage) {
+      this.storage.clear()
+    }
+  }
+
+  public initAccountStorage () {
+    if (!this.account?.pair?.address) return
+
+    this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
   }
 
   // methods for working with history
