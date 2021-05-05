@@ -106,6 +106,14 @@ export class BaseApi {
   }
 
   /**
+   * Set account data
+   * @param account
+   */
+  public setAccount (account: CreateResult): void {
+    this.account = account
+  }
+
+  /**
    * Set signer if the pair is locked (For polkadot js extension usage)
    * @param signer
    */

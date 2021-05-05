@@ -184,13 +184,6 @@ export class BridgeApi extends BaseApi {
     this.history = this.history.filter(({ type }) => !isBridgeOperation(type))
   }
 
-  public setAccount (account: CreateResult, signer?: Signer): void {
-    this.account = account
-    if (signer) {
-      this.setSigner(signer)
-    }
-  }
-
   private async calcTransferToEthParams (asset: RegisteredAsset, to: string, amount: string | number) {
     assert(this.account, Messages.connectWallet)
     const balance = new FPNumber(amount, asset.decimals)

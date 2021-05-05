@@ -2,6 +2,7 @@ import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import keyring from '@polkadot/ui-keyring'
+import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
@@ -133,6 +134,24 @@ export class Api extends BaseApi {
   }
 
   /**
+   * Set signer if the pair is locked (For polkadot js extension usage)
+   * @param signer
+   */
+  public setSigner (signer: Signer): void {
+    super.setSigner(signer)
+    this.bridge.setSigner(signer)
+  }
+
+  /**
+   * Set account data
+   * @param account
+   */
+  public setAccount (account: CreateResult): void {
+    super.setAccount(account)
+    this.bridge.setAccount(account)
+  }
+
+  /**
    * The first method you should run. Includes initialization process
    */
   public initialize (): void {
@@ -146,10 +165,11 @@ export class Api extends BaseApi {
     }
     const pair = keyring.getPair(address)
 
-    this.account = !isExternal
+    const account = !isExternal
       ? keyring.addPair(pair, decrypt(password))
       : keyring.addExternal(address, name ? { name } : {})
 
+    this.setAccount(account)
     this.initAccountStorage()
   }
 
@@ -182,8 +202,10 @@ export class Api extends BaseApi {
     name: string,
     password: string
   ): void {
-    this.account = keyring.addUri(suri, password, { name }, this.type)
-    this.bridge.setAccount(this.account)
+    const account = keyring.addUri(suri, password, { name }, this.type)
+
+    this.setAccount(account)
+
     if (this.storage) {
       this.storage.set('name', name)
       this.storage.set('password', encrypt(password))
@@ -274,22 +296,17 @@ export class Api extends BaseApi {
    * @param name
    */
   public importByPolkadotJs (address: string, name: string): void {
-    this.account = keyring.addExternal(address, { name: name || '' })
+    const account = keyring.addExternal(address, { name: name || '' })
+
+    this.setAccount(account)
+
     if (this.storage) {
       this.storage.set('name', name)
       this.storage.set('address', this.account.pair.address)
       this.storage.set('isExternal', true)
     }
-    this.initAccountStorage()
-  }
 
-  /**
-   * Set signer if the pair is locked (For polkadot js extension usage)
-   * @param signer
-   */
-  public setSigner (signer: Signer): void {
-    super.setSigner(signer)
-    this.bridge.setAccount(this.account, signer)
+    this.initAccountStorage()
   }
 
   private addToAssetList (asset: AccountAsset): void {
