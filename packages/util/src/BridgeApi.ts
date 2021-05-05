@@ -1,8 +1,7 @@
 import first from 'lodash/fp/first'
 import last from 'lodash/fp/last'
+import BigNumber from 'bignumber.js'
 import { assert } from '@polkadot/util'
-import { CreateResult } from '@polkadot/ui-keyring/types'
-import { Signer } from '@polkadot/types/types'
 
 import { BaseApi, Operation, History, isBridgeOperation } from './BaseApi'
 import { Messages } from './logger'
@@ -98,6 +97,7 @@ export interface BridgeRequest {
   soraAssetAddress?: string;
   status: BridgeTxStatus;
   hash: string;
+  amount?: string;
   kind?: RequestType | any; // For incoming TXs TODO: check type
 }
 
@@ -344,6 +344,9 @@ export class BridgeApi extends BaseApi {
     const tx = request.length ? first(request) : request
     request = caseInsensitiveValue(tx, first(operations)) || caseInsensitiveValue(tx, last(operations))
     formattedItem.soraAssetAddress = request.asset_id
+    if (request.amount) {
+      formattedItem.amount = new FPNumber(new BigNumber(request.amount)).toString()
+    }
     if (direction === BridgeDirection.Outgoing) {
       formattedItem.hash = last(caseInsensitiveValue(body, direction))
       formattedItem.from = request.from
