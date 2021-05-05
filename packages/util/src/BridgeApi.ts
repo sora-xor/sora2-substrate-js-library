@@ -128,7 +128,6 @@ export interface BridgeApprovedRequest {
  */
 export class BridgeApi extends BaseApi {
   private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID
-  private account: CreateResult
 
   constructor () {
     super()

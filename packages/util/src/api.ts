@@ -2,7 +2,6 @@ import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import { KeypairType } from '@polkadot/util-crypto/types'
 import keyring from '@polkadot/ui-keyring'
-import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
@@ -22,14 +21,14 @@ import {
   ZeroBalance,
   getBalance
 } from './assets'
-import { decrypt, encrypt, toHmacSHA256 } from './crypto'
+import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
 import { RewardingEvents, RewardInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
-import { AccountStorage, Storage } from './storage'
+import { Storage } from './storage'
 
 /**
  * Contains all necessary data and functions for the wallet
@@ -41,9 +40,8 @@ export class Api extends BaseApi {
   public readonly seedLength = 12
   public readonly bridge: BridgeApi = new BridgeApi()
 
-  private account?: CreateResult
   private _assets: Array<AccountAsset> = []
-  private liquidity: Array<AccountLiquidity> = []
+  private _liquidity: Array<AccountLiquidity> = []
   private balanceSubscriptions: Array<Subscription> = []
   private assetsBalanceSubject = new Subject<void>()
   public assetsBalanceUpdated = this.assetsBalanceSubject.asObservable()
@@ -76,19 +74,23 @@ export class Api extends BaseApi {
 
   public get accountLiquidity (): Array<AccountLiquidity> {
     if (this.storage) {
-      this.liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
+      this._liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
     }
-    return this.liquidity
+    return this._liquidity
+  }
+
+  public set accountLiquidity (liquidity: Array<AccountLiquidity>) {
+    this.storage?.set('liquidity', JSON.stringify(liquidity))
+    this._liquidity = [...liquidity]
   }
 
   public get accountHistory (): Array<History> {
     return this.history.filter(({ type }) => !isBridgeOperation(type))
   }
 
-  private initAccountStorage () {
-    if (!this.account?.pair?.address) return
-
-    this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
+  public initAccountStorage () {
+    super.initAccountStorage()
+    this.bridge.initAccountStorage()
 
     // transfer old history to accountStorage
     if (this.storage) {
@@ -300,8 +302,12 @@ export class Api extends BaseApi {
   }
 
   private addToLiquidityList (asset: AccountLiquidity): void {
-    const index = this.liquidity.findIndex(item => item.address === asset.address)
-    ~index ? this.liquidity[index] = asset : this.liquidity.push(asset)
+    const liquidityCopy = [...this.accountLiquidity]
+    const index = liquidityCopy.findIndex(item => item.address === asset.address)
+
+    ~index ? liquidityCopy[index] = asset : liquidityCopy.push(asset)
+
+    this.accountLiquidity = liquidityCopy
   }
 
   private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean) {
@@ -363,7 +369,7 @@ export class Api extends BaseApi {
     if (knownAsset) {
       return knownAsset
     }
-    const existingAsset = this.getAsset(address) || this.liquidity.find(asset => asset.address === address)
+    const existingAsset = this.getAsset(address) || this.accountLiquidity.find(asset => asset.address === address)
     if (existingAsset) {
       return {
         address: existingAsset.address,
@@ -693,10 +699,7 @@ export class Api extends BaseApi {
       } as AccountLiquidity
       accountLiquidity.push(asset)
     }
-    this.liquidity = accountLiquidity
-    if (this.storage) {
-      this.storage.set('liquidity', JSON.stringify(this.liquidity))
-    }
+    this.accountLiquidity = accountLiquidity
     return accountLiquidity
   }
 
@@ -705,7 +708,7 @@ export class Api extends BaseApi {
    */
   public async updateAccountLiquidity (): Promise<Array<AccountLiquidity>> {
     assert(this.account, Messages.connectWallet)
-    for (const asset of this.liquidity) {
+    for (const asset of this.accountLiquidity) {
       const result = await getBalance(this.api, this.account.pair.address, asset.address)
       const [reserveA, reserveB] = await this.getLiquidityReserves(asset.firstAddress, asset.secondAddress)
       const [balanceA, balanceB] = await this.estimateTokensRetrieved(
@@ -721,10 +724,8 @@ export class Api extends BaseApi {
       asset.secondBalance = balanceB
       this.addToLiquidityList(asset)
     }
-    if (this.storage) {
-      this.storage.set('liquidity', JSON.stringify(this.liquidity))
-    }
-    return this.liquidity
+
+    return this.accountLiquidity
   }
 
   /**
@@ -1271,18 +1272,16 @@ export class Api extends BaseApi {
     const address = this.account.pair.address
     keyring.forgetAccount(address)
     keyring.forgetAddress(address)
-    this.account = null
+
     this.accountAssets = []
-    this.accountStorage = null
-    this.signer = null
-    this.liquidity = []
-    this.history = []
+    this.accountLiquidity = []
+
     for (const subscription of this.balanceSubscriptions) {
       subscription.unsubscribe()
     }
-    if (this.storage) {
-      this.storage.clear()
-    }
+
+    super.logout()
+    this.bridge.logout()
   }
 
   //_________________________FORMATTER_METHODS_____________________________
