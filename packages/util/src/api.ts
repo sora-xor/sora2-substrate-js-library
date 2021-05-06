@@ -42,6 +42,7 @@ export class Api extends BaseApi {
   public readonly bridge: BridgeApi = new BridgeApi()
 
   private _assets: Array<AccountAsset> = []
+  private _accountAssetsAddresses: Array<string> = [] 
   private _liquidity: Array<AccountLiquidity> = []
   private balanceSubscriptions: Array<Subscription> = []
   private assetsBalanceSubject = new Subject<void>()
@@ -73,6 +74,63 @@ export class Api extends BaseApi {
     this._assets = [...assets]
   }
 
+  private addToAccountAssetsList (asset: AccountAsset): void {
+    const assetsCopy = [...this.accountAssets]
+    const index = assetsCopy.findIndex(item => item.address === asset.address)
+
+    ~index ? assetsCopy[index] = asset : assetsCopy.push(asset)
+
+    this.accountAssets = assetsCopy
+  }
+
+  private removeFromAccountAssetsList (address: string): void {
+    this.accountAssets = this.accountAssets.filter(item => item.address !== address)
+  }
+
+  // Account assets addresses
+
+  private get accountAssetsAddresses (): Array<string> {
+    if (this.accountStorage) {
+      this._accountAssetsAddresses = JSON.parse(this.accountStorage.get('assetsAddresses')) as Array<string> || []
+    }
+    return this._accountAssetsAddresses
+  }
+
+  private set accountAssetsAddresses (assetsAddresses: Array<string>) {
+    this.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses))
+    this._accountAssetsAddresses = [...assetsAddresses]
+  }
+
+  private addToAccountAssetsAddressesList (assetAddress: string): void {
+    const assetsAddressesCopy = [...this.accountAssetsAddresses]
+    const index = assetsAddressesCopy.findIndex(address => address === assetAddress)
+
+    ~index ? assetsAddressesCopy[index] = assetAddress : assetsAddressesCopy.push(assetAddress)
+
+    this.accountAssetsAddresses = assetsAddressesCopy
+  }
+
+  private removeFromAccountAssetsAddressesList (address: string): void {
+    this.accountAssetsAddresses = this.accountAssetsAddresses.filter(item => item !== address)
+  }
+
+  private addAccountAsset (asset: AccountAsset): void {
+    this.addToAccountAssetsList(asset)
+    this.addToAccountAssetsAddressesList(asset.address)
+  }
+
+  private removeAccountAsset (address: string): void {
+    this.removeFromAccountAssetsList(address)
+    this.removeFromAccountAssetsAddressesList(address)
+  }
+
+  public removeAsset (address: string): void {
+    this.removeAccountAsset(address)
+    this.updateAccountAssets()
+  }
+
+  // Account Liquidity methods
+
   public get accountLiquidity (): Array<AccountLiquidity> {
     if (this.storage) {
       this._liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
@@ -83,6 +141,15 @@ export class Api extends BaseApi {
   public set accountLiquidity (liquidity: Array<AccountLiquidity>) {
     this.storage?.set('liquidity', JSON.stringify(liquidity))
     this._liquidity = [...liquidity]
+  }
+
+  private addToLiquidityList (asset: AccountLiquidity): void {
+    const liquidityCopy = [...this.accountLiquidity]
+    const index = liquidityCopy.findIndex(item => item.address === asset.address)
+
+    ~index ? liquidityCopy[index] = asset : liquidityCopy.push(asset)
+
+    this.accountLiquidity = liquidityCopy
   }
 
   public get accountHistory (): Array<History> {
@@ -113,11 +180,6 @@ export class Api extends BaseApi {
     this.history = this.history.filter((item) =>
       isBridgeOperation(item.type) || (!!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress))
     )
-  }
-
-  public removeAsset (address: string): void {
-    this.accountAssets = this.accountAssets.filter(item => item.address !== address)
-    this.updateAccountAssets()
   }
 
   public getAsset (address: string): AccountAsset | null {
@@ -309,24 +371,6 @@ export class Api extends BaseApi {
     this.initAccountStorage()
   }
 
-  private addToAssetList (asset: AccountAsset): void {
-    const assetsCopy = [...this.accountAssets]
-    const index = assetsCopy.findIndex(item => item.address === asset.address)
-
-    ~index ? assetsCopy[index] = asset : assetsCopy.push(asset)
-
-    this.accountAssets = assetsCopy
-  }
-
-  private addToLiquidityList (asset: AccountLiquidity): void {
-    const liquidityCopy = [...this.accountLiquidity]
-    const index = liquidityCopy.findIndex(item => item.address === asset.address)
-
-    ~index ? liquidityCopy[index] = asset : liquidityCopy.push(asset)
-
-    this.accountLiquidity = liquidityCopy
-  }
-
   private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean) {
     assert(this.account, Messages.connectWallet)
     // TODO: add assert for symbol, name and totalSupply params
@@ -411,25 +455,28 @@ export class Api extends BaseApi {
     const result = await getAssetBalance(this.api, this.account.pair.address, address, decimals)
     asset.balance = result
     if (addToList) {
-      this.addToAssetList(asset)
+      this.addAccountAsset(asset)
       this.updateAccountAssets()
     }
     return asset
   }
 
   /**
-   * Get a list of all known assets from `KnownAssets` array
+   * Get a list of all known assets from `KnownAssets` array & from account storage
    */
   public async getKnownAccountAssets (): Promise<Array<AccountAsset>> {
     assert(this.account, Messages.connectWallet)
+
     const knownAssets: Array<AccountAsset> = []
-    for (const item of KnownAssets) {
-      const asset = { ...item } as AccountAsset
-      const result = await getAssetBalance(this.api, this.account.pair.address, item.address, item.decimals)
-      asset.balance = result
+    const knownAssetsAddresses = Object.values(KnownAssets).map(knownAsset => knownAsset.address)
+    const assetsAddresses = new Set([...knownAssetsAddresses, ...this.accountAssetsAddresses])
+
+    for (const assetAddress of assetsAddresses) {
+      const asset = await this.getAccountAsset(assetAddress)
+      this.addAccountAsset(asset)
       knownAssets.push(asset)
-      this.addToAssetList(asset)
     }
+
     return knownAssets
   }
 
@@ -444,7 +491,7 @@ export class Api extends BaseApi {
     for (const asset of this.accountAssets) {
       const subscription = getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address, asset.decimals).subscribe(result => {
         asset.balance = result
-        this.addToAssetList(asset)
+        this.addAccountAsset(asset)
         this.assetsBalanceSubject.next()
       })
       this.balanceSubscriptions.push(subscription)
@@ -653,7 +700,7 @@ export class Api extends BaseApi {
   ): Promise<void> {
     const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
     if (!this.getAsset(params.assetB.address)) {
-      this.addToAssetList({ ...params.assetB, balance: ZeroBalance })
+      this.addAccountAsset({ ...params.assetB, balance: ZeroBalance })
       this.updateAccountAssets()
     }
     await this.submitExtrinsic(
