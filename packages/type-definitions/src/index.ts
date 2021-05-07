@@ -36,6 +36,7 @@ const overrides = {
   MultiCurrencyBalance: 'Balance',
   MultiCurrencyBalanceOf: 'MultiCurrencyBalance',
   Timepoint: 'BridgeTimepoint',
+  AccountInfo: 'AccountInfoWithDualRefCount',
 };
 
 export const types = {
