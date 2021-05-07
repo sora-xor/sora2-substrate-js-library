@@ -37,12 +37,6 @@ const overrides = {
   MultiCurrencyBalanceOf: 'MultiCurrencyBalance',
   Timepoint: 'BridgeTimepoint',
   AccountInfo: 'AccountInfoWithDualRefCount',
-  RewardDestination: {
-    _enum: {
-      Stash: 'Null',
-      Controller: 'Null'
-    }
-  },
 };
 
 export const types = {
