@@ -40,7 +40,9 @@ class Connection {
   }
 
   private async stop (): Promise<void> {
-    await this.api.disconnect()
+    if (this.api) {
+      await this.api.disconnect()
+    }
     this.api = null
     this.apiRx = null
     this.endpoint = ''
