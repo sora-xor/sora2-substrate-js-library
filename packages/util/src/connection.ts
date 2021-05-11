@@ -23,19 +23,28 @@ class Connection {
   }
 
   private async run (endpoint: string): Promise<void> {
+    this.endpoint = endpoint
+
     const provider = new WsProvider(endpoint)
     const api = new ApiPromise(options({ provider }))
     const apiRx = new ApiRx(options({ provider }))
+
     await api.isReady
     await apiRx.isReady.toPromise()
-    this.endpoint = endpoint
-    this.api = api
-    this.apiRx = apiRx
+
+    // because this.endpoint can be overwritten by the next run call, which is faster
+    if (this.endpoint === endpoint) {
+      this.api = api
+      this.apiRx = apiRx
+    }
   }
 
   private async stop (): Promise<void> {
-    await this.api.disconnect()
+    if (this.api) {
+      await this.api.disconnect()
+    }
     this.api = null
+    this.apiRx = null
     this.endpoint = ''
   }
 
