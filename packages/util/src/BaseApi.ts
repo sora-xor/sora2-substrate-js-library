@@ -53,8 +53,10 @@ export class BaseApi {
 
   public initAccountStorage () {
     if (!this.account?.pair?.address) return
-
-    this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
+    // TODO: dependency injection ?
+    if (localStorage) {
+      this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
+    }
   }
 
   // methods for working with history
