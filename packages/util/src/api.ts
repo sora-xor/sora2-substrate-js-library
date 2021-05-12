@@ -1304,19 +1304,19 @@ export class Api extends BaseApi {
    * Get network fee for claim rewards operation
    */
   public async getClaimRewardsNetworkFee (rewards: Array<RewardInfo>, signature = ''): Promise<CodecString>  {
-    const args = this.getClaimRewardsParams(rewards, signature)
+    const params = this.calcClaimRewardsParams(rewards, signature)
 
-    if (!args.extrinsic) return '0'
+    if (!params.extrinsic) return '0'
 
-    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, args)
+    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, params)
   }
 
   /**
-   * Returns an array of transactions for claiming rewards
+   * Returns a params object { extrinsic, args }
    * @param rewards claiming rewards
    * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
    */
-  private getClaimRewardsParams (rewards: Array<RewardInfo>, signature = ''): any {
+  private calcClaimRewardsParams (rewards: Array<RewardInfo>, signature = ''): any {
     const transactions = []
 
     if (hasRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
@@ -1358,7 +1358,7 @@ export class Api extends BaseApi {
     fee?: CodecString,
     externalAddress?: string,
   ): Promise<void> {
-    const { extrinsic, args } = this.getClaimRewardsParams(rewards, signature)
+    const { extrinsic, args } = this.calcClaimRewardsParams(rewards, signature)
 
     assert(extrinsic, Messages.undefinedExtrinsic)
 
