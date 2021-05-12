@@ -1306,8 +1306,6 @@ export class Api extends BaseApi {
   public async getClaimRewardsNetworkFee (rewards: Array<RewardInfo>, signature = ''): Promise<CodecString>  {
     const params = this.calcClaimRewardsParams(rewards, signature)
 
-    if (!params.extrinsic) return '0'
-
     return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, params)
   }
 
@@ -1345,7 +1343,11 @@ export class Api extends BaseApi {
 
     if (transactions.length === 1) return transactions[0]
 
-    return {}
+    // for current compability
+    return {
+      extrinsic: this.api.tx.rewards.claim,
+      args: [signature]
+    }
   }
 
   /**
@@ -1359,8 +1361,6 @@ export class Api extends BaseApi {
     externalAddress?: string,
   ): Promise<void> {
     const { extrinsic, args } = this.calcClaimRewardsParams(rewards, signature)
-
-    assert(extrinsic, Messages.undefinedExtrinsic)
 
     await this.submitExtrinsic(
       extrinsic(...args),
