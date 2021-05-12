@@ -1304,9 +1304,11 @@ export class Api extends BaseApi {
    * Get network fee for claim rewards operation
    */
   public async getClaimRewardsNetworkFee (rewards: Array<RewardInfo>, signature = ''): Promise<CodecString>  {
-    const transactions = this.getClaimRewardsTransactions(rewards, signature)
+    const args = this.getClaimRewardsParams(rewards, signature)
 
-    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, transactions)
+    if (!args.extrinsic) return '0'
+
+    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, args)
   }
 
   /**
@@ -1314,20 +1316,36 @@ export class Api extends BaseApi {
    * @param rewards claiming rewards
    * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
    */
-  private getClaimRewardsTransactions (rewards: Array<RewardInfo>, signature = ''): Array<any> {
+  private getClaimRewardsParams (rewards: Array<RewardInfo>, signature = ''): any {
     const transactions = []
 
     if (hasRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
-      transactions.push(this.api.tx.pswapDistribution.claimIncentive())
+      transactions.push({
+        extrinsic: this.api.tx.pswapDistribution.claimIncentive,
+        args: []
+      })
     }
     if (hasRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve])) {
-      transactions.push(this.api.tx.multicollateralBondingCurvePool.claimIncentive())
+      transactions.push({
+        extrinsic: this.api.tx.multicollateralBondingCurvePool.claimIncentive,
+        args: []
+      })
     }
     if (hasRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NtfAirdrop])) {
-      transactions.push(this.api.tx.rewards.claim(signature))
+      transactions.push({
+        extrinsic: this.api.tx.rewards.claim,
+        args: [signature]
+      })
     }
 
-    return transactions
+    if (transactions.length > 1) return {
+      extrinsic: this.api.tx.utility.batch,
+      args: [transactions.map(({ extrinsic, args }) => extrinsic(...args))]
+    }
+
+    if (transactions.length === 1) return transactions[0]
+
+    return {}
   }
 
   /**
@@ -1340,10 +1358,12 @@ export class Api extends BaseApi {
     fee?: CodecString,
     externalAddress?: string,
   ): Promise<void> {
-    const transactions = this.getClaimRewardsTransactions(rewards, signature)
+    const { extrinsic, args } = this.getClaimRewardsParams(rewards, signature)
+
+    assert(extrinsic, Messages.undefinedExtrinsic)
 
     await this.submitExtrinsic(
-      this.api.tx.utility.batch(transactions),
+      extrinsic(...args),
       this.account.pair,
       {
         type: Operation.ClaimRewards,
