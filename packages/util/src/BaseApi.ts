@@ -235,7 +235,7 @@ export class BaseApi {
         extrinsic = this.api.tx.assets.register
         break
       case Operation.ClaimRewards:
-        extrinsic = this.api.tx.rewards.claim
+        extrinsic = this.api.tx.utility.batch
         break
       default:
         throw new Error('Unknown function')
