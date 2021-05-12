@@ -235,7 +235,8 @@ export class BaseApi {
         extrinsic = this.api.tx.assets.register
         break
       case Operation.ClaimRewards:
-        extrinsic = this.api.tx.rewards.claim
+        extrinsic = params[0].extrinsic
+        extrinsicParams = params[0].args
         break
       default:
         throw new Error('Unknown function')

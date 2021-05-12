@@ -25,7 +25,7 @@ import {
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
-import { RewardingEvents, RewardInfo } from './rewards'
+import { RewardingEvents, RewardInfo, hasRewardsForEvents, prepareRewardInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
@@ -1268,25 +1268,34 @@ export class Api extends BaseApi {
   public async checkExternalAccountRewards (externalAddress: string): Promise<Array<RewardInfo>> {
     const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (this.api.rpc as any).rewards.claimables(externalAddress)
 
-    const [val, pswap] = [KnownAssets.get(KnownSymbols.VAL), KnownAssets.get(KnownSymbols.PSWAP)]
+    const rewards = [
+      prepareRewardInfo(soraFarmHarvestAmount, RewardingEvents.SoraFarmHarvest),
+      prepareRewardInfo(nftAirdropAmount, RewardingEvents.NtfAirdrop),
+      prepareRewardInfo(xorErc20Amount, RewardingEvents.XorErc20)
+    ]
+
+    return rewards
+  }
+
+  /**
+   * Check rewards for internal account
+   */
+  public async checkInternalAccountRewards (): Promise<Array<RewardInfo>> {
+    assert(this.account, Messages.connectWallet)
+
+    const { address } = this.account.pair
+
+    const [liquidityProvisionAmount, buyingFromTBCPoolTuple] = await Promise.all([
+      (this.api.rpc as any).pswapDistribution.claimableAmount(address), // Balance
+      (this.api.query as any).multicollateralBondingCurvePool.rewards(address) // [claim_limit: Balance, pending_reward: Balance]
+    ])
+
+    const buyingFromTBCPoolAmount = (buyingFromTBCPoolTuple.toJSON())[0] // claim_limit
 
     const rewards = [
-      {
-        type: RewardingEvents.SoraFarmHarvest,
-        asset: pswap,
-        amount: new FPNumber(soraFarmHarvestAmount, pswap.decimals).toCodecString()
-      },
-      {
-        type: RewardingEvents.NtfAirdrop,
-        asset: pswap,
-        amount: new FPNumber(nftAirdropAmount, pswap.decimals).toCodecString()
-      },
-      {
-        type: RewardingEvents.XorErc20,
-        asset: val,
-        amount: new FPNumber(xorErc20Amount, val.decimals).toCodecString()
-      }
-    ] as Array<RewardInfo>
+      prepareRewardInfo(liquidityProvisionAmount, RewardingEvents.LiquidityProvision),
+      prepareRewardInfo(buyingFromTBCPoolAmount, RewardingEvents.BuyOnBondingCurve)
+    ]
 
     return rewards
   }
@@ -1294,22 +1303,67 @@ export class Api extends BaseApi {
   /**
    * Get network fee for claim rewards operation
    */
-  public async getClaimRewardsNetworkFee (signature = ''): Promise<CodecString>  {
-    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, signature)
+  public async getClaimRewardsNetworkFee (rewards: Array<RewardInfo>, signature = ''): Promise<CodecString>  {
+    const params = this.calcClaimRewardsParams(rewards, signature)
+
+    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, params)
+  }
+
+  /**
+   * Returns a params object { extrinsic, args }
+   * @param rewards claiming rewards
+   * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
+   */
+  private calcClaimRewardsParams (rewards: Array<RewardInfo>, signature = ''): any {
+    const transactions = []
+
+    if (hasRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
+      transactions.push({
+        extrinsic: this.api.tx.pswapDistribution.claimIncentive,
+        args: []
+      })
+    }
+    if (hasRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve])) {
+      transactions.push({
+        extrinsic: this.api.tx.multicollateralBondingCurvePool.claimIncentive,
+        args: []
+      })
+    }
+    if (hasRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NtfAirdrop])) {
+      transactions.push({
+        extrinsic: this.api.tx.rewards.claim,
+        args: [signature]
+      })
+    }
+
+    if (transactions.length > 1) return {
+      extrinsic: this.api.tx.utility.batch,
+      args: [transactions.map(({ extrinsic, args }) => extrinsic(...args))]
+    }
+
+    if (transactions.length === 1) return transactions[0]
+
+    // for current compability
+    return {
+      extrinsic: this.api.tx.rewards.claim,
+      args: [signature]
+    }
   }
 
   /**
    * Claim rewards
-   * @param signature message signed in external wallet
+   * @param signature message signed in external wallet (if want to claim external rewards)
    */
   public async claimRewards (
-    signature: string,
-    externalAddress: string,
-    fee: CodecString,
-    rewards: Array<RewardInfo>
+    rewards: Array<RewardInfo>,
+    signature?: string,
+    fee?: CodecString,
+    externalAddress?: string,
   ): Promise<void> {
+    const { extrinsic, args } = this.calcClaimRewardsParams(rewards, signature)
+
     await this.submitExtrinsic(
-      (this.api.tx.rewards.claim as any)(signature),
+      extrinsic(...args),
       this.account.pair,
       {
         type: Operation.ClaimRewards,
