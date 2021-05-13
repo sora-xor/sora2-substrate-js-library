@@ -1,12 +1,12 @@
 # sora-substrate-js-library
-sora-substrate-js-library (This repository is managed by Terraform!)
+sora-substrate-js-library
 
 ### Requirements
 * node version at least v14.14.0
 
 ### Prepare
 ```
-yarn install
+yarn --update-checksums
 yarn build
 ```
 additionally to get latest definitions for extrinsics, state queries and consts:\
