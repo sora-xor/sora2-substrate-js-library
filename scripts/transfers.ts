@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
 
-const ENDPOINT = 'wss://ws.framenode-1.s1.dev.sora2.soramitsu.co.jp'
+const ENDPOINT = 'wss://ws.sora2.soramitsu.co.jp'
 
 async function question (rl: readline.Interface, value: string): Promise<string> {
   return new Promise(resolve => rl.question(value, resolve))
@@ -46,6 +46,10 @@ async function main(): Promise<void> {
     input: process.stdin,
     output: process.stdout
   })
+  const endpoint = await question(rl, `
+  \n\nPlease input the endpoint ("wss://ws.sora2.soramitsu.co.jp" will be set by default):\n
+______________________________________________________________\n`
+    )
   // Get data from files
   const valParams = await getTransferParams(rl, KnownSymbols.VAL)
   const pswapParams = await getTransferParams(rl, KnownSymbols.PSWAP)
@@ -63,9 +67,9 @@ ______________________________________________________________\n`
     throw new Error('Incorrect seed. It should be written with spaces like:\none two three four five six seven eight nine ten eleven twelve\n\n')
   }
   // Open connection & import account
-  await connection.open(ENDPOINT)
+  await connection.open(endpoint || ENDPOINT)
   api.initialize()
-  console.log('Connected to:', ENDPOINT)
+  console.log('Connected to:', endpoint || ENDPOINT)
   const { address } = api.checkSeed(mnemonicSeed)
   if (!address) {
     throw new Error(`Mnemonic Seed "${mnemonicSeed}" is incorrect!\n\n`)
