@@ -1325,7 +1325,7 @@ export class Api extends BaseApi {
     }
     if (hasRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve])) {
       transactions.push({
-        extrinsic: this.api.tx.multicollateralBondingCurvePool.claimIncentive,
+        extrinsic: this.api.tx.multicollateralBondingCurvePool.claimIncentives,
         args: []
       })
     }
