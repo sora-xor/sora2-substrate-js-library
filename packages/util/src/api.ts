@@ -534,6 +534,25 @@ export class Api extends BaseApi {
   }
 
   /**
+   * Transfer all data from array
+   * @param data Transfer data
+   */
+   public async transferAll (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<void> {
+    assert(this.account, Messages.connectWallet)
+    assert(data.length, Messages.noTransferData)
+
+    const transactions = data.map(item => {
+      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString())
+    })
+
+    await this.submitExtrinsic(
+      this.api.tx.utility.batchAll(transactions),
+      this.account.pair,
+      { type: Operation.Transfer }
+    )
+  }
+
+  /**
    * Check swap operation
    * @param firstAssetAddress
    * @param secondAssetAddress
@@ -1099,7 +1118,7 @@ export class Api extends BaseApi {
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ): Promise<void> {
     const params = await this.calcCreatePairParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
-    const isPairAlreadyCreated = (await (this.api.rpc.tradingPair as any).isPairEnabled(this.defaultDEXId, firstAssetAddress, secondAssetAddress)).isTrue as boolean
+    const isPairAlreadyCreated = (await (this.api.rpc as any).tradingPair.isPairEnabled(this.defaultDEXId, firstAssetAddress, secondAssetAddress)).isTrue as boolean
     const transactions = []
     if (!isPairAlreadyCreated) {
       transactions.push((this.api.tx.tradingPair as any).register(...params.pairCreationArgs))
@@ -1109,7 +1128,7 @@ export class Api extends BaseApi {
       this.api.tx.poolXyk.depositLiquidity(...params.addLiquidityArgs)
     ])
     await this.submitExtrinsic(
-      this.api.tx.utility.batch(transactions),
+      this.api.tx.utility.batchAll(transactions),
       this.account.pair,
       {
         type: Operation.CreatePair,
@@ -1337,7 +1356,7 @@ export class Api extends BaseApi {
     }
 
     if (transactions.length > 1) return {
-      extrinsic: this.api.tx.utility.batch,
+      extrinsic: this.api.tx.utility.batchAll,
       args: [transactions.map(({ extrinsic, args }) => extrinsic(...args))]
     }
 

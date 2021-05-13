@@ -54,7 +54,7 @@ export class BaseApi {
   public initAccountStorage () {
     if (!this.account?.pair?.address) return
     // TODO: dependency injection ?
-    if (localStorage) {
+    if (this.storage) {
       this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
     }
   }
@@ -220,7 +220,7 @@ export class BaseApi {
         extrinsic = this.api.tx.poolXyk.withdrawLiquidity
         break
       case Operation.CreatePair:
-        extrinsic = this.api.tx.utility.batch
+        extrinsic = this.api.tx.utility.batchAll
         extrinsicParams = [[
           (this.api.tx.tradingPair as any).register(...params[0].pairCreationArgs),
           this.api.tx.poolXyk.initializePool(...params[0].pairCreationArgs),

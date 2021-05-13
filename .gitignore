@@ -26,3 +26,6 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
+
+# CSV files
+*.csv
