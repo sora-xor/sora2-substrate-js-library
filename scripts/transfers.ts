@@ -67,9 +67,10 @@ ______________________________________________________________\n`
     throw new Error('Incorrect seed. It should be written with spaces like:\none two three four five six seven eight nine ten eleven twelve\n\n')
   }
   // Open connection & import account
-  await connection.open(endpoint || ENDPOINT)
+  const usedEndpoint = endpoint.trim() || ENDPOINT
+  await connection.open(usedEndpoint)
   api.initialize()
-  console.log('Connected to:', endpoint || ENDPOINT)
+  console.log('Connected to:', usedEndpoint)
   const { address } = api.checkSeed(mnemonicSeed)
   if (!address) {
     throw new Error(`Mnemonic Seed "${mnemonicSeed}" is incorrect!\n\n`)
