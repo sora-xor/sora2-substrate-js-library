@@ -47,7 +47,7 @@ async function main(): Promise<void> {
     output: process.stdout
   })
   const endpoint = await question(rl, `
-  \n\nPlease input the endpoint ("wss://ws.sora2.soramitsu.co.jp" will be set by default):\n
+  \n\nPlease input the endpoint ("${ENDPOINT}" will be set by default):\n
 ______________________________________________________________\n`
     )
   // Get data from files
