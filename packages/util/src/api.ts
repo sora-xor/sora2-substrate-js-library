@@ -25,7 +25,7 @@ import {
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
-import { RewardingEvents, RewardInfo, hasRewardsForEvents, prepareRewardInfo } from './rewards'
+import { RewardingEvents, RewardInfo, isClaimableReward, hasRewardsForEvents, prepareRewardInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
@@ -1283,6 +1283,7 @@ export class Api extends BaseApi {
   /**
    * Check rewards for external account
    * @param externalAddress address of external account (ethereum account address)
+   * @returns rewards array with not zero amount
    */
   public async checkExternalAccountRewards (externalAddress: string): Promise<Array<RewardInfo>> {
     const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (this.api.rpc as any).rewards.claimables(externalAddress)
@@ -1291,13 +1292,14 @@ export class Api extends BaseApi {
       prepareRewardInfo(soraFarmHarvestAmount, RewardingEvents.SoraFarmHarvest),
       prepareRewardInfo(nftAirdropAmount, RewardingEvents.NtfAirdrop),
       prepareRewardInfo(xorErc20Amount, RewardingEvents.XorErc20)
-    ]
+    ].filter(item => isClaimableReward(item))
 
     return rewards
   }
 
   /**
    * Check rewards for internal account
+   * @returns rewards array with not zero amount
    */
   public async checkInternalAccountRewards (): Promise<Array<RewardInfo>> {
     assert(this.account, Messages.connectWallet)
@@ -1314,7 +1316,7 @@ export class Api extends BaseApi {
     const rewards = [
       prepareRewardInfo(liquidityProvisionAmount, RewardingEvents.LiquidityProvision),
       prepareRewardInfo(buyingFromTBCPoolAmount, RewardingEvents.BuyOnBondingCurve)
-    ]
+    ].filter(item => isClaimableReward(item))
 
     return rewards
   }
