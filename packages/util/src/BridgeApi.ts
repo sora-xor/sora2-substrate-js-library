@@ -16,7 +16,7 @@ export interface RegisteredAccountAsset extends AccountAsset {
 
 export interface RegisteredAsset extends Asset {
   externalAddress: string;
-  externalDecimals: string;
+  externalDecimals: string | number;
 }
 
 export interface BridgeHistory extends History {
@@ -186,7 +186,7 @@ export class BridgeApi extends BaseApi {
 
   private async calcTransferToEthParams (asset: RegisteredAsset, to: string, amount: string | number) {
     assert(this.account, Messages.connectWallet)
-    const balance = new FPNumber(amount, asset.decimals)
+    const balance = new FPNumber(amount, +asset.externalDecimals)
     return {
       args: [
         asset.address,
