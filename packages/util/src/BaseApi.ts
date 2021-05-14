@@ -7,7 +7,7 @@ import { Signer } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { decodeAddress } from '@polkadot/util-crypto'
 
-import { AccountStorage, Storage } from './storage'
+import { NamespacedStorageAdapter } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
 import { CodecString, FPNumber } from './fp'
 import { encrypt, toHmacSHA256 } from './crypto'
@@ -24,14 +24,12 @@ export const KeyringType = 'sr25519'
 
 export class BaseApi {
   protected signer?: Signer
-  protected storage?: Storage // common data storage
-  protected accountStorage?: AccountStorage // account data storage
+  protected storage?: NamespacedStorageAdapter // common data storage
+  protected accountStorage?: NamespacedStorageAdapter // account data storage
+  protected webStorage?: Storage
   protected account: CreateResult
   private _history: Array<History> = []
   private _restored: Boolean = false
-
-  constructor () {
-  }
 
   public get api (): ApiPromise {
     return connection.api
@@ -53,34 +51,34 @@ export class BaseApi {
 
   public initAccountStorage () {
     if (!this.account?.pair?.address) return
-    // TODO: dependency injection ?
-    if (this.storage) {
-      this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
+
+    if (this.webStorage) {
+      this.accountStorage = new NamespacedStorageAdapter(toHmacSHA256(this.account.pair.address), this.webStorage)
     }
   }
 
   // methods for working with history
   public get history (): Array<History> {
     if (this.accountStorage) {
-      this._history = JSON.parse(this.accountStorage.get('history')) as Array<History> || []
+      this._history = this.accountStorage.get('history') as Array<History> || []
     }
     return this._history
   }
 
   public set history (value: Array<History>) {
-    this.accountStorage?.set('history', JSON.stringify(value))
+    this.accountStorage?.set('history', value)
     this._history = [...value]
   }
 
   public get restored (): Boolean {
     if (this.accountStorage) {
-      this._restored = JSON.parse(this.accountStorage.get('restored')) || false
+      this._restored = this.accountStorage.get('restored') || false
     }
     return this._restored
   }
 
   public set restored (value: Boolean) {
-    this.accountStorage?.set('restored', JSON.stringify(value))
+    this.accountStorage?.set('restored', value)
     this._restored = value
   }
 
@@ -128,8 +126,16 @@ export class BaseApi {
    * Set storage if it should be used as data storage
    * @param storage
    */
-  public setStorage (storage: Storage): void {
+  public setStorage (storage: NamespacedStorageAdapter): void {
     this.storage = storage
+  }
+
+  /**
+   * Set up web storage to work with persistent data (account data) using NamespacedStorageAdapter
+   * @param webStorage
+   */
+  public setWebStorage (webStorage: Storage): void {
+    this.webStorage = webStorage
   }
 
   protected async submitExtrinsic (

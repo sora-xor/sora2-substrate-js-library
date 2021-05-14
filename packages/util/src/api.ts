@@ -29,7 +29,7 @@ import { RewardingEvents, RewardInfo, hasRewardsForEvents, prepareRewardInfo } f
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
-import { Storage } from './storage'
+import { NamespacedStorageAdapter } from './storage'
 
 /**
  * Contains all necessary data and functions for the wallet
@@ -64,13 +64,13 @@ export class Api extends BaseApi {
 
   public get accountAssets (): Array<AccountAsset> {
     if (this.storage) {
-      this._assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset> || []
+      this._assets = this.storage.get('assets') as Array<AccountAsset> || []
     }
     return this._assets
   }
 
   public set accountAssets (assets: Array<AccountAsset>) {
-    this.storage?.set('assets', JSON.stringify(assets))
+    this.storage?.set('assets', assets)
     this._assets = [...assets]
   }
 
@@ -91,13 +91,13 @@ export class Api extends BaseApi {
 
   private get accountAssetsAddresses (): Array<string> {
     if (this.accountStorage) {
-      this._accountAssetsAddresses = JSON.parse(this.accountStorage.get('assetsAddresses')) as Array<string> || []
+      this._accountAssetsAddresses = this.accountStorage.get('assetsAddresses') as Array<string> || []
     }
     return this._accountAssetsAddresses
   }
 
   private set accountAssetsAddresses (assetsAddresses: Array<string>) {
-    this.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses))
+    this.accountStorage?.set('assetsAddresses', assetsAddresses)
     this._accountAssetsAddresses = [...assetsAddresses]
   }
 
@@ -133,13 +133,13 @@ export class Api extends BaseApi {
 
   public get accountLiquidity (): Array<AccountLiquidity> {
     if (this.storage) {
-      this._liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
+      this._liquidity = this.storage.get('liquidity') as Array<AccountLiquidity> || []
     }
     return this._liquidity
   }
 
   public set accountLiquidity (liquidity: Array<AccountLiquidity>) {
-    this.storage?.set('liquidity', JSON.stringify(liquidity))
+    this.storage?.set('liquidity', liquidity)
     this._liquidity = [...liquidity]
   }
 
@@ -162,7 +162,7 @@ export class Api extends BaseApi {
 
     // transfer old history to accountStorage
     if (this.storage) {
-      const oldHistory = JSON.parse(this.storage.get('history')) || []
+      const oldHistory = this.storage.get('history') || []
 
       if (oldHistory.length) {
         this.history = oldHistory
@@ -190,9 +190,18 @@ export class Api extends BaseApi {
    * Set storage if it should be used as data storage
    * @param storage
    */
-  public setStorage (storage: Storage): void {
+  public setStorage (storage: NamespacedStorageAdapter): void {
     super.setStorage(storage)
     this.bridge.setStorage(storage)
+  }
+
+  /**
+   * Set up web storage to work with persistent data (account data) using NamespacedStorageAdapter
+   * @param webStorage
+   */
+  public setWebStorage (webStorage: Storage): void {
+    super.setWebStorage(webStorage)
+    this.bridge.setWebStorage(webStorage)
   }
 
   /**

@@ -129,10 +129,6 @@ export interface BridgeApprovedRequest {
 export class BridgeApi extends BaseApi {
   private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID
 
-  constructor () {
-    super()
-  }
-
   /**
    * This method will handle error cases.
    * For now, there is just for camelCase issues with substrate 3
