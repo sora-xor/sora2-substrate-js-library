@@ -186,7 +186,8 @@ export class BridgeApi extends BaseApi {
 
   private async calcTransferToEthParams (asset: RegisteredAsset, to: string, amount: string | number) {
     assert(this.account, Messages.connectWallet)
-    const balance = new FPNumber(amount, +asset.externalDecimals)
+    // Trim useless decimals
+    const balance = new FPNumber(new FPNumber(amount, +asset.externalDecimals).toString(), asset.decimals)
     return {
       args: [
         asset.address,
