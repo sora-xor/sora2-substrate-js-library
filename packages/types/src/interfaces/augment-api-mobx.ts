@@ -8,12 +8,12 @@ import type { BabeAuthorityWeight, MaybeRandomness, NextConfigDescriptor, Random
 import type { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { SetId, StoredPendingChange, StoredState } from '@polkadot/types/interfaces/grandpa';
-import type { NetworkId } from '@polkadot/types/interfaces/parachains';
 import type { Keys, SessionIndex } from '@polkadot/types/interfaces/session';
 import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraIndex, EraRewardPoints, Exposure, Forcing, Nominations, RewardDestination, SlashingSpans, SpanIndex, SpanRecord, StakingLedger, UnappliedSlash, ValidatorPrefs } from '@polkadot/types/interfaces/staking';
 import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
+import type { NetworkId } from '@polkadot/types/interfaces/xcm';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeStatus, EthPeersSync, IncomingRequest, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { AccountId, Address, AssetId, AssetId32, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Farm, FarmId, Farmer, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, PendingMultisigAccount, Perbill, PermissionId, Releases, Scope, Slot, SmoothPriceState, TechAccountId, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
