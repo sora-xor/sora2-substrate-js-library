@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/api-derive",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -8,9 +8,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@sora-substrate/types": "^1.3.4",
     "@babel/runtime": "^7.10.2",
-    "@polkadot/api-derive": "^4.1.1",
+    "@polkadot/api-derive": "^4.10.1",
+    "@sora-substrate/types": "^1.4.0",
     "rxjs": "^6.5.5"
   }
 }
