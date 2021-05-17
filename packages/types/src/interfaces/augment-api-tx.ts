@@ -4,7 +4,7 @@
 import type { Compact, Option, Vec } from '@polkadot/types';
 import type { AnyNumber } from '@polkadot/types/types';
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
-import type { AccountId, AmountOf, AssetId, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, LiquiditySourceType, LookupSource, Moment, SwapAction, SwapAmount, SwapVariant } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AmountOf, AssetId, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, Fixed, LiquiditySourceType, LookupSource, Moment, SwapAction, SwapAmount, SwapVariant } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/submittable' {
@@ -140,6 +140,26 @@ declare module '@polkadot/api/types/submittable' {
        * - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
        **/
       swap: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, swapAmount: SwapAmount | { WithDesiredInput: any } | { WithDesiredOutput: any } | string | Uint8Array, selectedSourceTypes: Vec<LiquiditySourceType> | (LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | number | Uint8Array)[], filterMode: FilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId, AssetId, SwapAmount, Vec<LiquiditySourceType>, FilterMode]>;
+    };
+    mockLiquiditySource: {
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+      setReserve: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, targetId: AssetId | AnyNumber | Uint8Array, baseReserve: Fixed | AnyNumber | Uint8Array, targetReserve: Fixed | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId, Fixed, Fixed]>;
+      testAccess: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, targetId: AssetId | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId]>;
+    };
+    mockLiquiditySource2: {
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+      setReserve: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, targetId: AssetId | AnyNumber | Uint8Array, baseReserve: Fixed | AnyNumber | Uint8Array, targetReserve: Fixed | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId, Fixed, Fixed]>;
+      testAccess: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, targetId: AssetId | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId]>;
+    };
+    mockLiquiditySource3: {
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+      setReserve: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, targetId: AssetId | AnyNumber | Uint8Array, baseReserve: Fixed | AnyNumber | Uint8Array, targetReserve: Fixed | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId, Fixed, Fixed]>;
+      testAccess: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, targetId: AssetId | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId]>;
+    };
+    mockLiquiditySource4: {
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+      setReserve: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, targetId: AssetId | AnyNumber | Uint8Array, baseReserve: Fixed | AnyNumber | Uint8Array, targetReserve: Fixed | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId, Fixed, Fixed]>;
+      testAccess: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, targetId: AssetId | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId]>;
     };
     technical: {
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
