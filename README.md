@@ -17,11 +17,12 @@ yarn build
 ```
 
 ### Export types as JSON
-```
-yarn build
-yarn export-types
-```
-Resulting JSON is located in `<repo root>/packages/types/src/metadata/types.json`
+`yarn build`
+`yarn export-types` (for the local node) OR `yarn export-types:all` (for all environments)
+
+Resulting JSON is located in:
+- `<repo root>/packages/types/src/metadata/types.json`
+- `<repo root>/packages/types/src/metadata/<env>/types.json`
 
 ### Run local test net with framenode first
 
