@@ -22,20 +22,31 @@ class Connection {
     }
   }
 
-  private async run (endpoint: string): Promise<void> {
+  private async run (endpoint: string, once = false): Promise<void> {
+    const prevEndpoint = this.endpoint
     this.endpoint = endpoint
 
     const provider = new WsProvider(endpoint)
     const api = new ApiPromise(options({ provider }))
     const apiRx = new ApiRx(options({ provider }))
-
-    await api.isReady
-    await apiRx.isReady.toPromise()
-
+    const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady'
     // because this.endpoint can be overwritten by the next run call, which is faster
-    if (this.endpoint === endpoint) {
-      this.api = api
-      this.apiRx = apiRx
+    const connectionEndpointIsStable = () => this.endpoint === endpoint
+
+    try {
+      await api[apiConnectionPromise]
+      await apiRx.isReady.toPromise()
+
+      if (connectionEndpointIsStable()) {
+        this.api = api
+        this.apiRx = apiRx
+      }
+    } catch (error) {
+      provider.disconnect()
+      if (connectionEndpointIsStable()) {
+        this.endpoint = prevEndpoint
+      }
+      throw error
     }
   }
 
@@ -52,19 +63,19 @@ class Connection {
     return !!this.api
   }
 
-  public async open (endpoint?: string): Promise<void> {
+  public async open (endpoint?: string, once?: boolean): Promise<void> {
     assert(endpoint || this.endpoint, Messages.endpointIsUndefined)
-    await this.withLoading(async () => await this.run(endpoint || this.endpoint))
+    await this.withLoading(async () => await this.run(endpoint || this.endpoint, once))
   }
 
   public async close (): Promise<void> {
     await this.withLoading(async () => await this.stop())
   }
 
-  public async restart (endpoint: string): Promise<void> {
+  public async restart (endpoint: string, once?: boolean): Promise<void> {
     await this.withLoading(async () => {
       await this.stop()
-      await this.run(endpoint)
+      await this.run(endpoint, once)
     })
   }
 }
