@@ -20,7 +20,6 @@ import * as soraDefinitions from '../src/interfaces/definitions'
 function filterModules(names: string[], defs: any, metaHex: any): string {
   const registry = new TypeRegistry()
   registerDefinitions(registry, defs)
-  console.log(metaHex)
 
   const metadata = new Metadata(registry, metaHex)
 
