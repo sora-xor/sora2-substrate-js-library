@@ -1311,7 +1311,7 @@ export class Api extends BaseApi {
       (this.api.query as any).multicollateralBondingCurvePool.rewards(address) // [claim_limit: Balance, pending_reward: Balance]
     ])
 
-    const buyingFromTBCPoolAmount = (buyingFromTBCPoolTuple.toJSON())[0] // claim_limit
+    const buyingFromTBCPoolAmount = buyingFromTBCPoolTuple[0] // claim_limit
 
     const rewards = [
       prepareRewardInfo(liquidityProvisionAmount, RewardingEvents.LiquidityProvision),
