@@ -1,4 +1,5 @@
 {
+    "AccountInfo": "AccountInfoWithDualRefCount",
     "Address": "AccountId",
     "Amount": "i128",
     "AmountOf": "Amount",
