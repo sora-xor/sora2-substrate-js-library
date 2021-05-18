@@ -22,7 +22,8 @@ class Connection {
     }
   }
 
-  private async run (endpoint: string, once = false): Promise<void> {
+  private async run (endpoint: string, once = false, timeout?: number): Promise<void> {
+    let connectionTimeout: any
     const prevEndpoint = this.endpoint
     this.endpoint = endpoint
 
@@ -32,10 +33,21 @@ class Connection {
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady'
     // because this.endpoint can be overwritten by the next run call, which is faster
     const connectionEndpointIsStable = () => this.endpoint === endpoint
+    // to disconnect after connection timeout
+    const runConnectionTimeout = () => {
+      if (!timeout) return Promise.resolve()
+
+      return new Promise ((_, reject) => {
+        connectionTimeout = setTimeout(() => reject('Connection Timeout'), timeout)
+      })
+    }
 
     try {
-      await api[apiConnectionPromise]
-      await apiRx.isReady.toPromise()
+      await Promise.all([
+        runConnectionTimeout(),
+        api[apiConnectionPromise],
+        apiRx.isReady.toPromise()
+      ])
 
       if (connectionEndpointIsStable()) {
         this.api = api
@@ -47,6 +59,8 @@ class Connection {
         this.endpoint = prevEndpoint
       }
       throw error
+    } finally {
+      clearTimeout(connectionTimeout)
     }
   }
 
@@ -63,19 +77,19 @@ class Connection {
     return !!this.api
   }
 
-  public async open (endpoint?: string, once?: boolean): Promise<void> {
+  public async open (endpoint?: string, once?: boolean, timeout?: number): Promise<void> {
     assert(endpoint || this.endpoint, Messages.endpointIsUndefined)
-    await this.withLoading(async () => await this.run(endpoint || this.endpoint, once))
+    await this.withLoading(async () => await this.run(endpoint || this.endpoint, once, timeout))
   }
 
   public async close (): Promise<void> {
     await this.withLoading(async () => await this.stop())
   }
 
-  public async restart (endpoint: string, once?: boolean): Promise<void> {
+  public async restart (endpoint: string, once?: boolean, timeout?: number): Promise<void> {
     await this.withLoading(async () => {
       await this.stop()
-      await this.run(endpoint, once)
+      await this.run(endpoint, once, timeout)
     })
   }
 }
