@@ -33,8 +33,12 @@ export interface RewardClaimHistory extends History {
   rewards?: Array<RewardInfo>;
 }
 
+export function isClaimableReward (reward: RewardInfo): boolean {
+  return !FPNumber.fromCodecValue(reward.amount, reward.asset.decimals).isZero()
+}
+
 export function hasRewardsForEvents (rewards: Array<RewardInfo>, events: Array<RewardingEvents>): boolean {
-  return rewards.some(item => !FPNumber.fromCodecValue(item.amount, item.asset.decimals).isZero() && events.includes(item.type))
+  return rewards.some(item => isClaimableReward(item) && events.includes(item.type))
 }
 
 export function prepareRewardInfo (amount: CodecString | number, type: RewardingEvents): RewardInfo {
