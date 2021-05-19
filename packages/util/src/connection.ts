@@ -88,7 +88,7 @@ class Connection {
     return !!this.api
   }
 
-  public async open (endpoint?: string, options?: any): Promise<void> {
+  public async open (endpoint?: string, options?: ConnectionRunOptions): Promise<void> {
     assert(endpoint || this.endpoint, Messages.endpointIsUndefined)
     await this.withLoading(async () => await this.run(endpoint || this.endpoint, options))
   }
@@ -97,7 +97,7 @@ class Connection {
     await this.withLoading(async () => await this.stop())
   }
 
-  public async restart (endpoint: string, options?: any): Promise<void> {
+  public async restart (endpoint: string, options?: ConnectionRunOptions): Promise<void> {
     await this.withLoading(async () => {
       await this.stop()
       await this.run(endpoint, options)
