@@ -1,6 +1,7 @@
 import last from 'lodash/fp/last'
 import first from 'lodash/fp/first'
 import { ApiPromise, ApiRx } from '@polkadot/api'
+import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
@@ -9,7 +10,7 @@ import { decodeAddress } from '@polkadot/util-crypto'
 import { AccountStorage, Storage } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
 import { CodecString, FPNumber } from './fp'
-import { encrypt } from './crypto'
+import { encrypt, toHmacSHA256 } from './crypto'
 import { connection } from './connection'
 import { BridgeHistory } from './BridgeApi'
 import { RewardClaimHistory } from './rewards'
@@ -25,6 +26,7 @@ export class BaseApi {
   protected signer?: Signer
   protected storage?: Storage // common data storage
   protected accountStorage?: AccountStorage // account data storage
+  protected account: CreateResult
   private _history: Array<History> = []
   private _restored: Boolean = false
 
@@ -37,6 +39,24 @@ export class BaseApi {
 
   public get apiRx (): ApiRx {
     return connection.apiRx
+  }
+
+  public logout (): void {
+    this.account = null
+    this.accountStorage = null
+    this.signer = null
+    this.history = []
+    if (this.storage) {
+      this.storage.clear()
+    }
+  }
+
+  public initAccountStorage () {
+    if (!this.account?.pair?.address) return
+    // TODO: dependency injection ?
+    if (this.storage) {
+      this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address))
+    }
   }
 
   // methods for working with history
@@ -85,6 +105,14 @@ export class BaseApi {
     if (!id) return
 
     this.history = this.history.filter(item => item.id !== id)
+  }
+
+  /**
+   * Set account data
+   * @param account
+   */
+  public setAccount (account: CreateResult): void {
+    this.account = account
   }
 
   /**
@@ -192,7 +220,7 @@ export class BaseApi {
         extrinsic = this.api.tx.poolXyk.withdrawLiquidity
         break
       case Operation.CreatePair:
-        extrinsic = this.api.tx.utility.batch
+        extrinsic = this.api.tx.utility.batchAll
         extrinsicParams = [[
           (this.api.tx.tradingPair as any).register(...params[0].pairCreationArgs),
           this.api.tx.poolXyk.initializePool(...params[0].pairCreationArgs),
@@ -209,7 +237,8 @@ export class BaseApi {
         extrinsic = this.api.tx.assets.register
         break
       case Operation.ClaimRewards:
-        extrinsic = this.api.tx.rewards.claim
+        extrinsic = params[0].extrinsic
+        extrinsicParams = params[0].args
         break
       default:
         throw new Error('Unknown function')

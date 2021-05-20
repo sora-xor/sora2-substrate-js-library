@@ -1,8 +1,7 @@
 import first from 'lodash/fp/first'
 import last from 'lodash/fp/last'
+import BigNumber from 'bignumber.js'
 import { assert } from '@polkadot/util'
-import { CreateResult } from '@polkadot/ui-keyring/types'
-import { Signer } from '@polkadot/types/types'
 
 import { BaseApi, Operation, History, isBridgeOperation } from './BaseApi'
 import { Messages } from './logger'
@@ -17,7 +16,7 @@ export interface RegisteredAccountAsset extends AccountAsset {
 
 export interface RegisteredAsset extends Asset {
   externalAddress: string;
-  externalDecimals: string;
+  externalDecimals: string | number;
 }
 
 export interface BridgeHistory extends History {
@@ -98,6 +97,7 @@ export interface BridgeRequest {
   soraAssetAddress?: string;
   status: BridgeTxStatus;
   hash: string;
+  amount?: string;
   kind?: RequestType | any; // For incoming TXs TODO: check type
 }
 
@@ -128,7 +128,6 @@ export interface BridgeApprovedRequest {
  */
 export class BridgeApi extends BaseApi {
   private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID
-  private account: CreateResult
 
   constructor () {
     super()
@@ -185,16 +184,10 @@ export class BridgeApi extends BaseApi {
     this.history = this.history.filter(({ type }) => !isBridgeOperation(type))
   }
 
-  public setAccount (account: CreateResult, signer?: Signer): void {
-    this.account = account
-    if (signer) {
-      this.setSigner(signer)
-    }
-  }
-
   private async calcTransferToEthParams (asset: RegisteredAsset, to: string, amount: string | number) {
     assert(this.account, Messages.connectWallet)
-    const balance = new FPNumber(amount, asset.decimals)
+    // Trim useless decimals
+    const balance = new FPNumber(new FPNumber(amount, +asset.externalDecimals).toString(), asset.decimals)
     return {
       args: [
         asset.address,
@@ -352,6 +345,9 @@ export class BridgeApi extends BaseApi {
     const tx = request.length ? first(request) : request
     request = caseInsensitiveValue(tx, first(operations)) || caseInsensitiveValue(tx, last(operations))
     formattedItem.soraAssetAddress = request.asset_id
+    if (request.amount) {
+      formattedItem.amount = new FPNumber(new BigNumber(request.amount)).toString()
+    }
     if (direction === BridgeDirection.Outgoing) {
       formattedItem.hash = last(caseInsensitiveValue(body, direction))
       formattedItem.from = request.from

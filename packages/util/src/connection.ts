@@ -5,6 +5,11 @@ import { options } from '@sora-substrate/api'
 
 import { Messages } from './logger'
 
+export interface ConnectionRunOptions {
+  once?: boolean;
+  timeout?: number;
+}
+
 class Connection {
   public api: ApiPromise
   public apiRx: ApiRx
@@ -22,20 +27,60 @@ class Connection {
     }
   }
 
-  private async run (endpoint: string): Promise<void> {
+  private async run (endpoint: string, runOptions?: ConnectionRunOptions): Promise<void> {
+    let connectionTimeout: any
+    const { once = false, timeout = 0 } = runOptions || {}
+    const prevEndpoint = this.endpoint
+    this.endpoint = endpoint
+
     const provider = new WsProvider(endpoint)
     const api = new ApiPromise(options({ provider }))
     const apiRx = new ApiRx(options({ provider }))
-    await api.isReady
-    await apiRx.isReady.toPromise()
-    this.endpoint = endpoint
-    this.api = api
-    this.apiRx = apiRx
+    const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady'
+
+    // because this.endpoint can be overwritten by the next run call, which is faster
+    const connectionEndpointIsStable = () => this.endpoint === endpoint
+    const runConnectionTimeout = (): Promise<void> => {
+      if (!timeout) return Promise.resolve()
+
+      return new Promise ((_, reject) => {
+        connectionTimeout = setTimeout(() => reject('Connection Timeout'), timeout)
+      })
+    }
+
+    const connectionRequests: Array<Promise<any>> = [
+      Promise.all([
+        api[apiConnectionPromise],
+        apiRx.isReady.toPromise()
+      ])
+    ]
+
+    if (timeout) connectionRequests.push(runConnectionTimeout())
+
+    try {
+      await Promise.race(connectionRequests)
+
+      if (connectionEndpointIsStable()) {
+        this.api = api
+        this.apiRx = apiRx
+      }
+    } catch (error) {
+      provider.disconnect()
+      if (connectionEndpointIsStable()) {
+        this.endpoint = prevEndpoint
+      }
+      throw error
+    } finally {
+      clearTimeout(connectionTimeout)
+    }
   }
 
   private async stop (): Promise<void> {
-    await this.api.disconnect()
+    if (this.api) {
+      await this.api.disconnect()
+    }
     this.api = null
+    this.apiRx = null
     this.endpoint = ''
   }
 
@@ -43,19 +88,19 @@ class Connection {
     return !!this.api
   }
 
-  public async open (endpoint?: string): Promise<void> {
+  public async open (endpoint?: string, options?: ConnectionRunOptions): Promise<void> {
     assert(endpoint || this.endpoint, Messages.endpointIsUndefined)
-    await this.withLoading(async () => await this.run(endpoint || this.endpoint))
+    await this.withLoading(async () => await this.run(endpoint || this.endpoint, options))
   }
 
   public async close (): Promise<void> {
     await this.withLoading(async () => await this.stop())
   }
 
-  public async restart (endpoint: string): Promise<void> {
+  public async restart (endpoint: string, options?: ConnectionRunOptions): Promise<void> {
     await this.withLoading(async () => {
       await this.stop()
-      await this.run(endpoint)
+      await this.run(endpoint, options)
     })
   }
 }

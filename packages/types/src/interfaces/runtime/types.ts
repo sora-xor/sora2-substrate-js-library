@@ -73,6 +73,12 @@ export interface ChangesTrieConfiguration extends Struct {
   readonly digestLevels: u32;
 }
 
+/** @name ChangesTrieSignal */
+export interface ChangesTrieSignal extends Enum {
+  readonly isNewConfiguration: boolean;
+  readonly asNewConfiguration: Option<ChangesTrieConfiguration>;
+}
+
 /** @name ChargeFeeInfo */
 export interface ChargeFeeInfo extends Struct {
   readonly tip: Compact<Balance>;
@@ -128,6 +134,8 @@ export interface DigestItem extends Enum {
   readonly asSeal: Seal;
   readonly isPreRuntime: boolean;
   readonly asPreRuntime: PreRuntime;
+  readonly isChangesTrieSignal: boolean;
+  readonly asChangesTrieSignal: ChangesTrieSignal;
 }
 
 /** @name DispatchErrorWithPostInfoTPostDispatchInfo */
@@ -153,6 +161,9 @@ export interface DistributionAccounts extends Null {}
 
 /** @name Duration */
 export interface Duration extends Null {}
+
+/** @name EncodedJustification */
+export interface EncodedJustification extends Bytes {}
 
 /** @name ExtrinsicsWeight */
 export interface ExtrinsicsWeight extends Struct {
@@ -212,6 +223,9 @@ export interface H2048 extends U8aFixed {}
 /** @name H256 */
 export interface H256 extends U8aFixed {}
 
+/** @name H32 */
+export interface H32 extends U8aFixed {}
+
 /** @name H512 */
 export interface H512 extends U8aFixed {}
 
@@ -230,6 +244,12 @@ export interface Header extends Struct {
   readonly digest: Digest;
 }
 
+/** @name HeaderPartial */
+export interface HeaderPartial extends Struct {
+  readonly parentHash: Hash;
+  readonly number: BlockNumber;
+}
+
 /** @name HolderId */
 export interface HolderId extends AccountId {}
 
@@ -243,7 +263,10 @@ export interface Index extends u32 {}
 export interface IndicesLookupSource extends GenericLookupSource {}
 
 /** @name Justification */
-export interface Justification extends Bytes {}
+export interface Justification extends ITuple<[ConsensusEngineId, EncodedJustification]> {}
+
+/** @name Justifications */
+export interface Justifications extends Vec<Justification> {}
 
 /** @name KeyTypeId */
 export interface KeyTypeId extends u32 {}
@@ -319,6 +342,9 @@ export interface OriginCaller extends Enum {
 
 /** @name OwnerId */
 export interface OwnerId extends AccountId {}
+
+/** @name PalletId */
+export interface PalletId extends LockIdentifier {}
 
 /** @name PalletsOrigin */
 export interface PalletsOrigin extends OriginCaller {}
@@ -436,9 +462,18 @@ export interface Seal extends ITuple<[ConsensusEngineId, Bytes]> {}
 export interface SealV0 extends ITuple<[u64, Signature]> {}
 
 /** @name SignedBlock */
-export interface SignedBlock extends Struct {
+export interface SignedBlock extends SignedBlockWithJustifications {}
+
+/** @name SignedBlockWithJustification */
+export interface SignedBlockWithJustification extends Struct {
   readonly block: Block;
-  readonly justification: Justification;
+  readonly justification: Option<EncodedJustification>;
+}
+
+/** @name SignedBlockWithJustifications */
+export interface SignedBlockWithJustifications extends Struct {
+  readonly block: Block;
+  readonly justifications: Option<Justifications>;
 }
 
 /** @name Slot */
