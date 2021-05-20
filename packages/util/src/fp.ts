@@ -26,6 +26,14 @@ const checkFinityString = (str: string) => !['-Infinity', 'Infinity', 'NaN'].inc
 
 export class FPNumber {
   /**
+   * Numbers' delimiters config
+   */
+  public static DELIMITERS_CONFIG = {
+    thousand: ',',
+    decimal: '.'
+  }
+
+  /**
    * Zero value
    */
   public static ZERO = FPNumber.fromNatural(0)
@@ -247,6 +255,23 @@ export class FPNumber {
       formatted = new BigNumber(value.toFormat().replace(/(0\.0*[1-9])([0-9]*)/, '$1'))
     }
     return formatted.toFormat(format)
+  }
+
+  public formatToLocaleString (): string {
+    const splittedValue = this.format().split('.')
+
+    if (splittedValue[0].length > 3) {
+      const reversedValue = splittedValue[0].split('').reverse()
+      splittedValue[0] = reversedValue.reduce((prev, current, index) => {
+        prev += current
+        if (++index % 3 === 0 && index !== reversedValue.length) {
+          prev += FPNumber.DELIMITERS_CONFIG.thousand
+        }
+        return prev
+      }).split('').reverse().join('')
+    }
+
+    return splittedValue.join(FPNumber.DELIMITERS_CONFIG.decimal)
   }
 
   /**
