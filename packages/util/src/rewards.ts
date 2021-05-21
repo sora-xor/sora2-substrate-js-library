@@ -41,7 +41,7 @@ export function isClaimableReward (reward: RewardInfo): boolean {
   
   const fpTotal = FPNumber.fromCodecValue(reward.total, reward.asset.decimals)
 
-  return FPNumber.lte(fpAmount, fpTotal)
+  return !fpAmount.isZero() && FPNumber.lte(fpAmount, fpTotal)
 }
 
 export function hasRewardsForEvents (rewards: Array<RewardInfo>, events: Array<RewardingEvents>): boolean {
