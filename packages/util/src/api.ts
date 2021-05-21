@@ -1298,9 +1298,9 @@ export class Api extends BaseApi {
     const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (this.api.rpc as any).rewards.claimables(externalAddress)
 
     const rewards = [
-      prepareRewardInfo(soraFarmHarvestAmount, RewardingEvents.SoraFarmHarvest),
-      prepareRewardInfo(nftAirdropAmount, RewardingEvents.NtfAirdrop),
-      prepareRewardInfo(xorErc20Amount, RewardingEvents.XorErc20)
+      prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount),
+      prepareRewardInfo(RewardingEvents.NtfAirdrop, nftAirdropAmount),
+      prepareRewardInfo(RewardingEvents.XorErc20, xorErc20Amount)
     ].filter(item => isClaimableReward(item))
 
     return rewards
@@ -1317,14 +1317,15 @@ export class Api extends BaseApi {
 
     const [liquidityProvisionAmount, buyingFromTBCPoolTuple] = await Promise.all([
       (this.api.rpc as any).pswapDistribution.claimableAmount(address), // Balance
-      (this.api.query as any).multicollateralBondingCurvePool.rewards(address) // [claim_limit: Balance, pending_reward: Balance]
+      (this.api.query as any).multicollateralBondingCurvePool.rewards(address) // [claim_limit: Balance, available_reward: Balance]
     ])
 
     const buyingFromTBCPoolAmount = buyingFromTBCPoolTuple[0] // claim_limit
+    const buyingFromTBCPoolTotal = buyingFromTBCPoolTuple[1] // available_reward
 
     const rewards = [
-      prepareRewardInfo(liquidityProvisionAmount, RewardingEvents.LiquidityProvision),
-      prepareRewardInfo(buyingFromTBCPoolAmount, RewardingEvents.BuyOnBondingCurve)
+      prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount),
+      prepareRewardInfo(RewardingEvents.BuyOnBondingCurve, buyingFromTBCPoolAmount, buyingFromTBCPoolTotal)
     ].filter(item => isClaimableReward(item))
 
     return rewards
