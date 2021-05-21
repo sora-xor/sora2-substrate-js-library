@@ -195,6 +195,7 @@ export class Api extends BaseApi {
     for (const subscription of this.balanceSubscriptions) {
       subscription.unsubscribe()
     }
+    this.balanceSubscriptions = []
   }
 
   /**
