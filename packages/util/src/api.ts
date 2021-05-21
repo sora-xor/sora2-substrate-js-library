@@ -4,7 +4,7 @@ import { KeypairType } from '@polkadot/util-crypto/types'
 import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
-import { Signer } from '@polkadot/types/types'
+import { Signer, Observable } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
 import { Subject } from '@polkadot/x-rxjs'
 
@@ -18,6 +18,7 @@ import {
   getAssets,
   PoolTokens,
   AccountLiquidity,
+  AccountBalance,
   getAssetBalanceObservable,
   ZeroBalance,
   getBalance
@@ -184,6 +185,17 @@ export class Api extends BaseApi {
 
   public getAsset (address: string): AccountAsset | null {
     return this.accountAssets.find(asset => asset.address === address) ?? null
+  }
+
+  public getAssetBalanceObservable (asset: AccountAsset): Observable<AccountBalance> {
+    return getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address, asset.decimals)
+  }
+
+  private unsubscribeFromAllBalancesUpdates () {
+    for (const subscription of this.balanceSubscriptions) {
+      subscription.unsubscribe()
+    }
+    this.balanceSubscriptions = []
   }
 
   /**
@@ -484,13 +496,11 @@ export class Api extends BaseApi {
    * Set subscriptions for balance updates of the account asset list
    */
   public updateAccountAssets (): void {
-    for (const subscription of this.balanceSubscriptions) {
-      subscription.unsubscribe()
-    }
+    this.unsubscribeFromAllBalancesUpdates()
     assert(this.account, Messages.connectWallet)
     for (const asset of this.accountAssets) {
-      const subscription = getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address, asset.decimals).subscribe(result => {
-        asset.balance = result
+      const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
+        asset.balance = accountBalance
         this.addAccountAsset(asset)
         this.assetsBalanceSubject.next()
       })
@@ -1289,9 +1299,9 @@ export class Api extends BaseApi {
     const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (this.api.rpc as any).rewards.claimables(externalAddress)
 
     const rewards = [
-      prepareRewardInfo(soraFarmHarvestAmount, RewardingEvents.SoraFarmHarvest),
-      prepareRewardInfo(nftAirdropAmount, RewardingEvents.NtfAirdrop),
-      prepareRewardInfo(xorErc20Amount, RewardingEvents.XorErc20)
+      prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount),
+      prepareRewardInfo(RewardingEvents.NtfAirdrop, nftAirdropAmount),
+      prepareRewardInfo(RewardingEvents.XorErc20, xorErc20Amount)
     ].filter(item => isClaimableReward(item))
 
     return rewards
@@ -1308,14 +1318,15 @@ export class Api extends BaseApi {
 
     const [liquidityProvisionAmount, buyingFromTBCPoolTuple] = await Promise.all([
       (this.api.rpc as any).pswapDistribution.claimableAmount(address), // Balance
-      (this.api.query as any).multicollateralBondingCurvePool.rewards(address) // [claim_limit: Balance, pending_reward: Balance]
+      (this.api.query as any).multicollateralBondingCurvePool.rewards(address) // [claim_limit: Balance, available_reward: Balance]
     ])
 
     const buyingFromTBCPoolAmount = buyingFromTBCPoolTuple[0] // claim_limit
+    const buyingFromTBCPoolTotal = buyingFromTBCPoolTuple[1] // available_reward
 
     const rewards = [
-      prepareRewardInfo(liquidityProvisionAmount, RewardingEvents.LiquidityProvision),
-      prepareRewardInfo(buyingFromTBCPoolAmount, RewardingEvents.BuyOnBondingCurve)
+      prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount),
+      prepareRewardInfo(RewardingEvents.BuyOnBondingCurve, buyingFromTBCPoolAmount, buyingFromTBCPoolTotal)
     ].filter(item => isClaimableReward(item))
 
     return rewards
@@ -1415,9 +1426,7 @@ export class Api extends BaseApi {
     this.accountAssets = []
     this.accountLiquidity = []
 
-    for (const subscription of this.balanceSubscriptions) {
-      subscription.unsubscribe()
-    }
+    this.unsubscribeFromAllBalancesUpdates()
 
     super.logout()
     this.bridge.logout()
