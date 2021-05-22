@@ -258,15 +258,16 @@ export class FPNumber {
   }
 
   public formatToLocaleString (): string {
-    const splittedValue = this.format().split('.')
+    let [integer, decimal] = this.format().split('.')
 
-    if (splittedValue[0].length > 3) {
-      const reversedValue = splittedValue[0].split('').reverse()
-      splittedValue[0] = reversedValue.reduce((prev, current, index) => {
+    if (integer.length > 3) {
+      const integerReversed = integer.split('').reverse()
+      const lastIndex = integerReversed.length - 1
+      integer = integerReversed.reduce((prev, current, index) => {
         prev += current
-        if (++index % 3 === 0 && index !== reversedValue.length) {
+        if (++index % 3 === 0 && index !== integerReversed.length) {
           // Avoid thousands' delimiter for negative numbers
-          if (index === reversedValue.length - 1 && reversedValue[reversedValue.length - 1] === '-') {
+          if (index === lastIndex && integerReversed[lastIndex] === '-') {
             return prev
           }
           prev += FPNumber.DELIMITERS_CONFIG.thousand
@@ -275,7 +276,7 @@ export class FPNumber {
       }).split('').reverse().join('')
     }
 
-    return splittedValue.join(FPNumber.DELIMITERS_CONFIG.decimal)
+    return decimal ? integer.concat(FPNumber.DELIMITERS_CONFIG.decimal, decimal) : integer
   }
 
   /**
