@@ -19,6 +19,7 @@ export interface RewardInfo {
   type: RewardingEvents;
   asset: Asset;
   amount: CodecString;
+  total?: CodecString;
 }
 
 export interface LPRewardsInfo {
@@ -41,15 +42,21 @@ export function hasRewardsForEvents (rewards: Array<RewardInfo>, events: Array<R
   return rewards.some(item => isClaimableReward(item) && events.includes(item.type))
 }
 
-export function prepareRewardInfo (amount: CodecString | number, type: RewardingEvents): RewardInfo {
+export function prepareRewardInfo (type: RewardingEvents, amount: CodecString | number, total?: CodecString | number): RewardInfo {
   const [val, pswap] = [KnownAssets.get(KnownSymbols.VAL), KnownAssets.get(KnownSymbols.PSWAP)]
   const asset = ({
     [RewardingEvents.XorErc20]: val
   })[type] ?? pswap
 
-  return {
+  const rewardInfo = {
     type,
     asset,
     amount: new FPNumber(amount, asset.decimals).toCodecString()
+  } as RewardInfo
+
+  if (total) {
+    rewardInfo.total = new FPNumber(total, asset.decimals).toCodecString()
   }
+
+  return rewardInfo
 }
