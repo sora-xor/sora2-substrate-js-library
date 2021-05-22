@@ -257,7 +257,7 @@ export class FPNumber {
     return formatted.toFormat(format)
   }
 
-  public formatToLocaleString (): string {
+  public toLocaleString (): string {
     let [integer, decimal] = this.format().split('.')
 
     if (integer.length > 3) {

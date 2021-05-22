@@ -76,9 +76,9 @@ describe('FPNumber', () => {
     [1234.123456, 1, '1,234.1'],
     ['1234567.123456', undefined, '1,234,567.123456'],
     [1234567.123456, undefined, '1,234,567.123456']
-  ])('[formatToLocaleString] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
+  ])('[toLocaleString] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision)
-    expect(instance.formatToLocaleString()).toBe(result)
+    expect(instance.toLocaleString()).toBe(result)
   })
 
   it.each([
