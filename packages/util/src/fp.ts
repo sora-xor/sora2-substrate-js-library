@@ -265,6 +265,10 @@ export class FPNumber {
       splittedValue[0] = reversedValue.reduce((prev, current, index) => {
         prev += current
         if (++index % 3 === 0 && index !== reversedValue.length) {
+          // Avoid thousands' delimiter for negative numbers
+          if (index === reversedValue.length - 1 && reversedValue[reversedValue.length - 1] === '-') {
+            return prev
+          }
           prev += FPNumber.DELIMITERS_CONFIG.thousand
         }
         return prev
