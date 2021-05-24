@@ -1,6 +1,7 @@
 import { assert } from '@polkadot/util'
 import { ApiPromise, ApiRx } from '@polkadot/api'
 import { WsProvider } from '@polkadot/rpc-provider'
+import { ProviderInterfaceEmitted, ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types'
 import { options } from '@sora-substrate/api'
 
 import { Messages } from './logger'
@@ -8,6 +9,7 @@ import { Messages } from './logger'
 export interface ConnectionRunOptions {
   once?: boolean;
   timeout?: number;
+  eventListeners?: Array<[ProviderInterfaceEmitted, ProviderInterfaceEmitCb]>
 }
 
 class Connection {
@@ -15,6 +17,7 @@ class Connection {
   public apiRx: ApiRx
   public endpoint: string
   public loading = false
+  public eventHandlers: Array<Function> = []
 
   private async withLoading (func: Function): Promise<any> {
     this.loading = true
@@ -29,7 +32,7 @@ class Connection {
 
   private async run (endpoint: string, runOptions?: ConnectionRunOptions): Promise<void> {
     let connectionTimeout: any
-    const { once = false, timeout = 0 } = runOptions || {}
+    const { once = false, timeout = 0, eventListeners = [] } = runOptions || {}
     const prevEndpoint = this.endpoint
     this.endpoint = endpoint
 
@@ -60,9 +63,20 @@ class Connection {
     try {
       await Promise.race(connectionRequests)
 
-      if (connectionEndpointIsStable()) {
-        this.api = api
-        this.apiRx = apiRx
+      if (!connectionEndpointIsStable()) return
+
+      this.api = api
+      this.apiRx = apiRx
+
+      // unsubscribe old event handlers, clear them from memory
+      if (this.eventHandlers.length > 0) {
+        this.eventHandlers.forEach(unsubscribeFn => unsubscribeFn())
+        this.eventHandlers = []
+      }
+
+      // add new event handlers
+      if (eventListeners.length > 0) {
+        this.eventHandlers = eventListeners.map(([eventName, callback]) => provider.on(eventName, callback))
       }
     } catch (error) {
       provider.disconnect()
