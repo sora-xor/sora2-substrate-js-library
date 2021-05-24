@@ -35,7 +35,13 @@ export interface RewardClaimHistory extends History {
 }
 
 export function isClaimableReward (reward: RewardInfo): boolean {
-  return !FPNumber.fromCodecValue(reward.amount, reward.asset.decimals).isZero()
+  const fpAmount = FPNumber.fromCodecValue(reward.amount, reward.asset.decimals)
+
+  if (!reward.total) return !fpAmount.isZero()
+  
+  const fpTotal = FPNumber.fromCodecValue(reward.total, reward.asset.decimals)
+
+  return !fpAmount.isZero() && FPNumber.lte(fpAmount, fpTotal)
 }
 
 export function hasRewardsForEvents (rewards: Array<RewardInfo>, events: Array<RewardingEvents>): boolean {
