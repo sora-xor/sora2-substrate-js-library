@@ -1,6 +1,7 @@
 import last from 'lodash/fp/last'
 import first from 'lodash/fp/first'
-import { ApiPromise, ApiRx } from '@polkadot/api'
+import { ApiPromise } from '@polkadot/api'
+import { ApiInterfaceRx } from '@polkadot/api/types'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
@@ -37,8 +38,8 @@ export class BaseApi {
     return connection.api
   }
 
-  public get apiRx (): ApiRx {
-    return connection.apiRx
+  public get apiRx (): ApiInterfaceRx {
+    return connection.api.rx as ApiInterfaceRx
   }
 
   public logout (): void {

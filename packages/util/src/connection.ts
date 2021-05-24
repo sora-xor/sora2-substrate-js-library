@@ -1,5 +1,5 @@
 import { assert } from '@polkadot/util'
-import { ApiPromise, ApiRx } from '@polkadot/api'
+import { ApiPromise } from '@polkadot/api'
 import { WsProvider } from '@polkadot/rpc-provider'
 import { ProviderInterfaceEmitted, ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types'
 import { options } from '@sora-substrate/api'
@@ -14,7 +14,6 @@ export interface ConnectionRunOptions {
 
 class Connection {
   public api: ApiPromise
-  public apiRx: ApiRx
   public endpoint: string
   public loading = false
   public eventHandlers: Array<Function> = []
@@ -38,7 +37,6 @@ class Connection {
 
     const provider = new WsProvider(endpoint)
     const api = new ApiPromise(options({ provider }))
-    const apiRx = new ApiRx(options({ provider }))
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady'
 
     // because this.endpoint can be overwritten by the next run call, which is faster
@@ -53,8 +51,7 @@ class Connection {
 
     const connectionRequests: Array<Promise<any>> = [
       Promise.all([
-        api[apiConnectionPromise],
-        apiRx.isReady.toPromise()
+        api[apiConnectionPromise]
       ])
     ]
 
@@ -66,7 +63,6 @@ class Connection {
       if (!connectionEndpointIsStable()) return
 
       this.api = api
-      this.apiRx = apiRx
 
       // unsubscribe old event handlers, clear them from memory
       if (this.eventHandlers.length > 0) {
@@ -94,7 +90,6 @@ class Connection {
       await this.api.disconnect()
     }
     this.api = null
-    this.apiRx = null
     this.endpoint = ''
   }
 
