@@ -41,7 +41,7 @@ yarn test:all
 
 ### Demo
 ```
-yarn test
+yarn demo
 ```
 or
 ```
