@@ -1043,6 +1043,10 @@ export class Api extends BaseApi {
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ): Promise<void> {
     const params = await this.calcAddLiquidityParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
+    if (!this.getAsset(params.secondAsset.address)) {
+      this.addAccountAsset({ ...params.secondAsset, balance: ZeroBalance })
+      this.updateAccountAssets()
+    }
     await this.submitExtrinsic(
       this.api.tx.poolXyk.depositLiquidity(...params.args),
       this.account.pair,
@@ -1137,6 +1141,10 @@ export class Api extends BaseApi {
       this.api.tx.poolXyk.initializePool(...params.pairCreationArgs),
       this.api.tx.poolXyk.depositLiquidity(...params.addLiquidityArgs)
     ])
+    if (!this.getAsset(params.secondAsset.address)) {
+      this.addAccountAsset({ ...params.secondAsset, balance: ZeroBalance })
+      this.updateAccountAssets()
+    }
     await this.submitExtrinsic(
       this.api.tx.utility.batchAll(transactions),
       this.account.pair,
