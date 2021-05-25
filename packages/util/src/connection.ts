@@ -50,9 +50,7 @@ class Connection {
     }
 
     const connectionRequests: Array<Promise<any>> = [
-      Promise.all([
-        api[apiConnectionPromise]
-      ])
+      api[apiConnectionPromise]
     ]
 
     if (timeout) connectionRequests.push(runConnectionTimeout())
