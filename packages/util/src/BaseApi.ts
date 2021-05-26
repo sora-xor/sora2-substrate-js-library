@@ -1,12 +1,11 @@
 import last from 'lodash/fp/last'
 import first from 'lodash/fp/first'
-import { ApiPromise } from '@polkadot/api'
-import { ApiInterfaceRx } from '@polkadot/api/types'
+import { ApiPromise, ApiRx } from '@polkadot/api'
 import { CreateResult } from '@polkadot/ui-keyring/types'
-import { KeyringPair } from '@polkadot/keyring/types'
+import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
 import { Signer } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
-import { decodeAddress } from '@polkadot/util-crypto'
+import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
 import { AccountStorage, Storage } from './storage'
 import { KnownAssets, KnownSymbols } from './assets'
@@ -24,22 +23,45 @@ export const isBridgeOperation = (operation: Operation) => [
 export const KeyringType = 'sr25519'
 
 export class BaseApi {
+  protected readonly prefix = 69
+
+  private _history: Array<History> = []
+  private _restored: Boolean = false
+
   protected signer?: Signer
   protected storage?: Storage // common data storage
   protected accountStorage?: AccountStorage // account data storage
   protected account: CreateResult
-  private _history: Array<History> = []
-  private _restored: Boolean = false
 
-  constructor () {
-  }
+  constructor () {}
 
   public get api (): ApiPromise {
     return connection.api
   }
 
-  public get apiRx (): ApiInterfaceRx {
-    return connection.api.rx as ApiInterfaceRx
+  public get apiRx (): ApiRx {
+    return connection.api.rx as ApiRx
+  }
+
+  public get accountPair (): KeyringPair {
+    if (!this.account) {
+      return null
+    }
+    return this.account.pair
+  }
+
+  public get address (): string {
+    if (!this.account) {
+      return ''
+    }
+    return this.formatAddress(this.account.pair.address)
+  }
+
+  public get accountJson (): KeyringPair$Json {
+    if (!this.account) {
+      return null
+    }
+    return this.account.json
   }
 
   public logout (): void {
@@ -142,7 +164,7 @@ export class BaseApi {
     const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet
     if (isNotFaucetOperation && signer) {
-      history.from = signer.address
+      history.from = this.address
     }
     if (!history.id) {
       history.startTime = Date.now()
@@ -251,12 +273,22 @@ export class BaseApi {
     return new FPNumber(res.partialFee, xor.decimals).toCodecString()
   }
 
+  public formatAddress (address: string, withSoraPrefix = true): string {
+    if (withSoraPrefix) {
+      const publicKey = decodeAddress(address, false)
+      return encodeAddress(publicKey, this.prefix)
+    }
+    const publicKey = decodeAddress(address, false, -1)
+    return encodeAddress(publicKey)
+  }
+
   /**
    * Check address
    * @param address
    */
   public checkAddress (address: string): boolean {
     try {
+      // If we'll need to check SORA prefix: decodeAddress(address, false, this.prefix)
       decodeAddress(address)
       return true
     } catch (error) {
