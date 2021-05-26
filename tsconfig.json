@@ -4,6 +4,7 @@
     "strict": false,
     "noImplicitAny": false,
     "noUnusedLocals": false,
+    "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
       "@sora-substrate/api": [

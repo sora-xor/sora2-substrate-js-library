@@ -3,7 +3,7 @@ import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/ut
 import { KeypairType } from '@polkadot/util-crypto/types'
 import keyring from '@polkadot/ui-keyring'
 import { CreateResult } from '@polkadot/ui-keyring/types'
-import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
+import { KeyringPair$Json } from '@polkadot/keyring/types'
 import { Signer, Observable } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
 import { Subject } from '@polkadot/x-rxjs'
@@ -48,20 +48,6 @@ export class Api extends BaseApi {
   private balanceSubscriptions: Array<Subscription> = []
   private assetsBalanceSubject = new Subject<void>()
   public assetsBalanceUpdated = this.assetsBalanceSubject.asObservable()
-
-  public get accountPair (): KeyringPair {
-    if (!this.account) {
-      return null
-    }
-    return this.account.pair
-  }
-
-  public get accountJson (): KeyringPair$Json {
-    if (!this.account) {
-      return null
-    }
-    return this.account.json
-  }
 
   public get accountAssets (): Array<AccountAsset> {
     if (this.storage) {
@@ -237,11 +223,14 @@ export class Api extends BaseApi {
     if (!address) {
       return
     }
-    const pair = keyring.getPair(address)
+    const defaultAddress = this.formatAddress(address, false)
+    const soraAddress = this.formatAddress(address)
+    this.storage?.set('address', soraAddress)
+    const pair = keyring.getPair(defaultAddress)
 
     const account = !isExternal
       ? keyring.addPair(pair, decrypt(password))
-      : keyring.addExternal(address, name ? { name } : {})
+      : keyring.addExternal(defaultAddress, name ? { name } : {})
 
     this.setAccount(account)
     this.initAccountStorage()
@@ -283,7 +272,8 @@ export class Api extends BaseApi {
     if (this.storage) {
       this.storage.set('name', name)
       this.storage.set('password', encrypt(password))
-      this.storage.set('address', this.account.pair.address)
+      const soraAddress = this.formatAddress(account.pair.address)
+      this.storage.set('address', soraAddress)
     }
 
     this.initAccountStorage()
@@ -375,8 +365,9 @@ export class Api extends BaseApi {
     this.setAccount(account)
 
     if (this.storage) {
+      const soraAddress = this.formatAddress(account.pair.address)
       this.storage.set('name', name)
-      this.storage.set('address', this.account.pair.address)
+      this.storage.set('address', soraAddress)
       this.storage.set('isExternal', true)
     }
 
@@ -536,10 +527,11 @@ export class Api extends BaseApi {
   public async transfer (assetAddress: string, toAddress: string, amount: NumberLike): Promise<void> {
     assert(this.account, Messages.connectWallet)
     const asset = await this.getAssetInfo(assetAddress)
+    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.formatAddress(toAddress)
     await this.submitExtrinsic(
       this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.account.pair,
-      { symbol: asset.symbol, to: toAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
+      { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
     )
   }
 

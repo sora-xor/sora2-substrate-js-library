@@ -1,5 +1,4 @@
-import { ApiPromise } from '@polkadot/api'
-import { ApiInterfaceRx } from '@polkadot/api/types'
+import { ApiPromise, ApiRx } from '@polkadot/api'
 import { Codec, Observable } from '@polkadot/types/types'
 import type { AccountData } from '@polkadot/types/interfaces/balances'
 import { map } from '@polkadot/x-rxjs/operators'
@@ -142,7 +141,7 @@ export async function getAssetBalance (api: ApiPromise, accountAddress: string, 
   return formatBalance(accountData, assetDecimals)
 }
 
-export function getAssetBalanceObservable (apiRx: ApiInterfaceRx, accountAddress: string, assetAddress: string, assetDecimals: number): Observable<AccountBalance> {
+export function getAssetBalanceObservable (apiRx: ApiRx, accountAddress: string, assetAddress: string, assetDecimals: number): Observable<AccountBalance> {
   const xorAddress = KnownAssets.get(KnownSymbols.XOR).address
   if (assetAddress === xorAddress) {
     return apiRx.query.system.account(accountAddress).pipe(
