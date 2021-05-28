@@ -147,6 +147,7 @@ export default {
         "Unspecified", "BuyOnBondingCurve"
       ]
     },
+    StorageVersion: "Null", // Generic storage version
     MarketMakerInfo: {
       count: "u32",
       volume: "Balance",
