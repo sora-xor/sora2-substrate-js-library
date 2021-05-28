@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
+import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { Signature } from '@polkadot/types/interfaces/extrinsics';
@@ -73,12 +73,6 @@ export interface ChangesTrieConfiguration extends Struct {
   readonly digestLevels: u32;
 }
 
-/** @name ChangesTrieSignal */
-export interface ChangesTrieSignal extends Enum {
-  readonly isNewConfiguration: boolean;
-  readonly asNewConfiguration: Option<ChangesTrieConfiguration>;
-}
-
 /** @name ChargeFeeInfo */
 export interface ChargeFeeInfo extends Struct {
   readonly tip: Compact<Balance>;
@@ -134,8 +128,6 @@ export interface DigestItem extends Enum {
   readonly asSeal: Seal;
   readonly isPreRuntime: boolean;
   readonly asPreRuntime: PreRuntime;
-  readonly isChangesTrieSignal: boolean;
-  readonly asChangesTrieSignal: ChangesTrieSignal;
 }
 
 /** @name DispatchErrorWithPostInfoTPostDispatchInfo */
@@ -161,9 +153,6 @@ export interface DistributionAccounts extends Null {}
 
 /** @name Duration */
 export interface Duration extends Null {}
-
-/** @name EncodedJustification */
-export interface EncodedJustification extends Bytes {}
 
 /** @name ExtrinsicsWeight */
 export interface ExtrinsicsWeight extends Struct {
@@ -223,9 +212,6 @@ export interface H2048 extends U8aFixed {}
 /** @name H256 */
 export interface H256 extends U8aFixed {}
 
-/** @name H32 */
-export interface H32 extends U8aFixed {}
-
 /** @name H512 */
 export interface H512 extends U8aFixed {}
 
@@ -244,12 +230,6 @@ export interface Header extends Struct {
   readonly digest: Digest;
 }
 
-/** @name HeaderPartial */
-export interface HeaderPartial extends Struct {
-  readonly parentHash: Hash;
-  readonly number: BlockNumber;
-}
-
 /** @name HolderId */
 export interface HolderId extends AccountId {}
 
@@ -263,10 +243,7 @@ export interface Index extends u32 {}
 export interface IndicesLookupSource extends GenericLookupSource {}
 
 /** @name Justification */
-export interface Justification extends ITuple<[ConsensusEngineId, EncodedJustification]> {}
-
-/** @name Justifications */
-export interface Justifications extends Vec<Justification> {}
+export interface Justification extends Bytes {}
 
 /** @name KeyTypeId */
 export interface KeyTypeId extends u32 {}
@@ -295,7 +272,10 @@ export interface LookupSource extends MultiAddress {}
 export interface LookupTarget extends AccountId {}
 
 /** @name MarketMakerInfo */
-export interface MarketMakerInfo extends Null {}
+export interface MarketMakerInfo extends Struct {
+  readonly count: u32;
+  readonly volume: Balance;
+}
 
 /** @name Mode */
 export interface Mode extends Enum {
@@ -345,9 +325,6 @@ export interface OriginCaller extends Enum {
 
 /** @name OwnerId */
 export interface OwnerId extends AccountId {}
-
-/** @name PalletId */
-export interface PalletId extends LockIdentifier {}
 
 /** @name PalletsOrigin */
 export interface PalletsOrigin extends OriginCaller {}
@@ -440,7 +417,11 @@ export interface Releases extends Enum {
 }
 
 /** @name RewardInfo */
-export interface RewardInfo extends Null {}
+export interface RewardInfo extends Struct {
+  readonly limit: Balance;
+  readonly total_available: Balance;
+  readonly rewards: BTreeMap<RewardReason, Balance>;
+}
 
 /** @name RewardReason */
 export interface RewardReason extends Enum {
@@ -468,18 +449,9 @@ export interface Seal extends ITuple<[ConsensusEngineId, Bytes]> {}
 export interface SealV0 extends ITuple<[u64, Signature]> {}
 
 /** @name SignedBlock */
-export interface SignedBlock extends SignedBlockWithJustifications {}
-
-/** @name SignedBlockWithJustification */
-export interface SignedBlockWithJustification extends Struct {
+export interface SignedBlock extends Struct {
   readonly block: Block;
-  readonly justification: Option<EncodedJustification>;
-}
-
-/** @name SignedBlockWithJustifications */
-export interface SignedBlockWithJustifications extends Struct {
-  readonly block: Block;
-  readonly justifications: Option<Justifications>;
+  readonly justification: Justification;
 }
 
 /** @name Slot */

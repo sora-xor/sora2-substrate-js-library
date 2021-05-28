@@ -43,6 +43,12 @@ export interface CurrencyIdEncoded extends Enum {
   readonly asTokenAddress: H160;
 }
 
+/** @name EthBridgeStorageVersion */
+export interface EthBridgeStorageVersion extends Enum {
+  readonly isV1: boolean;
+  readonly isV2RemovePendingTransfers: boolean;
+}
+
 /** @name EthPeersSync */
 export interface EthPeersSync extends Struct {
   readonly is_bridge_ready: bool;
