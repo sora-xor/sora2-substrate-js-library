@@ -254,6 +254,7 @@
         "network_id": "BridgeNetworkId"
     },
     "LookupSource": "AccountId",
+    "MarketMakerInfo": "Null",
     "Mode": {
         "_enum": [
             "Permit",
@@ -457,6 +458,7 @@
             "Done"
         ]
     },
+    "RewardInfo": "Null",
     "RewardReason": {
         "_enum": [
             "Unspecified",
@@ -475,6 +477,7 @@
         "v": "u8"
     },
     "SmoothPriceState": "Null",
+    "StorageVersion": "Null",
     "SwapAction": "Null",
     "SwapAmount": {
         "_enum": {
