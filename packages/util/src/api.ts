@@ -756,7 +756,6 @@ export class Api extends BaseApi {
       }
       const poolTokenAddress = first(props)
       const result = await getLiquidityBalance(this.api, this.account.pair.address, poolTokenAddress)
-      console.log('getLiquidityBalance', result)
       if (new FPNumber(result).isZero()) {
         continue
       }
