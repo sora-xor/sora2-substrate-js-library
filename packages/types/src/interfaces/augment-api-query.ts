@@ -1,11 +1,11 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
-import type { Option, Vec, bool } from '@polkadot/types';
-import type { AnyNumber, ITuple, Observable } from '@polkadot/types/types';
+import type { BTreeSet, Option, Vec, bool } from '@polkadot/types';
+import type { AnyNumber, Observable } from '@polkadot/types/types';
 import type { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import type { AccountId, AssetId, Balance, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Fixed, Hash, HolderId, LiquiditySourceType, Mode, Moment, OwnerId, PermissionId, Releases, Scope, TechAccountId } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, Balance, CurrencyId, DEXId, DEXInfo, Hash, HolderId, LiquiditySourceType, Mode, Moment, OwnerId, PermissionId, Releases, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/storage' {
@@ -37,19 +37,6 @@ declare module '@polkadot/api/types/storage' {
        **/
       [key: string]: QueryableStorageEntry<ApiType>;
     };
-    bondingCurvePool: {
-      distributionAccountsEntry: AugmentedQuery<ApiType, () => Observable<DistributionAccounts>, []> & QueryableStorageEntry<ApiType, []>;
-      fee: AugmentedQuery<ApiType, () => Observable<Fixed>, []> & QueryableStorageEntry<ApiType, []>;
-      initialPrice: AugmentedQuery<ApiType, () => Observable<Fixed>, []> & QueryableStorageEntry<ApiType, []>;
-      priceChangeRate: AugmentedQuery<ApiType, () => Observable<Fixed>, []> & QueryableStorageEntry<ApiType, []>;
-      priceChangeStep: AugmentedQuery<ApiType, () => Observable<Fixed>, []> & QueryableStorageEntry<ApiType, []>;
-      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountId>, []> & QueryableStorageEntry<ApiType, []>;
-      sellPriceCoefficient: AugmentedQuery<ApiType, () => Observable<Fixed>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
     dexapi: {
       enabledSourceTypes: AugmentedQuery<ApiType, () => Observable<Vec<LiquiditySourceType>>, []> & QueryableStorageEntry<ApiType, []>;
       /**
@@ -59,38 +46,6 @@ declare module '@polkadot/api/types/storage' {
     };
     dexManager: {
       dexInfos: AugmentedQuery<ApiType, (arg: DEXId | AnyNumber | Uint8Array) => Observable<Option<DEXInfo>>, [DEXId]> & QueryableStorageEntry<ApiType, [DEXId]>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
-    mockLiquiditySource: {
-      reserves: AugmentedQuery<ApiType, (arg1: DEXId | AnyNumber | Uint8Array, arg2: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[Fixed, Fixed]>>, [DEXId, AssetId]> & QueryableStorageEntry<ApiType, [DEXId, AssetId]>;
-      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountId>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
-    mockLiquiditySource2: {
-      reserves: AugmentedQuery<ApiType, (arg1: DEXId | AnyNumber | Uint8Array, arg2: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[Fixed, Fixed]>>, [DEXId, AssetId]> & QueryableStorageEntry<ApiType, [DEXId, AssetId]>;
-      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountId>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
-    mockLiquiditySource3: {
-      reserves: AugmentedQuery<ApiType, (arg1: DEXId | AnyNumber | Uint8Array, arg2: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[Fixed, Fixed]>>, [DEXId, AssetId]> & QueryableStorageEntry<ApiType, [DEXId, AssetId]>;
-      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountId>, []> & QueryableStorageEntry<ApiType, []>;
-      /**
-       * Generic query
-       **/
-      [key: string]: QueryableStorageEntry<ApiType>;
-    };
-    mockLiquiditySource4: {
-      reserves: AugmentedQuery<ApiType, (arg1: DEXId | AnyNumber | Uint8Array, arg2: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[Fixed, Fixed]>>, [DEXId, AssetId]> & QueryableStorageEntry<ApiType, [DEXId, AssetId]>;
-      reservesAcc: AugmentedQuery<ApiType, () => Observable<TechAccountId>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * Generic query
        **/
@@ -157,6 +112,13 @@ declare module '@polkadot/api/types/storage' {
        * The total issuance of a token type.
        **/
       totalIssuance: AugmentedQuery<ApiType, (arg: CurrencyId | AnyNumber | Uint8Array) => Observable<Balance>, [CurrencyId]> & QueryableStorageEntry<ApiType, [CurrencyId]>;
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>;
+    };
+    tradingPair: {
+      enabledSources: AugmentedQuery<ApiType, (arg1: DEXId | AnyNumber | Uint8Array, arg2: TradingPair | { base_asset_id?: any; target_asset_id?: any } | string | Uint8Array) => Observable<Option<BTreeSet<LiquiditySourceType>>>, [DEXId, TradingPair]> & QueryableStorageEntry<ApiType, [DEXId, TradingPair]>;
       /**
        * Generic query
        **/

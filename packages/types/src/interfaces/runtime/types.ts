@@ -294,6 +294,9 @@ export interface LookupSource extends MultiAddress {}
 /** @name LookupTarget */
 export interface LookupTarget extends AccountId {}
 
+/** @name MarketMakerInfo */
+export interface MarketMakerInfo extends Null {}
+
 /** @name Mode */
 export interface Mode extends Enum {
   readonly isPermit: boolean;
@@ -436,6 +439,9 @@ export interface Releases extends Enum {
   readonly isV10: boolean;
 }
 
+/** @name RewardInfo */
+export interface RewardInfo extends Null {}
+
 /** @name RewardReason */
 export interface RewardReason extends Enum {
   readonly isUnspecified: boolean;
@@ -489,6 +495,9 @@ export interface StorageData extends Bytes {}
 export interface StorageProof extends Struct {
   readonly trieNodes: Vec<Bytes>;
 }
+
+/** @name StorageVersion */
+export interface StorageVersion extends Null {}
 
 /** @name SwapAction */
 export interface SwapAction extends Null {}

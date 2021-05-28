@@ -1,29 +1,36 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
-import type { BTreeSet, Bytes, Option, Text, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
+import type { BTreeSet, Bytes, Data, Option, Text, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
 import type { AnyNumber, ITuple } from '@polkadot/types/types';
 import type { UncleEntryItem } from '@polkadot/types/interfaces/authorship';
 import type { BabeAuthorityWeight, MaybeRandomness, NextConfigDescriptor, Randomness } from '@polkadot/types/interfaces/babe';
 import type { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
+import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
+import type { Votes } from '@polkadot/types/interfaces/collective';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
+import type { PreimageStatus, PropIndex, Proposal, ReferendumIndex, ReferendumInfo, Voting } from '@polkadot/types/interfaces/democracy';
+import type { VoteThreshold } from '@polkadot/types/interfaces/elections';
 import type { SetId, StoredPendingChange, StoredState } from '@polkadot/types/interfaces/grandpa';
+import type { RegistrarInfo, Registration } from '@polkadot/types/interfaces/identity';
+import type { AuthIndex } from '@polkadot/types/interfaces/imOnline';
+import type { DeferredOffenceOf, Kind, OffenceDetails, OpaqueTimeSlot, ReportIdOf } from '@polkadot/types/interfaces/offences';
+import type { Scheduled, TaskAddress } from '@polkadot/types/interfaces/scheduler';
 import type { Keys, SessionIndex } from '@polkadot/types/interfaces/session';
-import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraIndex, EraRewardPoints, Exposure, Forcing, Nominations, RewardDestination, SlashingSpans, SpanIndex, SpanRecord, StakingLedger, UnappliedSlash, ValidatorPrefs } from '@polkadot/types/interfaces/staking';
+import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraIndex, EraRewardPoints, Exposure, Forcing, Nominations, RewardDestination, SeatHolder, SlashingSpans, SpanIndex, SpanRecord, StakingLedger, UnappliedSlash, ValidatorPrefs, Voter } from '@polkadot/types/interfaces/staking';
 import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
-import type { NetworkId } from '@polkadot/types/interfaces/xcm';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeStatus, EthPeersSync, IncomingRequest, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
-import type { AccountId, Address, AssetId, AssetId32, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Farm, FarmId, Farmer, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, PendingMultisigAccount, Perbill, PermissionId, Releases, Scope, Slot, SmoothPriceState, TechAccountId, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AccountId, AccountIdOf, Address, AssetId, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, PendingMultisigAccount, Perbill, PermissionId, Releases, RewardInfo, Scope, Slot, StorageVersion, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
   assets: {    /**
      * Asset Id -> (Symbol, Precision, Is Mintable)
      **/
-    assetInfos: StorageMap<AssetId | AnyNumber, ITuple<[AssetSymbol, BalancePrecision, bool]>>;
+    assetInfos: StorageMap<AssetId | AnyNumber, ITuple<[AssetSymbol, AssetName, BalancePrecision, bool]>>;
     /**
      * Asset Id -> Owner Account Id
      **/
@@ -146,14 +153,6 @@ export interface StorageType extends BaseStorageType {
      **/
     totalIssuance: Balance | null;
   };
-  bondingCurvePool: {    distributionAccountsEntry: DistributionAccounts | null;
-    fee: Fixed | null;
-    initialPrice: Fixed | null;
-    priceChangeRate: Fixed | null;
-    priceChangeStep: Fixed | null;
-    reservesAcc: TechAccountId | null;
-    sellPriceCoefficient: Fixed | null;
-  };
   bridgeMultisig: {    /**
      * Multisignature accounts.
      **/
@@ -165,14 +164,148 @@ export interface StorageType extends BaseStorageType {
      **/
     multisigs: StorageDoubleMap<AccountId | string, U8aFixed | string, Option<Multisig>>;
   };
+  council: {    /**
+     * The current members of the collective. This is stored sorted (just by value).
+     **/
+    members: Vec<AccountId> | null;
+    /**
+     * The prime member that helps determine the default vote behavior in case of absentations.
+     **/
+    prime: Option<AccountId> | null;
+    /**
+     * Proposals so far.
+     **/
+    proposalCount: u32 | null;
+    /**
+     * Actual proposal for a given hash, if it's current.
+     **/
+    proposalOf: StorageMap<Hash | string, Option<Proposal>>;
+    /**
+     * The hashes of the active proposals.
+     **/
+    proposals: Vec<Hash> | null;
+    /**
+     * Votes on a given proposal, if it is ongoing.
+     **/
+    voting: StorageMap<Hash | string, Option<Votes>>;
+  };
+  democracy: {    /**
+     * A record of who vetoed what. Maps proposal hash to a possible existent block number
+     * (until when it may not be resubmitted) and who vetoed it.
+     **/
+    blacklist: StorageMap<Hash | string, Option<ITuple<[BlockNumber, Vec<AccountId>]>>>;
+    /**
+     * Record of all proposals that have been subject to emergency cancellation.
+     **/
+    cancellations: StorageMap<Hash | string, bool>;
+    /**
+     * Those who have locked a deposit.
+     * 
+     * TWOX-NOTE: Safe, as increasing integer keys are safe.
+     **/
+    depositOf: StorageMap<PropIndex | AnyNumber, Option<ITuple<[Vec<AccountId>, BalanceOf]>>>;
+    /**
+     * True if the last referendum tabled was submitted externally. False if it was a public
+     * proposal.
+     **/
+    lastTabledWasExternal: bool | null;
+    /**
+     * Accounts for which there are locks in action which may be removed at some point in the
+     * future. The value is the block number at which the lock expires and may be removed.
+     * 
+     * TWOX-NOTE: OK ― `AccountId` is a secure hash.
+     **/
+    locks: StorageMap<AccountId | string, Option<BlockNumber>>;
+    /**
+     * The lowest referendum index representing an unbaked referendum. Equal to
+     * `ReferendumCount` if there isn't a unbaked referendum.
+     **/
+    lowestUnbaked: ReferendumIndex | null;
+    /**
+     * The referendum to be tabled whenever it would be valid to table an external proposal.
+     * This happens when a referendum needs to be tabled and one of two conditions are met:
+     * - `LastTabledWasExternal` is `false`; or
+     * - `PublicProps` is empty.
+     **/
+    nextExternal: Option<ITuple<[Hash, VoteThreshold]>> | null;
+    /**
+     * Map of hashes to the proposal preimage, along with who registered it and their deposit.
+     * The block number is the block at which it was deposited.
+     **/
+    preimages: StorageMap<Hash | string, Option<PreimageStatus>>;
+    /**
+     * The number of (public) proposals that have been made so far.
+     **/
+    publicPropCount: PropIndex | null;
+    /**
+     * The public proposals. Unsorted. The second item is the proposal's hash.
+     **/
+    publicProps: Vec<ITuple<[PropIndex, Hash, AccountId]>> | null;
+    /**
+     * The next free referendum index, aka the number of referenda started so far.
+     **/
+    referendumCount: ReferendumIndex | null;
+    /**
+     * Information concerning any given referendum.
+     * 
+     * TWOX-NOTE: SAFE as indexes are not under an attacker’s control.
+     **/
+    referendumInfoOf: StorageMap<ReferendumIndex | AnyNumber, Option<ReferendumInfo>>;
+    /**
+     * Storage version of the pallet.
+     * 
+     * New networks start with last version.
+     **/
+    storageVersion: Option<Releases> | null;
+    /**
+     * All votes for a particular voter. We store the balance for the number of votes that we
+     * have recorded. The second item is the total amount of delegations, that will be added.
+     * 
+     * TWOX-NOTE: SAFE as `AccountId`s are crypto hashes anyway.
+     **/
+    votingOf: StorageMap<AccountId | string, Voting>;
+  };
   dexapi: {    enabledSourceTypes: Vec<LiquiditySourceType> | null;
   };
   dexManager: {    dexInfos: StorageMap<DEXId | AnyNumber, Option<DEXInfo>>;
   };
+  electionsPhragmen: {    /**
+     * The present candidate list. A current member or runner-up can never enter this vector
+     * and is always implicitly assumed to be a candidate.
+     * 
+     * Second element is the deposit.
+     * 
+     * Invariant: Always sorted based on account id.
+     **/
+    candidates: Vec<ITuple<[AccountId, BalanceOf]>> | null;
+    /**
+     * The total number of vote rounds that have happened, excluding the upcoming one.
+     **/
+    electionRounds: u32 | null;
+    /**
+     * The current elected members.
+     * 
+     * Invariant: Always sorted based on account id.
+     **/
+    members: Vec<SeatHolder> | null;
+    /**
+     * The current reserved runners-up.
+     * 
+     * Invariant: Always sorted based on rank (worse to best). Upon removal of a member, the
+     * last (i.e. _best_) runner-up will be replaced.
+     **/
+    runnersUp: Vec<SeatHolder> | null;
+    /**
+     * Votes and locked stake of a particular voter.
+     * 
+     * TWOX-NOTE: SAFE as `AccountId` is a crypto hash.
+     **/
+    voting: StorageMap<AccountId | string, Voter>;
+  };
   ethBridge: {    /**
      * Requests made by an account.
      **/
-    accountRequests: StorageMap<AccountId | string, Vec<ITuple<[NetworkId, H256]>>>;
+    accountRequests: StorageMap<AccountId | string, Vec<ITuple<[BridgeNetworkId, H256]>>>;
     /**
      * Thischain authority account.
      **/
@@ -180,87 +313,85 @@ export interface StorageType extends BaseStorageType {
     /**
      * Multi-signature bridge peers' account. `None` if there is no account and network with the given ID.
      **/
-    bridgeAccount: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Option<AccountId>>;
-    /**
-     * Bridge status.
-     **/
-    bridgeBridgeStatus: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, BridgeStatus>;
+    bridgeAccount: StorageMap<BridgeNetworkId | AnyNumber, Option<AccountId>>;
     /**
      * Smart-contract address on Sidechain.
      **/
-    bridgeContractAddress: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Address>;
+    bridgeContractAddress: StorageMap<BridgeNetworkId | AnyNumber, Address>;
     /**
-     * Incoming requests.
+     * Bridge status.
      **/
-    incomingRequests: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, Option<IncomingRequest>>;
+    bridgeStatuses: StorageMap<BridgeNetworkId | AnyNumber, Option<BridgeStatus>>;
+    /**
+     * Used to identify an incoming request by the corresponding load request.
+     **/
+    loadToIncomingRequestHash: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, H256>;
     /**
      * Next Network ID counter.
      **/
-    nextNetworkId: NetworkId | null;
+    nextNetworkId: BridgeNetworkId | null;
+    /**
+     * Should be used in conjunction with `on_runtime_upgrade` to ensure an upgrade is executed
+     * once, even if the code is not removed in time.
+     **/
+    palletStorageVersion: StorageVersion | null;
     /**
      * Peer account ID on Thischain.
      **/
-    peerAccountId: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, AccountId>;
+    peerAccountId: StorageDoubleMap<BridgeNetworkId | AnyNumber, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, AccountId>;
     /**
      * Peer address on Sidechain.
      **/
-    peerAddress: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AccountId | string, Address>;
+    peerAddress: StorageDoubleMap<BridgeNetworkId | AnyNumber, AccountId | string, Address>;
     /**
      * Network peers set.
      **/
-    peers: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, BTreeSet<AccountId>>;
+    peers: StorageMap<BridgeNetworkId | AnyNumber, BTreeSet<AccountId>>;
     /**
      * Used for compatibility with XOR and VAL contracts.
      **/
     pendingEthPeersSync: EthPeersSync | null;
     /**
-     * Registered incoming requests queue handled by off-chain workers.
-     **/
-    pendingIncomingRequests: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, BTreeSet<H256>>;
-    /**
      * Network pending (being added/removed) peer.
      **/
-    pendingPeer: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Option<AccountId>>;
-    /**
-     * Sora PSWAP contract address.
-     **/
-    pswapContractAddress: Address | null;
-    /**
-     * PSWAP owners on Sidechain. `None` - no owner, `Some(0)` - already claimed.
-     **/
-    pswapOwners: StorageMap<Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, Option<Balance>>;
+    pendingPeer: StorageMap<BridgeNetworkId | AnyNumber, Option<AccountId>>;
     /**
      * Registered asset kind.
      **/
-    registeredAsset: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AssetId | AnyNumber, Option<AssetKind>>;
+    registeredAsset: StorageDoubleMap<BridgeNetworkId | AnyNumber, AssetId | AnyNumber, Option<AssetKind>>;
     /**
      * Registered token `AssetId` on Thischain.
      **/
-    registeredSidechainAsset: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, Option<AssetId>>;
+    registeredSidechainAsset: StorageDoubleMap<BridgeNetworkId | AnyNumber, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, Option<AssetId>>;
     /**
      * Registered asset address on Sidechain.
      **/
-    registeredSidechainToken: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AssetId | AnyNumber, Option<Address>>;
-    /**
-     * Registered requests.
-     **/
-    request: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, Option<OffchainRequest>>;
+    registeredSidechainToken: StorageDoubleMap<BridgeNetworkId | AnyNumber, AssetId | AnyNumber, Option<Address>>;
     /**
      * Outgoing requests approvals.
      **/
-    requestApprovals: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, BTreeSet<SignatureParams>>;
+    requestApprovals: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, BTreeSet<SignatureParams>>;
+    /**
+     * Registered requests.
+     **/
+    requests: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, Option<OffchainRequest>>;
     /**
      * Registered requests queue handled by off-chain workers.
      **/
-    requestsQueue: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Vec<OffchainRequest>>;
+    requestsQueue: StorageMap<BridgeNetworkId | AnyNumber, Vec<H256>>;
     /**
      * Requests statuses.
      **/
-    requestStatuses: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, Option<RequestStatus>>;
+    requestStatuses: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, Option<RequestStatus>>;
     /**
      * Requests submission height map (on substrate).
      **/
-    requestSubmissionHeight: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, BlockNumber>;
+    requestSubmissionHeight: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, BlockNumber>;
+    /**
+     * Precision (decimals) of a registered sidechain asset. Should be the same as in the ERC-20
+     * contract.
+     **/
+    sidechainAssetPrecision: StorageDoubleMap<BridgeNetworkId | AnyNumber, AssetId | AnyNumber, BalancePrecision>;
     /**
      * Sora VAL master contract address.
      **/
@@ -269,15 +400,6 @@ export interface StorageType extends BaseStorageType {
      * Sora XOR master contract address.
      **/
     xorMasterContractAddress: Address | null;
-  };
-  farming: {    farmers: StorageDoubleMap<FarmId | AnyNumber, AccountId | string, Option<Farmer>>;
-    farms: StorageMap<FarmId | AnyNumber, Option<Farm>>;
-    /**
-     * Collection of all registered marker tokens for farmer.
-     **/
-    markerTokensIndex: StorageMap<ITuple<[FarmId, AccountId]> | [FarmId | AnyNumber, AccountId | string], BTreeSet<AssetId>>;
-    nextFarmId: FarmId | null;
-    pricesStates: StorageDoubleMap<AssetId32 | string, AssetId32 | string, Option<SmoothPriceState>>;
   };
   grandpa: {    /**
      * The number of changes (both in terms of keys and underlying economic responsibilities)
@@ -308,6 +430,57 @@ export interface StorageType extends BaseStorageType {
      **/
     state: StoredState | null;
   };
+  identity: {    /**
+     * Information that is pertinent to identify the entity behind an account.
+     * 
+     * TWOX-NOTE: OK ― `AccountId` is a secure hash.
+     **/
+    identityOf: StorageMap<AccountId | string, Option<Registration>>;
+    /**
+     * The set of registrars. Not expected to get very big as can only be added through a
+     * special origin (likely a council motion).
+     * 
+     * The index into this can be cast to `RegistrarIndex` to get a valid value.
+     **/
+    registrars: Vec<Option<RegistrarInfo>> | null;
+    /**
+     * Alternative "sub" identities of this account.
+     * 
+     * The first item is the deposit, the second is a vector of the accounts.
+     * 
+     * TWOX-NOTE: OK ― `AccountId` is a secure hash.
+     **/
+    subsOf: StorageMap<AccountId | string, ITuple<[BalanceOf, Vec<AccountId>]>>;
+    /**
+     * The super-identity of an alternative "sub" identity together with its name, within that
+     * context. If the account is not some other account's sub-identity, then just `None`.
+     **/
+    superOf: StorageMap<AccountId | string, Option<ITuple<[AccountId, Data]>>>;
+  };
+  imOnline: {    /**
+     * For each session index, we keep a mapping of `ValidatorId<T>` to the
+     * number of blocks authored by the given authority.
+     **/
+    authoredBlocks: StorageDoubleMap<SessionIndex | AnyNumber, ValidatorId | string, u32>;
+    /**
+     * The block number after which it's ok to send heartbeats in current session.
+     * 
+     * At the beginning of each session we set this to a value that should
+     * fall roughly in the middle of the session duration.
+     * The idea is to first wait for the validators to produce a block
+     * in the current session, so that the heartbeat later on will not be necessary.
+     **/
+    heartbeatAfter: BlockNumber | null;
+    /**
+     * The current set of keys that may issue a heartbeat.
+     **/
+    keys: Vec<AuthorityId> | null;
+    /**
+     * For each session index, we keep a mapping of `AuthIndex` to
+     * `offchain::OpaqueNetworkState`.
+     **/
+    receivedHeartbeats: StorageDoubleMap<SessionIndex | AnyNumber, AuthIndex | AnyNumber, Option<Bytes>>;
+  };
   irohaMigration: {    account: AccountId | null;
     balances: StorageMap<Text | string, Option<Balance>>;
     migratedAccounts: StorageMap<Text | string, Option<AccountId>>;
@@ -316,18 +489,6 @@ export interface StorageType extends BaseStorageType {
     publicKeys: StorageMap<Text | string, Vec<ITuple<[bool, Text]>>>;
     quorums: StorageMap<Text | string, u8>;
     referrers: StorageMap<Text | string, Option<Text>>;
-  };
-  mockLiquiditySource: {    reserves: StorageDoubleMap<DEXId | AnyNumber, AssetId | AnyNumber, ITuple<[Fixed, Fixed]>>;
-    reservesAcc: TechAccountId | null;
-  };
-  mockLiquiditySource2: {    reserves: StorageDoubleMap<DEXId | AnyNumber, AssetId | AnyNumber, ITuple<[Fixed, Fixed]>>;
-    reservesAcc: TechAccountId | null;
-  };
-  mockLiquiditySource3: {    reserves: StorageDoubleMap<DEXId | AnyNumber, AssetId | AnyNumber, ITuple<[Fixed, Fixed]>>;
-    reservesAcc: TechAccountId | null;
-  };
-  mockLiquiditySource4: {    reserves: StorageDoubleMap<DEXId | AnyNumber, AssetId | AnyNumber, ITuple<[Fixed, Fixed]>>;
-    reservesAcc: TechAccountId | null;
   };
   multicollateralBondingCurvePool: {    /**
      * Coefficient which determines the fraction of input collateral token to be exchanged to XOR and
@@ -343,6 +504,10 @@ export interface StorageType extends BaseStorageType {
      **/
     baseFee: Fixed | null;
     /**
+     * Current reserves balance for collateral tokens, used for client usability.
+     **/
+    collateralReserves: StorageMap<AssetId | AnyNumber, Balance>;
+    /**
      * Accounts that receive 20% buy/sell margin according predefined proportions.
      **/
     distributionAccountsEntry: DistributionAccounts | null;
@@ -350,6 +515,7 @@ export interface StorageType extends BaseStorageType {
      * Collateral Assets allowed to be sold on bonding curve.
      **/
     enabledTargets: BTreeSet<AssetId> | null;
+    freeReservesAccountId: AccountId | null;
     /**
      * Account which stores actual PSWAP intended for rewards.
      **/
@@ -367,6 +533,7 @@ export interface StorageType extends BaseStorageType {
      * however this constant is not modified.
      **/
     initialPswapRewardsSupply: Balance | null;
+    pendingFreeReserves: Vec<ITuple<[AssetId, Balance]>> | null;
     priceChangeRate: Fixed | null;
     /**
      * Cofficients in buy price function.
@@ -399,18 +566,42 @@ export interface StorageType extends BaseStorageType {
      **/
     multisigs: StorageDoubleMap<AccountId | string, U8aFixed | string, Option<Multisig>>;
   };
+  offences: {    /**
+     * A vector of reports of the same kind that happened at the same time slot.
+     **/
+    concurrentReportsIndex: StorageDoubleMap<Kind | string, OpaqueTimeSlot | string, Vec<ReportIdOf>>;
+    /**
+     * Deferred reports that have been rejected by the offence handler and need to be submitted
+     * at a later time.
+     **/
+    deferredOffences: Vec<DeferredOffenceOf> | null;
+    /**
+     * The primary structure that holds all offence records keyed by report identifiers.
+     **/
+    reports: StorageMap<ReportIdOf | string, Option<OffenceDetails>>;
+    /**
+     * Enumerates all reports of a kind along with the time they happened.
+     * 
+     * All reports are sorted by the time of offence.
+     * 
+     * Note that the actual type of this mapping is `Vec<u8>`, this is because values of
+     * different types are not supported at the moment so we are doing the manual serialization.
+     **/
+    reportsByKindIndex: StorageMap<Kind | string, Bytes>;
+  };
   permissions: {    modes: StorageMap<PermissionId | AnyNumber, Mode>;
     owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
     permissions: StorageDoubleMap<HolderId | string, Scope | { Limited: any } | { Unlimited: any } | string, Vec<PermissionId>>;
   };
   poolXyk: {    /**
-     * Collection of all registered marker tokens.
+     * Liquidity providers of particular pool.
+     * Pool account => Liquidity provider account => Pool token balance
      **/
-    markerTokensIndex: BTreeSet<AssetId> | null;
+    poolProviders: StorageDoubleMap<AccountIdOf | string, AccountIdOf | string, Option<Balance>>;
     /**
-     * Properties of particular pool. [Reserves Account Id, Fees Account Id, Marker Asset Id]
+     * Properties of particular pool. [Reserves Account Id, Fees Account Id]
      **/
-    properties: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, Option<ITuple<[AccountId, AccountId, AssetId]>>>;
+    properties: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, Option<ITuple<[AccountId, AccountId]>>>;
     /**
      * Updated after last liquidity change operation.
      * [Base Asset Id (XOR) -> Target Asset Id => (Base Balance, Target Balance)].
@@ -420,15 +611,16 @@ export interface StorageType extends BaseStorageType {
      * pair to balance cache can be used quickly.
      **/
     reserves: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, ITuple<[Balance, Balance]>>;
+    /**
+     * Total issuance of particular pool.
+     * Pool account => Total issuance
+     **/
+    totalIssuances: StorageMap<AccountIdOf | string, Option<Balance>>;
   };
   pswapDistribution: {    /**
      * Amount of incentive tokens to be burned on each distribution.
      **/
     burnRate: Fixed | null;
-    /**
-     * Burn Rate update frequency in blocks. MUST be non-zero.
-     **/
-    burnUpdateFrequency: BlockNumber | null;
     /**
      * (Burn Rate Increase Delta, Burn Rate Max)
      **/
@@ -449,7 +641,7 @@ export interface StorageType extends BaseStorageType {
      * Store for information about accounts containing fees, that participate in incentive distribution mechanism.
      * Fees Account Id -> (DEX Id, Pool Marker Asset Id, Distribution Frequency, Block Offset) Frequency MUST be non-zero.
      **/
-    subscribedAccounts: StorageMap<AccountId | string, Option<ITuple<[DEXId, AssetId, BlockNumber, BlockNumber]>>>;
+    subscribedAccounts: StorageMap<AccountId | string, Option<ITuple<[DEXId, AccountIdOf, BlockNumber, BlockNumber]>>>;
   };
   randomnessCollectiveFlip: {    /**
      * Series of block headers from the last 81 blocks that acts as random seed material. This
@@ -459,6 +651,26 @@ export interface StorageType extends BaseStorageType {
     randomMaterial: Vec<Hash> | null;
   };
   referralSystem: {    referrers: StorageMap<AccountId | string, Option<AccountId>>;
+  };
+  rewards: {    pswapFarmOwners: StorageMap<EthereumAddress | string, Balance>;
+    pswapWaifuOwners: StorageMap<EthereumAddress | string, Balance>;
+    reservesAcc: TechAccountId | null;
+    valOwners: StorageMap<EthereumAddress | string, Balance>;
+  };
+  scheduler: {    /**
+     * Items to be executed, indexed by the block number that they should be executed on.
+     **/
+    agenda: StorageMap<BlockNumber | AnyNumber, Vec<Option<Scheduled>>>;
+    /**
+     * Lookup from identity to the block number and index of the task.
+     **/
+    lookup: StorageMap<Bytes | string, Option<TaskAddress>>;
+    /**
+     * Storage version of the pallet.
+     * 
+     * New networks start with last version.
+     **/
+    storageVersion: Releases | null;
   };
   session: {    /**
      * Current index of the session.
@@ -624,11 +836,6 @@ export interface StorageType extends BaseStorageType {
      **/
     minimumValidatorCount: u32 | null;
     /**
-     * Dynamic variable that can be set for each test, this variable is used for dynamic
-     * validators filter struct.
-     **/
-    minStakeDynamic: BalanceOf | null;
-    /**
      * The map from nominator stash key to the set of stash keys of all validators to nominate.
      **/
     nominators: StorageMap<AccountId | string, Option<Nominations>>;
@@ -784,6 +991,40 @@ export interface StorageType extends BaseStorageType {
      **/
     upgradedToU32RefCount: bool | null;
   };
+  technicalCommittee: {    /**
+     * The current members of the collective. This is stored sorted (just by value).
+     **/
+    members: Vec<AccountId> | null;
+    /**
+     * The prime member that helps determine the default vote behavior in case of absentations.
+     **/
+    prime: Option<AccountId> | null;
+    /**
+     * Proposals so far.
+     **/
+    proposalCount: u32 | null;
+    /**
+     * Actual proposal for a given hash, if it's current.
+     **/
+    proposalOf: StorageMap<Hash | string, Option<Proposal>>;
+    /**
+     * The hashes of the active proposals.
+     **/
+    proposals: Vec<Hash> | null;
+    /**
+     * Votes on a given proposal, if it is ongoing.
+     **/
+    voting: StorageMap<Hash | string, Option<Votes>>;
+  };
+  technicalMembership: {    /**
+     * The current membership, stored as an ordered Vec.
+     **/
+    members: Vec<AccountId> | null;
+    /**
+     * The current prime member, if one exists.
+     **/
+    prime: Option<AccountId> | null;
+  };
   timestamp: {    /**
      * Did the timestamp get updated in this block?
      **/
@@ -812,8 +1053,25 @@ export interface StorageType extends BaseStorageType {
      **/
     totalIssuance: StorageMap<CurrencyId | AnyNumber, Balance>;
   };
+  tradingPair: {    enabledSources: StorageDoubleMap<DEXId | AnyNumber, TradingPair | { base_asset_id?: any; target_asset_id?: any } | string, Option<BTreeSet<LiquiditySourceType>>>;
+  };
   transactionPayment: {    nextFeeMultiplier: Multiplier | null;
     storageVersion: Releases | null;
+  };
+  vestedRewards: {    /**
+     * Registry of market makers with large transaction volumes (>1 XOR per transaction).
+     **/
+    marketMakersRegistry: StorageMap<AccountId | string, MarketMakerInfo>;
+    /**
+     * Reserved for future use
+     * Mapping between users and their owned rewards of different kinds, which are vested.
+     **/
+    rewards: StorageMap<AccountId | string, RewardInfo>;
+    /**
+     * Reserved for future use
+     * Total amount of PSWAP pending rewards.
+     **/
+    totalRewards: Balance | null;
   };
   xorFee: {  };
 }
