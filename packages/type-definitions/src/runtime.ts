@@ -147,5 +147,8 @@ export default {
         "Unspecified", "BuyOnBondingCurve"
       ]
     },
+    StorageVersion: "Null",
+    MarketMakerInfo: "Null",
+    RewardInfo: "Null",
   }
 }

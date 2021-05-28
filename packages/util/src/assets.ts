@@ -127,6 +127,10 @@ export async function getAssetInfo (api: ApiPromise, address: string): Promise<A
   return asset
 }
 
+export async function getLiquidityBalance (api: ApiPromise, accountAddress: string, poolAddress: string): Promise<Codec> {
+  return await api.query.poolXyk.poolProviders(poolAddress, accountAddress) // BalanceInfo
+}
+
 export async function getBalance (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
   return await (api.rpc as any).assets.usableBalance(accountAddress, assetAddress) // BalanceInfo
 }

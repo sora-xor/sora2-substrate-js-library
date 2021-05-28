@@ -1,3 +1,4 @@
+import first from 'lodash/fp/first'
 import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import { KeypairType } from '@polkadot/util-crypto/types'
@@ -21,7 +22,8 @@ import {
   AccountBalance,
   getAssetBalanceObservable,
   ZeroBalance,
-  getBalance
+  getBalance,
+  getLiquidityBalance
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
@@ -752,17 +754,18 @@ export class Api extends BaseApi {
       if (!props || !props.length) {
         continue
       }
-      const result = await getBalance(this.api, this.account.pair.address, props[2])
+      const poolTokenAddress = first(props)
+      const result = await getLiquidityBalance(this.api, this.account.pair.address, poolTokenAddress)
       if (new FPNumber(result).isZero()) {
         continue
       }
-      const { decimals, symbol, name } = await this.getAssetInfo(props[2])
+      const { decimals, symbol, name } = await this.getLiquidityInfoByPoolAccount(poolTokenAddress)
       const balance = new FPNumber(result, decimals).toCodecString()
       if (!Number(balance)) {
         continue
       }
       const [reserveA, reserveB] = await this.getLiquidityReserves(xor.address, item.address, decimals, decimals)
-      const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, props[2], decimals, decimals)
+      const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, poolTokenAddress, decimals, decimals)
       const fpBalanceA = FPNumber.fromCodecValue(balanceA, decimals)
       const fpBalanceB = FPNumber.fromCodecValue(balanceB, decimals)
       const pts = FPNumber.fromCodecValue(totalSupply, decimals)
@@ -771,7 +774,7 @@ export class Api extends BaseApi {
         fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, decimals))
       )
       const asset = {
-        address: props[2],
+        address: poolTokenAddress,
         firstAddress: xor.address,
         secondAddress: item.address,
         firstBalance: balanceA,
@@ -786,31 +789,6 @@ export class Api extends BaseApi {
     }
     this.accountLiquidity = accountLiquidity
     return accountLiquidity
-  }
-
-  /**
-   * Update already added liquidity
-   */
-  public async updateAccountLiquidity (): Promise<Array<AccountLiquidity>> {
-    assert(this.account, Messages.connectWallet)
-    for (const asset of this.accountLiquidity) {
-      const result = await getBalance(this.api, this.account.pair.address, asset.address)
-      const [reserveA, reserveB] = await this.getLiquidityReserves(asset.firstAddress, asset.secondAddress)
-      const [balanceA, balanceB] = await this.estimateTokensRetrieved(
-        asset.firstAddress,
-        asset.secondAddress,
-        asset.balance,
-        reserveA,
-        reserveB,
-        asset.address
-      )
-      asset.balance = new FPNumber(result, asset.decimals).toCodecString()
-      asset.firstBalance = balanceA
-      asset.secondBalance = balanceB
-      this.addToLiquidityList(asset)
-    }
-
-    return this.accountLiquidity
   }
 
   /**
@@ -836,39 +814,29 @@ export class Api extends BaseApi {
     if (!props || !props.length) {
       return null
     }
-    const poolTokenAddress = props[2]
-    return await this.getAssetInfo(poolTokenAddress)
+    const poolTokenAccount = first(props)
+    // TODO: find a way to get pool data
+    return {
+      address: poolTokenAccount,
+      decimals: 18,
+      name: 'Pool XYK Token',
+      symbol: 'POOLXYK'
+    }
   }
 
   /**
-   * Get account liquidity information
+   * Get liquidity
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public async getAccountLiquidity (firstAssetAddress: string, secondAssetAddress: string): Promise<AccountLiquidity> {
-    assert(this.account, Messages.connectWallet)
-    const liquidityInfo = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    if (!liquidityInfo) {
-      return null
+   public async getLiquidityInfoByPoolAccount (poolTokenAccount: string): Promise<Asset> {
+    // TODO: find a way to get pool data
+    return {
+      address: poolTokenAccount,
+      decimals: 18,
+      name: 'Pool XYK Token',
+      symbol: 'POOLXYK'
     }
-    const { symbol, address, decimals, name } = liquidityInfo
-    const asset = {
-      decimals,
-      symbol,
-      address,
-      name,
-      firstAddress: firstAssetAddress,
-      secondAddress: secondAssetAddress
-    } as AccountLiquidity
-    const poolTokenBalance = await getBalance(this.api, this.account.pair.address, address)
-    const firstToken = await this.getAssetInfo(firstAssetAddress)
-    const secondToken = await this.getAssetInfo(secondAssetAddress)
-    const firstTokenBalance = await getBalance(this.api, this.account.pair.address, firstAssetAddress)
-    const secondTokenBalance = await getBalance(this.api, this.account.pair.address, secondAssetAddress)
-    asset.balance = new FPNumber(poolTokenBalance, asset.decimals).toCodecString()
-    asset.firstBalance = new FPNumber(firstTokenBalance, firstToken.decimals).toCodecString()
-    asset.secondBalance = new FPNumber(secondTokenBalance, secondToken.decimals).toCodecString()
-    return asset
   }
 
   /**
@@ -925,14 +893,9 @@ export class Api extends BaseApi {
     if (a.isZero() && b.isZero()) {
       return ['0', '0']
     }
-    const poolToken = await (
-      poolTokenAddress
-        ? this.getAssetInfo(poolTokenAddress)
-        : this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    )
-    const pIn = FPNumber.fromCodecValue(amount, poolToken.decimals)
-    const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
-    const pts = new FPNumber(totalSupply, poolToken.decimals)
+    const pIn = FPNumber.fromCodecValue(amount)
+    const totalSupply = await this.api.query.poolXyk.totalIssuances(poolTokenAddress) // BalanceInfo
+    const pts = new FPNumber(totalSupply)
     const aOut = pIn.mul(a).div(pts)
     const bOut = pIn.mul(b).div(pts)
     return [aOut.toCodecString(), bOut.toCodecString(), pts.toCodecString()]
@@ -966,7 +929,7 @@ export class Api extends BaseApi {
       return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()]
     }
     const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
+    const totalSupply = await this.api.query.poolXyk.totalIssuances(poolToken.address) // BalanceInfo
     const pts = new FPNumber(totalSupply, poolToken.decimals)
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b))
     return [result.toCodecString(), pts.toCodecString()]
