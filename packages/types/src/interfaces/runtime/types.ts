@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
+import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { Signature } from '@polkadot/types/interfaces/extrinsics';
@@ -295,7 +295,10 @@ export interface LookupSource extends MultiAddress {}
 export interface LookupTarget extends AccountId {}
 
 /** @name MarketMakerInfo */
-export interface MarketMakerInfo extends Null {}
+export interface MarketMakerInfo extends Struct {
+  readonly count: u32;
+  readonly volume: Balance;
+}
 
 /** @name Mode */
 export interface Mode extends Enum {
@@ -440,7 +443,11 @@ export interface Releases extends Enum {
 }
 
 /** @name RewardInfo */
-export interface RewardInfo extends Null {}
+export interface RewardInfo extends Struct {
+  readonly limit: Balance;
+  readonly total_available: Balance;
+  readonly rewards: BTreeMap<RewardReason, Balance>;
+}
 
 /** @name RewardReason */
 export interface RewardReason extends Enum {
