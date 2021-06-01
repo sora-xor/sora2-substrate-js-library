@@ -12,6 +12,8 @@ import ethBridge from './ethBridge'
 import pswapDistribution from './pswapDistribution'
 import rewards from './rewards'
 
+import versionedOverrides from './versioned';
+
 const soraDefs = {
   runtime,
   dexApi,
@@ -63,12 +65,15 @@ export const typesAlias = typesAliasFromDefs(soraDefs, { ...ormlAlias })
 export const slimOverrideBundle = {
   spec: {
     sora: {
-      types: [
-        {
-          minmax: [0, 99] as any,
-          types
-        }
-      ]
+      types: [...versionedOverrides].map((version) => {
+        return {
+          minmax: version.minmax,
+          types: {
+            ...types,
+            ...version.types
+          }
+        };
+      }),
     }
   }
 }
@@ -78,12 +83,15 @@ export const fullOverrideBundle = {
     sora: {
       alias: typesAlias,
       rpc,
-      types: [
-        {
-          minmax: [0, 99] as any,
-          types
-        }
-      ]
+      types: [...versionedOverrides].map((version) => {
+        return {
+          minmax: version.minmax,
+          types: {
+            ...types,
+            ...version.types
+          }
+        };
+      }),
     }
   }
 }

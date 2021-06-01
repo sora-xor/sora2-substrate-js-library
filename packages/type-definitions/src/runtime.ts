@@ -147,8 +147,15 @@ export default {
         "Unspecified", "BuyOnBondingCurve"
       ]
     },
-    StorageVersion: "Null",
-    MarketMakerInfo: "Null",
-    RewardInfo: "Null",
+    StorageVersion: "Null", // Generic storage version
+    MarketMakerInfo: {
+      count: "u32",
+      volume: "Balance",
+    },
+    RewardInfo: {
+      limit: "Balance",
+      total_available: "Balance",
+      rewards: "BTreeMap<RewardReason, Balance>",
+    },
   }
 }
