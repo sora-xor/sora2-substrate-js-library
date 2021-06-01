@@ -155,7 +155,7 @@ export class BaseApi {
     this.storage = storage
   }
 
-  protected async submitExtrinsic (
+  public async submitExtrinsic (
     extrinsic: SubmittableExtrinsic,
     signer: KeyringPair,
     historyData?: History | BridgeHistory | RewardClaimHistory,
