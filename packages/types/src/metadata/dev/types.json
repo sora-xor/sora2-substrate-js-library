@@ -77,6 +77,12 @@
     "DispatchResultWithPostInfo": "Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>",
     "DistributionAccounts": "Null",
     "Duration": "Null",
+    "EthBridgeStorageVersion": {
+        "_enum": [
+            "V1",
+            "V2RemovePendingTransfers"
+        ]
+    },
     "EthPeersSync": {
         "is_bridge_ready": "bool",
         "is_xor_ready": "bool",
@@ -254,7 +260,10 @@
         "network_id": "BridgeNetworkId"
     },
     "LookupSource": "AccountId",
-    "MarketMakerInfo": "Null",
+    "MarketMakerInfo": {
+        "count": "u32",
+        "volume": "Balance"
+    },
     "Mode": {
         "_enum": [
             "Permit",
@@ -458,7 +467,11 @@
             "Done"
         ]
     },
-    "RewardInfo": "Null",
+    "RewardInfo": {
+        "limit": "Balance",
+        "total_available": "Balance",
+        "rewards": "BTreeMap<RewardReason, Balance>"
+    },
     "RewardReason": {
         "_enum": [
             "Unspecified",
