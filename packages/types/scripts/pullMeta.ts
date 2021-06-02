@@ -35,6 +35,6 @@ if (process.argv[2] === 'all') {
     promises.push(pullMetadata(endpoint, `packages/types/src/metadata/${name}/latest.ts`))
   })
 } else {
-  promises.push(pullMetadata('ws://localhost:14001', 'packages/types/src/metadata/latest.ts'))
+  promises.push(pullMetadata('ws://localhost:9944', 'packages/types/src/metadata/latest.ts'))
 }
 Promise.all(promises).then(() => process.exit(0))
