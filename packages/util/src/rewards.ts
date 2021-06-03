@@ -7,12 +7,19 @@ export enum RewardingEvents {
   SoraFarmHarvest = 'SoraFarmHarvest',
   NtfAirdrop = 'NtfAirdrop',
   LiquidityProvision = 'LiquidityProvision',
-  BuyOnBondingCurve = 'BuyOnBondingCurve'
+  BuyOnBondingCurve = 'BuyOnBondingCurve',
+  Unspecified = 'Unspecified'
 }
 
 export enum RewardReason {
   Unspecified = 'Unspecified',
   BuyOnBondingCurve = 'BuyOnBondingCurve'
+}
+
+export interface RewardsInfo {
+  limit: CodecString;
+  total: CodecString;
+  rewards: Array<RewardInfo>;
 }
 
 export interface RewardInfo {
@@ -65,4 +72,18 @@ export function prepareRewardInfo (type: RewardingEvents, amount: CodecString | 
   }
 
   return rewardInfo
+}
+
+export function prepareRewardsInfo (limit: CodecString, total: CodecString, rewards: Array<[RewardingEvents, CodecString]>): RewardsInfo {
+  const asset = KnownAssets.get(KnownSymbols.PSWAP)
+
+  const claimableRewards = rewards
+    .map(([reason, balance]) => prepareRewardInfo(reason, balance))
+    .filter(item => isClaimableReward(item))
+
+  return {
+    limit: new FPNumber(limit, asset.decimals).toCodecString(),
+    total: new FPNumber(total, asset.decimals).toCodecString(),
+    rewards: claimableRewards
+  }
 }
