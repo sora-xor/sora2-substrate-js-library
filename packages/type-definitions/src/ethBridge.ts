@@ -426,7 +426,7 @@ export default {
     },
   },
   typesAlias: {
-    tokens: {
+    ethBridge: {
       StorageVersion: 'EthBridgeStorageVersion'
     }
   }
