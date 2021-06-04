@@ -25,7 +25,7 @@
     "export-types:prod": "ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts prod",
     "export-types:all": "yarn pull-metadata:all && yarn build:interfaces:stage && yarn export-types:stage && yarn build:interfaces:prod && yarn export-types:prod && yarn build:interfaces:dev && yarn export-types:dev",
     "transfers": "ts-node --project ./tsconfig.json scripts/transfers.ts",
-    "demo": "node -r ts-node/register -r tsconfig-paths/register run2.ts",
+    "demo": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
     "publish-workspaces": "lerna publish from-package"
   },
   "engines": {
