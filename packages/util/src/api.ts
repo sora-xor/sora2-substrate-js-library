@@ -1294,10 +1294,10 @@ export class Api extends BaseApi {
     const { address } = this.account.pair
 
     const {
-      limit,
-      total_available: total,
-      rewards
-    } = await (this.api.query as any).vestedRewards.rewards(address) // limit: "Balance", total_available: "Balance", rewards: "BTreeMap<RewardReason, Balance>",
+      limit, // "Balance"
+      total_available: total, // "Balance"
+      rewards // "BTreeMap<RewardReason, Balance>"
+    } = (await (this.api.query as any).vestedRewards.rewards(address)).toJSON()
 
     const rewardsInfo = prepareRewardsInfo(limit, total, rewards)
 
@@ -1327,7 +1327,7 @@ export class Api extends BaseApi {
         args: []
       })
     }
-    if (hasRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve])) {
+    if (hasRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve, RewardingEvents.LiquidityProvisionFarming, RewardingEvents.MarketMakerVolume])) {
       transactions.push({
         extrinsic: this.api.tx.vestedRewards.claimRewards,
         args: []

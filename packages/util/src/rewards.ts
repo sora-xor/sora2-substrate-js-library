@@ -8,6 +8,8 @@ export enum RewardingEvents {
   NtfAirdrop = 'NtfAirdrop',
   LiquidityProvision = 'LiquidityProvision',
   BuyOnBondingCurve = 'BuyOnBondingCurve',
+  LiquidityProvisionFarming = 'LiquidityProvisionFarming', // not used yet
+  MarketMakerVolume = 'MarketMakerVolume', // not used yet
   Unspecified = 'Unspecified'
 }
 
@@ -74,11 +76,11 @@ export function prepareRewardInfo (type: RewardingEvents, amount: CodecString | 
   return rewardInfo
 }
 
-export function prepareRewardsInfo (limit: CodecString, total: CodecString, rewards: Array<[RewardingEvents, CodecString]>): RewardsInfo {
+export function prepareRewardsInfo (limit: CodecString | number, total: CodecString | number, rewards: object): RewardsInfo {
   const asset = KnownAssets.get(KnownSymbols.PSWAP)
 
-  const claimableRewards = rewards
-    .map(([reason, balance]) => prepareRewardInfo(reason, balance))
+  const claimableRewards = Object.entries(rewards)
+    .map(([reason, balance]: [RewardingEvents, CodecString | number]) => prepareRewardInfo(reason, balance))
     .filter(item => isClaimableReward(item))
 
   return {
