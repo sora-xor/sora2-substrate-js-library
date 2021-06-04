@@ -1,3 +1,4 @@
+import merge from 'lodash/fp/merge'
 import { rpc as ormlRpc, types as ormlTypes, typesAlias as ormlAlias } from '@open-web3/orml-type-definitions'
 import { jsonrpcFromDefs, typesAliasFromDefs, typesFromDefs } from '@open-web3/orml-type-definitions/utils'
 
@@ -59,8 +60,19 @@ export const typesBundle = {
     } as any
   }
 }
+// TODO: MIGRATE TO typesAliasFromDefs WHEN PR WILL BE MERGED
+// https://github.com/open-web3-stack/open-web3.js/pull/181
+function typesAliasFromDefsInternal (
+  definitions: Record<string, Record<string, any>>,
+  initAlias: Record<string, any> = {}
+): Record<string, any> {
+  return Object.values(definitions).reduce(
+    (res: Record<string, any>, { typesAlias }): Record<string, any> => merge(typesAlias, res),
+    initAlias
+  )
+}
 export const rpc = jsonrpcFromDefs(soraDefs, { ...ormlRpc })
-export const typesAlias = typesAliasFromDefs(soraDefs, { ...ormlAlias })
+export const typesAlias = typesAliasFromDefsInternal(soraDefs, { ...ormlAlias })
 
 export const slimOverrideBundle = {
   spec: {
