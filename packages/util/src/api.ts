@@ -7,7 +7,8 @@ import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair$Json } from '@polkadot/keyring/types'
 import { Signer, Observable } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
-import { Subject } from '@polkadot/x-rxjs'
+import { Subject, scheduled, asapScheduler } from '@polkadot/x-rxjs'
+import { map, mergeAll } from '@polkadot/x-rxjs/operators'
 
 import {
   KnownAssets,
@@ -862,6 +863,21 @@ export class Api extends BaseApi {
     const firstValue = new FPNumber(result[0], firstAssetDecimals)
     const secondValue = new FPNumber(result[1], secondAssetDecimals)
     return [firstValue.toCodecString(), secondValue.toCodecString()]
+  }
+
+  public subscribeOnSwapReserves (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    liquiditySource = LiquiditySourceTypes.Default
+  ): Observable<void> {
+    const toVoid = (o: Observable<any>) => o.pipe(map(codec => {}))
+    const poolXyk = toVoid(this.apiRx.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress))
+    if (liquiditySource === LiquiditySourceTypes.XYKPool) {
+      return poolXyk
+    }
+    const firstTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress))
+    const secondTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress))
+    return scheduled([poolXyk, firstTbc, secondTbc], asapScheduler).pipe(mergeAll())
   }
 
   /**
