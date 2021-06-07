@@ -864,6 +864,13 @@ export class Api extends BaseApi {
     return [firstValue.toCodecString(), secondValue.toCodecString()]
   }
 
+  public subscribeOnLiquidityReserves (
+    firstAssetAddress: string,
+    secondAssetAddress: string
+  ) {
+    return this.apiRx.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress)
+  }
+
   /**
    * Estimate tokens retrieved.
    * Also it returns the total supply as `result[2]`
