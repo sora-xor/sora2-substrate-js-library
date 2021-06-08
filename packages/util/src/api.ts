@@ -871,13 +871,22 @@ export class Api extends BaseApi {
     liquiditySource = LiquiditySourceTypes.Default
   ): Observable<void> {
     const toVoid = (o: Observable<any>) => o.pipe(map(codec => {}))
-    const poolXyk = toVoid(this.apiRx.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress))
+    const poolXyk: Array<Observable<void>> = []
+    const xor = KnownAssets.get(KnownSymbols.XOR).address
+    if (![firstAssetAddress, secondAssetAddress].includes(xor)) {
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, firstAssetAddress)))
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, secondAssetAddress)))
+    } else {
+      const first = firstAssetAddress === xor ? firstAssetAddress : secondAssetAddress
+      const second = secondAssetAddress === xor ? firstAssetAddress : secondAssetAddress
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(first, second)))
+    }
     if (liquiditySource === LiquiditySourceTypes.XYKPool) {
-      return poolXyk
+      return scheduled(poolXyk, asapScheduler).pipe(concatAll())
     }
     const firstTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress))
     const secondTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress))
-    return scheduled([poolXyk, firstTbc, secondTbc], asapScheduler).pipe(concatAll())
+    return scheduled([...poolXyk, firstTbc, secondTbc], asapScheduler).pipe(concatAll())
   }
 
   /**
