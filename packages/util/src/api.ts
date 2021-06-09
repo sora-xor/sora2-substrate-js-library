@@ -29,7 +29,7 @@ import {
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
-import { RewardingEvents, RewardInfo, isClaimableReward, hasRewardsForEvents, prepareRewardInfo } from './rewards'
+import { RewardingEvents, RewardsInfo, RewardInfo, isClaimableReward, hasRewardsForEvents, prepareRewardInfo, prepareRewardsInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
@@ -871,13 +871,22 @@ export class Api extends BaseApi {
     liquiditySource = LiquiditySourceTypes.Default
   ): Observable<void> {
     const toVoid = (o: Observable<any>) => o.pipe(map(codec => {}))
-    const poolXyk = toVoid(this.apiRx.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress))
+    const poolXyk: Array<Observable<void>> = []
+    const xor = KnownAssets.get(KnownSymbols.XOR).address
+    if (![firstAssetAddress, secondAssetAddress].includes(xor)) {
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, firstAssetAddress)))
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, secondAssetAddress)))
+    } else {
+      const first = firstAssetAddress === xor ? firstAssetAddress : secondAssetAddress
+      const second = secondAssetAddress === xor ? firstAssetAddress : secondAssetAddress
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(first, second)))
+    }
     if (liquiditySource === LiquiditySourceTypes.XYKPool) {
-      return poolXyk
+      return scheduled(poolXyk, asapScheduler).pipe(concatAll())
     }
     const firstTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress))
     const secondTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress))
-    return scheduled([poolXyk, firstTbc, secondTbc], asapScheduler).pipe(concatAll())
+    return scheduled([...poolXyk, firstTbc, secondTbc], asapScheduler).pipe(concatAll())
   }
 
   /**
@@ -1287,28 +1296,37 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Check rewards for internal account
+   * Check rewards for providing liquidity
    * @returns rewards array with not zero amount
    */
-  public async checkInternalAccountRewards (): Promise<Array<RewardInfo>> {
+  public async checkLiquidityProvisionRewards (): Promise<Array<RewardInfo>> {
     assert(this.account, Messages.connectWallet)
 
     const { address } = this.account.pair
 
-    const [liquidityProvisionAmount, buyingFromTBCPoolTuple] = await Promise.all([
-      (this.api.rpc as any).pswapDistribution.claimableAmount(address), // Balance
-      (this.api.query as any).multicollateralBondingCurvePool.rewards(address) // [claim_limit: Balance, available_reward: Balance]
-    ])
-
-    const buyingFromTBCPoolAmount = buyingFromTBCPoolTuple[0] // claim_limit
-    const buyingFromTBCPoolTotal = buyingFromTBCPoolTuple[1] // available_reward
+    const liquidityProvisionAmount = await (this.api.rpc as any).pswapDistribution.claimableAmount(address) // Balance
 
     const rewards = [
       prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount),
-      prepareRewardInfo(RewardingEvents.BuyOnBondingCurve, buyingFromTBCPoolAmount, buyingFromTBCPoolTotal)
     ].filter(item => isClaimableReward(item))
 
     return rewards
+  }
+
+  public async checkVestedRewards (): Promise<RewardsInfo> {
+    assert(this.account, Messages.connectWallet)
+
+    const { address } = this.account.pair
+
+    const {
+      limit, // "Balance"
+      total_available: total, // "Balance"
+      rewards // "BTreeMap<RewardReason, Balance>"
+    } = (await (this.api.query as any).vestedRewards.rewards(address)).toJSON()
+
+    const rewardsInfo = prepareRewardsInfo(limit, total, rewards)
+
+    return rewardsInfo
   }
 
   /**
@@ -1334,9 +1352,9 @@ export class Api extends BaseApi {
         args: []
       })
     }
-    if (hasRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve])) {
+    if (hasRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve, RewardingEvents.LiquidityProvisionFarming, RewardingEvents.MarketMakerVolume])) {
       transactions.push({
-        extrinsic: this.api.tx.multicollateralBondingCurvePool.claimIncentives,
+        extrinsic: this.api.tx.vestedRewards.claimRewards,
         args: []
       })
     }

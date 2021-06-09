@@ -63,10 +63,7 @@ class Connection {
       this.api = api
 
       // unsubscribe old event handlers, clear them from memory
-      if (this.eventHandlers.length > 0) {
-        this.eventHandlers.forEach(unsubscribeFn => unsubscribeFn())
-        this.eventHandlers = []
-      }
+      this.unsubscribeEventHandlers()
 
       // add new event handlers
       if (eventListeners.length > 0) {
@@ -80,6 +77,13 @@ class Connection {
       throw error
     } finally {
       clearTimeout(connectionTimeout)
+    }
+  }
+
+  public unsubscribeEventHandlers (): void {
+    if (this.eventHandlers.length > 0) {
+      this.eventHandlers.forEach(unsubscribeFn => unsubscribeFn())
+      this.eventHandlers = []
     }
   }
 
