@@ -1,6 +1,7 @@
 import { ApiPromise, ApiRx } from '@polkadot/api'
 import { Codec, Observable } from '@polkadot/types/types'
 import type { AccountData } from '@polkadot/types/interfaces/balances'
+import type { OrmlAccountData } from '@open-web3/orml-types/interfaces/tokens'
 import { map } from '@polkadot/x-rxjs/operators'
 
 import { CodecString, FPNumber } from './fp'
@@ -32,18 +33,19 @@ export const ZeroBalance = {
   transferable: '0'
 } as AccountBalance
 
-function formatBalance (data: AccountData, assetDecimals?: number): AccountBalance {
+function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: number): AccountBalance {
   const free = new FPNumber(data.free || 0, assetDecimals)
   const reserved = new FPNumber(data.reserved || 0, assetDecimals)
-  const miscFrozen = new FPNumber(data.miscFrozen || 0, assetDecimals)
-  const feeFrozen = new FPNumber(data.feeFrozen || 0, assetDecimals)
+  const miscFrozen = new FPNumber((data as AccountData).miscFrozen || 0, assetDecimals)
+  const feeFrozen = new FPNumber((data as AccountData).feeFrozen || 0, assetDecimals)
+  const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals)
   const locked = FPNumber.max(miscFrozen, feeFrozen)
   return {
     reserved: reserved.toCodecString(),
     locked: locked.toCodecString(),
     total: free.add(reserved).toCodecString(),
     transferable: free.sub(locked).toCodecString(),
-    frozen: locked.add(reserved).toCodecString()
+    frozen: (frozen.isZero() ? locked.add(reserved) : frozen).toCodecString()
   } as AccountBalance
 }
 
