@@ -28,7 +28,6 @@ export interface RewardInfo {
   type: RewardingEvents;
   asset: Asset;
   amount: CodecString;
-  total?: CodecString;
 }
 
 export interface LPRewardsInfo {
@@ -46,18 +45,14 @@ export interface RewardClaimHistory extends History {
 export function isClaimableReward (reward: RewardInfo): boolean {
   const fpAmount = FPNumber.fromCodecValue(reward.amount, reward.asset.decimals)
 
-  if (!reward.total) return !fpAmount.isZero()
-  
-  const fpTotal = FPNumber.fromCodecValue(reward.total, reward.asset.decimals)
-
-  return !fpAmount.isZero() && FPNumber.lte(fpAmount, fpTotal)
+  return !fpAmount.isZero()
 }
 
 export function hasRewardsForEvents (rewards: Array<RewardInfo>, events: Array<RewardingEvents>): boolean {
   return rewards.some(item => isClaimableReward(item) && events.includes(item.type))
 }
 
-export function prepareRewardInfo (type: RewardingEvents, amount: CodecString | number, total?: CodecString | number): RewardInfo {
+export function prepareRewardInfo (type: RewardingEvents, amount: CodecString | number): RewardInfo {
   const [val, pswap] = [KnownAssets.get(KnownSymbols.VAL), KnownAssets.get(KnownSymbols.PSWAP)]
   const asset = ({
     [RewardingEvents.XorErc20]: val
@@ -69,23 +64,28 @@ export function prepareRewardInfo (type: RewardingEvents, amount: CodecString | 
     amount: new FPNumber(amount, asset.decimals).toCodecString()
   } as RewardInfo
 
-  if (total) {
-    rewardInfo.total = new FPNumber(total, asset.decimals).toCodecString()
-  }
-
   return rewardInfo
 }
 
-export function prepareRewardsInfo (limit: CodecString | number, total: CodecString | number, rewards: object): RewardsInfo {
+export function prepareRewardsInfo (limit: CodecString | number, total: CodecString | number, rewards: any): RewardsInfo | null {
   const asset = KnownAssets.get(KnownSymbols.PSWAP)
+  const buffer = []
 
-  const claimableRewards = Object.entries(rewards)
-    .map(([reason, balance]: [RewardingEvents, CodecString | number]) => prepareRewardInfo(reason, balance))
-    .filter(item => isClaimableReward(item))
+  const fpLimit = new FPNumber(limit, asset.decimals)
+
+  if (fpLimit.isZero()) return null
+
+  const fpTotal = new FPNumber(total, asset.decimals)
+
+  for (const [event, balance] of rewards.entries()) {
+    buffer.push(prepareRewardInfo(event.toString(), balance))
+  }
+
+  const claimableRewards = buffer.filter(item => isClaimableReward(item))
 
   return {
-    limit: new FPNumber(limit, asset.decimals).toCodecString(),
-    total: new FPNumber(total, asset.decimals).toCodecString(),
+    limit: fpLimit.toCodecString(),
+    total: fpTotal.toCodecString(),
     rewards: claimableRewards
   }
 }
