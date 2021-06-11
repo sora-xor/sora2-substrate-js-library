@@ -25,7 +25,7 @@ export interface RewardsInfo {
 }
 
 export interface RewardInfo {
-  type: RewardingEvents | string;
+  type: RewardingEvents;
   asset: Asset;
   amount: CodecString;
 }
