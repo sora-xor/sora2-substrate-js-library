@@ -1313,7 +1313,7 @@ export class Api extends BaseApi {
     return rewards
   }
 
-  public async checkVestedRewards (): Promise<RewardsInfo> {
+  public async checkVestedRewards (): Promise<RewardsInfo | null> {
     assert(this.account, Messages.connectWallet)
 
     const { address } = this.account.pair
@@ -1322,7 +1322,7 @@ export class Api extends BaseApi {
       limit, // "Balance"
       total_available: total, // "Balance"
       rewards // "BTreeMap<RewardReason, Balance>"
-    } = (await (this.api.query as any).vestedRewards.rewards(address)).toJSON()
+    } = await (this.api.query as any).vestedRewards.rewards(address)
 
     const rewardsInfo = prepareRewardsInfo(limit, total, rewards)
 
