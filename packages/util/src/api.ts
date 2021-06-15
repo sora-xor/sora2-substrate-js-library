@@ -1384,7 +1384,7 @@ export class Api extends BaseApi {
    * @param signature message signed in external wallet (if want to claim external rewards)
    */
   public async claimRewards (
-    rewards: Array<RewardInfo>,
+    rewards: Array<RewardInfo | RewardsInfo>,
     signature?: string,
     fee?: CodecString,
     externalAddress?: string,
