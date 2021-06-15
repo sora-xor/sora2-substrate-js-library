@@ -48,7 +48,7 @@ export function isClaimableReward (reward: RewardInfo): boolean {
   return !fpAmount.isZero()
 }
 
-export function containsRewardsForEvents (items: Array<RewardInfo | RewardsInfo>, events: Array<RewardingEvents>) {
+export function containsRewardsForEvents (items: Array<RewardInfo | RewardsInfo>, events: Array<RewardingEvents>): boolean {
   return items.some(item => {
     const key = 'rewards' in item ? item.rewards : [item]
 
