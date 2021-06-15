@@ -288,8 +288,7 @@ export class BaseApi {
    */
   public checkAddress (address: string): boolean {
     try {
-      // If we'll need to check SORA prefix: decodeAddress(address, false, this.prefix)
-      decodeAddress(address)
+      decodeAddress(address, false, this.prefix)
       return true
     } catch (error) {
       return false
