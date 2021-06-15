@@ -39,13 +39,21 @@ export interface LPRewardsInfo {
 export interface RewardClaimHistory extends History {
   soraNetworkFee?: CodecString;
   externalAddress?: string;
-  rewards?: Array<RewardInfo>;
+  rewards?: Array<RewardInfo | RewardsInfo>;
 }
 
 export function isClaimableReward (reward: RewardInfo): boolean {
   const fpAmount = FPNumber.fromCodecValue(reward.amount, reward.asset.decimals)
 
   return !fpAmount.isZero()
+}
+
+export function containsRewardsForEvents (items: Array<RewardInfo | RewardsInfo>, events: Array<RewardingEvents>): boolean {
+  return items.some(item => {
+    const key = 'rewards' in item ? item.rewards : [item]
+
+    return hasRewardsForEvents(key, events)
+  })
 }
 
 export function hasRewardsForEvents (rewards: Array<RewardInfo>, events: Array<RewardingEvents>): boolean {
