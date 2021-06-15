@@ -29,7 +29,7 @@ import {
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
-import { RewardingEvents, RewardsInfo, RewardInfo, isClaimableReward, hasRewardsForEvents, prepareRewardInfo, prepareRewardsInfo } from './rewards'
+import { RewardingEvents, RewardsInfo, RewardInfo, isClaimableReward, containsRewardsForEvents, prepareRewardInfo, prepareRewardsInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
@@ -1343,22 +1343,22 @@ export class Api extends BaseApi {
    * @param rewards claiming rewards
    * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
    */
-  private calcClaimRewardsParams (rewards: Array<RewardInfo>, signature = ''): any {
+  private calcClaimRewardsParams (rewards: Array<RewardInfo | RewardsInfo>, signature = ''): any {
     const transactions = []
 
-    if (hasRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
+    if (containsRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
       transactions.push({
         extrinsic: this.api.tx.pswapDistribution.claimIncentive,
         args: []
       })
     }
-    if (hasRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve, RewardingEvents.LiquidityProvisionFarming, RewardingEvents.MarketMakerVolume])) {
+    if (containsRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve, RewardingEvents.LiquidityProvisionFarming, RewardingEvents.MarketMakerVolume])) {
       transactions.push({
         extrinsic: this.api.tx.vestedRewards.claimRewards,
         args: []
       })
     }
-    if (hasRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NtfAirdrop])) {
+    if (containsRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NtfAirdrop])) {
       transactions.push({
         extrinsic: this.api.tx.rewards.claim,
         args: [signature]
