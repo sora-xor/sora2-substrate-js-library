@@ -8,6 +8,21 @@ import { CodecString, FPNumber } from './fp'
 
 export const MaxTotalSupply = '170141183460469231731.687303715884105727'
 
+export type Whitelist = {
+  [key: string]: WhitelistItem
+}
+
+export interface WhitelistItem {
+  symbol: string;
+  name: string;
+  decimals: number;
+  icon: string;
+}
+
+export interface WhitelistArrayItem extends WhitelistItem {
+  address: string;
+}
+
 export interface AccountAsset {
   address: string;
   balance: AccountBalance;
@@ -165,14 +180,14 @@ export function isNativeAsset (asset: any): boolean {
   return !!KnownAssets.get(asset.address)
 }
 
-function isRegisteredAsset (asset: Asset, whitelist: any): boolean {
+function isRegisteredAsset (asset: any, whitelist: Whitelist): boolean {
   if (!asset.address) {
     return false
   }
   return !!whitelist[asset.address]
 }
 
-export async function getAssets (api: ApiPromise, whitelist?: any): Promise<Array<Asset>> {
+export async function getAssets (api: ApiPromise, whitelist?: Whitelist): Promise<Array<Asset>> {
   const assetInfos = (await (api.rpc as any).assets.listAssetInfos()).toJSON()
   const assets = assetInfos.map(({ asset_id, symbol, name, precision }) => {
     return { symbol, name, address: asset_id, decimals: precision } as Asset
@@ -196,4 +211,32 @@ export async function getAssets (api: ApiPromise, whitelist?: any): Promise<Arra
     }
     return 0
   })
+}
+
+export const getWhitelistAssets = (whitelist: Array<WhitelistArrayItem>) => whitelist.reduce<Whitelist>((acc, asset) => {
+  acc[asset.address] = {
+    name: asset.name,
+    symbol: asset.symbol,
+    decimals: asset.decimals,
+    icon: asset.icon
+  }
+  return acc
+}, {})
+
+export const isWhitelistAsset = isRegisteredAsset
+
+export const getWhitelistIdsBySymbol = (whitelist: Array<WhitelistArrayItem>) => whitelist.reduce<any>((acc, asset) => {
+  acc[asset.symbol] = asset.address
+  return acc
+}, {})
+
+export function isBlacklistAsset (asset: any, whitelistIdsBySymbol: any): boolean {
+  if (!asset.address || !asset.symbol) {
+    return false
+  }
+  const address = whitelistIdsBySymbol[asset.symbol]
+  if (!address) {
+    return false
+  }
+  return address !== asset.address
 }

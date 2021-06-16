@@ -1,4 +1,4 @@
-import merge from 'lodash/fp/merge'
+import merge from 'lodash/merge'
 import { rpc as ormlRpc, types as ormlTypes, typesAlias as ormlAlias } from '@open-web3/orml-type-definitions'
 import { jsonrpcFromDefs, typesAliasFromDefs, typesFromDefs } from '@open-web3/orml-type-definitions/utils'
 
@@ -67,7 +67,7 @@ function typesAliasFromDefsInternal (
   initAlias: Record<string, any> = {}
 ): Record<string, any> {
   return Object.values(definitions).reduce(
-    (res: Record<string, any>, { typesAlias }): Record<string, any> => merge(typesAlias, res),
+    (res: Record<string, any>, { typesAlias }): Record<string, any> => merge({}, typesAlias, res),
     initAlias
   )
 }
