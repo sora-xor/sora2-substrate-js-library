@@ -293,7 +293,7 @@ export class BridgeApi extends BaseApi {
    */
   public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
     const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(this.externalNetwork)).toJSON()
-    const assets = await getAssets(this.api, false)
+    const assets = await getAssets(this.api)
     return this.getData(data).map(([_, soraAsset, externalAsset]) => {
       const soraAssetId = first(soraAsset)
       const asset = assets.find(a => a.address === soraAssetId)
