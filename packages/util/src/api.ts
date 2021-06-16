@@ -24,7 +24,8 @@ import {
   getAssetBalanceObservable,
   ZeroBalance,
   getBalance,
-  getLiquidityBalance
+  getLiquidityBalance,
+  Whitelist
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
@@ -1405,9 +1406,10 @@ export class Api extends BaseApi {
 
   /**
    * Get all tokens list registered in the blockchain network
+   * @param whitelist set of whitelist tokens
    * @param withPoolTokens `false` by default
    */
-  public async getAssets (withPoolTokens = false): Promise<Array<Asset>> {
+  public async getAssets (whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
     const assets = await getAssets(this.api)
     return withPoolTokens ? assets : assets.filter(asset => asset.symbol !== PoolTokens.XYKPOOL)
   }
