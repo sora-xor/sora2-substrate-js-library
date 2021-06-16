@@ -5,7 +5,6 @@ import type { OrmlAccountData } from '@open-web3/orml-types/interfaces/tokens'
 import { map } from '@polkadot/x-rxjs/operators'
 
 import { CodecString, FPNumber } from './fp'
-import { isRegisteredAsset } from './registeredAssets'
 
 export const MaxTotalSupply = '170141183460469231731.687303715884105727'
 
@@ -166,16 +165,23 @@ export function isNativeAsset (asset: any): boolean {
   return !!KnownAssets.get(asset.address)
 }
 
-export async function getAssets (api: ApiPromise, sorted = true): Promise<Array<Asset>> {
+function isRegisteredAsset (asset: Asset, whitelist: any): boolean {
+  if (!asset.address) {
+    return false
+  }
+  return !!whitelist[asset.address]
+}
+
+export async function getAssets (api: ApiPromise, whitelist?: any): Promise<Array<Asset>> {
   const assetInfos = (await (api.rpc as any).assets.listAssetInfos()).toJSON()
   const assets = assetInfos.map(({ asset_id, symbol, name, precision }) => {
     return { symbol, name, address: asset_id, decimals: precision } as Asset
   }) as Array<Asset>
-  return !sorted ? assets : assets.sort((a, b) => {
+  return !whitelist ? assets : assets.sort((a, b) => {
     const isNativeA = isNativeAsset(a)
     const isNativeB = isNativeAsset(b)
-    const isRegisteredA = isRegisteredAsset(a)
-    const isRegisteredB = isRegisteredAsset(b)
+    const isRegisteredA = isRegisteredAsset(a, whitelist)
+    const isRegisteredB = isRegisteredAsset(b, whitelist)
     if ((isNativeA && !isNativeB) || (isRegisteredA && !isRegisteredB)) {
       return -1
     }
