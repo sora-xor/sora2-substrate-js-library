@@ -1410,7 +1410,7 @@ export class Api extends BaseApi {
    * @param withPoolTokens `false` by default
    */
   public async getAssets (whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
-    const assets = await getAssets(this.api)
+    const assets = await getAssets(this.api, whitelist)
     return withPoolTokens ? assets : assets.filter(asset => asset.symbol !== PoolTokens.XYKPOOL)
   }
 
