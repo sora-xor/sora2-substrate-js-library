@@ -1289,7 +1289,7 @@ export class Api extends BaseApi {
 
     const rewards = [
       prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount),
-      prepareRewardInfo(RewardingEvents.NtfAirdrop, nftAirdropAmount),
+      prepareRewardInfo(RewardingEvents.NftAirdrop, nftAirdropAmount),
       prepareRewardInfo(RewardingEvents.XorErc20, xorErc20Amount)
     ].filter(item => isClaimableReward(item))
 
@@ -1359,7 +1359,7 @@ export class Api extends BaseApi {
         args: []
       })
     }
-    if (containsRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NtfAirdrop])) {
+    if (containsRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NftAirdrop])) {
       transactions.push({
         extrinsic: this.api.tx.rewards.claim,
         args: [signature]
