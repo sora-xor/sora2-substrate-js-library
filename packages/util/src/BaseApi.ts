@@ -3,7 +3,7 @@ import first from 'lodash/fp/first'
 import { ApiPromise, ApiRx } from '@polkadot/api'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
-import { Signer } from '@polkadot/types/types'
+import { Signer, ISubmittableResult } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
@@ -171,10 +171,10 @@ export class BaseApi {
       history.id = encrypt(`${history.startTime}`)
     }
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address)
-    const extrinsicFn = (callbackFn: (result: any) => void) => unsigned
-      ? extrinsic.send(callbackFn)
-      : extrinsic.signAndSend(signer.isLocked ? signer.address : signer, { signer: this.signer, nonce }, callbackFn)
-    const unsub = await extrinsicFn((result: any) => {
+    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(signer.isLocked ? signer.address : signer, { signer: this.signer, nonce })
+    history.txId = signedTx.hash.toString()
+    const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn)
+    const unsub = await extrinsicFn((result: ISubmittableResult) => {
       if (isBridgeOperation(history.type)) {
         history.signed = true
       }
@@ -318,6 +318,7 @@ export enum Operation {
 }
 
 export interface History {
+  txId?: string;
   type: Operation;
   amount?: string;
   symbol?: string;

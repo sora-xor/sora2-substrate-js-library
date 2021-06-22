@@ -5,7 +5,7 @@ import { History } from './BaseApi'
 export enum RewardingEvents {
   XorErc20 = 'XorErc20',
   SoraFarmHarvest = 'SoraFarmHarvest',
-  NtfAirdrop = 'NtfAirdrop',
+  NftAirdrop = 'NftAirdrop',
   LiquidityProvision = 'LiquidityProvision',
   BuyOnBondingCurve = 'BuyOnBondingCurve',
   LiquidityProvisionFarming = 'LiquidityProvisionFarming', // not used yet
