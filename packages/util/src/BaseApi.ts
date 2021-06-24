@@ -288,6 +288,9 @@ export class BaseApi {
    */
   public checkAddress (address: string): boolean {
     try {
+      if (address.slice(0, 2) !== 'cn') {
+        return false
+      }
       decodeAddress(address, false, this.prefix)
       return true
     } catch (error) {
