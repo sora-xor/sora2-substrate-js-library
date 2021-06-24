@@ -113,13 +113,20 @@ export class BaseApi {
     return this.history.find(item => item.id === id) ?? null
   }
 
-  public saveHistory (historyItem: History): void {
+  public saveHistory (historyItem: History, wasNotGenerated = false): void {
     if (!historyItem || !historyItem.id) return
 
     const historyCopy = [...this.history]
     const index = historyCopy.findIndex(item => item.id === historyItem.id)
 
-    ~index ? historyCopy[index] = { ...historyCopy[index], ...historyItem } : historyCopy.push(historyItem)
+    const item = ~index ? { ...historyCopy[index], ...historyItem } : historyItem
+
+    if (wasNotGenerated) {
+      // Tx was failed on the static validation and wasn't generated in the network
+      delete item.txId
+    }
+
+    ~index ? historyCopy[index] = item : historyCopy.push(item)
 
     this.history = historyCopy
   }
@@ -214,7 +221,7 @@ export class BaseApi {
       const errorParts = e.message.split(':')
       const errorInfo = last(errorParts).trim()
       history.errorMessage = errorInfo
-      this.saveHistory(history)
+      this.saveHistory(history, true)
       throw new Error(errorInfo)
     })
   }
