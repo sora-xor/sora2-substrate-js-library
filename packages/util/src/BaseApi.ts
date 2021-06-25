@@ -116,7 +116,21 @@ export class BaseApi {
   public saveHistory (historyItem: History, wasNotGenerated = false): void {
     if (!historyItem || !historyItem.id) return
 
-    const historyCopy = [...this.history]
+    let historyCopy: Array<History>
+    let addressStorage: Storage
+
+    const hasAccessToStorage = !!this.storage
+    const historyItemHasSigner = !!historyItem.from
+    const historyItemFromAddress = historyItemHasSigner ? this.formatAddress(historyItem.from, false) : ''
+    const needToUpdateAddressStorage = historyItemFromAddress && (historyItemFromAddress !== this.address) && hasAccessToStorage
+
+    if (needToUpdateAddressStorage) {
+      addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress))
+      historyCopy = JSON.parse(addressStorage.get('history')) || [];
+    } else {
+      historyCopy = [...this.history]
+    }
+
     const index = historyCopy.findIndex(item => item.id === historyItem.id)
 
     const item = ~index ? { ...historyCopy[index], ...historyItem } : historyItem
@@ -128,7 +142,11 @@ export class BaseApi {
 
     ~index ? historyCopy[index] = item : historyCopy.push(item)
 
-    this.history = historyCopy
+    if (needToUpdateAddressStorage && addressStorage) {
+      addressStorage.set('history', JSON.stringify(historyCopy))
+    } else {
+      this.history = historyCopy
+    }
   }
 
   public removeHistory (id: string): void {
