@@ -288,6 +288,10 @@ export class BaseApi {
         extrinsic = params[0].extrinsic
         extrinsicParams = params[0].args
         break
+      case Operation.TransferAll:
+        extrinsic = this.api.tx.utility.batchAll
+        extrinsicParams = params
+        break
       default:
         throw new Error('Unknown function')
     }
@@ -342,7 +346,8 @@ export enum Operation {
   RegisterAsset = 'RegisterAsset',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
-  ClaimRewards = 'ClaimRewards'
+  ClaimRewards = 'ClaimRewards',
+  TransferAll = 'TransferAll', // Batch with transfers
 }
 
 export interface History {
