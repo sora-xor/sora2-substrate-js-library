@@ -539,22 +539,31 @@ export class Api extends BaseApi {
     )
   }
 
+  private async prepareTransferAllTxs (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>) {
+    assert(this.account, Messages.connectWallet)
+    assert(data.length, Messages.noTransferData)
+
+    return data.map(item => {
+      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString())
+    })
+  }
+
+  public async getTransferAllNetworkFee (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<CodecString> {
+    const transactions = await this.prepareTransferAllTxs(data)
+    return await this.getNetworkFee(this.accountPair, Operation.TransferAll, transactions)
+  }
+
   /**
    * Transfer all data from array
    * @param data Transfer data
    */
    public async transferAll (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<void> {
-    assert(this.account, Messages.connectWallet)
-    assert(data.length, Messages.noTransferData)
-
-    const transactions = data.map(item => {
-      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString())
-    })
+    const transactions = await this.prepareTransferAllTxs(data)
 
     await this.submitExtrinsic(
       this.api.tx.utility.batchAll(transactions),
       this.account.pair,
-      { type: Operation.Transfer }
+      { type: Operation.TransferAll }
     )
   }
 
