@@ -5,7 +5,7 @@
 
 ### Prepare
 ```
-yarn --update-checksums
+yarn
 yarn build
 ```
 **CSV files for VAL or/and PSWAP tokens** should be located in `scripts` directory.
