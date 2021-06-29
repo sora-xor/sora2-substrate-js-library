@@ -1,4 +1,4 @@
-import { api, connection, KnownAssets, KnownSymbols, TransactionStatus } from '@sora-substrate/util'
+import { api, connection, FPNumber, KnownAssets, KnownSymbols, TransactionStatus } from '@sora-substrate/util'
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
@@ -78,6 +78,9 @@ ______________________________________________________________\n`
     throw new Error(`Mnemonic Seed "${mnemonicSeed}" is incorrect!\n\n`)
   }
   api.importAccount(mnemonicSeed, 'Test', 'qwasZX123')
+  // Display network fee
+  const fee = await api.getTransferAllNetworkFee(transferParams)
+  console.log(`Network fee is ${FPNumber.fromCodecValue(fee).toLocaleString()} XOR\n`)
   // Submit transfers
   await api.transferAll(transferParams)
   await delay()
