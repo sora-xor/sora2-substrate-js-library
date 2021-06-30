@@ -24,6 +24,11 @@ Resulting JSON is located in:
 - `<repo root>/packages/types/src/metadata/types.json`
 - `<repo root>/packages/types/src/metadata/<env>/types.json`
 
+### Export node api as markdown document
+`yarn generate-doc`
+
+Resulting MD is located in `<repo root>/doc.md`
+
 ### Run local test net with framenode first
 
 > This library version should be compatible with **develop** branch of **sora2-substrate** chain.
