@@ -8,7 +8,7 @@ async function demo(): Promise<void> {
   console.log('INITIALIZING API');
 
   // NOTE: replace to use relevant endpoint: 'ws://localhost:9944/' for local, wss://ws.address.of.chain:9944/ for testnet
-  const provider = new WsProvider('ws://localhost:9944/');
+  const provider = new WsProvider('wss://ws.framenode-1.s1.dev.sora2.soramitsu.co.jp');
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
 
@@ -29,6 +29,12 @@ async function demo(): Promise<void> {
   const VALAssetId = api.createType('AssetId', '0x0200040000000000000000000000000000000000000000000000000000000000');
   const PSWAPAssetId = api.createType('AssetId', '0x0200050000000000000000000000000000000000000000000000000000000000');
   const DAIAssetId = api.createType('AssetId', '0x0200060000000000000000000000000000000000000000000000000000000000');
+
+  const result = await (api.query as any).vestedRewards.rewards('cnRsKVCKmDhTJgB8kdTdpsXe2wqTh1MzKJFKhMYLSnjb3FCgA')
+
+  console.log(result)
+
+  return
 
   // register pair
   await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, PSWAPAssetId), root, "Enable Pair XOR-DOT");
