@@ -453,6 +453,8 @@ export interface RewardInfo extends Struct {
 export interface RewardReason extends Enum {
   readonly isUnspecified: boolean;
   readonly isBuyOnBondingCurve: boolean;
+  readonly isLiquidityProvisionFarming: boolean;
+  readonly isMarketMakerVolume: boolean;
 }
 
 /** @name RuntimeDbWeight */
