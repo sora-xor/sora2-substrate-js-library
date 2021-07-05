@@ -1,12 +1,27 @@
 import { ApiPromise, ApiRx } from '@polkadot/api'
 import { Codec, Observable } from '@polkadot/types/types'
 import type { AccountData } from '@polkadot/types/interfaces/balances'
+import type { OrmlAccountData } from '@open-web3/orml-types/interfaces/tokens'
 import { map } from '@polkadot/x-rxjs/operators'
 
 import { CodecString, FPNumber } from './fp'
-import { isRegisteredAsset } from './registeredAssets'
 
 export const MaxTotalSupply = '170141183460469231731.687303715884105727'
+
+export type Whitelist = {
+  [key: string]: WhitelistItem
+}
+
+export interface WhitelistItem {
+  symbol: string;
+  name: string;
+  decimals: number;
+  icon: string;
+}
+
+export interface WhitelistArrayItem extends WhitelistItem {
+  address: string;
+}
 
 export interface AccountAsset {
   address: string;
@@ -32,18 +47,19 @@ export const ZeroBalance = {
   transferable: '0'
 } as AccountBalance
 
-function formatBalance (data: AccountData, assetDecimals?: number): AccountBalance {
+function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: number): AccountBalance {
   const free = new FPNumber(data.free || 0, assetDecimals)
   const reserved = new FPNumber(data.reserved || 0, assetDecimals)
-  const miscFrozen = new FPNumber(data.miscFrozen || 0, assetDecimals)
-  const feeFrozen = new FPNumber(data.feeFrozen || 0, assetDecimals)
+  const miscFrozen = new FPNumber((data as AccountData).miscFrozen || 0, assetDecimals)
+  const feeFrozen = new FPNumber((data as AccountData).feeFrozen || 0, assetDecimals)
+  const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals)
   const locked = FPNumber.max(miscFrozen, feeFrozen)
   return {
     reserved: reserved.toCodecString(),
     locked: locked.toCodecString(),
     total: free.add(reserved).toCodecString(),
     transferable: free.sub(locked).toCodecString(),
-    frozen: locked.add(reserved).toCodecString()
+    frozen: (frozen.isZero() ? locked.add(reserved) : frozen).toCodecString()
   } as AccountBalance
 }
 
@@ -127,6 +143,10 @@ export async function getAssetInfo (api: ApiPromise, address: string): Promise<A
   return asset
 }
 
+export async function getLiquidityBalance (api: ApiPromise, accountAddress: string, poolAddress: string): Promise<Codec> {
+  return await api.query.poolXyk.poolProviders(poolAddress, accountAddress) // BalanceInfo
+}
+
 export async function getBalance (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
   return await (api.rpc as any).assets.usableBalance(accountAddress, assetAddress) // BalanceInfo
 }
@@ -160,16 +180,23 @@ export function isNativeAsset (asset: any): boolean {
   return !!KnownAssets.get(asset.address)
 }
 
-export async function getAssets (api: ApiPromise, sorted = true): Promise<Array<Asset>> {
+function isRegisteredAsset (asset: any, whitelist: Whitelist): boolean {
+  if (!asset.address) {
+    return false
+  }
+  return !!whitelist[asset.address]
+}
+
+export async function getAssets (api: ApiPromise, whitelist?: Whitelist): Promise<Array<Asset>> {
   const assetInfos = (await (api.rpc as any).assets.listAssetInfos()).toJSON()
   const assets = assetInfos.map(({ asset_id, symbol, name, precision }) => {
     return { symbol, name, address: asset_id, decimals: precision } as Asset
   }) as Array<Asset>
-  return !sorted ? assets : assets.sort((a, b) => {
+  return !whitelist ? assets : assets.sort((a, b) => {
     const isNativeA = isNativeAsset(a)
     const isNativeB = isNativeAsset(b)
-    const isRegisteredA = isRegisteredAsset(a)
-    const isRegisteredB = isRegisteredAsset(b)
+    const isRegisteredA = isRegisteredAsset(a, whitelist)
+    const isRegisteredB = isRegisteredAsset(b, whitelist)
     if ((isNativeA && !isNativeB) || (isRegisteredA && !isRegisteredB)) {
       return -1
     }
@@ -184,4 +211,32 @@ export async function getAssets (api: ApiPromise, sorted = true): Promise<Array<
     }
     return 0
   })
+}
+
+export const getWhitelistAssets = (whitelist: Array<WhitelistArrayItem>) => whitelist.reduce<Whitelist>((acc, asset) => {
+  acc[asset.address] = {
+    name: asset.name,
+    symbol: asset.symbol,
+    decimals: asset.decimals,
+    icon: asset.icon
+  }
+  return acc
+}, {})
+
+export const isWhitelistAsset = isRegisteredAsset
+
+export const getWhitelistIdsBySymbol = (whitelist: Array<WhitelistArrayItem>) => whitelist.reduce<any>((acc, asset) => {
+  acc[asset.symbol] = asset.address
+  return acc
+}, {})
+
+export function isBlacklistAsset (asset: any, whitelistIdsBySymbol: any): boolean {
+  if (!asset.address || !asset.symbol) {
+    return false
+  }
+  const address = whitelistIdsBySymbol[asset.symbol]
+  if (!address) {
+    return false
+  }
+  return address !== asset.address
 }

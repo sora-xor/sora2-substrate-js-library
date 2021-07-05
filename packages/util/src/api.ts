@@ -1,3 +1,4 @@
+import first from 'lodash/fp/first'
 import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import { KeypairType } from '@polkadot/util-crypto/types'
@@ -6,7 +7,8 @@ import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair$Json } from '@polkadot/keyring/types'
 import { Signer, Observable } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
-import { Subject } from '@polkadot/x-rxjs'
+import { Subject, scheduled, asapScheduler } from '@polkadot/x-rxjs'
+import { map, concatAll } from '@polkadot/x-rxjs/operators'
 
 import {
   KnownAssets,
@@ -21,12 +23,14 @@ import {
   AccountBalance,
   getAssetBalanceObservable,
   ZeroBalance,
-  getBalance
+  getBalance,
+  getLiquidityBalance,
+  Whitelist
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
-import { RewardingEvents, RewardInfo, isClaimableReward, hasRewardsForEvents, prepareRewardInfo } from './rewards'
+import { RewardingEvents, RewardsInfo, RewardInfo, isClaimableReward, containsRewardsForEvents, prepareRewardInfo, prepareRewardsInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
@@ -535,22 +539,31 @@ export class Api extends BaseApi {
     )
   }
 
+  private async prepareTransferAllTxs (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>) {
+    assert(this.account, Messages.connectWallet)
+    assert(data.length, Messages.noTransferData)
+
+    return data.map(item => {
+      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString())
+    })
+  }
+
+  public async getTransferAllNetworkFee (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<CodecString> {
+    const transactions = await this.prepareTransferAllTxs(data)
+    return await this.getNetworkFee(this.accountPair, Operation.TransferAll, transactions)
+  }
+
   /**
    * Transfer all data from array
    * @param data Transfer data
    */
    public async transferAll (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<void> {
-    assert(this.account, Messages.connectWallet)
-    assert(data.length, Messages.noTransferData)
-
-    const transactions = data.map(item => {
-      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString())
-    })
+    const transactions = await this.prepareTransferAllTxs(data)
 
     await this.submitExtrinsic(
       this.api.tx.utility.batchAll(transactions),
       this.account.pair,
-      { type: Operation.Transfer }
+      { type: Operation.TransferAll }
     )
   }
 
@@ -752,17 +765,18 @@ export class Api extends BaseApi {
       if (!props || !props.length) {
         continue
       }
-      const result = await getBalance(this.api, this.account.pair.address, props[2])
+      const poolTokenAddress = first(props)
+      const result = await getLiquidityBalance(this.api, this.account.pair.address, poolTokenAddress)
       if (new FPNumber(result).isZero()) {
         continue
       }
-      const { decimals, symbol, name } = await this.getAssetInfo(props[2])
+      const { decimals, symbol, name } = await this.getLiquidityInfoByPoolAccount(poolTokenAddress)
       const balance = new FPNumber(result, decimals).toCodecString()
       if (!Number(balance)) {
         continue
       }
       const [reserveA, reserveB] = await this.getLiquidityReserves(xor.address, item.address, decimals, decimals)
-      const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, props[2], decimals, decimals)
+      const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(xor.address, item.address, balance, reserveA, reserveB, poolTokenAddress, decimals, decimals)
       const fpBalanceA = FPNumber.fromCodecValue(balanceA, decimals)
       const fpBalanceB = FPNumber.fromCodecValue(balanceB, decimals)
       const pts = FPNumber.fromCodecValue(totalSupply, decimals)
@@ -771,7 +785,7 @@ export class Api extends BaseApi {
         fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, decimals))
       )
       const asset = {
-        address: props[2],
+        address: poolTokenAddress,
         firstAddress: xor.address,
         secondAddress: item.address,
         firstBalance: balanceA,
@@ -786,31 +800,6 @@ export class Api extends BaseApi {
     }
     this.accountLiquidity = accountLiquidity
     return accountLiquidity
-  }
-
-  /**
-   * Update already added liquidity
-   */
-  public async updateAccountLiquidity (): Promise<Array<AccountLiquidity>> {
-    assert(this.account, Messages.connectWallet)
-    for (const asset of this.accountLiquidity) {
-      const result = await getBalance(this.api, this.account.pair.address, asset.address)
-      const [reserveA, reserveB] = await this.getLiquidityReserves(asset.firstAddress, asset.secondAddress)
-      const [balanceA, balanceB] = await this.estimateTokensRetrieved(
-        asset.firstAddress,
-        asset.secondAddress,
-        asset.balance,
-        reserveA,
-        reserveB,
-        asset.address
-      )
-      asset.balance = new FPNumber(result, asset.decimals).toCodecString()
-      asset.firstBalance = balanceA
-      asset.secondBalance = balanceB
-      this.addToLiquidityList(asset)
-    }
-
-    return this.accountLiquidity
   }
 
   /**
@@ -836,39 +825,29 @@ export class Api extends BaseApi {
     if (!props || !props.length) {
       return null
     }
-    const poolTokenAddress = props[2]
-    return await this.getAssetInfo(poolTokenAddress)
+    const poolTokenAccount = first(props)
+    // TODO: find a way to get pool data
+    return {
+      address: poolTokenAccount,
+      decimals: 18,
+      name: 'Pool XYK Token',
+      symbol: 'POOLXYK'
+    }
   }
 
   /**
-   * Get account liquidity information
+   * Get liquidity
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public async getAccountLiquidity (firstAssetAddress: string, secondAssetAddress: string): Promise<AccountLiquidity> {
-    assert(this.account, Messages.connectWallet)
-    const liquidityInfo = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    if (!liquidityInfo) {
-      return null
+   public async getLiquidityInfoByPoolAccount (poolTokenAccount: string): Promise<Asset> {
+    // TODO: find a way to get pool data
+    return {
+      address: poolTokenAccount,
+      decimals: 18,
+      name: 'Pool XYK Token',
+      symbol: 'POOLXYK'
     }
-    const { symbol, address, decimals, name } = liquidityInfo
-    const asset = {
-      decimals,
-      symbol,
-      address,
-      name,
-      firstAddress: firstAssetAddress,
-      secondAddress: secondAssetAddress
-    } as AccountLiquidity
-    const poolTokenBalance = await getBalance(this.api, this.account.pair.address, address)
-    const firstToken = await this.getAssetInfo(firstAssetAddress)
-    const secondToken = await this.getAssetInfo(secondAssetAddress)
-    const firstTokenBalance = await getBalance(this.api, this.account.pair.address, firstAssetAddress)
-    const secondTokenBalance = await getBalance(this.api, this.account.pair.address, secondAssetAddress)
-    asset.balance = new FPNumber(poolTokenBalance, asset.decimals).toCodecString()
-    asset.firstBalance = new FPNumber(firstTokenBalance, firstToken.decimals).toCodecString()
-    asset.secondBalance = new FPNumber(secondTokenBalance, secondToken.decimals).toCodecString()
-    return asset
   }
 
   /**
@@ -894,6 +873,30 @@ export class Api extends BaseApi {
     const firstValue = new FPNumber(result[0], firstAssetDecimals)
     const secondValue = new FPNumber(result[1], secondAssetDecimals)
     return [firstValue.toCodecString(), secondValue.toCodecString()]
+  }
+
+  public subscribeOnSwapReserves (
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    liquiditySource = LiquiditySourceTypes.Default
+  ): Observable<void> {
+    const toVoid = (o: Observable<any>) => o.pipe(map(codec => {}))
+    const poolXyk: Array<Observable<void>> = []
+    const xor = KnownAssets.get(KnownSymbols.XOR).address
+    if (![firstAssetAddress, secondAssetAddress].includes(xor)) {
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, firstAssetAddress)))
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, secondAssetAddress)))
+    } else {
+      const first = firstAssetAddress === xor ? firstAssetAddress : secondAssetAddress
+      const second = secondAssetAddress === xor ? firstAssetAddress : secondAssetAddress
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(first, second)))
+    }
+    if (liquiditySource === LiquiditySourceTypes.XYKPool) {
+      return scheduled(poolXyk, asapScheduler).pipe(concatAll())
+    }
+    const firstTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress))
+    const secondTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress))
+    return scheduled([...poolXyk, firstTbc, secondTbc], asapScheduler).pipe(concatAll())
   }
 
   /**
@@ -925,14 +928,9 @@ export class Api extends BaseApi {
     if (a.isZero() && b.isZero()) {
       return ['0', '0']
     }
-    const poolToken = await (
-      poolTokenAddress
-        ? this.getAssetInfo(poolTokenAddress)
-        : this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    )
-    const pIn = FPNumber.fromCodecValue(amount, poolToken.decimals)
-    const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
-    const pts = new FPNumber(totalSupply, poolToken.decimals)
+    const pIn = FPNumber.fromCodecValue(amount)
+    const totalSupply = await this.api.query.poolXyk.totalIssuances(poolTokenAddress) // BalanceInfo
+    const pts = new FPNumber(totalSupply)
     const aOut = pIn.mul(a).div(pts)
     const bOut = pIn.mul(b).div(pts)
     return [aOut.toCodecString(), bOut.toCodecString(), pts.toCodecString()]
@@ -966,7 +964,7 @@ export class Api extends BaseApi {
       return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()]
     }
     const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    const totalSupply = await (this.api.rpc as any).assets.totalSupply(poolToken.address) // BalanceInfo
+    const totalSupply = await this.api.query.poolXyk.totalIssuances(poolToken.address) // BalanceInfo
     const pts = new FPNumber(totalSupply, poolToken.decimals)
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b))
     return [result.toCodecString(), pts.toCodecString()]
@@ -1300,7 +1298,7 @@ export class Api extends BaseApi {
 
     const rewards = [
       prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount),
-      prepareRewardInfo(RewardingEvents.NtfAirdrop, nftAirdropAmount),
+      prepareRewardInfo(RewardingEvents.NftAirdrop, nftAirdropAmount),
       prepareRewardInfo(RewardingEvents.XorErc20, xorErc20Amount)
     ].filter(item => isClaimableReward(item))
 
@@ -1308,28 +1306,37 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Check rewards for internal account
+   * Check rewards for providing liquidity
    * @returns rewards array with not zero amount
    */
-  public async checkInternalAccountRewards (): Promise<Array<RewardInfo>> {
+  public async checkLiquidityProvisionRewards (): Promise<Array<RewardInfo>> {
     assert(this.account, Messages.connectWallet)
 
     const { address } = this.account.pair
 
-    const [liquidityProvisionAmount, buyingFromTBCPoolTuple] = await Promise.all([
-      (this.api.rpc as any).pswapDistribution.claimableAmount(address), // Balance
-      (this.api.query as any).multicollateralBondingCurvePool.rewards(address) // [claim_limit: Balance, available_reward: Balance]
-    ])
-
-    const buyingFromTBCPoolAmount = buyingFromTBCPoolTuple[0] // claim_limit
-    const buyingFromTBCPoolTotal = buyingFromTBCPoolTuple[1] // available_reward
+    const liquidityProvisionAmount = await (this.api.rpc as any).pswapDistribution.claimableAmount(address) // Balance
 
     const rewards = [
       prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount),
-      prepareRewardInfo(RewardingEvents.BuyOnBondingCurve, buyingFromTBCPoolAmount, buyingFromTBCPoolTotal)
     ].filter(item => isClaimableReward(item))
 
     return rewards
+  }
+
+  public async checkVestedRewards (): Promise<RewardsInfo | null> {
+    assert(this.account, Messages.connectWallet)
+
+    const { address } = this.account.pair
+
+    const {
+      limit, // "Balance"
+      total_available: total, // "Balance"
+      rewards // "BTreeMap<RewardReason, Balance>"
+    } = await (this.api.query as any).vestedRewards.rewards(address)
+
+    const rewardsInfo = prepareRewardsInfo(limit, total, rewards)
+
+    return rewardsInfo
   }
 
   /**
@@ -1346,22 +1353,22 @@ export class Api extends BaseApi {
    * @param rewards claiming rewards
    * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
    */
-  private calcClaimRewardsParams (rewards: Array<RewardInfo>, signature = ''): any {
+  private calcClaimRewardsParams (rewards: Array<RewardInfo | RewardsInfo>, signature = ''): any {
     const transactions = []
 
-    if (hasRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
+    if (containsRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
       transactions.push({
         extrinsic: this.api.tx.pswapDistribution.claimIncentive,
         args: []
       })
     }
-    if (hasRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve])) {
+    if (containsRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve, RewardingEvents.LiquidityProvisionFarming, RewardingEvents.MarketMakerVolume])) {
       transactions.push({
-        extrinsic: this.api.tx.multicollateralBondingCurvePool.claimIncentives,
+        extrinsic: this.api.tx.vestedRewards.claimRewards,
         args: []
       })
     }
-    if (hasRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NtfAirdrop])) {
+    if (containsRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NftAirdrop])) {
       transactions.push({
         extrinsic: this.api.tx.rewards.claim,
         args: [signature]
@@ -1387,7 +1394,7 @@ export class Api extends BaseApi {
    * @param signature message signed in external wallet (if want to claim external rewards)
    */
   public async claimRewards (
-    rewards: Array<RewardInfo>,
+    rewards: Array<RewardInfo | RewardsInfo>,
     signature?: string,
     fee?: CodecString,
     externalAddress?: string,
@@ -1408,10 +1415,11 @@ export class Api extends BaseApi {
 
   /**
    * Get all tokens list registered in the blockchain network
+   * @param whitelist set of whitelist tokens
    * @param withPoolTokens `false` by default
    */
-  public async getAssets (withPoolTokens = false): Promise<Array<Asset>> {
-    const assets = await getAssets(this.api)
+  public async getAssets (whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
+    const assets = await getAssets(this.api, whitelist)
     return withPoolTokens ? assets : assets.filter(asset => asset.symbol !== PoolTokens.XYKPOOL)
   }
 

@@ -58,15 +58,12 @@ class Connection {
     try {
       await Promise.race(connectionRequests)
 
-      if (!connectionEndpointIsStable()) return
+      if (!connectionEndpointIsStable()) {
+        api.disconnect()
+        return
+      }
 
       this.api = api
-
-      // unsubscribe old event handlers, clear them from memory
-      if (this.eventHandlers.length > 0) {
-        this.eventHandlers.forEach(unsubscribeFn => unsubscribeFn())
-        this.eventHandlers = []
-      }
 
       // add new event handlers
       if (eventListeners.length > 0) {
@@ -83,8 +80,16 @@ class Connection {
     }
   }
 
+  public unsubscribeEventHandlers (): void {
+    if (this.eventHandlers.length > 0) {
+      this.eventHandlers.forEach(unsubscribeFn => unsubscribeFn())
+      this.eventHandlers = []
+    }
+  }
+
   private async stop (): Promise<void> {
     if (this.api) {
+      this.unsubscribeEventHandlers()
       await this.api.disconnect()
     }
     this.api = null

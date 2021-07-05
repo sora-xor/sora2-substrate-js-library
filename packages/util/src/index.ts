@@ -4,8 +4,21 @@ export * from './BridgeApi'
 export * from './connection'
 export * from './FaucetApi'
 export * from './storage'
-export * from './registeredAssets'
 export { FPNumber, CodecString } from './fp'
-export { AccountAsset, AccountLiquidity, Asset, AccountBalance, KnownAssets, KnownSymbols, MaxTotalSupply } from './assets'
-export { RewardingEvents, RewardInfo, LPRewardsInfo, RewardReason } from './rewards'
+export {
+  AccountAsset,
+  AccountLiquidity,
+  Asset,
+  AccountBalance,
+  KnownAssets,
+  KnownSymbols,
+  MaxTotalSupply,
+  Whitelist,
+  WhitelistArrayItem,
+  getWhitelistAssets,
+  isWhitelistAsset,
+  getWhitelistIdsBySymbol,
+  isBlacklistAsset
+} from './assets'
+export { RewardingEvents, RewardInfo, RewardsInfo, LPRewardsInfo, RewardReason } from './rewards'
 export { LiquiditySourceTypes, SwapResult } from './swap'

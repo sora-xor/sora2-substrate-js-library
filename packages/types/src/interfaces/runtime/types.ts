@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
+import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { Signature } from '@polkadot/types/interfaces/extrinsics';
@@ -294,6 +294,12 @@ export interface LookupSource extends MultiAddress {}
 /** @name LookupTarget */
 export interface LookupTarget extends AccountId {}
 
+/** @name MarketMakerInfo */
+export interface MarketMakerInfo extends Struct {
+  readonly count: u32;
+  readonly volume: Balance;
+}
+
 /** @name Mode */
 export interface Mode extends Enum {
   readonly isPermit: boolean;
@@ -436,10 +442,19 @@ export interface Releases extends Enum {
   readonly isV10: boolean;
 }
 
+/** @name RewardInfo */
+export interface RewardInfo extends Struct {
+  readonly limit: Balance;
+  readonly total_available: Balance;
+  readonly rewards: BTreeMap<RewardReason, Balance>;
+}
+
 /** @name RewardReason */
 export interface RewardReason extends Enum {
   readonly isUnspecified: boolean;
   readonly isBuyOnBondingCurve: boolean;
+  readonly isLiquidityProvisionFarming: boolean;
+  readonly isMarketMakerVolume: boolean;
 }
 
 /** @name RuntimeDbWeight */
@@ -489,6 +504,9 @@ export interface StorageData extends Bytes {}
 export interface StorageProof extends Struct {
   readonly trieNodes: Vec<Bytes>;
 }
+
+/** @name StorageVersion */
+export interface StorageVersion extends Null {}
 
 /** @name SwapAction */
 export interface SwapAction extends Null {}

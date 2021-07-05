@@ -419,5 +419,15 @@ export default {
         Incoming: "(IncomingRequest, H256)",
       }
     },
+    EthBridgeStorageVersion: {
+      _enum: [
+        "V1", "V2RemovePendingTransfers",
+      ]
+    },
+  },
+  typesAlias: {
+    ethBridge: {
+      StorageVersion: 'EthBridgeStorageVersion'
+    }
   }
 }

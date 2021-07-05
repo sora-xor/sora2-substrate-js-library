@@ -1,4 +1,4 @@
-import { api, connection, KnownAssets, KnownSymbols, TransactionStatus } from '@sora-substrate/util'
+import { api, connection, FPNumber, KnownAssets, KnownSymbols, TransactionStatus } from '@sora-substrate/util'
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
@@ -20,7 +20,8 @@ This file should be located in "scripts" directory. If you want to skip it - jus
   } catch (error) {
     console.warn(
 `CSV file "${filename}" for "${assetSymbol}" tokens is not found! File should be located in "scripts" directory.\n
-"filename" should be just a name of the file with extension without the path.\n\n`
+"filename" should be just a name of the file with extension without the path.\n
+"${assetSymbol}" TRANSFERS WILL BE SKIPPED\n\n`
     )
     return []
   }
@@ -51,9 +52,10 @@ async function main(): Promise<void> {
 ______________________________________________________________\n`
     )
   // Get data from files
+  const xorParams = await getTransferParams(rl, KnownSymbols.XOR)
   const valParams = await getTransferParams(rl, KnownSymbols.VAL)
   const pswapParams = await getTransferParams(rl, KnownSymbols.PSWAP)
-  const transferParams = [...valParams, ...pswapParams]
+  const transferParams = [...xorParams, ...valParams, ...pswapParams]
   if (!transferParams.length) {
     throw new Error('There is no data. Please try again')
   }
@@ -76,6 +78,9 @@ ______________________________________________________________\n`
     throw new Error(`Mnemonic Seed "${mnemonicSeed}" is incorrect!\n\n`)
   }
   api.importAccount(mnemonicSeed, 'Test', 'qwasZX123')
+  // Display network fee
+  const fee = await api.getTransferAllNetworkFee(transferParams)
+  console.log(`Network fee is ${FPNumber.fromCodecValue(fee).toLocaleString()} XOR\n`)
   // Submit transfers
   await api.transferAll(transferParams)
   await delay()

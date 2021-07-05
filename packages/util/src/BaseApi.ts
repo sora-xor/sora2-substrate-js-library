@@ -3,7 +3,7 @@ import first from 'lodash/fp/first'
 import { ApiPromise, ApiRx } from '@polkadot/api'
 import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
-import { Signer } from '@polkadot/types/types'
+import { Signer, ISubmittableResult } from '@polkadot/types/types'
 import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
@@ -113,15 +113,40 @@ export class BaseApi {
     return this.history.find(item => item.id === id) ?? null
   }
 
-  public saveHistory (historyItem: History): void {
+  public saveHistory (historyItem: History, wasNotGenerated = false): void {
     if (!historyItem || !historyItem.id) return
 
-    const historyCopy = [...this.history]
+    let historyCopy: Array<History>
+    let addressStorage: Storage
+
+    const hasAccessToStorage = !!this.storage
+    const historyItemHasSigner = !!historyItem.from
+    const historyItemFromAddress = historyItemHasSigner ? this.formatAddress(historyItem.from, false) : ''
+    const needToUpdateAddressStorage = historyItemFromAddress && (historyItemFromAddress !== this.address) && hasAccessToStorage
+
+    if (needToUpdateAddressStorage) {
+      addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress))
+      historyCopy = JSON.parse(addressStorage.get('history')) || [];
+    } else {
+      historyCopy = [...this.history]
+    }
+
     const index = historyCopy.findIndex(item => item.id === historyItem.id)
 
-    ~index ? historyCopy[index] = historyItem : historyCopy.push(historyItem)
+    const item = ~index ? { ...historyCopy[index], ...historyItem } : historyItem
 
-    this.history = historyCopy
+    if (wasNotGenerated) {
+      // Tx was failed on the static validation and wasn't generated in the network
+      delete item.txId
+    }
+
+    ~index ? historyCopy[index] = item : historyCopy.push(item)
+
+    if (needToUpdateAddressStorage && addressStorage) {
+      addressStorage.set('history', JSON.stringify(historyCopy))
+    } else {
+      this.history = historyCopy
+    }
   }
 
   public removeHistory (id: string): void {
@@ -155,7 +180,7 @@ export class BaseApi {
     this.storage = storage
   }
 
-  protected async submitExtrinsic (
+  public async submitExtrinsic (
     extrinsic: SubmittableExtrinsic,
     signer: KeyringPair,
     historyData?: History | BridgeHistory | RewardClaimHistory,
@@ -171,10 +196,10 @@ export class BaseApi {
       history.id = encrypt(`${history.startTime}`)
     }
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address)
-    const extrinsicFn = (callbackFn: (result: any) => void) => unsigned
-      ? extrinsic.send(callbackFn)
-      : extrinsic.signAndSend(signer.isLocked ? signer.address : signer, { signer: this.signer, nonce }, callbackFn)
-    const unsub = await extrinsicFn((result: any) => {
+    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(signer.isLocked ? signer.address : signer, { signer: this.signer, nonce })
+    history.txId = signedTx.hash.toString()
+    const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn)
+    const unsub = await extrinsicFn((result: ISubmittableResult) => {
       if (isBridgeOperation(history.type)) {
         history.signed = true
       }
@@ -214,7 +239,7 @@ export class BaseApi {
       const errorParts = e.message.split(':')
       const errorInfo = last(errorParts).trim()
       history.errorMessage = errorInfo
-      this.saveHistory(history)
+      this.saveHistory(history, true)
       throw new Error(errorInfo)
     })
   }
@@ -263,6 +288,10 @@ export class BaseApi {
         extrinsic = params[0].extrinsic
         extrinsicParams = params[0].args
         break
+      case Operation.TransferAll:
+        extrinsic = this.api.tx.utility.batchAll
+        extrinsicParams = params
+        break
       default:
         throw new Error('Unknown function')
     }
@@ -288,8 +317,10 @@ export class BaseApi {
    */
   public checkAddress (address: string): boolean {
     try {
-      // If we'll need to check SORA prefix: decodeAddress(address, false, this.prefix)
-      decodeAddress(address)
+      if (address.slice(0, 2) !== 'cn') {
+        return false
+      }
+      decodeAddress(address, false, this.prefix)
       return true
     } catch (error) {
       return false
@@ -315,10 +346,12 @@ export enum Operation {
   RegisterAsset = 'RegisterAsset',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
-  ClaimRewards = 'ClaimRewards'
+  ClaimRewards = 'ClaimRewards',
+  TransferAll = 'TransferAll', // Batch with transfers
 }
 
 export interface History {
+  txId?: string;
   type: Operation;
   amount?: string;
   symbol?: string;

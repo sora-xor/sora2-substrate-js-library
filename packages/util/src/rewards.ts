@@ -5,9 +5,12 @@ import { History } from './BaseApi'
 export enum RewardingEvents {
   XorErc20 = 'XorErc20',
   SoraFarmHarvest = 'SoraFarmHarvest',
-  NtfAirdrop = 'NtfAirdrop',
+  NftAirdrop = 'NftAirdrop',
   LiquidityProvision = 'LiquidityProvision',
-  BuyOnBondingCurve = 'BuyOnBondingCurve'
+  BuyOnBondingCurve = 'BuyOnBondingCurve',
+  LiquidityProvisionFarming = 'LiquidityProvisionFarming', // not used yet
+  MarketMakerVolume = 'MarketMakerVolume', // not used yet
+  Unspecified = 'Unspecified'
 }
 
 export enum RewardReason {
@@ -15,11 +18,16 @@ export enum RewardReason {
   BuyOnBondingCurve = 'BuyOnBondingCurve'
 }
 
+export interface RewardsInfo {
+  limit: CodecString;
+  total: CodecString;
+  rewards: Array<RewardInfo>;
+}
+
 export interface RewardInfo {
   type: RewardingEvents;
   asset: Asset;
   amount: CodecString;
-  total?: CodecString;
 }
 
 export interface LPRewardsInfo {
@@ -31,24 +39,28 @@ export interface LPRewardsInfo {
 export interface RewardClaimHistory extends History {
   soraNetworkFee?: CodecString;
   externalAddress?: string;
-  rewards?: Array<RewardInfo>;
+  rewards?: Array<RewardInfo | RewardsInfo>;
 }
 
 export function isClaimableReward (reward: RewardInfo): boolean {
   const fpAmount = FPNumber.fromCodecValue(reward.amount, reward.asset.decimals)
 
-  if (!reward.total) return !fpAmount.isZero()
-  
-  const fpTotal = FPNumber.fromCodecValue(reward.total, reward.asset.decimals)
+  return !fpAmount.isZero()
+}
 
-  return !fpAmount.isZero() && FPNumber.lte(fpAmount, fpTotal)
+export function containsRewardsForEvents (items: Array<RewardInfo | RewardsInfo>, events: Array<RewardingEvents>): boolean {
+  return items.some(item => {
+    const key = 'rewards' in item ? item.rewards : [item]
+
+    return hasRewardsForEvents(key, events)
+  })
 }
 
 export function hasRewardsForEvents (rewards: Array<RewardInfo>, events: Array<RewardingEvents>): boolean {
   return rewards.some(item => isClaimableReward(item) && events.includes(item.type))
 }
 
-export function prepareRewardInfo (type: RewardingEvents, amount: CodecString | number, total?: CodecString | number): RewardInfo {
+export function prepareRewardInfo (type: RewardingEvents, amount: CodecString | number): RewardInfo {
   const [val, pswap] = [KnownAssets.get(KnownSymbols.VAL), KnownAssets.get(KnownSymbols.PSWAP)]
   const asset = ({
     [RewardingEvents.XorErc20]: val
@@ -60,9 +72,28 @@ export function prepareRewardInfo (type: RewardingEvents, amount: CodecString | 
     amount: new FPNumber(amount, asset.decimals).toCodecString()
   } as RewardInfo
 
-  if (total) {
-    rewardInfo.total = new FPNumber(total, asset.decimals).toCodecString()
+  return rewardInfo
+}
+
+export function prepareRewardsInfo (limit: CodecString | number, total: CodecString | number, rewards: any): RewardsInfo | null {
+  const asset = KnownAssets.get(KnownSymbols.PSWAP)
+  const buffer = []
+
+  const fpLimit = new FPNumber(limit, asset.decimals)
+
+  if (fpLimit.isZero()) return null
+
+  const fpTotal = new FPNumber(total, asset.decimals)
+
+  for (const [event, balance] of rewards.entries()) {
+    buffer.push(prepareRewardInfo(event.toString(), balance))
   }
 
-  return rewardInfo
+  const claimableRewards = buffer.filter(item => isClaimableReward(item))
+
+  return {
+    limit: fpLimit.toCodecString(),
+    total: fpTotal.toCodecString(),
+    rewards: claimableRewards
+  }
 }

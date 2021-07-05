@@ -6,7 +6,7 @@ sora-substrate-js-library
 
 ### Prepare
 ```
-yarn --update-checksums
+yarn
 yarn build
 ```
 additionally to get latest definitions for extrinsics, state queries and consts:\
