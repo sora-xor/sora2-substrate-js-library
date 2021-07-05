@@ -26,7 +26,8 @@
     "export-types:all": "yarn pull-metadata:all && yarn build:interfaces:stage && yarn export-types:stage && yarn build:interfaces:prod && yarn export-types:prod && yarn build:interfaces:dev && yarn export-types:dev",
     "transfers": "ts-node --project ./tsconfig.json scripts/transfers.ts",
     "demo": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
-    "publish-workspaces": "lerna publish from-package"
+    "publish-workspaces": "lerna publish from-package",
+    "generate-doc": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/exportApi.ts"
   },
   "engines": {
     "yarn": "^1.10.1"
