@@ -144,7 +144,7 @@ export default {
     Public: "[u8; 33]",
     RewardReason: {
       _enum: [
-        "Unspecified", "BuyOnBondingCurve"
+        "Unspecified", "BuyOnBondingCurve", "LiquidityProvisionFarming", "MarketMakerVolume"
       ]
     },
     StorageVersion: "Null", // Generic storage version
