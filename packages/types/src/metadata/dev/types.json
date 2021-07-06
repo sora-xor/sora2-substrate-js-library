@@ -475,7 +475,9 @@
     "RewardReason": {
         "_enum": [
             "Unspecified",
-            "BuyOnBondingCurve"
+            "BuyOnBondingCurve",
+            "LiquidityProvisionFarming",
+            "MarketMakerVolume"
         ]
     },
     "Scope": {
