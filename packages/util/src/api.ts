@@ -754,6 +754,82 @@ export class Api extends BaseApi {
   }
 
   /**
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
+   * @param amountA Amount A value
+   * @param amountB Amount B value
+   * @param swapResultValue getMinMaxValue() -> min received if exchange A, otherwise - user's input when Exchange B
+   * @param accountId Account Id address
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
+   */
+  public async getSwapAndSendNetworkFee (
+    assetAAddress: string,
+    assetBAddress: string,
+    amountA: NumberLike,
+    amountB: NumberLike,
+    swapResultValue: string,
+    accountId: string,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
+    isExchangeB = false,
+    liquiditySource = LiquiditySourceTypes.Default
+  ): Promise<CodecString> {
+    const params: any = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
+    params.transferArgs = [assetBAddress, accountId, new FPNumber(swapResultValue, params.assetB.decimals).toCodecString()]
+    return await this.getNetworkFee(this.accountPair, Operation.SwapAndSend, params)
+  }
+
+  /**
+   * Swap & send batch operation
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
+   * @param amountA Amount A value
+   * @param amountB Amount B value
+   * @param swapResultValue getMinMaxValue() -> min received if exchange A, otherwise - user's input when Exchange B
+   * @param accountId Account Id address
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
+   */
+   public async swapAndSend (
+    assetAAddress: string,
+    assetBAddress: string,
+    amountA: NumberLike,
+    amountB: NumberLike,
+    swapResultValue: string,
+    accountId: string,
+    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
+    isExchangeB = false,
+    liquiditySource = LiquiditySourceTypes.Default
+  ): Promise<void> {
+    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
+    if (!this.getAsset(params.assetB.address)) {
+      this.addAccountAsset({ ...params.assetB, balance: ZeroBalance })
+      this.updateAccountAssets()
+    }
+
+    const swap = (this.api.tx.liquidityProxy as any).swap(...params.args)
+    const transfer = this.api.tx.assets.transfer(assetBAddress, accountId, new FPNumber(swapResultValue, params.assetB.decimals).toCodecString())
+
+    const formattedToAddress = accountId.slice(0, 2) === 'cn' ? accountId : this.formatAddress(accountId)
+
+    await this.submitExtrinsic(
+      this.api.tx.utility.batchAll([swap, transfer]),
+      this.account.pair,
+      {
+        symbol: params.assetA.symbol,
+        assetAddress: params.assetA.address,
+        amount: `${amountA}`,
+        symbol2: params.assetB.symbol,
+        asset2Address: params.assetB.address,
+        amount2: `${amountB}`,
+        liquiditySource,
+        to: formattedToAddress,
+        type: Operation.SwapAndSend
+      }
+    )
+  }
+
+  /**
    * Get account liquidity with pair where the first symbol is `XOR` and the second is from `accountAssets`
    */
   public async getKnownAccountLiquidity (): Promise<Array<AccountLiquidity>> {
