@@ -157,5 +157,11 @@ export default {
       total_available: "Balance",
       rewards: "BTreeMap<RewardReason, Balance>",
     },
+    PriceInfo: {
+      price_failures: "u32",
+      spot_prices: "Vec<Balance>",
+      average_price: "Balance",
+      needs_update: "bool"
+    }
   }
 }

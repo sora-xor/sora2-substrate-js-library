@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, i128, u16, u32, u64, u8 } from '@polkadot/types';
+import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, bool, i128, u16, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { Signature } from '@polkadot/types/interfaces/extrinsics';
@@ -406,6 +406,14 @@ export interface PostDispatchInfo extends Struct {
 
 /** @name PreRuntime */
 export interface PreRuntime extends ITuple<[ConsensusEngineId, Bytes]> {}
+
+/** @name PriceInfo */
+export interface PriceInfo extends Struct {
+  readonly price_failures: u32;
+  readonly spot_prices: Vec<Balance>;
+  readonly average_price: Balance;
+  readonly needs_update: bool;
+}
 
 /** @name Public */
 export interface Public extends U8aFixed {}
