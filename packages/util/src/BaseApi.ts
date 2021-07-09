@@ -292,6 +292,13 @@ export class BaseApi {
         extrinsic = this.api.tx.utility.batchAll
         extrinsicParams = params
         break
+      case Operation.SwapAndSend:
+        extrinsic = this.api.tx.utility.batchAll
+        extrinsicParams = [[
+          (this.api.tx.liquidityProxy as any).swap(...params[0].args),
+          (this.api.tx.assets as any).transfer(...params[0].transferArgs)
+        ]]
+        break
       default:
         throw new Error('Unknown function')
     }
@@ -348,6 +355,7 @@ export enum Operation {
   EthBridgeIncoming = 'EthBridgeIncoming',
   ClaimRewards = 'ClaimRewards',
   TransferAll = 'TransferAll', // Batch with transfers
+  SwapAndSend = 'SwapAndSend'
 }
 
 export interface History {
