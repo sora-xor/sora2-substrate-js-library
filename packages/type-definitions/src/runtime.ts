@@ -178,5 +178,11 @@ export default {
         WrappedRepr: "AccountId"
       }
     },
+    PriceInfo: {
+      price_failures: "u32",
+      spot_prices: "Vec<Balance>",
+      average_price: "Balance",
+      needs_update: "bool"
+    }
   }
 }
