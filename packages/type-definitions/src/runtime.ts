@@ -136,7 +136,7 @@ export default {
       volume: "Balance",
     },
     PredefinedAssetId: {
-      _enum: [
+      _enum: [ // Order must match rust definition
         "XOR",
         "DOT",
         "KSM",

@@ -1,8 +1,9 @@
 import { ApiPromise } from '@polkadot/api';
 import { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types/interfaces';
 import xxhash64AsBn from '@polkadot/util-crypto/xxhash/xxhash64/asBn';
+import { types } from '@sora-substrate/type-definitions'
 
-const predefinedAssets = ['XOR','DOT','KSM','USDT','VAL','PSWAP','DAI','ETH'];
+const predefinedAssets = types['PredefinedAssetId']['_enum'];
 
 export function bytesToUint(bytes) {
   var value = 0;
@@ -15,7 +16,7 @@ export function bytesToUint(bytes) {
 export function assetIdToTechAssetId(api: ApiPromise, assetId: AssetId | string): TechAssetId {
   let bytes = api.createType('AssetId', assetId).toU8a();
   const end = bytes[0] + 1;
-  if (end < 4) {
+  if (end < 5 && end > 1) {
     const frag = bytes.subarray(1, end);
     const index = bytesToUint(frag);
     if (index < predefinedAssets.length) {
