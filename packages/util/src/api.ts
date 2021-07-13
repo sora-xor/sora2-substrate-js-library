@@ -7,7 +7,7 @@ import { CreateResult } from '@polkadot/ui-keyring/types'
 import { KeyringPair$Json } from '@polkadot/keyring/types'
 import { Signer, Observable } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
-import { Subject, scheduled, asapScheduler } from '@polkadot/x-rxjs'
+import { Subject, scheduled, asapScheduler, combineLatest } from '@polkadot/x-rxjs'
 import { map, concatAll } from '@polkadot/x-rxjs/operators'
 
 import {
@@ -955,7 +955,7 @@ export class Api extends BaseApi {
     firstAssetAddress: string,
     secondAssetAddress: string,
     liquiditySource = LiquiditySourceTypes.Default
-  ): Observable<void> {
+  ): Observable<void[]> {
     const toVoid = (o: Observable<any>) => o.pipe(map(codec => {}))
     const poolXyk: Array<Observable<void>> = []
     const xor = KnownAssets.get(KnownSymbols.XOR).address
@@ -968,11 +968,11 @@ export class Api extends BaseApi {
       poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(first, second)))
     }
     if (liquiditySource === LiquiditySourceTypes.XYKPool) {
-      return scheduled(poolXyk, asapScheduler).pipe(concatAll())
+      return combineLatest(poolXyk)
     }
     const firstTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress))
     const secondTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress))
-    return scheduled([...poolXyk, firstTbc, secondTbc], asapScheduler).pipe(concatAll())
+    return combineLatest([...poolXyk, firstTbc, secondTbc])
   }
 
   /**
