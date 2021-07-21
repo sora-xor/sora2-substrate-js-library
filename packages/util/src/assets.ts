@@ -32,6 +32,14 @@ export interface AccountAsset {
   decimals?: number;
 }
 
+export enum BalanceType {
+  Transferable = 'transferable',
+  Frozen = 'frozen',
+  Locked = 'locked',
+  Reserved = 'reserved',
+  Total = 'total'
+}
+
 // Each value === value * 10 ^ decimals
 export interface AccountBalance {
   reserved: CodecString;
