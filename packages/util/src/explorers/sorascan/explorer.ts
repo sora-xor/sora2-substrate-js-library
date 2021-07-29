@@ -36,7 +36,7 @@ export default class SoraScanExplorer implements Explorer {
     return `${networkUrl}/${entityType}/${entityId}`
   }
 
-  public static getApiUrl (soraNetwork?: string) {
+  public static getApiUrl (soraNetwork?: string): string {
     const baseUrl = SoraScanExplorer.getBaseUrl(soraNetwork)
     const apiVersion = SoraScanExplorer.API_VERSION
 
