@@ -23,7 +23,6 @@ import {
   AccountBalance,
   getAssetBalanceObservable,
   ZeroBalance,
-  getBalance,
   getLiquidityBalance,
   Whitelist
 } from './assets'
@@ -35,6 +34,7 @@ import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
 import { Storage } from './storage'
+import ExplorerDataHandler from './explorers/ExplorerDataHandler'
 
 /**
  * Contains all necessary data and functions for the wallet
@@ -45,6 +45,7 @@ export class Api extends BaseApi {
   public readonly defaultSlippageTolerancePercent = 0.5
   public readonly seedLength = 12
   public readonly bridge: BridgeApi = new BridgeApi()
+  public readonly expolorerDataHandler: ExplorerDataHandler = new ExplorerDataHandler()
 
   private _assets: Array<AccountAsset> = []
   private _accountAssetsAddresses: Array<string> = [] 
@@ -132,15 +133,6 @@ export class Api extends BaseApi {
   public set accountLiquidity (liquidity: Array<AccountLiquidity>) {
     this.storage?.set('liquidity', JSON.stringify(liquidity))
     this._liquidity = [...liquidity]
-  }
-
-  private addToLiquidityList (asset: AccountLiquidity): void {
-    const liquidityCopy = [...this.accountLiquidity]
-    const index = liquidityCopy.findIndex(item => item.address === asset.address)
-
-    ~index ? liquidityCopy[index] = asset : liquidityCopy.push(asset)
-
-    this.accountLiquidity = liquidityCopy
   }
 
   public get accountHistory (): Array<History> {

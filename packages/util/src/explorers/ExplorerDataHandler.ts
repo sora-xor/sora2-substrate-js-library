@@ -5,8 +5,11 @@ export default class ExplorerDataHandler {
   protected explorer: Explorer
   protected parser: ExplorerDataParser
 
-  constructor (explorer: Explorer, parser: ExplorerDataParser) {
+  public setExplorer (explorer: Explorer) {
     this.explorer = explorer
+  }
+
+  public setParser (parser: ExplorerDataParser) {
     this.parser = parser
   }
 

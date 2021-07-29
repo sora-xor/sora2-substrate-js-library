@@ -32,6 +32,7 @@ export class BaseApi {
   protected storage?: Storage // common data storage
   protected accountStorage?: AccountStorage // account data storage
   protected account: CreateResult
+  protected soraNetwork: string
 
   constructor () {}
 
@@ -178,6 +179,14 @@ export class BaseApi {
    */
   public setStorage (storage: Storage): void {
     this.storage = storage
+  }
+
+  /**
+   * Set soraNetwork to use it explorer init
+   * @param storage
+   */
+  public setSoraNetwork (soraNetwork: string) {
+    this.soraNetwork = soraNetwork
   }
 
   public async submitExtrinsic (
