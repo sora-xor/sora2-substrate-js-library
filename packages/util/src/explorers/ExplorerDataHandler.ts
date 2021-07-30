@@ -34,7 +34,7 @@ export default class ExplorerDataHandler {
       throw new Error('[ExplorerDataParser]: "explorer" is not defined. Please use "setExplorer" method to set explorer instance')
     }
     if (!this.parser) {
-      throw new Error('[ExplorerDataParser]: "parser" is not defined. Please use "setParser" method to set explorer instance')
+      throw new Error('[ExplorerDataParser]: "parser" is not defined. Please use "setParser" method to set parser instance')
     }
   }
 }
