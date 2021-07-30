@@ -34,7 +34,9 @@ import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
 import { Storage } from './storage'
+
 import ExplorerDataHandler from './explorers/ExplorerDataHandler'
+import { Explorer, ExplorerDataParser } from './explorers/types'
 
 /**
  * Contains all necessary data and functions for the wallet
@@ -45,7 +47,10 @@ export class Api extends BaseApi {
   public readonly defaultSlippageTolerancePercent = 0.5
   public readonly seedLength = 12
   public readonly bridge: BridgeApi = new BridgeApi()
+
   public readonly expolorerDataHandler: ExplorerDataHandler = new ExplorerDataHandler()
+  private explorer: Explorer
+  private explorerParser: ExplorerDataParser
 
   private _assets: Array<AccountAsset> = []
   private _accountAssetsAddresses: Array<string> = [] 
@@ -178,6 +183,24 @@ export class Api extends BaseApi {
       subscription.unsubscribe()
     }
     this.balanceSubscriptions = []
+  }
+
+  /**
+   * Set explorer instance and use it in expolorerDataHandler
+   * @param explorer explorer instance
+   */
+  public setExplorer (explorer: Explorer): void {
+    this.explorer = explorer
+    this.expolorerDataHandler.setExplorer(this.explorer)
+  }
+
+  /**
+   * Set explorer data parser instance and use it in expolorerDataHandler
+   * @param explorerParser explorer data parser instance
+   */
+  public setExplorerParser (explorerParser: ExplorerDataParser): void {
+    this.explorerParser = explorerParser
+    this.expolorerDataHandler.setParser(this.explorerParser)
   }
 
   /**
