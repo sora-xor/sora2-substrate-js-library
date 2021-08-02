@@ -75,7 +75,8 @@ import(`../src/metadata${env ? '/' + env : ''}/latest`).then(meta => {
       'MockLiquiditySource2',
       'MockLiquiditySource3',
       'MockLiquiditySource4',
-      'DEXAPI'
+      'DEXAPI',
+      'Farming',
     ],
     definitions,
     metaHex
