@@ -173,6 +173,10 @@ export class Api extends BaseApi {
     )
   }
 
+  public getSystemBlockNumberObservable (): Observable<string> {
+    return this.apiRx.query.system.number().pipe(map(codec => codec.toString()))
+  }
+
   public getAsset (address: string): AccountAsset | null {
     return this.accountAssets.find(asset => asset.address === address) ?? null
   }
