@@ -10,6 +10,7 @@ export {
   AccountLiquidity,
   Asset,
   AccountBalance,
+  BalanceType,
   KnownAssets,
   KnownSymbols,
   MaxTotalSupply,

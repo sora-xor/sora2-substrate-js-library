@@ -17,6 +17,7 @@ export interface WhitelistItem {
   name: string;
   decimals: number;
   icon: string;
+  price?: CodecString;
 }
 
 export interface WhitelistArrayItem extends WhitelistItem {
@@ -29,6 +30,14 @@ export interface AccountAsset {
   symbol?: string;
   name?: string;
   decimals?: number;
+}
+
+export enum BalanceType {
+  Transferable = 'transferable',
+  Frozen = 'frozen',
+  Locked = 'locked',
+  Reserved = 'reserved',
+  Total = 'total'
 }
 
 // Each value === value * 10 ^ decimals
@@ -219,6 +228,9 @@ export const getWhitelistAssets = (whitelist: Array<WhitelistArrayItem>) => whit
     symbol: asset.symbol,
     decimals: asset.decimals,
     icon: asset.icon
+  }
+  if (asset.price) {
+    acc[asset.address].price = asset.price
   }
   return acc
 }, {})
