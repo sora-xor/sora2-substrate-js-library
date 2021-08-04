@@ -5,8 +5,8 @@ import { types } from '@sora-substrate/type-definitions'
 
 const predefinedAssets = types['PredefinedAssetId']['_enum'];
 
-export function bytesToUint(bytes) {
-  var value = 0;
+function bytesToUint(bytes: Uint8Array) {
+  let value = 0;
   for (var i = 0; i < bytes.length; i++) {
       value = (value * 256) + bytes[i];
   }
@@ -14,7 +14,7 @@ export function bytesToUint(bytes) {
 }
 
 export function assetIdToTechAssetId(api: ApiPromise, assetId: AssetId | string): TechAssetId {
-  let bytes = api.createType('AssetId', assetId).toU8a();
+  const bytes = api.createType('AssetId', assetId).toU8a();
   const end = bytes[0] + 1;
   if (end < 5 && end > 1) {
     const frag = bytes.subarray(1, end);

@@ -21,6 +21,7 @@ async function main(): Promise<void> {
       throw new Error('Found pool account mismatch!');
     }
   }
+  console.log("All accounts are OK");
 }
 
 main().catch(console.error).finally(() => process.exit());
