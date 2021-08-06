@@ -18,13 +18,24 @@ export default {
         {
           name: 'outputAssetId',
           type: 'AssetId'
-        }
+        },
+        {
+            name: 'at',
+            type: 'BlockHash',
+            isOptional: true
+        },
       ],
       type: 'bool'
     },
     listSupportedSources: {
       description: 'List liquidity source types enabled on chain.',
-      params: [],
+      params: [
+        {
+          name: 'at',
+          type: 'BlockHash',
+          isOptional: true
+        },
+      ],
       type: 'Vec<LiquiditySourceType>'
     },
     quote: {
@@ -53,7 +64,12 @@ export default {
         {
           name: 'swapVariant',
           type: 'SwapVariant'
-        }
+        },
+        {
+            name: 'at',
+            type: 'BlockHash',
+            isOptional: true
+        },
       ],
       type: 'Option<SwapOutcomeInfo>'
     }

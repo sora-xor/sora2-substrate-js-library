@@ -2,12 +2,24 @@ export default {
   rpc: {
     listDEXIds: {
       description: 'Enumerate available ids of DEXes',
-      params: [],
+      params: [
+        {
+          name: 'at',
+          type: 'BlockHash',
+          isOptional: true
+        },
+      ],
       type: 'Vec<DEXId>'
     },
     testBalance: {
       description: 'Test type of Balance',
-      params: [],
+      params: [
+        {
+          name: 'at',
+          type: 'BlockHash',
+          isOptional: true
+        },
+      ],
       type: 'Fixed'
     }
   },

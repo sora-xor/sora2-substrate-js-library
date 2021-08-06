@@ -15,6 +15,11 @@ export default {
           name: 'redirectFinishedLoadRequests',
           type: 'Option<bool>' // default: true
         },
+        {
+            name: 'at',
+            type: 'BlockHash',
+            isOptional: true
+        },
       ],
       type: 'Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>'
     },
@@ -28,6 +33,11 @@ export default {
         {
           name: 'networkId',
           type: 'Option<BridgeNetworkId>'
+        },
+        {
+            name: 'at',
+            type: 'BlockHash',
+            isOptional: true
         },
       ],
       type: 'Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchError>'
@@ -43,6 +53,11 @@ export default {
           name: 'networkId',
           type: 'Option<BridgeNetworkId>'
         },
+        {
+            name: 'at',
+            type: 'BlockHash',
+            isOptional: true
+        },
       ],
       type: 'Result<Vec<Vec<SignatureParams>>, DispatchError>'
     },
@@ -57,6 +72,11 @@ export default {
           name: 'statusFilter',
           type: 'Option<RequestStatus>'
         },
+        {
+            name: 'at',
+            type: 'BlockHash',
+            isOptional: true
+        },
       ],
       type: 'Result<Vec<(BridgeNetworkId, H256)>, DispatchError>'
     },
@@ -66,6 +86,11 @@ export default {
         {
           name: 'networkId',
           type: 'Option<BridgeNetworkId>'
+        },
+        {
+            name: 'at',
+            type: 'BlockHash',
+            isOptional: true
         },
       ],
       type: 'Result<Vec<(AssetKind, (AssetId, BalancePrecision), Option<(H160, BalancePrecision)>)>, DispatchError>'
