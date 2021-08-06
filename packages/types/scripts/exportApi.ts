@@ -160,7 +160,7 @@ function capitalizeFirstLetter(string) {
 }
 
 async function main(): Promise<void> {
-  const provider = new WsProvider('ws://localhost:9944/');
+  const provider = new WsProvider('wss://mof3.sora.org/');
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
 

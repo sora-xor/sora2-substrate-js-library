@@ -6,7 +6,12 @@ export default {
                 {
                     name: 'dexId',
                     type: 'DEXId'
-                }
+                },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'Vec<TradingPair>'
         },
@@ -24,7 +29,12 @@ export default {
                 {
                     name: 'outputAssetId',
                     type: 'AssetId'
-                }
+                },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'bool'
         },
@@ -42,7 +52,12 @@ export default {
                 {
                     name: 'targetAssetId',
                     type: 'AssetId'
-                }
+                },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'Vec<LiquiditySourceType>'
         },
@@ -64,6 +79,11 @@ export default {
                 {
                     name: 'liquiditySourceType',
                     type: 'LiquiditySourceType'
+                },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
                 },
             ],
             type: 'bool'

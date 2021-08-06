@@ -31,6 +31,11 @@ export default {
                     name: 'filterMode',
                     type: 'FilterMode'
                 },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'Option<LPSwapOutcomeInfo>'
         },
@@ -49,6 +54,11 @@ export default {
                     name: 'outputAssetId',
                     type: 'AssetId'
                 },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'bool'
         },
@@ -66,6 +76,11 @@ export default {
                 {
                     name: 'outputAssetId',
                     type: 'AssetId'
+                },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
                 },
             ],
             type: 'Vec<LiquiditySourceType>'
