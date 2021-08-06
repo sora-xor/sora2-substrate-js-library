@@ -9,6 +9,7 @@ import { Messages } from './logger'
 export interface ConnectionRunOptions {
   once?: boolean;
   timeout?: number;
+  autoConnectMs?: number;
   eventListeners?: Array<[ProviderInterfaceEmitted, ProviderInterfaceEmitCb]>
 }
 
@@ -31,11 +32,11 @@ class Connection {
 
   private async run (endpoint: string, runOptions?: ConnectionRunOptions): Promise<void> {
     let connectionTimeout: any
-    const { once = false, timeout = 0, eventListeners = [] } = runOptions || {}
+    const { once = false, timeout = 0, eventListeners = [], autoConnectMs = 1000 } = runOptions || {}
     const prevEndpoint = this.endpoint
     this.endpoint = endpoint
 
-    const provider = new WsProvider(endpoint)
+    const provider = new WsProvider(endpoint, once ? 0 : autoConnectMs)
     const api = new ApiPromise(options({ provider }))
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady'
 
@@ -56,6 +57,8 @@ class Connection {
     if (timeout) connectionRequests.push(runConnectionTimeout())
 
     try {
+      api.connect()
+
       await Promise.race(connectionRequests)
 
       if (!connectionEndpointIsStable()) {
