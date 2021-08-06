@@ -32,7 +32,7 @@ class Connection {
 
   private async run (endpoint: string, runOptions?: ConnectionRunOptions): Promise<void> {
     let connectionTimeout: any
-    const { once = false, timeout = 0, eventListeners = [], autoConnectMs = 1000 } = runOptions || {}
+    const { once = false, timeout = 0, eventListeners = [], autoConnectMs = 5000 } = runOptions || {}
     const prevEndpoint = this.endpoint
     this.endpoint = endpoint
 
