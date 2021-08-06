@@ -161,7 +161,8 @@ export default {
       price_failures: "u32",
       spot_prices: "Vec<Balance>",
       average_price: "Balance",
-      needs_update: "bool"
+      needs_update: "bool",
+      last_spot_price: "Balance",
     }
   }
 }

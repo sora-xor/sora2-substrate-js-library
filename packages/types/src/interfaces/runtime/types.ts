@@ -413,6 +413,7 @@ export interface PriceInfo extends Struct {
   readonly spot_prices: Vec<Balance>;
   readonly average_price: Balance;
   readonly needs_update: bool;
+  readonly last_spot_price: Balance;
 }
 
 /** @name Public */
