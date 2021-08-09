@@ -6,7 +6,12 @@ export default {
                 {
                     name: 'amount',
                     type: 'String'
-                }
+                },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'Option<CustomInfo>'
         }
