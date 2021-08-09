@@ -33,10 +33,12 @@ class Connection {
   private async run (endpoint: string, runOptions?: ConnectionRunOptions): Promise<void> {
     let connectionTimeout: any
     const { once = false, timeout = 0, eventListeners = [], autoConnectMs = 5000 } = runOptions || {}
+
     const prevEndpoint = this.endpoint
     this.endpoint = endpoint
 
-    const provider = new WsProvider(endpoint, once ? 0 : autoConnectMs)
+    const providerAutoConnectMs = once ? 0 : autoConnectMs
+    const provider = new WsProvider(endpoint, providerAutoConnectMs)
     const api = new ApiPromise(options({ provider }))
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady'
 
@@ -57,7 +59,10 @@ class Connection {
     if (timeout) connectionRequests.push(runConnectionTimeout())
 
     try {
-      api.connect()
+      // we should manually call connect fn without autoConnectMs
+      if (!providerAutoConnectMs) {
+        api.connect()
+      }
 
       await Promise.race(connectionRequests)
 
