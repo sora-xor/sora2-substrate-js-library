@@ -93,7 +93,11 @@ class Connection {
   private async stop (): Promise<void> {
     if (this.api) {
       this.unsubscribeEventHandlers()
-      await this.api.disconnect()
+      try {
+        await this.api.disconnect()
+      } catch (error) {
+        console.error(error)
+      }
     }
     this.api = null
     this.endpoint = ''
