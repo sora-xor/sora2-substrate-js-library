@@ -40,7 +40,6 @@ const overrides = {
   TAssetBalance: 'Balance',
   MultiCurrencyBalance: 'Balance',
   MultiCurrencyBalanceOf: 'MultiCurrencyBalance',
-  Timepoint: 'BridgeTimepoint',
   AccountInfo: 'AccountInfoWithDualRefCount',
 };
 

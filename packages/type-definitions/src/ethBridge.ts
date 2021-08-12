@@ -185,7 +185,7 @@ export default {
       amount: "Balance",
       nonce: "Index",
       network_id: "BridgeNetworkId",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
     },
     OutgoingTransferEncoded: {
       currency_id: "CurrencyIdEncoded",
@@ -202,7 +202,7 @@ export default {
       supply: "Balance",
       nonce: "Index",
       network_id: "BridgeNetworkId",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
     },
     OutgoingAddAssetEncoded: {
       name: "String",
@@ -222,7 +222,7 @@ export default {
       decimals: "u8",
       nonce: "Index",
       network_id: "BridgeNetworkId",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
     },
     OutgoingAddTokenEncoded: {
       token_address: "EthereumAddress",
@@ -239,7 +239,7 @@ export default {
       peer_account_id: "AccountId",
       nonce: "Index",
       network_id: "BridgeNetworkId",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
     },
     OutgoingAddPeerCompat: {
       author: "AccountId",
@@ -247,7 +247,7 @@ export default {
       peer_account_id: "AccountId",
       nonce: "Index",
       network_id: "BridgeNetworkId",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
     },
     OutgoingAddPeerEncoded: {
       peer_address: "EthereumAddress",
@@ -261,7 +261,7 @@ export default {
       peer_address: "EthereumAddress",
       nonce: "Index",
       network_id: "BridgeNetworkId",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
     },
     OutgoingRemovePeerCompat: {
       author: "AccountId",
@@ -269,7 +269,7 @@ export default {
       peer_address: "EthereumAddress",
       nonce: "Index",
       network_id: "BridgeNetworkId",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
     },
     OutgoingRemovePeerEncoded: {
       peer_address: "EthereumAddress",
@@ -281,7 +281,7 @@ export default {
       author: "AccountId",
       nonce: "Index",
       network_id: "BridgeNetworkId",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
     },
     OutgoingPrepareForMigrationEncoded: {
       this_contract_address: "EthereumAddress",
@@ -295,7 +295,7 @@ export default {
       erc20_native_tokens: "Vec<EthereumAddress>",
       nonce: "Index",
       network_id: "BridgeNetworkId",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
     },
     OutgoingMigrateEncoded: {
       this_contract_address: "EthereumAddress",
@@ -336,7 +336,7 @@ export default {
       author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       network_id: "BridgeNetworkId",
     },
     IncomingAddToken: {
@@ -348,7 +348,7 @@ export default {
       author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       network_id: "BridgeNetworkId",
     },
     IncomingChangePeers: {
@@ -358,7 +358,7 @@ export default {
       author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       network_id: "BridgeNetworkId",
     },
     IncomingChangePeersCompat: {
@@ -369,7 +369,7 @@ export default {
       author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       network_id: "BridgeNetworkId",
     },
     IncomingCancelOutgoingRequest: {
@@ -380,7 +380,7 @@ export default {
       author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       network_id: "BridgeNetworkId",
     },
     IncomingMarkAsDoneRequest: {
@@ -388,14 +388,14 @@ export default {
       initial_request_hash: "H256",
       author: "AccountId",
       at_height: "u64",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       network_id: "BridgeNetworkId",
     },
     IncomingPrepareForMigration: {
       author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       network_id: "BridgeNetworkId",
     },
     IncomingMigrate: {
@@ -403,7 +403,7 @@ export default {
       author: "AccountId",
       tx_hash: "H256",
       at_height: "u64",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       network_id: "BridgeNetworkId",
     },
     IncomingRequest: {
@@ -420,14 +420,14 @@ export default {
     LoadIncomingTransactionRequest: {
       author: "AccountId",
       hash: "H256",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       kind: "IncomingTransactionRequestKind",
       network_id: "BridgeNetworkId",
     },
     LoadIncomingMetaRequest: {
       author: "AccountId",
       hash: "H256",
-      timepoint: "Timepoint",
+      timepoint: "BridgeTimepoint",
       kind: "IncomingMetaRequestKind",
       network_id: "BridgeNetworkId",
     },
@@ -452,7 +452,7 @@ export default {
   },
   typesAlias: {
     ethBridge: {
-      StorageVersion: 'EthBridgeStorageVersion'
+      StorageVersion: 'EthBridgeStorageVersion',
     }
   }
 }
