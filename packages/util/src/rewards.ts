@@ -79,17 +79,16 @@ export function prepareRewardsInfo (limit: CodecString | number, total: CodecStr
   const asset = KnownAssets.get(KnownSymbols.PSWAP)
   const buffer = []
 
-  const fpLimit = new FPNumber(limit, asset.decimals)
-
-  if (fpLimit.isZero()) return null
-
-  const fpTotal = new FPNumber(total, asset.decimals)
-
   for (const [event, balance] of rewards.entries()) {
     buffer.push(prepareRewardInfo(event.toString(), balance))
   }
 
   const claimableRewards = buffer.filter(item => isClaimableReward(item))
+
+  if (claimableRewards.length === 0) return null
+
+  const fpLimit = new FPNumber(limit, asset.decimals)
+  const fpTotal = new FPNumber(total, asset.decimals)
 
   return {
     limit: fpLimit.toCodecString(),
