@@ -319,15 +319,12 @@ export class BaseApi {
   }
 
   /**
-   * Check address
+   * Validate address
    * @param address
    */
-  public checkAddress (address: string): boolean {
+  public validateAddress (address: string): boolean {
     try {
-      if (address.slice(0, 2) !== 'cn') {
-        return false
-      }
-      decodeAddress(address, false, this.prefix)
+      decodeAddress(address, false)
       return true
     } catch (error) {
       return false
