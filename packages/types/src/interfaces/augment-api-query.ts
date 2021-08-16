@@ -2,10 +2,11 @@
 /* eslint-disable */
 
 import type { BTreeSet, Option, Vec, bool } from '@polkadot/types';
-import type { AnyNumber, Observable } from '@polkadot/types/types';
+import type { AnyNumber, ITuple, Observable } from '@polkadot/types/types';
 import type { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import type { AccountId, Balance, CurrencyId, DEXId, DEXInfo, Hash, HolderId, LiquiditySourceType, Mode, Moment, OwnerId, PermissionId, Releases, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
+import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
+import type { AccountId, Balance, BlockNumber, CurrencyId, DEXId, DEXInfo, Hash, HolderId, LiquiditySourceType, Mode, Moment, OwnerId, PermissionId, Releases, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/storage' {
@@ -46,6 +47,21 @@ declare module '@polkadot/api/types/storage' {
     };
     dexManager: {
       dexInfos: AugmentedQuery<ApiType, (arg: DEXId | AnyNumber | Uint8Array) => Observable<Option<DEXInfo>>, [DEXId]> & QueryableStorageEntry<ApiType, [DEXId]>;
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>;
+    };
+    farming: {
+      /**
+       * Farmers of the pool. Pool => Farmers
+       **/
+      poolFarmers: AugmentedQuery<ApiType, (arg: AccountId | string | Uint8Array) => Observable<Vec<PoolFarmer>>, [AccountId]> & QueryableStorageEntry<ApiType, [AccountId]>;
+      /**
+       * Pools whose farmers are refreshed at the specific block. Block => Pools
+       **/
+      pools: AugmentedQuery<ApiType, (arg: BlockNumber | AnyNumber | Uint8Array) => Observable<Vec<AccountId>>, [BlockNumber]> & QueryableStorageEntry<ApiType, [BlockNumber]>;
+      savedValues: AugmentedQuery<ApiType, (arg: BlockNumber | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[AccountId, Vec<PoolFarmer>]>>>, [BlockNumber]> & QueryableStorageEntry<ApiType, [BlockNumber]>;
       /**
        * Generic query
        **/
@@ -133,6 +149,10 @@ declare module '@polkadot/api/types/storage' {
       [key: string]: QueryableStorageEntry<ApiType>;
     };
     xorFee: {
+      /**
+       * The amount of XOR to be reminted and exchanged for VAL at the end of the session
+       **/
+      xorToVal: AugmentedQuery<ApiType, () => Observable<Balance>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * Generic query
        **/

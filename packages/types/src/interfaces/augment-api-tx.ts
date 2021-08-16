@@ -135,6 +135,13 @@ declare module '@polkadot/api/types/submittable' {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
+    farming: {
+      migrateTo11: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
     liquidityProxy: {
       /**
        * Perform swap of tokens (input/output defined via SwapAmount direction).

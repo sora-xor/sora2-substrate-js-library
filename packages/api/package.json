@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/api",
-  "version": "1.4.1",
+  "version": "1.5.1",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -12,7 +12,7 @@
     "@open-web3/orml-api-derive": "^0.8.2-9",
     "@polkadot/api": "^4.10.1",
     "@polkadot/rpc-core": "^4.10.1",
-    "@sora-substrate/api-derive": "^1.4.1",
-    "@sora-substrate/types": "^1.4.1"
+    "@sora-substrate/api-derive": "^1.5.1",
+    "@sora-substrate/types": "^1.5.1"
   }
 }

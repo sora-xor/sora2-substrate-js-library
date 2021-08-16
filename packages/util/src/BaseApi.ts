@@ -337,7 +337,9 @@ export enum TransactionStatus {
   Broadcast = 'broadcast',
   InBlock = 'inblock',
   Finalized = 'finalized',
-  Error = 'error'
+  Error = 'error',
+  Usurped = 'usurped', // When TX is outdated
+  Invalid = 'invalid' // When something happened before sending to network
 }
 
 export enum Operation {

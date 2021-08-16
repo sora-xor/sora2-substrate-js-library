@@ -7,6 +7,11 @@ export default {
                     name: 'accountId',
                     type: 'AccountId'
                 },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'BalanceInfo'
         }
