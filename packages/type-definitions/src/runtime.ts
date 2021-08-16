@@ -126,7 +126,6 @@ export default {
     Permission: "Null",             // define properly if needed
     DistributionAccounts: "Null",
     MultisigAccount: "Null",
-    PendingMultisigAccount: "Null",
     Farmer: "Null",
     Farm: "Null",
     SmoothPriceState: "Null",
