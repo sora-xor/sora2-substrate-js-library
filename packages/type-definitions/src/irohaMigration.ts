@@ -17,7 +17,6 @@ export default {
         }
     },
     types: {
-
         PendingMultisigAccount: {
             approving_accounts: 'Vec<AccountId>',
             migrate_at: 'Option<BlockNumber>',
