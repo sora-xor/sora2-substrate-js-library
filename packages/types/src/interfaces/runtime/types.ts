@@ -368,9 +368,6 @@ export interface Pays extends Enum {
   readonly isNo: boolean;
 }
 
-/** @name PendingMultisigAccount */
-export interface PendingMultisigAccount extends Null {}
-
 /** @name Perbill */
 export interface Perbill extends UInt {}
 
