@@ -397,19 +397,6 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get register asset network fee
-   * @param symbol string with asset symbol
-   * @param name string with asset name
-   * @param totalSupply
-   * @param extensibleSupply
-   * @returns register asset network fee as a string (value * 10 ^ decimals)
-   */
-  public async getRegisterAssetNetworkFee (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply = false): Promise<CodecString> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply)
-    return await this.getNetworkFee(this.accountPair, Operation.RegisterAsset, ...params.args)
-  }
-
-  /**
    * Register asset
    * @param symbol string with asset symbol
    * @param name string with asset name
@@ -501,25 +488,6 @@ export class Api extends BaseApi {
       })
       this.balanceSubscriptions.push(subscription)
     }
-  }
-
-  /**
-   * Get transfer network fee in XOR
-   * @param assetAddress Asset address
-   * @param toAddress Account address
-   * @param amount Amount value
-   * @returns fee ** decimals
-   */
-  public async getTransferNetworkFee (assetAddress: string, toAddress: string, amount: NumberLike): Promise<CodecString> {
-    assert(this.account, Messages.connectWallet)
-    const asset = await this.getAssetInfo(assetAddress)
-    return await this.getNetworkFee(
-      this.accountPair,
-      Operation.Transfer,
-      assetAddress,
-      toAddress,
-      new FPNumber(amount, asset.decimals).toCodecString()
-    )
   }
 
   /**
@@ -692,29 +660,6 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get swap network fee
-   * @param assetAAddress Asset A address
-   * @param assetBAddress Asset B address
-   * @param amountA Amount A value
-   * @param amountB Amount B value
-   * @param slippageTolerance Slippage tolerance coefficient (in %)
-   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
-   * @returns fee ** decimals
-   */
-  public async getSwapNetworkFee (
-    assetAAddress: string,
-    assetBAddress: string,
-    amountA: NumberLike,
-    amountB: NumberLike,
-    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
-    isExchangeB = false,
-    liquiditySource = LiquiditySourceTypes.Default
-  ): Promise<CodecString> {
-    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
-    return await this.getNetworkFee(this.accountPair, Operation.Swap, ...params.args)
-  }
-
-  /**
    * Swap operation
    * @param assetAAddress Asset A address
    * @param assetBAddress Asset B address
@@ -751,32 +696,6 @@ export class Api extends BaseApi {
         type: Operation.Swap
       }
     )
-  }
-
-  /**
-   * @param assetAAddress Asset A address
-   * @param assetBAddress Asset B address
-   * @param amountA Amount A value
-   * @param amountB Amount B value
-   * @param swapResultValue getMinMaxValue() -> min received if exchange A, otherwise - user's input when Exchange B
-   * @param accountId Account Id address
-   * @param slippageTolerance Slippage tolerance coefficient (in %)
-   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
-   */
-  public async getSwapAndSendNetworkFee (
-    assetAAddress: string,
-    assetBAddress: string,
-    amountA: NumberLike,
-    amountB: NumberLike,
-    swapResultValue: string,
-    accountId: string,
-    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
-    isExchangeB = false,
-    liquiditySource = LiquiditySourceTypes.Default
-  ): Promise<CodecString> {
-    const params: any = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
-    params.transferArgs = [assetBAddress, accountId, new FPNumber(swapResultValue, params.assetB.decimals).toCodecString()]
-    return await this.getNetworkFee(this.accountPair, Operation.SwapAndSend, params)
   }
 
   /**
@@ -1075,25 +994,6 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get network fee for add liquidity operation
-   * @param firstAssetAddress
-   * @param secondAssetAddress
-   * @param firstAmount
-   * @param secondAmount
-   * @param slippageTolerance Slippage tolerance coefficient (in %)
-   */
-  public async getAddLiquidityNetworkFee (
-    firstAssetAddress: string,
-    secondAssetAddress: string,
-    firstAmount: NumberLike,
-    secondAmount: NumberLike,
-    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
-  ): Promise<CodecString> {
-    const params = await this.calcAddLiquidityParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
-    return await this.getNetworkFee(this.accountPair, Operation.AddLiquidity, ...params.args)
-  }
-
-  /**
    * Add liquidity
    * @param firstAssetAddress
    * @param secondAssetAddress
@@ -1156,25 +1056,6 @@ export class Api extends BaseApi {
       baseAssetAmount,
       targetAssetAmount
     }
-  }
-
-  /**
-   * Get network fee for pair creation operation
-   * @param firstAssetAddress
-   * @param secondAssetAddress
-   * @param firstAmount
-   * @param secondAmount
-   * @param slippageTolerance Slippage tolerance coefficient (in %)
-   */
-  public async getCreatePairNetworkFee (
-    firstAssetAddress: string,
-    secondAssetAddress: string,
-    firstAmount: NumberLike,
-    secondAmount: NumberLike,
-    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
-  ): Promise<CodecString> {
-    const params = await this.calcCreatePairParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
-    return await this.getNetworkFee(this.accountPair, Operation.CreatePair, params)
   }
 
   /**
@@ -1289,37 +1170,6 @@ export class Api extends BaseApi {
       firstAsset,
       secondAsset
     }
-  }
-
-  /**
-   * Get network fee for remove liquidity operation
-   * @param firstAssetAddress
-   * @param secondAssetAddress
-   * @param desiredMarker
-   * @param firstTotal checkLiquidityReserves()[0]
-   * @param secondTotal checkLiquidityReserves()[1]
-   * @param totalSupply Total supply coefficient, estimateTokensRetrieved()[2]
-   * @param slippageTolerance Slippage tolerance coefficient (in %)
-   */
-  public async getRemoveLiquidityNetworkFee (
-    firstAssetAddress: string,
-    secondAssetAddress: string,
-    desiredMarker: string,
-    firstTotal: CodecString,
-    secondTotal: CodecString,
-    totalSupply: CodecString,
-    slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
-  ): Promise<CodecString> {
-    const params = await this.calcRemoveLiquidityParams(
-      firstAssetAddress,
-      secondAssetAddress,
-      desiredMarker,
-      firstTotal,
-      secondTotal,
-      totalSupply,
-      slippageTolerance
-    )
-    return await this.getNetworkFee(this.accountPair, Operation.RemoveLiquidity, ...params.args)
   }
 
   /**

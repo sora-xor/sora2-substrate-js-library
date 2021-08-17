@@ -23,6 +23,22 @@ export const isBridgeOperation = (operation: Operation) => [
 export const KeyringType = 'sr25519'
 
 export class BaseApi {
+  /**
+   * Network fee values which can be used right after `calcStaticNetworkFees` method.
+   *
+   * Each value is represented as `CodecString`
+   */
+  public NetworkFee = {
+    [Operation.AddLiquidity]: '0',
+    [Operation.CreatePair]: '0',
+    [Operation.EthBridgeIncoming]: '0',
+    [Operation.RegisterAsset]: '0',
+    [Operation.RemoveLiquidity]: '0',
+    [Operation.Swap]: '0',
+    [Operation.SwapAndSend]: '0',
+    [Operation.Transfer]: '0'
+  }
+
   protected readonly prefix = 69
 
   private _history: Array<History> = []
@@ -307,6 +323,19 @@ export class BaseApi {
       { signer: this.signer }
     )
     return new FPNumber(res.partialFee, xor.decimals).toCodecString()
+  }
+
+  public async calcStaticNetworkFees (): Promise<void> {
+    const operations = [
+      Operation.AddLiquidity,
+      Operation.CreatePair,
+      Operation.EthBridgeIncoming,
+      Operation.RegisterAsset,
+      Operation.RemoveLiquidity,
+      Operation.Swap,
+      Operation.SwapAndSend,
+      Operation.Transfer
+    ]
   }
 
   public formatAddress (address: string, withSoraPrefix = true): string {
