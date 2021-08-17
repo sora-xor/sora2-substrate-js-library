@@ -1,11 +1,11 @@
 import first from 'lodash/fp/first'
 import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
-import { KeypairType } from '@polkadot/util-crypto/types'
+import type { KeypairType } from '@polkadot/util-crypto/types'
 import keyring from '@polkadot/ui-keyring'
-import { CreateResult } from '@polkadot/ui-keyring/types'
-import { KeyringPair$Json } from '@polkadot/keyring/types'
-import { Signer, Observable } from '@polkadot/types/types'
+import type { CreateResult } from '@polkadot/ui-keyring/types'
+import type { KeyringPair$Json } from '@polkadot/keyring/types'
+import type { Signer, Observable } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
 import { Subject, scheduled, asapScheduler } from '@polkadot/x-rxjs'
 import { map, concatAll } from '@polkadot/x-rxjs/operators'
@@ -41,7 +41,6 @@ import { Storage } from './storage'
  */
 export class Api extends BaseApi {
   private readonly type: KeypairType = KeyringType
-  private readonly defaultDEXId = 0
   public readonly defaultSlippageTolerancePercent = 0.5
   public readonly seedLength = 12
   public readonly bridge: BridgeApi = new BridgeApi()
@@ -134,15 +133,6 @@ export class Api extends BaseApi {
     this._liquidity = [...liquidity]
   }
 
-  private addToLiquidityList (asset: AccountLiquidity): void {
-    const liquidityCopy = [...this.accountLiquidity]
-    const index = liquidityCopy.findIndex(item => item.address === asset.address)
-
-    ~index ? liquidityCopy[index] = asset : liquidityCopy.push(asset)
-
-    this.accountLiquidity = liquidityCopy
-  }
-
   public get accountHistory (): Array<History> {
     return this.history.filter(({ type }) => !isBridgeOperation(type))
   }
@@ -218,12 +208,13 @@ export class Api extends BaseApi {
   /**
    * The first method you should run. Includes initialization process
    */
-  public initialize (): void {
+  public async initialize (): Promise<void> {
     const address = this.storage?.get('address')
     const password = this.storage?.get('password')
     const name = this.storage?.get('name')
     const isExternal = Boolean(this.storage?.get('isExternal'))
     keyring.loadAll({ type: KeyringType })
+    await this.calcStaticNetworkFees()
     if (!address) {
       return
     }
@@ -518,7 +509,7 @@ export class Api extends BaseApi {
 
   public async getTransferAllNetworkFee (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<CodecString> {
     const transactions = await this.prepareTransferAllTxs(data)
-    return await this.getNetworkFee(this.accountPair, Operation.TransferAll, transactions)
+    return await this.getNetworkFee(Operation.TransferAll, transactions)
   }
 
   /**
@@ -1271,7 +1262,7 @@ export class Api extends BaseApi {
   public async getClaimRewardsNetworkFee (rewards: Array<RewardInfo>, signature = ''): Promise<CodecString>  {
     const params = this.calcClaimRewardsParams(rewards, signature)
 
-    return await this.getNetworkFee(this.accountPair, Operation.ClaimRewards, params)
+    return await this.getNetworkFee(Operation.ClaimRewards, params)
   }
 
   /**

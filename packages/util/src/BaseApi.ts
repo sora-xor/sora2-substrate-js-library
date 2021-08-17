@@ -1,10 +1,11 @@
 import last from 'lodash/fp/last'
 import first from 'lodash/fp/first'
 import { ApiPromise, ApiRx } from '@polkadot/api'
-import { CreateResult } from '@polkadot/ui-keyring/types'
-import { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
-import { Signer, ISubmittableResult } from '@polkadot/types/types'
-import { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import type { CreateResult } from '@polkadot/ui-keyring/types'
+import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types'
+import type { Signer, ISubmittableResult } from '@polkadot/types/types'
+import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
+import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types'
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto'
 
 import { AccountStorage, Storage } from './storage'
@@ -14,6 +15,11 @@ import { encrypt, toHmacSHA256 } from './crypto'
 import { connection } from './connection'
 import { BridgeHistory } from './BridgeApi'
 import { RewardClaimHistory } from './rewards'
+
+type AccountWithOptions = {
+  account: AddressOrPair;
+  options: Partial<SignerOptions>;
+}
 
 export const isBridgeOperation = (operation: Operation) => [
   Operation.EthBridgeIncoming,
@@ -32,6 +38,7 @@ export class BaseApi {
     [Operation.AddLiquidity]: '0',
     [Operation.CreatePair]: '0',
     [Operation.EthBridgeIncoming]: '0',
+    [Operation.EthBridgeOutgoing]: '0',
     [Operation.RegisterAsset]: '0',
     [Operation.RemoveLiquidity]: '0',
     [Operation.Swap]: '0',
@@ -40,9 +47,10 @@ export class BaseApi {
   }
 
   protected readonly prefix = 69
+  protected readonly defaultDEXId = 0
 
   private _history: Array<History> = []
-  private _restored: Boolean = false
+  private _restored: boolean = false
 
   protected signer?: Signer
   protected storage?: Storage // common data storage
@@ -111,14 +119,14 @@ export class BaseApi {
     this._history = [...value]
   }
 
-  public get restored (): Boolean {
+  public get restored (): boolean {
     if (this.accountStorage) {
       this._restored = JSON.parse(this.accountStorage.get('restored')) || false
     }
     return this._restored
   }
 
-  public set restored (value: Boolean) {
+  public set restored (value: boolean) {
     this.accountStorage?.set('restored', JSON.stringify(value))
     this._restored = value
   }
@@ -196,6 +204,13 @@ export class BaseApi {
     this.storage = storage
   }
 
+  private getAccountWithOptions (): AccountWithOptions {
+    return {
+      account: this.accountPair.isLocked ? this.accountPair.address : this.accountPair,
+      options: { signer: this.signer }
+    }
+  }
+
   public async submitExtrinsic (
     extrinsic: SubmittableExtrinsic,
     signer: KeyringPair,
@@ -212,7 +227,8 @@ export class BaseApi {
       history.id = encrypt(`${history.startTime}`)
     }
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address)
-    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(signer.isLocked ? signer.address : signer, { signer: this.signer, nonce })
+    const { account, options } = this.getAccountWithOptions()
+    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce })
     history.txId = signedTx.hash.toString()
     const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn)
     const unsub = await extrinsicFn((result: ISubmittableResult) => {
@@ -261,12 +277,12 @@ export class BaseApi {
   }
 
   /**
-   * @param signer
+   * TODO: make it possible to remove this method
    * @param type
    * @param params
    * @returns value * 10 ^ decimals
    */
-  protected async getNetworkFee (signer: KeyringPair, type: Operation, ...params: Array<any>): Promise<CodecString> {
+  protected async getNetworkFee (type: Operation, ...params: Array<any>): Promise<CodecString> {
     let extrinsicParams = params
     const xor = KnownAssets.get(KnownSymbols.XOR)
     let extrinsic = null
@@ -318,24 +334,71 @@ export class BaseApi {
       default:
         throw new Error('Unknown function')
     }
-    const res = await (extrinsic(...extrinsicParams) as SubmittableExtrinsic).paymentInfo(
-      signer.isLocked ? signer.address : signer,
-      { signer: this.signer }
-    )
+    const { account, options } = this.getAccountWithOptions()
+    const res = await (extrinsic(...extrinsicParams) as SubmittableExtrinsic).paymentInfo(account, options)
     return new FPNumber(res.partialFee, xor.decimals).toCodecString()
   }
 
-  public async calcStaticNetworkFees (): Promise<void> {
+  /**
+   * Returns an extrinsic with the default or empty params.
+   *
+   * Actually, network fee value doesn't depend on extrinsic params, so, we can use empty/default values
+   * @param operation
+   */
+  private getEmptyExtrinsic (operation: Operation): SubmittableExtrinsic | null {
+    switch (operation) {
+      case Operation.AddLiquidity:
+        return this.api.tx.poolXyk.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0')
+      case Operation.CreatePair:
+        return this.api.tx.utility.batchAll([
+          this.api.tx.tradingPair.register(this.defaultDEXId, '', ''),
+          this.api.tx.poolXyk.initializePool(this.defaultDEXId, '', ''),
+          this.api.tx.poolXyk.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0')
+        ])
+      case Operation.EthBridgeIncoming:
+        return this.api.tx.ethBridge.requestFromSidechain('', { Transaction: 'Transfer' }, 0)
+      case Operation.EthBridgeOutgoing:
+        return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0)
+      case Operation.RegisterAsset:
+        return this.api.tx.assets.register('', '', '0', false)
+      case Operation.RemoveLiquidity:
+        return this.api.tx.poolXyk.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0')
+      case Operation.Swap:
+        return this.api.tx.liquidityProxy.swap(this.defaultDEXId, '', '', { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } }, [], 'Disabled')
+      case Operation.SwapAndSend:
+        return this.api.tx.utility.batchAll([
+          this.api.tx.liquidityProxy.swap(this.defaultDEXId, '', '', { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } }, [], 'Disabled'),
+          this.api.tx.assets.transfer('', '', '0')
+        ])
+      case Operation.Transfer:
+        return this.api.tx.assets.transfer('', '', '0')
+      default:
+        return null
+    }
+  }
+
+  protected async calcStaticNetworkFees (): Promise<void> {
+    const xor = KnownAssets.get(KnownSymbols.XOR)
     const operations = [
       Operation.AddLiquidity,
       Operation.CreatePair,
       Operation.EthBridgeIncoming,
+      Operation.EthBridgeOutgoing,
       Operation.RegisterAsset,
       Operation.RemoveLiquidity,
       Operation.Swap,
       Operation.SwapAndSend,
       Operation.Transfer
     ]
+    // We don't need to know real account address for checking network fees
+    const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs'
+    for (const operation of operations) {
+      const extrinsic = this.getEmptyExtrinsic(operation)
+      if (extrinsic) {
+        const res = await extrinsic.paymentInfo(mockAccountAddress)
+        this.NetworkFee[operation] = new FPNumber(res.partialFee, xor.decimals).toCodecString()
+      }
+    }
   }
 
   public formatAddress (address: string, withSoraPrefix = true): string {

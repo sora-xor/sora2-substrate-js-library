@@ -200,18 +200,6 @@ export class BridgeApi extends BaseApi {
   }
 
   /**
-   * Get transfer fee through the bridge
-   * @param asset Registered asset
-   * @param to Ethereum account address
-   * @param amount
-   * @returns Network fee
-   */
-  public async getTransferToEthFee (asset: RegisteredAsset, to: string, amount: string | number): Promise<CodecString> {
-    const params = await this.calcTransferToEthParams(asset, to, amount)
-    return await this.getNetworkFee(this.account.pair, Operation.EthBridgeOutgoing, ...params.args)
-  }
-
-  /**
    * Transfer through the bridge operation
    * @param asset RegisteredAsset
    * @param to Ethereum account address
@@ -235,24 +223,6 @@ export class BridgeApi extends BaseApi {
   }
 
   /**
-   * Get request from Ethereum network fee
-   * @param hash Eth hash of transaction
-   * @param type Type of operation, "Transfer" is set by default
-   * @returns Network fee
-   */
-  public async getRequestFromEthFee (hash: string, type: RequestType = RequestType.Transfer): Promise<CodecString> {
-    assert(this.account, Messages.connectWallet)
-    const kind = { [IncomingRequestKind.Transaction]: type }
-    return await this.getNetworkFee(
-      this.account.pair,
-      Operation.EthBridgeIncoming,
-      hash,
-      kind,
-      this.externalNetwork
-    )
-  }
-
-  /**
    * Request from Ethereum
    * @param hash Eth hash of transaction
    * @param type Type of operation, "Transfer" is set by default
@@ -270,22 +240,6 @@ export class BridgeApi extends BaseApi {
       }
     )
   }
-
-  /**
-   * Mark history data as `Done`
-   * @param hash Eth hash of transaction
-   */
-  // public async markAsDone (hash: string): Promise<void> {
-  //   assert(this.account, Messages.connectWallet)
-  //   await this.submitExtrinsic(
-  //     this.api.tx.ethBridge.requestFromSidechain(hash, RequestType.MarkAsDone, this.externalNetwork),
-  //     this.account.pair,
-  //     {
-  //       type: Operation.EthBridgeOutgoingMarkDone,
-  //       hash
-  //     }
-  //   )
-  // }
 
   /**
    * Get registered assets for bridge
