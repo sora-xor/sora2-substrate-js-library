@@ -24,7 +24,8 @@ import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
-import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, PendingMultisigAccount, Perbill, PermissionId, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
+import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
@@ -633,13 +634,7 @@ export interface StorageType extends BaseStorageType {
      **/
     totalIssuances: StorageMap<AccountIdOf | string, Option<Balance>>;
   };
-  priceTools: {    averagePrice: StorageMap<AssetId | AnyNumber, Balance>;
-    enabledTargets: BTreeSet<AssetId> | null;
-    spotPriceFailures: StorageMap<AssetId | AnyNumber, u32>;
-    /**
-     * For pair XOR-AssetB, stores prices of XOR in terms of AssetB.
-     **/
-    spotPrices: StorageMap<AssetId | AnyNumber, Vec<Balance>>;
+  priceTools: {    priceInfos: StorageMap<AssetId | AnyNumber, Option<PriceInfo>>;
   };
   pswapDistribution: {    /**
      * Amount of incentive tokens to be burned on each distribution.
@@ -674,8 +669,7 @@ export interface StorageType extends BaseStorageType {
      **/
     randomMaterial: Vec<Hash> | null;
   };
-  referralSystem: {    referrerBalances: StorageMap<AccountId | string, Option<Balance>>;
-    referrers: StorageMap<AccountId | string, Option<AccountId>>;
+  referralSystem: {    referrers: StorageMap<AccountId | string, Option<AccountId>>;
   };
   rewards: {    /**
      * Amount of VAL currently being vested (aggregated over the previous period of 14,400 blocks)
@@ -1143,12 +1137,12 @@ export interface StorageType extends BaseStorageType {
      **/
     enabledSynthetics: BTreeSet<AssetId> | null;
     /**
+     * Technical account used to store collateral tokens.
+     **/
+    permissionedTechAccount: TechAccountId | null;
+    /**
      * Asset that is used to compare collateral assets by value, e.g., DAI.
      **/
     referenceAssetId: AssetId | null;
-    /**
-     * Technical account used to store collateral tokens.
-     **/
-    reservesAcc: TechAccountId | null;
   };
 }

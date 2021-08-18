@@ -409,6 +409,12 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
        **/
       subscribeJustifications: AugmentedRpc<() => Observable<JustificationNotification>>;
     };
+    irohaMigration: {
+      /**
+       * Check if the account needs migration
+       **/
+      needsMigration: AugmentedRpc<(iroha_address: Text | string, at?: BlockHash | string | Uint8Array) => Observable<bool>>;
+    };
     liquidityProxy: {
       /**
        * Check if given two arbitrary tokens can be exchanged via any liquidity sources

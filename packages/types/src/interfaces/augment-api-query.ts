@@ -1,11 +1,12 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
-import type { BTreeSet, Option, Vec, bool } from '@polkadot/types';
+import type { BTreeSet, Option, Text, Vec, bool, u8 } from '@polkadot/types';
 import type { AnyNumber, ITuple, Observable } from '@polkadot/types/types';
 import type { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
+import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
 import type { AccountId, Balance, BlockNumber, CurrencyId, DEXId, DEXInfo, Hash, HolderId, LiquiditySourceType, Mode, Moment, OwnerId, PermissionId, Releases, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes } from '@polkadot/api/types';
 
@@ -67,6 +68,20 @@ declare module '@polkadot/api/types/storage' {
        **/
       [key: string]: QueryableStorageEntry<ApiType>;
     };
+    irohaMigration: {
+      account: AugmentedQuery<ApiType, () => Observable<AccountId>, []> & QueryableStorageEntry<ApiType, []>;
+      balances: AugmentedQuery<ApiType, (arg: Text | string) => Observable<Option<Balance>>, [Text]> & QueryableStorageEntry<ApiType, [Text]>;
+      migratedAccounts: AugmentedQuery<ApiType, (arg: Text | string) => Observable<Option<AccountId>>, [Text]> & QueryableStorageEntry<ApiType, [Text]>;
+      pendingMultiSigAccounts: AugmentedQuery<ApiType, (arg: Text | string) => Observable<PendingMultisigAccount>, [Text]> & QueryableStorageEntry<ApiType, [Text]>;
+      pendingReferrals: AugmentedQuery<ApiType, (arg: Text | string) => Observable<Vec<AccountId>>, [Text]> & QueryableStorageEntry<ApiType, [Text]>;
+      publicKeys: AugmentedQuery<ApiType, (arg: Text | string) => Observable<Vec<ITuple<[bool, Text]>>>, [Text]> & QueryableStorageEntry<ApiType, [Text]>;
+      quorums: AugmentedQuery<ApiType, (arg: Text | string) => Observable<u8>, [Text]> & QueryableStorageEntry<ApiType, [Text]>;
+      referrers: AugmentedQuery<ApiType, (arg: Text | string) => Observable<Option<Text>>, [Text]> & QueryableStorageEntry<ApiType, [Text]>;
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>;
+    };
     permissions: {
       modes: AugmentedQuery<ApiType, (arg: PermissionId | AnyNumber | Uint8Array) => Observable<Mode>, [PermissionId]> & QueryableStorageEntry<ApiType, [PermissionId]>;
       owners: AugmentedQuery<ApiType, (arg1: PermissionId | AnyNumber | Uint8Array, arg2: Scope | { Limited: any } | { Unlimited: any } | string | Uint8Array) => Observable<Vec<OwnerId>>, [PermissionId, Scope]> & QueryableStorageEntry<ApiType, [PermissionId, Scope]>;
@@ -89,7 +104,6 @@ declare module '@polkadot/api/types/storage' {
       [key: string]: QueryableStorageEntry<ApiType>;
     };
     referralSystem: {
-      referrerBalances: AugmentedQuery<ApiType, (arg: AccountId | string | Uint8Array) => Observable<Option<Balance>>, [AccountId]> & QueryableStorageEntry<ApiType, [AccountId]>;
       referrers: AugmentedQuery<ApiType, (arg: AccountId | string | Uint8Array) => Observable<Option<AccountId>>, [AccountId]> & QueryableStorageEntry<ApiType, [AccountId]>;
       /**
        * Generic query

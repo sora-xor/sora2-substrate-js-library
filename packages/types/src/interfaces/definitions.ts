@@ -3,6 +3,7 @@ export { default as dexApi } from './dexApi/definitions';
 export { default as dexManager } from './dexManager/definitions';
 export { default as ethBridge } from './ethBridge/definitions';
 export { default as farming } from './farming/definitions';
+export { default as irohaMigration } from './irohaMigration/definitions';
 export { default as liquidityProxy } from './liquidityProxy/definitions';
 export { default as pswapDistribution } from './pswapDistribution/definitions';
 export { default as rewards } from './rewards/definitions';

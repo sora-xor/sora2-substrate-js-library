@@ -5879,6 +5879,21 @@ arguments:
 + iroha_signature: `Text`
 <hr>
 
+### *Custom RPCs*
+
+
+#### **api.rpc.irohaMigration.needsMigration**
+
+
+>Check if the account needs migration
+
+arguments: 
++ iroha_address: `String`
++ at: `BlockHash`
+
+returns: `bool`
+<hr>
+
 ## ImOnline pallet
 
 
@@ -7875,7 +7890,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7890,7 +7905,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7904,7 +7919,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7919,7 +7934,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7931,7 +7946,7 @@ returns: `Option<SwapOutcomeInfo>`
     initial_request_hash: "H256",
     author: "AccountId",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7953,7 +7968,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7964,7 +7979,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -8022,7 +8037,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -8071,7 +8086,7 @@ returns: `Option<SwapOutcomeInfo>`
 {
     author: "AccountId",
     hash: "H256",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     kind: "IncomingMetaRequestKind",
     network_id: "BridgeNetworkId"
 }
@@ -8092,7 +8107,7 @@ returns: `Option<SwapOutcomeInfo>`
 {
     author: "AccountId",
     hash: "H256",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     kind: "IncomingTransactionRequestKind",
     network_id: "BridgeNetworkId"
 }
@@ -8170,7 +8185,7 @@ returns: `Option<SwapOutcomeInfo>`
     supply: "Balance",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8196,7 +8211,7 @@ returns: `Option<SwapOutcomeInfo>`
     peer_account_id: "AccountId",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8208,7 +8223,7 @@ returns: `Option<SwapOutcomeInfo>`
     peer_account_id: "AccountId",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8232,7 +8247,7 @@ returns: `Option<SwapOutcomeInfo>`
     decimals: "u8",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8257,7 +8272,7 @@ returns: `Option<SwapOutcomeInfo>`
     erc20_native_tokens: "Vec<EthereumAddress>",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8279,7 +8294,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8301,7 +8316,7 @@ returns: `Option<SwapOutcomeInfo>`
     peer_address: "EthereumAddress",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8313,7 +8328,7 @@ returns: `Option<SwapOutcomeInfo>`
     peer_address: "EthereumAddress",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8366,7 +8381,7 @@ returns: `Option<SwapOutcomeInfo>`
     amount: "Balance",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8390,7 +8405,10 @@ returns: `Option<SwapOutcomeInfo>`
 
 ### PendingMultisigAccount
 ```
-"Null"
+{
+    approving_accounts: "Vec<AccountId>",
+    migrate_at: "Option<BlockNumber>"
+}
 ```
 
 ### Permission
@@ -8417,6 +8435,22 @@ returns: `Option<SwapOutcomeInfo>`
 {
     actual_weight: "Option<Weight>",
     pays_fee: "Pays"
+}
+```
+
+### PredefinedAssetId
+```
+{
+    _enum: [
+        "XOR",
+        "DOT",
+        "KSM",
+        "USDT",
+        "VAL",
+        "PSWAP",
+        "DAI",
+        "ETH"
+    ]
 }
 ```
 
@@ -8607,11 +8641,6 @@ returns: `Option<SwapOutcomeInfo>`
 }
 ```
 
-### TechAccountIdPrimitive
-```
-"Null"
-```
-
 ### TechAmount
 ```
 "Amount"
@@ -8619,7 +8648,12 @@ returns: `Option<SwapOutcomeInfo>`
 
 ### TechAssetId
 ```
-"Null"
+{
+    _enum: {
+        Wrapped: "PredefinedAssetId",
+        Escaped: "AssetId"
+    }
+}
 ```
 
 ### TechBalance
@@ -8632,15 +8666,19 @@ returns: `Option<SwapOutcomeInfo>`
 {
     _enum: {
         FeeCollector: "Null",
-        LiquidityKeeper: "TradingPair",
+        FeeCollectorForPair: "TechTradingPair",
+        LiquidityKeeper: "TechTradingPair",
         Identifier: "Vec<u8>"
     }
 }
 ```
 
-### Timepoint
+### TechTradingPair
 ```
-"BridgeTimepoint"
+{
+    base_asset_id: "TechAssetId",
+    target_asset_id: "TechAssetId"
+}
 ```
 
 ### TradingPair
