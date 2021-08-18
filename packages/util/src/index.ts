@@ -23,3 +23,4 @@ export {
 } from './assets'
 export { RewardingEvents, RewardInfo, RewardsInfo, LPRewardsInfo, RewardReason } from './rewards'
 export { LiquiditySourceTypes, SwapResult } from './swap'
+export * from './poolAccount'
