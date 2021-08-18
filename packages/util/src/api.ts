@@ -1330,6 +1330,13 @@ export class Api extends BaseApi {
     )
   }
 
+  public getPools () {
+    this.apiRx.query.poolXyk.accountPools(this.accountPair.address).subscribe((res) => {
+      const targetIds = res.toJSON() as Array<string>
+      console.log(targetIds)
+    })
+  }
+
   /**
    * Get all tokens list registered in the blockchain network
    * @param whitelist set of whitelist tokens
