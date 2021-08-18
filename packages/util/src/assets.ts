@@ -1,8 +1,8 @@
-import { ApiPromise, ApiRx } from '@polkadot/api'
-import { Codec, Observable } from '@polkadot/types/types'
+import { map } from '@polkadot/x-rxjs/operators'
+import type { ApiPromise, ApiRx } from '@polkadot/api'
+import type { Codec, Observable } from '@polkadot/types/types'
 import type { AccountData } from '@polkadot/types/interfaces/balances'
 import type { OrmlAccountData } from '@open-web3/orml-types/interfaces/tokens'
-import { map } from '@polkadot/x-rxjs/operators'
 
 import { CodecString, FPNumber } from './fp'
 
