@@ -12,6 +12,7 @@
 * [permissions](#permissions-pallet)
 * [referralSystem](#referralsystem-pallet)
 * [rewards](#rewards-pallet)
+* [xorFee](#xorfee-pallet)
 * [bridgeMultisig](#bridgemultisig-pallet)
 * [session](#session-pallet)
 * [babe](#babe-pallet)
@@ -39,6 +40,8 @@
 * [electionsPhragmen](#electionsphragmen-pallet)
 * [vestedRewards](#vestedrewards-pallet)
 * [identity](#identity-pallet)
+* [priceTools](#pricetools-pallet)
+* [farming](#farming-pallet)
 * [utility](#utility-pallet)
 * [currencies](#currencies-pallet)
 * [liquidityProxy](#liquidityproxy-pallet)
@@ -984,8 +987,25 @@ arguments:
 
 arguments: 
 + eth_address: `EthereumAddress`
++ at: `BlockHash`
 
 returns: `Vec<BalanceInfo>`
+<hr>
+
+## XorFee pallet
+
+
+### *State Queries*
+
+
+#### **api.query.xorFee.xorToVal**
+
+
+> The amount of XOR to be reminted and exchanged for VAL at the end of the session
+
+arguments: -
+
+returns: `Balance`
 <hr>
 
 ## BridgeMultisig pallet
@@ -2947,6 +2967,7 @@ arguments:
 
 arguments: 
 + dexId: `DEXId`
++ at: `BlockHash`
 
 returns: `Vec<TradingPair>`
 <hr>
@@ -2960,6 +2981,7 @@ arguments:
 + dexId: `DEXId`
 + inputAssetId: `AssetId`
 + outputAssetId: `AssetId`
++ at: `BlockHash`
 
 returns: `bool`
 <hr>
@@ -2973,6 +2995,7 @@ arguments:
 + dexId: `DEXId`
 + baseAssetId: `AssetId`
 + targetAssetId: `AssetId`
++ at: `BlockHash`
 
 returns: `Vec<LiquiditySourceType>`
 <hr>
@@ -2987,6 +3010,7 @@ arguments:
 + baseAssetId: `AssetId`
 + targetAssetId: `AssetId`
 + liquiditySourceType: `LiquiditySourceType`
++ at: `BlockHash`
 
 returns: `bool`
 <hr>
@@ -3121,6 +3145,7 @@ arguments:
 arguments: 
 + accountId: `AccountId`
 + assetId: `AssetId`
++ at: `BlockHash`
 
 returns: `Option<BalanceInfo>`
 <hr>
@@ -3133,6 +3158,7 @@ returns: `Option<BalanceInfo>`
 arguments: 
 + accountId: `AccountId`
 + assetId: `AssetId`
++ at: `BlockHash`
 
 returns: `Option<BalanceInfo>`
 <hr>
@@ -3145,6 +3171,7 @@ returns: `Option<BalanceInfo>`
 arguments: 
 + accountId: `AccountId`
 + assetId: `AssetId`
++ at: `BlockHash`
 
 returns: `Option<BalanceInfo>`
 <hr>
@@ -3156,6 +3183,7 @@ returns: `Option<BalanceInfo>`
 
 arguments: 
 + assetId: `AssetId`
++ at: `BlockHash`
 
 returns: `Option<BalanceInfo>`
 <hr>
@@ -3165,7 +3193,8 @@ returns: `Option<BalanceInfo>`
 
 >List Ids of all assets registered on chain.
 
-arguments: -
+arguments: 
++ at: `BlockHash`
 
 returns: `Vec<AssetId>`
 <hr>
@@ -3175,7 +3204,8 @@ returns: `Vec<AssetId>`
 
 >List Infos of all assets registered on chain.
 
-arguments: -
+arguments: 
++ at: `BlockHash`
 
 returns: `Vec<AssetInfo>`
 <hr>
@@ -3187,6 +3217,7 @@ returns: `Vec<AssetInfo>`
 
 arguments: 
 + assetId: `AssetId`
++ at: `BlockHash`
 
 returns: `Option<AssetInfo>`
 <hr>
@@ -3215,7 +3246,8 @@ returns: `DEXInfo`
 
 >Enumerate available ids of DEXes
 
-arguments: -
+arguments: 
++ at: `BlockHash`
 
 returns: `Vec<DEXId>`
 <hr>
@@ -3450,14 +3482,6 @@ arguments:
 + multiplier: `Option<Fixed>`
 <hr>
 
-#### **api.tx.multicollateralBondingCurvePool.claimIncentives**
-
-
-> Claim all available PSWAP rewards by account signing this transaction.
-
-arguments: -
-<hr>
-
 ## PoolXyk pallet
 
 
@@ -3481,26 +3505,41 @@ arguments:
 returns: `(Balance,Balance)`
 <hr>
 
-#### **api.query.poolXyk.markerTokensIndex**
+#### **api.query.poolXyk.poolProviders**
 
 
-> Collection of all registered marker tokens.
+> Liquidity providers of particular pool.
+> Pool account => Liquidity provider account => Pool token balance
 
-arguments: -
+arguments: 
++ key1: `AccountIdOf`
++ key2: `AccountIdOf`
 
-returns: `BTreeSet<AssetId>`
+returns: `Balance`
+<hr>
+
+#### **api.query.poolXyk.totalIssuances**
+
+
+> Total issuance of particular pool.
+> Pool account => Total issuance
+
+arguments: 
++ key: `AccountIdOf`
+
+returns: `Balance`
 <hr>
 
 #### **api.query.poolXyk.properties**
 
 
-> Properties of particular pool. [Reserves Account Id, Fees Account Id, Marker Asset Id]
+> Properties of particular pool. [Reserves Account Id, Fees Account Id]
 
 arguments: 
 + key1: `AssetId`
 + key2: `AssetId`
 
-returns: `(AccountId,AccountId,AssetId)`
+returns: `(AccountId,AccountId)`
 <hr>
 
 ### *Extrinsics*
@@ -4977,7 +5016,7 @@ returns: `BridgeNetworkId`
 
 arguments: -
 
-returns: `StorageVersion`
+returns: `EthBridgeStorageVersion`
 <hr>
 
 ### *Extrinsics*
@@ -5236,6 +5275,7 @@ arguments:
 + requestHashes: `Vec<H256>`
 + networkId: `Option<BridgeNetworkId>`
 + redirectFinishedLoadRequests: `Option<bool>`
++ at: `BlockHash`
 
 returns: `Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>`
 <hr>
@@ -5248,6 +5288,7 @@ returns: `Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>`
 arguments: 
 + requestHashes: `Vec<H256>`
 + networkId: `Option<BridgeNetworkId>`
++ at: `BlockHash`
 
 returns: `Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchError>`
 <hr>
@@ -5260,6 +5301,7 @@ returns: `Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchEr
 arguments: 
 + requestHashes: `Vec<H256>`
 + networkId: `Option<BridgeNetworkId>`
++ at: `BlockHash`
 
 returns: `Result<Vec<Vec<SignatureParams>>, DispatchError>`
 <hr>
@@ -5272,6 +5314,7 @@ returns: `Result<Vec<Vec<SignatureParams>>, DispatchError>`
 arguments: 
 + accountId: `AccountId`
 + statusFilter: `Option<RequestStatus>`
++ at: `BlockHash`
 
 returns: `Result<Vec<(BridgeNetworkId, H256)>, DispatchError>`
 <hr>
@@ -5283,6 +5326,7 @@ returns: `Result<Vec<(BridgeNetworkId, H256)>, DispatchError>`
 
 arguments: 
 + networkId: `Option<BridgeNetworkId>`
++ at: `BlockHash`
 
 returns: `Result<Vec<(AssetKind, (AssetId, BalancePrecision), Option<(H160, BalancePrecision)>)>, DispatchError>`
 <hr>
@@ -5302,7 +5346,7 @@ returns: `Result<Vec<(AssetKind, (AssetId, BalancePrecision), Option<(H160, Bala
 arguments: 
 + key: `AccountId`
 
-returns: `(DEXId,AssetId,BlockNumber,BlockNumber)`
+returns: `(DEXId,AccountIdOf,BlockNumber,BlockNumber)`
 <hr>
 
 #### **api.query.pswapDistribution.burnRate**
@@ -5376,6 +5420,7 @@ arguments: -
 
 arguments: 
 + accountId: `AccountId`
++ at: `BlockHash`
 
 returns: `BalanceInfo`
 <hr>
@@ -5832,6 +5877,21 @@ arguments:
 + iroha_address: `Text`
 + iroha_public_key: `Text`
 + iroha_signature: `Text`
+<hr>
+
+### *Custom RPCs*
+
+
+#### **api.rpc.irohaMigration.needsMigration**
+
+
+>Check if the account needs migration
+
+arguments: 
++ iroha_address: `String`
++ at: `BlockHash`
+
+returns: `bool`
 <hr>
 
 ## ImOnline pallet
@@ -6325,6 +6385,26 @@ arguments:
 returns: `MarketMakerInfo`
 <hr>
 
+### *Extrinsics*
+
+
+#### **api.tx.vestedRewards.claimRewards**
+
+
+> Claim all available PSWAP rewards by account signing this transaction.
+
+arguments: -
+<hr>
+
+#### **api.tx.vestedRewards.injectMarketMakers**
+
+
+> Inject market makers snapshot into storage.
+
+arguments: 
++ snapshot: `Vec<(AccountId,u32,Balance)>`
+<hr>
+
 ## Identity pallet
 
 
@@ -6729,6 +6809,70 @@ arguments:
 arguments: -
 <hr>
 
+## PriceTools pallet
+
+
+### *State Queries*
+
+
+#### **api.query.priceTools.priceInfos**
+
+
+
+arguments: 
++ key: `AssetId`
+
+returns: `PriceInfo`
+<hr>
+
+## Farming pallet
+
+
+### *State Queries*
+
+
+#### **api.query.farming.pools**
+
+
+> Pools whose farmers are refreshed at the specific block. Block => Pools
+
+arguments: 
++ key: `BlockNumber`
+
+returns: `Vec<AccountId>`
+<hr>
+
+#### **api.query.farming.poolFarmers**
+
+
+> Farmers of the pool. Pool => Farmers
+
+arguments: 
++ key: `AccountId`
+
+returns: `Vec<PoolFarmer>`
+<hr>
+
+#### **api.query.farming.savedValues**
+
+
+
+arguments: 
++ key: `BlockNumber`
+
+returns: `Vec<(AccountId,Vec<PoolFarmer>)>`
+<hr>
+
+### *Extrinsics*
+
+
+#### **api.tx.farming.migrateTo11**
+
+
+
+arguments: -
+<hr>
+
 ## Utility pallet
 
 
@@ -6894,6 +7038,7 @@ arguments:
 + swapVariant: `SwapVariant`
 + selectedSourceTypes: `Vec<LiquiditySourceType>`
 + filterMode: `FilterMode`
++ at: `BlockHash`
 
 returns: `Option<LPSwapOutcomeInfo>`
 <hr>
@@ -6907,6 +7052,7 @@ arguments:
 + dexId: `DEXId`
 + inputAssetId: `AssetId`
 + outputAssetId: `AssetId`
++ at: `BlockHash`
 
 returns: `bool`
 <hr>
@@ -6920,6 +7066,7 @@ arguments:
 + dexId: `DEXId`
 + inputAssetId: `AssetId`
 + outputAssetId: `AssetId`
++ at: `BlockHash`
 
 returns: `Vec<LiquiditySourceType>`
 <hr>
@@ -7422,6 +7569,7 @@ arguments:
 + liquiditySourceType: `LiquiditySourceType`
 + inputAssetId: `AssetId`
 + outputAssetId: `AssetId`
++ at: `BlockHash`
 
 returns: `bool`
 <hr>
@@ -7431,7 +7579,8 @@ returns: `bool`
 
 >List liquidity source types enabled on chain.
 
-arguments: -
+arguments: 
++ at: `BlockHash`
 
 returns: `Vec<LiquiditySourceType>`
 <hr>
@@ -7448,6 +7597,7 @@ arguments:
 + outputAssetId: `AssetId`
 + amount: `String`
 + swapVariant: `SwapVariant`
++ at: `BlockHash`
 
 returns: `Option<SwapOutcomeInfo>`
 <hr>
@@ -7669,6 +7819,16 @@ returns: `Option<SwapOutcomeInfo>`
 "Null"
 ```
 
+### EthBridgeStorageVersion
+```
+{
+    _enum: [
+        "V1",
+        "V2RemovePendingTransfers"
+    ]
+}
+```
+
 ### EthPeersSync
 ```
 {
@@ -7730,7 +7890,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7745,7 +7905,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7759,7 +7919,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7774,7 +7934,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7786,7 +7946,7 @@ returns: `Option<SwapOutcomeInfo>`
     initial_request_hash: "H256",
     author: "AccountId",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7808,7 +7968,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7819,7 +7979,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7877,7 +8037,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     network_id: "BridgeNetworkId"
 }
 ```
@@ -7926,7 +8086,7 @@ returns: `Option<SwapOutcomeInfo>`
 {
     author: "AccountId",
     hash: "H256",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     kind: "IncomingMetaRequestKind",
     network_id: "BridgeNetworkId"
 }
@@ -7947,7 +8107,7 @@ returns: `Option<SwapOutcomeInfo>`
 {
     author: "AccountId",
     hash: "H256",
-    timepoint: "Timepoint",
+    timepoint: "BridgeTimepoint",
     kind: "IncomingTransactionRequestKind",
     network_id: "BridgeNetworkId"
 }
@@ -8025,7 +8185,7 @@ returns: `Option<SwapOutcomeInfo>`
     supply: "Balance",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8051,7 +8211,7 @@ returns: `Option<SwapOutcomeInfo>`
     peer_account_id: "AccountId",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8063,7 +8223,7 @@ returns: `Option<SwapOutcomeInfo>`
     peer_account_id: "AccountId",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8087,7 +8247,7 @@ returns: `Option<SwapOutcomeInfo>`
     decimals: "u8",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8112,7 +8272,7 @@ returns: `Option<SwapOutcomeInfo>`
     erc20_native_tokens: "Vec<EthereumAddress>",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8134,7 +8294,7 @@ returns: `Option<SwapOutcomeInfo>`
     author: "AccountId",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8156,7 +8316,7 @@ returns: `Option<SwapOutcomeInfo>`
     peer_address: "EthereumAddress",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8168,7 +8328,7 @@ returns: `Option<SwapOutcomeInfo>`
     peer_address: "EthereumAddress",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8221,7 +8381,7 @@ returns: `Option<SwapOutcomeInfo>`
     amount: "Balance",
     nonce: "Index",
     network_id: "BridgeNetworkId",
-    timepoint: "Timepoint"
+    timepoint: "BridgeTimepoint"
 }
 ```
 
@@ -8245,7 +8405,10 @@ returns: `Option<SwapOutcomeInfo>`
 
 ### PendingMultisigAccount
 ```
-"Null"
+{
+    approving_accounts: "Vec<AccountId>",
+    migrate_at: "Option<BlockNumber>"
+}
 ```
 
 ### Permission
@@ -8260,7 +8423,11 @@ returns: `Option<SwapOutcomeInfo>`
 
 ### PoolFarmer
 ```
-"Null"
+{
+    account: "AccountId",
+    block: "BlockNumber",
+    weight: "Balance"
+}
 ```
 
 ### PostDispatchInfo
@@ -8268,6 +8435,33 @@ returns: `Option<SwapOutcomeInfo>`
 {
     actual_weight: "Option<Weight>",
     pays_fee: "Pays"
+}
+```
+
+### PredefinedAssetId
+```
+{
+    _enum: [
+        "XOR",
+        "DOT",
+        "KSM",
+        "USDT",
+        "VAL",
+        "PSWAP",
+        "DAI",
+        "ETH"
+    ]
+}
+```
+
+### PriceInfo
+```
+{
+    price_failures: "u32",
+    spot_prices: "Vec<Balance>",
+    average_price: "Balance",
+    needs_update: "bool",
+    last_spot_price: "Balance"
 }
 ```
 
@@ -8320,7 +8514,11 @@ returns: `Option<SwapOutcomeInfo>`
 
 ### RewardInfo
 ```
-"Null"
+{
+    limit: "Balance",
+    total_available: "Balance",
+    rewards: "BTreeMap<RewardReason, Balance>"
+}
 ```
 
 ### RewardReason
@@ -8328,7 +8526,9 @@ returns: `Option<SwapOutcomeInfo>`
 {
     _enum: [
         "Unspecified",
-        "BuyOnBondingCurve"
+        "BuyOnBondingCurve",
+        "LiquidityProvisionFarming",
+        "MarketMakerVolume"
     ]
 }
 ```
@@ -8441,11 +8641,6 @@ returns: `Option<SwapOutcomeInfo>`
 }
 ```
 
-### TechAccountIdPrimitive
-```
-"Null"
-```
-
 ### TechAmount
 ```
 "Amount"
@@ -8453,7 +8648,12 @@ returns: `Option<SwapOutcomeInfo>`
 
 ### TechAssetId
 ```
-"Null"
+{
+    _enum: {
+        Wrapped: "PredefinedAssetId",
+        Escaped: "AssetId"
+    }
+}
 ```
 
 ### TechBalance
@@ -8466,15 +8666,19 @@ returns: `Option<SwapOutcomeInfo>`
 {
     _enum: {
         FeeCollector: "Null",
-        LiquidityKeeper: "TradingPair",
+        FeeCollectorForPair: "TechTradingPair",
+        LiquidityKeeper: "TechTradingPair",
         Identifier: "Vec<u8>"
     }
 }
 ```
 
-### Timepoint
+### TechTradingPair
 ```
-"BridgeTimepoint"
+{
+    base_asset_id: "TechAssetId",
+    target_asset_id: "TechAssetId"
+}
 ```
 
 ### TradingPair

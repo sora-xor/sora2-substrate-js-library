@@ -109,7 +109,6 @@ export default {
     Permission: "Null",             // define properly if needed
     DistributionAccounts: "Null",
     MultisigAccount: "Null",
-    PendingMultisigAccount: "Null",
     Farmer: "Null",
     Farm: "Null",
     SmoothPriceState: "Null",
@@ -182,7 +181,8 @@ export default {
       price_failures: "u32",
       spot_prices: "Vec<Balance>",
       average_price: "Balance",
-      needs_update: "bool"
+      needs_update: "bool",
+      last_spot_price: "Balance",
     }
   }
 }

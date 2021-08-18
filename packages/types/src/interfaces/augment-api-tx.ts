@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
-import type { Compact, Option, Vec } from '@polkadot/types';
+import type { Compact, Option, Text, Vec } from '@polkadot/types';
 import type { AnyNumber } from '@polkadot/types/types';
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import type { AccountId, AmountOf, AssetId, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, LiquiditySourceType, LookupSource, Moment, SwapAmount, SwapVariant } from '@sora-substrate/types/interfaces/runtime';
@@ -137,6 +137,13 @@ declare module '@polkadot/api/types/submittable' {
     };
     farming: {
       migrateTo11: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
+    irohaMigration: {
+      migrate: AugmentedSubmittable<(irohaAddress: Text | string, irohaPublicKey: Text | string, irohaSignature: Text | string) => SubmittableExtrinsic<ApiType>, [Text, Text, Text]>;
       /**
        * Generic tx
        **/

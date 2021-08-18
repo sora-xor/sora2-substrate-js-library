@@ -8,6 +8,7 @@ import dexManager from './dexManager'
 import tradingPair from './tradingPair'
 import template from './template'
 import assets from './assets'
+import irohaMigration from './irohaMigration'
 import liquidityProxy from './liquidityProxy'
 import ethBridge from './ethBridge'
 import pswapDistribution from './pswapDistribution'
@@ -17,17 +18,18 @@ import farming from './farming'
 import versionedOverrides from './versioned';
 
 const soraDefs = {
-  runtime,
+  assets,
   dexApi,
   dexManager,
-  tradingPair,
-  template,
-  assets,
-  liquidityProxy,
   ethBridge,
+  farming,
+  irohaMigration,
+  liquidityProxy,
   pswapDistribution,
   rewards,
-  farming,
+  runtime,
+  template,
+  tradingPair,
 }
 
 const overrides = {
@@ -40,7 +42,6 @@ const overrides = {
   TAssetBalance: 'Balance',
   MultiCurrencyBalance: 'Balance',
   MultiCurrencyBalanceOf: 'MultiCurrencyBalance',
-  Timepoint: 'BridgeTimepoint',
   AccountInfo: 'AccountInfoWithDualRefCount',
 };
 

@@ -368,9 +368,6 @@ export interface Pays extends Enum {
   readonly isNo: boolean;
 }
 
-/** @name PendingMultisigAccount */
-export interface PendingMultisigAccount extends Null {}
-
 /** @name Perbill */
 export interface Perbill extends UInt {}
 
@@ -425,6 +422,7 @@ export interface PriceInfo extends Struct {
   readonly spot_prices: Vec<Balance>;
   readonly average_price: Balance;
   readonly needs_update: bool;
+  readonly last_spot_price: Balance;
 }
 
 /** @name Public */
