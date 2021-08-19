@@ -1,8 +1,8 @@
 import { assert } from '@polkadot/util'
 import { ApiPromise } from '@polkadot/api'
 import { WsProvider } from '@polkadot/rpc-provider'
-import { ProviderInterfaceEmitted, ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types'
 import { options } from '@sora-substrate/api'
+import type { ProviderInterfaceEmitted, ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types'
 
 import { Messages } from './logger'
 

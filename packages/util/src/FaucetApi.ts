@@ -1,5 +1,5 @@
 import keyring from '@polkadot/ui-keyring'
-import { CreateResult } from '@polkadot/ui-keyring/types'
+import type { CreateResult } from '@polkadot/ui-keyring/types'
 
 import { BaseApi, History, Operation, KeyringType } from './BaseApi'
 import { getBalance, KnownAssets } from './assets'

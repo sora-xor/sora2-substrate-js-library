@@ -1,10 +1,10 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
-import type { Compact, Option, Vec } from '@polkadot/types';
+import type { Compact, Option, Text, Vec } from '@polkadot/types';
 import type { AnyNumber } from '@polkadot/types/types';
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
-import type { AccountId, AmountOf, AssetId, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, LiquiditySourceType, LookupSource, Moment, SwapAction, SwapAmount, SwapVariant } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AmountOf, AssetId, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, LiquiditySourceType, LookupSource, Moment, SwapAmount, SwapVariant } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/submittable' {
@@ -142,6 +142,13 @@ declare module '@polkadot/api/types/submittable' {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
+    irohaMigration: {
+      migrate: AugmentedSubmittable<(irohaAddress: Text | string, irohaPublicKey: Text | string, irohaSignature: Text | string) => SubmittableExtrinsic<ApiType>, [Text, Text, Text]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
     liquidityProxy: {
       /**
        * Perform swap of tokens (input/output defined via SwapAmount direction).
@@ -155,13 +162,6 @@ declare module '@polkadot/api/types/submittable' {
        * - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
        **/
       swap: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, swapAmount: SwapAmount | { WithDesiredInput: any } | { WithDesiredOutput: any } | string | Uint8Array, selectedSourceTypes: Vec<LiquiditySourceType> | (LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | number | Uint8Array)[], filterMode: FilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId, AssetId, SwapAmount, Vec<LiquiditySourceType>, FilterMode]>;
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>;
-    };
-    technical: {
-      createSwap: AugmentedSubmittable<(action: SwapAction | null) => SubmittableExtrinsic<ApiType>, [SwapAction]>;
       /**
        * Generic tx
        **/

@@ -67,8 +67,9 @@ import type { AccountId32Junction, AccountIndex64Junction, AccountKey20Junction,
 import type { AssetInfo, AssetNameStr, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
+import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
 import type { LPRewardsInfo, LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
-import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChangesTrieSignal, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DispatchErrorWithPostInfoTPostDispatchInfo, DispatchResultWithPostInfo, DistributionAccounts, Duration, EncodedJustification, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H32, H512, H64, Hash, Header, HeaderPartial, HolderId, I32F32, Index, IndicesLookupSource, Justification, Justifications, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, MarketMakerInfo, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletId, PalletVersion, PalletsOrigin, Pays, PendingMultisigAccount, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PostDispatchInfo, PreRuntime, PriceInfo, Public, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RewardInfo, RewardReason, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, SignedBlockWithJustification, SignedBlockWithJustifications, Slot, SmoothPriceState, StorageData, StorageProof, StorageVersion, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAccountIdPrimitive, TechAmount, TechAssetId, TechBalance, TechPurpose, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChangesTrieSignal, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Digest, DigestItem, DispatchErrorWithPostInfoTPostDispatchInfo, DispatchResultWithPostInfo, DistributionAccounts, Duration, EncodedJustification, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H32, H512, H64, Hash, Header, HeaderPartial, HolderId, I32F32, Index, IndicesLookupSource, Justification, Justifications, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, MarketMakerInfo, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletId, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PostDispatchInfo, PreRuntime, PredefinedAssetId, PriceInfo, Public, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RewardInfo, RewardReason, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, SignedBlockWithJustification, SignedBlockWithJustifications, Slot, SmoothPriceState, StorageData, StorageProof, StorageVersion, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAmount, TechAssetId, TechBalance, TechPurpose, TechTradingPair, TradingPair, TransactionPriority, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
 import type { TP } from '@sora-substrate/types/interfaces/tradingPair';
 
@@ -856,6 +857,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<PoolInfo>': Option<PoolInfo>;
     'Option<PostDispatchInfo>': Option<PostDispatchInfo>;
     'Option<Precommits>': Option<Precommits>;
+    'Option<PredefinedAssetId>': Option<PredefinedAssetId>;
     'Option<PrefabWasmModule>': Option<PrefabWasmModule>;
     'Option<PrefixedStorageKey>': Option<PrefixedStorageKey>;
     'Option<PreimageStatus>': Option<PreimageStatus>;
@@ -1074,11 +1076,11 @@ declare module '@polkadot/types/types/registry' {
     'Option<TAssetBalance>': Option<TAssetBalance>;
     'Option<TAssetDepositBalance>': Option<TAssetDepositBalance>;
     'Option<TechAccountId>': Option<TechAccountId>;
-    'Option<TechAccountIdPrimitive>': Option<TechAccountIdPrimitive>;
     'Option<TechAmount>': Option<TechAmount>;
     'Option<TechAssetId>': Option<TechAssetId>;
     'Option<TechBalance>': Option<TechBalance>;
     'Option<TechPurpose>': Option<TechPurpose>;
+    'Option<TechTradingPair>': Option<TechTradingPair>;
     'Option<Text>': Option<Text>;
     'Option<Timepoint>': Option<Timepoint>;
     'Option<TimestampedValue>': Option<TimestampedValue>;
@@ -1863,6 +1865,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<PoolInfo>': Vec<PoolInfo>;
     'Vec<PostDispatchInfo>': Vec<PostDispatchInfo>;
     'Vec<Precommits>': Vec<Precommits>;
+    'Vec<PredefinedAssetId>': Vec<PredefinedAssetId>;
     'Vec<PrefabWasmModule>': Vec<PrefabWasmModule>;
     'Vec<PrefixedStorageKey>': Vec<PrefixedStorageKey>;
     'Vec<PreimageStatus>': Vec<PreimageStatus>;
@@ -2081,11 +2084,11 @@ declare module '@polkadot/types/types/registry' {
     'Vec<TAssetBalance>': Vec<TAssetBalance>;
     'Vec<TAssetDepositBalance>': Vec<TAssetDepositBalance>;
     'Vec<TechAccountId>': Vec<TechAccountId>;
-    'Vec<TechAccountIdPrimitive>': Vec<TechAccountIdPrimitive>;
     'Vec<TechAmount>': Vec<TechAmount>;
     'Vec<TechAssetId>': Vec<TechAssetId>;
     'Vec<TechBalance>': Vec<TechBalance>;
     'Vec<TechPurpose>': Vec<TechPurpose>;
+    'Vec<TechTradingPair>': Vec<TechTradingPair>;
     'Vec<Text>': Vec<Text>;
     'Vec<Timepoint>': Vec<Timepoint>;
     'Vec<TimestampedValue>': Vec<TimestampedValue>;
@@ -2870,6 +2873,7 @@ declare module '@polkadot/types/types/registry' {
     PoolInfo: PoolInfo;
     PostDispatchInfo: PostDispatchInfo;
     Precommits: Precommits;
+    PredefinedAssetId: PredefinedAssetId;
     PrefabWasmModule: PrefabWasmModule;
     PrefixedStorageKey: PrefixedStorageKey;
     PreimageStatus: PreimageStatus;
@@ -3088,11 +3092,11 @@ declare module '@polkadot/types/types/registry' {
     TAssetBalance: TAssetBalance;
     TAssetDepositBalance: TAssetDepositBalance;
     TechAccountId: TechAccountId;
-    TechAccountIdPrimitive: TechAccountIdPrimitive;
     TechAmount: TechAmount;
     TechAssetId: TechAssetId;
     TechBalance: TechBalance;
     TechPurpose: TechPurpose;
+    TechTradingPair: TechTradingPair;
     Text: Text;
     Timepoint: Timepoint;
     TimestampedValue: TimestampedValue;
