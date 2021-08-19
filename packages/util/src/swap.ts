@@ -1,5 +1,5 @@
-import { CodecString } from './fp'
-import { LPRewardsInfo } from './rewards'
+import type { CodecString } from './fp'
+import type { LPRewardsInfo } from './rewards'
 
 export enum LiquiditySourceTypes {
   Default = '',
