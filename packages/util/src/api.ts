@@ -243,17 +243,12 @@ export class Api extends BaseApi {
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public async getLiquidityInfo (firstAssetAddress: string, secondAssetAddress: string): Promise<Asset> {
+  public getLiquidityInfo (firstAssetAddress: string, secondAssetAddress: string): Asset {
     const poolTokenAccount = poolAccountIdFromAssetPair(this.api, firstAssetAddress, secondAssetAddress).toString()
     if (!poolTokenAccount) {
       return null
     }
-    return {
-      address: poolTokenAccount,
-      decimals: 18,
-      name: 'Pool XYK Token',
-      symbol: 'POOLXYK'
-    }
+    return this.getLiquidityInfoByPoolAccount(poolTokenAccount)
   }
 
   /**
@@ -261,7 +256,7 @@ export class Api extends BaseApi {
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public async getLiquidityInfoByPoolAccount (poolTokenAccount: string): Promise<Asset> {
+  public getLiquidityInfoByPoolAccount (poolTokenAccount: string): Asset {
     return {
       address: poolTokenAccount,
       decimals: 18,
@@ -371,7 +366,7 @@ export class Api extends BaseApi {
       const inaccuracy = new FPNumber('0.000000000000001')
       return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()]
     }
-    const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
+    const poolToken = this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
     const totalSupply = await this.api.query.poolXyk.totalIssuances(poolToken.address) // BalanceInfo
     const pts = new FPNumber(totalSupply, poolToken.decimals)
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b))
@@ -380,7 +375,7 @@ export class Api extends BaseApi {
 
   private async getAccountLiquidityItem (firstAddress: string, secondAddress: string, reserveA: CodecString, reserveB: CodecString): Promise<AccountLiquidity | null> {
     const poolAccount = poolAccountIdFromAssetPair(this.api, firstAddress, secondAddress).toString()
-    const { decimals, symbol, name } = await this.getLiquidityInfoByPoolAccount(poolAccount)
+    const { decimals, symbol, name } = this.getLiquidityInfoByPoolAccount(poolAccount)
     const balanceCodec = await getLiquidityBalance(this.api, this.accountPair.address, poolAccount)
     if (!balanceCodec) {
       return null
@@ -1198,7 +1193,7 @@ export class Api extends BaseApi {
     assert(this.account, Messages.connectWallet)
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const poolToken = await this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
+    const poolToken = this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
     const desired = new FPNumber(desiredMarker, poolToken.decimals)
     const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
     const reserveB = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
