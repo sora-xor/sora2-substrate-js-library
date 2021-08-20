@@ -1,8 +1,22 @@
 import xxhash64AsBn from '@polkadot/util-crypto/xxhash/xxhash64/asBn'
-import { types } from '@sora-substrate/type-definitions'
 import type { ApiPromise } from '@polkadot/api'
 
-const predefinedAssets = types['PredefinedAssetId']['_enum']
+// import { types } from '@sora-substrate/type-definitions'
+
+// TODO: fix import issues
+// const predefinedAssets = types['PredefinedAssetId']['_enum']
+
+const predefinedAssets = [
+  // Order must match rust definition
+  'XOR',
+  'DOT',
+  'KSM',
+  'USDT',
+  'VAL',
+  'PSWAP',
+  'DAI',
+  'ETH'
+]
 
 function bytesToUint (bytes: Uint8Array) {
   let value = 0
