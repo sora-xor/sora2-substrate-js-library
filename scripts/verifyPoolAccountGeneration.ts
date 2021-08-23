@@ -1,9 +1,8 @@
-
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import { Keyring } from '@polkadot/api';
-import { poolAccountIdFromAssetPair } from '@sora-substrate/util';
+import { poolAccountIdFromAssetPair } from '@sora-substrate/util/poolAccount';
 
 async function main(): Promise<void> {
   const provider = new WsProvider('wss://ws.mof.sora.org');
