@@ -412,16 +412,19 @@ export class Api extends BaseApi {
 
   /**
    * Set subscriptions for balance updates of the account asset list
-   * @param targetAssetIds if set then subscribtions will be set with this array
+   * @param targetAssetIds
    */
-  public updateAccountLiquidity (targetAssetIds?: Array<string>): void {
+  public updateAccountLiquidity (targetAssetIds: Array<string>): void {
     const xor = KnownAssets.get(KnownSymbols.XOR)
     const getReserve = (reserve: Codec) => new FPNumber(reserve).toCodecString()
     const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) => this.accountLiquidity = this.accountLiquidity.filter(item => item.secondAddress !== liquidity.secondAddress)
     this.unsubscribeFromAllLiquidityUpdates()
     assert(this.account, Messages.connectWallet)
-    // preparing required fields
-    const liquidityList = targetAssetIds ? targetAssetIds.map(id => ({ secondAddress: id })) : [...this.accountLiquidity]
+    // Update list of current account liquidity and execute next()
+    const liquidityList = targetAssetIds.map(id => ({ secondAddress: id }))
+    this.accountLiquidity = this.accountLiquidity.filter(item => targetAssetIds.includes(item.secondAddress))
+    this.liquiditySubject.next()
+    // Refresh all required subscriptions
     for (const liquidity of liquidityList) {
       const subscription = this.apiRx.query.poolXyk.reserves(xor.address, liquidity.secondAddress).subscribe(async reserves => {
         if (!reserves || !(reserves[0] || reserves[1])) {
