@@ -459,6 +459,7 @@ export class Api extends BaseApi {
    * Do not forget to call `unsubscribe`
    */
   public getUserPoolsSubscription (): Subscription {
+    assert(this.account, Messages.connectWallet)
     return this.apiRx.query.poolXyk.accountPools(this.accountPair.address).subscribe((result) => {
       const targetIds = result.toJSON() as Array<string>
       this.updateAccountLiquidity(targetIds)
@@ -1317,7 +1318,16 @@ export class Api extends BaseApi {
   public async getClaimRewardsNetworkFee (rewards: Array<RewardInfo>, signature = ''): Promise<CodecString>  {
     const params = this.calcClaimRewardsParams(rewards, signature)
 
-    return await this.getNetworkFee(Operation.ClaimRewards, params)
+    switch (params.extrinsic) {
+      case this.api.tx.pswapDistribution.claimIncentive:
+        return this.NetworkFee[Operation.ClaimLiquidityProvisionRewards]
+      case this.api.tx.vestedRewards.claimRewards:
+        return this.NetworkFee[Operation.ClaimVestedRewards]
+      case this.api.tx.rewards.claim:
+        return this.NetworkFee[Operation.ClaimExternalRewards]
+      default:
+        return await this.getNetworkFee(Operation.ClaimRewards, params)
+    }
   }
 
   /**

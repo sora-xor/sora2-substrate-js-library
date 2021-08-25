@@ -43,7 +43,10 @@ export class BaseApi {
     [Operation.RemoveLiquidity]: '0',
     [Operation.Swap]: '0',
     [Operation.SwapAndSend]: '0',
-    [Operation.Transfer]: '0'
+    [Operation.Transfer]: '0',
+    [Operation.ClaimVestedRewards]: '0',
+    [Operation.ClaimLiquidityProvisionRewards]: '0',
+    [Operation.ClaimExternalRewards]: '0'
   }
 
   protected readonly prefix = 69
@@ -372,6 +375,12 @@ export class BaseApi {
         ])
       case Operation.Transfer:
         return this.api.tx.assets.transfer('', '', '0')
+      case Operation.ClaimVestedRewards:
+        return this.api.tx.vestedRewards.claimRewards()
+      case Operation.ClaimLiquidityProvisionRewards:
+        return this.api.tx.pswapDistribution.claimIncentive()
+      case Operation.ClaimExternalRewards:
+        return this.api.tx.rewards.claim('')
       default:
         return null
     }
@@ -388,7 +397,10 @@ export class BaseApi {
       Operation.RemoveLiquidity,
       Operation.Swap,
       Operation.SwapAndSend,
-      Operation.Transfer
+      Operation.Transfer,
+      Operation.ClaimVestedRewards,
+      Operation.ClaimLiquidityProvisionRewards,
+      Operation.ClaimExternalRewards
     ]
     // We don't need to know real account address for checking network fees
     const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs'
@@ -445,6 +457,9 @@ export enum Operation {
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
   ClaimRewards = 'ClaimRewards',
+  ClaimVestedRewards = 'ClaimVestedRewards', // Used for calc network fee
+  ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards', // Used for calc network fee
+  ClaimExternalRewards = 'ClaimExternalRewards', // Used for calc network fee
   TransferAll = 'TransferAll', // Batch with transfers
   SwapAndSend = 'SwapAndSend'
 }
