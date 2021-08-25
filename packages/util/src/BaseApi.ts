@@ -380,7 +380,7 @@ export class BaseApi {
       case Operation.ClaimLiquidityProvisionRewards:
         return this.api.tx.pswapDistribution.claimIncentive()
       case Operation.ClaimExternalRewards:
-        return this.api.tx.rewards.claim('')
+        return this.api.tx.rewards.claim('0xa8811ca9a2f65a4e21bd82a1e121f2a7f0f94006d0d4bcacf50016aef0b67765692bb7a06367365f13a521ec129c260451a682e658048729ff514e77e4cdffab1b') // signature mock
       default:
         return null
     }
