@@ -61,7 +61,7 @@ import(`../src/metadata${env ? '/' + env : ''}/latest`).then(meta => {
       'Permissions',
       'TokenDealer',
       'TemplateModule',
-      'ReferralSystem',
+      'Referrals',
       'IrohaMigration',
       'XorFee',
       'Tokens',

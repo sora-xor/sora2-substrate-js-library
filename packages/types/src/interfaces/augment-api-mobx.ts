@@ -25,7 +25,7 @@ import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
@@ -601,8 +601,7 @@ export interface StorageType extends BaseStorageType {
      **/
     reportsByKindIndex: StorageMap<Kind | string, Bytes>;
   };
-  permissions: {    modes: StorageMap<PermissionId | AnyNumber, Mode>;
-    owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
+  permissions: {    owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
     permissions: StorageDoubleMap<HolderId | string, Scope | { Limited: any } | { Unlimited: any } | string, Vec<PermissionId>>;
   };
   poolXyk: {    /**
@@ -669,7 +668,8 @@ export interface StorageType extends BaseStorageType {
      **/
     randomMaterial: Vec<Hash> | null;
   };
-  referralSystem: {    referrers: StorageMap<AccountId | string, Option<AccountId>>;
+  referrals: {    referrerBalances: StorageMap<AccountId | string, Option<Balance>>;
+    referrers: StorageMap<AccountId | string, Option<AccountId>>;
   };
   rewards: {    /**
      * Amount of VAL currently being vested (aggregated over the previous period of 14,400 blocks)
