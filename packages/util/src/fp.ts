@@ -175,7 +175,7 @@ export class FPNumber {
    * @param {number} precision Precision
    */
   public static fromNatural (value: number | string, precision: number = FPNumber.DEFAULT_PRECISION): FPNumber {
-    return new FPNumber(new BigNumber(value).times(10 ** precision))
+    return new FPNumber(value, precision)
   }
 
   /**

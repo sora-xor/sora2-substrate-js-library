@@ -1,10 +1,10 @@
 export default {
     rpc: {
-        testMultiply2: {
-            description: 'Test type of Balance',
+        needsMigration: {
+            description: 'Check if the account needs migration',
             params: [
                 {
-                    name: 'amount',
+                    name: 'iroha_address',
                     type: 'String'
                 },
                 {
@@ -13,12 +13,13 @@ export default {
                     isOptional: true
                 },
             ],
-            type: 'Option<CustomInfo>'
+            type: 'bool'
         }
     },
     types: {
-        CustomInfo: {
-            amount: 'Balance'
+        PendingMultisigAccount: {
+            approving_accounts: 'Vec<AccountId>',
+            migrate_at: 'Option<BlockNumber>',
         }
     }
 }

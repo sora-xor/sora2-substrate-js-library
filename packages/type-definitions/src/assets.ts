@@ -11,6 +11,11 @@ export default {
                     name: 'assetId',
                     type: 'AssetId'
                 },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'Option<BalanceInfo>'
         },
@@ -24,6 +29,11 @@ export default {
                 {
                     name: 'assetId',
                     type: 'AssetId'
+                },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
                 },
             ],
             type: 'Option<BalanceInfo>'
@@ -39,6 +49,11 @@ export default {
                     name: 'assetId',
                     type: 'AssetId'
                 },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'Option<BalanceInfo>'
         },
@@ -49,17 +64,34 @@ export default {
                     name: 'assetId',
                     type: 'AssetId'
                 },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
             ],
             type: 'Option<BalanceInfo>'
         },
         listAssetIds: {
             description: 'List Ids of all assets registered on chain.',
-            params: [],
+            params: [
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
+            ],
             type: 'Vec<AssetId>'
         },
         listAssetInfos: {
             description: 'List Infos of all assets registered on chain.',
-            params: [],
+            params: [
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
+                },
+            ],
             type: 'Vec<AssetInfo>'
         },
         getAssetInfo: {
@@ -68,6 +100,11 @@ export default {
                 {
                     name: 'assetId',
                     type: 'AssetId'
+                },
+                {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isOptional: true
                 },
             ],
             type: 'Option<AssetInfo>'
