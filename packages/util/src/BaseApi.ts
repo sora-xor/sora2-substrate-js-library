@@ -472,6 +472,7 @@ export interface History {
   assetAddress?: string;
   id?: string;
   blockId?: string;
+  blockHeight?: string;
   to?: string;
   amount2?: string;
   symbol2?: string;
@@ -482,4 +483,6 @@ export interface History {
   status?: string;
   errorMessage?: string;
   liquiditySource?: string;
+  liquidityProviderFee?: CodecString;
+  soraNetworkFee?: CodecString;
 }
