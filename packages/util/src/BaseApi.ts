@@ -53,6 +53,7 @@ export class BaseApi {
   protected readonly defaultDEXId = 0
 
   private _history: Array<History> = []
+  private _historySyncTimestamp: number = 0
   private _restored: boolean = false
 
   protected signer?: Signer
@@ -132,6 +133,18 @@ export class BaseApi {
   public set restored (value: boolean) {
     this.accountStorage?.set('restored', JSON.stringify(value))
     this._restored = value
+  }
+
+  public get historySyncTimestamp (): number {
+    if (this.accountStorage) {
+      this._historySyncTimestamp = JSON.parse(this.accountStorage.get('historySyncTimestamp')) || 0
+    }
+    return this._historySyncTimestamp
+  }
+
+  public set historySyncTimestamp (value: number) {
+    this.accountStorage?.set('historySyncTimestamp', JSON.stringify(value))
+    this._historySyncTimestamp = value
   }
 
   public getHistory (id: string): History | null {
@@ -485,4 +498,5 @@ export interface History {
   liquiditySource?: string;
   liquidityProviderFee?: CodecString;
   soraNetworkFee?: CodecString;
+  payload?: any; // can be used to integrate with third-party services
 }
