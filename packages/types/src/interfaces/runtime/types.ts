@@ -283,6 +283,7 @@ export interface LiquiditySourceType extends Enum {
   readonly isMockPool2: boolean;
   readonly isMockPool3: boolean;
   readonly isMockPool4: boolean;
+  readonly isXstPool: boolean;
 }
 
 /** @name LockIdentifier */
@@ -411,6 +412,7 @@ export interface PredefinedAssetId extends Enum {
   readonly isPswap: boolean;
   readonly isDai: boolean;
   readonly isEth: boolean;
+  readonly isXstusd: boolean;
 }
 
 /** @name PreRuntime */
