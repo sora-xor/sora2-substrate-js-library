@@ -693,7 +693,7 @@ export class Api extends BaseApi {
 
   // # API methods
 
-  private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean) {
+  private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean, isNft: boolean) {
     assert(this.account, Messages.connectWallet)
     // TODO: add assert for symbol, name and totalSupply params
     const supply = new FPNumber(totalSupply)
@@ -702,7 +702,8 @@ export class Api extends BaseApi {
         symbol,
         name,
         supply.toCodecString(),
-        extensibleSupply
+        extensibleSupply,
+        isNft
       ]
     }
   }
@@ -718,8 +719,8 @@ export class Api extends BaseApi {
    * @param totalSupply
    * @param extensibleSupply
    */
-  public async registerAsset (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply = false): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply)
+  public async registerAsset (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply = false, isNft = false): Promise<void> {
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, isNft)
     await this.submitExtrinsic(
       (this.api.tx.assets.register as any)(...params.args),
       this.account.pair,
