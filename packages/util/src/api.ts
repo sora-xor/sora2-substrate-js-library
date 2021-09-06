@@ -412,16 +412,19 @@ export class Api extends BaseApi {
 
   /**
    * Set subscriptions for balance updates of the account asset list
-   * @param targetAssetIds if set then subscribtions will be set with this array
+   * @param targetAssetIds
    */
-  public updateAccountLiquidity (targetAssetIds?: Array<string>): void {
+  public updateAccountLiquidity (targetAssetIds: Array<string>): void {
     const xor = KnownAssets.get(KnownSymbols.XOR)
     const getReserve = (reserve: Codec) => new FPNumber(reserve).toCodecString()
     const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) => this.accountLiquidity = this.accountLiquidity.filter(item => item.secondAddress !== liquidity.secondAddress)
     this.unsubscribeFromAllLiquidityUpdates()
     assert(this.account, Messages.connectWallet)
-    // preparing required fields
-    const liquidityList = targetAssetIds ? targetAssetIds.map(id => ({ secondAddress: id })) : [...this.accountLiquidity]
+    // Update list of current account liquidity and execute next()
+    const liquidityList = targetAssetIds.map(id => ({ secondAddress: id }))
+    this.accountLiquidity = this.accountLiquidity.filter(item => targetAssetIds.includes(item.secondAddress))
+    this.liquiditySubject.next()
+    // Refresh all required subscriptions
     for (const liquidity of liquidityList) {
       const subscription = this.apiRx.query.poolXyk.reserves(xor.address, liquidity.secondAddress).subscribe(async reserves => {
         if (!reserves || !(reserves[0] || reserves[1])) {
@@ -456,6 +459,7 @@ export class Api extends BaseApi {
    * Do not forget to call `unsubscribe`
    */
   public getUserPoolsSubscription (): Subscription {
+    assert(this.account, Messages.connectWallet)
     return this.apiRx.query.poolXyk.accountPools(this.accountPair.address).subscribe((result) => {
       const targetIds = result.toJSON() as Array<string>
       this.updateAccountLiquidity(targetIds)
@@ -689,7 +693,7 @@ export class Api extends BaseApi {
 
   // # API methods
 
-  private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean) {
+  private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean, isNft: boolean) {
     assert(this.account, Messages.connectWallet)
     // TODO: add assert for symbol, name and totalSupply params
     const supply = new FPNumber(totalSupply)
@@ -698,7 +702,10 @@ export class Api extends BaseApi {
         symbol,
         name,
         supply.toCodecString(),
-        extensibleSupply
+        extensibleSupply,
+        isNft,
+        null,
+        null
       ]
     }
   }
@@ -714,8 +721,8 @@ export class Api extends BaseApi {
    * @param totalSupply
    * @param extensibleSupply
    */
-  public async registerAsset (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply = false): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply)
+  public async registerAsset (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply = false, isNft = false): Promise<void> {
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, isNft)
     await this.submitExtrinsic(
       (this.api.tx.assets.register as any)(...params.args),
       this.account.pair,
@@ -1314,7 +1321,16 @@ export class Api extends BaseApi {
   public async getClaimRewardsNetworkFee (rewards: Array<RewardInfo>, signature = ''): Promise<CodecString>  {
     const params = this.calcClaimRewardsParams(rewards, signature)
 
-    return await this.getNetworkFee(Operation.ClaimRewards, params)
+    switch (params.extrinsic) {
+      case this.api.tx.pswapDistribution.claimIncentive:
+        return this.NetworkFee[Operation.ClaimLiquidityProvisionRewards]
+      case this.api.tx.vestedRewards.claimRewards:
+        return this.NetworkFee[Operation.ClaimVestedRewards]
+      case this.api.tx.rewards.claim:
+        return this.NetworkFee[Operation.ClaimExternalRewards]
+      default:
+        return await this.getNetworkFee(Operation.ClaimRewards, params)
+    }
   }
 
   /**

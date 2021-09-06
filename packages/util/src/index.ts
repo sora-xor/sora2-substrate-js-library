@@ -4,6 +4,7 @@ export * from './BridgeApi'
 export * from './connection'
 export * from './FaucetApi'
 export * from './storage'
+export * from './http'
 export { FPNumber, CodecString } from './fp'
 export {
   AccountAsset,

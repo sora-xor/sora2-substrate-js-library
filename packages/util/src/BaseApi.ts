@@ -43,13 +43,17 @@ export class BaseApi {
     [Operation.RemoveLiquidity]: '0',
     [Operation.Swap]: '0',
     [Operation.SwapAndSend]: '0',
-    [Operation.Transfer]: '0'
+    [Operation.Transfer]: '0',
+    [Operation.ClaimVestedRewards]: '0',
+    [Operation.ClaimLiquidityProvisionRewards]: '0',
+    [Operation.ClaimExternalRewards]: '0'
   }
 
   protected readonly prefix = 69
   protected readonly defaultDEXId = 0
 
   private _history: Array<History> = []
+  private _historySyncTimestamp: number = 0
   private _restored: boolean = false
 
   protected signer?: Signer
@@ -129,6 +133,18 @@ export class BaseApi {
   public set restored (value: boolean) {
     this.accountStorage?.set('restored', JSON.stringify(value))
     this._restored = value
+  }
+
+  public get historySyncTimestamp (): number {
+    if (this.accountStorage) {
+      this._historySyncTimestamp = JSON.parse(this.accountStorage.get('historySyncTimestamp')) || 0
+    }
+    return this._historySyncTimestamp
+  }
+
+  public set historySyncTimestamp (value: number) {
+    this.accountStorage?.set('historySyncTimestamp', JSON.stringify(value))
+    this._historySyncTimestamp = value
   }
 
   public getHistory (id: string): History | null {
@@ -360,7 +376,7 @@ export class BaseApi {
       case Operation.EthBridgeOutgoing:
         return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0)
       case Operation.RegisterAsset:
-        return this.api.tx.assets.register('', '', '0', false)
+        return this.api.tx.assets.register('', '', '0', false, false, null, null)
       case Operation.RemoveLiquidity:
         return this.api.tx.poolXyk.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0')
       case Operation.Swap:
@@ -372,6 +388,12 @@ export class BaseApi {
         ])
       case Operation.Transfer:
         return this.api.tx.assets.transfer('', '', '0')
+      case Operation.ClaimVestedRewards:
+        return this.api.tx.vestedRewards.claimRewards()
+      case Operation.ClaimLiquidityProvisionRewards:
+        return this.api.tx.pswapDistribution.claimIncentive()
+      case Operation.ClaimExternalRewards:
+        return this.api.tx.rewards.claim('0xa8811ca9a2f65a4e21bd82a1e121f2a7f0f94006d0d4bcacf50016aef0b67765692bb7a06367365f13a521ec129c260451a682e658048729ff514e77e4cdffab1b') // signature mock
       default:
         return null
     }
@@ -388,7 +410,10 @@ export class BaseApi {
       Operation.RemoveLiquidity,
       Operation.Swap,
       Operation.SwapAndSend,
-      Operation.Transfer
+      Operation.Transfer,
+      Operation.ClaimVestedRewards,
+      Operation.ClaimLiquidityProvisionRewards,
+      Operation.ClaimExternalRewards
     ]
     // We don't need to know real account address for checking network fees
     const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs'
@@ -445,6 +470,12 @@ export enum Operation {
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
   ClaimRewards = 'ClaimRewards',
+  /** it's used for calc network fee */
+  ClaimVestedRewards = 'ClaimVestedRewards',
+  /** it's used for calc network fee */
+  ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards',
+  /** it's used for calc network fee */
+  ClaimExternalRewards = 'ClaimExternalRewards',
   TransferAll = 'TransferAll', // Batch with transfers
   SwapAndSend = 'SwapAndSend'
 }
@@ -457,6 +488,7 @@ export interface History {
   assetAddress?: string;
   id?: string;
   blockId?: string;
+  blockHeight?: string;
   to?: string;
   amount2?: string;
   symbol2?: string;
@@ -467,4 +499,7 @@ export interface History {
   status?: string;
   errorMessage?: string;
   liquiditySource?: string;
+  liquidityProviderFee?: CodecString;
+  soraNetworkFee?: CodecString;
+  payload?: any; // can be used to integrate with third-party services
 }

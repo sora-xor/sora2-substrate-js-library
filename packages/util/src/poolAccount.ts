@@ -1,11 +1,24 @@
 import xxhash64AsBn from '@polkadot/util-crypto/xxhash/xxhash64/asBn'
-import { types } from '@sora-substrate/type-definitions'
 import type { ApiPromise } from '@polkadot/api'
-import type { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types/interfaces'
 
-const predefinedAssets = types['PredefinedAssetId']['_enum']
+// import { types } from '@sora-substrate/type-definitions'
 
-function bytesToUint (bytes: Uint8Array) {
+// TODO: fix import issues
+// const predefinedAssets = types['PredefinedAssetId']['_enum']
+
+const predefinedAssets = [
+  // Order must match rust definition
+  'XOR',
+  'DOT',
+  'KSM',
+  'USDT',
+  'VAL',
+  'PSWAP',
+  'DAI',
+  'ETH'
+]
+
+function bytesToUint (bytes: Uint8Array): number {
   let value = 0
   for (var i = 0; i < bytes.length; i++) {
     value = (value * 256) + bytes[i]
@@ -13,7 +26,7 @@ function bytesToUint (bytes: Uint8Array) {
   return value
 }
 
-export function assetIdToTechAssetId (api: ApiPromise, assetId: AssetId | string): TechAssetId {
+export function assetIdToTechAssetId (api: ApiPromise, assetId: any | string): any {
   const bytes = api.createType('AssetId', assetId).toU8a()
   const end = bytes[0] + 1
   if (end < 5 && end > 1) {
@@ -26,7 +39,7 @@ export function assetIdToTechAssetId (api: ApiPromise, assetId: AssetId | string
   return api.createType('TechAssetId', { Escaped: assetId })
 }
 
-export function poolTechAccountIdFromAssetPair (api: ApiPromise, baseAssetId: AssetId | string, targetAssetId: AssetId | string): TechAccountId {
+export function poolTechAccountIdFromAssetPair (api: ApiPromise, baseAssetId: any | string, targetAssetId: any | string): any {
   const techBaseAsset = assetIdToTechAssetId(api, baseAssetId)
   const techTargetAsset = assetIdToTechAssetId(api, targetAssetId)
   const tradingPair = api.createType('TechTradingPair', { base_asset_id: techBaseAsset, target_asset_id: techTargetAsset })
@@ -34,7 +47,7 @@ export function poolTechAccountIdFromAssetPair (api: ApiPromise, baseAssetId: As
   return api.createType('TechAccountId', { Pure: [0, techPurpose] })
 }
 
-export function techAccountIdToAccountId (api: ApiPromise, techAccountId: TechAccountId): AccountId {
+export function techAccountIdToAccountId (api: ApiPromise, techAccountId: any): any {
   const magicPrefix = new Uint8Array([84, 115, 79, 144, 249, 113, 160, 44, 96, 155, 45, 104, 78, 97, 181, 87])
   const u8a = new Uint8Array(32)
   u8a.set(magicPrefix, 0)
@@ -43,6 +56,6 @@ export function techAccountIdToAccountId (api: ApiPromise, techAccountId: TechAc
   return api.createType('AccountId', u8a)
 }
 
-export function poolAccountIdFromAssetPair(api: ApiPromise, baseAssetId: AssetId | string, targetAssetId: AssetId | string): AccountId {
+export function poolAccountIdFromAssetPair (api: ApiPromise, baseAssetId: any | string, targetAssetId: any | string): any {
   return techAccountIdToAccountId(api, poolTechAccountIdFromAssetPair(api, baseAssetId, targetAssetId))
 }
