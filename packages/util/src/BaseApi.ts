@@ -376,7 +376,7 @@ export class BaseApi {
       case Operation.EthBridgeOutgoing:
         return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0)
       case Operation.RegisterAsset:
-        return this.api.tx.assets.register('', '', '0', false, false)
+        return this.api.tx.assets.register('', '', '0', false, false, null, null)
       case Operation.RemoveLiquidity:
         return this.api.tx.poolXyk.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0')
       case Operation.Swap:
