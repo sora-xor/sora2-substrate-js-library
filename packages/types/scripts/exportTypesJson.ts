@@ -93,12 +93,6 @@ function convertTypes(inputContent: object, addCustom: boolean, specVersion: num
   }
 }
 
-//1. взять текущий файл
-//2. если его нет, создать новый. конец.
-//3. если файл есть, то проверить типы
-  //3.1. получить разницу типов
-  //3.3. если после 3.2 не пусто, то добавить новую версию.
-
 function buildTop(inputContent: object, addCustom: boolean) {
   let builder = {};
   if (addCustom) {
