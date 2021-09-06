@@ -1,5 +1,9 @@
 import fs from 'fs'
 import { localTypes } from '@sora-substrate/type-definitions'
+import { ApiPromise } from '@polkadot/api';
+import { options } from '@sora-substrate/api';
+import { WsProvider } from '@polkadot/rpc-provider';
+import { SORA_ENV } from './pullMeta';
 
 function sortObjectByKey(value) {
   return Object.keys(value).sort().reduce((o, key) => {
@@ -9,30 +13,91 @@ function sortObjectByKey(value) {
   }, {})
 }
 
-export function generateTypesJson(env?: string) {
+export async function generateTypesJson(env?: string) {
   console.log("NOTE: Make sure `yarn build` was run with latest types")
   let sortedTypes = sortObjectByKey(localTypes);
   const data = JSON.stringify(sortedTypes, null, 4);
-  const typesScalecodec = JSON.stringify(convertTypes(sortedTypes, true), null, 4);
+  const provider = new WsProvider(SORA_ENV[env]);
+  const api = new ApiPromise(options({ provider }));
+  await api.isReady;
+  const specVersion = api.consts.system.version.specVersion;
+  await api.disconnect();
+  let typesScalecodec;
+  if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec.json`)) {
+    const currentTypes = JSON.parse(fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec.json`, 'utf-8'));
+    typesScalecodec = JSON.stringify(convertTypes(sortedTypes, true, specVersion.toNumber(), currentTypes), null, 4);
+  } else {
+    typesScalecodec = JSON.stringify(convertTypes(sortedTypes, true, 1, {}), null, 4);
+  }
   fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types.json`, data);
   fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec.json`, typesScalecodec);
-
 }
 
 generateTypesJson(process.argv[2])
 
-function convertTypes(inputContent: object, addCustom: boolean) {
-  const types = {};
-  types["runtime_id"] = 1;
-  types["versioning"] = [];
-  types["versioning"].push(
-    {
-      runtime_range: [1, null],
-      types: buildTop(inputContent, addCustom)
-    },
-  )
-  return types;
+function convertTypes(inputContent: object, addCustom: boolean, specVersion: number, currentTypes: object) {
+  if (specVersion === 1) { //if a new file is generated for new environment
+    const types = {};
+    types["runtime_id"] = specVersion;
+    types["versioning"] = [];
+    types["versioning"].push(
+      {
+        runtime_range: [specVersion, null],
+        types: buildTop(inputContent, addCustom)
+      },
+    )
+    return types;
+  } else { //if add new types to the existing file
+    currentTypes["runtime_id"] = specVersion;
+    const newTypes = buildTop(inputContent, false); //build new types structure
+    let newTypesToAdd = {} //different of new types and old types
+    for (let property in newTypes) { //check every parameter in new types structure
+      let typeAlreadyDefined = false;
+        for (let version in currentTypes["versioning"]) {
+          for (let currentTypeKey in currentTypes["versioning"][version]["types"]){
+          if (property === currentTypeKey) { //check if parameter definition is the same
+            if (JSON.stringify(newTypes[property]) === JSON.stringify(currentTypes["versioning"][version]["types"][property])) {
+              typeAlreadyDefined = true; //if parameters are the same then mark it as already defined
+              break;
+            }
+          }
+        }
+      }
+      if (!typeAlreadyDefined) { //if type is not defined or the definition has changed
+        newTypesToAdd[property] = newTypes[property];
+      }
+    }
+    if (Object.entries(newTypesToAdd).length > 0) { //if there is a difference between old and new types
+      let foundVersion;
+      for (let version in currentTypes["versioning"]) { //check if specVersion already added
+        if (currentTypes["versioning"][version]["runtime_range"][0] === specVersion
+          && currentTypes["versioning"][version]["runtime_range"][1] === null) {
+          foundVersion = currentTypes["versioning"][version];
+        }
+      }
+      if (foundVersion) { //if specVersion added then add new types there
+        foundVersion["types"] = {
+          ...foundVersion["types"],
+          ...newTypesToAdd
+        };
+      } else { //if specVersion wasn't added then create it with new types
+        currentTypes["versioning"].push(
+          {
+            runtime_range: [specVersion, null],
+            types: newTypesToAdd
+          }
+        )
+      }
+    }
+    return currentTypes;
+  }
 }
+
+//1. взять текущий файл
+//2. если его нет, создать новый. конец.
+//3. если файл есть, то проверить типы
+  //3.1. получить разницу типов
+  //3.3. если после 3.2 не пусто, то добавить новую версию.
 
 function buildTop(inputContent: object, addCustom: boolean) {
   let builder = {};
