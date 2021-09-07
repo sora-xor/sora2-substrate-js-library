@@ -238,7 +238,7 @@ export const getWhitelistAssets = (whitelist: Array<WhitelistArrayItem>) => whit
 export const isWhitelistAsset = isRegisteredAsset
 
 export const getWhitelistIdsBySymbol = (whitelist: Array<WhitelistArrayItem>) => whitelist.reduce<any>((acc, asset) => {
-  acc[asset.symbol] = asset.address
+  acc[asset.symbol.toUpperCase()] = asset.address
   return acc
 }, {})
 
