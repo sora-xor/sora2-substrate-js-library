@@ -16,26 +16,35 @@ function sortObjectByKey(value) {
 export async function generateTypesJson(env?: string) {
   console.log("NOTE: Make sure `yarn build` was run with latest types")
   let sortedTypes = sortObjectByKey(localTypes);
+  sortedTypes["Timepoint"] = "BridgeTimepoint"; //should be added
   const data = JSON.stringify(sortedTypes, null, 4);
   const provider = new WsProvider(SORA_ENV[env]);
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
   const specVersion = api.consts.system.version.specVersion;
   await api.disconnect();
-  let typesScalecodec;
-  if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec.json`)) {
-    const currentTypes = JSON.parse(fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec.json`, 'utf-8'));
-    typesScalecodec = JSON.stringify(convertTypes(sortedTypes, true, specVersion.toNumber(), currentTypes), null, 4);
+  let typesScalecodec_mobile;
+  if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`)) {
+    const currentTypes = JSON.parse(fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`, 'utf-8'));
+    typesScalecodec_mobile = JSON.stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes), null, 4);
   } else {
-    typesScalecodec = JSON.stringify(convertTypes(sortedTypes, true, 1, {}), null, 4);
+    typesScalecodec_mobile = JSON.stringify(convertTypes(sortedTypes, 1, {}), null, 4);
+  }
+  let typesScalecodec_python;
+  if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`)) {
+    const currentTypes = JSON.parse(fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`, 'utf-8'));
+    typesScalecodec_python = JSON.stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes), null, 4);
+  } else {
+    typesScalecodec_python = JSON.stringify(convertTypes(sortedTypes, 1, {}), null, 4);
   }
   fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types.json`, data);
-  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec.json`, typesScalecodec);
+  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`, typesScalecodec_mobile);
+  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`, typesScalecodec_python);
 }
 
 generateTypesJson(process.argv[2])
 
-function convertTypes(inputContent: object, addCustom: boolean, specVersion: number, currentTypes: object) {
+function convertTypes(inputContent: object, specVersion: number, currentTypes: object) {
   if (specVersion === 1) { //if a new file is generated for new environment
     const types = {};
     types["runtime_id"] = specVersion;
@@ -43,15 +52,19 @@ function convertTypes(inputContent: object, addCustom: boolean, specVersion: num
     types["versioning"].push(
       {
         runtime_range: [specVersion, null],
-        types: buildTop(inputContent, addCustom)
+        types: buildTop(inputContent)
       },
     )
     return types;
   } else { //if add new types to the existing file
     currentTypes["runtime_id"] = specVersion;
-    const newTypes = buildTop(inputContent, false); //build new types structure
+    const newTypes = buildTop(inputContent); //build new types structure
     let newTypesToAdd = {} //different of new types and old types
     for (let property in newTypes) { //check every parameter in new types structure
+      console.log(property);
+      if (property === "Address") { //Address should not be changed
+        break;
+      }
       let typeAlreadyDefined = false;
         for (let version in currentTypes["versioning"]) {
           for (let currentTypeKey in currentTypes["versioning"][version]["types"]){
@@ -93,17 +106,8 @@ function convertTypes(inputContent: object, addCustom: boolean, specVersion: num
   }
 }
 
-function buildTop(inputContent: object, addCustom: boolean) {
+function buildTop(inputContent: object) {
   let builder = {};
-  if (addCustom) {
-    builder = {
-      String: "Text",
-      FixedU128: "u128",
-      U256: "u256",
-      SessionKeys2: "(AccountId, AccountId)"
-    };
-  }
-
   buildTypes(builder, inputContent);
   return builder;
 }
@@ -111,6 +115,21 @@ function buildTop(inputContent: object, addCustom: boolean) {
 function buildTypes(builder: any, tree: object) {
   for (let [key, value] of Object.entries(tree)) {
     if (typeof value != 'object') {
+      if (key === "DispatchResultWithPostInfo") {//exception for "DispatchResultWithPostInfo" type
+        value = {
+          "type": "enum",
+          "type_mapping": [
+            [
+              "Ok",
+              "PostDispatchInfo"
+            ],
+            [
+              "Err",
+              "DispatchErrorWithPostInfoTPostDispatchInfo"
+            ]
+          ]
+        }
+      }
       builder[key] = value;
     } else {
       if (value["_enum"]) {
@@ -130,9 +149,9 @@ function buildTypes(builder: any, tree: object) {
 function buildEnumItem(a: object) {
   const builder = {};
   builder["type"] = "enum";
-  builder["values_list"] = [];
+  builder["value_list"] = [];
   for (let [, value] of Object.entries(a)) {
-    builder["values_list"].push(value);
+    builder["value_list"].push(value);
   }
   return builder;
 }

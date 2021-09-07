@@ -559,6 +559,5 @@
         "base_asset_id": "AssetId",
         "target_asset_id": "AssetId"
     },
-    "ValidationFunction": "Null",
-    "Timepoint": "BridgeTimepoint"
+    "ValidationFunction": "Null"
 }
