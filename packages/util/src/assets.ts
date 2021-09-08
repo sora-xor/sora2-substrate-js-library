@@ -17,7 +17,6 @@ export interface WhitelistItem {
   name: string;
   decimals: number;
   icon: string;
-  price?: CodecString;
 }
 
 export interface WhitelistArrayItem extends WhitelistItem {
@@ -228,9 +227,6 @@ export const getWhitelistAssets = (whitelist: Array<WhitelistArrayItem>) => whit
     symbol: asset.symbol,
     decimals: asset.decimals,
     icon: asset.icon
-  }
-  if (asset.price) {
-    acc[asset.address].price = asset.price
   }
   return acc
 }, {})
