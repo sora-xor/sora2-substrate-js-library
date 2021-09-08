@@ -37,7 +37,6 @@ export interface LPRewardsInfo {
 }
 
 export interface RewardClaimHistory extends History {
-  soraNetworkFee?: CodecString;
   externalAddress?: string;
   rewards?: Array<RewardInfo | RewardsInfo>;
 }

@@ -53,6 +53,7 @@ export class BaseApi {
   protected readonly defaultDEXId = 0
 
   private _history: Array<History> = []
+  private _historySyncTimestamp: number = 0
   private _restored: boolean = false
 
   protected signer?: Signer
@@ -132,6 +133,18 @@ export class BaseApi {
   public set restored (value: boolean) {
     this.accountStorage?.set('restored', JSON.stringify(value))
     this._restored = value
+  }
+
+  public get historySyncTimestamp (): number {
+    if (this.accountStorage) {
+      this._historySyncTimestamp = JSON.parse(this.accountStorage.get('historySyncTimestamp')) || 0
+    }
+    return this._historySyncTimestamp
+  }
+
+  public set historySyncTimestamp (value: number) {
+    this.accountStorage?.set('historySyncTimestamp', JSON.stringify(value))
+    this._historySyncTimestamp = value
   }
 
   public getHistory (id: string): History | null {
@@ -363,7 +376,7 @@ export class BaseApi {
       case Operation.EthBridgeOutgoing:
         return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0)
       case Operation.RegisterAsset:
-        return this.api.tx.assets.register('', '', '0', false)
+        return this.api.tx.assets.register('', '', '0', false, false, null, null)
       case Operation.RemoveLiquidity:
         return this.api.tx.poolXyk.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0')
       case Operation.Swap:
@@ -457,9 +470,12 @@ export enum Operation {
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
   ClaimRewards = 'ClaimRewards',
-  ClaimVestedRewards = 'ClaimVestedRewards', // Used for calc network fee
-  ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards', // Used for calc network fee
-  ClaimExternalRewards = 'ClaimExternalRewards', // Used for calc network fee
+  /** it's used for calc network fee */
+  ClaimVestedRewards = 'ClaimVestedRewards',
+  /** it's used for calc network fee */
+  ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards',
+  /** it's used for calc network fee */
+  ClaimExternalRewards = 'ClaimExternalRewards',
   TransferAll = 'TransferAll', // Batch with transfers
   SwapAndSend = 'SwapAndSend'
 }
@@ -472,6 +488,7 @@ export interface History {
   assetAddress?: string;
   id?: string;
   blockId?: string;
+  blockHeight?: string;
   to?: string;
   amount2?: string;
   symbol2?: string;
@@ -482,4 +499,7 @@ export interface History {
   status?: string;
   errorMessage?: string;
   liquiditySource?: string;
+  liquidityProviderFee?: CodecString;
+  soraNetworkFee?: CodecString;
+  payload?: any; // can be used to integrate with third-party services
 }
