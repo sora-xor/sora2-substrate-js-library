@@ -1,5 +1,5 @@
 {
-    "runtime_id": 9,
+    "runtime_id": 8,
     "versioning": [
         {
             "runtime_range": [
@@ -13,7 +13,6 @@
                 "Sr25519Public": "[u8; 32]",
                 "SessionKeys2": "(Sr25519Public, Sr25519Public)",
                 "SessionKeys3": "(Sr25519Public, Sr25519Public, Sr25519Public)",
-                "AccountInfo": "AccountInfoWithDualRefCount",
                 "Address": "AccountIdAddress",
                 "Amount": "i128",
                 "AmountOf": "Amount",

@@ -62,7 +62,7 @@ function convertTypes(inputContent: object, specVersion: number, currentTypes: o
     let newTypesToAdd = {} //different of new types and old types
     for (let property in newTypes) { //check every parameter in new types structure
       console.log(property);
-      if (property === "Address") { //Address should not be changed
+      if (property === "Address" || property === "AccountInfo") { //Address and AccountInfo should not be changed
         break;
       }
       let typeAlreadyDefined = false;
