@@ -67,7 +67,8 @@ export default {
         'MockPool',
         'MockPool2',
         'MockPool3',
-        'MockPool4'
+        'MockPool4',
+        'XSTPool'
       ]
     },
     FilterMode: {
@@ -143,7 +144,8 @@ export default {
         "VAL",
         "PSWAP",
         "DAI",
-        "ETH"
+        "ETH",
+        "XSTUSD"
       ]
     },
     RewardInfo: {
