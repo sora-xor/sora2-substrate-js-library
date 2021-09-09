@@ -1,20 +1,20 @@
-import fs from 'fs'
-import { localTypes } from '@sora-substrate/type-definitions'
+import fs from 'fs';
+import { localTypes } from '@sora-substrate/type-definitions';
 import { ApiPromise } from '@polkadot/api';
 import { options } from '@sora-substrate/api';
 import { WsProvider } from '@polkadot/rpc-provider';
-import { SORA_ENV } from './pullMeta';
+import { SORA_ENV } from './consts';
 
 function sortObjectByKey(value) {
   return Object.keys(value).sort().reduce((o, key) => {
-    const v = value[key]
-    o[key] = v
-    return o
-  }, {})
+    const v = value[key];
+    o[key] = v;
+    return o;
+  }, {});
 }
 
 export async function generateTypesJson(env?: string) {
-  console.log("NOTE: Make sure `yarn build` was run with latest types")
+  console.log("NOTE: Make sure `yarn build` was run with latest types");
   let sortedTypes = sortObjectByKey(localTypes);
   sortedTypes["Timepoint"] = "BridgeTimepoint"; //should be added
   const data = JSON.stringify(sortedTypes, null, 4);
@@ -23,14 +23,14 @@ export async function generateTypesJson(env?: string) {
   await api.isReady;
   const specVersion = api.consts.system.version.specVersion;
   await api.disconnect();
-  let typesScalecodec_mobile;
+  let typesScalecodec_mobile: string | NodeJS.ArrayBufferView;
   if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`)) {
     const currentTypes = JSON.parse(fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`, 'utf-8'));
     typesScalecodec_mobile = JSON.stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes), null, 4);
   } else {
     typesScalecodec_mobile = JSON.stringify(convertTypes(sortedTypes, 1, {}), null, 4);
   }
-  let typesScalecodec_python;
+  let typesScalecodec_python: string | NodeJS.ArrayBufferView;
   if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`)) {
     const currentTypes = JSON.parse(fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`, 'utf-8'));
     typesScalecodec_python = JSON.stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes), null, 4);
@@ -42,7 +42,7 @@ export async function generateTypesJson(env?: string) {
   fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`, typesScalecodec_python);
 }
 
-generateTypesJson(process.argv[2])
+generateTypesJson(process.argv[2]);
 
 function convertTypes(inputContent: object, specVersion: number, currentTypes: object) {
   if (specVersion === 1) { //if a new file is generated for new environment
@@ -53,7 +53,7 @@ function convertTypes(inputContent: object, specVersion: number, currentTypes: o
       {
         runtime_range: [specVersion, null],
         types: buildTop(inputContent)
-      },
+      }
     )
     return types;
   } else { //if add new types to the existing file
@@ -150,7 +150,7 @@ function buildEnumItem(a: object) {
   const builder = {};
   builder["type"] = "enum";
   builder["value_list"] = [];
-  for (let [, value] of Object.entries(a)) {
+  for (let [_, value] of Object.entries(a)) {
     builder["value_list"].push(value);
   }
   return builder;

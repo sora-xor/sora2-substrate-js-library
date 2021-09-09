@@ -437,7 +437,10 @@
         "raw": "Vec<u8>"
     },
     "OwnerId": "AccountId",
-    "PendingMultisigAccount": "Null",
+    "PendingMultisigAccount": {
+        "approving_accounts": "Vec<AccountId>",
+        "migrate_at": "Option<BlockNumber>"
+    },
     "Permission": "Null",
     "PermissionId": "u32",
     "PoolFarmer": {
@@ -448,6 +451,18 @@
     "PostDispatchInfo": {
         "actual_weight": "Option<Weight>",
         "pays_fee": "Pays"
+    },
+    "PredefinedAssetId": {
+        "_enum": [
+            "XOR",
+            "DOT",
+            "KSM",
+            "USDT",
+            "VAL",
+            "PSWAP",
+            "DAI",
+            "ETH"
+        ]
     },
     "PriceInfo": {
         "price_failures": "u32",
@@ -544,16 +559,25 @@
             "WrappedRepr": "AccountId"
         }
     },
-    "TechAccountIdPrimitive": "Null",
     "TechAmount": "Amount",
-    "TechAssetId": "Null",
+    "TechAssetId": {
+        "_enum": {
+            "Wrapped": "PredefinedAssetId",
+            "Escaped": "AssetId"
+        }
+    },
     "TechBalance": "Balance",
     "TechPurpose": {
         "_enum": {
             "FeeCollector": "Null",
-            "LiquidityKeeper": "TradingPair",
+            "FeeCollectorForPair": "TechTradingPair",
+            "LiquidityKeeper": "TechTradingPair",
             "Identifier": "Vec<u8>"
         }
+    },
+    "TechTradingPair": {
+        "base_asset_id": "TechAssetId",
+        "target_asset_id": "TechAssetId"
     },
     "TradingPair": {
         "base_asset_id": "AssetId",
