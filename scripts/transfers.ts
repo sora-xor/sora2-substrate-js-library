@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
 
-const ENDPOINT = 'wss://ws.sora2.soramitsu.co.jp'
+const ENDPOINT = 'wss://mof3.sora.org'
 
 async function question (rl: readline.Interface, value: string): Promise<string> {
   return new Promise(resolve => rl.question(value, resolve))
