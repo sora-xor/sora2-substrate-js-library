@@ -406,7 +406,7 @@ export class Api extends BaseApi {
       decimals,
       balance,
       name,
-      poolShare: minted.div(pts).mul(new FPNumber(100)).format() || '0'
+      poolShare: minted.div(pts).mul(FPNumber.HUNDRED).format() || '0'
     } as AccountLiquidity
   }
 
