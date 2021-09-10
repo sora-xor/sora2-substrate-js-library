@@ -21,6 +21,10 @@ type AccountWithOptions = {
   options: Partial<SignerOptions>;
 }
 
+export type NetworkFeesObject = {
+  [key in Operation]: CodecString
+}
+
 export const isBridgeOperation = (operation: Operation) => [
   Operation.EthBridgeIncoming,
   Operation.EthBridgeOutgoing
@@ -47,7 +51,7 @@ export class BaseApi {
     [Operation.ClaimVestedRewards]: '0',
     [Operation.ClaimLiquidityProvisionRewards]: '0',
     [Operation.ClaimExternalRewards]: '0'
-  }
+  } as NetworkFeesObject
 
   protected readonly prefix = 69
   protected readonly defaultDEXId = 0
