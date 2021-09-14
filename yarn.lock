@@ -2342,10 +2342,17 @@
     memoizee "^0.4.14"
     rxjs "^6.6.3"
 
-"@open-web3/orml-type-definitions@^0.8.2-11", "@open-web3/orml-type-definitions@^0.8.2-9":
+"@open-web3/orml-type-definitions@^0.8.2-11":
   version "0.8.2-11"
   resolved "https://registry.yarnpkg.com/@open-web3/orml-type-definitions/-/orml-type-definitions-0.8.2-11.tgz#56358d371b63f83761234a7b1283ac9008e6dddd"
   integrity sha512-cUv5+mprnaGNt0tu3FhK1nFRBK7SGjPhA1O0nxWWeRmuuH5fjkr0glbHE9kcKuCBfsh7nt6NGwxwl9emQtUDSA==
+
+"@open-web3/orml-type-definitions@^0.9.4-35":
+  version "0.9.4-35"
+  resolved "https://registry.yarnpkg.com/@open-web3/orml-type-definitions/-/orml-type-definitions-0.9.4-35.tgz#49a6637871ee4fc352d2ed59a63c32b205559536"
+  integrity sha512-Pycx7Wd3OJIcQaDemGlVAHVXNra5mx//8zWC23js5uBO0brmxdjxnfOZ25HkyfsV4IJXRBKJ7FhnFcOxefBPwQ==
+  dependencies:
+    lodash.merge "^4.6.2"
 
 "@open-web3/orml-types@^0.8.2-9":
   version "0.8.2-11"
@@ -10159,6 +10166,11 @@ lodash.memoize@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/lodash.memoize/-/lodash.memoize-4.1.2.tgz#bcc6c49a42a2840ed997f323eada5ecd182e0bfe"
   integrity sha1-vMbEmkKihA7Zl/Mj6tpezRguC/4=
+
+lodash.merge@^4.6.2:
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
+  integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
 
 lodash.set@^4.3.2:
   version "4.3.2"
