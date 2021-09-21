@@ -1,5 +1,4 @@
 {
-  "version": "1.6.9",
   "author": "Stefan Popov <popov@soramitsu.co.jp>",
   "private": true,
   "license": "Apache-2.0",
@@ -27,8 +26,10 @@
     "transfers": "ts-node --project ./tsconfig.json scripts/transfers.ts",
     "verify-pool-account-gen": "ts-node --project ./tsconfig.json scripts/verifyPoolAccountGeneration.ts",
     "demo": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
-    "publish-workspaces": "lerna publish from-package",
-    "generate-doc": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/exportApi.ts"
+    "publish-workspaces": "yarn export-types:all && lerna publish from-package",
+    "generate-doc": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/exportApi.ts",
+    "bump-version": "lerna version patch --no-push --no-git-tag-version",
+    "set-version": "lerna version --no-push --no-git-tag-version"
   },
   "engines": {
     "yarn": "^1.10.1"
