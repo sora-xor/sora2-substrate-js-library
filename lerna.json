@@ -10,6 +10,8 @@
       "ignoreChanges": [
         "yarn.lock"
       ],
+      "no-git-tag-version": true,
+       "no-push": true,
       "yes": true
     }
   }
