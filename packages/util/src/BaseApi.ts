@@ -30,6 +30,11 @@ export const isBridgeOperation = (operation: Operation) => [
   Operation.EthBridgeOutgoing
 ].includes(operation)
 
+const isLiquidityPoolOperation = (operation: Operation) => [
+  Operation.AddLiquidity,
+  Operation.RemoveLiquidity
+].includes(operation)
+
 export const KeyringType = 'sr25519'
 
 export class BaseApi {
@@ -264,6 +269,18 @@ export class BaseApi {
         history.endTime = Date.now()
         this.saveHistory(history)
         result.events.forEach(({ event: { data, method, section } }: any) => {
+          if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
+            const xor = KnownAssets.get(KnownSymbols.XOR)
+            const [assetId, from, to, amount] = data
+
+            const address = assetId.toString()
+            const amountFormatted = new FPNumber(amount).toString()
+            const amountKey = xor.address === address ? 'amount' : 'amount2'
+
+            history[amountKey] = amountFormatted
+            this.saveHistory(history)
+          }
+
           if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
             history.hash = first(data.toJSON())
             this.saveHistory(history)
