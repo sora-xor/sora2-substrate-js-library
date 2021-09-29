@@ -1218,7 +1218,10 @@ export class Api extends BaseApi {
         desiredB.sub(desiredB.mul(slippage)).toCodecString()
       ],
       firstAsset,
-      secondAsset
+      secondAsset,
+      // amountA, amountB - without slippage (for initial history)
+      amountA: desiredA.toString(),
+      amountB: desiredB.toString()
     }
   }
 
@@ -1259,7 +1262,8 @@ export class Api extends BaseApi {
         assetAddress: params.firstAsset.address,
         symbol2: params.secondAsset.symbol,
         asset2Address: params.secondAsset.address,
-        amount: `${desiredMarker}`
+        amount: params.amountA,
+        amount2: params.amountB
       }
     )
   }
