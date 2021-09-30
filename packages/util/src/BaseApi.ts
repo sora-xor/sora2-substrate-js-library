@@ -21,7 +21,7 @@ type AccountWithOptions = {
   options: Partial<SignerOptions>;
 }
 
-type SaveHistoryOptions = {
+export type SaveHistoryOptions = {
   wasNotGenerated?: boolean;
   toCurrentAccount?: boolean;
 }
