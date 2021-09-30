@@ -68,6 +68,7 @@ export class BaseApi {
 
   private _history: Array<History> = []
   private _historySyncTimestamp: number = 0
+  private _historySyncOperations: Array<Operation | string> = []
   private _restored: boolean = false
 
   protected signer?: Signer
@@ -159,6 +160,18 @@ export class BaseApi {
   public set historySyncTimestamp (value: number) {
     this.accountStorage?.set('historySyncTimestamp', JSON.stringify(value))
     this._historySyncTimestamp = value
+  }
+
+  public get historySyncOperations (): Array<Operation | string> {
+    if (this.accountStorage) {
+      this._historySyncOperations = JSON.parse(this.accountStorage.get('historySyncOperations')) as Array<Operation | string> || []
+    }
+    return this._historySyncOperations
+  }
+
+  public set historySyncOperations (value: Array<Operation | string>) {
+    this.accountStorage?.set('historySyncOperations', JSON.stringify(value))
+    this._historySyncOperations = [...value]
   }
 
   public getHistory (id: string): History | null {
