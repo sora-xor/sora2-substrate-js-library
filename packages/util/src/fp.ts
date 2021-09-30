@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import isNil from 'lodash/fp/isNil';
-import type { Codec } from '@polkadot/types/types'
+import type { Codec } from '@polkadot/types/types' 
 
 export type CodecString = string;
 export type NumberLike = number | string;
