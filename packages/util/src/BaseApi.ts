@@ -21,6 +21,11 @@ type AccountWithOptions = {
   options: Partial<SignerOptions>;
 }
 
+export type SaveHistoryOptions = {
+  wasNotGenerated?: boolean;
+  toCurrentAccount?: boolean;
+}
+
 export type NetworkFeesObject = {
   [key in Operation]: CodecString
 }
@@ -162,7 +167,7 @@ export class BaseApi {
     return this.history.find(item => item.id === id) ?? null
   }
 
-  public saveHistory (historyItem: History, wasNotGenerated = false): void {
+  public saveHistory (historyItem: History, options?: SaveHistoryOptions): void {
     if (!historyItem || !historyItem.id) return
 
     let historyCopy: Array<History>
@@ -171,7 +176,7 @@ export class BaseApi {
     const hasAccessToStorage = !!this.storage
     const historyItemHasSigner = !!historyItem.from
     const historyItemFromAddress = historyItemHasSigner ? this.formatAddress(historyItem.from, false) : ''
-    const needToUpdateAddressStorage = historyItemFromAddress && (historyItemFromAddress !== this.address) && hasAccessToStorage
+    const needToUpdateAddressStorage = !options?.toCurrentAccount && historyItemFromAddress && (historyItemFromAddress !== this.address) && hasAccessToStorage
 
     if (needToUpdateAddressStorage) {
       addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress))
@@ -184,7 +189,7 @@ export class BaseApi {
 
     const item = ~index ? { ...historyCopy[index], ...historyItem } : historyItem
 
-    if (wasNotGenerated) {
+    if (options?.wasNotGenerated) {
       // Tx was failed on the static validation and wasn't generated in the network
       delete item.txId
     }
@@ -308,7 +313,9 @@ export class BaseApi {
       const errorParts = e.message.split(':')
       const errorInfo = last(errorParts).trim()
       history.errorMessage = errorInfo
-      this.saveHistory(history, true)
+      this.saveHistory(history, {
+        wasNotGenerated: true
+      })
       throw new Error(errorInfo)
     })
   }
