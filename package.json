@@ -11,7 +11,7 @@
     "build:interfaces:prod": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts prod",
     "check-deps": "./node_modules/@open-web3/util/scripts/check-deps.js yarn.lock @polkadot/ @open-web3/",
     "clean": "polkadot-dev-clean-build",
-    "lint": "eslint '*.ts'",
+    "lint": "prettier --write",
     "postinstall": "polkadot-dev-yarn-only",
     "test": "jest --testPathIgnorePatterns",
     "test:all": "yarn build && yarn test",
@@ -66,7 +66,7 @@
   },
   "lint-staged": {
     "*.{js,ts,json,md}": [
-      "eslint --fix",
+      "prettier --write",
       "git add"
     ]
   }

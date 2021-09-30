@@ -3,7 +3,7 @@ import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/ut
 import keyring from '@polkadot/ui-keyring'
 import { Subject, scheduled, asapScheduler } from '@polkadot/x-rxjs'
 import { map, concatAll } from '@polkadot/x-rxjs/operators'
-import type { KeypairType } from '@polkadot/util-crypto/types';
+import type { KeypairType } from '@polkadot/util-crypto/types'
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, Observable, Codec } from '@polkadot/types/types';
