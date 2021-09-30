@@ -1,13 +1,13 @@
-import { assert, isHex } from '@polkadot/util'
-import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
-import keyring from '@polkadot/ui-keyring'
-import { Subject, scheduled, asapScheduler } from '@polkadot/x-rxjs'
-import { map, concatAll } from '@polkadot/x-rxjs/operators'
-import type { KeypairType } from '@polkadot/util-crypto/types'
-import type { CreateResult } from '@polkadot/ui-keyring/types'
-import type { KeyringPair$Json } from '@polkadot/keyring/types'
-import type { Signer, Observable, Codec } from '@polkadot/types/types'
-import type { Subscription } from '@polkadot/x-rxjs'
+import { assert, isHex } from '@polkadot/util';
+import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
+import keyring from '@polkadot/ui-keyring';
+import { Subject, scheduled, asapScheduler } from '@polkadot/x-rxjs';
+import { map, concatAll } from '@polkadot/x-rxjs/operators';
+import type { KeypairType } from '@polkadot/util-crypto/types';
+import type { CreateResult } from '@polkadot/ui-keyring/types';
+import type { KeyringPair$Json } from '@polkadot/keyring/types';
+import type { Signer, Observable, Codec } from '@polkadot/types/types';
+import type { Subscription } from '@polkadot/x-rxjs';
 
 import {
   KnownAssets,
@@ -23,102 +23,110 @@ import {
   getAssetBalanceObservable,
   ZeroBalance,
   Whitelist,
-  getLiquidityBalance
-} from './assets'
-import { decrypt, encrypt } from './crypto'
-import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
-import { SwapResult, LiquiditySourceTypes } from './swap'
-import { RewardingEvents, RewardsInfo, RewardInfo, isClaimableReward, containsRewardsForEvents, prepareRewardInfo, prepareRewardsInfo } from './rewards'
-import { CodecString, FPNumber, NumberLike } from './fp'
-import { Messages } from './logger'
-import { BridgeApi } from './BridgeApi'
-import { Storage } from './storage'
-import { poolAccountIdFromAssetPair } from './poolAccount'
+  getLiquidityBalance,
+} from './assets';
+import { decrypt, encrypt } from './crypto';
+import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi';
+import { SwapResult, LiquiditySourceTypes } from './swap';
+import {
+  RewardingEvents,
+  RewardsInfo,
+  RewardInfo,
+  isClaimableReward,
+  containsRewardsForEvents,
+  prepareRewardInfo,
+  prepareRewardsInfo,
+} from './rewards';
+import { CodecString, FPNumber, NumberLike } from './fp';
+import { Messages } from './logger';
+import { BridgeApi } from './BridgeApi';
+import { Storage } from './storage';
+import { poolAccountIdFromAssetPair } from './poolAccount';
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
  */
 export class Api extends BaseApi {
-  private readonly type: KeypairType = KeyringType
-  public readonly defaultSlippageTolerancePercent = 0.5
-  public readonly seedLength = 12
-  public readonly bridge: BridgeApi = new BridgeApi()
+  private readonly type: KeypairType = KeyringType;
+  public readonly defaultSlippageTolerancePercent = 0.5;
+  public readonly seedLength = 12;
+  public readonly bridge: BridgeApi = new BridgeApi();
 
-  private _assets: Array<AccountAsset> = []
-  private _accountAssetsAddresses: Array<string> = [] 
-  private _liquidity: Array<AccountLiquidity> = []
+  private _assets: Array<AccountAsset> = [];
+  private _accountAssetsAddresses: Array<string> = [];
+  private _liquidity: Array<AccountLiquidity> = [];
 
-  private balanceSubscriptions: Array<Subscription> = []
-  private assetsBalanceSubject = new Subject<void>()
-  public assetsBalanceUpdated = this.assetsBalanceSubject.asObservable()
+  private balanceSubscriptions: Array<Subscription> = [];
+  private assetsBalanceSubject = new Subject<void>();
+  public assetsBalanceUpdated = this.assetsBalanceSubject.asObservable();
 
-  private liquiditySubscriptions: Array<Subscription> = []
-  private liquiditySubject = new Subject<void>()
-  public liquidityUpdated = this.liquiditySubject.asObservable()
+  private liquiditySubscriptions: Array<Subscription> = [];
+  private liquiditySubject = new Subject<void>();
+  public liquidityUpdated = this.liquiditySubject.asObservable();
 
   // # Account assets methods
 
-  public get accountAssets (): Array<AccountAsset> {
+  public get accountAssets(): Array<AccountAsset> {
     if (this.storage) {
-      this._assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset> || []
+      this._assets = (JSON.parse(this.storage.get('assets')) as Array<AccountAsset>) || [];
     }
-    return this._assets
+    return this._assets;
   }
 
-  public set accountAssets (assets: Array<AccountAsset>) {
-    this.storage?.set('assets', JSON.stringify(assets))
-    this._assets = [...assets]
+  public set accountAssets(assets: Array<AccountAsset>) {
+    this.storage?.set('assets', JSON.stringify(assets));
+    this._assets = [...assets];
   }
 
-  private addToAccountAssetsList (asset: AccountAsset): void {
-    const assetsCopy = [...this.accountAssets]
-    const index = assetsCopy.findIndex(item => item.address === asset.address)
+  private addToAccountAssetsList(asset: AccountAsset): void {
+    const assetsCopy = [...this.accountAssets];
+    const index = assetsCopy.findIndex((item) => item.address === asset.address);
 
-    ~index ? assetsCopy[index] = asset : assetsCopy.push(asset)
+    ~index ? (assetsCopy[index] = asset) : assetsCopy.push(asset);
 
-    this.accountAssets = assetsCopy
+    this.accountAssets = assetsCopy;
   }
 
-  private removeFromAccountAssetsList (address: string): void {
-    this.accountAssets = this.accountAssets.filter(item => item.address !== address)
+  private removeFromAccountAssetsList(address: string): void {
+    this.accountAssets = this.accountAssets.filter((item) => item.address !== address);
   }
 
-  private addAccountAsset (asset: AccountAsset): void {
-    this.addToAccountAssetsList(asset)
-    this.addToAccountAssetsAddressesList(asset.address)
+  private addAccountAsset(asset: AccountAsset): void {
+    this.addToAccountAssetsList(asset);
+    this.addToAccountAssetsAddressesList(asset.address);
   }
 
-  private removeAccountAsset (address: string): void {
-    this.removeFromAccountAssetsList(address)
-    this.removeFromAccountAssetsAddressesList(address)
+  private removeAccountAsset(address: string): void {
+    this.removeFromAccountAssetsList(address);
+    this.removeFromAccountAssetsAddressesList(address);
   }
 
-  public removeAsset (address: string): void {
-    this.removeAccountAsset(address)
-    this.updateAccountAssets()
+  public removeAsset(address: string): void {
+    this.removeAccountAsset(address);
+    this.updateAccountAssets();
   }
 
-  public getAsset (address: string): AccountAsset | null {
-    return this.accountAssets.find(asset => asset.address === address) ?? null
+  public getAsset(address: string): AccountAsset | null {
+    return this.accountAssets.find((asset) => asset.address === address) ?? null;
   }
 
-  public getAssetBalanceObservable (asset: AccountAsset): Observable<AccountBalance> {
-    return getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address, asset.decimals)
+  public getAssetBalanceObservable(asset: AccountAsset): Observable<AccountBalance> {
+    return getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address, asset.decimals);
   }
 
   /**
    * Set subscriptions for balance updates of the account asset list
    */
-  public updateAccountAssets (): void {
-    this.unsubscribeFromAllBalancesUpdates()
-    assert(this.account, Messages.connectWallet)
+  public updateAccountAssets(): void {
+    this.unsubscribeFromAllBalancesUpdates();
+    assert(this.account, Messages.connectWallet);
     for (const asset of this.accountAssets) {
       const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
-        asset.balance = accountBalance
-        this.addAccountAsset(asset)
-        this.assetsBalanceSubject.next()
-      })
-      this.balanceSubscriptions.push(subscription)
+        asset.balance = accountBalance;
+        this.addAccountAsset(asset);
+        this.assetsBalanceSubject.next();
+      });
+      this.balanceSubscriptions.push(subscription);
     }
   }
 
@@ -126,21 +134,21 @@ export class Api extends BaseApi {
    * Get asset information
    * @param address asset address
    */
-  public async getAssetInfo (address: string): Promise<Asset> {
-    const knownAsset = KnownAssets.get(address)
+  public async getAssetInfo(address: string): Promise<Asset> {
+    const knownAsset = KnownAssets.get(address);
     if (knownAsset) {
-      return knownAsset
+      return knownAsset;
     }
-    const existingAsset = this.getAsset(address) || this.accountLiquidity.find(asset => asset.address === address)
+    const existingAsset = this.getAsset(address) || this.accountLiquidity.find((asset) => asset.address === address);
     if (existingAsset) {
       return {
         address: existingAsset.address,
         decimals: existingAsset.decimals,
         symbol: existingAsset.symbol,
-        name: existingAsset.name
-      } as Asset
+        name: existingAsset.name,
+      } as Asset;
     }
-    return await getAssetInfo(this.api, address)
+    return await getAssetInfo(this.api, address);
   }
 
   /**
@@ -149,93 +157,93 @@ export class Api extends BaseApi {
    * @param address asset address
    * @param addToList should asset be added to list or not
    */
-  public async getAccountAsset (address: string, addToList = false): Promise<AccountAsset> {
-    assert(this.account, Messages.connectWallet)
-    const { decimals, symbol, name } = await this.getAssetInfo(address)
-    const asset = { address, decimals, symbol, name } as AccountAsset
-    const result = await getAssetBalance(this.api, this.account.pair.address, address, decimals)
-    asset.balance = result
+  public async getAccountAsset(address: string, addToList = false): Promise<AccountAsset> {
+    assert(this.account, Messages.connectWallet);
+    const { decimals, symbol, name } = await this.getAssetInfo(address);
+    const asset = { address, decimals, symbol, name } as AccountAsset;
+    const result = await getAssetBalance(this.api, this.account.pair.address, address, decimals);
+    asset.balance = result;
     if (addToList) {
-      this.addAccountAsset(asset)
-      this.updateAccountAssets()
+      this.addAccountAsset(asset);
+      this.updateAccountAssets();
     }
-    return asset
+    return asset;
   }
 
   /**
    * Get a list of all known assets from `KnownAssets` array & from account storage
    */
-  public async getKnownAccountAssets (): Promise<Array<AccountAsset>> {
-    assert(this.account, Messages.connectWallet)
+  public async getKnownAccountAssets(): Promise<Array<AccountAsset>> {
+    assert(this.account, Messages.connectWallet);
 
-    const knownAssets: Array<AccountAsset> = []
-    const knownAssetsAddresses = Object.values(KnownAssets).map(knownAsset => knownAsset.address)
-    const assetsAddresses = new Set([...knownAssetsAddresses, ...this.accountAssetsAddresses])
+    const knownAssets: Array<AccountAsset> = [];
+    const knownAssetsAddresses = Object.values(KnownAssets).map((knownAsset) => knownAsset.address);
+    const assetsAddresses = new Set([...knownAssetsAddresses, ...this.accountAssetsAddresses]);
 
     for (const assetAddress of assetsAddresses) {
-      const asset = await this.getAccountAsset(assetAddress)
-      this.addAccountAsset(asset)
-      knownAssets.push(asset)
+      const asset = await this.getAccountAsset(assetAddress);
+      this.addAccountAsset(asset);
+      knownAssets.push(asset);
     }
 
-    return knownAssets
+    return knownAssets;
   }
 
-  private unsubscribeFromAllBalancesUpdates (): void {
+  private unsubscribeFromAllBalancesUpdates(): void {
     for (const subscription of this.balanceSubscriptions) {
-      subscription.unsubscribe()
+      subscription.unsubscribe();
     }
-    this.balanceSubscriptions = []
+    this.balanceSubscriptions = [];
   }
 
   // # Account assets addresses
 
-  private get accountAssetsAddresses (): Array<string> {
+  private get accountAssetsAddresses(): Array<string> {
     if (this.accountStorage) {
-      this._accountAssetsAddresses = JSON.parse(this.accountStorage.get('assetsAddresses')) as Array<string> || []
+      this._accountAssetsAddresses = (JSON.parse(this.accountStorage.get('assetsAddresses')) as Array<string>) || [];
     }
-    return this._accountAssetsAddresses
+    return this._accountAssetsAddresses;
   }
 
-  private set accountAssetsAddresses (assetsAddresses: Array<string>) {
-    this.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses))
-    this._accountAssetsAddresses = [...assetsAddresses]
+  private set accountAssetsAddresses(assetsAddresses: Array<string>) {
+    this.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses));
+    this._accountAssetsAddresses = [...assetsAddresses];
   }
 
-  private addToAccountAssetsAddressesList (assetAddress: string): void {
-    const assetsAddressesCopy = [...this.accountAssetsAddresses]
-    const index = assetsAddressesCopy.findIndex(address => address === assetAddress)
+  private addToAccountAssetsAddressesList(assetAddress: string): void {
+    const assetsAddressesCopy = [...this.accountAssetsAddresses];
+    const index = assetsAddressesCopy.findIndex((address) => address === assetAddress);
 
-    ~index ? assetsAddressesCopy[index] = assetAddress : assetsAddressesCopy.push(assetAddress)
+    ~index ? (assetsAddressesCopy[index] = assetAddress) : assetsAddressesCopy.push(assetAddress);
 
-    this.accountAssetsAddresses = assetsAddressesCopy
+    this.accountAssetsAddresses = assetsAddressesCopy;
   }
 
-  private removeFromAccountAssetsAddressesList (address: string): void {
-    this.accountAssetsAddresses = this.accountAssetsAddresses.filter(item => item !== address)
+  private removeFromAccountAssetsAddressesList(address: string): void {
+    this.accountAssetsAddresses = this.accountAssetsAddresses.filter((item) => item !== address);
   }
 
   // # Account Liquidity methods
 
-  public get accountLiquidity (): Array<AccountLiquidity> {
+  public get accountLiquidity(): Array<AccountLiquidity> {
     if (this.storage) {
-      this._liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
+      this._liquidity = (JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity>) || [];
     }
-    return this._liquidity
+    return this._liquidity;
   }
 
-  public set accountLiquidity (liquidity: Array<AccountLiquidity>) {
-    this.storage?.set('liquidity', JSON.stringify(liquidity))
-    this._liquidity = [...liquidity]
+  public set accountLiquidity(liquidity: Array<AccountLiquidity>) {
+    this.storage?.set('liquidity', JSON.stringify(liquidity));
+    this._liquidity = [...liquidity];
   }
 
-  private addToLiquidityList (asset: AccountLiquidity): void {
-    const liquidityCopy = [...this.accountLiquidity]
-    const index = liquidityCopy.findIndex(item => item.address === asset.address)
+  private addToLiquidityList(asset: AccountLiquidity): void {
+    const liquidityCopy = [...this.accountLiquidity];
+    const index = liquidityCopy.findIndex((item) => item.address === asset.address);
 
-    ~index ? liquidityCopy[index] = asset : liquidityCopy.push(asset)
+    ~index ? (liquidityCopy[index] = asset) : liquidityCopy.push(asset);
 
-    this.accountLiquidity = liquidityCopy
+    this.accountLiquidity = liquidityCopy;
   }
 
   /**
@@ -243,12 +251,12 @@ export class Api extends BaseApi {
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public getLiquidityInfo (firstAssetAddress: string, secondAssetAddress: string): Asset {
-    const poolTokenAccount = poolAccountIdFromAssetPair(this.api, firstAssetAddress, secondAssetAddress).toString()
+  public getLiquidityInfo(firstAssetAddress: string, secondAssetAddress: string): Asset {
+    const poolTokenAccount = poolAccountIdFromAssetPair(this.api, firstAssetAddress, secondAssetAddress).toString();
     if (!poolTokenAccount) {
-      return null
+      return null;
     }
-    return this.getLiquidityInfoByPoolAccount(poolTokenAccount)
+    return this.getLiquidityInfoByPoolAccount(poolTokenAccount);
   }
 
   /**
@@ -256,13 +264,13 @@ export class Api extends BaseApi {
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public getLiquidityInfoByPoolAccount (poolTokenAccount: string): Asset {
+  public getLiquidityInfoByPoolAccount(poolTokenAccount: string): Asset {
     return {
       address: poolTokenAccount,
       decimals: 18,
       name: 'Pool XYK Token',
-      symbol: 'POOLXYK'
-    }
+      symbol: 'POOLXYK',
+    };
   }
 
   /**
@@ -270,12 +278,14 @@ export class Api extends BaseApi {
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public async checkLiquidity (firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
-    const props = (await this.api.query.poolXyk.properties(firstAssetAddress, secondAssetAddress)).toJSON() as Array<string>
+  public async checkLiquidity(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
+    const props = (
+      await this.api.query.poolXyk.properties(firstAssetAddress, secondAssetAddress)
+    ).toJSON() as Array<string>;
     if (!props || !props.length) {
-      return false
+      return false;
     }
-    return true
+    return true;
   }
 
   /**
@@ -286,19 +296,19 @@ export class Api extends BaseApi {
    * @param firstAssetDecimals
    * @param secondAssetDecimals
    */
-  public async getLiquidityReserves (
+  public async getLiquidityReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
     firstAssetDecimals?: number,
     secondAssetDecimals?: number
   ): Promise<Array<CodecString>> {
-    const result = await this.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress) as any // Array<Balance>
+    const result = (await this.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress)) as any; // Array<Balance>
     if (!result || result.length !== 2) {
-      return ['0', '0']
+      return ['0', '0'];
     }
-    const firstValue = new FPNumber(result[0], firstAssetDecimals)
-    const secondValue = new FPNumber(result[1], secondAssetDecimals)
-    return [firstValue.toCodecString(), secondValue.toCodecString()]
+    const firstValue = new FPNumber(result[0], firstAssetDecimals);
+    const secondValue = new FPNumber(result[1], secondAssetDecimals);
+    return [firstValue.toCodecString(), secondValue.toCodecString()];
   }
 
   /**
@@ -313,7 +323,7 @@ export class Api extends BaseApi {
    * @param firstAssetDecimals If it's not set then request about asset info will be performed
    * @param secondAssetDecimals If it's not set then request about asset info will be performed
    */
-  public async estimateTokensRetrieved (
+  public async estimateTokensRetrieved(
     firstAssetAddress: string,
     secondAssetAddress: string,
     amount: CodecString,
@@ -326,17 +336,17 @@ export class Api extends BaseApi {
     // actually, we don't need to use decimals here, so, we don't need to send these requests
     // firstAssetDecimals = firstAssetDecimals ?? (await this.getAssetInfo(firstAssetAddress)).decimals
     // secondAssetDecimals = secondAssetDecimals ?? (await this.getAssetInfo(secondAssetAddress)).decimals
-    const a = FPNumber.fromCodecValue(firstTotal, firstAssetDecimals)
-    const b = FPNumber.fromCodecValue(secondTotal, secondAssetDecimals)
+    const a = FPNumber.fromCodecValue(firstTotal, firstAssetDecimals);
+    const b = FPNumber.fromCodecValue(secondTotal, secondAssetDecimals);
     if (a.isZero() && b.isZero()) {
-      return ['0', '0']
+      return ['0', '0'];
     }
-    const pIn = FPNumber.fromCodecValue(amount)
-    const totalSupply = await this.api.query.poolXyk.totalIssuances(poolTokenAddress) // BalanceInfo
-    const pts = new FPNumber(totalSupply)
-    const aOut = pIn.mul(a).div(pts)
-    const bOut = pIn.mul(b).div(pts)
-    return [aOut.toCodecString(), bOut.toCodecString(), pts.toCodecString()]
+    const pIn = FPNumber.fromCodecValue(amount);
+    const totalSupply = await this.api.query.poolXyk.totalIssuances(poolTokenAddress); // BalanceInfo
+    const pts = new FPNumber(totalSupply);
+    const aOut = pIn.mul(a).div(pts);
+    const bOut = pIn.mul(b).div(pts);
+    return [aOut.toCodecString(), bOut.toCodecString(), pts.toCodecString()];
   }
 
   /**
@@ -348,7 +358,7 @@ export class Api extends BaseApi {
    * @param firstTotal checkLiquidityReserves()[0]
    * @param secondTotal checkLiquidityReserves()[1]
    */
-  public async estimatePoolTokensMinted (
+  public async estimatePoolTokensMinted(
     firstAssetAddress: string,
     secondAssetAddress: string,
     firstAmount: NumberLike,
@@ -356,46 +366,60 @@ export class Api extends BaseApi {
     firstTotal: CodecString,
     secondTotal: CodecString
   ): Promise<Array<CodecString>> {
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const aIn = new FPNumber(firstAmount, firstAsset.decimals)
-    const bIn = new FPNumber(secondAmount, secondAsset.decimals)
-    const a = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
-    const b = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
+    const firstAsset = await this.getAssetInfo(firstAssetAddress);
+    const secondAsset = await this.getAssetInfo(secondAssetAddress);
+    const aIn = new FPNumber(firstAmount, firstAsset.decimals);
+    const bIn = new FPNumber(secondAmount, secondAsset.decimals);
+    const a = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals);
+    const b = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals);
     if (a.isZero() && b.isZero()) {
-      const inaccuracy = new FPNumber('0.000000000000001')
-      return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()]
+      const inaccuracy = new FPNumber('0.000000000000001');
+      return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()];
     }
-    const poolToken = this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    const totalSupply = await this.api.query.poolXyk.totalIssuances(poolToken.address) // BalanceInfo
-    const pts = new FPNumber(totalSupply, poolToken.decimals)
-    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b))
-    return [result.toCodecString(), pts.toCodecString()]
+    const poolToken = this.getLiquidityInfo(firstAssetAddress, secondAssetAddress);
+    const totalSupply = await this.api.query.poolXyk.totalIssuances(poolToken.address); // BalanceInfo
+    const pts = new FPNumber(totalSupply, poolToken.decimals);
+    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b));
+    return [result.toCodecString(), pts.toCodecString()];
   }
 
-  private async getAccountLiquidityItem (firstAddress: string, secondAddress: string, reserveA: CodecString, reserveB: CodecString): Promise<AccountLiquidity | null> {
-    const poolAccount = poolAccountIdFromAssetPair(this.api, firstAddress, secondAddress).toString()
-    const { decimals, symbol, name } = this.getLiquidityInfoByPoolAccount(poolAccount)
-    const balanceCodec = await getLiquidityBalance(this.api, this.accountPair.address, poolAccount)
+  private async getAccountLiquidityItem(
+    firstAddress: string,
+    secondAddress: string,
+    reserveA: CodecString,
+    reserveB: CodecString
+  ): Promise<AccountLiquidity | null> {
+    const poolAccount = poolAccountIdFromAssetPair(this.api, firstAddress, secondAddress).toString();
+    const { decimals, symbol, name } = this.getLiquidityInfoByPoolAccount(poolAccount);
+    const balanceCodec = await getLiquidityBalance(this.api, this.accountPair.address, poolAccount);
     if (!balanceCodec) {
-      return null
+      return null;
     }
-    const balanceFPNumber = new FPNumber(balanceCodec, decimals)
+    const balanceFPNumber = new FPNumber(balanceCodec, decimals);
     if (balanceFPNumber.isZero()) {
-      return null
+      return null;
     }
-    const balance = balanceFPNumber.toCodecString()
+    const balance = balanceFPNumber.toCodecString();
     if (!Number(balance)) {
-      return null
+      return null;
     }
-    const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(firstAddress, secondAddress, balance, reserveA, reserveB, poolAccount, decimals, decimals)
-    const fpBalanceA = FPNumber.fromCodecValue(balanceA, decimals)
-    const fpBalanceB = FPNumber.fromCodecValue(balanceB, decimals)
-    const pts = FPNumber.fromCodecValue(totalSupply, decimals)
+    const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(
+      firstAddress,
+      secondAddress,
+      balance,
+      reserveA,
+      reserveB,
+      poolAccount,
+      decimals,
+      decimals
+    );
+    const fpBalanceA = FPNumber.fromCodecValue(balanceA, decimals);
+    const fpBalanceB = FPNumber.fromCodecValue(balanceB, decimals);
+    const pts = FPNumber.fromCodecValue(totalSupply, decimals);
     const minted = FPNumber.min(
       fpBalanceA.mul(pts).div(FPNumber.fromCodecValue(reserveA, decimals)),
       fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, decimals))
-    )
+    );
     return {
       address: poolAccount,
       firstAddress,
@@ -406,50 +430,58 @@ export class Api extends BaseApi {
       decimals,
       balance,
       name,
-      poolShare: minted.div(pts).mul(FPNumber.HUNDRED).format() || '0'
-    } as AccountLiquidity
+      poolShare: minted.div(pts).mul(FPNumber.HUNDRED).format() || '0',
+    } as AccountLiquidity;
   }
 
   /**
    * Set subscriptions for balance updates of the account asset list
    * @param targetAssetIds
    */
-  public updateAccountLiquidity (targetAssetIds: Array<string>): void {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    const getReserve = (reserve: Codec) => new FPNumber(reserve).toCodecString()
-    const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) => this.accountLiquidity = this.accountLiquidity.filter(item => item.secondAddress !== liquidity.secondAddress)
-    this.unsubscribeFromAllLiquidityUpdates()
-    assert(this.account, Messages.connectWallet)
+  public updateAccountLiquidity(targetAssetIds: Array<string>): void {
+    const xor = KnownAssets.get(KnownSymbols.XOR);
+    const getReserve = (reserve: Codec) => new FPNumber(reserve).toCodecString();
+    const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) =>
+      (this.accountLiquidity = this.accountLiquidity.filter((item) => item.secondAddress !== liquidity.secondAddress));
+    this.unsubscribeFromAllLiquidityUpdates();
+    assert(this.account, Messages.connectWallet);
     // Update list of current account liquidity and execute next()
-    const liquidityList = targetAssetIds.map(id => ({ secondAddress: id }))
-    this.accountLiquidity = this.accountLiquidity.filter(item => targetAssetIds.includes(item.secondAddress))
-    this.liquiditySubject.next()
+    const liquidityList = targetAssetIds.map((id) => ({ secondAddress: id }));
+    this.accountLiquidity = this.accountLiquidity.filter((item) => targetAssetIds.includes(item.secondAddress));
+    this.liquiditySubject.next();
     // Refresh all required subscriptions
     for (const liquidity of liquidityList) {
-      const subscription = this.apiRx.query.poolXyk.reserves(xor.address, liquidity.secondAddress).subscribe(async reserves => {
-        if (!reserves || !(reserves[0] || reserves[1])) {
-          removeLiquidityItem(liquidity) // Remove it from list if something was wrong
-        } else {
-          const reserveA = getReserve(reserves[0])
-          const reserveB = getReserve(reserves[1])
-          const updatedLiquidity = await this.getAccountLiquidityItem(xor.address, liquidity.secondAddress, reserveA, reserveB)
-          if (updatedLiquidity) {
-            this.addToLiquidityList(updatedLiquidity)
+      const subscription = this.apiRx.query.poolXyk
+        .reserves(xor.address, liquidity.secondAddress)
+        .subscribe(async (reserves) => {
+          if (!reserves || !(reserves[0] || reserves[1])) {
+            removeLiquidityItem(liquidity); // Remove it from list if something was wrong
           } else {
-            removeLiquidityItem(liquidity) // Remove it from list if something was wrong
+            const reserveA = getReserve(reserves[0]);
+            const reserveB = getReserve(reserves[1]);
+            const updatedLiquidity = await this.getAccountLiquidityItem(
+              xor.address,
+              liquidity.secondAddress,
+              reserveA,
+              reserveB
+            );
+            if (updatedLiquidity) {
+              this.addToLiquidityList(updatedLiquidity);
+            } else {
+              removeLiquidityItem(liquidity); // Remove it from list if something was wrong
+            }
           }
-        }
-        this.liquiditySubject.next()
-      })
-      this.liquiditySubscriptions.push(subscription)
+          this.liquiditySubject.next();
+        });
+      this.liquiditySubscriptions.push(subscription);
     }
   }
 
-  public unsubscribeFromAllLiquidityUpdates (): void {
+  public unsubscribeFromAllLiquidityUpdates(): void {
     for (const subscription of this.liquiditySubscriptions) {
-      subscription.unsubscribe()
+      subscription.unsubscribe();
     }
-    this.liquiditySubscriptions = []
+    this.liquiditySubscriptions = [];
   }
 
   /**
@@ -458,33 +490,33 @@ export class Api extends BaseApi {
    *
    * Do not forget to call `unsubscribe`
    */
-  public getUserPoolsSubscription (): Subscription {
-    assert(this.account, Messages.connectWallet)
+  public getUserPoolsSubscription(): Subscription {
+    assert(this.account, Messages.connectWallet);
     return this.apiRx.query.poolXyk.accountPools(this.accountPair.address).subscribe((result) => {
-      const targetIds = result.toJSON() as Array<string>
-      this.updateAccountLiquidity(targetIds)
-    })
+      const targetIds = result.toJSON() as Array<string>;
+      this.updateAccountLiquidity(targetIds);
+    });
   }
 
   // # History methods
 
-  public get accountHistory (): Array<History> {
-    return this.history.filter(({ type }) => !isBridgeOperation(type))
+  public get accountHistory(): Array<History> {
+    return this.history.filter(({ type }) => !isBridgeOperation(type));
   }
 
-  public initAccountStorage () {
-    super.initAccountStorage()
-    this.bridge.initAccountStorage()
+  public initAccountStorage() {
+    super.initAccountStorage();
+    this.bridge.initAccountStorage();
 
     // transfer old history to accountStorage
     if (this.storage) {
-      const oldHistory = JSON.parse(this.storage.get('history')) || []
+      const oldHistory = JSON.parse(this.storage.get('history')) || [];
 
       if (oldHistory.length) {
-        this.history = oldHistory
+        this.history = oldHistory;
       }
 
-      this.storage.remove('history')
+      this.storage.remove('history');
     }
   }
 
@@ -492,19 +524,21 @@ export class Api extends BaseApi {
    * Remove all history except bridge history
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
-  public clearHistory (assetAddress?: string) {
-    this.history = this.history.filter((item) =>
-      isBridgeOperation(item.type) || (!!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress))
-    )
+  public clearHistory(assetAddress?: string) {
+    this.history = this.history.filter(
+      (item) =>
+        isBridgeOperation(item.type) ||
+        (!!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress))
+    );
   }
 
   /**
    * Set storage if it should be used as data storage
    * @param storage
    */
-  public setStorage (storage: Storage): void {
-    super.setStorage(storage)
-    this.bridge.setStorage(storage)
+  public setStorage(storage: Storage): void {
+    super.setStorage(storage);
+    this.bridge.setStorage(storage);
   }
 
   // # Account management methods
@@ -513,62 +547,62 @@ export class Api extends BaseApi {
    * Set signer if the pair is locked (For polkadot js extension usage)
    * @param signer
    */
-  public setSigner (signer: Signer): void {
-    super.setSigner(signer)
-    this.bridge.setSigner(signer)
+  public setSigner(signer: Signer): void {
+    super.setSigner(signer);
+    this.bridge.setSigner(signer);
   }
 
   /**
    * Set account data
    * @param account
    */
-  public setAccount (account: CreateResult): void {
-    super.setAccount(account)
-    this.bridge.setAccount(account)
+  public setAccount(account: CreateResult): void {
+    super.setAccount(account);
+    this.bridge.setAccount(account);
   }
 
   /**
    * The first method you should run. Includes initialization process
    */
-  public async initialize (): Promise<void> {
-    const address = this.storage?.get('address')
-    const password = this.storage?.get('password')
-    const name = this.storage?.get('name')
-    const isExternal = Boolean(this.storage?.get('isExternal'))
-    keyring.loadAll({ type: KeyringType })
-    await this.calcStaticNetworkFees()
+  public async initialize(): Promise<void> {
+    const address = this.storage?.get('address');
+    const password = this.storage?.get('password');
+    const name = this.storage?.get('name');
+    const isExternal = Boolean(this.storage?.get('isExternal'));
+    keyring.loadAll({ type: KeyringType });
+    await this.calcStaticNetworkFees();
     if (!address) {
-      return
+      return;
     }
-    const defaultAddress = this.formatAddress(address, false)
-    const soraAddress = this.formatAddress(address)
-    this.storage?.set('address', soraAddress)
-    const pair = keyring.getPair(defaultAddress)
+    const defaultAddress = this.formatAddress(address, false);
+    const soraAddress = this.formatAddress(address);
+    this.storage?.set('address', soraAddress);
+    const pair = keyring.getPair(defaultAddress);
 
     const account = !isExternal
       ? keyring.addPair(pair, decrypt(password))
-      : keyring.addExternal(defaultAddress, name ? { name } : {})
+      : keyring.addExternal(defaultAddress, name ? { name } : {});
 
-    this.setAccount(account)
-    this.initAccountStorage()
+    this.setAccount(account);
+    this.initAccountStorage();
   }
 
   /**
    * Before use the seed for wallet connection you may want to check its correctness
    * @param suri Seed which is set by the user
    */
-  public checkSeed (suri: string): { address: string; suri: string } {
-    const { phrase } = keyExtractSuri(suri)
+  public checkSeed(suri: string): { address: string; suri: string } {
+    const { phrase } = keyExtractSuri(suri);
     if (isHex(phrase)) {
-      assert(isHex(phrase, 256), 'Hex seed is not 256-bits')
+      assert(isHex(phrase, 256), 'Hex seed is not 256-bits');
     } else {
-      assert(String(phrase).split(' ').length === this.seedLength, `Mnemonic should contain ${this.seedLength} words`)
-      assert(mnemonicValidate(phrase), 'There is no valid mnemonic seed')
+      assert(String(phrase).split(' ').length === this.seedLength, `Mnemonic should contain ${this.seedLength} words`);
+      assert(mnemonicValidate(phrase), 'There is no valid mnemonic seed');
     }
     return {
       address: keyring.createFromUri(suri, {}, this.type).address,
-      suri
-    }
+      suri,
+    };
   }
 
   /**
@@ -577,23 +611,19 @@ export class Api extends BaseApi {
    * @param name Name of the wallet account
    * @param password Password which will be set for the wallet
    */
-  public importAccount (
-    suri: string,
-    name: string,
-    password: string
-  ): void {
-    const account = keyring.addUri(suri, password, { name }, this.type)
+  public importAccount(suri: string, name: string, password: string): void {
+    const account = keyring.addUri(suri, password, { name }, this.type);
 
-    this.setAccount(account)
+    this.setAccount(account);
 
     if (this.storage) {
-      this.storage.set('name', name)
-      this.storage.set('password', encrypt(password))
-      const soraAddress = this.formatAddress(account.pair.address)
-      this.storage.set('address', soraAddress)
+      this.storage.set('name', name);
+      this.storage.set('password', encrypt(password));
+      const soraAddress = this.formatAddress(account.pair.address);
+      this.storage.set('address', soraAddress);
     }
 
-    this.initAccountStorage()
+    this.initAccountStorage();
   }
 
   /**
@@ -602,19 +632,19 @@ export class Api extends BaseApi {
    * @param oldPassword
    * @param newPassword
    */
-  public changePassword (oldPassword: string, newPassword: string): void {
-    const pair = this.accountPair
+  public changePassword(oldPassword: string, newPassword: string): void {
+    const pair = this.accountPair;
     try {
       if (!pair.isLocked) {
-        pair.lock()
+        pair.lock();
       }
-      pair.decodePkcs8(oldPassword)
+      pair.decodePkcs8(oldPassword);
     } catch (error) {
-      throw new Error('Old password is invalid')
+      throw new Error('Old password is invalid');
     }
-    keyring.encryptAccount(pair, newPassword)
+    keyring.encryptAccount(pair, newPassword);
     if (this.storage) {
-      this.storage.set('password', encrypt(newPassword))
+      this.storage.set('password', encrypt(newPassword));
     }
   }
 
@@ -623,11 +653,11 @@ export class Api extends BaseApi {
    * TODO: check it, polkadot-js extension doesn't change account name
    * @param name New name
    */
-  public changeName (name: string): void {
-    const pair = this.accountPair
-    keyring.saveAccountMeta(pair, { ...pair.meta, name })
+  public changeName(name: string): void {
+    const pair = this.accountPair;
+    keyring.saveAccountMeta(pair, { ...pair.meta, name });
     if (this.storage) {
-      this.storage.set('name', name)
+      this.storage.set('name', name);
     }
   }
 
@@ -637,12 +667,12 @@ export class Api extends BaseApi {
    * @param json
    * @param password
    */
-  public restoreFromJson (json: KeyringPair$Json, password: string): { address: string, name: string } {
+  public restoreFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
     try {
-      const pair = keyring.restoreAccount(json, password)
-      return { address: pair.address, name: ((pair.meta || {}).name || '') as string }
+      const pair = keyring.restoreAccount(json, password);
+      return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
     } catch (error) {
-      throw new Error((error as Error).message)
+      throw new Error((error as Error).message);
     }
   }
 
@@ -651,24 +681,24 @@ export class Api extends BaseApi {
    * @param password
    * @param encrypted If `true` then it will be decrypted. `false` by default
    */
-  public exportAccount (password: string, encrypted = false): string {
-    let pass = password
+  public exportAccount(password: string, encrypted = false): string {
+    let pass = password;
     if (encrypted) {
-      pass = decrypt(password)
+      pass = decrypt(password);
     }
-    const pair = this.accountPair
-    return JSON.stringify(keyring.backupAccount(pair, pass))
+    const pair = this.accountPair;
+    return JSON.stringify(keyring.backupAccount(pair, pass));
   }
 
   /**
    * Create seed phrase. It returns `{ address, seed }` object.
    */
-  public createSeed (): { address: string, seed: string } {
-    const seed = mnemonicGenerate(this.seedLength)
+  public createSeed(): { address: string; seed: string } {
+    const seed = mnemonicGenerate(this.seedLength);
     return {
       address: keyring.createFromUri(seed, {}, this.type).address,
-      seed
-    }
+      seed,
+    };
   }
 
   /**
@@ -676,42 +706,40 @@ export class Api extends BaseApi {
    * @param address
    * @param name
    */
-  public importByPolkadotJs (address: string, name: string): void {
-    const account = keyring.addExternal(address, { name: name || '' })
+  public importByPolkadotJs(address: string, name: string): void {
+    const account = keyring.addExternal(address, { name: name || '' });
 
-    this.setAccount(account)
+    this.setAccount(account);
 
     if (this.storage) {
-      const soraAddress = this.formatAddress(account.pair.address)
-      this.storage.set('name', name)
-      this.storage.set('address', soraAddress)
-      this.storage.set('isExternal', true)
+      const soraAddress = this.formatAddress(account.pair.address);
+      this.storage.set('name', name);
+      this.storage.set('address', soraAddress);
+      this.storage.set('isExternal', true);
     }
 
-    this.initAccountStorage()
+    this.initAccountStorage();
   }
 
   // # API methods
 
-  private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean, isNft: boolean) {
-    assert(this.account, Messages.connectWallet)
+  private async calcRegisterAssetParams(
+    symbol: string,
+    name: string,
+    totalSupply: NumberLike,
+    extensibleSupply: boolean,
+    isNft: boolean
+  ) {
+    assert(this.account, Messages.connectWallet);
     // TODO: add assert for symbol, name and totalSupply params
-    const supply = new FPNumber(totalSupply)
+    const supply = new FPNumber(totalSupply);
     return {
-      args: [
-        symbol,
-        name,
-        supply.toCodecString(),
-        extensibleSupply,
-        isNft,
-        null,
-        null
-      ]
-    }
+      args: [symbol, name, supply.toCodecString(), extensibleSupply, isNft, null, null],
+    };
   }
 
-  private prepareLiquiditySources (liquiditySource: LiquiditySourceTypes): Array<LiquiditySourceTypes> {
-    return liquiditySource ? [liquiditySource] : []
+  private prepareLiquiditySources(liquiditySource: LiquiditySourceTypes): Array<LiquiditySourceTypes> {
+    return liquiditySource ? [liquiditySource] : [];
   }
 
   /**
@@ -721,16 +749,18 @@ export class Api extends BaseApi {
    * @param totalSupply
    * @param extensibleSupply
    */
-  public async registerAsset (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply = false, isNft = false): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, isNft)
-    await this.submitExtrinsic(
-      (this.api.tx.assets.register as any)(...params.args),
-      this.account.pair,
-      {
-        symbol,
-        type: Operation.RegisterAsset
-      }
-    )
+  public async registerAsset(
+    symbol: string,
+    name: string,
+    totalSupply: NumberLike,
+    extensibleSupply = false,
+    isNft = false
+  ): Promise<void> {
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, isNft);
+    await this.submitExtrinsic((this.api.tx.assets.register as any)(...params.args), this.account.pair, {
+      symbol,
+      type: Operation.RegisterAsset,
+    });
   }
 
   /**
@@ -739,43 +769,45 @@ export class Api extends BaseApi {
    * @param toAddress Account address
    * @param amount Amount value
    */
-  public async transfer (assetAddress: string, toAddress: string, amount: NumberLike): Promise<void> {
-    assert(this.account, Messages.connectWallet)
-    const asset = await this.getAssetInfo(assetAddress)
-    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.formatAddress(toAddress)
+  public async transfer(assetAddress: string, toAddress: string, amount: NumberLike): Promise<void> {
+    assert(this.account, Messages.connectWallet);
+    const asset = await this.getAssetInfo(assetAddress);
+    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.formatAddress(toAddress);
     await this.submitExtrinsic(
       this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.account.pair,
       { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
-    )
+    );
   }
 
-  private async prepareTransferAllTxs (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>) {
-    assert(this.account, Messages.connectWallet)
-    assert(data.length, Messages.noTransferData)
+  private async prepareTransferAllTxs(data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>) {
+    assert(this.account, Messages.connectWallet);
+    assert(data.length, Messages.noTransferData);
 
-    return data.map(item => {
-      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString())
-    })
+    return data.map((item) => {
+      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString());
+    });
   }
 
-  public async getTransferAllNetworkFee (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<CodecString> {
-    const transactions = await this.prepareTransferAllTxs(data)
-    return await this.getNetworkFee(Operation.TransferAll, transactions)
+  public async getTransferAllNetworkFee(
+    data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>
+  ): Promise<CodecString> {
+    const transactions = await this.prepareTransferAllTxs(data);
+    return await this.getNetworkFee(Operation.TransferAll, transactions);
   }
 
   /**
    * Transfer all data from array
    * @param data Transfer data
    */
-   public async transferAll (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<void> {
-    const transactions = await this.prepareTransferAllTxs(data)
+  public async transferAll(
+    data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>
+  ): Promise<void> {
+    const transactions = await this.prepareTransferAllTxs(data);
 
-    await this.submitExtrinsic(
-      this.api.tx.utility.batchAll(transactions),
-      this.account.pair,
-      { type: Operation.TransferAll }
-    )
+    await this.submitExtrinsic(this.api.tx.utility.batchAll(transactions), this.account.pair, {
+      type: Operation.TransferAll,
+    });
   }
 
   /**
@@ -784,18 +816,29 @@ export class Api extends BaseApi {
    * @param secondAssetAddress
    * @returns availability of swap operation
    */
-  async checkSwap (firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
-    return (await (this.api.rpc as any).liquidityProxy.isPathAvailable(this.defaultDEXId, firstAssetAddress, secondAssetAddress)).isTrue
+  async checkSwap(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
+    return (
+      await (this.api.rpc as any).liquidityProxy.isPathAvailable(
+        this.defaultDEXId,
+        firstAssetAddress,
+        secondAssetAddress
+      )
+    ).isTrue;
   }
 
-  async getListEnabledSourcesForPath (firstAssetAddress: string, secondAssetAddress: string): Promise<Array<LiquiditySourceTypes>> {
-    const list = (await (this.api.rpc as any).liquidityProxy.listEnabledSourcesForPath(
-      this.defaultDEXId,
-      firstAssetAddress,
-      secondAssetAddress
-    )).toJSON()
+  async getListEnabledSourcesForPath(
+    firstAssetAddress: string,
+    secondAssetAddress: string
+  ): Promise<Array<LiquiditySourceTypes>> {
+    const list = (
+      await (this.api.rpc as any).liquidityProxy.listEnabledSourcesForPath(
+        this.defaultDEXId,
+        firstAssetAddress,
+        secondAssetAddress
+      )
+    ).toJSON();
 
-    return (list as Array<LiquiditySourceTypes>)
+    return list as Array<LiquiditySourceTypes>;
   }
 
   /**
@@ -805,17 +848,17 @@ export class Api extends BaseApi {
    * @param amount Amount value (Asset A if Exchange A, else - Asset B)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    */
-  public async getSwapResult (
+  public async getSwapResult(
     assetAAddress: string,
     assetBAddress: string,
     amount: NumberLike,
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<SwapResult> {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    const assetA = await this.getAssetInfo(assetAAddress)
-    const assetB = await this.getAssetInfo(assetBAddress)
-    const liquiditySources = this.prepareLiquiditySources(liquiditySource)
+    const xor = KnownAssets.get(KnownSymbols.XOR);
+    const assetA = await this.getAssetInfo(assetAAddress);
+    const assetB = await this.getAssetInfo(assetBAddress);
+    const liquiditySources = this.prepareLiquiditySources(liquiditySource);
     const result = await (this.api.rpc as any).liquidityProxy.quote(
       this.defaultDEXId,
       assetAAddress,
@@ -824,14 +867,17 @@ export class Api extends BaseApi {
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
       liquiditySources,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
-    )
-    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amount_without_impact: 0 }
+    );
+    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amount_without_impact: 0 };
     return {
       amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
       fee: new FPNumber(value.fee, xor.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
-      amountWithoutImpact: new FPNumber(value.amount_without_impact, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
-    } as SwapResult
+      amountWithoutImpact: new FPNumber(
+        value.amount_without_impact,
+        (!isExchangeB ? assetB : assetA).decimals
+      ).toCodecString(),
+    } as SwapResult;
   }
 
   /**
@@ -843,22 +889,22 @@ export class Api extends BaseApi {
    * @param isExchangeB If `isExchangeB` then Exchange B and it calculates max sold,
    * else - Exchange A and it calculates min received. `false` by default
    */
-  public async getMinMaxValue (
+  public async getMinMaxValue(
     assetAAddress: string,
     assetBAddress: string,
     resultAmount: string,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent,
     isExchangeB = false
   ): Promise<CodecString> {
-    const assetA = await this.getAssetInfo(assetAAddress)
-    const assetB = await this.getAssetInfo(assetBAddress)
-    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals
-    const result = new FPNumber(resultAmount, resultDecimals)
-    const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100, resultDecimals))
-    return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toCodecString()
+    const assetA = await this.getAssetInfo(assetAAddress);
+    const assetB = await this.getAssetInfo(assetBAddress);
+    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals;
+    const result = new FPNumber(resultAmount, resultDecimals);
+    const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100, resultDecimals));
+    return (!isExchangeB ? result.sub(resultMulSlippage) : result.add(resultMulSlippage)).toCodecString();
   }
 
-  private async calcSwapParams (
+  private async calcSwapParams(
     assetAAddress: string,
     assetBAddress: string,
     amountA: NumberLike,
@@ -867,26 +913,26 @@ export class Api extends BaseApi {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ) {
-    assert(this.account, Messages.connectWallet)
-    const assetA = await this.getAssetInfo(assetAAddress)
-    const assetB = await this.getAssetInfo(assetBAddress)
-    const desiredDecimals = (!isExchangeB ? assetA : assetB).decimals
-    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals
-    const desiredCodecString = (new FPNumber(!isExchangeB ? amountA : amountB, desiredDecimals)).toCodecString()
-    const result = new FPNumber(!isExchangeB ? amountB : amountA, resultDecimals)
-    const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100))
-    const liquiditySources = this.prepareLiquiditySources(liquiditySource)
-    const params = {} as any
+    assert(this.account, Messages.connectWallet);
+    const assetA = await this.getAssetInfo(assetAAddress);
+    const assetB = await this.getAssetInfo(assetBAddress);
+    const desiredDecimals = (!isExchangeB ? assetA : assetB).decimals;
+    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals;
+    const desiredCodecString = new FPNumber(!isExchangeB ? amountA : amountB, desiredDecimals).toCodecString();
+    const result = new FPNumber(!isExchangeB ? amountB : amountA, resultDecimals);
+    const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100));
+    const liquiditySources = this.prepareLiquiditySources(liquiditySource);
+    const params = {} as any;
     if (!isExchangeB) {
       params.WithDesiredInput = {
         desired_amount_in: desiredCodecString,
-        min_amount_out: result.sub(resultMulSlippage).toCodecString()
-      }
+        min_amount_out: result.sub(resultMulSlippage).toCodecString(),
+      };
     } else {
       params.WithDesiredOutput = {
         desired_amount_out: desiredCodecString,
-        max_amount_in: result.add(resultMulSlippage).toCodecString()
-      }
+        max_amount_in: result.add(resultMulSlippage).toCodecString(),
+      };
     }
     return {
       args: [
@@ -895,11 +941,11 @@ export class Api extends BaseApi {
         assetBAddress,
         params,
         liquiditySources,
-        liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
+        liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected',
       ],
       assetA,
-      assetB
-    }
+      assetB,
+    };
   }
 
   /**
@@ -911,7 +957,7 @@ export class Api extends BaseApi {
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    */
-  public async swap (
+  public async swap(
     assetAAddress: string,
     assetBAddress: string,
     amountA: NumberLike,
@@ -920,25 +966,29 @@ export class Api extends BaseApi {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
-    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
+    const params = await this.calcSwapParams(
+      assetAAddress,
+      assetBAddress,
+      amountA,
+      amountB,
+      slippageTolerance,
+      isExchangeB,
+      liquiditySource
+    );
     if (!this.getAsset(params.assetB.address)) {
-      this.addAccountAsset({ ...params.assetB, balance: ZeroBalance })
-      this.updateAccountAssets()
+      this.addAccountAsset({ ...params.assetB, balance: ZeroBalance });
+      this.updateAccountAssets();
     }
-    await this.submitExtrinsic(
-      (this.api.tx.liquidityProxy as any).swap(...params.args),
-      this.account.pair,
-      {
-        symbol: params.assetA.symbol,
-        assetAddress: params.assetA.address,
-        amount: `${amountA}`,
-        symbol2: params.assetB.symbol,
-        asset2Address: params.assetB.address,
-        amount2: `${amountB}`,
-        liquiditySource,
-        type: Operation.Swap
-      }
-    )
+    await this.submitExtrinsic((this.api.tx.liquidityProxy as any).swap(...params.args), this.account.pair, {
+      symbol: params.assetA.symbol,
+      assetAddress: params.assetA.address,
+      amount: `${amountA}`,
+      symbol2: params.assetB.symbol,
+      asset2Address: params.assetB.address,
+      amount2: `${amountB}`,
+      liquiditySource,
+      type: Operation.Swap,
+    });
   }
 
   /**
@@ -952,7 +1002,7 @@ export class Api extends BaseApi {
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    */
-   public async swapAndSend (
+  public async swapAndSend(
     assetAAddress: string,
     assetBAddress: string,
     amountA: NumberLike,
@@ -963,71 +1013,79 @@ export class Api extends BaseApi {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
-    const params = await this.calcSwapParams(assetAAddress, assetBAddress, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
+    const params = await this.calcSwapParams(
+      assetAAddress,
+      assetBAddress,
+      amountA,
+      amountB,
+      slippageTolerance,
+      isExchangeB,
+      liquiditySource
+    );
     if (!this.getAsset(params.assetB.address)) {
-      this.addAccountAsset({ ...params.assetB, balance: ZeroBalance })
-      this.updateAccountAssets()
+      this.addAccountAsset({ ...params.assetB, balance: ZeroBalance });
+      this.updateAccountAssets();
     }
 
-    const swap = (this.api.tx.liquidityProxy as any).swap(...params.args)
-    const transfer = this.api.tx.assets.transfer(assetBAddress, accountId, new FPNumber(swapResultValue, params.assetB.decimals).toCodecString())
+    const swap = (this.api.tx.liquidityProxy as any).swap(...params.args);
+    const transfer = this.api.tx.assets.transfer(
+      assetBAddress,
+      accountId,
+      new FPNumber(swapResultValue, params.assetB.decimals).toCodecString()
+    );
 
-    const formattedToAddress = accountId.slice(0, 2) === 'cn' ? accountId : this.formatAddress(accountId)
+    const formattedToAddress = accountId.slice(0, 2) === 'cn' ? accountId : this.formatAddress(accountId);
 
-    await this.submitExtrinsic(
-      this.api.tx.utility.batchAll([swap, transfer]),
-      this.account.pair,
-      {
-        symbol: params.assetA.symbol,
-        assetAddress: params.assetA.address,
-        amount: `${amountA}`,
-        symbol2: params.assetB.symbol,
-        asset2Address: params.assetB.address,
-        amount2: `${amountB}`,
-        liquiditySource,
-        to: formattedToAddress,
-        type: Operation.SwapAndSend
-      }
-    )
+    await this.submitExtrinsic(this.api.tx.utility.batchAll([swap, transfer]), this.account.pair, {
+      symbol: params.assetA.symbol,
+      assetAddress: params.assetA.address,
+      amount: `${amountA}`,
+      symbol2: params.assetB.symbol,
+      asset2Address: params.assetB.address,
+      amount2: `${amountB}`,
+      liquiditySource,
+      to: formattedToAddress,
+      type: Operation.SwapAndSend,
+    });
   }
 
-  public subscribeOnSwapReserves (
+  public subscribeOnSwapReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
     liquiditySource = LiquiditySourceTypes.Default
   ): Observable<void> {
-    const toVoid = (o: Observable<any>) => o.pipe(map(codec => {}))
-    const poolXyk: Array<Observable<void>> = []
-    const xor = KnownAssets.get(KnownSymbols.XOR).address
+    const toVoid = (o: Observable<any>) => o.pipe(map((codec) => {}));
+    const poolXyk: Array<Observable<void>> = [];
+    const xor = KnownAssets.get(KnownSymbols.XOR).address;
     if (![firstAssetAddress, secondAssetAddress].includes(xor)) {
-      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, firstAssetAddress)))
-      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, secondAssetAddress)))
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, firstAssetAddress)));
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, secondAssetAddress)));
     } else {
-      const first = firstAssetAddress === xor ? firstAssetAddress : secondAssetAddress
-      const second = secondAssetAddress === xor ? firstAssetAddress : secondAssetAddress
-      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(first, second)))
+      const first = firstAssetAddress === xor ? firstAssetAddress : secondAssetAddress;
+      const second = secondAssetAddress === xor ? firstAssetAddress : secondAssetAddress;
+      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(first, second)));
     }
     if (liquiditySource === LiquiditySourceTypes.XYKPool) {
-      return scheduled(poolXyk, asapScheduler).pipe(concatAll())
+      return scheduled(poolXyk, asapScheduler).pipe(concatAll());
     }
-    const firstTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress))
-    const secondTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress))
-    return scheduled([...poolXyk, firstTbc, secondTbc], asapScheduler).pipe(concatAll())
+    const firstTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress));
+    const secondTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress));
+    return scheduled([...poolXyk, firstTbc, secondTbc], asapScheduler).pipe(concatAll());
   }
 
-  private async calcAddLiquidityParams (
+  private async calcAddLiquidityParams(
     firstAssetAddress: string,
     secondAssetAddress: string,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ) {
-    assert(this.account, Messages.connectWallet)
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals)
-    const secondAmountNum = new FPNumber(secondAmount, secondAsset.decimals)
-    const slippage = new FPNumber(Number(slippageTolerance) / 100)
+    assert(this.account, Messages.connectWallet);
+    const firstAsset = await this.getAssetInfo(firstAssetAddress);
+    const secondAsset = await this.getAssetInfo(secondAssetAddress);
+    const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals);
+    const secondAmountNum = new FPNumber(secondAmount, secondAsset.decimals);
+    const slippage = new FPNumber(Number(slippageTolerance) / 100);
     return {
       args: [
         this.defaultDEXId,
@@ -1036,11 +1094,11 @@ export class Api extends BaseApi {
         firstAmountNum.toCodecString(),
         secondAmountNum.toCodecString(),
         firstAmountNum.sub(firstAmountNum.mul(slippage)).toCodecString(),
-        secondAmountNum.sub(secondAmountNum.mul(slippage)).toCodecString()
+        secondAmountNum.sub(secondAmountNum.mul(slippage)).toCodecString(),
       ],
       firstAsset,
-      secondAsset
-    }
+      secondAsset,
+    };
   }
 
   /**
@@ -1051,61 +1109,65 @@ export class Api extends BaseApi {
    * @param secondAmount // TODO: add a case when 'B' should be calculated automatically
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
-  public async addLiquidity (
+  public async addLiquidity(
     firstAssetAddress: string,
     secondAssetAddress: string,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ): Promise<void> {
-    const params = await this.calcAddLiquidityParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
+    const params = await this.calcAddLiquidityParams(
+      firstAssetAddress,
+      secondAssetAddress,
+      firstAmount,
+      secondAmount,
+      slippageTolerance
+    );
     if (!this.getAsset(params.secondAsset.address)) {
-      this.addAccountAsset({ ...params.secondAsset, balance: ZeroBalance })
-      this.updateAccountAssets()
+      this.addAccountAsset({ ...params.secondAsset, balance: ZeroBalance });
+      this.updateAccountAssets();
     }
-    await this.submitExtrinsic(
-      this.api.tx.poolXyk.depositLiquidity(...params.args),
-      this.account.pair,
-      {
-        type: Operation.AddLiquidity,
-        symbol: params.firstAsset.symbol,
-        assetAddress: params.firstAsset.address,
-        symbol2: params.secondAsset.symbol,
-        asset2Address: params.secondAsset.address,
-        amount: `${firstAmount}`,
-        amount2: `${secondAmount}`
-      }
-    )
+    await this.submitExtrinsic(this.api.tx.poolXyk.depositLiquidity(...params.args), this.account.pair, {
+      type: Operation.AddLiquidity,
+      symbol: params.firstAsset.symbol,
+      assetAddress: params.firstAsset.address,
+      symbol2: params.secondAsset.symbol,
+      asset2Address: params.secondAsset.address,
+      amount: `${firstAmount}`,
+      amount2: `${secondAmount}`,
+    });
   }
 
-  private async calcCreatePairParams (
+  private async calcCreatePairParams(
     firstAssetAddress: string,
     secondAssetAddress: string,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ) {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    assert([firstAssetAddress, secondAssetAddress].includes(xor.address), Messages.xorIsRequired)
-    const baseAssetId = firstAssetAddress === xor.address ? firstAssetAddress : secondAssetAddress
-    const targetAssetId = firstAssetAddress !== xor.address ? firstAssetAddress : secondAssetAddress
-    const exists = await this.checkLiquidity(baseAssetId, targetAssetId)
-    assert(!exists, Messages.pairAlreadyCreated)
-    const baseAssetAmount = baseAssetId === firstAssetAddress ? firstAmount : secondAmount
-    const targetAssetAmount = targetAssetId === secondAssetAddress ? secondAmount : firstAmount
-    const params = await this.calcAddLiquidityParams(baseAssetId, targetAssetId, baseAssetAmount, targetAssetAmount, slippageTolerance)
+    const xor = KnownAssets.get(KnownSymbols.XOR);
+    assert([firstAssetAddress, secondAssetAddress].includes(xor.address), Messages.xorIsRequired);
+    const baseAssetId = firstAssetAddress === xor.address ? firstAssetAddress : secondAssetAddress;
+    const targetAssetId = firstAssetAddress !== xor.address ? firstAssetAddress : secondAssetAddress;
+    const exists = await this.checkLiquidity(baseAssetId, targetAssetId);
+    assert(!exists, Messages.pairAlreadyCreated);
+    const baseAssetAmount = baseAssetId === firstAssetAddress ? firstAmount : secondAmount;
+    const targetAssetAmount = targetAssetId === secondAssetAddress ? secondAmount : firstAmount;
+    const params = await this.calcAddLiquidityParams(
+      baseAssetId,
+      targetAssetId,
+      baseAssetAmount,
+      targetAssetAmount,
+      slippageTolerance
+    );
     return {
-      pairCreationArgs: [
-        this.defaultDEXId,
-        baseAssetId,
-        targetAssetId
-      ],
+      pairCreationArgs: [this.defaultDEXId, baseAssetId, targetAssetId],
       addLiquidityArgs: params.args,
       firstAsset: params.firstAsset,
       secondAsset: params.secondAsset,
       baseAssetAmount,
-      targetAssetAmount
-    }
+      targetAssetAmount,
+    };
   }
 
   /**
@@ -1121,74 +1183,80 @@ export class Api extends BaseApi {
    * @param secondAmount
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
-  public async createPair (
+  public async createPair(
     firstAssetAddress: string,
     secondAssetAddress: string,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ): Promise<void> {
-    const params = await this.calcCreatePairParams(firstAssetAddress, secondAssetAddress, firstAmount, secondAmount, slippageTolerance)
-    const isPairAlreadyCreated = (await (this.api.rpc as any).tradingPair.isPairEnabled(this.defaultDEXId, firstAssetAddress, secondAssetAddress)).isTrue as boolean
-    const transactions = []
+    const params = await this.calcCreatePairParams(
+      firstAssetAddress,
+      secondAssetAddress,
+      firstAmount,
+      secondAmount,
+      slippageTolerance
+    );
+    const isPairAlreadyCreated = (
+      await (this.api.rpc as any).tradingPair.isPairEnabled(this.defaultDEXId, firstAssetAddress, secondAssetAddress)
+    ).isTrue as boolean;
+    const transactions = [];
     if (!isPairAlreadyCreated) {
-      transactions.push((this.api.tx.tradingPair as any).register(...params.pairCreationArgs))
+      transactions.push((this.api.tx.tradingPair as any).register(...params.pairCreationArgs));
     }
-    transactions.push(...[
-      this.api.tx.poolXyk.initializePool(...params.pairCreationArgs),
-      this.api.tx.poolXyk.depositLiquidity(...params.addLiquidityArgs)
-    ])
+    transactions.push(
+      ...[
+        this.api.tx.poolXyk.initializePool(...params.pairCreationArgs),
+        this.api.tx.poolXyk.depositLiquidity(...params.addLiquidityArgs),
+      ]
+    );
     if (!this.getAsset(params.secondAsset.address)) {
-      this.addAccountAsset({ ...params.secondAsset, balance: ZeroBalance })
-      this.updateAccountAssets()
+      this.addAccountAsset({ ...params.secondAsset, balance: ZeroBalance });
+      this.updateAccountAssets();
     }
-    await this.submitExtrinsic(
-      this.api.tx.utility.batchAll(transactions),
-      this.account.pair,
-      {
-        type: Operation.CreatePair,
-        symbol: params.firstAsset.symbol,
-        assetAddress: params.firstAsset.address,
-        symbol2: params.secondAsset.symbol,
-        asset2Address: params.secondAsset.address,
-        amount: `${params.baseAssetAmount}`,
-        amount2: `${params.targetAssetAmount}`
-      }
-    )
+    await this.submitExtrinsic(this.api.tx.utility.batchAll(transactions), this.account.pair, {
+      type: Operation.CreatePair,
+      symbol: params.firstAsset.symbol,
+      assetAddress: params.firstAsset.address,
+      symbol2: params.secondAsset.symbol,
+      asset2Address: params.secondAsset.address,
+      amount: `${params.baseAssetAmount}`,
+      amount2: `${params.targetAssetAmount}`,
+    });
   }
 
-  public async getEnabledLiquiditySourcesForPair (
+  public async getEnabledLiquiditySourcesForPair(
     firstAssetAddress: string,
     secondAssetAddress: string
   ): Promise<Array<LiquiditySourceTypes>> {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    const baseAssetId = secondAssetAddress === xor.address ? secondAssetAddress : firstAssetAddress
-    const targetAssetId = baseAssetId === secondAssetAddress ? firstAssetAddress : secondAssetAddress
-    const list = (await (this.api.rpc as any).tradingPair.listEnabledSourcesForPair(
-      this.defaultDEXId,
-      baseAssetId,
-      targetAssetId
-    )).toJSON()
+    const xor = KnownAssets.get(KnownSymbols.XOR);
+    const baseAssetId = secondAssetAddress === xor.address ? secondAssetAddress : firstAssetAddress;
+    const targetAssetId = baseAssetId === secondAssetAddress ? firstAssetAddress : secondAssetAddress;
+    const list = (
+      await (this.api.rpc as any).tradingPair.listEnabledSourcesForPair(this.defaultDEXId, baseAssetId, targetAssetId)
+    ).toJSON();
 
-    return (list as Array<LiquiditySourceTypes>)
+    return list as Array<LiquiditySourceTypes>;
   }
 
-  public async checkLiquiditySourceIsEnabledForPair (
+  public async checkLiquiditySourceIsEnabledForPair(
     firstAssetAddress: string,
     secondAssetAddress: string,
     liquiditySource: LiquiditySourceTypes
   ): Promise<boolean> {
-    const isEnabled = (await (this.api.rpc as any).tradingPair.isSourceEnabledForPair(
-      this.defaultDEXId,
-      firstAssetAddress,
-      secondAssetAddress,
-      liquiditySource
-    )).toJSON()
+    const isEnabled = (
+      await (this.api.rpc as any).tradingPair.isSourceEnabledForPair(
+        this.defaultDEXId,
+        firstAssetAddress,
+        secondAssetAddress,
+        liquiditySource
+      )
+    ).toJSON();
 
-    return isEnabled
+    return isEnabled;
   }
 
-  private async calcRemoveLiquidityParams (
+  private async calcRemoveLiquidityParams(
     firstAssetAddress: string,
     secondAssetAddress: string,
     desiredMarker: string,
@@ -1197,17 +1265,17 @@ export class Api extends BaseApi {
     totalSupply: CodecString,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ) {
-    assert(this.account, Messages.connectWallet)
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const poolToken = this.getLiquidityInfo(firstAssetAddress, secondAssetAddress)
-    const desired = new FPNumber(desiredMarker, poolToken.decimals)
-    const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
-    const reserveB = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
-    const pts = FPNumber.fromCodecValue(totalSupply, poolToken.decimals)
-    const desiredA = desired.mul(reserveA).div(pts)
-    const desiredB = desired.mul(reserveB).div(pts)
-    const slippage = new FPNumber(Number(slippageTolerance) / 100)
+    assert(this.account, Messages.connectWallet);
+    const firstAsset = await this.getAssetInfo(firstAssetAddress);
+    const secondAsset = await this.getAssetInfo(secondAssetAddress);
+    const poolToken = this.getLiquidityInfo(firstAssetAddress, secondAssetAddress);
+    const desired = new FPNumber(desiredMarker, poolToken.decimals);
+    const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals);
+    const reserveB = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals);
+    const pts = FPNumber.fromCodecValue(totalSupply, poolToken.decimals);
+    const desiredA = desired.mul(reserveA).div(pts);
+    const desiredB = desired.mul(reserveB).div(pts);
+    const slippage = new FPNumber(Number(slippageTolerance) / 100);
     return {
       args: [
         this.defaultDEXId,
@@ -1215,14 +1283,14 @@ export class Api extends BaseApi {
         secondAssetAddress,
         desired.toCodecString(),
         desiredA.sub(desiredA.mul(slippage)).toCodecString(),
-        desiredB.sub(desiredB.mul(slippage)).toCodecString()
+        desiredB.sub(desiredB.mul(slippage)).toCodecString(),
       ],
       firstAsset,
       secondAsset,
       // amountA, amountB - without slippage (for initial history)
       amountA: desiredA.toString(),
-      amountB: desiredB.toString()
-    }
+      amountB: desiredB.toString(),
+    };
   }
 
   /**
@@ -1235,7 +1303,7 @@ export class Api extends BaseApi {
    * @param totalSupply Total supply coefficient, estimateTokensRetrieved()[2]
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
-  public async removeLiquidity (
+  public async removeLiquidity(
     firstAssetAddress: string,
     secondAssetAddress: string,
     desiredMarker: string,
@@ -1252,20 +1320,16 @@ export class Api extends BaseApi {
       secondTotal,
       totalSupply,
       slippageTolerance
-    )
-    await this.submitExtrinsic(
-      this.api.tx.poolXyk.withdrawLiquidity(...params.args),
-      this.account.pair,
-      {
-        type: Operation.RemoveLiquidity,
-        symbol: params.firstAsset.symbol,
-        assetAddress: params.firstAsset.address,
-        symbol2: params.secondAsset.symbol,
-        asset2Address: params.secondAsset.address,
-        amount: params.amountA,
-        amount2: params.amountB
-      }
-    )
+    );
+    await this.submitExtrinsic(this.api.tx.poolXyk.withdrawLiquidity(...params.args), this.account.pair, {
+      type: Operation.RemoveLiquidity,
+      symbol: params.firstAsset.symbol,
+      assetAddress: params.firstAsset.address,
+      symbol2: params.secondAsset.symbol,
+      asset2Address: params.secondAsset.address,
+      amount: params.amountA,
+      amount2: params.amountB,
+    });
   }
 
   /**
@@ -1273,67 +1337,69 @@ export class Api extends BaseApi {
    * @param externalAddress address of external account (ethereum account address)
    * @returns rewards array with not zero amount
    */
-  public async checkExternalAccountRewards (externalAddress: string): Promise<Array<RewardInfo>> {
-    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (this.api.rpc as any).rewards.claimables(externalAddress)
+  public async checkExternalAccountRewards(externalAddress: string): Promise<Array<RewardInfo>> {
+    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (this.api.rpc as any).rewards.claimables(
+      externalAddress
+    );
 
     const rewards = [
       prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount),
       prepareRewardInfo(RewardingEvents.NftAirdrop, nftAirdropAmount),
-      prepareRewardInfo(RewardingEvents.XorErc20, xorErc20Amount)
-    ].filter(item => isClaimableReward(item))
+      prepareRewardInfo(RewardingEvents.XorErc20, xorErc20Amount),
+    ].filter((item) => isClaimableReward(item));
 
-    return rewards
+    return rewards;
   }
 
   /**
    * Check rewards for providing liquidity
    * @returns rewards array with not zero amount
    */
-  public async checkLiquidityProvisionRewards (): Promise<Array<RewardInfo>> {
-    assert(this.account, Messages.connectWallet)
+  public async checkLiquidityProvisionRewards(): Promise<Array<RewardInfo>> {
+    assert(this.account, Messages.connectWallet);
 
-    const { address } = this.account.pair
+    const { address } = this.account.pair;
 
-    const liquidityProvisionAmount = await (this.api.rpc as any).pswapDistribution.claimableAmount(address) // Balance
+    const liquidityProvisionAmount = await (this.api.rpc as any).pswapDistribution.claimableAmount(address); // Balance
 
-    const rewards = [
-      prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount),
-    ].filter(item => isClaimableReward(item))
+    const rewards = [prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount)].filter((item) =>
+      isClaimableReward(item)
+    );
 
-    return rewards
+    return rewards;
   }
 
-  public async checkVestedRewards (): Promise<RewardsInfo | null> {
-    assert(this.account, Messages.connectWallet)
+  public async checkVestedRewards(): Promise<RewardsInfo | null> {
+    assert(this.account, Messages.connectWallet);
 
-    const { address } = this.account.pair
+    const { address } = this.account.pair;
 
     const {
       limit, // "Balance"
       total_available: total, // "Balance"
-      rewards // "BTreeMap<RewardReason, Balance>"
-    } = await (this.api.query as any).vestedRewards.rewards(address)
+      rewards, // "BTreeMap<RewardReason, Balance>"
+    } = await (this.api.query as any).vestedRewards.rewards(address);
 
-    const rewardsInfo = prepareRewardsInfo(limit, total, rewards)
+    const rewardsInfo = prepareRewardsInfo(limit, total, rewards);
 
-    return rewardsInfo
+    return rewardsInfo;
   }
 
   /**
    * Get network fee for claim rewards operation
    */
-  public async getClaimRewardsNetworkFee (rewards: Array<RewardInfo>, signature = ''): Promise<CodecString>  {
-    const params = this.calcClaimRewardsParams(rewards, signature)
+  public async getClaimRewardsNetworkFee(rewards: Array<RewardInfo>, signature = ''): Promise<CodecString> {
+    const params = this.calcClaimRewardsParams(rewards, signature);
 
     switch (params.extrinsic) {
       case this.api.tx.pswapDistribution.claimIncentive:
-        return this.NetworkFee[Operation.ClaimLiquidityProvisionRewards]
+        return this.NetworkFee[Operation.ClaimLiquidityProvisionRewards];
       case this.api.tx.vestedRewards.claimRewards:
-        return this.NetworkFee[Operation.ClaimVestedRewards]
+        return this.NetworkFee[Operation.ClaimVestedRewards];
       case this.api.tx.rewards.claim:
-        return this.NetworkFee[Operation.ClaimExternalRewards]
+        return this.NetworkFee[Operation.ClaimExternalRewards];
       default:
-        return await this.getNetworkFee(Operation.ClaimRewards, params)
+        return await this.getNetworkFee(Operation.ClaimRewards, params);
     }
   }
 
@@ -1342,64 +1408,73 @@ export class Api extends BaseApi {
    * @param rewards claiming rewards
    * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
    */
-  private calcClaimRewardsParams (rewards: Array<RewardInfo | RewardsInfo>, signature = ''): any {
-    const transactions = []
+  private calcClaimRewardsParams(rewards: Array<RewardInfo | RewardsInfo>, signature = ''): any {
+    const transactions = [];
 
     if (containsRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
       transactions.push({
         extrinsic: this.api.tx.pswapDistribution.claimIncentive,
-        args: []
-      })
+        args: [],
+      });
     }
-    if (containsRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve, RewardingEvents.LiquidityProvisionFarming, RewardingEvents.MarketMakerVolume])) {
+    if (
+      containsRewardsForEvents(rewards, [
+        RewardingEvents.BuyOnBondingCurve,
+        RewardingEvents.LiquidityProvisionFarming,
+        RewardingEvents.MarketMakerVolume,
+      ])
+    ) {
       transactions.push({
         extrinsic: this.api.tx.vestedRewards.claimRewards,
-        args: []
-      })
+        args: [],
+      });
     }
-    if (containsRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NftAirdrop])) {
+    if (
+      containsRewardsForEvents(rewards, [
+        RewardingEvents.SoraFarmHarvest,
+        RewardingEvents.XorErc20,
+        RewardingEvents.NftAirdrop,
+      ])
+    ) {
       transactions.push({
         extrinsic: this.api.tx.rewards.claim,
-        args: [signature]
-      })
+        args: [signature],
+      });
     }
 
-    if (transactions.length > 1) return {
-      extrinsic: this.api.tx.utility.batchAll,
-      args: [transactions.map(({ extrinsic, args }) => extrinsic(...args))]
-    }
+    if (transactions.length > 1)
+      return {
+        extrinsic: this.api.tx.utility.batchAll,
+        args: [transactions.map(({ extrinsic, args }) => extrinsic(...args))],
+      };
 
-    if (transactions.length === 1) return transactions[0]
+    if (transactions.length === 1) return transactions[0];
 
     // for current compability
     return {
       extrinsic: this.api.tx.rewards.claim,
-      args: [signature]
-    }
+      args: [signature],
+    };
   }
 
   /**
    * Claim rewards
    * @param signature message signed in external wallet (if want to claim external rewards)
    */
-  public async claimRewards (
+  public async claimRewards(
     rewards: Array<RewardInfo | RewardsInfo>,
     signature?: string,
     fee?: CodecString,
-    externalAddress?: string,
+    externalAddress?: string
   ): Promise<void> {
-    const { extrinsic, args } = this.calcClaimRewardsParams(rewards, signature)
+    const { extrinsic, args } = this.calcClaimRewardsParams(rewards, signature);
 
-    await this.submitExtrinsic(
-      extrinsic(...args),
-      this.account.pair,
-      {
-        type: Operation.ClaimRewards,
-        externalAddress,
-        soraNetworkFee: fee,
-        rewards
-      }
-    )
+    await this.submitExtrinsic(extrinsic(...args), this.account.pair, {
+      type: Operation.ClaimRewards,
+      externalAddress,
+      soraNetworkFee: fee,
+      rewards,
+    });
   }
 
   /**
@@ -1407,52 +1482,52 @@ export class Api extends BaseApi {
    * @param whitelist set of whitelist tokens
    * @param withPoolTokens `false` by default
    */
-  public async getAssets (whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
-    const assets = await getAssets(this.api, whitelist)
-    return withPoolTokens ? assets : assets.filter(asset => asset.symbol !== PoolTokens.XYKPOOL)
+  public async getAssets(whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
+    const assets = await getAssets(this.api, whitelist);
+    return withPoolTokens ? assets : assets.filter((asset) => asset.symbol !== PoolTokens.XYKPOOL);
   }
 
   // # Logout & reset methods
 
-  public unsubscribeAll (): void {
-    this.unsubscribeFromAllBalancesUpdates()
-    this.unsubscribeFromAllLiquidityUpdates()
+  public unsubscribeAll(): void {
+    this.unsubscribeFromAllBalancesUpdates();
+    this.unsubscribeFromAllLiquidityUpdates();
   }
 
   /**
    * Remove all wallet data
    */
-  public logout (): void {
-    const address = this.account.pair.address
-    keyring.forgetAccount(address)
-    keyring.forgetAddress(address)
+  public logout(): void {
+    const address = this.account.pair.address;
+    keyring.forgetAccount(address);
+    keyring.forgetAddress(address);
 
-    this.accountAssets = []
-    this.accountLiquidity = []
+    this.accountAssets = [];
+    this.accountLiquidity = [];
 
-    this.unsubscribeAll()
+    this.unsubscribeAll();
 
-    super.logout()
-    this.bridge.logout()
+    super.logout();
+    this.bridge.logout();
   }
 
   // # Formatter methods
-  public hasEnoughXor (asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    const xorDecimals = xor.decimals
-    const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals)
+  public hasEnoughXor(asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
+    const xor = KnownAssets.get(KnownSymbols.XOR);
+    const xorDecimals = xor.decimals;
+    const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals);
     if (asset.address === xor.address) {
-      const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals)
-      const fpAmount = new FPNumber(amount, xorDecimals)
-      return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
+      const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals);
+      const fpAmount = new FPNumber(amount, xorDecimals);
+      return FPNumber.lte(fpFee, fpBalance.sub(fpAmount));
     }
     // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.getAsset(xor.address)
+    const xorAccountAsset = this.getAsset(xor.address);
     if (!xorAccountAsset) {
-      return false
+      return false;
     }
-    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance.transferable, xorDecimals)
-    return FPNumber.lte(fpFee, xorBalance)
+    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance.transferable, xorDecimals);
+    return FPNumber.lte(fpFee, xorBalance);
   }
   /**
    * Divide the first asset by the second
@@ -1463,24 +1538,24 @@ export class Api extends BaseApi {
    * @param reversed If `true`: the second by the first (`false` by default)
    * @returns Formatted string
    */
-  public async divideAssets (
+  public async divideAssets(
     firstAssetAddress: string,
     secondAssetAddress: string,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     reversed = false
   ): Promise<string> {
-    const one = new FPNumber(1)
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals)
-    const secondAmountNum = new FPNumber(secondAmount, secondAsset.decimals)
+    const one = new FPNumber(1);
+    const firstAsset = await this.getAssetInfo(firstAssetAddress);
+    const secondAsset = await this.getAssetInfo(secondAssetAddress);
+    const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals);
+    const secondAmountNum = new FPNumber(secondAmount, secondAsset.decimals);
     const result = !reversed
       ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
-      : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one)
-    return result.format()
+      : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one);
+    return result.format();
   }
 }
 
 /** Api object */
-export const api = new Api()
+export const api = new Api();

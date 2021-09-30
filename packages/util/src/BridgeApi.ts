@@ -1,13 +1,13 @@
-import first from 'lodash/fp/first'
-import last from 'lodash/fp/last'
-import BigNumber from 'bignumber.js'
-import { assert } from '@polkadot/util'
+import first from 'lodash/fp/first';
+import last from 'lodash/fp/last';
+import BigNumber from 'bignumber.js';
+import { assert } from '@polkadot/util';
 
-import { BaseApi, Operation, History, isBridgeOperation } from './BaseApi'
-import { Messages } from './logger'
-import { getAssets, Asset, AccountAsset, isNativeAsset } from './assets'
-import { CodecString, FPNumber } from './fp'
-import { encrypt } from './crypto'
+import { BaseApi, Operation, History, isBridgeOperation } from './BaseApi';
+import { Messages } from './logger';
+import { getAssets, Asset, AccountAsset, isNativeAsset } from './assets';
+import { CodecString, FPNumber } from './fp';
+import { encrypt } from './crypto';
 
 export interface RegisteredAccountAsset extends AccountAsset {
   externalAddress: string;
@@ -33,7 +33,7 @@ export interface BridgeHistory extends History {
 
 export enum BridgeNetworks {
   ETH_NETWORK_ID = 0,
-  ENERGY_NETWORK_ID = 1
+  ENERGY_NETWORK_ID = 1,
 }
 
 /**
@@ -44,7 +44,7 @@ export enum BridgeNetworks {
 export enum BridgeDirection {
   Outgoing = 'Outgoing',
   Incoming = 'Incoming',
-  LoadIncoming = 'LoadIncoming'
+  LoadIncoming = 'LoadIncoming',
 }
 
 export enum BridgeTxStatus {
@@ -52,7 +52,7 @@ export enum BridgeTxStatus {
   Pending = 'Pending',
   Frozen = 'Frozen', // CancelOutgoingRequest
   Failed = 'Failed',
-  Done = 'Done'
+  Done = 'Done',
 }
 
 /**
@@ -60,7 +60,7 @@ export enum BridgeTxStatus {
  */
 export enum BridgeCurrencyType {
   AssetId = 'AssetId', // -> receiveBySidechainAssetId
-  TokenAddress = 'TokenAddress' // -> receievByEthereumAssetAddress
+  TokenAddress = 'TokenAddress', // -> receievByEthereumAssetAddress
 }
 
 /**
@@ -74,20 +74,20 @@ export enum RequestType {
   RemovePeer = 'RemovePeer',
   ClaimPswap = 'ClaimPswap',
   CancelOutgoingRequest = 'CancelOutgoingRequest',
-  MarkAsDone = 'MarkAsDone'
+  MarkAsDone = 'MarkAsDone',
 }
 
-const toCamelCase = (str: string) => str[0].toLowerCase() + str.slice(1)
+const toCamelCase = (str: string) => str[0].toLowerCase() + str.slice(1);
 
-const stringToCaseInsensitiveArray = (str: string) => [str, toCamelCase(str)]
+const stringToCaseInsensitiveArray = (str: string) => [str, toCamelCase(str)];
 
-const arrayToCaseInsensitiveArray = (arr: Array<string>) => arr.flatMap(str => stringToCaseInsensitiveArray(str))
+const arrayToCaseInsensitiveArray = (arr: Array<string>) => arr.flatMap((str) => stringToCaseInsensitiveArray(str));
 
-const caseInsensitiveValue = (obj: any, key: string) => obj[key] || obj[toCamelCase(key)]
+const caseInsensitiveValue = (obj: any, key: string) => obj[key] || obj[toCamelCase(key)];
 
 enum IncomingRequestKind {
   Transaction = 'Transaction',
-  Meta = 'Meta'
+  Meta = 'Meta',
 }
 
 export interface BridgeRequest {
@@ -127,10 +127,10 @@ export interface BridgeApprovedRequest {
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
 export class BridgeApi extends BaseApi {
-  private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID
+  private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
 
-  constructor () {
-    super()
+  constructor() {
+    super();
   }
 
   /**
@@ -138,65 +138,60 @@ export class BridgeApi extends BaseApi {
    * For now, there is just for camelCase issues with substrate 3
    * @param data
    */
-  private getData (data: any): any {
-    return data.ok || data.Ok
+  private getData(data: any): any {
+    return data.ok || data.Ok;
   }
 
-  public get externalNetwork (): BridgeNetworks {
-    return this._externalNetwork
+  public get externalNetwork(): BridgeNetworks {
+    return this._externalNetwork;
   }
 
-  public set externalNetwork (networkId: BridgeNetworks) {
-    const key = 'externalNetwork'
-    this.storage.set(key, networkId)
-    this._externalNetwork = networkId
+  public set externalNetwork(networkId: BridgeNetworks) {
+    const key = 'externalNetwork';
+    this.storage.set(key, networkId);
+    this._externalNetwork = networkId;
   }
 
-  public get accountHistory (): Array<BridgeHistory> {
-    return (this.history as Array<BridgeHistory>).filter(({ type }) => isBridgeOperation(type))
+  public get accountHistory(): Array<BridgeHistory> {
+    return (this.history as Array<BridgeHistory>).filter(({ type }) => isBridgeOperation(type));
   }
 
-  public generateHistoryItem (params: BridgeHistory): BridgeHistory | null {
+  public generateHistoryItem(params: BridgeHistory): BridgeHistory | null {
     if (!params.type) {
-      return null
+      return null;
     }
-    const historyItem = (params || {}) as BridgeHistory
-    historyItem.startTime = historyItem.startTime || Date.now()
-    historyItem.id = encrypt(`${historyItem.startTime}`)
-    historyItem.transactionStep = historyItem.transactionStep || 1
-    historyItem.transactionState = historyItem.transactionState || 'INITIAL'
-    this.saveHistory(historyItem)
-    return historyItem
+    const historyItem = (params || {}) as BridgeHistory;
+    historyItem.startTime = historyItem.startTime || Date.now();
+    historyItem.id = encrypt(`${historyItem.startTime}`);
+    historyItem.transactionStep = historyItem.transactionStep || 1;
+    historyItem.transactionState = historyItem.transactionState || 'INITIAL';
+    this.saveHistory(historyItem);
+    return historyItem;
   }
 
-  public saveHistory (history: BridgeHistory): void {
+  public saveHistory(history: BridgeHistory): void {
     if (!(history && history.id && isBridgeOperation(history.type))) {
-      return
+      return;
     }
-    super.saveHistory(history)
+    super.saveHistory(history);
   }
 
-  public getHistory (id: string): BridgeHistory | null {
-    return this.accountHistory.find(item => item.id === id) ?? null
+  public getHistory(id: string): BridgeHistory | null {
+    return this.accountHistory.find((item) => item.id === id) ?? null;
   }
 
-  public clearHistory (): void {
-    this.history = this.history.filter(({ type }) => !isBridgeOperation(type))
+  public clearHistory(): void {
+    this.history = this.history.filter(({ type }) => !isBridgeOperation(type));
   }
 
-  private async calcTransferToEthParams (asset: RegisteredAsset, to: string, amount: string | number) {
-    assert(this.account, Messages.connectWallet)
+  private async calcTransferToEthParams(asset: RegisteredAsset, to: string, amount: string | number) {
+    assert(this.account, Messages.connectWallet);
     // Trim useless decimals
-    const balance = new FPNumber(new FPNumber(amount, +asset.externalDecimals).toString(), asset.decimals)
+    const balance = new FPNumber(new FPNumber(amount, +asset.externalDecimals).toString(), asset.decimals);
     return {
-      args: [
-        asset.address,
-        to,
-        balance.toCodecString(),
-        this.externalNetwork
-      ],
-      asset
-    }
+      args: [asset.address, to, balance.toCodecString(), this.externalNetwork],
+      asset,
+    };
   }
 
   /**
@@ -206,9 +201,14 @@ export class BridgeApi extends BaseApi {
    * @param amount
    * @param historyId not required
    */
-  public async transferToEth (asset: RegisteredAsset, to: string, amount: string | number, historyId?: string): Promise<void> {
-    const params = await this.calcTransferToEthParams(asset, to, amount)
-    const historyItem = this.getHistory(historyId)
+  public async transferToEth(
+    asset: RegisteredAsset,
+    to: string,
+    amount: string | number,
+    historyId?: string
+  ): Promise<void> {
+    const params = await this.calcTransferToEthParams(asset, to, amount);
+    const historyItem = this.getHistory(historyId);
 
     await this.submitExtrinsic(
       this.api.tx.ethBridge.transferToSidechain(...params.args),
@@ -217,9 +217,9 @@ export class BridgeApi extends BaseApi {
         symbol: params.asset.symbol,
         assetAddress: params.asset.address,
         amount: `${amount}`,
-        type: Operation.EthBridgeOutgoing
+        type: Operation.EthBridgeOutgoing,
       }
-    )
+    );
   }
 
   /**
@@ -227,92 +227,95 @@ export class BridgeApi extends BaseApi {
    * @param hash Eth hash of transaction
    * @param type Type of operation, "Transfer" is set by default
    */
-  public async requestFromEth (hash: string, type: RequestType = RequestType.Transfer): Promise<void> {
-    assert(this.account, Messages.connectWallet)
-    const historyItem = this.accountHistory.find(item => item.hash === hash)
-    const kind = { [IncomingRequestKind.Transaction]: type }
+  public async requestFromEth(hash: string, type: RequestType = RequestType.Transfer): Promise<void> {
+    assert(this.account, Messages.connectWallet);
+    const historyItem = this.accountHistory.find((item) => item.hash === hash);
+    const kind = { [IncomingRequestKind.Transaction]: type };
     await this.submitExtrinsic(
       this.api.tx.ethBridge.requestFromSidechain(hash, kind, this.externalNetwork),
       this.account.pair,
       historyItem || {
         type: Operation.EthBridgeIncoming,
-        hash
+        hash,
       }
-    )
+    );
   }
 
   /**
    * Get registered assets for bridge
    * @returns Array with all registered assets
    */
-  public async getRegisteredAssets (): Promise<Array<RegisteredAsset>> {
-    const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(this.externalNetwork)).toJSON()
-    const assets = await getAssets(this.api)
-    return this.getData(data).map(([_, soraAsset, externalAsset]) => {
-      const soraAssetId = first(soraAsset)
-      const asset = assets.find(a => a.address === soraAssetId)
-      return {
-        address: soraAssetId,
-        externalAddress: first(externalAsset),
-        decimals: asset.decimals,
-        symbol: asset.symbol,
-        name: asset.name,
-        externalDecimals: last(externalAsset)
-      } as RegisteredAsset
-    }).sort((a: RegisteredAsset, b: RegisteredAsset) => {
-      const isNativeA = isNativeAsset(a)
-      const isNativeB = isNativeAsset(b)
-      if (isNativeA && !isNativeB) {
-        return -1
-      }
-      if (!isNativeA && isNativeB) {
-        return 1
-      }
-      if (a.symbol < b.symbol) {
-        return -1
-      }
-      if (a.symbol > b.symbol) {
-        return 1
-      }
-      return 0
-    })
+  public async getRegisteredAssets(): Promise<Array<RegisteredAsset>> {
+    const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(this.externalNetwork)).toJSON();
+    const assets = await getAssets(this.api);
+    return this.getData(data)
+      .map(([_, soraAsset, externalAsset]) => {
+        const soraAssetId = first(soraAsset);
+        const asset = assets.find((a) => a.address === soraAssetId);
+        return {
+          address: soraAssetId,
+          externalAddress: first(externalAsset),
+          decimals: asset.decimals,
+          symbol: asset.symbol,
+          name: asset.name,
+          externalDecimals: last(externalAsset),
+        } as RegisteredAsset;
+      })
+      .sort((a: RegisteredAsset, b: RegisteredAsset) => {
+        const isNativeA = isNativeAsset(a);
+        const isNativeB = isNativeAsset(b);
+        if (isNativeA && !isNativeB) {
+          return -1;
+        }
+        if (!isNativeA && isNativeB) {
+          return 1;
+        }
+        if (a.symbol < b.symbol) {
+          return -1;
+        }
+        if (a.symbol > b.symbol) {
+          return 1;
+        }
+        return 0;
+      });
   }
 
-  private formatRequest (item: any): BridgeRequest {
-    const formattedItem = {} as BridgeRequest
-    formattedItem.status = last(item)
-    const body = first(item) as any
-    const checkDirection = (value: string) => ~stringToCaseInsensitiveArray(value).findIndex(prop => prop in body)
-    let direction: BridgeDirection, operations = [RequestType.Transfer, RequestType.TransferXOR]
+  private formatRequest(item: any): BridgeRequest {
+    const formattedItem = {} as BridgeRequest;
+    formattedItem.status = last(item);
+    const body = first(item) as any;
+    const checkDirection = (value: string) => ~stringToCaseInsensitiveArray(value).findIndex((prop) => prop in body);
+    let direction: BridgeDirection,
+      operations = [RequestType.Transfer, RequestType.TransferXOR];
     if (checkDirection(BridgeDirection.Outgoing)) {
-      direction = BridgeDirection.Outgoing
+      direction = BridgeDirection.Outgoing;
     } else if (checkDirection(BridgeDirection.Incoming)) {
-      direction = BridgeDirection.Incoming
+      direction = BridgeDirection.Incoming;
     } else if (checkDirection(BridgeDirection.LoadIncoming)) {
-      direction = BridgeDirection.LoadIncoming
-      operations = ['Transaction'] as any // TODO: check it
+      direction = BridgeDirection.LoadIncoming;
+      operations = ['Transaction'] as any; // TODO: check it
     } else {
-      return null
+      return null;
     }
-    formattedItem.direction = direction === BridgeDirection.LoadIncoming ? BridgeDirection.Incoming : direction
-    let request = caseInsensitiveValue(body, direction)
-    const tx = request.length ? first(request) : request
-    request = caseInsensitiveValue(tx, first(operations)) || caseInsensitiveValue(tx, last(operations))
-    formattedItem.soraAssetAddress = request.asset_id
+    formattedItem.direction = direction === BridgeDirection.LoadIncoming ? BridgeDirection.Incoming : direction;
+    let request = caseInsensitiveValue(body, direction);
+    const tx = request.length ? first(request) : request;
+    request = caseInsensitiveValue(tx, first(operations)) || caseInsensitiveValue(tx, last(operations));
+    formattedItem.soraAssetAddress = request.asset_id;
     if (request.amount) {
-      formattedItem.amount = new FPNumber(new BigNumber(request.amount)).toString()
+      formattedItem.amount = new FPNumber(new BigNumber(request.amount)).toString();
     }
     if (direction === BridgeDirection.Outgoing) {
-      formattedItem.hash = last(caseInsensitiveValue(body, direction))
-      formattedItem.from = request.from
-      formattedItem.to = request.to
+      formattedItem.hash = last(caseInsensitiveValue(body, direction));
+      formattedItem.from = request.from;
+      formattedItem.to = request.to;
     } else {
-      formattedItem.from = request.author // TODO: check it
-      formattedItem.to = this.account.pair.address
-      formattedItem.kind = request.asset_kind || request.kind
-      formattedItem.hash = request.tx_hash || request.hash
+      formattedItem.from = request.author; // TODO: check it
+      formattedItem.to = this.account.pair.address;
+      formattedItem.kind = request.asset_kind || request.kind;
+      formattedItem.hash = request.tx_hash || request.hash;
     }
-    return formattedItem
+    return formattedItem;
   }
 
   /**
@@ -320,9 +323,9 @@ export class BridgeApi extends BaseApi {
    * @param hash Bridge hash
    * @returns History of request
    */
-  public async getRequest (hash: string): Promise<BridgeRequest> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], this.externalNetwork, true)).toJSON()
-    return first(this.getData(data).map((item: any) => this.formatRequest(item)))
+  public async getRequest(hash: string): Promise<BridgeRequest> {
+    const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], this.externalNetwork, true)).toJSON();
+    return first(this.getData(data).map((item: any) => this.formatRequest(item)));
   }
 
   /**
@@ -330,33 +333,35 @@ export class BridgeApi extends BaseApi {
    * @param hashes Array with bridge hashes
    * @returns Array with history of requests
    */
-  public async getRequests (hashes: Array<string>): Promise<Array<BridgeRequest>> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, this.externalNetwork, true)).toJSON()
-    return this.getData(data).map((item: any) => this.formatRequest(item))
+  public async getRequests(hashes: Array<string>): Promise<Array<BridgeRequest>> {
+    const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, this.externalNetwork, true)).toJSON();
+    return this.getData(data).map((item: any) => this.formatRequest(item));
   }
 
-  private formatApprovedRequest (item: any): BridgeApprovedRequest {
-    const formattedItem = {} as BridgeApprovedRequest
-    const operations = [RequestType.Transfer, RequestType.TransferXOR]
-    const body = first(item)
-    const proofs = last(item) as any
-    const request = caseInsensitiveValue(body, first(operations)) || caseInsensitiveValue(body, last(operations))
-    formattedItem.hash = request.tx_hash
-    formattedItem.from = request.from
-    formattedItem.to = request.to
-    formattedItem.amount = `${request.amount}`.split(',').join('')
-    formattedItem.currencyType = stringToCaseInsensitiveArray(BridgeCurrencyType.TokenAddress).includes(first(Object.keys(request.currency_id)))
+  private formatApprovedRequest(item: any): BridgeApprovedRequest {
+    const formattedItem = {} as BridgeApprovedRequest;
+    const operations = [RequestType.Transfer, RequestType.TransferXOR];
+    const body = first(item);
+    const proofs = last(item) as any;
+    const request = caseInsensitiveValue(body, first(operations)) || caseInsensitiveValue(body, last(operations));
+    formattedItem.hash = request.tx_hash;
+    formattedItem.from = request.from;
+    formattedItem.to = request.to;
+    formattedItem.amount = `${request.amount}`.split(',').join('');
+    formattedItem.currencyType = stringToCaseInsensitiveArray(BridgeCurrencyType.TokenAddress).includes(
+      first(Object.keys(request.currency_id))
+    )
       ? BridgeCurrencyType.TokenAddress
-      : BridgeCurrencyType.AssetId
-    formattedItem.r = []
-    formattedItem.s = []
-    formattedItem.v = []
-    proofs.forEach(proof => {
-      formattedItem.r.push(proof.r)
-      formattedItem.s.push(proof.s)
-      formattedItem.v.push(+proof.v + 27) // TODO: remove this hack
-    })
-    return formattedItem
+      : BridgeCurrencyType.AssetId;
+    formattedItem.r = [];
+    formattedItem.s = [];
+    formattedItem.v = [];
+    proofs.forEach((proof) => {
+      formattedItem.r.push(proof.r);
+      formattedItem.s.push(proof.s);
+      formattedItem.v.push(+proof.v + 27); // TODO: remove this hack
+    });
+    return formattedItem;
   }
 
   /**
@@ -364,9 +369,9 @@ export class BridgeApi extends BaseApi {
    * @param hash Bridge hash
    * @returns Approved request with proofs
    */
-  public async getApprovedRequest (hash: string): Promise<BridgeApprovedRequest> {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests([hash], this.externalNetwork)).toHuman()
-    return first(this.getData(data).map(item => this.formatApprovedRequest(item)))
+  public async getApprovedRequest(hash: string): Promise<BridgeApprovedRequest> {
+    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests([hash], this.externalNetwork)).toHuman();
+    return first(this.getData(data).map((item) => this.formatApprovedRequest(item)));
   }
 
   /**
@@ -374,21 +379,21 @@ export class BridgeApi extends BaseApi {
    * @param hashes Array with account hashes for bridge
    * @returns Array with approved requests with proofs
    */
-  public async getApprovedRequests (hashes: Array<string>): Promise<Array<BridgeApprovedRequest>> {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests(hashes, this.externalNetwork)).toHuman()
-    return this.getData(data).map(item => this.formatApprovedRequest(item))
+  public async getApprovedRequests(hashes: Array<string>): Promise<Array<BridgeApprovedRequest>> {
+    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests(hashes, this.externalNetwork)).toHuman();
+    return this.getData(data).map((item) => this.formatApprovedRequest(item));
   }
 
   /**
    * Get account requests
    * @returns Array with hashes
    */
-  public async getAccountRequests (status = BridgeTxStatus.Ready): Promise<Array<string>> {
-    assert(this.account, Messages.connectWallet)
-    const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address, status)).toJSON()
+  public async getAccountRequests(status = BridgeTxStatus.Ready): Promise<Array<string>> {
+    assert(this.account, Messages.connectWallet);
+    const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address, status)).toJSON();
     return this.getData(data)
       .filter(([networkId, _]) => networkId === this.externalNetwork)
-      .map(([_, hash]) => hash) as Array<string>
+      .map(([_, hash]) => hash) as Array<string>;
   }
 
   /**
@@ -396,8 +401,8 @@ export class BridgeApi extends BaseApi {
    * @param hashes
    * @returns
    */
-  public async getApprovals (hashes: Array<string>) {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovals(hashes, this.externalNetwork)).toJSON()
-    return this.getData(data)
+  public async getApprovals(hashes: Array<string>) {
+    const data = (await (this.api.rpc as any).ethBridge.getApprovals(hashes, this.externalNetwork)).toJSON();
+    return this.getData(data);
   }
 }

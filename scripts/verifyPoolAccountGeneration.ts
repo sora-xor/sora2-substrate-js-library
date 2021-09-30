@@ -11,15 +11,17 @@ async function main(): Promise<void> {
   let baseAsset = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000000');
   let properties = await api.query.poolXyk.properties.entries(baseAsset);
   for (let entry in properties) {
-    const targetAsset = api.createType("AssetId", properties[entry][0].slice(-32)).toString();
+    const targetAsset = api.createType('AssetId', properties[entry][0].slice(-32)).toString();
     const actualAccount = properties[entry][1].toJSON()[0].toString();
-    const generatedAccount = poolAccountIdFromAssetPair(api, baseAsset, targetAsset).toString()
-    console.log(targetAsset, actualAccount, generatedAccount, actualAccount == generatedAccount?'OK':'ERROR');
+    const generatedAccount = poolAccountIdFromAssetPair(api, baseAsset, targetAsset).toString();
+    console.log(targetAsset, actualAccount, generatedAccount, actualAccount == generatedAccount ? 'OK' : 'ERROR');
     if (actualAccount != generatedAccount) {
       throw new Error('Found pool account mismatch!');
     }
   }
-  console.log("All accounts are OK");
+  console.log('All accounts are OK');
 }
 
-main().catch(console.error).finally(() => process.exit());
+main()
+  .catch(console.error)
+  .finally(() => process.exit());

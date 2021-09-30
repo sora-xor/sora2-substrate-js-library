@@ -6,10 +6,10 @@ export default {
         {
           name: 'at',
           type: 'BlockHash',
-          isOptional: true
+          isOptional: true,
         },
       ],
-      type: 'Vec<DEXId>'
+      type: 'Vec<DEXId>',
     },
     testBalance: {
       description: 'Test type of Balance',
@@ -17,12 +17,11 @@ export default {
         {
           name: 'at',
           type: 'BlockHash',
-          isOptional: true
+          isOptional: true,
         },
       ],
-      type: 'Fixed'
-    }
+      type: 'Fixed',
+    },
   },
-  types: {
-  }
-}
+  types: {},
+};

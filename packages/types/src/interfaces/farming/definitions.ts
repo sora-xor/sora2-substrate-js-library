@@ -1,4 +1,4 @@
-import { Definitions } from '@polkadot/types/types'
-import farming from '@sora-substrate/type-definitions/farming'
+import { Definitions } from '@polkadot/types/types';
+import farming from '@sora-substrate/type-definitions/farming';
 
-export default farming as Definitions
+export default farming as Definitions;

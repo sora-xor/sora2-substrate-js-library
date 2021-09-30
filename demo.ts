@@ -19,7 +19,10 @@ async function demo(): Promise<void> {
   const root = keyring.addFromUri('//Alice', { name: 'Root' });
   const user_a = keyring.addFromUri('//Bob', { name: 'UserA' });
   // not a secret, specifically generated mnemonic for this demo
-  const user_b = keyring.addFromMnemonic('shield shed shallow chase peace blade erosion poem health foil federal cushion', { name: 'UserB' });
+  const user_b = keyring.addFromMnemonic(
+    'shield shed shallow chase peace blade erosion poem health foil federal cushion',
+    { name: 'UserB' }
+  );
 
   console.log(root.address.toString());
 
@@ -31,47 +34,93 @@ async function demo(): Promise<void> {
   const DAIAssetId = api.createType('AssetId', '0x0200060000000000000000000000000000000000000000000000000000000000');
 
   // register pair
-  await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, PSWAPAssetId), root, "Enable Pair XOR-DOT");
+  await submitExtrinsic(api, api.tx.tradingPair.register(0, XORAssetId, PSWAPAssetId), root, 'Enable Pair XOR-DOT');
 
   // initialize pool
-  await submitExtrinsic(api, api.tx.poolXyk.initializePool(0, XORAssetId, PSWAPAssetId), root, "Initialize Pool for Pair XOR-DOT");
+  await submitExtrinsic(
+    api,
+    api.tx.poolXyk.initializePool(0, XORAssetId, PSWAPAssetId),
+    root,
+    'Initialize Pool for Pair XOR-DOT'
+  );
 
   // mint xor and dot for account
-  await submitExtrinsic(api, api.tx.assets.mint(XORAssetId, user_b.address, "105000000000000000000000000000000000"), root, "Mint XOR for User B");
-  await submitExtrinsic(api, api.tx.assets.mint(PSWAPAssetId, user_b.address, "144000000000000000000000000000000000"), root, "Mint DOT for User B");
+  await submitExtrinsic(
+    api,
+    api.tx.assets.mint(XORAssetId, user_b.address, '105000000000000000000000000000000000'),
+    root,
+    'Mint XOR for User B'
+  );
+  await submitExtrinsic(
+    api,
+    api.tx.assets.mint(PSWAPAssetId, user_b.address, '144000000000000000000000000000000000'),
+    root,
+    'Mint DOT for User B'
+  );
 
   // add liquidity
-  await submitExtrinsic(api, api.tx.poolXyk.depositLiquidity(0, XORAssetId, PSWAPAssetId, "1000000000000000000", "2000000000000000000", "0", "0"), user_b, "Add liquidity from User B");
+  await submitExtrinsic(
+    api,
+    api.tx.poolXyk.depositLiquidity(
+      0,
+      XORAssetId,
+      PSWAPAssetId,
+      '1000000000000000000',
+      '2000000000000000000',
+      '0',
+      '0'
+    ),
+    user_b,
+    'Add liquidity from User B'
+  );
 
   // check balances
   let balanceX = await (api.rpc as any).assets.freeBalance(user_b.address, XORAssetId);
-  console.log("User B XOR FREE: ", balanceX.unwrap().balance.toString());
+  console.log('User B XOR FREE: ', balanceX.unwrap().balance.toString());
   let balanceD = await (api.rpc as any).assets.freeBalance(user_b.address, PSWAPAssetId);
-  console.log("User B DOT FREE: ", balanceD.unwrap().balance.toString());
+  console.log('User B DOT FREE: ', balanceD.unwrap().balance.toString());
 
-  let claimables = await (api.rpc as any).rewards.claimables('21Bc9f4a3d9Dc86f142F802668dB7D908cF0A636').toString()
-  console.log(claimables)
+  let claimables = await (api.rpc as any).rewards.claimables('21Bc9f4a3d9Dc86f142F802668dB7D908cF0A636').toString();
+  console.log(claimables);
 
   // get the liquidity sources list for path via liquidity proxy
-  let listEnabledSourcesForPath = (await (api.rpc as any).liquidityProxy.listEnabledSourcesForPath(
-    0,
-    XORAssetId,
-    VALAssetId
-  )).toJSON()
-  console.log(`listEnabledSourcesForPath ${XORAssetId} -> ${VALAssetId}`, listEnabledSourcesForPath)
+  let listEnabledSourcesForPath = (
+    await (api.rpc as any).liquidityProxy.listEnabledSourcesForPath(0, XORAssetId, VALAssetId)
+  ).toJSON();
+  console.log(`listEnabledSourcesForPath ${XORAssetId} -> ${VALAssetId}`, listEnabledSourcesForPath);
 
   // get the price via liquidity proxy
-  let quoted_result = await (api.rpc as any).liquidityProxy.quote(0, DAIAssetId, XORAssetId, "1000000000000000000", "WithDesiredInput", [], "Disabled");
-  console.log("Quoted exchange DOT: ", quoted_result.unwrap().amount.toString());
-  console.log("Quoted exchange FEE: ", quoted_result.unwrap().fee.toString());
-  console.log("Quoted exchange rewards: ", quoted_result.unwrap().rewards.toJSON())
+  let quoted_result = await (api.rpc as any).liquidityProxy.quote(
+    0,
+    DAIAssetId,
+    XORAssetId,
+    '1000000000000000000',
+    'WithDesiredInput',
+    [],
+    'Disabled'
+  );
+  console.log('Quoted exchange DOT: ', quoted_result.unwrap().amount.toString());
+  console.log('Quoted exchange FEE: ', quoted_result.unwrap().fee.toString());
+  console.log('Quoted exchange rewards: ', quoted_result.unwrap().rewards.toJSON());
 
   // perform swap via liquidity proxy
-  await submitExtrinsic(api, api.tx.liquidityProxy.swap(0, XORAssetId, PSWAPAssetId, { WithDesiredInput: { desired_amount_in: "1000000000000000000", min_amount_out: "0" } }, [], "Disabled"), user_b, "User B swaps");
+  await submitExtrinsic(
+    api,
+    api.tx.liquidityProxy.swap(
+      0,
+      XORAssetId,
+      PSWAPAssetId,
+      { WithDesiredInput: { desired_amount_in: '1000000000000000000', min_amount_out: '0' } },
+      [],
+      'Disabled'
+    ),
+    user_b,
+    'User B swaps'
+  );
 
   // check user_b balance
   let balance2 = await (api.rpc as any).assets.freeBalance(user_b.address, PSWAPAssetId);
-  console.log("User B DOT FREE: ", balance2.unwrap().balance.toString());
+  console.log('User B DOT FREE: ', balance2.unwrap().balance.toString());
 }
 
 async function inner_submitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, finishCallback: any): Promise<void> {
@@ -87,7 +136,7 @@ async function inner_submitExtrinsic(api: ApiPromise, extrinsic: any, signer: an
       result.events.forEach(({ phase, event: { data, method, section } }: any) => {
         console.log(`\t' ${phase}: ${section}.${method}:: ${data}`);
         if (section === 'system' && method === 'ExtrinsicFailed') {
-          const [error,] = data;
+          const [error] = data;
           if (error.isModule) {
             const decoded = api.registry.findMetaError(error.asModule);
             const { documentation, name, section } = decoded;
@@ -112,4 +161,6 @@ async function submitExtrinsic(api: ApiPromise, extrinsic: any, signer: any, deb
   });
 }
 
-demo().catch(console.error).finally(() => process.exit());
+demo()
+  .catch(console.error)
+  .finally(() => process.exit());
