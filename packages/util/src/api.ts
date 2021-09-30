@@ -1,5 +1,5 @@
 import { assert, isHex } from '@polkadot/util'
-import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
+import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import keyring from '@polkadot/ui-keyring';
 import { Subject, scheduled, asapScheduler } from '@polkadot/x-rxjs';
 import { map, concatAll } from '@polkadot/x-rxjs/operators';
