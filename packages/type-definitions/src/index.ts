@@ -10,6 +10,7 @@ import assets from './assets'
 import irohaMigration from './irohaMigration'
 import liquidityProxy from './liquidityProxy'
 import ethBridge from './ethBridge'
+import beefy from './beefy'
 import pswapDistribution from './pswapDistribution'
 import rewards from './rewards'
 import farming from './farming'
@@ -21,6 +22,7 @@ const soraDefs = {
   dexApi,
   dexManager,
   ethBridge,
+  beefy,
   farming,
   irohaMigration,
   liquidityProxy,

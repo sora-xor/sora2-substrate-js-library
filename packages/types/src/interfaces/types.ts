@@ -5,6 +5,7 @@ export * from './assets/types';
 export * from './dexApi/types';
 export * from './dexManager/types';
 export * from './ethBridge/types';
+export * from './beefy/types';
 export * from './farming/types';
 export * from './irohaMigration/types';
 export * from './liquidityProxy/types';

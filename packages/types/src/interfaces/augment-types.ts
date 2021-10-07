@@ -65,6 +65,7 @@ import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AccountId32Junction, AccountIndex64Junction, AccountKey20Junction, AssetInstance, BodyId, BodyPart, BodyPartAtLeastProportion, BodyPartFraction, BodyPartMoreThanProportion, DoubleEncodedCall, InboundStatus, Junction, MultiAsset, MultiAssetAbstractFungible, MultiAssetAbstractNonFungible, MultiAssetConcreteFungible, MultiAssetConcreteNonFungible, MultiLocation, NetworkId, OutboundStatus, Outcome, PluralityJunction, QueueConfigData, VersionedMultiAsset, VersionedMultiLocation, VersionedXcm, Xcm, XcmAssetEffects, XcmError, XcmHrmpChannelAccepted, XcmHrmpChannelClosing, XcmHrmpNewChannelOpenRequest, XcmOrder, XcmOrderBuyExecution, XcmOrderDepositAsset, XcmOrderDepositReserveAsset, XcmOrderExchangeAsset, XcmOrderInitiateReserveWithdraw, XcmOrderInitiateTeleport, XcmOrderQueryHolding, XcmOriginKind, XcmQueryResponse, XcmRelayedFrom, XcmReserveAssetDeposit, XcmResponse, XcmTeleportAsset, XcmTransact, XcmTransferAsset, XcmTransferReserveAsset, XcmWithdrawAsset, XcmpMessageFormat } from '@polkadot/types/interfaces/xcm';
 import type { AssetInfo, AssetNameStr, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
+import type { Authorities, BeefyId, BeefySignature, Commitment, Currency, ReserveData, ReserveIdentifier, SignedCommitment, WeakVec } from '@sora-substrate/types/interfaces/beefy';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
@@ -98,6 +99,7 @@ declare module '@polkadot/types/types/registry' {
     'Compact<ClassId>': Compact<ClassId>;
     'Compact<ContractDiscriminant>': Compact<ContractDiscriminant>;
     'Compact<CoreIndex>': Compact<CoreIndex>;
+    'Compact<Currency>': Compact<Currency>;
     'Compact<CurrencyId>': Compact<CurrencyId>;
     'Compact<CurrencyIdOf>': Compact<CurrencyIdOf>;
     'Compact<DataProviderId>': Compact<DataProviderId>;
@@ -247,6 +249,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<AuctionIndex>': Option<AuctionIndex>;
     'Option<AuctionInfo>': Option<AuctionInfo>;
     'Option<AuthIndex>': Option<AuthIndex>;
+    'Option<Authorities>': Option<Authorities>;
     'Option<AuthorityDiscoveryId>': Option<AuthorityDiscoveryId>;
     'Option<AuthorityId>': Option<AuthorityId>;
     'Option<AuthorityIndex>': Option<AuthorityIndex>;
@@ -273,9 +276,11 @@ declare module '@polkadot/types/types/registry' {
     'Option<BalanceStatus>': Option<BalanceStatus>;
     'Option<BasisPoints>': Option<BasisPoints>;
     'Option<BeefyCommitment>': Option<BeefyCommitment>;
+    'Option<BeefyId>': Option<BeefyId>;
     'Option<BeefyKey>': Option<BeefyKey>;
     'Option<BeefyNextAuthoritySet>': Option<BeefyNextAuthoritySet>;
     'Option<BeefyPayload>': Option<BeefyPayload>;
+    'Option<BeefySignature>': Option<BeefySignature>;
     'Option<BeefySignedCommitment>': Option<BeefySignedCommitment>;
     'Option<Bid>': Option<Bid>;
     'Option<Bidder>': Option<Bidder>;
@@ -336,6 +341,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<CollatorId>': Option<CollatorId>;
     'Option<CollatorSignature>': Option<CollatorSignature>;
     'Option<CollectiveOrigin>': Option<CollectiveOrigin>;
+    'Option<Commitment>': Option<Commitment>;
     'Option<CommittedCandidateReceipt>': Option<CommittedCandidateReceipt>;
     'Option<CompactAssignments>': Option<CompactAssignments>;
     'Option<CompactAssignmentsTo257>': Option<CompactAssignmentsTo257>;
@@ -389,6 +395,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<CoreIndex>': Option<CoreIndex>;
     'Option<CoreOccupied>': Option<CoreOccupied>;
     'Option<CreatedBlock>': Option<CreatedBlock>;
+    'Option<Currency>': Option<Currency>;
     'Option<CurrencyId>': Option<CurrencyId>;
     'Option<CurrencyIdEncoded>': Option<CurrencyIdEncoded>;
     'Option<CurrencyIdOf>': Option<CurrencyIdOf>;
@@ -926,6 +933,8 @@ declare module '@polkadot/types/types/registry' {
     'Option<Reporter>': Option<Reporter>;
     'Option<ReportIdOf>': Option<ReportIdOf>;
     'Option<RequestStatus>': Option<RequestStatus>;
+    'Option<ReserveData>': Option<ReserveData>;
+    'Option<ReserveIdentifier>': Option<ReserveIdentifier>;
     'Option<Retriable>': Option<Retriable>;
     'Option<RewardDestination>': Option<RewardDestination>;
     'Option<RewardInfo>': Option<RewardInfo>;
@@ -985,6 +994,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<SignedBlock>': Option<SignedBlock>;
     'Option<SignedBlockWithJustification>': Option<SignedBlockWithJustification>;
     'Option<SignedBlockWithJustifications>': Option<SignedBlockWithJustifications>;
+    'Option<SignedCommitment>': Option<SignedCommitment>;
     'Option<SignerPayload>': Option<SignerPayload>;
     'Option<SigningContext>': Option<SigningContext>;
     'Option<SiLookupTypeId>': Option<SiLookupTypeId>;
@@ -1161,6 +1171,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<VrfData>': Option<VrfData>;
     'Option<VrfOutput>': Option<VrfOutput>;
     'Option<VrfProof>': Option<VrfProof>;
+    'Option<WeakVec>': Option<WeakVec>;
     'Option<Weight>': Option<Weight>;
     'Option<WeightMultiplier>': Option<WeightMultiplier>;
     'Option<WeightPerClass>': Option<WeightPerClass>;
@@ -1255,6 +1266,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<AuctionIndex>': Vec<AuctionIndex>;
     'Vec<AuctionInfo>': Vec<AuctionInfo>;
     'Vec<AuthIndex>': Vec<AuthIndex>;
+    'Vec<Authorities>': Vec<Authorities>;
     'Vec<AuthorityDiscoveryId>': Vec<AuthorityDiscoveryId>;
     'Vec<AuthorityId>': Vec<AuthorityId>;
     'Vec<AuthorityIndex>': Vec<AuthorityIndex>;
@@ -1281,9 +1293,11 @@ declare module '@polkadot/types/types/registry' {
     'Vec<BalanceStatus>': Vec<BalanceStatus>;
     'Vec<BasisPoints>': Vec<BasisPoints>;
     'Vec<BeefyCommitment>': Vec<BeefyCommitment>;
+    'Vec<BeefyId>': Vec<BeefyId>;
     'Vec<BeefyKey>': Vec<BeefyKey>;
     'Vec<BeefyNextAuthoritySet>': Vec<BeefyNextAuthoritySet>;
     'Vec<BeefyPayload>': Vec<BeefyPayload>;
+    'Vec<BeefySignature>': Vec<BeefySignature>;
     'Vec<BeefySignedCommitment>': Vec<BeefySignedCommitment>;
     'Vec<Bid>': Vec<Bid>;
     'Vec<Bidder>': Vec<Bidder>;
@@ -1344,6 +1358,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<CollatorId>': Vec<CollatorId>;
     'Vec<CollatorSignature>': Vec<CollatorSignature>;
     'Vec<CollectiveOrigin>': Vec<CollectiveOrigin>;
+    'Vec<Commitment>': Vec<Commitment>;
     'Vec<CommittedCandidateReceipt>': Vec<CommittedCandidateReceipt>;
     'Vec<CompactAssignments>': Vec<CompactAssignments>;
     'Vec<CompactAssignmentsTo257>': Vec<CompactAssignmentsTo257>;
@@ -1397,6 +1412,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<CoreIndex>': Vec<CoreIndex>;
     'Vec<CoreOccupied>': Vec<CoreOccupied>;
     'Vec<CreatedBlock>': Vec<CreatedBlock>;
+    'Vec<Currency>': Vec<Currency>;
     'Vec<CurrencyId>': Vec<CurrencyId>;
     'Vec<CurrencyIdEncoded>': Vec<CurrencyIdEncoded>;
     'Vec<CurrencyIdOf>': Vec<CurrencyIdOf>;
@@ -1934,6 +1950,8 @@ declare module '@polkadot/types/types/registry' {
     'Vec<Reporter>': Vec<Reporter>;
     'Vec<ReportIdOf>': Vec<ReportIdOf>;
     'Vec<RequestStatus>': Vec<RequestStatus>;
+    'Vec<ReserveData>': Vec<ReserveData>;
+    'Vec<ReserveIdentifier>': Vec<ReserveIdentifier>;
     'Vec<Retriable>': Vec<Retriable>;
     'Vec<RewardDestination>': Vec<RewardDestination>;
     'Vec<RewardInfo>': Vec<RewardInfo>;
@@ -1993,6 +2011,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<SignedBlock>': Vec<SignedBlock>;
     'Vec<SignedBlockWithJustification>': Vec<SignedBlockWithJustification>;
     'Vec<SignedBlockWithJustifications>': Vec<SignedBlockWithJustifications>;
+    'Vec<SignedCommitment>': Vec<SignedCommitment>;
     'Vec<SignerPayload>': Vec<SignerPayload>;
     'Vec<SigningContext>': Vec<SigningContext>;
     'Vec<SiLookupTypeId>': Vec<SiLookupTypeId>;
@@ -2169,6 +2188,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<VrfData>': Vec<VrfData>;
     'Vec<VrfOutput>': Vec<VrfOutput>;
     'Vec<VrfProof>': Vec<VrfProof>;
+    'Vec<WeakVec>': Vec<WeakVec>;
     'Vec<Weight>': Vec<Weight>;
     'Vec<WeightMultiplier>': Vec<WeightMultiplier>;
     'Vec<WeightPerClass>': Vec<WeightPerClass>;
@@ -2263,6 +2283,7 @@ declare module '@polkadot/types/types/registry' {
     AuctionIndex: AuctionIndex;
     AuctionInfo: AuctionInfo;
     AuthIndex: AuthIndex;
+    Authorities: Authorities;
     AuthorityDiscoveryId: AuthorityDiscoveryId;
     AuthorityId: AuthorityId;
     AuthorityIndex: AuthorityIndex;
@@ -2289,9 +2310,11 @@ declare module '@polkadot/types/types/registry' {
     BalanceStatus: BalanceStatus;
     BasisPoints: BasisPoints;
     BeefyCommitment: BeefyCommitment;
+    BeefyId: BeefyId;
     BeefyKey: BeefyKey;
     BeefyNextAuthoritySet: BeefyNextAuthoritySet;
     BeefyPayload: BeefyPayload;
+    BeefySignature: BeefySignature;
     BeefySignedCommitment: BeefySignedCommitment;
     Bid: Bid;
     Bidder: Bidder;
@@ -2352,6 +2375,7 @@ declare module '@polkadot/types/types/registry' {
     CollatorId: CollatorId;
     CollatorSignature: CollatorSignature;
     CollectiveOrigin: CollectiveOrigin;
+    Commitment: Commitment;
     CommittedCandidateReceipt: CommittedCandidateReceipt;
     CompactAssignments: CompactAssignments;
     CompactAssignmentsTo257: CompactAssignmentsTo257;
@@ -2405,6 +2429,7 @@ declare module '@polkadot/types/types/registry' {
     CoreIndex: CoreIndex;
     CoreOccupied: CoreOccupied;
     CreatedBlock: CreatedBlock;
+    Currency: Currency;
     CurrencyId: CurrencyId;
     CurrencyIdEncoded: CurrencyIdEncoded;
     CurrencyIdOf: CurrencyIdOf;
@@ -2942,6 +2967,8 @@ declare module '@polkadot/types/types/registry' {
     Reporter: Reporter;
     ReportIdOf: ReportIdOf;
     RequestStatus: RequestStatus;
+    ReserveData: ReserveData;
+    ReserveIdentifier: ReserveIdentifier;
     Retriable: Retriable;
     RewardDestination: RewardDestination;
     RewardInfo: RewardInfo;
@@ -3001,6 +3028,7 @@ declare module '@polkadot/types/types/registry' {
     SignedBlock: SignedBlock;
     SignedBlockWithJustification: SignedBlockWithJustification;
     SignedBlockWithJustifications: SignedBlockWithJustifications;
+    SignedCommitment: SignedCommitment;
     SignerPayload: SignerPayload;
     SigningContext: SigningContext;
     SiLookupTypeId: SiLookupTypeId;
@@ -3177,6 +3205,7 @@ declare module '@polkadot/types/types/registry' {
     VrfData: VrfData;
     VrfOutput: VrfOutput;
     VrfProof: VrfProof;
+    WeakVec: WeakVec;
     Weight: Weight;
     WeightMultiplier: WeightMultiplier;
     WeightPerClass: WeightPerClass;
