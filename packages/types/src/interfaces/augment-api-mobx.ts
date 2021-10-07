@@ -30,7 +30,15 @@ import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/a
 
 export interface StorageType extends BaseStorageType {
   assets: {    /**
-     * Asset Id -> (Symbol, Precision, Is Mintable)
+     * Asset Id -> Content Source
+     **/
+    assetContentSource: StorageMap<AssetId | AnyNumber, Option<ContentSource>>;
+    /**
+     * Asset Id -> Description
+     **/
+    assetDescription: StorageMap<AssetId | AnyNumber, Option<Description>>;
+    /**
+     * Asset Id -> (Symbol, Name, Precision, Is Mintable)
      **/
     assetInfos: StorageMap<AssetId | AnyNumber, ITuple<[AssetSymbol, AssetName, BalancePrecision, bool]>>;
     /**
@@ -411,7 +419,6 @@ export interface StorageType extends BaseStorageType {
      * Pools whose farmers are refreshed at the specific block. Block => Pools
      **/
     pools: StorageMap<BlockNumber | AnyNumber, Vec<AccountId>>;
-    savedValues: StorageMap<BlockNumber | AnyNumber, Vec<ITuple<[AccountId, Vec<PoolFarmer>]>>>;
   };
   grandpa: {    /**
      * The number of changes (both in terms of keys and underlying economic responsibilities)

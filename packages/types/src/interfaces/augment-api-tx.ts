@@ -177,6 +177,10 @@ declare module '@polkadot/api/types/submittable' {
        **/
       setReferrer: AugmentedSubmittable<(referrer: AccountId | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId]>;
       /**
+       * Unreserves the balance and transfers it back to the account
+       **/
+      unreserve: AugmentedSubmittable<(balance: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Balance]>;
+      /**
        * Generic tx
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;

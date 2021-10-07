@@ -280,9 +280,9 @@
     "MultiCurrencyBalance": "Balance",
     "MultiCurrencyBalanceOf": "MultiCurrencyBalance",
     "MultisigAccount": {
-  "signatories": "Vec<AccountId>",
-  "threshold": "u8"
-},
+        "signatories": "Vec<AccountId>",
+        "threshold": "u8"
+    },
     "OffchainRequest": {
         "_enum": {
             "Outgoing": "(OutgoingRequest, H256)",
