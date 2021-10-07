@@ -1,8 +1,8 @@
-import { ApiPromise, ApiRx } from '@polkadot/api'
-import { Codec, Observable } from '@polkadot/types/types'
+import { map } from '@polkadot/x-rxjs/operators'
+import type { ApiPromise, ApiRx } from '@polkadot/api'
+import type { Codec, Observable } from '@polkadot/types/types'
 import type { AccountData } from '@polkadot/types/interfaces/balances'
 import type { OrmlAccountData } from '@open-web3/orml-types/interfaces/tokens'
-import { map } from '@polkadot/x-rxjs/operators'
 
 import { CodecString, FPNumber } from './fp'
 
@@ -29,6 +29,14 @@ export interface AccountAsset {
   symbol?: string;
   name?: string;
   decimals?: number;
+}
+
+export enum BalanceType {
+  Transferable = 'transferable',
+  Frozen = 'frozen',
+  Locked = 'locked',
+  Reserved = 'reserved',
+  Total = 'total'
 }
 
 // Each value === value * 10 ^ decimals
@@ -226,7 +234,7 @@ export const getWhitelistAssets = (whitelist: Array<WhitelistArrayItem>) => whit
 export const isWhitelistAsset = isRegisteredAsset
 
 export const getWhitelistIdsBySymbol = (whitelist: Array<WhitelistArrayItem>) => whitelist.reduce<any>((acc, asset) => {
-  acc[asset.symbol] = asset.address
+  acc[asset.symbol.toUpperCase()] = asset.address
   return acc
 }, {})
 

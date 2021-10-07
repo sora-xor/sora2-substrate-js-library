@@ -67,7 +67,8 @@ export default {
         'MockPool',
         'MockPool2',
         'MockPool3',
-        'MockPool4'
+        'MockPool4',
+        'XSTPool'
       ]
     },
     FilterMode: {
@@ -99,34 +100,16 @@ export default {
         Unlimited: "Null"
       }
     },
-    TechPurpose: {
-      _enum: {
-        FeeCollector: "Null",
-        LiquidityKeeper: "TradingPair",
-        Identifier: "Vec<u8>"
-      }
-    },
-    TechAccountId: {
-      _enum: {
-        Pure: "(DEXId, TechPurpose)",
-        Generic: "(Vec<u8>, Vec<u8>)",
-        Wrapped: "AccountId",
-        WrappedRepr: "AccountId"
-      }
-    },
     OracleKey: "AssetId",
     ChargeFeeInfo: {
       tip: "Compact<Balance>",
       target_asset_id: "AssetId"
     },
-    TechAssetId: "Null",            // define properly if needed
-    TechAccountIdPrimitive: "Null", // define properly if needed
     SwapAction: "Null",             // define properly if needed
     ValidationFunction: "Null",     // define properly if needed
     Permission: "Null",             // define properly if needed
     DistributionAccounts: "Null",
     MultisigAccount: "Null",
-    PendingMultisigAccount: "Null",
     Farmer: "Null",
     Farm: "Null",
     SmoothPriceState: "Null",
@@ -152,16 +135,56 @@ export default {
       count: "u32",
       volume: "Balance",
     },
+    PredefinedAssetId: {
+      _enum: [ // Order must match rust definition
+        "XOR",
+        "DOT",
+        "KSM",
+        "USDT",
+        "VAL",
+        "PSWAP",
+        "DAI",
+        "ETH",
+        "XSTUSD"
+      ]
+    },
     RewardInfo: {
       limit: "Balance",
       total_available: "Balance",
       rewards: "BTreeMap<RewardReason, Balance>",
     },
+    TechTradingPair: {
+      base_asset_id: 'TechAssetId',
+      target_asset_id: 'TechAssetId',
+    },
+    TechAssetId: {
+      _enum: {
+        Wrapped: "PredefinedAssetId",
+        Escaped: "AssetId"
+      }
+    },
+    TechPurpose: {
+      _enum: {
+        FeeCollector: "Null",
+        FeeCollectorForPair: "TechTradingPair",
+        LiquidityKeeper: "TechTradingPair",
+        Identifier: "Vec<u8>"
+      }
+    },
+    TechAccountId: {
+      _enum: {
+        Pure: "(DEXId, TechPurpose)",
+        Generic: "(Vec<u8>, Vec<u8>)",
+        Wrapped: "AccountId",
+        WrappedRepr: "AccountId"
+      }
+    },
     PriceInfo: {
       price_failures: "u32",
       spot_prices: "Vec<Balance>",
       average_price: "Balance",
-      needs_update: "bool"
+      needs_update: "bool",
+      last_spot_price: "Balance",
     }
   }
 }

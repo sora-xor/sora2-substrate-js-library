@@ -34,11 +34,6 @@ export class FPNumber {
   }
 
   /**
-   * Zero value
-   */
-  public static ZERO = FPNumber.fromNatural(0)
-
-  /**
    * Default precision = `18`
    */
   public static DEFAULT_PRECISION = 18
@@ -62,6 +57,16 @@ export class FPNumber {
    * `8` Rounds towards nearest neighbour. If equidistant, rounds towards -Infinity
    */
   public static DEFAULT_ROUND_MODE: BigNumber.RoundingMode = 3
+
+  /**
+   * Zero value (0)
+   */
+  public static ZERO = FPNumber.fromNatural(0)
+
+  /**
+   * Hundred value (100)
+   */
+   public static HUNDRED = FPNumber.fromNatural(100)
 
   /**
    * Return the **max** value, `null` if an array is empty
@@ -175,7 +180,7 @@ export class FPNumber {
    * @param {number} precision Precision
    */
   public static fromNatural (value: number | string, precision: number = FPNumber.DEFAULT_PRECISION): FPNumber {
-    return new FPNumber(new BigNumber(value).times(10 ** precision))
+    return new FPNumber(value, precision)
   }
 
   /**

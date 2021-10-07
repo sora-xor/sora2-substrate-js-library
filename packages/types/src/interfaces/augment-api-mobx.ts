@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
-import type { BTreeSet, Bytes, Option, Text, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
+import type { BTreeSet, Bytes, Data, Option, Text, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
 import type { AnyNumber, ITuple } from '@polkadot/types/types';
 import type { UncleEntryItem } from '@polkadot/types/interfaces/authorship';
 import type { BabeAuthorityWeight, MaybeRandomness, NextConfigDescriptor, Randomness } from '@polkadot/types/interfaces/babe';
@@ -12,18 +12,20 @@ import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { PreimageStatus, PropIndex, Proposal, ReferendumIndex, ReferendumInfo, Voting } from '@polkadot/types/interfaces/democracy';
 import type { VoteThreshold } from '@polkadot/types/interfaces/elections';
 import type { SetId, StoredPendingChange, StoredState } from '@polkadot/types/interfaces/grandpa';
+import type { RegistrarInfo, Registration } from '@polkadot/types/interfaces/identity';
 import type { AuthIndex } from '@polkadot/types/interfaces/imOnline';
 import type { DeferredOffenceOf, Kind, OffenceDetails, OpaqueTimeSlot, ReportIdOf } from '@polkadot/types/interfaces/offences';
 import type { Scheduled, TaskAddress } from '@polkadot/types/interfaces/scheduler';
 import type { Keys, SessionIndex } from '@polkadot/types/interfaces/session';
-import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraIndex, EraRewardPoints, Exposure, Forcing, Nominations, RewardDestination, SlashingSpans, SpanIndex, SpanRecord, StakingLedger, UnappliedSlash, ValidatorPrefs } from '@polkadot/types/interfaces/staking';
+import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraIndex, EraRewardPoints, Exposure, Forcing, Nominations, RewardDestination, SeatHolder, SlashingSpans, SpanIndex, SpanRecord, StakingLedger, UnappliedSlash, ValidatorPrefs, Voter } from '@polkadot/types/interfaces/staking';
 import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
-import type { NetworkId } from '@polkadot/types/interfaces/xcm';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeStatus, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
-import type { AccountId, Address, AssetId, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, PendingMultisigAccount, Perbill, PermissionId, Releases, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
+import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
+import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
@@ -34,7 +36,7 @@ export interface StorageType extends BaseStorageType {
     /**
      * Asset Id -> Owner Account Id
      **/
-    assetOwners: StorageMap<AssetId | AnyNumber, AccountId>;
+    assetOwners: StorageMap<AssetId | AnyNumber, Option<AccountId>>;
     /**
      * Asset Id -> AssetRecord<T>
      **/
@@ -269,10 +271,43 @@ export interface StorageType extends BaseStorageType {
   };
   dexManager: {    dexInfos: StorageMap<DEXId | AnyNumber, Option<DEXInfo>>;
   };
+  electionsPhragmen: {    /**
+     * The present candidate list. A current member or runner-up can never enter this vector
+     * and is always implicitly assumed to be a candidate.
+     * 
+     * Second element is the deposit.
+     * 
+     * Invariant: Always sorted based on account id.
+     **/
+    candidates: Vec<ITuple<[AccountId, BalanceOf]>> | null;
+    /**
+     * The total number of vote rounds that have happened, excluding the upcoming one.
+     **/
+    electionRounds: u32 | null;
+    /**
+     * The current elected members.
+     * 
+     * Invariant: Always sorted based on account id.
+     **/
+    members: Vec<SeatHolder> | null;
+    /**
+     * The current reserved runners-up.
+     * 
+     * Invariant: Always sorted based on rank (worse to best). Upon removal of a member, the
+     * last (i.e. _best_) runner-up will be replaced.
+     **/
+    runnersUp: Vec<SeatHolder> | null;
+    /**
+     * Votes and locked stake of a particular voter.
+     * 
+     * TWOX-NOTE: SAFE as `AccountId` is a crypto hash.
+     **/
+    voting: StorageMap<AccountId | string, Voter>;
+  };
   ethBridge: {    /**
      * Requests made by an account.
      **/
-    accountRequests: StorageMap<AccountId | string, Vec<ITuple<[NetworkId, H256]>>>;
+    accountRequests: StorageMap<AccountId | string, Vec<ITuple<[BridgeNetworkId, H256]>>>;
     /**
      * Thischain authority account.
      **/
@@ -280,35 +315,40 @@ export interface StorageType extends BaseStorageType {
     /**
      * Multi-signature bridge peers' account. `None` if there is no account and network with the given ID.
      **/
-    bridgeAccount: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Option<AccountId>>;
+    bridgeAccount: StorageMap<BridgeNetworkId | AnyNumber, Option<AccountId>>;
     /**
      * Smart-contract address on Sidechain.
      **/
-    bridgeContractAddress: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Address>;
+    bridgeContractAddress: StorageMap<BridgeNetworkId | AnyNumber, Address>;
     /**
      * Bridge status.
      **/
-    bridgeStatuses: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Option<BridgeStatus>>;
+    bridgeStatuses: StorageMap<BridgeNetworkId | AnyNumber, Option<BridgeStatus>>;
     /**
      * Used to identify an incoming request by the corresponding load request.
      **/
-    loadToIncomingRequestHash: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, H256>;
+    loadToIncomingRequestHash: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, H256>;
+    /**
+     * Requests migrating from version '0.1.0' to '0.2.0'. These requests should be removed from
+     * `RequestsQueue` before migration procedure started.
+     **/
+    migratingRequests: Vec<H256> | null;
     /**
      * Next Network ID counter.
      **/
-    nextNetworkId: NetworkId | null;
+    nextNetworkId: BridgeNetworkId | null;
     /**
      * Peer account ID on Thischain.
      **/
-    peerAccountId: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, AccountId>;
+    peerAccountId: StorageDoubleMap<BridgeNetworkId | AnyNumber, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, AccountId>;
     /**
      * Peer address on Sidechain.
      **/
-    peerAddress: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AccountId | string, Address>;
+    peerAddress: StorageDoubleMap<BridgeNetworkId | AnyNumber, AccountId | string, Address>;
     /**
      * Network peers set.
      **/
-    peers: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, BTreeSet<AccountId>>;
+    peers: StorageMap<BridgeNetworkId | AnyNumber, BTreeSet<AccountId>>;
     /**
      * Used for compatibility with XOR and VAL contracts.
      **/
@@ -316,44 +356,44 @@ export interface StorageType extends BaseStorageType {
     /**
      * Network pending (being added/removed) peer.
      **/
-    pendingPeer: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Option<AccountId>>;
+    pendingPeer: StorageMap<BridgeNetworkId | AnyNumber, Option<AccountId>>;
     /**
      * Registered asset kind.
      **/
-    registeredAsset: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AssetId | AnyNumber, Option<AssetKind>>;
+    registeredAsset: StorageDoubleMap<BridgeNetworkId | AnyNumber, AssetId | AnyNumber, Option<AssetKind>>;
     /**
      * Registered token `AssetId` on Thischain.
      **/
-    registeredSidechainAsset: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, Option<AssetId>>;
+    registeredSidechainAsset: StorageDoubleMap<BridgeNetworkId | AnyNumber, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, Option<AssetId>>;
     /**
      * Registered asset address on Sidechain.
      **/
-    registeredSidechainToken: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AssetId | AnyNumber, Option<Address>>;
+    registeredSidechainToken: StorageDoubleMap<BridgeNetworkId | AnyNumber, AssetId | AnyNumber, Option<Address>>;
     /**
      * Outgoing requests approvals.
      **/
-    requestApprovals: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, BTreeSet<SignatureParams>>;
+    requestApprovals: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, BTreeSet<SignatureParams>>;
     /**
      * Registered requests.
      **/
-    requests: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, Option<OffchainRequest>>;
+    requests: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, Option<OffchainRequest>>;
     /**
      * Registered requests queue handled by off-chain workers.
      **/
-    requestsQueue: StorageMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, Vec<H256>>;
+    requestsQueue: StorageMap<BridgeNetworkId | AnyNumber, Vec<H256>>;
     /**
      * Requests statuses.
      **/
-    requestStatuses: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, Option<RequestStatus>>;
+    requestStatuses: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, Option<RequestStatus>>;
     /**
      * Requests submission height map (on substrate).
      **/
-    requestSubmissionHeight: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, H256 | string, BlockNumber>;
+    requestSubmissionHeight: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, BlockNumber>;
     /**
      * Precision (decimals) of a registered sidechain asset. Should be the same as in the ERC-20
      * contract.
      **/
-    sidechainAssetPrecision: StorageDoubleMap<NetworkId | { Any: any } | { Named: any } | { Polkadot: any } | { Kusama: any } | string, AssetId | AnyNumber, BalancePrecision>;
+    sidechainAssetPrecision: StorageDoubleMap<BridgeNetworkId | AnyNumber, AssetId | AnyNumber, BalancePrecision>;
     /**
      * Sora VAL master contract address.
      **/
@@ -362,6 +402,16 @@ export interface StorageType extends BaseStorageType {
      * Sora XOR master contract address.
      **/
     xorMasterContractAddress: Address | null;
+  };
+  farming: {    /**
+     * Farmers of the pool. Pool => Farmers
+     **/
+    poolFarmers: StorageMap<AccountId | string, Vec<PoolFarmer>>;
+    /**
+     * Pools whose farmers are refreshed at the specific block. Block => Pools
+     **/
+    pools: StorageMap<BlockNumber | AnyNumber, Vec<AccountId>>;
+    savedValues: StorageMap<BlockNumber | AnyNumber, Vec<ITuple<[AccountId, Vec<PoolFarmer>]>>>;
   };
   grandpa: {    /**
      * The number of changes (both in terms of keys and underlying economic responsibilities)
@@ -391,6 +441,33 @@ export interface StorageType extends BaseStorageType {
      * State of the current authority set.
      **/
     state: StoredState | null;
+  };
+  identity: {    /**
+     * Information that is pertinent to identify the entity behind an account.
+     * 
+     * TWOX-NOTE: OK ― `AccountId` is a secure hash.
+     **/
+    identityOf: StorageMap<AccountId | string, Option<Registration>>;
+    /**
+     * The set of registrars. Not expected to get very big as can only be added through a
+     * special origin (likely a council motion).
+     * 
+     * The index into this can be cast to `RegistrarIndex` to get a valid value.
+     **/
+    registrars: Vec<Option<RegistrarInfo>> | null;
+    /**
+     * Alternative "sub" identities of this account.
+     * 
+     * The first item is the deposit, the second is a vector of the accounts.
+     * 
+     * TWOX-NOTE: OK ― `AccountId` is a secure hash.
+     **/
+    subsOf: StorageMap<AccountId | string, ITuple<[BalanceOf, Vec<AccountId>]>>;
+    /**
+     * The super-identity of an alternative "sub" identity together with its name, within that
+     * context. If the account is not some other account's sub-identity, then just `None`.
+     **/
+    superOf: StorageMap<AccountId | string, Option<ITuple<[AccountId, Data]>>>;
   };
   imOnline: {    /**
      * For each session index, we keep a mapping of `ValidatorId<T>` to the
@@ -450,6 +527,7 @@ export interface StorageType extends BaseStorageType {
      * Collateral Assets allowed to be sold on bonding curve.
      **/
     enabledTargets: BTreeSet<AssetId> | null;
+    freeReservesAccountId: AccountId | null;
     /**
      * Account which stores actual PSWAP intended for rewards.
      **/
@@ -467,6 +545,7 @@ export interface StorageType extends BaseStorageType {
      * however this constant is not modified.
      **/
     initialPswapRewardsSupply: Balance | null;
+    pendingFreeReserves: Vec<ITuple<[AssetId, Balance]>> | null;
     priceChangeRate: Fixed | null;
     /**
      * Cofficients in buy price function.
@@ -522,18 +601,23 @@ export interface StorageType extends BaseStorageType {
      **/
     reportsByKindIndex: StorageMap<Kind | string, Bytes>;
   };
-  permissions: {    modes: StorageMap<PermissionId | AnyNumber, Mode>;
-    owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
+  permissions: {    owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
     permissions: StorageDoubleMap<HolderId | string, Scope | { Limited: any } | { Unlimited: any } | string, Vec<PermissionId>>;
   };
   poolXyk: {    /**
-     * Collection of all registered marker tokens.
+     * Set of pools in which accounts have some share.
+     * Liquidity provider account => Target Asset of pair (assuming base asset is XOR)
      **/
-    markerTokensIndex: BTreeSet<AssetId> | null;
+    accountPools: StorageMap<AccountIdOf | string, BTreeSet<AssetIdOf>>;
     /**
-     * Properties of particular pool. [Reserves Account Id, Fees Account Id, Marker Asset Id]
+     * Liquidity providers of particular pool.
+     * Pool account => Liquidity provider account => Pool token balance
      **/
-    properties: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, Option<ITuple<[AccountId, AccountId, AssetId]>>>;
+    poolProviders: StorageDoubleMap<AccountIdOf | string, AccountIdOf | string, Option<Balance>>;
+    /**
+     * Properties of particular pool. Base Asset => Target Asset => (Reserves Account Id, Fees Account Id)
+     **/
+    properties: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, Option<ITuple<[AccountId, AccountId]>>>;
     /**
      * Updated after last liquidity change operation.
      * [Base Asset Id (XOR) -> Target Asset Id => (Base Balance, Target Balance)].
@@ -543,6 +627,13 @@ export interface StorageType extends BaseStorageType {
      * pair to balance cache can be used quickly.
      **/
     reserves: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, ITuple<[Balance, Balance]>>;
+    /**
+     * Total issuance of particular pool.
+     * Pool account => Total issuance
+     **/
+    totalIssuances: StorageMap<AccountIdOf | string, Option<Balance>>;
+  };
+  priceTools: {    priceInfos: StorageMap<AssetId | AnyNumber, Option<PriceInfo>>;
   };
   pswapDistribution: {    /**
      * Amount of incentive tokens to be burned on each distribution.
@@ -568,7 +659,7 @@ export interface StorageType extends BaseStorageType {
      * Store for information about accounts containing fees, that participate in incentive distribution mechanism.
      * Fees Account Id -> (DEX Id, Pool Marker Asset Id, Distribution Frequency, Block Offset) Frequency MUST be non-zero.
      **/
-    subscribedAccounts: StorageMap<AccountId | string, Option<ITuple<[DEXId, AssetId, BlockNumber, BlockNumber]>>>;
+    subscribedAccounts: StorageMap<AccountId | string, Option<ITuple<[DEXId, AccountIdOf, BlockNumber, BlockNumber]>>>;
   };
   randomnessCollectiveFlip: {    /**
      * Series of block headers from the last 81 blocks that acts as random seed material. This
@@ -577,12 +668,40 @@ export interface StorageType extends BaseStorageType {
      **/
     randomMaterial: Vec<Hash> | null;
   };
-  referralSystem: {    referrers: StorageMap<AccountId | string, Option<AccountId>>;
+  referrals: {    referrerBalances: StorageMap<AccountId | string, Option<Balance>>;
+    referrers: StorageMap<AccountId | string, Option<AccountId>>;
   };
-  rewards: {    pswapFarmOwners: StorageMap<EthereumAddress | string, Balance>;
+  rewards: {    /**
+     * Amount of VAL currently being vested (aggregated over the previous period of 14,400 blocks)
+     **/
+    currentClaimableVal: Balance | null;
+    /**
+     * All addresses are split in batches, `AddressBatches` maps batch number to a set of addresses
+     **/
+    ethAddresses: StorageMap<u32 | AnyNumber, Vec<EthereumAddress>>;
+    /**
+     * A flag indicating whether VAL rewards data migration has been finalized
+     **/
+    migrationPending: bool | null;
+    pswapFarmOwners: StorageMap<EthereumAddress | string, Balance>;
     pswapWaifuOwners: StorageMap<EthereumAddress | string, Balance>;
     reservesAcc: TechAccountId | null;
-    valOwners: StorageMap<EthereumAddress | string, Balance>;
+    /**
+     * Total amount of VAL that can be claimed by users at current point in time
+     **/
+    totalClaimableVal: Balance | null;
+    /**
+     * Total amount of VAL rewards either claimable now or some time in the future
+     **/
+    totalValRewards: Balance | null;
+    /**
+     * Amount of VAL burned since last vesting
+     **/
+    valBurnedSinceLastVesting: Balance | null;
+    /**
+     * A map EthAddresses -> RewardInfo, that is claimable and remaining vested amounts per address
+     **/
+    valOwners: StorageMap<EthereumAddress | string, RewardInfo>;
   };
   scheduler: {    /**
      * Items to be executed, indexed by the block number that they should be executed on.
@@ -943,6 +1062,15 @@ export interface StorageType extends BaseStorageType {
      **/
     voting: StorageMap<Hash | string, Option<Votes>>;
   };
+  technicalMembership: {    /**
+     * The current membership, stored as an ordered Vec.
+     **/
+    members: Vec<AccountId> | null;
+    /**
+     * The current prime member, if one exists.
+     **/
+    prime: Option<AccountId> | null;
+  };
   timestamp: {    /**
      * Did the timestamp get updated in this block?
      **/
@@ -976,5 +1104,45 @@ export interface StorageType extends BaseStorageType {
   transactionPayment: {    nextFeeMultiplier: Multiplier | null;
     storageVersion: Releases | null;
   };
-  xorFee: {  };
+  vestedRewards: {    /**
+     * Registry of market makers with large transaction volumes (>1 XOR per transaction).
+     **/
+    marketMakersRegistry: StorageMap<AccountId | string, MarketMakerInfo>;
+    /**
+     * Reserved for future use
+     * Mapping between users and their owned rewards of different kinds, which are vested.
+     **/
+    rewards: StorageMap<AccountId | string, RewardInfo>;
+    /**
+     * Reserved for future use
+     * Total amount of PSWAP pending rewards.
+     **/
+    totalRewards: Balance | null;
+  };
+  xorFee: {    /**
+     * The amount of XOR to be reminted and exchanged for VAL at the end of the session
+     **/
+    xorToVal: Balance | null;
+  };
+  xstPool: {    /**
+     * Base fee in XOR which is deducted on all trades, currently it's burned: 0.7%.
+     **/
+    baseFee: Fixed | null;
+    /**
+     * Current reserves balance for collateral tokens, used for client usability.
+     **/
+    collateralReserves: StorageMap<AssetId | AnyNumber, Balance>;
+    /**
+     * XST Assets allowed to be traded using XST.
+     **/
+    enabledSynthetics: BTreeSet<AssetId> | null;
+    /**
+     * Technical account used to store collateral tokens.
+     **/
+    permissionedTechAccount: TechAccountId | null;
+    /**
+     * Asset that is used to compare collateral assets by value, e.g., DAI.
+     **/
+    referenceAssetId: AssetId | null;
+  };
 }

@@ -4,12 +4,14 @@ export * from './BridgeApi'
 export * from './connection'
 export * from './FaucetApi'
 export * from './storage'
+export * from './http'
 export { FPNumber, CodecString } from './fp'
 export {
   AccountAsset,
   AccountLiquidity,
   Asset,
   AccountBalance,
+  BalanceType,
   KnownAssets,
   KnownSymbols,
   MaxTotalSupply,
@@ -22,3 +24,4 @@ export {
 } from './assets'
 export { RewardingEvents, RewardInfo, RewardsInfo, LPRewardsInfo, RewardReason } from './rewards'
 export { LiquiditySourceTypes, SwapResult } from './swap'
+export * from './poolAccount'

@@ -61,7 +61,8 @@ import(`../src/metadata${env ? '/' + env : ''}/latest`).then(meta => {
       'Permissions',
       'TokenDealer',
       'TemplateModule',
-      'ReferralSystem',
+      'Referrals',
+      'IrohaMigration',
       'XorFee',
       'Tokens',
       'Currencies',
@@ -75,7 +76,8 @@ import(`../src/metadata${env ? '/' + env : ''}/latest`).then(meta => {
       'MockLiquiditySource2',
       'MockLiquiditySource3',
       'MockLiquiditySource4',
-      'DEXAPI'
+      'DEXAPI',
+      'Farming',
     ],
     definitions,
     metaHex

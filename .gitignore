@@ -3,6 +3,9 @@ node_modules
 dist
 build
 
+# lerna
+lerna-debug.log
+
 /tests/e2e/reports/
 selenium-debug.log
 

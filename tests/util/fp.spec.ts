@@ -477,4 +477,18 @@ describe('FPNumber', () => {
     const instance = new FPNumber(value, precision)
     expect(instance.isFinity()).toBe(result)
   })
+
+  it.each([
+    [0, FPNumber.ZERO],
+    [100, FPNumber.HUNDRED]
+  ])('[FPNumber static] (value "%s") is equal to new FPNumber("%s")', (value, staticValue) => {
+    const instance = new FPNumber(value)
+
+    expect(FPNumber.isEqualTo(instance, staticValue)).toBe(true)
+
+    expect(instance.toString()).toBe(staticValue.toString())
+    expect(instance.toCodecString()).toBe(staticValue.toCodecString())
+    expect(instance.toLocaleString()).toBe(staticValue.toLocaleString())
+    expect(instance.toFixed()).toBe(staticValue.toFixed())
+  })
 })

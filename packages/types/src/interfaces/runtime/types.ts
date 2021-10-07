@@ -283,6 +283,7 @@ export interface LiquiditySourceType extends Enum {
   readonly isMockPool2: boolean;
   readonly isMockPool3: boolean;
   readonly isMockPool4: boolean;
+  readonly isXstPool: boolean;
 }
 
 /** @name LockIdentifier */
@@ -368,9 +369,6 @@ export interface Pays extends Enum {
   readonly isNo: boolean;
 }
 
-/** @name PendingMultisigAccount */
-export interface PendingMultisigAccount extends Null {}
-
 /** @name Perbill */
 export interface Perbill extends UInt {}
 
@@ -404,6 +402,19 @@ export interface PostDispatchInfo extends Struct {
   readonly pays_fee: Pays;
 }
 
+/** @name PredefinedAssetId */
+export interface PredefinedAssetId extends Enum {
+  readonly isXor: boolean;
+  readonly isDot: boolean;
+  readonly isKsm: boolean;
+  readonly isUsdt: boolean;
+  readonly isVal: boolean;
+  readonly isPswap: boolean;
+  readonly isDai: boolean;
+  readonly isEth: boolean;
+  readonly isXstusd: boolean;
+}
+
 /** @name PreRuntime */
 export interface PreRuntime extends ITuple<[ConsensusEngineId, Bytes]> {}
 
@@ -413,6 +424,7 @@ export interface PriceInfo extends Struct {
   readonly spot_prices: Vec<Balance>;
   readonly average_price: Balance;
   readonly needs_update: bool;
+  readonly last_spot_price: Balance;
 }
 
 /** @name Public */
@@ -569,14 +581,16 @@ export interface TechAccountId extends Enum {
   readonly asWrappedRepr: AccountId;
 }
 
-/** @name TechAccountIdPrimitive */
-export interface TechAccountIdPrimitive extends Null {}
-
 /** @name TechAmount */
 export interface TechAmount extends Amount {}
 
 /** @name TechAssetId */
-export interface TechAssetId extends Null {}
+export interface TechAssetId extends Enum {
+  readonly isWrapped: boolean;
+  readonly asWrapped: PredefinedAssetId;
+  readonly isEscaped: boolean;
+  readonly asEscaped: AssetId;
+}
 
 /** @name TechBalance */
 export interface TechBalance extends Balance {}
@@ -584,10 +598,18 @@ export interface TechBalance extends Balance {}
 /** @name TechPurpose */
 export interface TechPurpose extends Enum {
   readonly isFeeCollector: boolean;
+  readonly isFeeCollectorForPair: boolean;
+  readonly asFeeCollectorForPair: TechTradingPair;
   readonly isLiquidityKeeper: boolean;
-  readonly asLiquidityKeeper: TradingPair;
+  readonly asLiquidityKeeper: TechTradingPair;
   readonly isIdentifier: boolean;
   readonly asIdentifier: Bytes;
+}
+
+/** @name TechTradingPair */
+export interface TechTradingPair extends Struct {
+  readonly base_asset_id: TechAssetId;
+  readonly target_asset_id: TechAssetId;
 }
 
 /** @name TradingPair */
