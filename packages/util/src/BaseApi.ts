@@ -21,9 +21,23 @@ type AccountWithOptions = {
   options: Partial<SignerOptions>;
 }
 
+export type SaveHistoryOptions = {
+  wasNotGenerated?: boolean;
+  toCurrentAccount?: boolean;
+}
+
+export type NetworkFeesObject = {
+  [key in Operation]: CodecString
+}
+
 export const isBridgeOperation = (operation: Operation) => [
   Operation.EthBridgeIncoming,
   Operation.EthBridgeOutgoing
+].includes(operation)
+
+const isLiquidityPoolOperation = (operation: Operation) => [
+  Operation.AddLiquidity,
+  Operation.RemoveLiquidity
 ].includes(operation)
 
 export const KeyringType = 'sr25519'
@@ -47,13 +61,14 @@ export class BaseApi {
     [Operation.ClaimVestedRewards]: '0',
     [Operation.ClaimLiquidityProvisionRewards]: '0',
     [Operation.ClaimExternalRewards]: '0'
-  }
+  } as NetworkFeesObject
 
   protected readonly prefix = 69
   protected readonly defaultDEXId = 0
 
   private _history: Array<History> = []
   private _historySyncTimestamp: number = 0
+  private _historySyncOperations: Array<Operation> = []
   private _restored: boolean = false
 
   protected signer?: Signer
@@ -147,13 +162,25 @@ export class BaseApi {
     this._historySyncTimestamp = value
   }
 
+  public get historySyncOperations (): Array<Operation> {
+    if (this.accountStorage) {
+      this._historySyncOperations = JSON.parse(this.accountStorage.get('historySyncOperations')) as Array<Operation> || []
+    }
+    return this._historySyncOperations
+  }
+
+  public set historySyncOperations (value: Array<Operation>) {
+    this.accountStorage?.set('historySyncOperations', JSON.stringify(value))
+    this._historySyncOperations = [...value]
+  }
+
   public getHistory (id: string): History | null {
     if (!id) return null
 
     return this.history.find(item => item.id === id) ?? null
   }
 
-  public saveHistory (historyItem: History, wasNotGenerated = false): void {
+  public saveHistory (historyItem: History, options?: SaveHistoryOptions): void {
     if (!historyItem || !historyItem.id) return
 
     let historyCopy: Array<History>
@@ -162,7 +189,7 @@ export class BaseApi {
     const hasAccessToStorage = !!this.storage
     const historyItemHasSigner = !!historyItem.from
     const historyItemFromAddress = historyItemHasSigner ? this.formatAddress(historyItem.from, false) : ''
-    const needToUpdateAddressStorage = historyItemFromAddress && (historyItemFromAddress !== this.address) && hasAccessToStorage
+    const needToUpdateAddressStorage = !options?.toCurrentAccount && historyItemFromAddress && (historyItemFromAddress !== this.address) && hasAccessToStorage
 
     if (needToUpdateAddressStorage) {
       addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress))
@@ -175,7 +202,7 @@ export class BaseApi {
 
     const item = ~index ? { ...historyCopy[index], ...historyItem } : historyItem
 
-    if (wasNotGenerated) {
+    if (options?.wasNotGenerated) {
       // Tx was failed on the static validation and wasn't generated in the network
       delete item.txId
     }
@@ -260,6 +287,18 @@ export class BaseApi {
         history.endTime = Date.now()
         this.saveHistory(history)
         result.events.forEach(({ event: { data, method, section } }: any) => {
+          if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
+            const xor = KnownAssets.get(KnownSymbols.XOR)
+            const [assetId, from, to, amount] = data
+
+            const address = assetId.toString()
+            const amountFormatted = new FPNumber(amount).toString()
+            const amountKey = xor.address === address ? 'amount' : 'amount2'
+
+            history[amountKey] = amountFormatted
+            this.saveHistory(history)
+          }
+
           if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
             history.hash = first(data.toJSON())
             this.saveHistory(history)
@@ -287,7 +326,9 @@ export class BaseApi {
       const errorParts = e.message.split(':')
       const errorInfo = last(errorParts).trim()
       history.errorMessage = errorInfo
-      this.saveHistory(history, true)
+      this.saveHistory(history, {
+        wasNotGenerated: true
+      })
       throw new Error(errorInfo)
     })
   }

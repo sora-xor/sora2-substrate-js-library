@@ -1,32 +1,34 @@
 import fs from 'fs'
 import { w3cwebsocket as WebSocket } from 'websocket'
-
-export enum SORA_ENV {
-  stage = 'wss://ws.stage.sora2.soramitsu.co.jp',
-  prod = 'wss://ws.sora2.soramitsu.co.jp',
-  // test = 'wss://ws.framenode-1.s1.tst.sora2.soramitsu.co.jp',
-  dev = 'wss://ws.framenode-1.s1.dev.sora2.soramitsu.co.jp',
-}
+import { SORA_ENV } from './consts'
 
 async function pullMetadata(apiEndpoint: string, targetFile: string) {
-  console.log(`Pulling from ${apiEndpoint}`)
-  const ws = new WebSocket(apiEndpoint)
-
-  await new Promise<void>(resolve => {
-    ws.onopen = (): void => {
-      ws.send('{"id":"1","jsonrpc":"2.0","method":"state_getMetadata","params":[]}')
-      resolve()
+  await new Promise<void>(async res => {
+    console.log(`Pulling from ${apiEndpoint}`)
+    const ws = new WebSocket(apiEndpoint)
+    ws.onerror = (error) => {
+      console.log(`[${apiEndpoint}] META cannot be pulled!`)
+      ws.close()
+      res()
     }
+    console.log(apiEndpoint)
+    await new Promise<void>(resolve => {
+      ws.onopen = (): void => {
+        ws.send('{"id":"1","jsonrpc":"2.0","method":"state_getMetadata","params":[]}')
+        resolve()
+      }
+    })
+    await new Promise<void>(resolve => {
+      ws.onmessage = (msg: any): void => {
+        const metadata = JSON.parse(msg.data).result
+        fs.writeFileSync(targetFile, `export default '${metadata}'`)
+        console.log(`${apiEndpoint}: Done!`)
+        resolve()
+      }
+    })
+    ws.close()
+    res()
   })
-  await new Promise<void>(resolve => {
-    ws.onmessage = (msg: any): void => {
-      const metadata = JSON.parse(msg.data).result
-      fs.writeFileSync(targetFile, `export default '${metadata}'`)
-      console.log(`${apiEndpoint}: Done!`)
-      resolve()
-    }
-  })
-  ws.close()
 }
 
 const promises = [] as Array<Promise<void>>
