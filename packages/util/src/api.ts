@@ -1,7 +1,7 @@
 import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import keyring from '@polkadot/ui-keyring'
-import { Subject } from '@polkadot/x-rxjs'
+import { Subject, combineLatest } from '@polkadot/x-rxjs'
 import { map } from '@polkadot/x-rxjs/operators'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import type { CreateResult } from '@polkadot/ui-keyring/types'
@@ -994,25 +994,37 @@ export class Api extends BaseApi {
   public subscribeOnSwapReserves (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    liquiditySource = LiquiditySourceTypes.Default
-  ): Observable<void[]> {
-    const toVoid = (o: Observable<any>) => o.pipe(map(codec => {}))
-    const poolXyk: Array<Observable<void>> = []
+  ): Observable<any> {
+    const toCodec = (o: Observable<any>) => o.pipe(map(codec => {
+      return Array.isArray(codec) ? codec.map(item => item.toString()) : codec.toString()
+    }))
+
+    const xyk: Array<Observable<any>> = []
+    const tbc: Array<Observable<any>> = []
+    const xst: Array<Observable<any>> = []
+
     const xor = KnownAssets.get(KnownSymbols.XOR).address
+
     if (![firstAssetAddress, secondAssetAddress].includes(xor)) {
-      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, firstAssetAddress)))
-      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, secondAssetAddress)))
+      xyk.push(toCodec(this.apiRx.query.poolXyk.reserves(xor, firstAssetAddress)))
+      xyk.push(toCodec(this.apiRx.query.poolXyk.reserves(xor, secondAssetAddress)))
     } else {
       const first = firstAssetAddress === xor ? firstAssetAddress : secondAssetAddress
       const second = secondAssetAddress === xor ? firstAssetAddress : secondAssetAddress
-      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(first, second)))
+      xyk.push(toCodec(this.apiRx.query.poolXyk.reserves(first, second)))
     }
-    if (liquiditySource === LiquiditySourceTypes.XYKPool) {
-      return combineLatest(poolXyk)
-    }
-    const firstTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress))
-    const secondTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress))
-    return combineLatest([...poolXyk, firstTbc, secondTbc])
+
+    tbc.push(toCodec(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress)))
+    tbc.push(toCodec(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress)))
+
+    xst.push(toCodec(this.apiRx.query.xstPool.collateralReserves(firstAssetAddress)))
+    xst.push(toCodec(this.apiRx.query.xstPool.collateralReserves(secondAssetAddress)))
+
+    return combineLatest([...xst, ...tbc, ...xyk]).pipe(map(([xst2, xst1, tbc2, tbc1, ...xyk]) => ({
+      xyk,
+      tbc: [tbc1, tbc2],
+      xst: [xst1, xst2]
+    })))
   }
 
   private async calcAddLiquidityParams (
