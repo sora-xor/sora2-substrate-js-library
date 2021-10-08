@@ -1566,8 +1566,7 @@
                         ]
                     ]
                 },
-                "ValidationFunction": "Null",
-                "Timepoint": "BridgeTimepoint"
+                "ValidationFunction": "Null"
             }
         }
     ]

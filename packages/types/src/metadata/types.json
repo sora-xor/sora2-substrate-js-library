@@ -544,7 +544,6 @@
             "Identifier": "Vec<u8>"
         }
     },
-    "Timepoint": "BridgeTimepoint",
     "TradingPair": {
         "base_asset_id": "AssetId",
         "target_asset_id": "AssetId"

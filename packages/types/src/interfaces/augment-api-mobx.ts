@@ -20,9 +20,9 @@ import type { Keys, SessionIndex } from '@polkadot/types/interfaces/session';
 import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraIndex, EraRewardPoints, Exposure, Forcing, Nominations, RewardDestination, SeatHolder, SlashingSpans, SpanIndex, SpanRecord, StakingLedger, UnappliedSlash, ValidatorPrefs, Voter } from '@polkadot/types/interfaces/staking';
 import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
+import type { Multisig } from '@polkadot/types/interfaces/utility';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
 import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
@@ -168,7 +168,7 @@ export interface StorageType extends BaseStorageType {
      **/
     accounts: StorageMap<AccountId | string, Option<MultisigAccount>>;
     calls: StorageMap<U8aFixed | string, Option<ITuple<[OpaqueCall, AccountId, BalanceOf]>>>;
-    dispatchedCalls: StorageDoubleMap<U8aFixed | string, Timepoint | { height?: any; index?: any } | string, ITuple<[]>>;
+    dispatchedCalls: StorageDoubleMap<U8aFixed | string, BridgeTimepoint | { height?: any; index?: any } | string, ITuple<[]>>;
     /**
      * The set of open multisig operations.
      **/

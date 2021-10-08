@@ -16,7 +16,6 @@ function sortObjectByKey(value) {
 export async function generateTypesJson(env?: string) {
   console.log("NOTE: Make sure `yarn build` was run with latest types");
   let sortedTypes = sortObjectByKey(localTypes);
-  sortedTypes["Timepoint"] = "BridgeTimepoint"; //should be added
   const data = JSON.stringify(sortedTypes, null, 4);
   const provider = new WsProvider(SORA_ENV[env]);
   const api = new ApiPromise(options({ provider }));
