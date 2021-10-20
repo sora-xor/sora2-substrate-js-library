@@ -467,6 +467,10 @@ export class BaseApi {
     }
   }
 
+  public static getPublicKeyFromAccountId (accountId: string): string {
+    return decodeAddress(accountId, false).toString()
+  }
+
   public formatAddress (address: string, withSoraPrefix = true): string {
     if (withSoraPrefix) {
       const publicKey = decodeAddress(address, false)

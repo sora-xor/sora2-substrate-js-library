@@ -109,7 +109,10 @@ export default {
     ValidationFunction: "Null",     // define properly if needed
     Permission: "Null",             // define properly if needed
     DistributionAccounts: "Null",
-    MultisigAccount: "Null",
+    MultisigAccount: {
+      signatories: "Vec<AccountId>",
+      threshold: "u8"
+    },
     Farmer: "Null",
     Farm: "Null",
     SmoothPriceState: "Null",

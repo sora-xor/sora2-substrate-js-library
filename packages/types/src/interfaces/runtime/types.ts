@@ -320,7 +320,10 @@ export interface MultiAddress extends GenericMultiAddress {}
 export interface MultiCurrencyBalanceOf extends Null {}
 
 /** @name MultisigAccount */
-export interface MultisigAccount extends Null {}
+export interface MultisigAccount extends Struct {
+  readonly signatories: Vec<AccountId>;
+  readonly threshold: u8;
+}
 
 /** @name MultiSigner */
 export interface MultiSigner extends Enum {

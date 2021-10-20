@@ -279,7 +279,10 @@
     },
     "MultiCurrencyBalance": "Balance",
     "MultiCurrencyBalanceOf": "MultiCurrencyBalance",
-    "MultisigAccount": "Null",
+    "MultisigAccount": {
+        "signatories": "Vec<AccountId>",
+        "threshold": "u8"
+    },
     "OffchainRequest": {
         "_enum": {
             "Outgoing": "(OutgoingRequest, H256)",
@@ -585,6 +588,5 @@
         "base_asset_id": "AssetId",
         "target_asset_id": "AssetId"
     },
-    "ValidationFunction": "Null",
-    "Timepoint": "BridgeTimepoint"
+    "ValidationFunction": "Null"
 }
