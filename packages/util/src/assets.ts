@@ -121,7 +121,7 @@ class ArrayLike<T> extends Array<T> {
   }
 }
 
-export const KnownAssets = new ArrayLike<Asset>([
+export const NativeAssets = new ArrayLike<Asset>([
   {
     address: '0x0200000000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XOR,
@@ -144,6 +144,17 @@ export const KnownAssets = new ArrayLike<Asset>([
     totalSupply: '10000000000'
   },
   {
+    address: '0x0200080000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.XSTUSD,
+    name: 'SORA Synthetic USD',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    totalSupply: MaxTotalSupply,
+  },
+])
+
+export const KnownAssets = new ArrayLike<Asset>([
+  ...NativeAssets,
+  {
     address: '0x0200060000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.DAI,
     name: 'Dai Stablecoin',
@@ -154,13 +165,6 @@ export const KnownAssets = new ArrayLike<Asset>([
     address: '0x0200070000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.ETH,
     name: 'Ether',
-    decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: MaxTotalSupply,
-  },
-  {
-    address: '0x0200080000000000000000000000000000000000000000000000000000000000',
-    symbol: KnownSymbols.XSTUSD,
-    name: 'SORA Synthetic USD',
     decimals: FPNumber.DEFAULT_PRECISION,
     totalSupply: MaxTotalSupply,
   },

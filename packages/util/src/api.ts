@@ -10,6 +10,7 @@ import type { Signer, Observable, Codec } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
 
 import {
+  NativeAssets,
   KnownAssets,
   getAssetBalance,
   AccountAsset,
@@ -169,8 +170,8 @@ export class Api extends BaseApi {
     assert(this.account, Messages.connectWallet)
 
     const knownAssets: Array<AccountAsset> = []
-    const knownAssetsAddresses = Object.values(KnownAssets).map(knownAsset => knownAsset.address)
-    const assetsAddresses = new Set([...knownAssetsAddresses, ...this.accountAssetsAddresses])
+    const nativeAssetsAddresses = Object.values(NativeAssets).map(nativeAsset => nativeAsset.address)
+    const assetsAddresses = new Set([...nativeAssetsAddresses, ...this.accountAssetsAddresses])
 
     for (const assetAddress of assetsAddresses) {
       const asset = await this.getAccountAsset(assetAddress)
