@@ -27,7 +27,7 @@ import {
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
-import { SwapResult, LiquiditySourceTypes } from './swap'
+import { SwapResult, LiquiditySourceTypes, QuotePayload } from './swap'
 import { RewardingEvents, RewardsInfo, RewardInfo, isClaimableReward, containsRewardsForEvents, prepareRewardInfo, prepareRewardsInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
@@ -996,7 +996,7 @@ export class Api extends BaseApi {
     secondAssetAddress: string,
     pairLiquiditySources: Array<LiquiditySourceTypes>,
     selectedLiquiditySource = LiquiditySourceTypes.Default
-  ): Observable<any> {
+  ): Observable<QuotePayload> {
     const XOR = KnownAssets.get(KnownSymbols.XOR).address;
     const DAI = KnownAssets.get(KnownSymbols.DAI).address;
     const XSTUSD = KnownAssets.get(KnownSymbols.XSTUSD).address;
@@ -1018,6 +1018,7 @@ export class Api extends BaseApi {
       return toAveragePrice(this.apiRx.query.priceTools.priceInfos(assetAddress));
     };
 
+    // is TBC or XST sources used
     const isSourceUsed = (source: LiquiditySourceTypes): boolean => (selectedLiquiditySource === source) || (
       selectedLiquiditySource === LiquiditySourceTypes.Default &&
       pairLiquiditySources.includes(source)
@@ -1067,7 +1068,7 @@ export class Api extends BaseApi {
       const tbc = data.slice(position, position += tbcReserves.length);
       const xyk = data.slice(position, position += xykReserves.length);
 
-      return {
+      const payload: QuotePayload = {
         reserves: {
           xyk,
           tbc: combineValuesWithKeys(tbc, assetsWithReserves),
@@ -1075,6 +1076,8 @@ export class Api extends BaseApi {
         prices: combineValuesWithKeys(prices, assetsWithPrices),
         issuances: combineValuesWithKeys(issuances, assetsWithIssuances),
       }
+
+      return payload;
     }));
   }
 
