@@ -1,7 +1,7 @@
 import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import keyring from '@polkadot/ui-keyring'
-import { Subject, combineLatest } from '@polkadot/x-rxjs'
+import { Subject, combineLatest, of } from '@polkadot/x-rxjs'
 import { map } from '@polkadot/x-rxjs/operators'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import type { CreateResult } from '@polkadot/ui-keyring/types'
@@ -994,37 +994,88 @@ export class Api extends BaseApi {
   public subscribeOnSwapReserves (
     firstAssetAddress: string,
     secondAssetAddress: string,
+    pairLiquiditySources: Array<LiquiditySourceTypes>,
+    selectedLiquiditySource = LiquiditySourceTypes.Default
   ): Observable<any> {
+    const XOR = KnownAssets.get(KnownSymbols.XOR).address;
+    const DAI = KnownAssets.get(KnownSymbols.DAI).address;
+    const XSTUSD = KnownAssets.get(KnownSymbols.XSTUSD).address;
+
     const toCodec = (o: Observable<any>) => o.pipe(map(codec => {
       return Array.isArray(codec) ? codec.map(item => item.toString()) : codec.toString()
-    }))
+    }));
 
-    const xyk: Array<Observable<any>> = []
-    const tbc: Array<Observable<any>> = []
-    const xst: Array<Observable<any>> = []
+    const toAveragePrice = (o: Observable<any>) => o.pipe(map(codec => codec.value.average_price.toString()));
 
-    const xor = KnownAssets.get(KnownSymbols.XOR).address
+    const getAssetAveragePrice = (assetAddress: string): Observable<any> => {
+      if (assetAddress === DAI || assetAddress === XSTUSD) {
+        return of(new FPNumber(1).toCodecString());
+      }
+      if (assetAddress === XOR) {
+        return toAveragePrice(this.apiRx.query.priceTools.priceInfos(DAI));
+      }
 
-    if (![firstAssetAddress, secondAssetAddress].includes(xor)) {
-      xyk.push(toCodec(this.apiRx.query.poolXyk.reserves(xor, firstAssetAddress)))
-      xyk.push(toCodec(this.apiRx.query.poolXyk.reserves(xor, secondAssetAddress)))
-    } else {
-      const first = firstAssetAddress === xor ? firstAssetAddress : secondAssetAddress
-      const second = secondAssetAddress === xor ? firstAssetAddress : secondAssetAddress
-      xyk.push(toCodec(this.apiRx.query.poolXyk.reserves(first, second)))
-    }
+      return toAveragePrice(this.apiRx.query.priceTools.priceInfos(assetAddress));
+    };
 
-    tbc.push(toCodec(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress)))
-    tbc.push(toCodec(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress)))
+    const isSourceUsed = (source: LiquiditySourceTypes): boolean => (selectedLiquiditySource === source) || (
+      selectedLiquiditySource === LiquiditySourceTypes.Default &&
+      pairLiquiditySources.includes(source)
+    );
 
-    xst.push(toCodec(this.apiRx.query.xstPool.collateralReserves(firstAssetAddress)))
-    xst.push(toCodec(this.apiRx.query.xstPool.collateralReserves(secondAssetAddress)))
+    const combineValuesWithKeys = (values: Array<string>, keys: Array<string>): { [key: string]: string } =>
+      values.reduce((result, value, index) => ({
+        ...result,
+        [keys[index]]: value
+      }), {});
 
-    return combineLatest([...xst, ...tbc, ...xyk]).pipe(map(([xst2, xst1, tbc2, tbc1, ...xyk]) => ({
-      xyk,
-      tbc: [tbc1, tbc2],
-      xst: [xst1, xst2]
-    })))
+    // Assets that have XYK reserves (XOR - asset) or TBC collateral reserves (not XOR)
+    const assetsWithReserves = [firstAssetAddress, secondAssetAddress].filter(address => address !== XOR);
+    // Assets that have average price data (storage has prices only for KnownAssets)
+    const assetsWithPrices = [...assetsWithReserves, XOR].filter(address => KnownAssets.contains(address));
+    // Assets for which we need to know the total supply
+    const assetsWithIssuances = [XOR, XSTUSD];
+
+    const tbcUsed = isSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
+    const xstUsed = isSourceUsed(LiquiditySourceTypes.XSTPool);
+
+    const xykReserves = assetsWithReserves.map(address => toCodec(this.apiRx.query.poolXyk.reserves(XOR, address)));
+
+    // fill array if TBC source available
+    const tbcReserves = tbcUsed
+      ? assetsWithReserves.map(address => toCodec(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(address)))
+      : [];
+
+    // fill array if TBC or XST source available
+    const assetsPrices = (tbcUsed || xstUsed)
+      ? assetsWithPrices.map(address => getAssetAveragePrice(address))
+      : [];
+
+    // if TBC source available
+    const assetsIssuances = tbcUsed
+      ? [
+        toCodec(this.apiRx.query.balances.totalIssuance()),
+        toCodec(this.apiRx.query.tokens.totalIssuance(XSTUSD))
+      ]
+      : [];
+
+    return combineLatest([...assetsIssuances, ...assetsPrices, ...tbcReserves, ...xykReserves]).pipe(map(data => {
+      let position = assetsIssuances.length;
+
+      const issuances = data.slice(0, position);
+      const prices = data.slice(position, position += assetsPrices.length);
+      const tbc = data.slice(position, position += tbcReserves.length);
+      const xyk = data.slice(position, position += xykReserves.length);
+
+      return {
+        reserves: {
+          xyk,
+          tbc: combineValuesWithKeys(tbc, assetsWithReserves),
+        },
+        prices: combineValuesWithKeys(prices, assetsWithPrices),
+        issuances: combineValuesWithKeys(issuances, assetsWithIssuances),
+      }
+    }));
   }
 
   private async calcAddLiquidityParams (

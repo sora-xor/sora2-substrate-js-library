@@ -4,6 +4,7 @@ import type { LPRewardsInfo } from './rewards'
 export enum LiquiditySourceTypes {
   Default = '',
   XYKPool = 'XYKPool',
+  XSTPool = 'XSTPool',
   MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool'
 }
 
