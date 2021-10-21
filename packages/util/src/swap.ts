@@ -4,6 +4,7 @@ import type { LPRewardsInfo } from './rewards'
 export enum LiquiditySourceTypes {
   Default = '',
   XYKPool = 'XYKPool',
+  XSTPool = 'XSTPool',
   MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool'
 }
 
@@ -13,3 +14,18 @@ export interface SwapResult {
   rewards: Array<LPRewardsInfo>;
   amountWithoutImpact: CodecString;
 }
+
+export type QuotePayload = {
+  reserves: {
+    xyk: Array<[CodecString, CodecString]>;
+    tbc: {
+      [key: string]: CodecString;
+    };
+  };
+  prices: {
+    [key: string]: CodecString;
+  };
+  issuances: {
+    [key: string]: CodecString;
+  };
+};
