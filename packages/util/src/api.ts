@@ -998,9 +998,11 @@ export class Api extends BaseApi {
     pairLiquiditySources: Array<LiquiditySourceTypes>,
     selectedLiquiditySource = LiquiditySourceTypes.Default
   ): Observable<QuotePayload> {
-    const XOR = KnownAssets.get(KnownSymbols.XOR).address;
-    const DAI = KnownAssets.get(KnownSymbols.DAI).address;
-    const XSTUSD = KnownAssets.get(KnownSymbols.XSTUSD).address;
+    const knownAssetAddress = (symbol: string) => KnownAssets.get(symbol).address;
+
+    const XOR = knownAssetAddress(KnownSymbols.XOR);
+    const DAI = knownAssetAddress(KnownSymbols.DAI);
+    const XSTUSD = knownAssetAddress(KnownSymbols.XSTUSD);
 
     const toCodec = (o: Observable<any>) => o.pipe(map(codec => {
       return Array.isArray(codec) ? codec.map(item => item.toString()) : codec.toString()

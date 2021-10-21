@@ -157,7 +157,7 @@ export const KnownAssets = new ArrayLike<Asset>([
   {
     address: '0x0200060000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.DAI,
-    name: 'Dai Stablecoin',
+    name: 'Dai',
     decimals: FPNumber.DEFAULT_PRECISION,
     totalSupply: MaxTotalSupply,
   },
