@@ -111,7 +111,7 @@ class ArrayLike<T> extends Array<T> {
     items && this.addItems(items)
   }
   private addItems (items: Array<T>): void {
-    if (typeof(items) === 'number') {
+    if (!(items instanceof Array)) {
       return
     }
     this.push(...items)
