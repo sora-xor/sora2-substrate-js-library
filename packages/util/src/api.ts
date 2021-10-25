@@ -165,13 +165,13 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get a list of all known assets from `KnownAssets` array & from account storage
+   * Get a list of all known assets from `NativeAssets` array & from account storage
    */
   public async getKnownAccountAssets (): Promise<Array<AccountAsset>> {
     assert(this.account, Messages.connectWallet)
 
     const knownAssets: Array<AccountAsset> = []
-    const nativeAssetsAddresses = Object.values(NativeAssets).map(nativeAsset => nativeAsset.address)
+    const nativeAssetsAddresses = NativeAssets.map(nativeAsset => nativeAsset.address)
     const assetsAddresses = new Set([...nativeAssetsAddresses, ...this.accountAssetsAddresses])
 
     for (const assetAddress of assetsAddresses) {
