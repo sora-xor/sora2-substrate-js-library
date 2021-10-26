@@ -13,6 +13,7 @@ export {
   AccountBalance,
   BalanceType,
   KnownAssets,
+  NativeAssets,
   KnownSymbols,
   MaxTotalSupply,
   Whitelist,
@@ -20,7 +21,8 @@ export {
   getWhitelistAssets,
   isWhitelistAsset,
   getWhitelistIdsBySymbol,
-  isBlacklistAsset
+  isBlacklistAsset,
+  XOR
 } from './assets'
 export { RewardingEvents, RewardInfo, RewardsInfo, LPRewardsInfo, RewardReason } from './rewards'
 export * from './swap'
