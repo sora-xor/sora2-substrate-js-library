@@ -9,7 +9,7 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types'
 
 import { AccountStorage, Storage } from './storage'
-import { KnownAssets, KnownSymbols } from './assets'
+import { KnownAssets, KnownSymbols, XOR } from './assets'
 import { CodecString, FPNumber } from './fp'
 import { encrypt, toHmacSHA256 } from './crypto'
 import { connection } from './connection'
@@ -288,12 +288,11 @@ export class BaseApi {
         this.saveHistory(history)
         result.events.forEach(({ event: { data, method, section } }: any) => {
           if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
-            const xor = KnownAssets.get(KnownSymbols.XOR)
             const [assetId, from, to, amount] = data
 
             const address = assetId.toString()
             const amountFormatted = new FPNumber(amount).toString()
-            const amountKey = xor.address === address ? 'amount' : 'amount2'
+            const amountKey = XOR.address === address ? 'amount' : 'amount2'
 
             history[amountKey] = amountFormatted
             this.saveHistory(history)
@@ -341,7 +340,6 @@ export class BaseApi {
    */
   protected async getNetworkFee (type: Operation, ...params: Array<any>): Promise<CodecString> {
     let extrinsicParams = params
-    const xor = KnownAssets.get(KnownSymbols.XOR)
     let extrinsic = null
     switch (type) {
       case Operation.Transfer:
@@ -393,7 +391,7 @@ export class BaseApi {
     }
     const { account, options } = this.getAccountWithOptions()
     const res = await (extrinsic(...extrinsicParams) as SubmittableExtrinsic).paymentInfo(account, options)
-    return new FPNumber(res.partialFee, xor.decimals).toCodecString()
+    return new FPNumber(res.partialFee, XOR.decimals).toCodecString()
   }
 
   /**
@@ -441,7 +439,6 @@ export class BaseApi {
   }
 
   protected async calcStaticNetworkFees (): Promise<void> {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
     const operations = [
       Operation.AddLiquidity,
       Operation.CreatePair,
@@ -462,7 +459,7 @@ export class BaseApi {
       const extrinsic = this.getEmptyExtrinsic(operation)
       if (extrinsic) {
         const res = await extrinsic.paymentInfo(mockAccountAddress)
-        this.NetworkFee[operation] = new FPNumber(res.partialFee, xor.decimals).toCodecString()
+        this.NetworkFee[operation] = new FPNumber(res.partialFee, XOR.decimals).toCodecString()
       }
     }
   }

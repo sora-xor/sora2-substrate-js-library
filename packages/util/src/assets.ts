@@ -111,7 +111,10 @@ class ArrayLike<T> extends Array<T> {
     items && this.addItems(items)
   }
   private addItems (items: Array<T>): void {
-    items.forEach(item => this.push(item))
+    if (!(items instanceof Array)) {
+      return
+    }
+    this.push(...items)
   }
   public contains (info: string): boolean {
     return !!this.find((asset: any) => [asset.address, asset.symbol].includes(info))
@@ -152,6 +155,8 @@ export const NativeAssets = new ArrayLike<Asset>([
   },
 ])
 
+export const XOR = NativeAssets.get(KnownSymbols.XOR)
+
 export const KnownAssets = new ArrayLike<Asset>([
   ...NativeAssets,
   {
@@ -188,8 +193,7 @@ export async function getBalance (api: ApiPromise, accountAddress: string, asset
 }
 
 export async function getAssetBalance (api: ApiPromise, accountAddress: string, assetAddress: string, assetDecimals: number): Promise<AccountBalance> {
-  const xorAddress = KnownAssets.get(KnownSymbols.XOR).address
-  if (assetAddress === xorAddress) {
+  if (assetAddress === XOR.address) {
     const accountInfo = await api.query.system.account(accountAddress)
     return formatBalance(accountInfo.data, assetDecimals)
   }
@@ -198,8 +202,7 @@ export async function getAssetBalance (api: ApiPromise, accountAddress: string, 
 }
 
 export function getAssetBalanceObservable (apiRx: ApiRx, accountAddress: string, assetAddress: string, assetDecimals: number): Observable<AccountBalance> {
-  const xorAddress = KnownAssets.get(KnownSymbols.XOR).address
-  if (assetAddress === xorAddress) {
+  if (assetAddress === XOR.address) {
     return apiRx.query.system.account(accountAddress).pipe(
       map(({ data }) => formatBalance(data, assetDecimals))
     )

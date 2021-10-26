@@ -24,7 +24,8 @@ import {
   getAssetBalanceObservable,
   ZeroBalance,
   Whitelist,
-  getLiquidityBalance
+  getLiquidityBalance,
+  XOR
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
@@ -164,13 +165,13 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get a list of all known assets from `KnownAssets` array & from account storage
+   * Get a list of all known assets from `NativeAssets` array & from account storage
    */
   public async getKnownAccountAssets (): Promise<Array<AccountAsset>> {
     assert(this.account, Messages.connectWallet)
 
     const knownAssets: Array<AccountAsset> = []
-    const nativeAssetsAddresses = Object.values(NativeAssets).map(nativeAsset => nativeAsset.address)
+    const nativeAssetsAddresses = NativeAssets.map(nativeAsset => nativeAsset.address)
     const assetsAddresses = new Set([...nativeAssetsAddresses, ...this.accountAssetsAddresses])
 
     for (const assetAddress of assetsAddresses) {
@@ -416,7 +417,6 @@ export class Api extends BaseApi {
    * @param targetAssetIds
    */
   public updateAccountLiquidity (targetAssetIds: Array<string>): void {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
     const getReserve = (reserve: Codec) => new FPNumber(reserve).toCodecString()
     const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) => this.accountLiquidity = this.accountLiquidity.filter(item => item.secondAddress !== liquidity.secondAddress)
     this.unsubscribeFromAllLiquidityUpdates()
@@ -427,13 +427,13 @@ export class Api extends BaseApi {
     this.liquiditySubject.next()
     // Refresh all required subscriptions
     for (const liquidity of liquidityList) {
-      const subscription = this.apiRx.query.poolXyk.reserves(xor.address, liquidity.secondAddress).subscribe(async reserves => {
+      const subscription = this.apiRx.query.poolXyk.reserves(XOR.address, liquidity.secondAddress).subscribe(async reserves => {
         if (!reserves || !(reserves[0] || reserves[1])) {
           removeLiquidityItem(liquidity) // Remove it from list if something was wrong
         } else {
           const reserveA = getReserve(reserves[0])
           const reserveB = getReserve(reserves[1])
-          const updatedLiquidity = await this.getAccountLiquidityItem(xor.address, liquidity.secondAddress, reserveA, reserveB)
+          const updatedLiquidity = await this.getAccountLiquidityItem(XOR.address, liquidity.secondAddress, reserveA, reserveB)
           if (updatedLiquidity) {
             this.addToLiquidityList(updatedLiquidity)
           } else {
@@ -813,7 +813,6 @@ export class Api extends BaseApi {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<SwapResult> {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
     const assetA = await this.getAssetInfo(assetAAddress)
     const assetB = await this.getAssetInfo(assetBAddress)
     const liquiditySources = this.prepareLiquiditySources(liquiditySource)
@@ -829,7 +828,7 @@ export class Api extends BaseApi {
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amount_without_impact: 0 }
     return {
       amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
-      fee: new FPNumber(value.fee, xor.decimals).toCodecString(),
+      fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
       amountWithoutImpact: new FPNumber(value.amount_without_impact, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
     } as SwapResult
@@ -1154,10 +1153,9 @@ export class Api extends BaseApi {
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ) {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    assert([firstAssetAddress, secondAssetAddress].includes(xor.address), Messages.xorIsRequired)
-    const baseAssetId = firstAssetAddress === xor.address ? firstAssetAddress : secondAssetAddress
-    const targetAssetId = firstAssetAddress !== xor.address ? firstAssetAddress : secondAssetAddress
+    assert([firstAssetAddress, secondAssetAddress].includes(XOR.address), Messages.xorIsRequired)
+    const baseAssetId = firstAssetAddress === XOR.address ? firstAssetAddress : secondAssetAddress
+    const targetAssetId = firstAssetAddress !== XOR.address ? firstAssetAddress : secondAssetAddress
     const exists = await this.checkLiquidity(baseAssetId, targetAssetId)
     assert(!exists, Messages.pairAlreadyCreated)
     const baseAssetAmount = baseAssetId === firstAssetAddress ? firstAmount : secondAmount
@@ -1230,8 +1228,7 @@ export class Api extends BaseApi {
     firstAssetAddress: string,
     secondAssetAddress: string
   ): Promise<Array<LiquiditySourceTypes>> {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    const baseAssetId = secondAssetAddress === xor.address ? secondAssetAddress : firstAssetAddress
+    const baseAssetId = secondAssetAddress === XOR.address ? secondAssetAddress : firstAssetAddress
     const targetAssetId = baseAssetId === secondAssetAddress ? firstAssetAddress : secondAssetAddress
     const list = (await (this.api.rpc as any).tradingPair.listEnabledSourcesForPair(
       this.defaultDEXId,
@@ -1511,16 +1508,15 @@ export class Api extends BaseApi {
 
   // # Formatter methods
   public hasEnoughXor (asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    const xorDecimals = xor.decimals
+    const xorDecimals = XOR.decimals
     const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals)
-    if (asset.address === xor.address) {
+    if (asset.address === XOR.address) {
       const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals)
       const fpAmount = new FPNumber(amount, xorDecimals)
       return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
     }
     // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.getAsset(xor.address)
+    const xorAccountAsset = this.getAsset(XOR.address)
     if (!xorAccountAsset) {
       return false
     }
