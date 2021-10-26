@@ -1478,6 +1478,10 @@ export class Api extends BaseApi {
     return withPoolTokens ? assets : assets.filter(asset => asset.symbol !== PoolTokens.XYKPOOL)
   }
 
+  public getSystemBlockNumberObservable (): Observable<string> {
+    return this.apiRx.query.system.number().pipe(map(codec => codec.toString()))
+  }
+
   // # Logout & reset methods
 
   public unsubscribeAll (): void {
