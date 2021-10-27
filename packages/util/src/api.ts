@@ -1472,6 +1472,14 @@ export class Api extends BaseApi {
   }
 
   /**
+   * Get Multisigs account by Multisig Account Address
+   * @param address
+   */
+  public async getMultisigs (address: string): Promise<any> {
+    return await this.api.query.multisig.multisigs.entries(address);
+  }
+
+  /**
    * Get all tokens list registered in the blockchain network
    * @param whitelist set of whitelist tokens
    * @param withPoolTokens `false` by default
