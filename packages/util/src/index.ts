@@ -24,6 +24,6 @@ export {
   isBlacklistAsset,
   XOR
 } from './assets'
-export { RewardingEvents, RewardInfo, RewardsInfo, LPRewardsInfo, RewardReason } from './rewards'
+export { RewardingEvents, RewardInfo, RewardsInfo, LPRewardsInfo, RewardReason, AccountMarketMakerInfo } from './rewards'
 export * from './swap'
 export * from './poolAccount'
