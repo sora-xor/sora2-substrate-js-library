@@ -30,7 +30,17 @@ import {
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes, QuotePayload } from './swap'
-import { RewardingEvents, RewardsInfo, RewardInfo, isClaimableReward, containsRewardsForEvents, prepareRewardInfo, prepareRewardsInfo } from './rewards'
+import {
+  RewardingEvents,
+  RewardsInfo,
+  RewardInfo,
+  AccountMarketMakerInfo,
+  isClaimableReward,
+  containsRewardsForEvents,
+  prepareRewardInfo,
+  prepareRewardsInfo,
+  getAccountMarketMakerInfoObservable
+} from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
@@ -991,10 +1001,15 @@ export class Api extends BaseApi {
     )
   }
 
+  public subscribeOnAccountMarketMakerInfo (): Observable<AccountMarketMakerInfo> {
+    assert(this.account, Messages.connectWallet)
+
+    return getAccountMarketMakerInfoObservable(this.apiRx, this.account.pair.address)
+  }
+
   public subscribeOnSwapReserves (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    pairLiquiditySources: Array<LiquiditySourceTypes>,
     selectedLiquiditySource = LiquiditySourceTypes.Default
   ): Observable<QuotePayload> {
     const knownAssetAddress = (symbol: string) => KnownAssets.get(symbol).address;
@@ -1021,10 +1036,9 @@ export class Api extends BaseApi {
     };
 
     // is TBC or XST sources used
-    const isSourceUsed = (source: LiquiditySourceTypes): boolean => (selectedLiquiditySource === source) || (
-      selectedLiquiditySource === LiquiditySourceTypes.Default &&
-      pairLiquiditySources.includes(source)
-    );
+    const isSourceUsed = (source: LiquiditySourceTypes): boolean =>
+      selectedLiquiditySource === source ||
+      selectedLiquiditySource === LiquiditySourceTypes.Default;
 
     const combineValuesWithKeys = (values: Array<string>, keys: Array<string>): { [key: string]: string } =>
       values.reduce((result, value, index) => ({
