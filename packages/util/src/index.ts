@@ -26,4 +26,5 @@ export {
 } from './assets'
 export { RewardingEvents, RewardInfo, RewardsInfo, LPRewardsInfo, RewardReason, AccountMarketMakerInfo } from './rewards'
 export * from './swap'
+export * from './liquidityProxy'
 export * from './poolAccount'

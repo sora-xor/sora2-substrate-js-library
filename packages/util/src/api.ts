@@ -29,7 +29,8 @@ import {
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
-import { SwapResult, LiquiditySourceTypes, QuotePayload } from './swap'
+import { SwapResult, LiquiditySourceTypes } from './swap'
+import { QuotePayload } from './liquidityProxy'
 import {
   RewardingEvents,
   RewardsInfo,
