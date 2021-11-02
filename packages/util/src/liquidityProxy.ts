@@ -118,6 +118,14 @@ const safeQuoteResult = (amount: FPNumber, market: LiquiditySourceTypes): QuoteR
 };
 
 // TBC quote
+
+/**
+ * This function is used to determine particular asset price in terms of a reference asset, which is set for
+ * bonding curve (there could be only single token chosen as reference for all comparisons). Basically, the
+ * reference token is expected to be a USD-bound stablecoin, e.g. DAI.
+ * 
+ * Example use: understand actual value of two tokens in terms of USD.
+ */
 const tbcReferencePrice = (assetId: string, payload: QuotePayload): FPNumber => {
   if (assetId === DAI) {
     return ONE;
@@ -129,25 +137,45 @@ const tbcReferencePrice = (assetId: string, payload: QuotePayload): FPNumber => 
   }
 };
 
+/**
+ * Buy function with regards to asset total supply and its change delta. It represents the amount of
+ * input collateral required from User in order to receive requested XOR amount. I.e. the price User buys at.
+ * XOR is also referred as main asset.
+ * Value of `delta` is assumed to be either positive or negative.
+ * For every `price_change_step` tokens the price goes up by `price_change_rate`.
+ * 
+ * `buy_price_usd = (xor_total_supply + xor_supply_delta) / (price_change_step * price_change_rate) + initial_price_usd`
+ */
 const tbcBuyFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
   const xstusdIssuance = FPNumber.fromCodecValue(payload.issuances[XSTUSD]);
   const xorIssuance = FPNumber.fromCodecValue(payload.issuances[XOR]);
   const xorPrice = FPNumber.fromCodecValue(payload.prices[XOR]);
   const xstXorLiability = safeDivide(xstusdIssuance, xorPrice);
-
-  // buy_price_usd = (xor_total_supply + xor_supply_delta) / (price_change_step * price_change_rate) + initial_price_usd`
   return safeDivide(xorIssuance.add(xstXorLiability).add(delta), PRICE_CHANGE_COEFF).add(INITIAL_PRICE);
 };
 
+
+
+/**
+ * Sell function with regards to asset total supply and its change delta. It represents the amount of
+ * output collateral tokens received by User by indicating exact sold XOR amount. I.e. the price User sells at.
+ * Value of `delta` is assumed to be either positive or negative.
+ * Sell function is `sell_price_coefficient`% of buy function (see `tbcBuyFunction`).
+ * 
+ * `sell_price = sell_price_coefficient * buy_price`
+ */
 const tbcSellFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
   const buyFunctionResult = tbcBuyFunction(delta, payload);
 
   return buyFunctionResult.mul(SELL_PRICE_COEFF);
 };
 
-// Calculate USD price for all XOR in network, this is done by applying ideal sell function to XOR total supply.
-// `delta` is a XOR supply offset from current total supply.
-// ((initial_price + current_state) / 2) * (xor_issuance + delta)
+/**
+ * Calculate USD price for all XOR in network, this is done by applying ideal sell function to XOR total supply.
+ * `delta` is a XOR supply offset from current total supply.
+ * 
+ * `((initial_price + current_state) / 2) * (xor_issuance + delta)`
+ */
 const idealReservesReferencePrice = (delta: FPNumber, payload: QuotePayload): FPNumber => {
   const xorIssuance = FPNumber.fromCodecValue(payload.issuances[XOR]);
   const currentState = tbcBuyFunction(delta, payload);
@@ -155,6 +183,10 @@ const idealReservesReferencePrice = (delta: FPNumber, payload: QuotePayload): FP
   return safeDivide(INITIAL_PRICE.add(currentState), new FPNumber(2)).mul(xorIssuance.add(delta));
 };
 
+/**
+ * Calculate USD price for single collateral asset that is stored in reserves account. In other words, find out how much
+ * reserves worth, considering only one asset type.
+ */
 const actualReservesReferencePrice = (collateralAssetId: string, payload: QuotePayload): FPNumber => {
   const reserve = FPNumber.fromCodecValue(payload.reserves.tbc[collateralAssetId]);
   const price = tbcReferencePrice(collateralAssetId, payload);
@@ -162,8 +194,10 @@ const actualReservesReferencePrice = (collateralAssetId: string, payload: QuoteP
   return reserve.mul(price);
 };
 
-// Mapping that defines ratio of fee penalty applied for selling XOR with
-// low collateralized reserves.
+/**
+ * Mapping that defines ratio of fee penalty applied for selling XOR with
+ * low collateralized reserves.
+ */
 const mapCollateralizedFractionToPenalty = (fraction: FPNumber): FPNumber => {
   if (FPNumber.isLessThan(fraction, new FPNumber(0.05))) {
     return new FPNumber(0.09);
@@ -178,6 +212,10 @@ const mapCollateralizedFractionToPenalty = (fraction: FPNumber): FPNumber => {
   }
 };
 
+/**
+ * Calculate ratio of fee penalty that is applied to trades when XOR is sold while
+ * reserves are low for target collateral asset.
+ */
 const sellPenalty = (collateralAssetId: string, payload: QuotePayload): FPNumber => {
   const idealReservesPrice = idealReservesReferencePrice(FPNumber.ZERO, payload);
   const collateralReservesPrice = actualReservesReferencePrice(collateralAssetId, payload);
@@ -192,6 +230,22 @@ const sellPenalty = (collateralAssetId: string, payload: QuotePayload): FPNumber
   return penalty;
 };
 
+
+
+/**
+ * Calculates and returns the current sell price, assuming that input is the main asset and output is the collateral asset.
+ * To calculate sell price for a specific amount of assets:
+ * 1. Current reserves of collateral token are taken
+ * 2. Same amount by value is assumed for main asset
+ *
+ *    2.1. Values are compared via getting prices for both main and collateral tokens with regard to another token called reference token which is set for particular pair. This should be e.g. stablecoin DAI.
+ *
+ *    2.2. Reference price for base token is taken as 80% of current bonding curve buy price.
+ *
+ *    2.3. Reference price for collateral token is taken as current market price, i.e. price for 1 token on liquidity proxy.
+ *
+ * 3. Given known reserves for main and collateral, output collateral amount is calculated by applying x*y=k model resulting in curve-like dependency.
+ */
 const tbcSellPrice = (
   collateralAssetId: string,
   amount: FPNumber,
@@ -265,6 +319,7 @@ const tbcSellPrice = (
 /// xor_supply_delta = (√((buy_function(xor_total_supply) * 2 / price_change_coeff)²
 ///                    + 8 * buy_price_usd / price_change_coeff) - 2 * buy_function(xor_total_supply)
 ///                    / price_change_coeff) / 2
+/// ```
 const tbcBuyPrice = (
   collateralAssetId: string,
   amount: FPNumber,
@@ -527,10 +582,13 @@ const xstQuote = (
 
 // XYK quote
 
-// input token is xor, user indicates desired input amount
-// x - xor reserve
-// y - other token reserve
-// x_in - desired input amount (xor)
+/**
+ * Input token is xor, user indicates desired input amount
+ * @param x - xor reserve
+ * @param y - other token reserve
+ * @param xIn x_in - desired input amount (xor)
+ * @returns QuoteResult
+ */
 const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   const x1 = xIn.mul(ONE.sub(XYK_FEE));
   const yOut = safeDivide(x1.mul(y), x.add(x1));
@@ -548,10 +606,13 @@ const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   };
 };
 
-// output token is xor, user indicates desired input amount
-// x - other token reserve
-// y - xor reserve
-// x_in - desired input amount (other token)
+/**
+ * Output token is xor, user indicates desired input amount
+ * @param x - other token reserve
+ * @param y - xor reserve
+ * @param xIn - desired input amount (other token)
+ * @returnsQuoteResult
+ */
 const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   const y1 = safeDivide(xIn.mul(y), x.add(xIn));
   const yOut = y1.mul(ONE.sub(XYK_FEE));
@@ -569,10 +630,13 @@ const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   };
 };
 
-// input token is xor, user indicates desired output amount
-// x - xor reserve
-// y - other token reserve
-// y_out - desired output amount (other token)
+/**
+ * Input token is xor, user indicates desired output amount
+ * @param x - xor reserve
+ * @param y - other token reserve
+ * @param yOut - desired output amount (other token)
+ * @returns QuoteResult
+ */
 const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
     throw new Error(`xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `);
@@ -594,10 +658,13 @@ const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   };
 };
 
-// output token is xor, user indicates desired output amount
-// x - other token reserve
-// y - xor reserve
-// y_out - desired output amount (xor)
+/**
+ * Output token is xor, user indicates desired output amount
+ * @param x - other token reserve
+ * @param y - xor reserve
+ * @param yOut - desired output amount (xor)
+ * @returns 
+ */
 const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   const y1 = safeDivide(yOut, ONE.sub(XYK_FEE));
 
@@ -667,7 +734,12 @@ const quotePrimaryMarket = (
   }
 };
 
-// xor is output
+/**
+ * Determines the share of a swap that should be exchanged in the primary market
+ * (i.e., the multi-collateral bonding curve pool) based on the current reserves of
+ * the base asset and the collateral asset in the secondary market (e.g., an XYK pool)
+ * provided the base asset is being bought.
+ */
 const primaryMarketAmountBuyingXor = (
   collateralAssetId: string,
   amount: FPNumber,
@@ -722,7 +794,12 @@ const primaryMarketAmountBuyingXor = (
   }
 };
 
-// xor is input
+/**
+ * Determines the share of a swap that should be exchanged in the primary market
+ * (i.e. the multi-collateral bonding curve pool) based on the current reserves of
+ * the base asset and the collateral asset in the secondary market (e.g. an XYK pool)
+ * provided the base asset is being sold.
+ */
 const primaryMarketAmountSellingXor = (
   collateralAssetId: string,
   amount: FPNumber,
@@ -795,6 +872,9 @@ const extremum = (isDesiredInput: boolean): FPNumber => {
   }
 };
 
+/**
+ * Implements the "smart" split algorithm.
+ */
 const smartSplit = (
   inputAssetId: string,
   outputAssetId: string,
@@ -889,6 +969,10 @@ const smartSplit = (
   };
 };
 
+/**
+ * Computes the optimal distribution across available liquidity sources to exectute the requested trade
+ * given the input and output assets, the trade amount and a liquidity sources filter.
+ */
 const quoteSingle = (
   inputAssetId: string,
   outputAssetId: string,
