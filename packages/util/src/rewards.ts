@@ -108,7 +108,7 @@ export function prepareRewardsInfo (limit: CodecString | number, total: CodecStr
 export function getAccountMarketMakerInfoObservable (apiRx: ApiRx, accountAddress: string): Observable<AccountMarketMakerInfo> {
   return apiRx.query.vestedRewards.marketMakersRegistry(accountAddress).pipe(
     map((data) => ({
-      count: (data as any).count,// u32;
+      count: +(data as any).count,// u32;
       volume: new FPNumber((data as any).volume).toCodecString()// Balance
     }))
   )
