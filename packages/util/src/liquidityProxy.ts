@@ -276,50 +276,53 @@ const tbcSellPrice = (
   }
 };
 
-/// Calculates and returns the current buy price, assuming that input is the collateral asset and output is the main asset.
-///
-/// To calculate price for a specific amount of assets (with desired main asset output),
-/// one needs to calculate the area of a right trapezoid.
-///
-/// `AB` : buy_function(xor_total_supply)
-/// `CD` : buy_function(xor_total_supply + xor_supply_delta)
-///
-/// ```nocompile
-///          ..  C
-///        ..  │
-///   B  ..    │
-///     │   S  │
-///     │      │
-///   A └──────┘ D
-/// ```
-///
-/// 1) Amount of collateral tokens needed in USD to get `xor_supply_delta`(AD) XOR tokens
-/// ```nocompile
-/// S = ((AB + CD) / 2) * AD
-///
-/// or
-///
-/// buy_price_usd = ((buy_function(xor_total_supply) + buy_function(xor_total_supply + xor_supply_delta)) / 2) * xor_supply_delta
-/// ```
-/// 2) Amount of XOR tokens received by depositing `S` collateral tokens in USD:
-///
-/// Solving right trapezoid area formula with respect to `xor_supply_delta` (AD),
-/// actual square `S` is known and represents collateral amount.
-/// We have a quadratic equation:
-/// ```nocompile
-/// buy_function(x) = price_change_coefficient * x + initial_price
-/// Assume `M` = 1 / price_change_coefficient = 1 / 1337
-///
-/// M * AD² + 2 * AB * AD - 2 * S = 0
-/// equation with two solutions, taking only positive one:
-/// AD = (√((AB * 2 / M)² + 8 * S / M) - 2 * AB / M) / 2
-///
-/// or
-///
-/// xor_supply_delta = (√((buy_function(xor_total_supply) * 2 / price_change_coeff)²
-///                    + 8 * buy_price_usd / price_change_coeff) - 2 * buy_function(xor_total_supply)
-///                    / price_change_coeff) / 2
-/// ```
+
+
+/**
+Calculates and returns the current buy price, assuming that input is the collateral asset and output is the main asset.
+
+To calculate price for a specific amount of assets (with desired main asset output),
+one needs to calculate the area of a right trapezoid.
+
+`AB` : buy_function(xor_total_supply)
+`CD` : buy_function(xor_total_supply + xor_supply_delta)
+
+```nocompile
+         ..  C
+       ..  │
+  B  ..    │
+    │   S  │
+    │      │
+  A └──────┘ D
+```
+
+1) Amount of collateral tokens needed in USD to get `xor_supply_delta`(AD) XOR tokens
+S = ((AB + CD) / 2) * AD
+
+or
+
+buy_price_usd = ((buy_function(xor_total_supply) + buy_function(xor_total_supply + xor_supply_delta)) / 2) * xor_supply_delta
+
+2) Amount of XOR tokens received by depositing `S` collateral tokens in USD:
+
+Solving right trapezoid area formula with respect to `xor_supply_delta` (AD),
+actual square `S` is known and represents collateral amount.
+We have a quadratic equation:
+
+buy_function(x) = price_change_coefficient * x + initial_price
+
+Assume `M` = 1 / price_change_coefficient = 1 / 1337
+
+M * AD² + 2 * AB * AD - 2 * S = 0
+equation with two solutions, taking only positive one:
+AD = (√((AB * 2 / M)² + 8 * S / M) - 2 * AB / M) / 2
+
+or
+
+xor_supply_delta = (√((buy_function(xor_total_supply) * 2 / price_change_coeff)²
+                   + 8 * buy_price_usd / price_change_coeff) - 2 * buy_function(xor_total_supply)
+                   / price_change_coeff) / 2
+ */
 const tbcBuyPrice = (
   collateralAssetId: string,
   amount: FPNumber,
@@ -611,7 +614,7 @@ const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
  * @param x - other token reserve
  * @param y - xor reserve
  * @param xIn - desired input amount (other token)
- * @returnsQuoteResult
+ * @returns QuoteResult
  */
 const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   const y1 = safeDivide(xIn.mul(y), x.add(xIn));
@@ -663,7 +666,7 @@ const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
  * @param x - other token reserve
  * @param y - xor reserve
  * @param yOut - desired output amount (xor)
- * @returns 
+ * @returns QuoteResult
  */
 const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   const y1 = safeDivide(yOut, ONE.sub(XYK_FEE));
@@ -1313,20 +1316,29 @@ const quoteWithoutImpactSingle = (
 
 // REWARDS
 
-/// Calculate amount of PSWAP rewarded for collateralizing XOR in TBC.
-///
-/// ideal_reserves_before = sell_function(0 to xor_total_supply_before_trade)
-/// ideal_reserves_after = sell_function(0 to xor_total_supply_after_trade)
-/// actual_reserves_before = collateral_asset_reserves * collateral_asset_usd_price
-/// actual_reserves_after = actual_reserves_before + collateral_asset_input_amount * collateral_asset_usd_price
-///
-/// unfunded_liabilities = (ideal_reserves_before - actual_reserves_before)
-/// a = unfunded_liabilities / ideal_reserves_before
-/// b = unfunded_liabilities / ideal_reserves_after
-/// P = initial_pswap_rewards
-/// N = enabled reserve currencies except PSWAP and VAL
-///
-/// reward_pswap = ((a - b) * mean(a, b) * P) / N
+/**
+ * Calculate amount of PSWAP rewarded for collateralizing XOR in TBC.
+ * 
+ * `ideal_reserves_before = sell_function(0 to xor_total_supply_before_trade)`
+ * 
+ * `ideal_reserves_after = sell_function(0 to xor_total_supply_after_trade)`
+ * 
+ * `actual_reserves_before = collateral_asset_reserves * collateral_asset_usd_price`
+ * 
+ * `actual_reserves_after = actual_reserves_before + collateral_asset_input_amount * collateral_asset_usd_price`
+ * 
+ * `unfunded_liabilities = (ideal_reserves_before - actual_reserves_before)`
+ * 
+ * `a = unfunded_liabilities / ideal_reserves_before`
+ * 
+ * `b = unfunded_liabilities / ideal_reserves_after`
+ * 
+ * `P = initial_pswap_rewards`
+ * 
+ * `N = enabled reserve currencies except PSWAP and VAL`
+ * 
+ * `reward_pswap = ((a - b) * mean(a, b) * P) / N`
+ */
 const checkRewards = (collateralAssetId: string, xorAmount: FPNumber, payload: QuotePayload): Array<LPRewardsInfo> => {
   if ([PSWAP, VAL].includes(collateralAssetId)) {
     return [];
