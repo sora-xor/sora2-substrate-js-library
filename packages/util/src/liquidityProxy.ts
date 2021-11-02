@@ -31,6 +31,7 @@ const incentivizedCurrenciesNum = new FPNumber(2);
 const initialPswapTbcRewardsAmount = new FPNumber(2500000000);
 
 const ASSETS_HAS_XYK_POOL = [PSWAP, VAL, DAI, ETH];
+const ONE = new FPNumber(1);
 
 export type QuotePaths = {
   [key: string]: Array<LiquiditySourceTypes>;
@@ -115,7 +116,7 @@ const safeQuoteResult = (amount: FPNumber, market: LiquiditySourceTypes): QuoteR
 // TBC quote
 const tbcReferencePrice = (assetId: string, payload: QuotePayload): FPNumber => {
   if (assetId === DAI) {
-    return new FPNumber(1);
+    return ONE;
   } else {
     const xorPrice = FPNumber.fromCodecValue(payload.prices[XOR]);
     const assetPrice = FPNumber.fromCodecValue(payload.prices[assetId]);
@@ -260,7 +261,7 @@ const tbcSellPriceWithFee = (
     };
   } else {
     const inputAmount = tbcSellPrice(collateralAssetId, amount, isDesiredInput, payload);
-    const inputAmountWithFee = safeDivide(inputAmount, new FPNumber(1).sub(newFee));
+    const inputAmountWithFee = safeDivide(inputAmount, ONE.sub(newFee));
 
     return {
       amount: inputAmountWithFee,
@@ -300,7 +301,7 @@ const tbcBuyPriceWithFee = (
       ],
     };
   } else {
-    const amountWithFee = safeDivide(amount, new FPNumber(1).sub(TBC_FEE));
+    const amountWithFee = safeDivide(amount, ONE.sub(TBC_FEE));
     const inputAmount = tbcBuyPrice(collateralAssetId, amountWithFee, isDesiredInput, payload);
     const rewards = checkRewards(collateralAssetId, amount, payload);
 
@@ -339,12 +340,12 @@ const tbcQuote = (
 // XST quote
 const xstReferencePrice = (assetId: string, payload: QuotePayload): FPNumber => {
   if (assetId === DAI || assetId === XSTUSD) {
-    return new FPNumber(1);
+    return ONE;
   } else {
     const avgPrice = FPNumber.fromCodecValue(payload.prices[assetId]);
 
     if (assetId === XOR) {
-      return FPNumber.max(avgPrice, new FPNumber(100));
+      return FPNumber.max(avgPrice, FPNumber.HUNDRED);
     }
 
     return avgPrice;
@@ -403,7 +404,7 @@ const xstBuyPriceWithFee = (amount: FPNumber, isDesiredInput: boolean, payload: 
       ],
     };
   } else {
-    const fpFee = new FPNumber(1).sub(XST_FEE);
+    const fpFee = ONE.sub(XST_FEE);
     const amountWithFee = safeDivide(amount, fpFee);
     const input = xstBuyPrice(amountWithFee, isDesiredInput, payload);
 
@@ -439,7 +440,7 @@ const xstSellPriceWithFee = (amount: FPNumber, isDesiredInput: boolean, payload:
     };
   } else {
     const inputAmount = xstSellPrice(amount, isDesiredInput, payload);
-    const inputAmountWithFee = safeDivide(inputAmount, new FPNumber(1).sub(XST_FEE));
+    const inputAmountWithFee = safeDivide(inputAmount, ONE.sub(XST_FEE));
 
     return {
       amount: inputAmountWithFee,
@@ -479,7 +480,7 @@ const xstQuote = (
 // y - other token reserve
 // x_in - desired input amount (xor)
 const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
-  const x1 = xIn.mul(new FPNumber(1).sub(XYK_FEE));
+  const x1 = xIn.mul(ONE.sub(XYK_FEE));
   const yOut = safeDivide(x1.mul(y), x.add(x1));
 
   return {
@@ -501,7 +502,7 @@ const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
 // x_in - desired input amount (other token)
 const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   const y1 = safeDivide(xIn.mul(y), x.add(xIn));
-  const yOut = y1.mul(new FPNumber(1).sub(XYK_FEE));
+  const yOut = y1.mul(ONE.sub(XYK_FEE));
 
   return {
     amount: yOut,
@@ -526,7 +527,7 @@ const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   }
 
   const x1 = safeDivide(x.mul(yOut), y.sub(yOut));
-  const xIn = safeDivide(x1, new FPNumber(1).sub(XYK_FEE));
+  const xIn = safeDivide(x1, ONE.sub(XYK_FEE));
 
   return {
     amount: xIn,
@@ -546,7 +547,7 @@ const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
 // y - xor reserve
 // y_out - desired output amount (xor)
 const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
-  const y1 = safeDivide(yOut, new FPNumber(1).sub(XYK_FEE));
+  const y1 = safeDivide(yOut, ONE.sub(XYK_FEE));
 
   if (FPNumber.isGreaterThanOrEqualTo(y1, y)) {
     throw new Error(`xykQuote: output amount ${y1.toString()} is larger than reserves ${y.toString()}. `);
@@ -1046,21 +1047,21 @@ const xykQuoteWithoutImpact = (
 
     if (isDesiredInput) {
       if (isXorInput) {
-        const amountWithoutFee = amount.mul(new FPNumber(1).sub(XYK_FEE));
+        const amountWithoutFee = amount.mul(ONE.sub(XYK_FEE));
 
         return amountWithoutFee.mul(price);
       } else {
         const amountWithFee = amount.mul(price);
 
-        return amountWithFee.mul(new FPNumber(1).sub(XYK_FEE));
+        return amountWithFee.mul(ONE.sub(XYK_FEE));
       }
     } else {
       if (isXorInput) {
         const amountWithoutFee = safeDivide(amount, price);
 
-        return safeDivide(amountWithoutFee, new FPNumber(1).sub(XYK_FEE));
+        return safeDivide(amountWithoutFee, ONE.sub(XYK_FEE));
       } else {
-        const amountWithFee = safeDivide(amount, new FPNumber(1).sub(XYK_FEE));
+        const amountWithFee = safeDivide(amount, ONE.sub(XYK_FEE));
 
         return safeDivide(amountWithFee, price);
       }
@@ -1104,7 +1105,7 @@ const tbcQuoteWithoutImpact = (
         return collateralOut;
       } else {
         const xorIn = safeDivide(amount, xorPrice);
-        const inputAmountWithFee = safeDivide(xorIn, new FPNumber(1).sub(newFee));
+        const inputAmountWithFee = safeDivide(xorIn, ONE.sub(newFee));
 
         return inputAmountWithFee;
       }
@@ -1117,7 +1118,7 @@ const tbcQuoteWithoutImpact = (
 
         return xorOut.sub(feeAmount);
       } else {
-        const outputAmountWithFee = safeDivide(amount, new FPNumber(1).sub(TBC_FEE));
+        const outputAmountWithFee = safeDivide(amount, ONE.sub(TBC_FEE));
         const collateralIn = outputAmountWithFee.mul(xorPrice);
 
         return collateralIn;
