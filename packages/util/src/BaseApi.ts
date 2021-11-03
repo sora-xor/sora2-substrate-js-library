@@ -60,7 +60,9 @@ export class BaseApi {
     [Operation.Transfer]: '0',
     [Operation.ClaimVestedRewards]: '0',
     [Operation.ClaimLiquidityProvisionRewards]: '0',
-    [Operation.ClaimExternalRewards]: '0'
+    [Operation.ClaimExternalRewards]: '0',
+    [Operation.ApproveAsMulti]: '0',
+    [Operation.CancelAsMulti]: '0'
   } as NetworkFeesObject
 
   protected readonly prefix = 69
@@ -298,7 +300,6 @@ export class BaseApi {
             history[amountKey] = amountFormatted
             this.saveHistory(history)
           }
-
           if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
             history.hash = first(data.toJSON())
             this.saveHistory(history)
@@ -518,7 +519,9 @@ export enum Operation {
   /** it's used for calc network fee */
   ClaimExternalRewards = 'ClaimExternalRewards',
   TransferAll = 'TransferAll', // Batch with transfers
-  SwapAndSend = 'SwapAndSend'
+  SwapAndSend = 'SwapAndSend',
+  ApproveAsMulti = 'ApproveAsMulti',
+  CancelAsMulti = 'CancelAsMulti'
 }
 
 export interface History {
@@ -543,4 +546,18 @@ export interface History {
   liquidityProviderFee?: CodecString;
   soraNetworkFee?: CodecString;
   payload?: any; // can be used to integrate with third-party services
+}
+
+export interface Timepoint {
+  height: string; // block number
+  index: string; // transaction index
+}
+
+export interface Multisig {
+  accountId: string;
+  callHash: string;
+  timepoint: Timepoint;
+  deposit: string;
+  depositor: string;
+  approvals: Array<string>;
 }

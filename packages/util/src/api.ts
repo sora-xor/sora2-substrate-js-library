@@ -27,7 +27,7 @@ import {
   getLiquidityBalance
 } from './assets'
 import { decrypt, encrypt } from './crypto'
-import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
+import { BaseApi, Operation, KeyringType, isBridgeOperation, History, Multisig, Timepoint } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes, QuotePayload } from './swap'
 import { RewardingEvents, RewardsInfo, RewardInfo, isClaimableReward, containsRewardsForEvents, prepareRewardInfo, prepareRewardsInfo } from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
@@ -1472,11 +1472,154 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get Multisigs account by Multisig Account Address
-   * @param address
+   * Get Multisigs operations by Multisig Account Address
+   * @param address Multisig account address
    */
-  public async getMultisigs (address: string): Promise<any> {
-    return await this.api.query.multisig.multisigs.entries(address);
+  public async getMultisigs (address: string): Promise<Array<Multisig> | null> {
+    const multisig = await this.api.query.multisig.multisigs.entries(address)
+
+    if (multisig) {
+      return multisig.map(item => {
+        const multisigInfo = item[0].args;
+        const multisigBody = item[1].toJSON();
+        return {
+          accountId: multisigInfo[0].toString(),
+          callHash: multisigInfo[1].toString(),
+          timepoint: {
+            height: multisigBody['when']['height'].toString(),
+            index: multisigBody['when']['index'].toString(),
+          },
+          deposit: multisigBody['deposit'].toString(),
+          depositor: multisigBody['depositor'].toString(),
+          approvals: multisigBody['approvals'].toString(),
+        };
+      })
+    }
+
+    return null;
+  }
+
+  /**
+   * Get the base amount of currency needed to reserve for creating a multisig execution or to store a dispatch call for later.
+   */
+  public async getDepositBase (): Promise<string | null> {
+    return this.api.consts.multisig.depositBase.toString();
+  }
+
+  /**
+   * Get the amount of currency needed per unit threshold when creating a multisig execution.
+   */
+  public async getDepositFactor (): Promise<string | null> {
+    return this.api.consts.multisig.depositFactor.toString();
+  }
+
+  /**
+   * Get the maximum amount of signatories allowed in the multisig.
+   */
+  public async getMaxSignatories (): Promise<string | null> {
+    return this.api.consts.multisig.maxSignatories.toString();
+  }
+
+  /**
+   * Approve as Multisignature
+   * Register approval for a dispatch to be made from a deterministic composite account if approved by a total of threshold - 1 of other_signatories.
+   * Payment: DepositBase will be reserved if this is the first approval, plus threshold times DepositFactor. It is returned once this dispatch happens or is cancelled.
+   * @param threshold The total number of approvals for this dispatch before it is executed.
+   * @param otherSignatories The accounts (other than the sender) who can approve this dispatch. May not be empty.
+   * @param timepoint If this is the first approval, then this must be None. If it is not the first approval, then it must be Some, with the timepoint (block number and transaction index) of the first approval transaction.
+   * @param callHash The hash of the call to be executed.
+   * @param maxWeight
+   */
+  public async approveAsMulti (threshold: number, otherSignatories: Array<string>, timepoint: Timepoint | null, isFirstApproval: boolean, callHash: string, maxWeight: number): Promise<void> {
+    await this.submitExtrinsic(
+      this.api.tx.multisig.approveAsMulti(threshold, otherSignatories, isFirstApproval ? null: timepoint, callHash, maxWeight),
+      this.account.pair,
+      {
+        type: Operation.ApproveAsMulti,
+        payload: {
+          threshold: threshold,
+          otherSignatories: otherSignatories,
+          timepoint: timepoint,
+          callHash: callHash,
+          maxWeight: maxWeight
+        }
+      }
+    );
+  }
+
+  /**
+   * Approve as Multisignature
+   * Register approval for a dispatch to be made from a deterministic composite account if approved by a total of threshold - 1 of other_signatories.
+   * If there are enough, then dispatch the call.
+   * Payment: DepositBase will be reserved if this is the first approval, plus threshold times DepositFactor. It is returned once this dispatch happens or is cancelled.
+   * NOTE: Unless this is the final approval, you will generally want to use approve_as_multi instead, since it only requires a hash of the call.
+   * Result is equivalent to the dispatched result if threshold is exactly 1. Otherwise on success, result is Ok and the result from the interior call, if it was executed, may be found in the deposited MultisigExecuted event.
+   * @param threshold The total number of approvals for this dispatch before it is executed.
+   * @param otherSignatories The accounts (other than the sender) who can approve this dispatch. May not be empty.
+   * @param timepoint If this is the first approval, then this must be None. If it is not the first approval, then it must be Some, with the timepoint (block number and transaction index) of the first approval transaction.
+   * @param call The call to be executed.
+   * @param storeCall
+   * @param maxWeight
+   */
+  public async asMulti (threshold: number, otherSignatories: Array<string>, timepoint: Timepoint | null, isFirstApproval: boolean, call: string, storeCall: boolean, maxWeight: number): Promise<void> {
+    await this.submitExtrinsic(
+      this.api.tx.multisig.asMulti(threshold, otherSignatories, isFirstApproval ? null: timepoint, call, storeCall, maxWeight),
+      this.account.pair,
+      {
+        type: Operation.ApproveAsMulti,
+        payload: {
+          threshold: threshold,
+          otherSignatories: otherSignatories,
+          timepoint: timepoint,
+          call: call,
+          storeCall: storeCall,
+          maxWeight: maxWeight
+        }
+      }
+    );
+  }
+
+  /**
+   * Immediately dispatch a multi-signature call using a single approval from the caller.
+   * Result is equivalent to the dispatched result.
+   * @param otherSignatories The accounts (other than the sender) who can approve this dispatch. May not be empty.
+   * @param call The call to be executed.
+   */
+  public async asMultiThreshold1 (otherSignatories: Array<string>, call: string): Promise<void> {
+    await this.submitExtrinsic(
+      this.api.tx.multisig.asMultiThreshold1(otherSignatories, call),
+      this.account.pair,
+      {
+        type: Operation.ApproveAsMulti,
+        payload: {
+          otherSignatories: otherSignatories,
+          call: call
+        }
+      }
+    );
+  }
+
+  /**
+   * Immediately dispatch a multi-signature call using a single approval from the caller.
+   * @param threshold The total number of approvals for this dispatch before it is executed.
+   * @param otherSignatories The accounts (other than the sender) who can approve this dispatch. May not be empty.
+   * @param timepoint The timepoint (block number and transaction index) of the first approval transaction for this dispatch.
+   * @param callHash The hash of the call to be executed.
+   */
+  public async cancelAsMulti (threshold: number, otherSignatories: Array<string>, timepoint: Timepoint, callHash: string): Promise<void> {
+    await this.submitExtrinsic(
+      this.api.tx.multisig.cancelAsMulti(threshold, otherSignatories, timepoint, callHash),
+      this.account.pair,
+      {
+        type: Operation.CancelAsMulti,
+        payload: {
+          threshold: threshold,
+          otherSignatories: otherSignatories,
+          timepoint: timepoint,
+          callHash: callHash
+        }
+      }
+    );
   }
 
   /**
