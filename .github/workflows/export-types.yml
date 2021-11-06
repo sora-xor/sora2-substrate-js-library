@@ -1,0 +1,43 @@
+name: update-types
+on:
+  workflow_dispatch:
+
+jobs:
+  update-types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: update types
+        run: |
+          yarn export-types:dev
+          yarn export-types:test
+          yarn export-types:stage1
+          yarn export-types:stage2
+          yarn export-types:prod
+      
+      - name: diff check
+        id: diff-check
+        run: |
+          echo "types-diff=$(git diff HEAD | wc -l)" >> $GITHUB_ENV
+
+      - name: bump version # if types changed
+        if: ${{ env.types-diff > 0 }}
+        run: yarn bump-version
+
+      - name: commit and pr # if types changed
+        if: ${{ env.types-diff > 0 }}
+        uses: peter-evans/create-pull-request@v3
+        with:
+          branch: types-autoupdate
+          title: 'Types autoupdate'
+
+      - name: send message to telegram # if types changed
+        if: ${{ env.types-diff > 0 }}
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            New pull request created to update types in sora2-substrate-js-library
+            Repository: ${{ github.repository }}
+            See changes: https://github.com/${{ github.repository }}/pulls
