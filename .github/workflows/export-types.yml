@@ -1,6 +1,7 @@
 name: update-types
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '30 * * * *'
 
 jobs:
   update-types:
