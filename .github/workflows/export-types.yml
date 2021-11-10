@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: install requirements
+        run: yarn install
+
       - name: update types
         run: |
           yarn export-types:dev
