@@ -11,6 +11,9 @@ jobs:
       - name: install requirements
         run: yarn install
 
+      - name: build
+        run: yarn build
+
       - name: update types
         run: |
           yarn export-types:dev
