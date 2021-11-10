@@ -9,14 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: install requirements
-        run: |
-          export DEBIAN_FRONTEND=noninteractive
-          apt update
-          apt install -y curl gnupg
-          curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-          echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-          apt update
-          apt install -y yarn
+        run: yarn install
 
       - name: update types
         run: |
