@@ -11,6 +11,9 @@ jobs:
       - name: install requirements
         run: yarn install
 
+      - name: build
+        run: yarn build
+
       - name: update types
         run: |
           yarn export-types:dev
@@ -18,7 +21,7 @@ jobs:
           yarn export-types:stage1
           yarn export-types:stage2
           yarn export-types:prod
-      
+
       - name: diff check
         id: diff-check
         run: |
