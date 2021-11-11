@@ -21,7 +21,7 @@ jobs:
           yarn export-types:stage1
           yarn export-types:stage2
           yarn export-types:prod
-      
+
       - name: diff check
         id: diff-check
         run: |
