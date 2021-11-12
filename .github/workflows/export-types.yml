@@ -41,8 +41,10 @@ jobs:
           body: "Types checked and update is required"
           reviewers: |
             stefashkaa
-            Cre-eD
+            Nikita-Polyakov
             pgolovkin
+            alexnatalia
+            RustemYuzlibaev
 
       - name: send message to telegram # if types changed
         if: ${{ env.types-diff > 0 }}
