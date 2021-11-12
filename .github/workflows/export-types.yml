@@ -18,8 +18,7 @@ jobs:
         run: |
           yarn export-types:dev
           yarn export-types:test
-          yarn export-types:stage1
-          yarn export-types:stage2
+          yarn export-types:stage
           yarn export-types:prod
 
       - name: diff check
