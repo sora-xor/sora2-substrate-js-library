@@ -3,6 +3,8 @@ on:
   schedule:
     - cron: '30 * * * *'
 
+  workflow_dispatch:
+
 jobs:
   update-types:
     runs-on: ubuntu-latest
@@ -18,8 +20,7 @@ jobs:
         run: |
           yarn export-types:dev
           yarn export-types:test
-          yarn export-types:stage1
-          yarn export-types:stage2
+          yarn export-types:stage
           yarn export-types:prod
 
       - name: diff check
