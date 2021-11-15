@@ -52,4 +52,4 @@ jobs:
           message: |
             New pull request created to update types in sora2-substrate-js-library
             Repository: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/pulls
+            See changes: ${{ steps.pr.outputs.pull-request-url }}
