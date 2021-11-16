@@ -30,6 +30,7 @@ jobs:
         run: yarn bump-version
 
       - name: commit and pr # if types changed
+        id: pr
         if: ${{ env.types-diff > 0 }}
         uses: peter-evans/create-pull-request@v3
         with:
@@ -52,4 +53,4 @@ jobs:
           message: |
             New pull request created to update types in sora2-substrate-js-library
             Repository: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/pulls
+            See changes: ${{ steps.pr.outputs.pull-request-url }}
