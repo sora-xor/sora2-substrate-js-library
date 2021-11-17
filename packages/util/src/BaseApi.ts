@@ -549,8 +549,8 @@ export interface History {
 }
 
 export interface Timepoint {
-  height: string; // block number
-  index: string; // transaction index
+  height: number; // block number
+  index: number; // transaction index
 }
 
 export interface Multisig {

@@ -1486,8 +1486,8 @@ export class Api extends BaseApi {
           accountId: multisigInfo[0].toString(),
           callHash: multisigInfo[1].toString(),
           timepoint: {
-            height: multisigBody['when']['height'].toString(),
-            index: multisigBody['when']['index'].toString(),
+            height: multisigBody['when']['height'],
+            index: multisigBody['when']['index'],
           },
           deposit: multisigBody['deposit'].toString(),
           depositor: multisigBody['depositor'].toString(),
