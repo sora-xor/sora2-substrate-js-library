@@ -70,10 +70,6 @@ export type QuotePrimaryMarketResult = {
 }
 
 // UTILS
-const throwError = (message: string): never => {
-  throw new Error(`[liquidityProxy]: ${message}`);
-};
-
 const toFp = (item: CodecString): FPNumber => FPNumber.fromCodecValue(item);
 
 const getMaxPositive = (value: FPNumber) => FPNumber.max(value, FPNumber.ZERO);
@@ -101,7 +97,7 @@ const getXykReserves = (inputAssetId: string, payload: QuotePayload): [FPNumber,
 
 const safeDivide = (value: FPNumber, divider: FPNumber): FPNumber => {
   if (divider.isZero() || divider.isNaN()) {
-    throwError(`Division error: ${value.toString()} / ${divider.toString()}`)
+    throw new Error(`[liquidityProxy] Division error: ${value.toString()} / ${divider.toString()}`)
   } else {
     return value.div(divider);
   }
@@ -225,7 +221,7 @@ const sellPenalty = (collateralAssetId: string, payload: QuotePayload): FPNumber
   const collateralReservesPrice = actualReservesReferencePrice(collateralAssetId, payload);
 
   if (collateralReservesPrice.isZero()) {
-    throwError(`TBC: Not enough collateral reserves ${collateralAssetId}`);
+    throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAssetId}`);
   }
 
   const collateralizedFraction = safeDivide(collateralReservesPrice, idealReservesPrice);
@@ -265,13 +261,13 @@ const tbcSellPrice = (
     const outputCollateral = safeDivide(amount.mul(collateralSupply), xorSupply.add(amount));
 
     if (FPNumber.isGreaterThan(outputCollateral, collateralSupply)) {
-      throwError(`TBC: Not enough collateral reserves ${collateralAssetId}`);
+      throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAssetId}`);
     }
 
     return outputCollateral;
   } else {
     if (FPNumber.isGreaterThan(amount, collateralSupply)) {
-      throwError(`TBC: Not enough collateral reserves ${collateralAssetId}`);
+      throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAssetId}`);
     }
 
     const outputXor = safeDivide(xorSupply.mul(amount), collateralSupply.sub(amount));
@@ -646,7 +642,7 @@ const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
  */
 const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
-    throwError(`xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `);
+    throw new Error(`[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `);
   }
 
   const x1 = safeDivide(x.mul(yOut), y.sub(yOut));
@@ -676,7 +672,7 @@ const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   const y1 = safeDivide(yOut, ONE.sub(XYK_FEE));
 
   if (FPNumber.isGreaterThanOrEqualTo(y1, y)) {
-    throwError(`xykQuote: output amount ${y1.toString()} is larger than reserves ${y.toString()}.`);
+    throw new Error(`[liquidityProxy] xykQuote: output amount ${y1.toString()} is larger than reserves ${y.toString()}.`);
   }
 
   const xIn = safeDivide(x.mul(y1), y.sub(y1));
@@ -992,7 +988,7 @@ const quoteSingle = (
   const sources = listLiquiditySources(inputAssetId, outputAssetId, selectedSources, paths);
 
   if (!sources.length) {
-    throwError(`Path doesn't exist: [${inputAssetId}, ${outputAssetId}]`);
+    throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAssetId}, ${outputAssetId}]`);
   }
 
   if (sources.length === 1) {
@@ -1009,7 +1005,7 @@ const quoteSingle = (
         return xstQuote(inputAssetId, amount, isDesiredInput, payload);
       }
       default: {
-        throwError(`Unexpected liquidity source: ${sources[0]}`);
+        throw new Error(`[liquidityProxy] Unexpected liquidity source: ${sources[0]}`);
       }
     }
   } else if (sources.length === 2) {
@@ -1020,10 +1016,10 @@ const quoteSingle = (
     ) {
       return smartSplit(inputAssetId, outputAssetId, amount, isDesiredInput, payload);
     } else {
-      throwError('Unsupported operation');
+      throw new Error('[liquidityProxy] Unsupported operation');
     }
   } else {
-    throwError('Unsupported operation');
+    throw new Error('[liquidityProxy] Unsupported operation');
   }
 };
 
