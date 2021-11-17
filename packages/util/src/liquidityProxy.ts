@@ -97,7 +97,7 @@ const getXykReserves = (inputAssetId: string, payload: QuotePayload): [FPNumber,
 
 const safeDivide = (value: FPNumber, divider: FPNumber): FPNumber => {
   if (divider.isZero() || divider.isNaN()) {
-    throw new Error(`Division error: ${value.toString()} / ${divider.toString()}`);
+    throw new Error(`[liquidityProxy] Division error: ${value.toString()} / ${divider.toString()}`)
   } else {
     return value.div(divider);
   }
@@ -221,7 +221,7 @@ const sellPenalty = (collateralAssetId: string, payload: QuotePayload): FPNumber
   const collateralReservesPrice = actualReservesReferencePrice(collateralAssetId, payload);
 
   if (collateralReservesPrice.isZero()) {
-    throw new Error(`TBC: Not enough collateral reserves ${collateralAssetId}`);
+    throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAssetId}`);
   }
 
   const collateralizedFraction = safeDivide(collateralReservesPrice, idealReservesPrice);
@@ -261,13 +261,13 @@ const tbcSellPrice = (
     const outputCollateral = safeDivide(amount.mul(collateralSupply), xorSupply.add(amount));
 
     if (FPNumber.isGreaterThan(outputCollateral, collateralSupply)) {
-      throw new Error(`TBC: Not enough collateral reserves ${collateralAssetId}`);
+      throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAssetId}`);
     }
 
     return outputCollateral;
   } else {
     if (FPNumber.isGreaterThan(amount, collateralSupply)) {
-      throw new Error(`TBC: Not enough collateral reserves ${collateralAssetId}`);
+      throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAssetId}`);
     }
 
     const outputXor = safeDivide(xorSupply.mul(amount), collateralSupply.sub(amount));
@@ -642,7 +642,7 @@ const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
  */
 const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
-    throw new Error(`xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `);
+    throw new Error(`[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `);
   }
 
   const x1 = safeDivide(x.mul(yOut), y.sub(yOut));
@@ -672,7 +672,7 @@ const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   const y1 = safeDivide(yOut, ONE.sub(XYK_FEE));
 
   if (FPNumber.isGreaterThanOrEqualTo(y1, y)) {
-    throw new Error(`xykQuote: output amount ${y1.toString()} is larger than reserves ${y.toString()}. `);
+    throw new Error(`[liquidityProxy] xykQuote: output amount ${y1.toString()} is larger than reserves ${y.toString()}.`);
   }
 
   const xIn = safeDivide(x.mul(y1), y.sub(y1));
@@ -988,7 +988,7 @@ const quoteSingle = (
   const sources = listLiquiditySources(inputAssetId, outputAssetId, selectedSources, paths);
 
   if (!sources.length) {
-    throw new Error("Path doesn't exist");
+    throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAssetId}, ${outputAssetId}]`);
   }
 
   if (sources.length === 1) {
@@ -1005,7 +1005,7 @@ const quoteSingle = (
         return xstQuote(inputAssetId, amount, isDesiredInput, payload);
       }
       default: {
-        throw new Error(`Unexpected liquidity source: ${sources[0]}`);
+        throw new Error(`[liquidityProxy] Unexpected liquidity source: ${sources[0]}`);
       }
     }
   } else if (sources.length === 2) {
@@ -1016,10 +1016,10 @@ const quoteSingle = (
     ) {
       return smartSplit(inputAssetId, outputAssetId, amount, isDesiredInput, payload);
     } else {
-      throw new Error('Unsupported operation');
+      throw new Error('[liquidityProxy] Unsupported operation');
     }
   } else {
-    throw new Error('Unsupported operation');
+    throw new Error('[liquidityProxy] Unsupported operation');
   }
 };
 
@@ -1066,109 +1066,120 @@ export const quote = (
   paths: QuotePaths,
   payload: QuotePayload
 ): SwapResult => {
-  const amount = new FPNumber(value);
+  try {
+    const amount = new FPNumber(value);
 
-  if (isDirectExchange(inputAssetId, outputAssetId)) {
-    const result = quoteSingle(inputAssetId, outputAssetId, amount, isDesiredInput, selectedSources, paths, payload);
-    const amountWithoutImpact = quoteWithoutImpactSingle(
-      inputAssetId,
-      outputAssetId,
-      isDesiredInput,
-      result.distribution,
-      payload
-    );
-
-    return {
-      amount: result.amount.toCodecString(),
-      fee: result.fee.toCodecString(),
-      rewards: result.rewards,
-      amountWithoutImpact: amountWithoutImpact.toCodecString(),
-    };
-  } else {
-    if (isDesiredInput) {
-      const firstQuote = quoteSingle(inputAssetId, XOR, amount, isDesiredInput, selectedSources, paths, payload);
-      const secondQuote = quoteSingle(
-        XOR,
-        outputAssetId,
-        firstQuote.amount,
-        isDesiredInput,
-        selectedSources,
-        paths,
-        payload
-      );
-
-      const firstQuoteWithoutImpact = quoteWithoutImpactSingle(
+    if (isDirectExchange(inputAssetId, outputAssetId)) {
+      const result = quoteSingle(inputAssetId, outputAssetId, amount, isDesiredInput, selectedSources, paths, payload);
+      const amountWithoutImpact = quoteWithoutImpactSingle(
         inputAssetId,
-        XOR,
-        isDesiredInput,
-        firstQuote.distribution,
-        payload
-      );
-
-      const ratioToActual = safeDivide(firstQuoteWithoutImpact, firstQuote.amount);
-
-      // multiply all amounts in second distribution to adjust to first quote without impact:
-      const secondQuoteDistribution = secondQuote.distribution.map(({ market, amount }) => ({
-        market,
-        amount: amount.mul(ratioToActual),
-      }));
-
-      const secondQuoteWithoutImpact = quoteWithoutImpactSingle(
-        XOR,
         outputAssetId,
         isDesiredInput,
-        secondQuoteDistribution,
+        result.distribution,
         payload
       );
 
       return {
-        amount: secondQuote.amount.toCodecString(),
-        fee: firstQuote.fee.add(secondQuote.fee).toCodecString(),
-        rewards: [...firstQuote.rewards, ...secondQuote.rewards],
-        amountWithoutImpact: secondQuoteWithoutImpact.toCodecString(),
+        amount: result.amount.toCodecString(),
+        fee: result.fee.toCodecString(),
+        rewards: result.rewards,
+        amountWithoutImpact: amountWithoutImpact.toCodecString(),
       };
     } else {
-      const secondQuote = quoteSingle(XOR, outputAssetId, amount, isDesiredInput, selectedSources, paths, payload);
-      const firstQuote = quoteSingle(
-        inputAssetId,
-        XOR,
-        secondQuote.amount,
-        isDesiredInput,
-        selectedSources,
-        paths,
-        payload
-      );
+      if (isDesiredInput) {
+        const firstQuote = quoteSingle(inputAssetId, XOR, amount, isDesiredInput, selectedSources, paths, payload);
+        const secondQuote = quoteSingle(
+          XOR,
+          outputAssetId,
+          firstQuote.amount,
+          isDesiredInput,
+          selectedSources,
+          paths,
+          payload
+        );
 
-      const secondQuoteWithoutImpact = quoteWithoutImpactSingle(
-        XOR,
-        outputAssetId,
-        isDesiredInput,
-        secondQuote.distribution,
-        payload
-      );
+        const firstQuoteWithoutImpact = quoteWithoutImpactSingle(
+          inputAssetId,
+          XOR,
+          isDesiredInput,
+          firstQuote.distribution,
+          payload
+        );
 
-      const ratioToActual = safeDivide(secondQuoteWithoutImpact, secondQuote.amount);
+        const ratioToActual = safeDivide(firstQuoteWithoutImpact, firstQuote.amount);
 
-      // multiply all amounts in first distribution to adjust to second quote without impact:
-      const firstQuoteDistribution = firstQuote.distribution.map(({ market, amount }) => ({
-        market,
-        amount: amount.mul(ratioToActual),
-      }));
+        // multiply all amounts in second distribution to adjust to first quote without impact:
+        const secondQuoteDistribution = secondQuote.distribution.map(({ market, amount }) => ({
+          market,
+          amount: amount.mul(ratioToActual),
+        }));
 
-      const firstQuoteWithoutImpact = quoteWithoutImpactSingle(
-        inputAssetId,
-        XOR,
-        isDesiredInput,
-        firstQuoteDistribution,
-        payload
-      );
+        const secondQuoteWithoutImpact = quoteWithoutImpactSingle(
+          XOR,
+          outputAssetId,
+          isDesiredInput,
+          secondQuoteDistribution,
+          payload
+        );
 
-      return {
-        amount: firstQuote.amount.toCodecString(),
-        fee: firstQuote.fee.add(secondQuote.fee).toCodecString(),
-        rewards: [...firstQuote.rewards, ...secondQuote.rewards],
-        amountWithoutImpact: firstQuoteWithoutImpact.toCodecString(),
-      };
+        return {
+          amount: secondQuote.amount.toCodecString(),
+          fee: firstQuote.fee.add(secondQuote.fee).toCodecString(),
+          rewards: [...firstQuote.rewards, ...secondQuote.rewards],
+          amountWithoutImpact: secondQuoteWithoutImpact.toCodecString(),
+        };
+      } else {
+        const secondQuote = quoteSingle(XOR, outputAssetId, amount, isDesiredInput, selectedSources, paths, payload);
+        const firstQuote = quoteSingle(
+          inputAssetId,
+          XOR,
+          secondQuote.amount,
+          isDesiredInput,
+          selectedSources,
+          paths,
+          payload
+        );
+
+        const secondQuoteWithoutImpact = quoteWithoutImpactSingle(
+          XOR,
+          outputAssetId,
+          isDesiredInput,
+          secondQuote.distribution,
+          payload
+        );
+
+        const ratioToActual = safeDivide(secondQuoteWithoutImpact, secondQuote.amount);
+
+        // multiply all amounts in first distribution to adjust to second quote without impact:
+        const firstQuoteDistribution = firstQuote.distribution.map(({ market, amount }) => ({
+          market,
+          amount: amount.mul(ratioToActual),
+        }));
+
+        const firstQuoteWithoutImpact = quoteWithoutImpactSingle(
+          inputAssetId,
+          XOR,
+          isDesiredInput,
+          firstQuoteDistribution,
+          payload
+        );
+
+        return {
+          amount: firstQuote.amount.toCodecString(),
+          fee: firstQuote.fee.add(secondQuote.fee).toCodecString(),
+          rewards: [...firstQuote.rewards, ...secondQuote.rewards],
+          amountWithoutImpact: firstQuoteWithoutImpact.toCodecString(),
+        };
+      }
+    }
+  } catch (error) {
+    console.info(error);
+
+    return {
+      amount: FPNumber.ZERO.toCodecString(),
+      fee: FPNumber.ZERO.toCodecString(),
+      rewards: [],
+      amountWithoutImpact: FPNumber.ZERO.toCodecString()
     }
   }
 };
