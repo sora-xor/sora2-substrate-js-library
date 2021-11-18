@@ -62,6 +62,7 @@ declare module '@polkadot/api/types/storage' {
        * Pools whose farmers are refreshed at the specific block. Block => Pools
        **/
       pools: AugmentedQuery<ApiType, (arg: BlockNumber | AnyNumber | Uint8Array) => Observable<Vec<AccountId>>, [BlockNumber]> & QueryableStorageEntry<ApiType, [BlockNumber]>;
+      savedValues: AugmentedQuery<ApiType, (arg: BlockNumber | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[AccountId, Vec<PoolFarmer>]>>>, [BlockNumber]> & QueryableStorageEntry<ApiType, [BlockNumber]>;
       /**
        * Generic query
        **/
