@@ -13,6 +13,9 @@ jobs:
       - name: install requirements
         run: yarn install
 
+      - name: pull meta
+        run: yarn pull-metadata
+
       - name: build
         run: yarn build
 
