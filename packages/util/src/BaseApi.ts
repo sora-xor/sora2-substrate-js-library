@@ -515,7 +515,10 @@ export enum Operation {
   /** it's used for calc network fee */
   ClaimExternalRewards = 'ClaimExternalRewards',
   TransferAll = 'TransferAll', // Batch with transfers
-  SwapAndSend = 'SwapAndSend'
+  SwapAndSend = 'SwapAndSend',
+  ReferralsReserve = 'ReferralsReserve',
+  ReferralsUnreserve = 'ReferralsUnreserve',
+  ReferralsSetReferrer = 'ReferralsSetReferrer'
 }
 
 export interface History {

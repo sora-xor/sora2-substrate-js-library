@@ -1564,6 +1564,63 @@ export class Api extends BaseApi {
       : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one)
     return result.format()
   }
+
+  /**
+   * Returns the referrer of the referree
+   * @param refereeId address of referee account
+   * @returns referrer
+   */
+  public async getReferralsReferrer (refereeId: string): Promise<string> {
+    const referrer = await this.api.query.referrals.referrers(refereeId) as any
+    return !referrer ? '' : referrer
+  }
+
+  /**
+   * Transfer balance from the the account to the special account
+   * This balance can be used by referrals to pay the fee
+   * @param amount balance to reserve
+   */
+  public async referralsReserve (amount: NumberLike): Promise<void> {
+    assert(this.account, Messages.connectWallet)
+    const asset = await this.getAssetInfo(KnownAssets.get(KnownSymbols.XOR).address)
+    const assetAddress: string = asset?.address
+    await this.submitExtrinsic(
+      this.api.tx.referrals.reserve(new FPNumber(amount, asset.decimals).toCodecString()),
+      this.account.pair,
+      { symbol: asset.symbol, amount: `${amount}`, assetAddress, type: Operation.ReferralsReserve }
+    )
+  }
+
+  /**
+   * Unreserve the balance
+   * @param amount balance to unreserve
+   */
+  public async referralsUnreserve (amount: NumberLike): Promise<void> {
+    assert(this.account, Messages.connectWallet)
+    const asset = await this.getAssetInfo(KnownAssets.get(KnownSymbols.XOR).address)
+    const assetAddress: string = asset?.address
+    await this.submitExtrinsic(
+      this.api.tx.referrals.unreserve(new FPNumber(amount, asset.decimals).toCodecString()),
+      this.account.pair,
+      { symbol: asset.symbol, amount: `${amount}`, assetAddress, type: Operation.ReferralsUnreserve }
+    )
+  }
+
+  /**
+   * Sets referrer to be their referrer if the account doesn’t have a referrer yet.
+   * This extrinsic is paid by the special balance of the referrer if the referree doesn’t have a referrer,
+   * otherwise the extrinsic fails and the fee is paid by the referree
+   * @param referrerId address of referrer account
+   */
+  public async referralsSetReferrer (referrerId: string): Promise<void> {
+    assert(this.account, Messages.connectWallet)
+    const formattedToAddress = referrerId.slice(0, 2) === 'cn' ? referrerId : this.formatAddress(referrerId)
+    await this.submitExtrinsic(
+      this.api.tx.referrals.setReferrer(referrerId),
+      this.account.pair,
+      { to: formattedToAddress, type: Operation.ReferralsSetReferrer }
+    )
+  }
 }
 
 /** Api object */
