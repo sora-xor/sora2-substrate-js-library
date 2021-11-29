@@ -57,8 +57,10 @@ export class Api extends BaseApi {
   public readonly seedLength = 12
   public readonly bridge: BridgeApi = new BridgeApi()
 
+  public accountDefaultAssetsAddresses: Array<string> = KnownAssets.map(asset => asset.address)
+
   private _assets: Array<AccountAsset> = []
-  private _accountAssetsAddresses: Array<string> = [] 
+  private _accountAssetsAddresses: Array<string> = []
   private _liquidity: Array<AccountLiquidity> = []
 
   private balanceSubscriptions: Array<Subscription> = []
@@ -182,8 +184,7 @@ export class Api extends BaseApi {
     assert(this.account, Messages.connectWallet)
 
     const knownAssets: Array<AccountAsset> = []
-    const nativeAssetsAddresses = NativeAssets.map(nativeAsset => nativeAsset.address)
-    const assetsAddresses = new Set([...nativeAssetsAddresses, ...this.accountAssetsAddresses])
+    const assetsAddresses = new Set([...this.accountDefaultAssetsAddresses, ...this.accountAssetsAddresses])
 
     for (const assetAddress of assetsAddresses) {
       const asset = await this.getAccountAsset(assetAddress)
