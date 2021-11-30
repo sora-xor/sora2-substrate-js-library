@@ -94,11 +94,17 @@ export interface Consensus extends ITuple<[ConsensusEngineId, Bytes]> {}
 /** @name ConsensusEngineId */
 export interface ConsensusEngineId extends GenericConsensusEngineId {}
 
+/** @name ContentSource */
+export interface ContentSource extends Bytes {}
+
 /** @name CurrencyId */
 export interface CurrencyId extends AssetId {}
 
 /** @name CurrencyIdOf */
 export interface CurrencyIdOf extends AssetId {}
+
+/** @name Description */
+export interface Description extends Bytes {}
 
 /** @name DEXId */
 export interface DEXId extends u32 {}

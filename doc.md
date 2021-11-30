@@ -40,8 +40,10 @@
 * [electionsPhragmen](#electionsphragmen-pallet)
 * [vestedRewards](#vestedrewards-pallet)
 * [identity](#identity-pallet)
-* [priceTools](#pricetools-pallet)
 * [farming](#farming-pallet)
+* [xstPool](#xstpool-pallet)
+* [priceTools](#pricetools-pallet)
+* [ceresStaking](#ceresstaking-pallet)
 * [utility](#utility-pallet)
 * [currencies](#currencies-pallet)
 * [liquidityProxy](#liquidityproxy-pallet)
@@ -939,11 +941,12 @@ returns: `TechAccountId`
 #### **api.query.rewards.valOwners**
 
 
+> A map EthAddresses -> RewardInfo, that is claimable and remaining vested amounts per address
 
 arguments: 
 + key: `EthereumAddress`
 
-returns: `Balance`
+returns: `RewardInfo`
 <hr>
 
 #### **api.query.rewards.pswapFarmOwners**
@@ -966,6 +969,67 @@ arguments:
 returns: `Balance`
 <hr>
 
+#### **api.query.rewards.valBurnedSinceLastVesting**
+
+
+> Amount of VAL burned since last vesting
+
+arguments: -
+
+returns: `Balance`
+<hr>
+
+#### **api.query.rewards.currentClaimableVal**
+
+
+> Amount of VAL currently being vested (aggregated over the previous period of 14,400 blocks)
+
+arguments: -
+
+returns: `Balance`
+<hr>
+
+#### **api.query.rewards.ethAddresses**
+
+
+> All addresses are split in batches, `AddressBatches` maps batch number to a set of addresses
+
+arguments: 
++ key: `u32`
+
+returns: `Vec<EthereumAddress>`
+<hr>
+
+#### **api.query.rewards.totalValRewards**
+
+
+> Total amount of VAL rewards either claimable now or some time in the future
+
+arguments: -
+
+returns: `Balance`
+<hr>
+
+#### **api.query.rewards.totalClaimableVal**
+
+
+> Total amount of VAL that can be claimed by users at current point in time
+
+arguments: -
+
+returns: `Balance`
+<hr>
+
+#### **api.query.rewards.migrationPending**
+
+
+> A flag indicating whether VAL rewards data migration has been finalized
+
+arguments: -
+
+returns: `bool`
+<hr>
+
 ### *Extrinsics*
 
 
@@ -975,6 +1039,15 @@ returns: `Balance`
 
 arguments: 
 + signature: `Bytes`
+<hr>
+
+#### **api.tx.rewards.finalizeStorageMigration**
+
+
+> Finalize the update of unclaimed VAL data in storage
+
+arguments: 
++ amounts: `Vec<(EthereumAddress,Balance)>`
 <hr>
 
 ### *Custom RPCs*
@@ -3518,6 +3591,18 @@ arguments:
 returns: `Balance`
 <hr>
 
+#### **api.query.poolXyk.accountPools**
+
+
+> Set of pools in which accounts have some share.
+> Liquidity provider account => Target Asset of pair (assuming base asset is XOR)
+
+arguments: 
++ key: `AccountIdOf`
+
+returns: `BTreeSet<AssetIdOf>`
+<hr>
+
 #### **api.query.poolXyk.totalIssuances**
 
 
@@ -3533,7 +3618,7 @@ returns: `Balance`
 #### **api.query.poolXyk.properties**
 
 
-> Properties of particular pool. [Reserves Account Id, Fees Account Id]
+> Properties of particular pool. Base Asset => Target Asset => (Reserves Account Id, Fees Account Id)
 
 arguments: 
 + key1: `AssetId`
@@ -3544,18 +3629,6 @@ returns: `(AccountId,AccountId)`
 
 ### *Extrinsics*
 
-
-#### **api.tx.poolXyk.swapPair**
-
-
-
-arguments: 
-+ receiver: `AccountIdOf`
-+ dex_id: `DEXIdOf`
-+ input_asset_id: `AssetIdOf`
-+ output_asset_id: `AssetIdOf`
-+ swap_amount: `SwapAmount`
-<hr>
 
 #### **api.tx.poolXyk.depositLiquidity**
 
@@ -4742,6 +4815,35 @@ arguments: -
 returns: `Vec<LiquiditySourceType>`
 <hr>
 
+### *Extrinsics*
+
+
+#### **api.tx.dexapi.swap**
+
+
+> Perform swap with specified parameters. Gateway for invoking liquidity source exchanges.
+>
+> - `dex_id`: ID of the exchange.
+> - `liquidity_source_type`: Type of liquidity source to perform swap on.
+> - `input_asset_id`: ID of Asset to be deposited from sender account into pool reserves.
+> - `output_asset_id`: ID of Asset t0 be withdrawn from pool reserves into receiver account.
+> - `amount`: Either amount of desired input or output tokens, determined by `swap_variant` parameter.
+> - `limit`: Either maximum input amount or minimum output amount tolerated for successful swap,
+>            determined by `swap_variant` parameter.
+> - `swap_variant`: Either 'WithDesiredInput' or 'WithDesiredOutput', indicates amounts purpose.
+> - `receiver`: Optional value, indicates AccountId for swap receiver. If not set, default is `sender`.
+
+arguments: 
++ dex_id: `DEXId`
++ liquidity_source_type: `LiquiditySourceType`
++ input_asset_id: `AssetId`
++ output_asset_id: `AssetId`
++ amount: `Balance`
++ limit: `Balance`
++ swap_variant: `SwapVariant`
++ receiver: `Option<AccountId>`
+<hr>
+
 ## EthBridge pallet
 
 
@@ -5008,15 +5110,15 @@ arguments: -
 returns: `BridgeNetworkId`
 <hr>
 
-#### **api.query.ethBridge.palletStorageVersion**
+#### **api.query.ethBridge.migratingRequests**
 
 
-> Should be used in conjunction with `on_runtime_upgrade` to ensure an upgrade is executed
-> once, even if the code is not removed in time.
+> Requests migrating from version '0.1.0' to '0.2.0'. These requests should be removed from
+> `RequestsQueue` before migration procedure started.
 
 arguments: -
 
-returns: `EthBridgeStorageVersion`
+returns: `Vec<H256>`
 <hr>
 
 ### *Extrinsics*
@@ -5261,6 +5363,13 @@ arguments:
 + who: `AccountId`
 + address: `EthereumAddress`
 + network_id: `BridgeNetworkId`
+<hr>
+
+#### **api.tx.ethBridge.migrateTo020**
+
+
+
+arguments: -
 <hr>
 
 ### *Custom RPCs*
@@ -6809,22 +6918,6 @@ arguments:
 arguments: -
 <hr>
 
-## PriceTools pallet
-
-
-### *State Queries*
-
-
-#### **api.query.priceTools.priceInfos**
-
-
-
-arguments: 
-+ key: `AssetId`
-
-returns: `PriceInfo`
-<hr>
-
 ## Farming pallet
 
 
@@ -6867,6 +6960,161 @@ returns: `Vec<(AccountId,Vec<PoolFarmer>)>`
 
 
 #### **api.tx.farming.migrateTo11**
+
+
+
+arguments: -
+<hr>
+
+## XstPool pallet
+
+
+### *State Queries*
+
+
+#### **api.query.xstPool.permissionedTechAccount**
+
+
+> Technical account used to store collateral tokens.
+
+arguments: -
+
+returns: `TechAccountId`
+<hr>
+
+#### **api.query.xstPool.baseFee**
+
+
+> Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
+
+arguments: -
+
+returns: `Fixed`
+<hr>
+
+#### **api.query.xstPool.enabledSynthetics**
+
+
+> XST Assets allowed to be traded using XST.
+
+arguments: -
+
+returns: `BTreeSet<AssetId>`
+<hr>
+
+#### **api.query.xstPool.referenceAssetId**
+
+
+> Asset that is used to compare collateral assets by value, e.g., DAI.
+
+arguments: -
+
+returns: `AssetId`
+<hr>
+
+#### **api.query.xstPool.collateralReserves**
+
+
+> Current reserves balance for collateral tokens, used for client usability.
+
+arguments: 
++ key: `AssetId`
+
+returns: `Balance`
+<hr>
+
+### *Extrinsics*
+
+
+#### **api.tx.xstPool.initializePool**
+
+
+> Enable exchange path on the pool for pair BaseAsset-SyntheticAsset.
+
+arguments: 
++ synthetic_asset_id: `AssetId`
+<hr>
+
+#### **api.tx.xstPool.setReferenceAsset**
+
+
+> Change reference asset which is used to determine collateral assets value. Intended to be e.g., stablecoin DAI.
+
+arguments: 
++ reference_asset_id: `AssetId`
+<hr>
+
+#### **api.tx.xstPool.enableSyntheticAsset**
+
+
+
+arguments: 
++ synthetic_asset: `AssetId`
+<hr>
+
+## PriceTools pallet
+
+
+### *State Queries*
+
+
+#### **api.query.priceTools.priceInfos**
+
+
+
+arguments: 
++ key: `AssetId`
+
+returns: `PriceInfo`
+<hr>
+
+## CeresStaking pallet
+
+
+### *State Queries*
+
+
+#### **api.query.ceresStaking.stakers**
+
+
+> AccountId -> StakingInfo
+
+arguments: 
++ key: `AccountIdOf`
+
+returns: `StakingInfo`
+<hr>
+
+#### **api.query.ceresStaking.totalDeposited**
+
+
+
+arguments: -
+
+returns: `Balance`
+<hr>
+
+#### **api.query.ceresStaking.rewardsRemaining**
+
+
+
+arguments: -
+
+returns: `Balance`
+<hr>
+
+### *Extrinsics*
+
+
+#### **api.tx.ceresStaking.deposit**
+
+
+
+arguments: 
++ amount: `Balance`
+<hr>
+
+#### **api.tx.ceresStaking.withdraw**
 
 
 
@@ -7750,6 +7998,11 @@ returns: `Option<SwapOutcomeInfo>`
 }
 ```
 
+### ContentSource
+```
+"Vec<u8>"
+```
+
 ### CurrencyId
 ```
 "AssetId"
@@ -7794,6 +8047,11 @@ returns: `Option<SwapOutcomeInfo>`
     default_fee: "BasisPoints",
     default_protocol_fee: "BasisPoints"
 }
+```
+
+### Description
+```
+"Vec<u8>"
 ```
 
 ### DispatchErrorWithPostInfoTPostDispatchInfo
@@ -8076,7 +8334,8 @@ returns: `Option<SwapOutcomeInfo>`
         "MockPool",
         "MockPool2",
         "MockPool3",
-        "MockPool4"
+        "MockPool4",
+        "XSTPool"
     ]
 }
 ```
@@ -8158,7 +8417,10 @@ returns: `Option<SwapOutcomeInfo>`
 
 ### MultisigAccount
 ```
-"Null"
+{
+    signatories: "Vec<AccountId>",
+    threshold: "u8"
+}
 ```
 
 ### OffchainRequest
@@ -8449,7 +8711,8 @@ returns: `Option<SwapOutcomeInfo>`
         "VAL",
         "PSWAP",
         "DAI",
-        "ETH"
+        "ETH",
+        "XSTUSD"
     ]
 }
 ```

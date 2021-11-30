@@ -188,6 +188,8 @@ export default {
       average_price: "Balance",
       needs_update: "bool",
       last_spot_price: "Balance",
-    }
+    },
+    ContentSource: 'Vec<u8>',
+    Description: 'Vec<u8>'
   }
 }
