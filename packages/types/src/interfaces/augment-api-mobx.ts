@@ -20,25 +20,17 @@ import type { Keys, SessionIndex } from '@polkadot/types/interfaces/session';
 import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraIndex, EraRewardPoints, Exposure, Forcing, Nominations, RewardDestination, SeatHolder, SlashingSpans, SpanIndex, SpanRecord, StakingLedger, UnappliedSlash, ValidatorPrefs, Voter } from '@polkadot/types/interfaces/staking';
 import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import type { Multisig } from '@polkadot/types/interfaces/utility';
+import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, Address, AssetId, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, StorageVersion, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
   assets: {    /**
-     * Asset Id -> Content Source
-     **/
-    assetContentSource: StorageMap<AssetId | AnyNumber, Option<ContentSource>>;
-    /**
-     * Asset Id -> Description
-     **/
-    assetDescription: StorageMap<AssetId | AnyNumber, Option<Description>>;
-    /**
-     * Asset Id -> (Symbol, Name, Precision, Is Mintable)
+     * Asset Id -> (Symbol, Precision, Is Mintable)
      **/
     assetInfos: StorageMap<AssetId | AnyNumber, ITuple<[AssetSymbol, AssetName, BalancePrecision, bool]>>;
     /**
@@ -168,7 +160,7 @@ export interface StorageType extends BaseStorageType {
      **/
     accounts: StorageMap<AccountId | string, Option<MultisigAccount>>;
     calls: StorageMap<U8aFixed | string, Option<ITuple<[OpaqueCall, AccountId, BalanceOf]>>>;
-    dispatchedCalls: StorageDoubleMap<U8aFixed | string, BridgeTimepoint | { height?: any; index?: any } | string, ITuple<[]>>;
+    dispatchedCalls: StorageDoubleMap<U8aFixed | string, Timepoint | { height?: any; index?: any } | string, ITuple<[]>>;
     /**
      * The set of open multisig operations.
      **/
@@ -337,14 +329,14 @@ export interface StorageType extends BaseStorageType {
      **/
     loadToIncomingRequestHash: StorageDoubleMap<BridgeNetworkId | AnyNumber, H256 | string, H256>;
     /**
-     * Requests migrating from version '0.1.0' to '0.2.0'. These requests should be removed from
-     * `RequestsQueue` before migration procedure started.
-     **/
-    migratingRequests: Vec<H256> | null;
-    /**
      * Next Network ID counter.
      **/
     nextNetworkId: BridgeNetworkId | null;
+    /**
+     * Should be used in conjunction with `on_runtime_upgrade` to ensure an upgrade is executed
+     * once, even if the code is not removed in time.
+     **/
+    palletStorageVersion: StorageVersion | null;
     /**
      * Peer account ID on Thischain.
      **/
@@ -419,6 +411,7 @@ export interface StorageType extends BaseStorageType {
      * Pools whose farmers are refreshed at the specific block. Block => Pools
      **/
     pools: StorageMap<BlockNumber | AnyNumber, Vec<AccountId>>;
+    savedValues: StorageMap<BlockNumber | AnyNumber, Vec<ITuple<[AccountId, Vec<PoolFarmer>]>>>;
   };
   grandpa: {    /**
      * The number of changes (both in terms of keys and underlying economic responsibilities)
@@ -608,21 +601,17 @@ export interface StorageType extends BaseStorageType {
      **/
     reportsByKindIndex: StorageMap<Kind | string, Bytes>;
   };
-  permissions: {    owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
+  permissions: {    modes: StorageMap<PermissionId | AnyNumber, Mode>;
+    owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
     permissions: StorageDoubleMap<HolderId | string, Scope | { Limited: any } | { Unlimited: any } | string, Vec<PermissionId>>;
   };
   poolXyk: {    /**
-     * Set of pools in which accounts have some share.
-     * Liquidity provider account => Target Asset of pair (assuming base asset is XOR)
-     **/
-    accountPools: StorageMap<AccountIdOf | string, BTreeSet<AssetIdOf>>;
-    /**
      * Liquidity providers of particular pool.
      * Pool account => Liquidity provider account => Pool token balance
      **/
     poolProviders: StorageDoubleMap<AccountIdOf | string, AccountIdOf | string, Option<Balance>>;
     /**
-     * Properties of particular pool. Base Asset => Target Asset => (Reserves Account Id, Fees Account Id)
+     * Properties of particular pool. [Reserves Account Id, Fees Account Id]
      **/
     properties: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, Option<ITuple<[AccountId, AccountId]>>>;
     /**
@@ -675,40 +664,12 @@ export interface StorageType extends BaseStorageType {
      **/
     randomMaterial: Vec<Hash> | null;
   };
-  referrals: {    referrerBalances: StorageMap<AccountId | string, Option<Balance>>;
-    referrers: StorageMap<AccountId | string, Option<AccountId>>;
+  referralSystem: {    referrers: StorageMap<AccountId | string, Option<AccountId>>;
   };
-  rewards: {    /**
-     * Amount of VAL currently being vested (aggregated over the previous period of 14,400 blocks)
-     **/
-    currentClaimableVal: Balance | null;
-    /**
-     * All addresses are split in batches, `AddressBatches` maps batch number to a set of addresses
-     **/
-    ethAddresses: StorageMap<u32 | AnyNumber, Vec<EthereumAddress>>;
-    /**
-     * A flag indicating whether VAL rewards data migration has been finalized
-     **/
-    migrationPending: bool | null;
-    pswapFarmOwners: StorageMap<EthereumAddress | string, Balance>;
+  rewards: {    pswapFarmOwners: StorageMap<EthereumAddress | string, Balance>;
     pswapWaifuOwners: StorageMap<EthereumAddress | string, Balance>;
     reservesAcc: TechAccountId | null;
-    /**
-     * Total amount of VAL that can be claimed by users at current point in time
-     **/
-    totalClaimableVal: Balance | null;
-    /**
-     * Total amount of VAL rewards either claimable now or some time in the future
-     **/
-    totalValRewards: Balance | null;
-    /**
-     * Amount of VAL burned since last vesting
-     **/
-    valBurnedSinceLastVesting: Balance | null;
-    /**
-     * A map EthAddresses -> RewardInfo, that is claimable and remaining vested amounts per address
-     **/
-    valOwners: StorageMap<EthereumAddress | string, RewardInfo>;
+    valOwners: StorageMap<EthereumAddress | string, Balance>;
   };
   scheduler: {    /**
      * Items to be executed, indexed by the block number that they should be executed on.
@@ -964,11 +925,6 @@ export interface StorageType extends BaseStorageType {
      **/
     validatorSlashInEra: StorageDoubleMap<EraIndex | AnyNumber, AccountId | string, Option<ITuple<[Perbill, BalanceOf]>>>;
   };
-  sudo: {    /**
-     * The `AccountId` of the sudo key.
-     **/
-    key: AccountId | null;
-  };
   system: {    /**
      * The full account information for a particular account ID.
      **/
@@ -1130,26 +1086,5 @@ export interface StorageType extends BaseStorageType {
      * The amount of XOR to be reminted and exchanged for VAL at the end of the session
      **/
     xorToVal: Balance | null;
-  };
-  xstPool: {    /**
-     * Base fee in XOR which is deducted on all trades, currently it's burned: 0.7%.
-     **/
-    baseFee: Fixed | null;
-    /**
-     * Current reserves balance for collateral tokens, used for client usability.
-     **/
-    collateralReserves: StorageMap<AssetId | AnyNumber, Balance>;
-    /**
-     * XST Assets allowed to be traded using XST.
-     **/
-    enabledSynthetics: BTreeSet<AssetId> | null;
-    /**
-     * Technical account used to store collateral tokens.
-     **/
-    permissionedTechAccount: TechAccountId | null;
-    /**
-     * Asset that is used to compare collateral assets by value, e.g., DAI.
-     **/
-    referenceAssetId: AssetId | null;
   };
 }

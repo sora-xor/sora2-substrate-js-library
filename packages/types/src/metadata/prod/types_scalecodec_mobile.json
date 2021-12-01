@@ -729,8 +729,17 @@
                 "MultiCurrencyBalance": "Balance",
                 "MultiCurrencyBalanceOf": "MultiCurrencyBalance",
                 "MultisigAccount": {
-                    "signatories": "Vec<AccountId>",
-                    "threshold": "u8"
+                    "type": "struct",
+                    "type_mapping": [
+                      [
+                        "signatories",
+                        "Vec<AccountId>"
+                      ],
+                      [
+                        "threshold",
+                        "u8"
+                      ]
+                    ]
                 },
                 "OffchainRequest": {
                     "type": "enum",
