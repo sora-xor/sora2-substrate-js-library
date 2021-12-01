@@ -1,3 +1,7 @@
+import { map } from '@polkadot/x-rxjs/operators'
+import type { ApiRx } from '@polkadot/api'
+import type { Observable } from '@polkadot/types/types'
+
 import { CodecString, FPNumber } from './fp'
 import { Asset, KnownAssets, KnownSymbols } from './assets'
 import { History } from './BaseApi'
@@ -39,6 +43,11 @@ export interface LPRewardsInfo {
 export interface RewardClaimHistory extends History {
   externalAddress?: string;
   rewards?: Array<RewardInfo | RewardsInfo>;
+}
+
+export interface AccountMarketMakerInfo {
+  count: number;
+  volume: CodecString;
 }
 
 export function isClaimableReward (reward: RewardInfo): boolean {
@@ -94,4 +103,13 @@ export function prepareRewardsInfo (limit: CodecString | number, total: CodecStr
     total: fpTotal.toCodecString(),
     rewards: claimableRewards
   }
+}
+
+export function getAccountMarketMakerInfoObservable (apiRx: ApiRx, accountAddress: string): Observable<AccountMarketMakerInfo> {
+  return apiRx.query.vestedRewards.marketMakersRegistry(accountAddress).pipe(
+    map((data) => ({
+      count: +(data as any).count,// u32;
+      volume: new FPNumber((data as any).volume).toCodecString()// Balance
+    }))
+  )
 }

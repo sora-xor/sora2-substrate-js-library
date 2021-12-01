@@ -25,7 +25,7 @@ import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, AccountIdOf, Address, AssetId, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, StorageVersion, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, Address, AssetId, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, StorageVersion, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
@@ -85,7 +85,7 @@ export interface StorageType extends BaseStorageType {
     initialized: Option<MaybeRandomness> | null;
     /**
      * How late the current block is compared to its parent.
-     * 
+     *
      * This entry is populated as part of block execution and is cleaned up
      * on block finalization. Querying this storage entry outside of block
      * execution context should always yield zero.
@@ -105,9 +105,9 @@ export interface StorageType extends BaseStorageType {
     nextRandomness: Randomness | null;
     /**
      * The epoch randomness for the *current* epoch.
-     * 
+     *
      * # Security
-     * 
+     *
      * This MUST NOT be used for gambling, as it can be influenced by a
      * malicious validator in the short term. It MAY be used in many
      * cryptographic protocols, however, so long as one remembers that this
@@ -118,11 +118,11 @@ export interface StorageType extends BaseStorageType {
     randomness: Randomness | null;
     /**
      * Randomness under construction.
-     * 
+     *
      * We make a tradeoff between storage accesses and list length.
      * We store the under-construction randomness in segments of up to
      * `UNDER_CONSTRUCTION_SEGMENT_LENGTH`.
-     * 
+     *
      * Once a segment reaches this length, we begin the next one.
      * We reset all segments and return to `0` at the beginning of every
      * epoch.
@@ -135,7 +135,7 @@ export interface StorageType extends BaseStorageType {
   };
   balances: {    /**
      * The balance of an account.
-     * 
+     *
      * NOTE: This is only used in the case that this pallet is used to store balances.
      **/
     account: StorageMap<AccountId | string, AccountData>;
@@ -146,7 +146,7 @@ export interface StorageType extends BaseStorageType {
     locks: StorageMap<AccountId | string, Vec<BalanceLock>>;
     /**
      * Storage version of the pallet.
-     * 
+     *
      * This is set to v2.0.0 for new networks.
      **/
     storageVersion: Releases | null;
@@ -202,7 +202,7 @@ export interface StorageType extends BaseStorageType {
     cancellations: StorageMap<Hash | string, bool>;
     /**
      * Those who have locked a deposit.
-     * 
+     *
      * TWOX-NOTE: Safe, as increasing integer keys are safe.
      **/
     depositOf: StorageMap<PropIndex | AnyNumber, Option<ITuple<[Vec<AccountId>, BalanceOf]>>>;
@@ -214,7 +214,7 @@ export interface StorageType extends BaseStorageType {
     /**
      * Accounts for which there are locks in action which may be removed at some point in the
      * future. The value is the block number at which the lock expires and may be removed.
-     * 
+     *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      **/
     locks: StorageMap<AccountId | string, Option<BlockNumber>>;
@@ -249,20 +249,20 @@ export interface StorageType extends BaseStorageType {
     referendumCount: ReferendumIndex | null;
     /**
      * Information concerning any given referendum.
-     * 
+     *
      * TWOX-NOTE: SAFE as indexes are not under an attacker’s control.
      **/
     referendumInfoOf: StorageMap<ReferendumIndex | AnyNumber, Option<ReferendumInfo>>;
     /**
      * Storage version of the pallet.
-     * 
+     *
      * New networks start with last version.
      **/
     storageVersion: Option<Releases> | null;
     /**
      * All votes for a particular voter. We store the balance for the number of votes that we
      * have recorded. The second item is the total amount of delegations, that will be added.
-     * 
+     *
      * TWOX-NOTE: SAFE as `AccountId`s are crypto hashes anyway.
      **/
     votingOf: StorageMap<AccountId | string, Voting>;
@@ -274,9 +274,9 @@ export interface StorageType extends BaseStorageType {
   electionsPhragmen: {    /**
      * The present candidate list. A current member or runner-up can never enter this vector
      * and is always implicitly assumed to be a candidate.
-     * 
+     *
      * Second element is the deposit.
-     * 
+     *
      * Invariant: Always sorted based on account id.
      **/
     candidates: Vec<ITuple<[AccountId, BalanceOf]>> | null;
@@ -286,20 +286,20 @@ export interface StorageType extends BaseStorageType {
     electionRounds: u32 | null;
     /**
      * The current elected members.
-     * 
+     *
      * Invariant: Always sorted based on account id.
      **/
     members: Vec<SeatHolder> | null;
     /**
      * The current reserved runners-up.
-     * 
+     *
      * Invariant: Always sorted based on rank (worse to best). Upon removal of a member, the
      * last (i.e. _best_) runner-up will be replaced.
      **/
     runnersUp: Vec<SeatHolder> | null;
     /**
      * Votes and locked stake of a particular voter.
-     * 
+     *
      * TWOX-NOTE: SAFE as `AccountId` is a crypto hash.
      **/
     voting: StorageMap<AccountId | string, Voter>;
@@ -429,7 +429,7 @@ export interface StorageType extends BaseStorageType {
     /**
      * A mapping from grandpa set ID to the index of the *most recent* session for which its
      * members were responsible.
-     * 
+     *
      * TWOX-NOTE: `SetId` is not under user control.
      **/
     setIdSession: StorageMap<SetId | AnyNumber, Option<SessionIndex>>;
@@ -444,22 +444,22 @@ export interface StorageType extends BaseStorageType {
   };
   identity: {    /**
      * Information that is pertinent to identify the entity behind an account.
-     * 
+     *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      **/
     identityOf: StorageMap<AccountId | string, Option<Registration>>;
     /**
      * The set of registrars. Not expected to get very big as can only be added through a
      * special origin (likely a council motion).
-     * 
+     *
      * The index into this can be cast to `RegistrarIndex` to get a valid value.
      **/
     registrars: Vec<Option<RegistrarInfo>> | null;
     /**
      * Alternative "sub" identities of this account.
-     * 
+     *
      * The first item is the deposit, the second is a vector of the accounts.
-     * 
+     *
      * TWOX-NOTE: OK ― `AccountId` is a secure hash.
      **/
     subsOf: StorageMap<AccountId | string, ITuple<[BalanceOf, Vec<AccountId>]>>;
@@ -476,7 +476,7 @@ export interface StorageType extends BaseStorageType {
     authoredBlocks: StorageDoubleMap<SessionIndex | AnyNumber, ValidatorId | string, u32>;
     /**
      * The block number after which it's ok to send heartbeats in current session.
-     * 
+     *
      * At the beginning of each session we set this to a value that should
      * fall roughly in the middle of the session duration.
      * The idea is to first wait for the validators to produce a block
@@ -593,9 +593,9 @@ export interface StorageType extends BaseStorageType {
     reports: StorageMap<ReportIdOf | string, Option<OffenceDetails>>;
     /**
      * Enumerates all reports of a kind along with the time they happened.
-     * 
+     *
      * All reports are sorted by the time of offence.
-     * 
+     *
      * Note that the actual type of this mapping is `Vec<u8>`, this is because values of
      * different types are not supported at the moment so we are doing the manual serialization.
      **/
@@ -681,7 +681,7 @@ export interface StorageType extends BaseStorageType {
     lookup: StorageMap<Bytes | string, Option<TaskAddress>>;
     /**
      * Storage version of the pallet.
-     * 
+     *
      * New networks start with last version.
      **/
     storageVersion: Releases | null;
@@ -692,7 +692,7 @@ export interface StorageType extends BaseStorageType {
     currentIndex: SessionIndex | null;
     /**
      * Indices of disabled validators.
-     * 
+     *
      * The set is cleared when `on_session_ending` returns a new set of identities.
      **/
     disabledValidators: Vec<u32> | null;
@@ -721,7 +721,7 @@ export interface StorageType extends BaseStorageType {
   };
   staking: {    /**
      * The active era information, it holds index and start.
-     * 
+     *
      * The active era is the era being currently rewarded. Validator set of this era must be
      * equal to [`SessionInterface::validators`].
      **/
@@ -732,7 +732,7 @@ export interface StorageType extends BaseStorageType {
     bonded: StorageMap<AccountId | string, Option<AccountId>>;
     /**
      * A mapping from still-bonded eras to the first session index of that era.
-     * 
+     *
      * Must contains information for eras for the range:
      * `[active_era - bounding_duration; active_era]`
      **/
@@ -744,7 +744,7 @@ export interface StorageType extends BaseStorageType {
     canceledSlashPayout: BalanceOf | null;
     /**
      * The current era index.
-     * 
+     *
      * This is the latest planned era, depending on how the Session pallet queues the validator
      * set, it might be active or not.
      **/
@@ -765,30 +765,30 @@ export interface StorageType extends BaseStorageType {
     erasRewardPoints: StorageMap<EraIndex | AnyNumber, EraRewardPoints>;
     /**
      * Exposure of validator at era.
-     * 
+     *
      * This is keyed first by the era index to allow bulk deletion and then the stash account.
-     * 
+     *
      * Is it removed after `HISTORY_DEPTH` eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
      **/
     erasStakers: StorageDoubleMap<EraIndex | AnyNumber, AccountId | string, Exposure>;
     /**
      * Clipped Exposure of validator at era.
-     * 
+     *
      * This is similar to [`ErasStakers`] but number of nominators exposed is reduced to the
      * `T::MaxNominatorRewardedPerValidator` biggest stakers.
      * (Note: the field `total` and `own` of the exposure remains unchanged).
      * This is used to limit the i/o cost for the nominator payout.
-     * 
+     *
      * This is keyed fist by the era index to allow bulk deletion and then the stash account.
-     * 
+     *
      * Is it removed after `HISTORY_DEPTH` eras.
      * If stakers hasn't been set or has been removed then empty exposure is returned.
      **/
     erasStakersClipped: StorageDoubleMap<EraIndex | AnyNumber, AccountId | string, Exposure>;
     /**
      * The session index at which the era start for the last `HISTORY_DEPTH` eras.
-     * 
+     *
      * Note: This tracks the starting session (i.e. session index when era start being active)
      * for the eras in `[CurrentEra - HISTORY_DEPTH, CurrentEra]`.
      **/
@@ -800,15 +800,15 @@ export interface StorageType extends BaseStorageType {
     erasTotalStake: StorageMap<EraIndex | AnyNumber, BalanceOf>;
     /**
      * Similar to `ErasStakers`, this holds the preferences of validators.
-     * 
+     *
      * This is keyed first by the era index to allow bulk deletion and then the stash account.
-     * 
+     *
      * Is it removed after `HISTORY_DEPTH` eras.
      **/
     erasValidatorPrefs: StorageDoubleMap<EraIndex | AnyNumber, AccountId | string, ValidatorPrefs>;
     /**
      * The total validator era payout for the last `HISTORY_DEPTH` eras.
-     * 
+     *
      * Eras that haven't finished yet or has been removed doesn't have reward.
      **/
     erasValidatorReward: StorageMap<EraIndex | AnyNumber, Option<MultiCurrencyBalanceOf>>;
@@ -822,9 +822,9 @@ export interface StorageType extends BaseStorageType {
     forceEra: Forcing | null;
     /**
      * Number of eras to keep in history.
-     * 
+     *
      * Information is kept for eras in `[current_era - history_depth; current_era]`.
-     * 
+     *
      * Must be more than the number of eras delayed by session otherwise. I.e. active era must
      * always be in history. I.e. `active_era > current_era - history_depth` must be
      * guaranteed.
@@ -877,7 +877,7 @@ export interface StorageType extends BaseStorageType {
     slashingSpans: StorageMap<AccountId | string, Option<SlashingSpans>>;
     /**
      * The percentage of the slash that is distributed to reporters.
-     * 
+     *
      * The rest of the slashed value is handled by the `Slash`.
      **/
     slashRewardFraction: Perbill | null;
@@ -899,7 +899,7 @@ export interface StorageType extends BaseStorageType {
     /**
      * True if network has been upgraded to this version.
      * Storage version of the pallet.
-     * 
+     *
      * This is set to v5.0.0 for new networks.
      **/
     storageVersion: Releases | null;
@@ -956,11 +956,11 @@ export interface StorageType extends BaseStorageType {
     /**
      * Mapping between a topic (represented by T::Hash) and a vector of indexes
      * of events in the `<Events<T>>` list.
-     * 
+     *
      * All topic vectors have deterministic storage locations depending on the topic. This
      * allows light-clients to leverage the changes trie storage tracking mechanism and
      * in case of changes fetch the list of events of interest.
-     * 
+     *
      * The value has the type `(T::BlockNumber, EventIndex)` because if we used only just
      * the `EventIndex` then in case if the topic has the same contents on the next block
      * no notification will be triggered thus the event might be lost.
@@ -1045,9 +1045,9 @@ export interface StorageType extends BaseStorageType {
   };
   tokens: {    /**
      * The balance of a token type under an account.
-     * 
+     *
      * NOTE: If the total is ever zero, decrease account ref account.
-     * 
+     *
      * NOTE: This is only used in the case that this module is used to store
      * balances.
      **/

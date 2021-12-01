@@ -1,8 +1,8 @@
 import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import keyring from '@polkadot/ui-keyring'
-import { Subject, scheduled, asapScheduler } from '@polkadot/x-rxjs'
-import { map, concatAll } from '@polkadot/x-rxjs/operators'
+import { Subject, combineLatest, of } from '@polkadot/x-rxjs'
+import { map } from '@polkadot/x-rxjs/operators'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import type { CreateResult } from '@polkadot/ui-keyring/types'
 import type { KeyringPair$Json } from '@polkadot/keyring/types'
@@ -10,6 +10,7 @@ import type { Signer, Observable, Codec } from '@polkadot/types/types'
 import type { Subscription } from '@polkadot/x-rxjs'
 
 import {
+  NativeAssets,
   KnownAssets,
   getAssetBalance,
   AccountAsset,
@@ -23,12 +24,24 @@ import {
   getAssetBalanceObservable,
   ZeroBalance,
   Whitelist,
-  getLiquidityBalance
+  getLiquidityBalance,
+  XOR
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes } from './swap'
-import { RewardingEvents, RewardsInfo, RewardInfo, isClaimableReward, containsRewardsForEvents, prepareRewardInfo, prepareRewardsInfo } from './rewards'
+import { QuotePayload } from './liquidityProxy'
+import {
+  RewardingEvents,
+  RewardsInfo,
+  RewardInfo,
+  AccountMarketMakerInfo,
+  isClaimableReward,
+  containsRewardsForEvents,
+  prepareRewardInfo,
+  prepareRewardsInfo,
+  getAccountMarketMakerInfoObservable
+} from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
@@ -44,8 +57,11 @@ export class Api extends BaseApi {
   public readonly seedLength = 12
   public readonly bridge: BridgeApi = new BridgeApi()
 
+  // Default assets addresses of account - list of NativeAssets addresses
+  public accountDefaultAssetsAddresses: Array<string> = NativeAssets.map(asset => asset.address)
+
   private _assets: Array<AccountAsset> = []
-  private _accountAssetsAddresses: Array<string> = [] 
+  private _accountAssetsAddresses: Array<string> = []
   private _liquidity: Array<AccountLiquidity> = []
 
   private balanceSubscriptions: Array<Subscription> = []
@@ -163,14 +179,13 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get a list of all known assets from `KnownAssets` array & from account storage
+   * Get a list of all assets from default account assets array & from account storage
    */
   public async getKnownAccountAssets (): Promise<Array<AccountAsset>> {
     assert(this.account, Messages.connectWallet)
 
     const knownAssets: Array<AccountAsset> = []
-    const knownAssetsAddresses = Object.values(KnownAssets).map(knownAsset => knownAsset.address)
-    const assetsAddresses = new Set([...knownAssetsAddresses, ...this.accountAssetsAddresses])
+    const assetsAddresses = new Set([...this.accountDefaultAssetsAddresses, ...this.accountAssetsAddresses])
 
     for (const assetAddress of assetsAddresses) {
       const asset = await this.getAccountAsset(assetAddress)
@@ -415,7 +430,6 @@ export class Api extends BaseApi {
    * @param targetAssetIds
    */
   public updateAccountLiquidity (targetAssetIds: Array<string>): void {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
     const getReserve = (reserve: Codec) => new FPNumber(reserve).toCodecString()
     const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) => this.accountLiquidity = this.accountLiquidity.filter(item => item.secondAddress !== liquidity.secondAddress)
     this.unsubscribeFromAllLiquidityUpdates()
@@ -426,13 +440,13 @@ export class Api extends BaseApi {
     this.liquiditySubject.next()
     // Refresh all required subscriptions
     for (const liquidity of liquidityList) {
-      const subscription = this.apiRx.query.poolXyk.reserves(xor.address, liquidity.secondAddress).subscribe(async reserves => {
+      const subscription = this.apiRx.query.poolXyk.reserves(XOR.address, liquidity.secondAddress).subscribe(async reserves => {
         if (!reserves || !(reserves[0] || reserves[1])) {
           removeLiquidityItem(liquidity) // Remove it from list if something was wrong
         } else {
           const reserveA = getReserve(reserves[0])
           const reserveB = getReserve(reserves[1])
-          const updatedLiquidity = await this.getAccountLiquidityItem(xor.address, liquidity.secondAddress, reserveA, reserveB)
+          const updatedLiquidity = await this.getAccountLiquidityItem(XOR.address, liquidity.secondAddress, reserveA, reserveB)
           if (updatedLiquidity) {
             this.addToLiquidityList(updatedLiquidity)
           } else {
@@ -812,7 +826,6 @@ export class Api extends BaseApi {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<SwapResult> {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
     const assetA = await this.getAssetInfo(assetAAddress)
     const assetB = await this.getAssetInfo(assetBAddress)
     const liquiditySources = this.prepareLiquiditySources(liquiditySource)
@@ -828,7 +841,7 @@ export class Api extends BaseApi {
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amount_without_impact: 0 }
     return {
       amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
-      fee: new FPNumber(value.fee, xor.decimals).toCodecString(),
+      fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
       amountWithoutImpact: new FPNumber(value.amount_without_impact, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
     } as SwapResult
@@ -991,28 +1004,100 @@ export class Api extends BaseApi {
     )
   }
 
+  public subscribeOnAccountMarketMakerInfo (): Observable<AccountMarketMakerInfo> {
+    assert(this.account, Messages.connectWallet)
+
+    return getAccountMarketMakerInfoObservable(this.apiRx, this.account.pair.address)
+  }
+
   public subscribeOnSwapReserves (
     firstAssetAddress: string,
     secondAssetAddress: string,
-    liquiditySource = LiquiditySourceTypes.Default
-  ): Observable<void> {
-    const toVoid = (o: Observable<any>) => o.pipe(map(codec => {}))
-    const poolXyk: Array<Observable<void>> = []
-    const xor = KnownAssets.get(KnownSymbols.XOR).address
-    if (![firstAssetAddress, secondAssetAddress].includes(xor)) {
-      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, firstAssetAddress)))
-      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(xor, secondAssetAddress)))
-    } else {
-      const first = firstAssetAddress === xor ? firstAssetAddress : secondAssetAddress
-      const second = secondAssetAddress === xor ? firstAssetAddress : secondAssetAddress
-      poolXyk.push(toVoid(this.apiRx.query.poolXyk.reserves(first, second)))
-    }
-    if (liquiditySource === LiquiditySourceTypes.XYKPool) {
-      return scheduled(poolXyk, asapScheduler).pipe(concatAll())
-    }
-    const firstTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(firstAssetAddress))
-    const secondTbc = toVoid(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(secondAssetAddress))
-    return scheduled([...poolXyk, firstTbc, secondTbc], asapScheduler).pipe(concatAll())
+    selectedLiquiditySource = LiquiditySourceTypes.Default
+  ): Observable<QuotePayload> {
+    const knownAssetAddress = (symbol: string) => KnownAssets.get(symbol).address;
+
+    const XOR = knownAssetAddress(KnownSymbols.XOR);
+    const DAI = knownAssetAddress(KnownSymbols.DAI);
+    const XSTUSD = knownAssetAddress(KnownSymbols.XSTUSD);
+
+    const toCodec = (o: Observable<any>) => o.pipe(map(codec => {
+      return Array.isArray(codec) ? codec.map(item => item.toString()) : codec.toString()
+    }));
+
+    const toAveragePrice = (o: Observable<any>) => o.pipe(map(codec => codec.value.average_price.toString()));
+
+    const getAssetAveragePrice = (assetAddress: string): Observable<any> => {
+      if (assetAddress === DAI || assetAddress === XSTUSD) {
+        return of(new FPNumber(1).toCodecString());
+      }
+      if (assetAddress === XOR) {
+        return toAveragePrice(this.apiRx.query.priceTools.priceInfos(DAI));
+      }
+
+      return toAveragePrice(this.apiRx.query.priceTools.priceInfos(assetAddress));
+    };
+
+    // is TBC or XST sources used
+    const isSourceUsed = (source: LiquiditySourceTypes): boolean =>
+      selectedLiquiditySource === source ||
+      selectedLiquiditySource === LiquiditySourceTypes.Default;
+
+    const combineValuesWithKeys = (values: Array<string>, keys: Array<string>): { [key: string]: string } =>
+      values.reduce((result, value, index) => ({
+        ...result,
+        [keys[index]]: value
+      }), {});
+
+    // Assets that have XYK reserves (XOR - asset) or TBC collateral reserves (not XOR)
+    const assetsWithReserves = [firstAssetAddress, secondAssetAddress].filter(address => address !== XOR);
+    // Assets that have average price data (storage has prices only for KnownAssets)
+    const assetsWithPrices = [...assetsWithReserves, XOR].filter(address => KnownAssets.contains(address));
+    // Assets for which we need to know the total supply
+    const assetsWithIssuances = [XOR, XSTUSD];
+
+    const tbcUsed = isSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
+    const xstUsed = isSourceUsed(LiquiditySourceTypes.XSTPool);
+
+    const xykReserves = assetsWithReserves.map(address => toCodec(this.apiRx.query.poolXyk.reserves(XOR, address)));
+
+    // fill array if TBC source available
+    const tbcReserves = tbcUsed
+      ? assetsWithReserves.map(address => toCodec(this.apiRx.query.multicollateralBondingCurvePool.collateralReserves(address)))
+      : [];
+
+    // fill array if TBC or XST source available
+    const assetsPrices = (tbcUsed || xstUsed)
+      ? assetsWithPrices.map(address => getAssetAveragePrice(address))
+      : [];
+
+    // if TBC source available
+    const assetsIssuances = tbcUsed
+      ? [
+        toCodec(this.apiRx.query.balances.totalIssuance()),
+        toCodec(this.apiRx.query.tokens.totalIssuance(XSTUSD))
+      ]
+      : [];
+
+    return combineLatest([...assetsIssuances, ...assetsPrices, ...tbcReserves, ...xykReserves]).pipe(map(data => {
+      let position = assetsIssuances.length;
+
+      const issuances = data.slice(0, position);
+      const prices = data.slice(position, position += assetsPrices.length);
+      const tbc = data.slice(position, position += tbcReserves.length);
+      const xyk = data.slice(position, position += xykReserves.length);
+
+      const payload: QuotePayload = {
+        reserves: {
+          xyk,
+          tbc: combineValuesWithKeys(tbc, assetsWithReserves),
+        },
+        prices: combineValuesWithKeys(prices, assetsWithPrices),
+        issuances: combineValuesWithKeys(issuances, assetsWithIssuances),
+      }
+
+      return payload;
+    }));
   }
 
   private async calcAddLiquidityParams (
@@ -1085,10 +1170,9 @@ export class Api extends BaseApi {
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.defaultSlippageTolerancePercent
   ) {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    assert([firstAssetAddress, secondAssetAddress].includes(xor.address), Messages.xorIsRequired)
-    const baseAssetId = firstAssetAddress === xor.address ? firstAssetAddress : secondAssetAddress
-    const targetAssetId = firstAssetAddress !== xor.address ? firstAssetAddress : secondAssetAddress
+    assert([firstAssetAddress, secondAssetAddress].includes(XOR.address), Messages.xorIsRequired)
+    const baseAssetId = firstAssetAddress === XOR.address ? firstAssetAddress : secondAssetAddress
+    const targetAssetId = firstAssetAddress !== XOR.address ? firstAssetAddress : secondAssetAddress
     const exists = await this.checkLiquidity(baseAssetId, targetAssetId)
     assert(!exists, Messages.pairAlreadyCreated)
     const baseAssetAmount = baseAssetId === firstAssetAddress ? firstAmount : secondAmount
@@ -1161,8 +1245,7 @@ export class Api extends BaseApi {
     firstAssetAddress: string,
     secondAssetAddress: string
   ): Promise<Array<LiquiditySourceTypes>> {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    const baseAssetId = secondAssetAddress === xor.address ? secondAssetAddress : firstAssetAddress
+    const baseAssetId = secondAssetAddress === XOR.address ? secondAssetAddress : firstAssetAddress
     const targetAssetId = baseAssetId === secondAssetAddress ? firstAssetAddress : secondAssetAddress
     const list = (await (this.api.rpc as any).tradingPair.listEnabledSourcesForPair(
       this.defaultDEXId,
@@ -1412,6 +1495,10 @@ export class Api extends BaseApi {
     return withPoolTokens ? assets : assets.filter(asset => asset.symbol !== PoolTokens.XYKPOOL)
   }
 
+  public getSystemBlockNumberObservable (): Observable<string> {
+    return this.apiRx.query.system.number().pipe(map(codec => codec.toString()))
+  }
+
   // # Logout & reset methods
 
   public unsubscribeAll (): void {
@@ -1438,16 +1525,15 @@ export class Api extends BaseApi {
 
   // # Formatter methods
   public hasEnoughXor (asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
-    const xor = KnownAssets.get(KnownSymbols.XOR)
-    const xorDecimals = xor.decimals
+    const xorDecimals = XOR.decimals
     const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals)
-    if (asset.address === xor.address) {
+    if (asset.address === XOR.address) {
       const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals)
       const fpAmount = new FPNumber(amount, xorDecimals)
       return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
     }
     // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.getAsset(xor.address)
+    const xorAccountAsset = this.getAsset(XOR.address)
     if (!xorAccountAsset) {
       return false
     }
