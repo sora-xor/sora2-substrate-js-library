@@ -1,4 +1,4 @@
-import { map } from '@polkadot/x-rxjs/operators'
+import { map, mergeMap } from '@polkadot/x-rxjs/operators'
 import type { ApiPromise, ApiRx } from '@polkadot/api'
 import type { Codec, Observable } from '@polkadot/types/types'
 import type { AccountData } from '@polkadot/types/interfaces/balances'
@@ -36,7 +36,8 @@ export enum BalanceType {
   Frozen = 'frozen',
   Locked = 'locked',
   Reserved = 'reserved',
-  Total = 'total'
+  Total = 'total',
+  Bounded = 'bounded'
 }
 
 // Each value === value * 10 ^ decimals
@@ -46,6 +47,7 @@ export interface AccountBalance {
   locked: CodecString; // = max(miscFrozen, feeFrozen).
   transferable: CodecString; // = free - Locked.
   frozen: CodecString; // = Locked + reserved.
+  bounded?: CodecString; // bonded XOR
 }
 
 export const ZeroBalance = {
@@ -55,19 +57,21 @@ export const ZeroBalance = {
   transferable: '0'
 } as AccountBalance
 
-function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: number): AccountBalance {
+function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: number, boundedData?: CodecString): AccountBalance {
   const free = new FPNumber(data.free || 0, assetDecimals)
   const reserved = new FPNumber(data.reserved || 0, assetDecimals)
   const miscFrozen = new FPNumber((data as AccountData).miscFrozen || 0, assetDecimals)
   const feeFrozen = new FPNumber((data as AccountData).feeFrozen || 0, assetDecimals)
   const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals)
   const locked = FPNumber.max(miscFrozen, feeFrozen)
+  const bounded = new FPNumber(boundedData || 0, assetDecimals)
   return {
     reserved: reserved.toCodecString(),
     locked: locked.toCodecString(),
     total: free.add(reserved).toCodecString(),
     transferable: free.sub(locked).toCodecString(),
-    frozen: (frozen.isZero() ? locked.add(reserved) : frozen).toCodecString()
+    frozen: (frozen.isZero() ? locked.add(reserved) : frozen).toCodecString(),
+    bounded: bounded.toCodecString()
   } as AccountBalance
 }
 
@@ -195,14 +199,19 @@ export async function getBalance (api: ApiPromise, accountAddress: string, asset
 export async function getAssetBalance (api: ApiPromise, accountAddress: string, assetAddress: string, assetDecimals: number): Promise<AccountBalance> {
   if (assetAddress === XOR.address) {
     const accountInfo = await api.query.system.account(accountAddress)
-    return formatBalance(accountInfo.data, assetDecimals)
+    const bondedBalance = await api.query.referrals.referrerBalances(accountAddress)
+    return formatBalance(accountInfo.data, assetDecimals, bondedBalance.toString())
   }
   const accountData = await api.query.tokens.accounts(accountAddress, assetAddress)
   return formatBalance(accountData, assetDecimals)
 }
 
 export function getAssetBalanceObservable (apiRx: ApiRx, accountAddress: string, assetAddress: string, assetDecimals: number): Observable<AccountBalance> {
+  // TODO: Add 2 mappings: data and boundedData
   if (assetAddress === XOR.address) {
+    // const boundedData = apiRx.query.referrals.referrerBalances(accountAddress).pipe(
+    //   map(({ boundedData }) => formatBalance(data, assetDecimals, boundedData))
+    // )
     return apiRx.query.system.account(accountAddress).pipe(
       map(({ data }) => formatBalance(data, assetDecimals))
     )

@@ -60,7 +60,10 @@ export class BaseApi {
     [Operation.Transfer]: '0',
     [Operation.ClaimVestedRewards]: '0',
     [Operation.ClaimLiquidityProvisionRewards]: '0',
-    [Operation.ClaimExternalRewards]: '0'
+    [Operation.ClaimExternalRewards]: '0',
+    [Operation.ReferralReserveXor]: '0',
+    [Operation.ReferralUnreserveXor]: '0',
+    [Operation.ReferralSetInvitedUser]: '0'
   } as NetworkFeesObject
 
   protected readonly prefix = 69
@@ -386,6 +389,15 @@ export class BaseApi {
           (this.api.tx.assets as any).transfer(...params[0].transferArgs)
         ]]
         break
+      case Operation.ReferralReserveXor:
+          extrinsic = this.api.tx.referrals.reserve
+          break
+      case Operation.ReferralUnreserveXor:
+          extrinsic = this.api.tx.referrals.unreserve
+          break
+      case Operation.ReferralSetInvitedUser:
+          extrinsic = this.api.tx.referrals.setReferrer
+          break
       default:
         throw new Error('Unknown function')
     }
@@ -433,6 +445,12 @@ export class BaseApi {
         return this.api.tx.pswapDistribution.claimIncentive()
       case Operation.ClaimExternalRewards:
         return this.api.tx.rewards.claim('0xa8811ca9a2f65a4e21bd82a1e121f2a7f0f94006d0d4bcacf50016aef0b67765692bb7a06367365f13a521ec129c260451a682e658048729ff514e77e4cdffab1b') // signature mock
+      case Operation.ReferralReserveXor:
+        return this.api.tx.referrals.reserve('0')
+      case Operation.ReferralUnreserveXor:
+        return this.api.tx.referrals.unreserve('0')
+      case Operation.ReferralSetInvitedUser:
+        return this.api.tx.referrals.setReferrer('')
       default:
         return null
     }
@@ -451,7 +469,10 @@ export class BaseApi {
       Operation.Transfer,
       Operation.ClaimVestedRewards,
       Operation.ClaimLiquidityProvisionRewards,
-      Operation.ClaimExternalRewards
+      Operation.ClaimExternalRewards,
+      Operation.ReferralReserveXor,
+      Operation.ReferralUnreserveXor,
+      Operation.ReferralSetInvitedUser
     ]
     // We don't need to know real account address for checking network fees
     const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs'
@@ -516,9 +537,9 @@ export enum Operation {
   ClaimExternalRewards = 'ClaimExternalRewards',
   TransferAll = 'TransferAll', // Batch with transfers
   SwapAndSend = 'SwapAndSend',
-  ReferralsReserve = 'ReferralsReserve',
-  ReferralsUnreserve = 'ReferralsUnreserve',
-  ReferralsSetReferrer = 'ReferralsSetReferrer'
+  ReferralReserveXor = 'ReferralReserveXor',
+  ReferralUnreserveXor = 'ReferralUnreserveXor',
+  ReferralSetInvitedUser = 'ReferralSetInvitedUser'
 }
 
 export interface History {
