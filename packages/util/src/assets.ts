@@ -37,7 +37,7 @@ export enum BalanceType {
   Locked = 'locked',
   Reserved = 'reserved',
   Total = 'total',
-  Bounded = 'bounded'
+  Bonded = 'bonded'
 }
 
 // Each value === value * 10 ^ decimals
@@ -47,7 +47,7 @@ export interface AccountBalance {
   locked: CodecString; // = max(miscFrozen, feeFrozen).
   transferable: CodecString; // = free - Locked.
   frozen: CodecString; // = Locked + reserved.
-  bounded?: CodecString; // bonded XOR
+  bonded?: CodecString; // bonded XOR
 }
 
 export const ZeroBalance = {
@@ -57,21 +57,21 @@ export const ZeroBalance = {
   transferable: '0'
 } as AccountBalance
 
-function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: number, boundedData?: CodecString): AccountBalance {
+function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: number, bondedData?: CodecString): AccountBalance {
   const free = new FPNumber(data.free || 0, assetDecimals)
   const reserved = new FPNumber(data.reserved || 0, assetDecimals)
   const miscFrozen = new FPNumber((data as AccountData).miscFrozen || 0, assetDecimals)
   const feeFrozen = new FPNumber((data as AccountData).feeFrozen || 0, assetDecimals)
   const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals)
   const locked = FPNumber.max(miscFrozen, feeFrozen)
-  const bounded = new FPNumber(boundedData || 0, assetDecimals)
+  const bonded = new FPNumber(bondedData || 0, assetDecimals)
   return {
     reserved: reserved.toCodecString(),
     locked: locked.toCodecString(),
     total: free.add(reserved).toCodecString(),
     transferable: free.sub(locked).toCodecString(),
     frozen: (frozen.isZero() ? locked.add(reserved) : frozen).toCodecString(),
-    bounded: bounded.toCodecString()
+    bonded: bonded.toCodecString()
   } as AccountBalance
 }
 
@@ -207,10 +207,10 @@ export async function getAssetBalance (api: ApiPromise, accountAddress: string, 
 }
 
 export function getAssetBalanceObservable (apiRx: ApiRx, accountAddress: string, assetAddress: string, assetDecimals: number): Observable<AccountBalance> {
-  // TODO: Add 2 mappings: data and boundedData
+  // TODO: Add 2 mappings: data and bondedData
   if (assetAddress === XOR.address) {
-    // const boundedData = apiRx.query.referrals.referrerBalances(accountAddress).pipe(
-    //   map(({ boundedData }) => formatBalance(data, assetDecimals, boundedData))
+    // const bondedData = apiRx.query.referrals.referrerBalances(accountAddress).pipe(
+    //   map(({ bondedData }) => formatBalance(data, assetDecimals, bondedData))
     // )
     return apiRx.query.system.account(accountAddress).pipe(
       map(({ data }) => formatBalance(data, assetDecimals))

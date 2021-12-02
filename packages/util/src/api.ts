@@ -1588,7 +1588,7 @@ export class Api extends BaseApi {
   public async getInvitedUsers (referralId: string): Promise<Array<string>> {
     const referrals = await this.api.query.referrals.referrers.entries() as any
     if (!referrals) return []
-    return referrals.filter(info => info[1].toString() === referralId).map(item => item[0].args);
+    return referrals.filter(info => info[1].toString() === referralId).map(item => item[0].args.toString())
   }
 
   /**
