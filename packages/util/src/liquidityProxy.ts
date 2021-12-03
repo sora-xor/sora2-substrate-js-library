@@ -39,7 +39,9 @@ export type QuotePaths = {
 
 export type QuotePayload = {
   reserves: {
-    xyk: Array<[CodecString, CodecString]>;
+    xyk: {
+      [key: string]: [CodecString, CodecString];
+    };
     tbc: {
       [key: string]: CodecString;
     };
@@ -76,21 +78,12 @@ const getMaxPositive = (value: FPNumber) => FPNumber.max(value, FPNumber.ZERO);
 const isGreaterThanZero = (value: FPNumber) => FPNumber.isGreaterThan(value, FPNumber.ZERO);
 const isLessThanOrEqualToZero = (value: FPNumber) => FPNumber.isLessThanOrEqualTo(value, FPNumber.ZERO);
 
-const getXykReservesPositioned = (
-  isXorInput: boolean,
-  reserves: QuotePayload['reserves']['xyk']
-): [CodecString, CodecString] => {
-  if (!isXorInput) {
-    return [reserves[0][1], reserves[0][0]];
-  } else if (reserves.length === 2) {
-    return [reserves[1][0], reserves[1][1]];
-  } else {
-    return [reserves[0][0], reserves[0][1]];
-  }
-};
-
-const getXykReserves = (inputAssetId: string, payload: QuotePayload): [FPNumber, FPNumber] => {
-  const [input, output] = getXykReservesPositioned(inputAssetId === XOR, payload.reserves.xyk);
+// returs reserves by order: inputAssetId, outputAssetId
+export const getXykReserves = (inputAssetId: string, outputAssetId: string, payload: QuotePayload): [FPNumber, FPNumber] => {
+  const isXorInput = inputAssetId === XOR;
+  const nonXor = isXorInput ? outputAssetId : inputAssetId;
+  const reserves = [...payload.reserves.xyk[nonXor]];
+  const [input, output] = isXorInput ? reserves : reserves.reverse();
 
   return [toFp(input), toFp(output)];
 };
@@ -891,7 +884,7 @@ const smartSplit = (
   let bestRewards: Array<LPRewardsInfo> = [];
 
   const isXorInput = inputAssetId === XOR;
-  const [inputReserves, outputReserves] = getXykReserves(inputAssetId, payload);
+  const [inputReserves, outputReserves] = getXykReserves(inputAssetId, outputAssetId, payload);
 
   const [xorReserve, otherReserve] = isXorInput ? [inputReserves, outputReserves] : [outputReserves, inputReserves];
 
@@ -994,7 +987,7 @@ const quoteSingle = (
   if (sources.length === 1) {
     switch (sources[0]) {
       case LiquiditySourceTypes.XYKPool: {
-        const [inputReserves, outputReserves] = getXykReserves(inputAssetId, payload);
+        const [inputReserves, outputReserves] = getXykReserves(inputAssetId, outputAssetId, payload);
 
         return xykQuote(inputReserves, outputReserves, amount, isDesiredInput, inputAssetId === XOR);
       }
@@ -1306,7 +1299,7 @@ const quoteWithoutImpactSingle = (
     const { market, amount } = item;
 
     if (market === LiquiditySourceTypes.XYKPool) {
-      const [inputReserves, outputReserves] = getXykReserves(inputAssetId, payload);
+      const [inputReserves, outputReserves] = getXykReserves(inputAssetId, outputAssetId, payload);
       const value = xykQuoteWithoutImpact(inputReserves, outputReserves, amount, isDesiredInput, inputAssetId === XOR);
 
       return result.add(value);

@@ -1043,7 +1043,7 @@ export class Api extends BaseApi {
       selectedLiquiditySource === source ||
       selectedLiquiditySource === LiquiditySourceTypes.Default;
 
-    const combineValuesWithKeys = (values: Array<string>, keys: Array<string>): { [key: string]: string } =>
+    const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key: string]: T } =>
       values.reduce((result, value, index) => ({
         ...result,
         [keys[index]]: value
@@ -1082,14 +1082,14 @@ export class Api extends BaseApi {
     return combineLatest([...assetsIssuances, ...assetsPrices, ...tbcReserves, ...xykReserves]).pipe(map(data => {
       let position = assetsIssuances.length;
 
-      const issuances = data.slice(0, position);
-      const prices = data.slice(position, position += assetsPrices.length);
-      const tbc = data.slice(position, position += tbcReserves.length);
-      const xyk = data.slice(position, position += xykReserves.length);
+      const issuances: Array<string> = data.slice(0, position);
+      const prices: Array<string> = data.slice(position, position += assetsPrices.length);
+      const tbc: Array<string> = data.slice(position, position += tbcReserves.length);
+      const xyk: Array<[string, string]> = data.slice(position, position += xykReserves.length);
 
       const payload: QuotePayload = {
         reserves: {
-          xyk,
+          xyk: combineValuesWithKeys(xyk, assetsWithReserves),
           tbc: combineValuesWithKeys(tbc, assetsWithReserves),
         },
         prices: combineValuesWithKeys(prices, assetsWithPrices),
