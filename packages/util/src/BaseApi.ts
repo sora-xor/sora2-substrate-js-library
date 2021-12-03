@@ -443,7 +443,12 @@ export class BaseApi {
     }
   }
 
-  protected async calcStaticNetworkFees (): Promise<void> {
+  /**
+   * Calc all required network fees. The result will be written to `NetworkFee` object.
+   *
+   * For example, `api.NetworkFee[Operation.AddLiquidity]`
+   */
+  public async calcStaticNetworkFees (): Promise<void> {
     const operations = [
       Operation.AddLiquidity,
       Operation.CreatePair,

@@ -544,13 +544,12 @@ export class Api extends BaseApi {
   /**
    * The first method you should run. Includes initialization process
    */
-  public async initialize (): Promise<void> {
+  public initialize (): void {
     const address = this.storage?.get('address')
     const password = this.storage?.get('password')
     const name = this.storage?.get('name')
     const isExternal = Boolean(this.storage?.get('isExternal'))
     keyring.loadAll({ type: KeyringType })
-    await this.calcStaticNetworkFees()
     if (!address) {
       return
     }
@@ -1497,6 +1496,10 @@ export class Api extends BaseApi {
 
   public getSystemBlockNumberObservable (): Observable<string> {
     return this.apiRx.query.system.number().pipe(map(codec => codec.toString()))
+  }
+
+  public getRuntimeVersionObservable (): Observable<number> {
+    return this.apiRx.query.system.lastRuntimeUpgrade().pipe(map(value => (value.toJSON() as any).specVersion))
   }
 
   // # Logout & reset methods
