@@ -1,4 +1,5 @@
-import { map, mergeMap } from '@polkadot/x-rxjs/operators'
+import { map } from '@polkadot/x-rxjs/operators'
+import { combineLatest } from '@polkadot/x-rxjs'
 import type { ApiPromise, ApiRx } from '@polkadot/api'
 import type { Codec, Observable } from '@polkadot/types/types'
 import type { AccountData } from '@polkadot/types/interfaces/balances'
@@ -40,24 +41,35 @@ export enum BalanceType {
   Bonded = 'bonded'
 }
 
-// Each value === value * 10 ^ decimals
+/**
+ * Account Balance structure. Each value === value * 10 ^ decimals
+ *
+ * total = free + reserved + bonded
+ *
+ * locked = max(miscFrozen, feeFrozen)
+ *
+ * transferable = free - locked
+ *
+ * frozen = locked + reserved
+ */
 export interface AccountBalance {
   reserved: CodecString;
-  total: CodecString; //  = free + reserved.
-  locked: CodecString; // = max(miscFrozen, feeFrozen).
-  transferable: CodecString; // = free - Locked.
-  frozen: CodecString; // = Locked + reserved.
-  bonded?: CodecString; // bonded XOR
+  total: CodecString;
+  locked: CodecString;
+  transferable: CodecString;
+  frozen: CodecString;
+  bonded: CodecString;
 }
 
 export const ZeroBalance = {
   frozen: '0',
   locked: '0',
   total: '0',
-  transferable: '0'
+  transferable: '0',
+  bonded: '0'
 } as AccountBalance
 
-function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: number, bondedData?: CodecString): AccountBalance {
+function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: number, bondedData?: Codec): AccountBalance {
   const free = new FPNumber(data.free || 0, assetDecimals)
   const reserved = new FPNumber(data.reserved || 0, assetDecimals)
   const miscFrozen = new FPNumber((data as AccountData).miscFrozen || 0, assetDecimals)
@@ -65,13 +77,15 @@ function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: num
   const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals)
   const locked = FPNumber.max(miscFrozen, feeFrozen)
   const bonded = new FPNumber(bondedData || 0, assetDecimals)
+  const freeAndReserved = free.add(reserved)
+  const hasBonded = bonded.isFinity()
   return {
     reserved: reserved.toCodecString(),
     locked: locked.toCodecString(),
-    total: free.add(reserved).toCodecString(),
+    total: (hasBonded ? freeAndReserved.add(bonded) : freeAndReserved).toCodecString(),
     transferable: free.sub(locked).toCodecString(),
     frozen: (frozen.isZero() ? locked.add(reserved) : frozen).toCodecString(),
-    bonded: bonded.toCodecString()
+    bonded: hasBonded ? bonded.toCodecString() : '0'
   } as AccountBalance
 }
 
@@ -166,7 +180,7 @@ export const KnownAssets = new ArrayLike<Asset>([
   {
     address: '0x0200060000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.DAI,
-    name: 'Dai',
+    name: 'Dai Stablecoin',
     decimals: FPNumber.DEFAULT_PRECISION,
     totalSupply: MaxTotalSupply,
   },
@@ -200,20 +214,19 @@ export async function getAssetBalance (api: ApiPromise, accountAddress: string, 
   if (assetAddress === XOR.address) {
     const accountInfo = await api.query.system.account(accountAddress)
     const bondedBalance = await api.query.referrals.referrerBalances(accountAddress)
-    return formatBalance(accountInfo.data, assetDecimals, bondedBalance.toString())
+    return formatBalance(accountInfo.data, assetDecimals, bondedBalance)
   }
   const accountData = await api.query.tokens.accounts(accountAddress, assetAddress)
   return formatBalance(accountData, assetDecimals)
 }
 
 export function getAssetBalanceObservable (apiRx: ApiRx, accountAddress: string, assetAddress: string, assetDecimals: number): Observable<AccountBalance> {
-  // TODO: Add 2 mappings: data and bondedData
   if (assetAddress === XOR.address) {
-    // const bondedData = apiRx.query.referrals.referrerBalances(accountAddress).pipe(
-    //   map(({ bondedData }) => formatBalance(data, assetDecimals, bondedData))
-    // )
-    return apiRx.query.system.account(accountAddress).pipe(
-      map(({ data }) => formatBalance(data, assetDecimals))
+    const accountInfo = apiRx.query.system.account(accountAddress)
+    const bondedBalance = apiRx.query.referrals.referrerBalances(accountAddress)
+
+    return combineLatest([accountInfo, bondedBalance]).pipe(
+      map((result) => formatBalance(result[0].data, assetDecimals, result[1]))
     )
   }
   return apiRx.query.tokens.accounts(accountAddress, assetAddress).pipe(
