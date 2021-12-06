@@ -9,7 +9,7 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types'
 
 import { AccountStorage, Storage } from './storage'
-import { KnownAssets, KnownSymbols, XOR } from './assets'
+import { XOR } from './assets'
 import { CodecString, FPNumber } from './fp'
 import { encrypt, toHmacSHA256 } from './crypto'
 import { connection } from './connection'
@@ -427,7 +427,12 @@ export class BaseApi {
       case Operation.EthBridgeOutgoing:
         return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0)
       case Operation.RegisterAsset:
-        return this.api.tx.assets.register('', '', '0', false, false, null, null)
+        try {
+          return this.api.tx.assets.register('', '', '0', false, false, null, null)
+        } catch (error) {
+          // TODO: remove this hack when nft tokens will be supported
+          return this.api.tx.assets.register('', '', '0', false)
+        }
       case Operation.RemoveLiquidity:
         return this.api.tx.poolXyk.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0')
       case Operation.Swap:
@@ -456,7 +461,12 @@ export class BaseApi {
     }
   }
 
-  protected async calcStaticNetworkFees (): Promise<void> {
+  /**
+   * Calc all required network fees. The result will be written to `NetworkFee` object.
+   *
+   * For example, `api.NetworkFee[Operation.AddLiquidity]`
+   */
+  public async calcStaticNetworkFees (): Promise<void> {
     const operations = [
       Operation.AddLiquidity,
       Operation.CreatePair,

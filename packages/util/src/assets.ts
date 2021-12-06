@@ -194,18 +194,17 @@ export const KnownAssets = new ArrayLike<Asset>([
 ])
 
 export async function getAssetInfo (api: ApiPromise, address: string): Promise<Asset> {
-  const asset = { address } as Asset
-  const assetInfo = (await (api.rpc as any).assets.getAssetInfo(address)).toJSON()
-  asset.decimals = assetInfo.precision
-  asset.symbol = assetInfo.symbol
-  asset.name = assetInfo.name
-  return asset
+  const [symbol, name, decimals, _] = (await api.query.assets.assetInfos(address)).toHuman() as any
+  return { address, symbol, name, decimals: +decimals } as Asset
 }
 
 export async function getLiquidityBalance (api: ApiPromise, accountAddress: string, poolAddress: string): Promise<Codec> {
   return await api.query.poolXyk.poolProviders(poolAddress, accountAddress) // BalanceInfo
 }
 
+/**
+ * Used *ONLY* for faucet
+ */
 export async function getBalance (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
   return await (api.rpc as any).assets.usableBalance(accountAddress, assetAddress) // BalanceInfo
 }
@@ -249,9 +248,10 @@ function isRegisteredAsset (asset: any, whitelist: Whitelist): boolean {
 }
 
 export async function getAssets (api: ApiPromise, whitelist?: Whitelist): Promise<Array<Asset>> {
-  const assetInfos = (await (api.rpc as any).assets.listAssetInfos()).toJSON()
-  const assets = assetInfos.map(({ asset_id, symbol, name, precision }) => {
-    return { symbol, name, address: asset_id, decimals: precision } as Asset
+  const assets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
+    const [address] = key.toHuman() as any
+    const [symbol, name, decimals, _] = codec.toHuman() as any
+    return { address, symbol, name, decimals: +decimals }
   }) as Array<Asset>
   return !whitelist ? assets : assets.sort((a, b) => {
     const isNativeA = isNativeAsset(a)
