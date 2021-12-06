@@ -675,7 +675,8 @@ export interface StorageType extends BaseStorageType {
      **/
     randomMaterial: Vec<Hash> | null;
   };
-  referrals: {    referrerBalances: StorageMap<AccountId | string, Option<Balance>>;
+  referrals: {    referrals: StorageMap<AccountId | string, Vec<AccountId>>;
+    referrerBalances: StorageMap<AccountId | string, Option<Balance>>;
     referrers: StorageMap<AccountId | string, Option<AccountId>>;
   };
   rewards: {    /**
@@ -1115,6 +1116,10 @@ export interface StorageType extends BaseStorageType {
      * Registry of market makers with large transaction volumes (>1 XOR per transaction).
      **/
     marketMakersRegistry: StorageMap<AccountId | string, MarketMakerInfo>;
+    /**
+     * Market making pairs storage.
+     **/
+    marketMakingPairs: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, ITuple<[]>>;
     /**
      * Reserved for future use
      * Mapping between users and their owned rewards of different kinds, which are vested.
