@@ -1577,10 +1577,7 @@ export class Api extends BaseApi {
    */
   public async getReferral (invitedUserId: string): Promise<string> {
     const referral = await this.api.query.referrals.referrers(invitedUserId) as any
-    if (!referral || !referral.length) {
-      return ''
-    }
-    return referral
+    return !referral ? '' : referral.toString()
   }
 
   /**
