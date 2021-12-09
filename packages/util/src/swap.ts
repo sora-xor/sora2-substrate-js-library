@@ -8,6 +8,10 @@ export enum LiquiditySourceTypes {
   MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool'
 }
 
+export type PrimaryMarketsEnabledAssets = {
+  [key: string]: Array<string>
+};
+
 export interface SwapResult {
   amount: CodecString;
   fee: CodecString;
