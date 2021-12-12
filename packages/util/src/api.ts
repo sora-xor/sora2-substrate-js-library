@@ -716,9 +716,9 @@ export class Api extends BaseApi {
         name,
         supply.toCodecString(),
         extensibleSupply,
-        isNft,
-        null,
-        null
+        // isNft, TODO: [nft] Uncomment it when nft will be supported
+        // null,
+        // null
       ]
     }
   }
