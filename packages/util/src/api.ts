@@ -1598,11 +1598,7 @@ export class Api extends BaseApi {
    * @returns array of invited users
    */
   public async getInvitedUsers (referralId: string): Promise<Array<string>> {
-    const referrals = await this.api.query.referrals.referrals(referralId) as any
-    if (!referrals) {
-      return []
-    }
-    return referrals
+    return await this.api.query.referrals.referrals(referralId) as any
   }
 
   /**
@@ -1612,12 +1608,10 @@ export class Api extends BaseApi {
    */
   public async reserveXor (amount: NumberLike): Promise<void> {
     assert(this.account, Messages.connectWallet)
-    const asset = await this.getAssetInfo(KnownAssets.get(KnownSymbols.XOR).address)
-    const assetAddress: string = asset?.address
     await this.submitExtrinsic(
-      this.api.tx.referrals.reserve(new FPNumber(amount, asset.decimals).toCodecString()),
+      this.api.tx.referrals.reserve(new FPNumber(amount, XOR.decimals).toCodecString()),
       this.account.pair,
-      { symbol: asset.symbol, amount: `${amount}`, assetAddress, type: Operation.ReferralReserveXor }
+      { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralReserveXor }
     )
   }
 
@@ -1627,12 +1621,10 @@ export class Api extends BaseApi {
    */
   public async unreserveXor (amount: NumberLike): Promise<void> {
     assert(this.account, Messages.connectWallet)
-    const asset = await this.getAssetInfo(KnownAssets.get(KnownSymbols.XOR).address)
-    const assetAddress: string = asset?.address
     await this.submitExtrinsic(
-      this.api.tx.referrals.unreserve(new FPNumber(amount, asset.decimals).toCodecString()),
+      this.api.tx.referrals.unreserve(new FPNumber(amount, XOR.decimals).toCodecString()),
       this.account.pair,
-      { symbol: asset.symbol, amount: `${amount}`, assetAddress, type: Operation.ReferralUnreserveXor }
+      { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralUnreserveXor }
     )
   }
 
