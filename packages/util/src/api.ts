@@ -373,10 +373,11 @@ export class Api extends BaseApi {
   ): Promise<Array<CodecString>> {
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const aIn = new FPNumber(firstAmount, firstAsset.decimals)
-    const bIn = new FPNumber(secondAmount, secondAsset.decimals)
-    const a = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals)
-    const b = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals)
+    const decimals = Math.max(firstAsset.decimals, secondAsset.decimals)
+    const aIn = new FPNumber(firstAmount, decimals)
+    const bIn = new FPNumber(secondAmount, decimals)
+    const a = FPNumber.fromCodecValue(firstTotal, decimals)
+    const b = FPNumber.fromCodecValue(secondTotal, decimals)
     if (a.isZero() && b.isZero()) {
       const inaccuracy = new FPNumber('0.000000000000001')
       return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()]
@@ -392,6 +393,8 @@ export class Api extends BaseApi {
     const poolAccount = poolAccountIdFromAssetPair(this.api, firstAddress, secondAddress).toString()
     const { decimals, symbol, name } = this.getLiquidityInfoByPoolAccount(poolAccount)
     const balanceCodec = await getLiquidityBalance(this.api, this.accountPair.address, poolAccount)
+    const firstAsset = await this.getAssetInfo(firstAddress)
+    const secondAsset = await this.getAssetInfo(secondAddress)
     if (!balanceCodec) {
       return null
     }
@@ -403,13 +406,13 @@ export class Api extends BaseApi {
     if (!Number(balance)) {
       return null
     }
-    const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(firstAddress, secondAddress, balance, reserveA, reserveB, poolAccount, decimals, decimals)
-    const fpBalanceA = FPNumber.fromCodecValue(balanceA, decimals)
-    const fpBalanceB = FPNumber.fromCodecValue(balanceB, decimals)
+    const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(firstAddress, secondAddress, balance, reserveA, reserveB, poolAccount, firstAsset.decimals, secondAsset.decimals)
+    const fpBalanceA = FPNumber.fromCodecValue(balanceA, firstAsset.decimals)
+    const fpBalanceB = FPNumber.fromCodecValue(balanceB, secondAsset.decimals)
     const pts = FPNumber.fromCodecValue(totalSupply, decimals)
     const minted = FPNumber.min(
-      fpBalanceA.mul(pts).div(FPNumber.fromCodecValue(reserveA, decimals)),
-      fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, decimals))
+      fpBalanceA.mul(pts).div(FPNumber.fromCodecValue(reserveA, firstAsset.decimals)),
+      fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, secondAsset.decimals))
     )
     return {
       address: poolAccount,
@@ -418,7 +421,8 @@ export class Api extends BaseApi {
       firstBalance: balanceA,
       secondBalance: balanceB,
       symbol,
-      decimals,
+      decimals: firstAsset.decimals,
+      decimals2: secondAsset.decimals,
       balance,
       name,
       poolShare: minted.div(pts).mul(FPNumber.HUNDRED).format() || '0'
@@ -709,7 +713,7 @@ export class Api extends BaseApi {
   private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean, isNft: boolean) {
     assert(this.account, Messages.connectWallet)
     // TODO: add assert for symbol, name and totalSupply params
-    const supply = new FPNumber(totalSupply)
+    const supply = isNft ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply)
     return {
       args: [
         symbol,
@@ -727,7 +731,8 @@ export class Api extends BaseApi {
     return liquiditySource ? [liquiditySource] : []
   }
 
-  /**
+  // symbol, name, content (link), description...
+  /** MODIFY to support NFT
    * Register asset
    * @param symbol string with asset symbol
    * @param name string with asset name
@@ -1123,7 +1128,9 @@ export class Api extends BaseApi {
         secondAmountNum.sub(secondAmountNum.mul(slippage)).toCodecString()
       ],
       firstAsset,
-      secondAsset
+      secondAsset,
+      firstAssetDecimals: firstAsset.decimals,
+      secondAssetDecimals: secondAsset.decimals
     }
   }
 
@@ -1157,7 +1164,9 @@ export class Api extends BaseApi {
         symbol2: params.secondAsset.symbol,
         asset2Address: params.secondAsset.address,
         amount: `${firstAmount}`,
-        amount2: `${secondAmount}`
+        amount2: `${secondAmount}`,
+        decimals: params.firstAssetDecimals,
+        decimals2: params.secondAssetDecimals
       }
     )
   }
@@ -1559,11 +1568,12 @@ export class Api extends BaseApi {
     secondAmount: NumberLike,
     reversed = false
   ): Promise<string> {
-    const one = new FPNumber(1)
     const firstAsset = await this.getAssetInfo(firstAssetAddress)
     const secondAsset = await this.getAssetInfo(secondAssetAddress)
-    const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals)
-    const secondAmountNum = new FPNumber(secondAmount, secondAsset.decimals)
+    const decimals = Math.max(firstAsset.decimals, secondAsset.decimals)
+    const one = new FPNumber(1, decimals)
+    const firstAmountNum = new FPNumber(firstAmount, decimals)
+    const secondAmountNum = new FPNumber(secondAmount, decimals)
     const result = !reversed
       ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
       : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one)
