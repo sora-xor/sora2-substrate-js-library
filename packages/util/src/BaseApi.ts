@@ -475,11 +475,11 @@ export class BaseApi {
   }
 
   public formatAddress (address: string, withSoraPrefix = true): string {
+    const publicKey = decodeAddress(address, false)
+
     if (withSoraPrefix) {
-      const publicKey = decodeAddress(address, false)
       return encodeAddress(publicKey, this.prefix)
     }
-    const publicKey = decodeAddress(address, false, -1)
     return encodeAddress(publicKey)
   }
 
@@ -494,6 +494,17 @@ export class BaseApi {
     } catch (error) {
       return false
     }
+  }
+
+  /**
+   * Get public key as hex string by account address
+   * @param address
+   * @returns 
+   */
+  public getPublicKeyByAddress (address: string): string {
+    const publicKey = decodeAddress(address, false);
+
+    return Buffer.from(publicKey).toString('hex');
   }
 }
 

@@ -29,7 +29,7 @@ import {
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
-import { SwapResult, LiquiditySourceTypes } from './swap'
+import { SwapResult, LiquiditySourceTypes, PrimaryMarketsEnabledAssets } from './swap'
 import { QuotePayload } from './liquidityProxy'
 import {
   RewardingEvents,
@@ -720,9 +720,9 @@ export class Api extends BaseApi {
         name,
         supply.toCodecString(),
         extensibleSupply,
-        isNft,
-        null,
-        null
+        // isNft, TODO: [nft] Uncomment it when nft will be supported
+        // null,
+        // null
       ]
     }
   }
@@ -1012,6 +1012,18 @@ export class Api extends BaseApi {
     assert(this.account, Messages.connectWallet)
 
     return getAccountMarketMakerInfoObservable(this.apiRx, this.account.pair.address)
+  }
+
+  public subscribeOnPrimaryMarketsEnabledAssets(): Observable<PrimaryMarketsEnabledAssets> {
+    const toJSON = (o: Observable<any>) => o.pipe(map(data => data.toJSON()));
+
+    const tbc = toJSON(this.apiRx.query.multicollateralBondingCurvePool.enabledTargets());
+    const xst = toJSON(this.apiRx.query.xstPool.enabledSynthetics());
+
+    return combineLatest([tbc, xst]).pipe(map(data => ({
+      tbc: data[0],
+      xst: data[1]
+    })));
   }
 
   public subscribeOnSwapReserves (
