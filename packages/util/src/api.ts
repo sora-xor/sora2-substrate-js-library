@@ -349,8 +349,10 @@ export class Api extends BaseApi {
     const pIn = FPNumber.fromCodecValue(amount)
     const totalSupply = await this.api.query.poolXyk.totalIssuances(poolTokenAddress) // BalanceInfo
     const pts = new FPNumber(totalSupply)
-    const aOut = pIn.mul(a).div(pts)
-    const bOut = pIn.mul(b).div(pts)
+    const ptsFirstAsset = new FPNumber(totalSupply, firstAssetDecimals);
+    const ptsSecondAsset = new FPNumber(totalSupply, secondAssetDecimals);
+    const aOut = pIn.mul(a).div(ptsFirstAsset)
+    const bOut = pIn.mul(b).div(ptsSecondAsset)
     return [aOut.toCodecString(), bOut.toCodecString(), pts.toCodecString()]
   }
 
@@ -410,7 +412,7 @@ export class Api extends BaseApi {
     const fpBalanceA = FPNumber.fromCodecValue(balanceA, firstAsset.decimals)
     const fpBalanceB = FPNumber.fromCodecValue(balanceB, secondAsset.decimals)
     const pts = FPNumber.fromCodecValue(totalSupply, decimals)
-    const minted = FPNumber.min(
+    const minted = FPNumber.max(
       fpBalanceA.mul(pts).div(FPNumber.fromCodecValue(reserveA, firstAsset.decimals)),
       fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, secondAsset.decimals))
     )
@@ -720,9 +722,9 @@ export class Api extends BaseApi {
         name,
         supply.toCodecString(),
         extensibleSupply,
-        // isNft, TODO: [nft] Uncomment it when nft will be supported
-        // null,
-        // null
+        isNft, 
+        null,
+        null
       ]
     }
   }
