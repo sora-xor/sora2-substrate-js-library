@@ -733,8 +733,7 @@ export class Api extends BaseApi {
     return liquiditySource ? [liquiditySource] : []
   }
 
-  // symbol, name, content (link), description...
-  /** MODIFY to support NFT
+  /** 
    * Register asset
    * @param symbol string with asset symbol
    * @param name string with asset name

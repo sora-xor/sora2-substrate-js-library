@@ -25,10 +25,6 @@ async function main(): Promise<void> {
 
   const assets = await api.getAssets();
 
-  console.log('**************************************');
-
-  // console.log(`assets`, assets);
-
   const nftAsset = assets.find(asset => asset.symbol === nftSymbol);
   console.log(`nftAsset`, nftAsset);
 

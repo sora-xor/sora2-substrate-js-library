@@ -25,7 +25,7 @@
     "export-types:all": "yarn pull-metadata:all && yarn export-types:prod && yarn export-types:stage && yarn export-types:test && yarn export-types:dev",
     "transfers": "ts-node --project ./tsconfig.json scripts/transfers.ts",
     "verify-pool-account-gen": "ts-node --project ./tsconfig.json scripts/verifyPoolAccountGeneration.ts",
-    "demo": "node -r ts-node/register -r tsconfig-paths/register run.ts",
+    "demo": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
     "publish-workspaces": "lerna publish from-package",
     "generate-doc": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/exportApi.ts",
     "bump-version": "lerna version patch --no-push --no-git-tag-version",
