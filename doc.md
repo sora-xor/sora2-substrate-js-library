@@ -10,7 +10,7 @@
 * [randomnessCollectiveFlip](#randomnesscollectiveflip-pallet)
 * [transactionPayment](#transactionpayment-pallet)
 * [permissions](#permissions-pallet)
-* [referralSystem](#referralsystem-pallet)
+* [referrals](#referrals-pallet)
 * [rewards](#rewards-pallet)
 * [xorFee](#xorfee-pallet)
 * [bridgeMultisig](#bridgemultisig-pallet)
@@ -907,13 +907,13 @@ arguments:
 returns: `Vec<PermissionId>`
 <hr>
 
-## ReferralSystem pallet
+## Referrals pallet
 
 
 ### *State Queries*
 
 
-#### **api.query.referralSystem.referrers**
+#### **api.query.referrals.referrers**
 
 
 

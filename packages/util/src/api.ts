@@ -1592,6 +1592,68 @@ export class Api extends BaseApi {
       : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one)
     return result.format()
   }
+
+  /**
+   * Returns the referral of the invited user by Id
+   * @param invitedUserId address of invited account
+   * @returns referral
+   */
+  public async getReferral (invitedUserId: string): Promise<string> {
+    const referral = await this.api.query.referrals.referrers(invitedUserId) as any
+    return !referral ? '' : referral.toString()
+  }
+
+  /**
+   * Returns invited users of the referral
+   * @param referralId address of referral account
+   * @returns array of invited users
+   */
+  public async getInvitedUsers (referralId: string): Promise<Array<string>> {
+    return await this.api.query.referrals.referrals(referralId) as any
+  }
+
+  /**
+   * Transfer XOR balance from the referral account to the special account
+   * This balance can be used by referrals to pay the fee
+   * @param amount balance to reserve
+   */
+  public async reserveXor (amount: NumberLike): Promise<void> {
+    assert(this.account, Messages.connectWallet)
+    await this.submitExtrinsic(
+      this.api.tx.referrals.reserve(new FPNumber(amount, XOR.decimals).toCodecString()),
+      this.account.pair,
+      { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralReserveXor }
+    )
+  }
+
+  /**
+   * Unreserve XOR balance
+   * @param amount balance to unreserve
+   */
+  public async unreserveXor (amount: NumberLike): Promise<void> {
+    assert(this.account, Messages.connectWallet)
+    await this.submitExtrinsic(
+      this.api.tx.referrals.unreserve(new FPNumber(amount, XOR.decimals).toCodecString()),
+      this.account.pair,
+      { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralUnreserveXor }
+    )
+  }
+
+  /**
+   * Sets invited user to their referral if the account doesn’t have a referral yet.
+   * This extrinsic is paid by the special balance of the referral if the invited user doesn’t have a referral,
+   * otherwise the extrinsic fails and the fee is paid by the invited user
+   * @param referralId address of referral account
+   */
+  public async setInvitedUser (referralId: string): Promise<void> {
+    assert(this.account, Messages.connectWallet)
+    const formattedToAddress = referralId.slice(0, 2) === 'cn' ? referralId : this.formatAddress(referralId)
+    await this.submitExtrinsic(
+      this.api.tx.referrals.setReferrer(referralId),
+      this.account.pair,
+      { to: formattedToAddress, type: Operation.ReferralSetInvitedUser }
+    )
+  }
 }
 
 /** Api object */
