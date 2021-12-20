@@ -552,7 +552,6 @@ export interface History {
   amount2?: string;
   symbol2?: string;
   asset2Address?: string;
-  decimals?: number;
   decimals2?: number;
   startTime?: number;
   endTime?: number;
