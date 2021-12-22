@@ -62,7 +62,6 @@ export class Api extends BaseApi {
 
   private _assets: Array<AccountAsset> = []
   private _accountAssetsAddresses: Array<string> = []
-  private _liquidity: Array<AccountLiquidity> = []
 
   private balanceSubscriptions: Array<Subscription> = []
   private assetsBalanceSubject = new Subject<void>()
@@ -71,6 +70,7 @@ export class Api extends BaseApi {
   private liquiditySubscriptions: Array<Subscription> = []
   private liquiditySubject = new Subject<void>()
   public liquidityUpdated = this.liquiditySubject.asObservable()
+  public accountLiquidity: Array<AccountLiquidity> = []
 
   // # Account assets methods
 
@@ -231,19 +231,6 @@ export class Api extends BaseApi {
   }
 
   // # Account Liquidity methods
-
-  public get accountLiquidity (): Array<AccountLiquidity> {
-    if (this.storage) {
-      this._liquidity = JSON.parse(this.storage.get('liquidity')) as Array<AccountLiquidity> || []
-    }
-    return this._liquidity
-  }
-
-  public set accountLiquidity (liquidity: Array<AccountLiquidity>) {
-    this.storage?.set('liquidity', JSON.stringify(liquidity))
-    this._liquidity = [...liquidity]
-  }
-
   private addToLiquidityList (asset: AccountLiquidity): void {
     const liquidityCopy = [...this.accountLiquidity]
     const index = liquidityCopy.findIndex(item => item.address === asset.address)
@@ -489,17 +476,6 @@ export class Api extends BaseApi {
   public initAccountStorage () {
     super.initAccountStorage()
     this.bridge.initAccountStorage()
-
-    // transfer old history to accountStorage
-    if (this.storage) {
-      const oldHistory = JSON.parse(this.storage.get('history')) || []
-
-      if (oldHistory.length) {
-        this.history = oldHistory
-      }
-
-      this.storage.remove('history')
-    }
   }
 
   /**
