@@ -742,6 +742,16 @@ export class Api extends BaseApi {
     return liquiditySource ? [liquiditySource] : []
   }
 
+  public async getNftContent(address): Promise<string>{
+    const content = await this.api.query.assets.assetContentSource(address)
+    return `${content.toHuman()}`
+  }
+
+  public async getNftDescription(address): Promise<string> {
+    const desc = await this.api.query.assets.assetDescription(address)
+    return `${desc.toHuman()}`
+  }
+
   /**
    * Register asset
    * @param symbol string with asset symbol

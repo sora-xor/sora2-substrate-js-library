@@ -5,7 +5,7 @@ async function delay(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const nftSymbol = 'NFTZXC';
+  const nftSymbol = 'NFTRTX';
   const nftName = 'NFTName';
 
   await connection.open('wss://ws.framenode-3.s3.dev.sora2.soramitsu.co.jp');
@@ -18,7 +18,11 @@ async function main(): Promise<void> {
     'namename'
   );
 
-  await api.registerAsset(nftSymbol, nftName, '150', false, { isNft: true, content: 'link', description: 'description' });
+  await api.registerAsset(nftSymbol, nftName, '150', false, {
+    isNft: true,
+    content: 'link',
+    description: 'description'
+  });
   await delay();
 
   console.log(`accountHistory`, api.accountHistory);
@@ -27,6 +31,9 @@ async function main(): Promise<void> {
 
   const nftAsset = assets.find(asset => asset.symbol === nftSymbol);
   console.log(`nftAsset`, nftAsset);
+
+  console.log(`api.getNftContent()`, await api.getNftContent(nftAsset.address));
+  console.log(`api.getNftDesc()`, await api.getNftDescription(nftAsset.address));
 
   await connection.close();
 }
