@@ -18,7 +18,7 @@ async function main(): Promise<void> {
     'namename'
   );
 
-  await api.registerAsset(nftSymbol, nftName, '150', false, true);
+  await api.registerAsset(nftSymbol, nftName, '150', false, { isNft: true, content: 'link', description: 'description' });
   await delay();
 
   console.log(`accountHistory`, api.accountHistory);
