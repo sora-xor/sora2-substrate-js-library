@@ -95,6 +95,7 @@ export interface AccountLiquidity {
   symbol?: string;
   name?: string;
   decimals?: number;
+  decimals2?: number;
   firstAddress: string;
   secondAddress: string;
   firstBalance: CodecString; // value * 10 ^ decimals
