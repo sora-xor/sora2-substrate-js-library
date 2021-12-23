@@ -712,19 +712,28 @@ export class Api extends BaseApi {
 
   // # API methods
 
-  private async calcRegisterAssetParams (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply: boolean, isNft: boolean) {
+  private async calcRegisterAssetParams (
+    symbol: string,
+    name: string,
+    totalSupply: NumberLike,
+    extensibleSupply: boolean,
+    nft = {
+      isNft: false,
+      content: null,
+      description: null
+    }) {
     assert(this.account, Messages.connectWallet)
     // TODO: add assert for symbol, name and totalSupply params
-    const supply = isNft ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply)
+    const supply = nft.isNft ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply)
     return {
       args: [
         symbol,
         name,
         supply.toCodecString(),
         extensibleSupply,
-        isNft, 
-        null,
-        null
+        nft.isNft,
+        nft.content,
+        nft.description
       ]
     }
   }
@@ -733,15 +742,25 @@ export class Api extends BaseApi {
     return liquiditySource ? [liquiditySource] : []
   }
 
-  /** 
+  /**
    * Register asset
    * @param symbol string with asset symbol
    * @param name string with asset name
    * @param totalSupply
    * @param extensibleSupply
    */
-  public async registerAsset (symbol: string, name: string, totalSupply: NumberLike, extensibleSupply = false, isNft = false): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, isNft)
+  public async registerAsset (
+    symbol: string,
+    name: string,
+    totalSupply: NumberLike,
+    extensibleSupply = false,
+    nft = {
+      isNft: false,
+      content: null,
+      description: null
+    }
+  ): Promise<void> {
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nft)
     await this.submitExtrinsic(
       (this.api.tx.assets.register as any)(...params.args),
       this.account.pair,
