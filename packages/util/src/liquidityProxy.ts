@@ -1186,27 +1186,25 @@ const xykQuoteWithoutImpact = (
   isXorInput: boolean
 ): FPNumber => {
   try {
-    const price = safeDivide(outputReserves, inputReserves);
-
     if (isDesiredInput) {
       if (isXorInput) {
         const amountWithoutFee = amount.mul(ONE.sub(XYK_FEE));
 
-        return amountWithoutFee.mul(price);
+        return safeDivide(amountWithoutFee.mul(outputReserves), inputReserves);
       } else {
-        const amountWithFee = amount.mul(price);
+        const amountWithFee = safeDivide(amount.mul(outputReserves), inputReserves);
 
         return amountWithFee.mul(ONE.sub(XYK_FEE));
       }
     } else {
       if (isXorInput) {
-        const amountWithoutFee = safeDivide(amount, price);
+        const amountWithoutFee = safeDivide(amount.mul(inputReserves), outputReserves);
 
         return safeDivide(amountWithoutFee, ONE.sub(XYK_FEE));
       } else {
         const amountWithFee = safeDivide(amount, ONE.sub(XYK_FEE));
 
-        return safeDivide(amountWithFee, price);
+        return safeDivide(amountWithFee.mul(inputReserves), outputReserves);
       }
     }
   } catch (error) {
