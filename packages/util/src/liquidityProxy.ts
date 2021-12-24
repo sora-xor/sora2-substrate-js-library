@@ -72,7 +72,7 @@ export type QuotePrimaryMarketResult = {
 }
 
 // UTILS
-const toFp = (item: CodecString, decimals: number): FPNumber => FPNumber.fromCodecValue(item, decimals);
+const toFp = (item: CodecString): FPNumber => FPNumber.fromCodecValue(item);
 
 const getMaxPositive = (value: FPNumber) => FPNumber.max(value, FPNumber.ZERO);
 const isGreaterThanZero = (value: FPNumber) => FPNumber.isGreaterThan(value, FPNumber.ZERO);
@@ -87,7 +87,7 @@ export const getXykReserves = (inputAsset: Asset, outputAsset: Asset, payload: Q
   const reserves = [...payload.reserves.xyk[nonXor]];
   const [input, output] = isXorInput ? reserves : reserves.reverse();
 
-  return [toFp(input, inputAsset.decimals), toFp(output, outputAsset.decimals)];
+  return [toFp(input), toFp(output)];
 };
 
 const safeDivide = (value: FPNumber, divider: FPNumber): FPNumber => {
@@ -142,8 +142,8 @@ const tbcReferencePrice = (asset: Asset, payload: QuotePayload): FPNumber => {
  * `buy_price_usd = (xor_total_supply + xor_supply_delta) / (price_change_step * price_change_rate) + initial_price_usd`
  */
 const tbcBuyFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
-  const xstusdIssuance = FPNumber.fromCodecValue(payload.issuances[XSTUSD.address], XSTUSD.decimals);
-  const xorIssuance = FPNumber.fromCodecValue(payload.issuances[XOR.address], XOR.decimals);
+  const xstusdIssuance = FPNumber.fromCodecValue(payload.issuances[XSTUSD.address]);
+  const xorIssuance = FPNumber.fromCodecValue(payload.issuances[XOR.address]);
   const xorPrice = FPNumber.fromCodecValue(payload.prices[XOR.address]);
   const xstXorLiability = safeDivide(xstusdIssuance, xorPrice);
   return safeDivide(xorIssuance.add(xstXorLiability).add(delta), PRICE_CHANGE_COEFF).add(INITIAL_PRICE);
@@ -172,7 +172,7 @@ const tbcSellFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
  * `((initial_price + current_state) / 2) * (xor_issuance + delta)`
  */
 const idealReservesReferencePrice = (delta: FPNumber, payload: QuotePayload): FPNumber => {
-  const xorIssuance = FPNumber.fromCodecValue(payload.issuances[XOR.address], XOR.decimals);
+  const xorIssuance = FPNumber.fromCodecValue(payload.issuances[XOR.address]);
   const currentState = tbcBuyFunction(delta, payload);
 
   return safeDivide(INITIAL_PRICE.add(currentState), new FPNumber(2)).mul(xorIssuance.add(delta));
@@ -183,7 +183,7 @@ const idealReservesReferencePrice = (delta: FPNumber, payload: QuotePayload): FP
  * reserves worth, considering only one asset type.
  */
 const actualReservesReferencePrice = (collateralAsset: Asset, payload: QuotePayload): FPNumber => {
-  const reserve = FPNumber.fromCodecValue(payload.reserves.tbc[collateralAsset.address], collateralAsset.decimals);
+  const reserve = FPNumber.fromCodecValue(payload.reserves.tbc[collateralAsset.address]);
   const price = tbcReferencePrice(collateralAsset, payload);
 
   return reserve.mul(price);
@@ -247,7 +247,7 @@ const tbcSellPrice = (
   isDesiredInput: boolean,
   payload: QuotePayload
 ): FPNumber => {
-  const collateralSupply = FPNumber.fromCodecValue(payload.reserves.tbc[collateralAsset.address], collateralAsset.decimals);
+  const collateralSupply = FPNumber.fromCodecValue(payload.reserves.tbc[collateralAsset.address]);
   const xorPrice = tbcSellFunction(FPNumber.ZERO, payload);
   const collateralPrice = tbcReferencePrice(collateralAsset, payload);
   const xorSupply = safeDivide(collateralSupply.mul(collateralPrice), xorPrice);
@@ -587,18 +587,18 @@ const xstQuote = (
  * @param xIn x_in - desired input amount (xor)
  * @returns QuoteResult
  */
-const xykQuoteA = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: number, xIn: FPNumber): QuoteResult => {
+const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   const x1 = xIn.mul(ONE.sub(XYK_FEE));
   const yOut = safeDivide(x1.mul(y), x.add(x1));
 
   return {
-    amount: yOut.dp(yDecimals),
-    fee: xIn.mul(XYK_FEE).dp(xDecimals),
+    amount: yOut,
+    fee: xIn.mul(XYK_FEE),
     rewards: [],
     distribution: [
       {
         market: LiquiditySourceTypes.XYKPool,
-        amount: xIn.dp(xDecimals),
+        amount: xIn,
       },
     ],
   };
@@ -611,18 +611,18 @@ const xykQuoteA = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: numbe
  * @param xIn - desired input amount (other token)
  * @returns QuoteResult
  */
-const xykQuoteB = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: number, xIn: FPNumber): QuoteResult => {
+const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   const y1 = safeDivide(xIn.mul(y), x.add(xIn));
   const yOut = y1.mul(ONE.sub(XYK_FEE));
 
   return {
-    amount: yOut.dp(yDecimals),
-    fee: y1.sub(yOut).dp(yDecimals),
+    amount: yOut,
+    fee: y1.sub(yOut),
     rewards: [],
     distribution: [
       {
         market: LiquiditySourceTypes.XYKPool,
-        amount: xIn.dp(xDecimals),
+        amount: xIn,
       },
     ],
   };
@@ -635,7 +635,7 @@ const xykQuoteB = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: numbe
  * @param yOut - desired output amount (other token)
  * @returns QuoteResult
  */
-const xykQuoteC = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: number, yOut: FPNumber): QuoteResult => {
+const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
     throw new Error(`[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `);
   }
@@ -644,13 +644,13 @@ const xykQuoteC = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: numbe
   const xIn = safeDivide(x1, ONE.sub(XYK_FEE));
 
   return {
-    amount: xIn.dp(xDecimals),
-    fee: xIn.sub(x1).dp(xDecimals),
+    amount: xIn,
+    fee: xIn.sub(x1),
     rewards: [],
     distribution: [
       {
         market: LiquiditySourceTypes.XYKPool,
-        amount: yOut.dp(yDecimals),
+        amount: yOut,
       },
     ],
   };
@@ -663,7 +663,7 @@ const xykQuoteC = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: numbe
  * @param yOut - desired output amount (xor)
  * @returns QuoteResult
  */
-const xykQuoteD = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: number, yOut: FPNumber): QuoteResult => {
+const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   const y1 = safeDivide(yOut, ONE.sub(XYK_FEE));
 
   if (FPNumber.isGreaterThanOrEqualTo(y1, y)) {
@@ -673,13 +673,13 @@ const xykQuoteD = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: numbe
   const xIn = safeDivide(x.mul(y1), y.sub(y1));
 
   return {
-    amount: xIn.dp(xDecimals),
-    fee: y1.sub(yOut).dp(yDecimals),
+    amount: xIn,
+    fee: y1.sub(yOut),
     rewards: [],
     distribution: [
       {
         market: LiquiditySourceTypes.XYKPool,
-        amount: yOut.dp(yDecimals),
+        amount: yOut,
       },
     ],
   };
@@ -687,9 +687,7 @@ const xykQuoteD = (x: FPNumber, xDecimals: number, y: FPNumber, yDecimals: numbe
 
 const xykQuote = (
   inputReserves: FPNumber,
-  inputDecimals: number,
   outputReserves: FPNumber,
-  outputDecimals: number,
   amount: FPNumber,
   isDesiredInput: boolean,
   isXorInput: boolean
@@ -697,15 +695,15 @@ const xykQuote = (
   try {
     if (isDesiredInput) {
       if (isXorInput) {
-        return xykQuoteA(inputReserves, inputDecimals, outputReserves, outputDecimals, amount);
+        return xykQuoteA(inputReserves, outputReserves, amount);
       } else {
-        return xykQuoteB(inputReserves, inputDecimals, outputReserves, outputDecimals, amount);
+        return xykQuoteB(inputReserves, outputReserves, amount);
       }
     } else {
       if (isXorInput) {
-        return xykQuoteC(inputReserves, inputDecimals, outputReserves, outputDecimals, amount);
+        return xykQuoteC(inputReserves, outputReserves, amount);
       } else {
-        return xykQuoteD(inputReserves, inputDecimals, outputReserves, outputDecimals, amount);
+        return xykQuoteD(inputReserves, outputReserves, amount);
       }
     }
   } catch (error) {
@@ -905,9 +903,7 @@ const smartSplit = (
     if (FPNumber.isLessThan(primaryAmount, amount)) {
       const outcomeSecondary = xykQuote(
         inputReserves,
-        inputAsset.decimals,
         outputReserves,
-        outputAsset.decimals,
         amount.sub(primaryAmount),
         isDesiredInput,
         isXorInput
@@ -940,7 +936,7 @@ const smartSplit = (
   }
 
   // check xyk only result regardless of split, because it might be better
-  const outcomeSecondary = xykQuote(inputReserves, inputAsset.decimals, outputReserves, outputAsset.decimals, amount, isDesiredInput, isXorInput);
+  const outcomeSecondary = xykQuote(inputReserves, outputReserves, amount, isDesiredInput, isXorInput);
 
   if (isBetter(isDesiredInput, outcomeSecondary.amount, bestOutcome)) {
     bestOutcome = outcomeSecondary.amount;
@@ -992,7 +988,7 @@ const quoteSingle = (
       case LiquiditySourceTypes.XYKPool: {
         const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload);
         const isXorInput = isXorAsset(inputAsset);
-        return xykQuote(inputReserves, inputAsset.decimals, outputReserves, outputAsset.decimals, amount, isDesiredInput, isXorInput);
+        return xykQuote(inputReserves, outputReserves, amount, isDesiredInput, isXorInput);
       }
       case LiquiditySourceTypes.MulticollateralBondingCurvePool: {
         return tbcQuote(inputAsset, outputAsset, amount, isDesiredInput, payload);
@@ -1063,7 +1059,8 @@ export const quote = (
   payload: QuotePayload
 ): SwapResult => {
   try {
-    const amount = new FPNumber(value);
+    const valueDecimals = isDesiredInput ? inputAsset.decimals : outputAsset.decimals;
+    const amount = FPNumber.fromCodecValue(new FPNumber(value, valueDecimals).toCodecString());
 
     if (isDirectExchange(inputAsset.address, outputAsset.address)) {
       const result = quoteSingle(inputAsset, outputAsset, amount, isDesiredInput, selectedSources, paths, payload);
@@ -1183,9 +1180,7 @@ export const quote = (
 // PRICE IMPACT
 const xykQuoteWithoutImpact = (
   inputReserves: FPNumber,
-  inputDecimals: number,
   outputReserves: FPNumber,
-  outputDecimals: number,
   amount: FPNumber,
   isDesiredInput: boolean,
   isXorInput: boolean
@@ -1197,21 +1192,21 @@ const xykQuoteWithoutImpact = (
       if (isXorInput) {
         const amountWithoutFee = amount.mul(ONE.sub(XYK_FEE));
 
-        return amountWithoutFee.mul(price).dp(outputDecimals);
+        return amountWithoutFee.mul(price);
       } else {
         const amountWithFee = amount.mul(price);
 
-        return amountWithFee.mul(ONE.sub(XYK_FEE)).dp(outputDecimals);
+        return amountWithFee.mul(ONE.sub(XYK_FEE));
       }
     } else {
       if (isXorInput) {
         const amountWithoutFee = safeDivide(amount, price);
 
-        return safeDivide(amountWithoutFee, ONE.sub(XYK_FEE)).dp(inputDecimals);
+        return safeDivide(amountWithoutFee, ONE.sub(XYK_FEE));
       } else {
         const amountWithFee = safeDivide(amount, ONE.sub(XYK_FEE));
 
-        return safeDivide(amountWithFee, price).dp(inputDecimals);
+        return safeDivide(amountWithFee, price);
       }
     }
   } catch (error) {
@@ -1305,7 +1300,7 @@ const quoteWithoutImpactSingle = (
 
     if (market === LiquiditySourceTypes.XYKPool) {
       const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload);
-      const value = xykQuoteWithoutImpact(inputReserves, inputAsset.decimals, outputReserves, outputAsset.decimals, amount, isDesiredInput, isXorAsset(inputAsset));
+      const value = xykQuoteWithoutImpact(inputReserves, outputReserves, amount, isDesiredInput, isXorAsset(inputAsset));
 
       return result.add(value);
     }
