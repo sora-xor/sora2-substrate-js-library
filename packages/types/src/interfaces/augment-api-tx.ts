@@ -167,24 +167,6 @@ declare module '@polkadot/api/types/submittable' {
        **/
       [key: string]: SubmittableExtrinsicFunction<ApiType>;
     };
-    referrals: {
-      /**
-       * Reserves the balance from the account for a special balance that can be used to pay referrals' fees
-       **/
-      reserve: AugmentedSubmittable<(balance: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Balance]>;
-      /**
-       * Sets the referrer for the account
-       **/
-      setReferrer: AugmentedSubmittable<(referrer: AccountId | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId]>;
-      /**
-       * Unreserves the balance and transfers it back to the account
-       **/
-      unreserve: AugmentedSubmittable<(balance: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Balance]>;
-      /**
-       * Generic tx
-       **/
-      [key: string]: SubmittableExtrinsicFunction<ApiType>;
-    };
     timestamp: {
       /**
        * Set the current time.
