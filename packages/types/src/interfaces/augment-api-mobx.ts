@@ -20,25 +20,17 @@ import type { Keys, SessionIndex } from '@polkadot/types/interfaces/session';
 import type { ActiveEraInfo, ElectionResult, ElectionScore, ElectionStatus, EraIndex, EraRewardPoints, Exposure, Forcing, Nominations, RewardDestination, SeatHolder, SlashingSpans, SpanIndex, SpanRecord, StakingLedger, UnappliedSlash, ValidatorPrefs, Voter } from '@polkadot/types/interfaces/staking';
 import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, LastRuntimeUpgradeInfo, Phase } from '@polkadot/types/interfaces/system';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
-import type { Multisig } from '@polkadot/types/interfaces/utility';
+import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, CurrencyId, DEXId, DEXInfo, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Mode, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
   assets: {    /**
-     * Asset Id -> Content Source
-     **/
-    assetContentSource: StorageMap<AssetId | AnyNumber, Option<ContentSource>>;
-    /**
-     * Asset Id -> Description
-     **/
-    assetDescription: StorageMap<AssetId | AnyNumber, Option<Description>>;
-    /**
-     * Asset Id -> (Symbol, Name, Precision, Is Mintable)
+     * Asset Id -> (Symbol, Precision, Is Mintable)
      **/
     assetInfos: StorageMap<AssetId | AnyNumber, ITuple<[AssetSymbol, AssetName, BalancePrecision, bool]>>;
     /**
@@ -168,7 +160,7 @@ export interface StorageType extends BaseStorageType {
      **/
     accounts: StorageMap<AccountId | string, Option<MultisigAccount>>;
     calls: StorageMap<U8aFixed | string, Option<ITuple<[OpaqueCall, AccountId, BalanceOf]>>>;
-    dispatchedCalls: StorageDoubleMap<U8aFixed | string, BridgeTimepoint | { height?: any; index?: any } | string, ITuple<[]>>;
+    dispatchedCalls: StorageDoubleMap<U8aFixed | string, Timepoint | { height?: any; index?: any } | string, ITuple<[]>>;
     /**
      * The set of open multisig operations.
      **/
@@ -419,6 +411,7 @@ export interface StorageType extends BaseStorageType {
      * Pools whose farmers are refreshed at the specific block. Block => Pools
      **/
     pools: StorageMap<BlockNumber | AnyNumber, Vec<AccountId>>;
+    savedValues: StorageMap<BlockNumber | AnyNumber, Vec<ITuple<[AccountId, Vec<PoolFarmer>]>>>;
   };
   grandpa: {    /**
      * The number of changes (both in terms of keys and underlying economic responsibilities)
@@ -608,7 +601,8 @@ export interface StorageType extends BaseStorageType {
      **/
     reportsByKindIndex: StorageMap<Kind | string, Bytes>;
   };
-  permissions: {    owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
+  permissions: {    modes: StorageMap<PermissionId | AnyNumber, Mode>;
+    owners: StorageDoubleMap<PermissionId | AnyNumber, Scope | { Limited: any } | { Unlimited: any } | string, Vec<OwnerId>>;
     permissions: StorageDoubleMap<HolderId | string, Scope | { Limited: any } | { Unlimited: any } | string, Vec<PermissionId>>;
   };
   poolXyk: {    /**
@@ -675,9 +669,7 @@ export interface StorageType extends BaseStorageType {
      **/
     randomMaterial: Vec<Hash> | null;
   };
-  referrals: {    referrals: StorageMap<AccountId | string, Vec<AccountId>>;
-    referrerBalances: StorageMap<AccountId | string, Option<Balance>>;
-    referrers: StorageMap<AccountId | string, Option<AccountId>>;
+  referralSystem: {    referrers: StorageMap<AccountId | string, Option<AccountId>>;
   };
   rewards: {    /**
      * Amount of VAL currently being vested (aggregated over the previous period of 14,400 blocks)
@@ -1116,10 +1108,6 @@ export interface StorageType extends BaseStorageType {
      * Registry of market makers with large transaction volumes (>1 XOR per transaction).
      **/
     marketMakersRegistry: StorageMap<AccountId | string, MarketMakerInfo>;
-    /**
-     * Market making pairs storage.
-     **/
-    marketMakingPairs: StorageDoubleMap<AssetId | AnyNumber, AssetId | AnyNumber, ITuple<[]>>;
     /**
      * Reserved for future use
      * Mapping between users and their owned rewards of different kinds, which are vested.

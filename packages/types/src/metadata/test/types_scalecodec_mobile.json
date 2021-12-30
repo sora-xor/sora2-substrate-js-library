@@ -1,6 +1,5 @@
 {
     "runtime_id": 20,
-    "types": {},
     "versioning": [
         {
             "runtime_range": [
@@ -110,6 +109,7 @@
                         ]
                     ]
                 },
+                "ContentSource": "Vec<u8>",
                 "CurrencyId": "AssetId",
                 "CurrencyIdEncoded": {
                     "type": "enum",
@@ -153,6 +153,7 @@
                         ]
                     ]
                 },
+                "Description": "Vec<u8>",
                 "DispatchErrorWithPostInfoTPostDispatchInfo": {
                     "type": "struct",
                     "type_mapping": [
@@ -626,7 +627,8 @@
                         "MockPool",
                         "MockPool2",
                         "MockPool3",
-                        "MockPool4"
+                        "MockPool4",
+                        "XSTPool"
                     ]
                 },
                 "LoadIncomingMetaRequest": {
@@ -729,8 +731,17 @@
                 "MultiCurrencyBalance": "Balance",
                 "MultiCurrencyBalanceOf": "MultiCurrencyBalance",
                 "MultisigAccount": {
-                    "signatories": "Vec<AccountId>",
-                    "threshold": "u8"
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "signatories",
+                            "Vec<AccountId>"
+                        ],
+                        [
+                            "threshold",
+                            "u8"
+                        ]
+                    ]
                 },
                 "OffchainRequest": {
                     "type": "enum",
@@ -1277,7 +1288,19 @@
                     ]
                 },
                 "OwnerId": "AccountId",
-                "PendingMultisigAccount": "Null",
+                "PendingMultisigAccount": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "approving_accounts",
+                            "Vec<AccountId>"
+                        ],
+                        [
+                            "migrate_at",
+                            "Option<BlockNumber>"
+                        ]
+                    ]
+                },
                 "Permission": "Null",
                 "PermissionId": "u32",
                 "PoolFarmer": {
@@ -1308,6 +1331,20 @@
                             "pays_fee",
                             "Pays"
                         ]
+                    ]
+                },
+                "PredefinedAssetId": {
+                    "type": "enum",
+                    "value_list": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD"
                     ]
                 },
                 "PriceInfo": {
@@ -1532,9 +1569,20 @@
                         ]
                     ]
                 },
-                "TechAccountIdPrimitive": "Null",
                 "TechAmount": "Amount",
-                "TechAssetId": "Null",
+                "TechAssetId": {
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "Wrapped",
+                            "PredefinedAssetId"
+                        ],
+                        [
+                            "Escaped",
+                            "AssetId"
+                        ]
+                    ]
+                },
                 "TechBalance": "Balance",
                 "TechPurpose": {
                     "type": "enum",
@@ -1544,12 +1592,29 @@
                             "Null"
                         ],
                         [
+                            "FeeCollectorForPair",
+                            "TechTradingPair"
+                        ],
+                        [
                             "LiquidityKeeper",
-                            "TradingPair"
+                            "TechTradingPair"
                         ],
                         [
                             "Identifier",
                             "Vec<u8>"
+                        ]
+                    ]
+                },
+                "TechTradingPair": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "base_asset_id",
+                            "TechAssetId"
+                        ],
+                        [
+                            "target_asset_id",
+                            "TechAssetId"
                         ]
                     ]
                 },
