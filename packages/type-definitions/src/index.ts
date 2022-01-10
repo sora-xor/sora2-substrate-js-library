@@ -13,11 +13,15 @@ import ethBridge from './ethBridge'
 import pswapDistribution from './pswapDistribution'
 import rewards from './rewards'
 import farming from './farming'
+import ceresStaking from './ceresStaking'
+import ceresLiquidityLocker from './ceresLiquidityLocker'
 
 import versionedOverrides from './versioned';
 
 const soraDefs = {
   assets,
+  ceresLiquidityLocker,
+  ceresStaking,
   dexApi,
   dexManager,
   ethBridge,
