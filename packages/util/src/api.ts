@@ -30,7 +30,7 @@ import {
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { SwapResult, LiquiditySourceTypes, PrimaryMarketsEnabledAssets } from './swap'
-import { QuotePayload } from './liquidityProxy'
+import { QuotePayload } from './swap/liquidityProxy'
 import {
   RewardingEvents,
   RewardsInfo,
@@ -46,7 +46,7 @@ import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
 import { Storage } from './storage'
-import { poolAccountIdFromAssetPair } from './poolAccount'
+import { poolAccountIdFromAssetPair } from './pools/account'
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
