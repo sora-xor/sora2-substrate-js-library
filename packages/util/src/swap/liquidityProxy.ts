@@ -1,14 +1,13 @@
 import { XOR } from '../assets';
-import { LiquiditySourceTypes } from '../swap';
+import { LiquiditySourceTypes } from './consts';
 import { RewardReason } from '../rewards';
 import { FPNumber } from '../fp';
 import { SwapConsts as Consts } from './consts';
 
 import type { CodecString } from '../fp';
 import type { LPRewardsInfo } from '../rewards';
-import type { SwapResult } from '../swap';
 import type { Asset } from '../assets';
-import type { QuotePayload, QuoteResult, QuotePrimaryMarketResult, QuotePaths, Distribution } from './types';
+import type { QuotePayload, QuoteResult, QuotePrimaryMarketResult, QuotePaths, Distribution, SwapResult } from './types';
 
 // UTILS
 const toFp = (item: CodecString): FPNumber => FPNumber.fromCodecValue(item);

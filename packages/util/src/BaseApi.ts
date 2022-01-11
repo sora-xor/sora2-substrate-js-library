@@ -67,7 +67,7 @@ export class BaseApi {
   } as NetworkFeesObject
 
   protected readonly prefix = 69
-  protected readonly defaultDEXId = 0
+  public readonly defaultDEXId = 0
 
   private _history: Array<History> = []
   private _historySyncTimestamp: number = 0
@@ -77,7 +77,7 @@ export class BaseApi {
   protected signer?: Signer
   protected storage?: Storage // common data storage
   protected accountStorage?: AccountStorage // account data storage
-  protected account: CreateResult
+  public account: CreateResult
 
   constructor () {}
 

@@ -2,6 +2,8 @@ import { FPNumber } from '../fp';
 import { KnownAssets, KnownSymbols, MaxTotalSupply } from '../assets';
 
 export class SwapConsts {
+  static readonly ZERO_STR = '0';
+
   static readonly PSWAP = KnownAssets.get(KnownSymbols.PSWAP);
   static readonly VAL = KnownAssets.get(KnownSymbols.VAL);
   static readonly DAI = KnownAssets.get(KnownSymbols.DAI);
@@ -32,4 +34,11 @@ export class SwapConsts {
   ].map(asset => asset.address);
 
   static readonly ONE = new FPNumber(1);
+}
+
+export enum LiquiditySourceTypes {
+  Default = '',
+  XYKPool = 'XYKPool',
+  XSTPool = 'XSTPool',
+  MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool'
 }
