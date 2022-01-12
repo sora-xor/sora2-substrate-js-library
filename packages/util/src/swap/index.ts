@@ -4,7 +4,7 @@ import { combineLatest, of } from '@polkadot/x-rxjs';
 import { map } from '@polkadot/x-rxjs/operators';
 import type { Observable } from '@polkadot/types/types';
 
-import { LiquiditySourceTypes, SwapConsts } from './consts';
+import { LiquiditySourceTypes, Consts as SwapConsts } from './consts';
 import { AccountAsset, Asset, KnownAssets, XOR, ZeroBalance } from '../assets';
 import { isDirectExchange, quote } from './liquidityProxy';
 import { NumberLike, FPNumber, CodecString } from '../fp';

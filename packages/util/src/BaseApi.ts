@@ -75,7 +75,7 @@ export class BaseApi {
   private _restored: boolean = false
 
   protected signer?: Signer
-  protected storage?: Storage // common data storage
+  public storage?: Storage // common data storage
   protected accountStorage?: AccountStorage // account data storage
   public account: CreateResult
 

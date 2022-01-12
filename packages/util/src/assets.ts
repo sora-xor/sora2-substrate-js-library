@@ -89,30 +89,12 @@ function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: num
   } as AccountBalance
 }
 
-export interface AccountLiquidity {
-  address: string;
-  balance: CodecString; // value * 10 ^ decimals
-  symbol?: string;
-  name?: string;
-  decimals?: number;
-  decimals2?: number;
-  firstAddress: string;
-  secondAddress: string;
-  firstBalance: CodecString; // value * 10 ^ decimals
-  secondBalance: CodecString; // value * 10 ^ decimals
-  poolShare: string; // Formatted value
-}
-
 export interface Asset {
   address: string;
   symbol: string;
   name: string;
   decimals: number;
   totalSupply?: string;
-}
-
-export enum PoolTokens {
-  XYKPOOL = 'XYKPOOL'
 }
 
 export enum KnownSymbols {
@@ -197,10 +179,6 @@ export const KnownAssets = new ArrayLike<Asset>([
 export async function getAssetInfo (api: ApiPromise, address: string): Promise<Asset> {
   const [symbol, name, decimals, _] = (await api.query.assets.assetInfos(address)).toHuman() as any
   return { address, symbol, name, decimals: +decimals } as Asset
-}
-
-export async function getLiquidityBalance (api: ApiPromise, accountAddress: string, poolAddress: string): Promise<Codec> {
-  return await api.query.poolXyk.poolProviders(poolAddress, accountAddress) // BalanceInfo
 }
 
 /**

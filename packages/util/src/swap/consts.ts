@@ -1,7 +1,7 @@
 import { FPNumber } from '../fp';
 import { KnownAssets, KnownSymbols, MaxTotalSupply } from '../assets';
 
-export class SwapConsts {
+export class Consts {
   static readonly ZERO_STR = '0';
 
   static readonly PSWAP = KnownAssets.get(KnownSymbols.PSWAP);
@@ -12,7 +12,7 @@ export class SwapConsts {
 
   static readonly XYK_FEE = new FPNumber(0.003);
   static readonly XST_FEE = new FPNumber(0.007);
-  static readonly TBC_FEE = SwapConsts.XYK_FEE;
+  static readonly TBC_FEE = Consts.XYK_FEE;
 
   static readonly MAX = new FPNumber(MaxTotalSupply);
 
@@ -27,10 +27,10 @@ export class SwapConsts {
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
 
   static readonly ASSETS_HAS_XYK_POOL = [
-    SwapConsts.PSWAP,
-    SwapConsts.VAL,
-    SwapConsts.DAI,
-    SwapConsts.ETH
+    Consts.PSWAP,
+    Consts.VAL,
+    Consts.DAI,
+    Consts.ETH
   ].map(asset => asset.address);
 
   static readonly ONE = new FPNumber(1);
