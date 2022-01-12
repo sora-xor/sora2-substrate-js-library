@@ -32,7 +32,7 @@ import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
 import { Storage } from './storage'
-import { poolAccountIdFromAssetPair } from './pools/account'
+import { poolAccountIdFromAssetPair } from './poolXyk/account'
 import { SwapModule } from './swap'
 import { RewardsModule } from './rewards'
 

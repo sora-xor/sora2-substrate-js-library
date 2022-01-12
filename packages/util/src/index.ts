@@ -25,4 +25,4 @@ export {
   XOR
 } from './assets'
 export * from './swap'
-export * from './pools/account'
+export * from './poolXyk/account'
