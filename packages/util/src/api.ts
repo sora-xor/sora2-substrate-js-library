@@ -28,23 +28,13 @@ import {
 } from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
-import {
-  RewardingEvents,
-  RewardsInfo,
-  RewardInfo,
-  AccountMarketMakerInfo,
-  isClaimableReward,
-  containsRewardsForEvents,
-  prepareRewardInfo,
-  prepareRewardsInfo,
-  getAccountMarketMakerInfoObservable
-} from './rewards'
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
 import { Storage } from './storage'
 import { poolAccountIdFromAssetPair } from './pools/account'
 import { SwapModule } from './swap'
+import { RewardsModule } from './rewards'
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
@@ -53,8 +43,10 @@ export class Api extends BaseApi {
   private readonly type: KeypairType = KeyringType
   public readonly defaultSlippageTolerancePercent = 0.5
   public readonly seedLength = 12
+
   public readonly bridge: BridgeApi = new BridgeApi()
   public readonly swap: SwapModule = new SwapModule(this)
+  public readonly rewards: RewardsModule = new RewardsModule(this)
 
   // Default assets addresses of account - list of NativeAssets addresses
   public accountDefaultAssetsAddresses: Array<string> = NativeAssets.map(asset => asset.address)
@@ -821,12 +813,6 @@ export class Api extends BaseApi {
     )
   }
 
-  public subscribeOnAccountMarketMakerInfo (): Observable<AccountMarketMakerInfo> {
-    assert(this.account, Messages.connectWallet)
-
-    return getAccountMarketMakerInfoObservable(this.apiRx, this.account.pair.address)
-  }
-
   private async calcAddLiquidityParams (
     firstAssetAddress: string,
     secondAssetAddress: string,
@@ -1048,140 +1034,6 @@ export class Api extends BaseApi {
         asset2Address: params.secondAsset.address,
         amount: params.amountA,
         amount2: params.amountB
-      }
-    )
-  }
-
-  /**
-   * Check rewards for external account
-   * @param externalAddress address of external account (ethereum account address)
-   * @returns rewards array with not zero amount
-   */
-  public async checkExternalAccountRewards (externalAddress: string): Promise<Array<RewardInfo>> {
-    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (this.api.rpc as any).rewards.claimables(externalAddress)
-
-    const rewards = [
-      prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount),
-      prepareRewardInfo(RewardingEvents.NftAirdrop, nftAirdropAmount),
-      prepareRewardInfo(RewardingEvents.XorErc20, xorErc20Amount)
-    ].filter(item => isClaimableReward(item))
-
-    return rewards
-  }
-
-  /**
-   * Check rewards for providing liquidity
-   * @returns rewards array with not zero amount
-   */
-  public async checkLiquidityProvisionRewards (): Promise<Array<RewardInfo>> {
-    assert(this.account, Messages.connectWallet)
-
-    const { address } = this.account.pair
-
-    const liquidityProvisionAmount = await (this.api.rpc as any).pswapDistribution.claimableAmount(address) // Balance
-
-    const rewards = [
-      prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount),
-    ].filter(item => isClaimableReward(item))
-
-    return rewards
-  }
-
-  public async checkVestedRewards (): Promise<RewardsInfo | null> {
-    assert(this.account, Messages.connectWallet)
-
-    const { address } = this.account.pair
-
-    const {
-      limit, // "Balance"
-      total_available: total, // "Balance"
-      rewards // "BTreeMap<RewardReason, Balance>"
-    } = await (this.api.query as any).vestedRewards.rewards(address)
-
-    const rewardsInfo = prepareRewardsInfo(limit, total, rewards)
-
-    return rewardsInfo
-  }
-
-  /**
-   * Get network fee for claim rewards operation
-   */
-  public async getClaimRewardsNetworkFee (rewards: Array<RewardInfo>, signature = ''): Promise<CodecString>  {
-    const params = this.calcClaimRewardsParams(rewards, signature)
-
-    switch (params.extrinsic) {
-      case this.api.tx.pswapDistribution.claimIncentive:
-        return this.NetworkFee[Operation.ClaimLiquidityProvisionRewards]
-      case this.api.tx.vestedRewards.claimRewards:
-        return this.NetworkFee[Operation.ClaimVestedRewards]
-      case this.api.tx.rewards.claim:
-        return this.NetworkFee[Operation.ClaimExternalRewards]
-      default:
-        return await this.getNetworkFee(Operation.ClaimRewards, params)
-    }
-  }
-
-  /**
-   * Returns a params object { extrinsic, args }
-   * @param rewards claiming rewards
-   * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
-   */
-  private calcClaimRewardsParams (rewards: Array<RewardInfo | RewardsInfo>, signature = ''): any {
-    const transactions = []
-
-    if (containsRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
-      transactions.push({
-        extrinsic: this.api.tx.pswapDistribution.claimIncentive,
-        args: []
-      })
-    }
-    if (containsRewardsForEvents(rewards, [RewardingEvents.BuyOnBondingCurve, RewardingEvents.LiquidityProvisionFarming, RewardingEvents.MarketMakerVolume])) {
-      transactions.push({
-        extrinsic: this.api.tx.vestedRewards.claimRewards,
-        args: []
-      })
-    }
-    if (containsRewardsForEvents(rewards, [RewardingEvents.SoraFarmHarvest, RewardingEvents.XorErc20, RewardingEvents.NftAirdrop])) {
-      transactions.push({
-        extrinsic: this.api.tx.rewards.claim,
-        args: [signature]
-      })
-    }
-
-    if (transactions.length > 1) return {
-      extrinsic: this.api.tx.utility.batchAll,
-      args: [transactions.map(({ extrinsic, args }) => extrinsic(...args))]
-    }
-
-    if (transactions.length === 1) return transactions[0]
-
-    // for current compability
-    return {
-      extrinsic: this.api.tx.rewards.claim,
-      args: [signature]
-    }
-  }
-
-  /**
-   * Claim rewards
-   * @param signature message signed in external wallet (if want to claim external rewards)
-   */
-  public async claimRewards (
-    rewards: Array<RewardInfo | RewardsInfo>,
-    signature?: string,
-    fee?: CodecString,
-    externalAddress?: string,
-  ): Promise<void> {
-    const { extrinsic, args } = this.calcClaimRewardsParams(rewards, signature)
-
-    await this.submitExtrinsic(
-      extrinsic(...args),
-      this.account.pair,
-      {
-        type: Operation.ClaimRewards,
-        externalAddress,
-        soraNetworkFee: fee,
-        rewards
       }
     )
   }

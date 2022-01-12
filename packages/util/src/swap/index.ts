@@ -369,8 +369,8 @@ export class SwapModule {
 
   /**
    * Run swap & send batch operation
-   * @param assetAAddress Asset A address
-   * @param assetBAddress Asset B address
+   * @param assetA Asset A
+   * @param assetB Asset B
    * @param amountA Amount A value
    * @param amountB Amount B value
    * @param swapResultValue getMinMaxValue() -> min received if exchange A, otherwise - user's input when Exchange B

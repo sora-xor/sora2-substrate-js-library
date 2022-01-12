@@ -13,8 +13,8 @@ import { XOR } from './assets'
 import { CodecString, FPNumber } from './fp'
 import { encrypt, toHmacSHA256 } from './crypto'
 import { connection } from './connection'
-import { BridgeHistory } from './BridgeApi'
-import { RewardClaimHistory } from './rewards'
+import type { BridgeHistory } from './BridgeApi'
+import type { RewardClaimHistory } from './rewards/types'
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -341,7 +341,7 @@ export class BaseApi {
    * @param params
    * @returns value * 10 ^ decimals
    */
-  protected async getNetworkFee (type: Operation, ...params: Array<any>): Promise<CodecString> {
+  public async getNetworkFee (type: Operation, ...params: Array<any>): Promise<CodecString> {
     let extrinsicParams = params
     let extrinsic = null
     switch (type) {
