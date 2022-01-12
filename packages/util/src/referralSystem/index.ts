@@ -2,12 +2,12 @@ import { assert } from '@polkadot/util'
 
 import { Messages } from '../logger';
 import { FPNumber, NumberLike } from '../fp';
-import { XOR } from '../assets';
+import { XOR } from '../assets/consts';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 
 export class ReferralSystemModule {
-  constructor (private root: Api) {}
+  constructor (private readonly root: Api) {}
 
   /**
    * Returns the referral of the invited user by Id

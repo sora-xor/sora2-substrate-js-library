@@ -1,6 +1,6 @@
 import type { CodecString, FPNumber } from '../fp';
-import type { LPRewardsInfo } from '../rewards';
 import type { LiquiditySourceTypes } from './consts';
+import type { LPRewardsInfo } from '../rewards/types';
 
 export type PrimaryMarketsEnabledAssets = {
   [key: string]: Array<string>

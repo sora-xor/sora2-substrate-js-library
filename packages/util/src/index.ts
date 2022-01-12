@@ -5,6 +5,8 @@ import * as RewardsConsts from './rewards/consts'
 import * as RewardsTypes from './rewards/types'
 import * as SwapConsts from './swap/consts'
 import * as SwapTypes from './swap/types'
+import * as AssetsConsts from './assets/consts'
+import * as AssetsTypes from './assets/types'
 
 export * from './api'
 export * from './BaseApi'
@@ -14,23 +16,6 @@ export * from './FaucetApi'
 export * from './storage'
 export * from './http'
 export { FPNumber, CodecString } from './fp'
-export {
-  AccountAsset,
-  Asset,
-  AccountBalance,
-  BalanceType,
-  KnownAssets,
-  NativeAssets,
-  KnownSymbols,
-  MaxTotalSupply,
-  Whitelist,
-  WhitelistArrayItem,
-  getWhitelistAssets,
-  isWhitelistAsset,
-  getWhitelistIdsBySymbol,
-  isBlacklistAsset,
-  XOR
-} from './assets'
 
 export {
   PoolXykConsts,
@@ -39,5 +24,7 @@ export {
   RewardsConsts,
   RewardsTypes,
   SwapConsts,
-  SwapTypes
+  SwapTypes,
+  AssetsConsts,
+  AssetsTypes
 }

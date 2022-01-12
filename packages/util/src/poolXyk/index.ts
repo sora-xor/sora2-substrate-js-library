@@ -5,14 +5,15 @@ import type { Subscription } from '@polkadot/x-rxjs';
 
 import { CodecString, FPNumber, NumberLike } from '../fp';
 import { poolAccountIdFromAssetPair } from './account';
-import { Asset, XOR, ZeroBalance, AccountAsset } from '../assets';
+import { XOR, ZeroBalance } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 import type { AccountLiquidity } from './types';
+import type { Asset, AccountAsset } from '../assets/types';
 
 export class PoolXykModule {
-  constructor (private root: Api) {}
+  constructor (private readonly root: Api) {}
 
   private _liquidity: Array<AccountLiquidity> = []
   private subscriptions: Array<Subscription> = []
@@ -184,8 +185,8 @@ export class PoolXykModule {
     const poolAccount = poolAccountIdFromAssetPair(this.root.api, firstAddress, secondAddress).toString()
     const { decimals, symbol, name } = this.getInfoByPoolAccount(poolAccount)
     const balanceCodec = await this.root.api.query.poolXyk.poolProviders(poolAccount, this.root.accountPair.address) // BalanceInfo
-    const firstAsset = await this.root.getAssetInfo(firstAddress)
-    const secondAsset = await this.root.getAssetInfo(secondAddress)
+    const firstAsset = await this.root.assets.getAssetInfo(firstAddress)
+    const secondAsset = await this.root.assets.getAssetInfo(secondAddress)
     if (!balanceCodec) {
       return null
     }
@@ -315,9 +316,9 @@ export class PoolXykModule {
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ): Promise<void> {
     const params = await this.calcAddTxParams(firstAsset, secondAsset, firstAmount, secondAmount, slippageTolerance)
-    if (!this.root.getAsset(secondAsset.address)) {
-      this.root.addAccountAsset({ ...secondAsset, balance: ZeroBalance })
-      this.root.updateAccountAssets()
+    if (!this.root.assets.getAsset(secondAsset.address)) {
+      this.root.assets.addAccountAsset({ ...secondAsset, balance: ZeroBalance })
+      this.root.assets.updateAccountAssets()
     }
     await this.root.submitExtrinsic(
       this.root.api.tx.poolXyk.depositLiquidity(...params.args),
@@ -393,9 +394,9 @@ export class PoolXykModule {
       this.root.api.tx.poolXyk.initializePool(...params.pairCreationArgs),
       this.root.api.tx.poolXyk.depositLiquidity(...params.addLiquidityArgs)
     ])
-    if (!this.root.getAsset(secondAsset.address)) {
-      this.root.addAccountAsset({ ...secondAsset, balance: ZeroBalance })
-      this.root.updateAccountAssets()
+    if (!this.root.assets.getAsset(secondAsset.address)) {
+      this.root.assets.addAccountAsset({ ...secondAsset, balance: ZeroBalance })
+      this.root.assets.updateAccountAssets()
     }
     await this.root.submitExtrinsic(
       this.root.api.tx.utility.batchAll(transactions),

@@ -9,7 +9,7 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types'
 
 import { AccountStorage, Storage } from './storage'
-import { XOR } from './assets'
+import { XOR } from './assets/consts'
 import { CodecString, FPNumber } from './fp'
 import { encrypt, toHmacSHA256 } from './crypto'
 import { connection } from './connection'
@@ -76,7 +76,7 @@ export class BaseApi {
 
   protected signer?: Signer
   public storage?: Storage // common data storage
-  protected accountStorage?: AccountStorage // account data storage
+  public accountStorage?: AccountStorage // account data storage
   public account: CreateResult
 
   constructor () {}
@@ -274,6 +274,8 @@ export class BaseApi {
     }
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address)
     const { account, options } = this.getAccountWithOptions()
+    // TODO: Add ERA only for SWAP
+    // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce })
     history.txId = signedTx.hash.toString()
     const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn)

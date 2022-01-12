@@ -4,14 +4,14 @@ import type { Observable } from '@polkadot/types/types';
 
 import { RewardingEvents } from './consts';
 import { CodecString, FPNumber } from '../fp';
-import { KnownAssets, KnownSymbols } from '../assets';
+import { KnownAssets, KnownSymbols } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 import type { AccountMarketMakerInfo, RewardInfo, RewardsInfo } from './types';
 
 export class RewardsModule {
-  constructor (private root: Api) {}
+  constructor (private readonly root: Api) {}
 
   private isClaimableReward (reward: RewardInfo): boolean {
     const fpAmount = FPNumber.fromCodecValue(reward.amount, reward.asset.decimals);

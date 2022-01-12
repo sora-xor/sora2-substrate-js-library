@@ -1,19 +1,24 @@
 import { FPNumber } from '../fp';
-import { KnownAssets, KnownSymbols, MaxTotalSupply } from '../assets';
+import { KnownAssets, KnownSymbols, MaxTotalSupply } from '../assets/consts';
 
 export class Consts {
+  /** Zero string */
   static readonly ZERO_STR = '0';
-
+  /** PSWAP token */
   static readonly PSWAP = KnownAssets.get(KnownSymbols.PSWAP);
+  /** VAL token */
   static readonly VAL = KnownAssets.get(KnownSymbols.VAL);
+  /** DAI token */
   static readonly DAI = KnownAssets.get(KnownSymbols.DAI);
+  /** ETH token */
   static readonly ETH = KnownAssets.get(KnownSymbols.ETH);
+  /** XST-USD token */
   static readonly XSTUSD = KnownAssets.get(KnownSymbols.XSTUSD);
 
   static readonly XYK_FEE = new FPNumber(0.003);
   static readonly XST_FEE = new FPNumber(0.007);
   static readonly TBC_FEE = Consts.XYK_FEE;
-
+  /** Max `Rust` number value */
   static readonly MAX = new FPNumber(MaxTotalSupply);
 
   // TBC
@@ -32,7 +37,7 @@ export class Consts {
     Consts.DAI,
     Consts.ETH
   ].map(asset => asset.address);
-
+  /** Just `1` as `FPNumber` object */
   static readonly ONE = new FPNumber(1);
 }
 

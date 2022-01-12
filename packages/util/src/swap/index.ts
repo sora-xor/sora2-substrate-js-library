@@ -5,16 +5,17 @@ import { map } from '@polkadot/x-rxjs/operators';
 import type { Observable } from '@polkadot/types/types';
 
 import { LiquiditySourceTypes, Consts as SwapConsts } from './consts';
-import { AccountAsset, Asset, KnownAssets, XOR, ZeroBalance } from '../assets';
 import { isDirectExchange, quote } from './liquidityProxy';
+import { KnownAssets, XOR, ZeroBalance } from '../assets/consts';
 import { NumberLike, FPNumber, CodecString } from '../fp';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 import type { PathsAndPairLiquiditySources, PrimaryMarketsEnabledAssets, QuotePaths, QuotePayload, SwapResult } from './types';
+import type { AccountAsset, Asset } from '../assets/types';
 
 export class SwapModule {
-  constructor (private root: Api) {}
+  constructor (private readonly root: Api) {}
 
   /**
    * Get available list of sources for the selected asset
@@ -347,9 +348,9 @@ export class SwapModule {
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
     const params = await this.calcTxParams(assetA, assetB, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
-    if (!this.root.getAsset(assetB.address)) {
-      this.root.addAccountAsset({ ...assetB, balance: ZeroBalance })
-      this.root.updateAccountAssets()
+    if (!this.root.assets.getAsset(assetB.address)) {
+      this.root.assets.addAccountAsset({ ...assetB, balance: ZeroBalance })
+      this.root.assets.updateAccountAssets()
     }
     await this.root.submitExtrinsic(
       (this.root.api.tx.liquidityProxy as any).swap(...params.args),
@@ -390,9 +391,9 @@ export class SwapModule {
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
     const params = await this.calcTxParams(assetA, assetB, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
-    if (!this.root.getAsset(assetB.address)) {
-      this.root.addAccountAsset({ ...assetB, balance: ZeroBalance })
-      this.root.updateAccountAssets()
+    if (!this.root.assets.getAsset(assetB.address)) {
+      this.root.assets.addAccountAsset({ ...assetB, balance: ZeroBalance })
+      this.root.assets.updateAccountAssets()
     }
 
     const swap = (this.root.api.tx.liquidityProxy as any).swap(...params.args)
@@ -437,8 +438,8 @@ export class SwapModule {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<SwapResult> {
-    const assetA = await this.root.getAssetInfo(assetAAddress)
-    const assetB = await this.root.getAssetInfo(assetBAddress)
+    const assetA = await this.root.assets.getAssetInfo(assetAAddress)
+    const assetB = await this.root.assets.getAssetInfo(assetBAddress)
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource)
     const result = await (this.root.api.rpc as any).liquidityProxy.quote(
       this.root.defaultDEXId,

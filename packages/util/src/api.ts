@@ -1,27 +1,12 @@
 import { assert, isHex } from '@polkadot/util'
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
 import keyring from '@polkadot/ui-keyring'
-import { Subject } from '@polkadot/x-rxjs'
 import { map } from '@polkadot/x-rxjs/operators'
 import type { KeypairType } from '@polkadot/util-crypto/types'
 import type { CreateResult } from '@polkadot/ui-keyring/types'
 import type { KeyringPair$Json } from '@polkadot/keyring/types'
 import type { Signer, Observable } from '@polkadot/types/types'
-import type { Subscription } from '@polkadot/x-rxjs'
 
-import {
-  NativeAssets,
-  KnownAssets,
-  getAssetBalance,
-  AccountAsset,
-  Asset,
-  getAssetInfo,
-  getAssets,
-  AccountBalance,
-  getAssetBalanceObservable,
-  Whitelist,
-  XOR
-} from './assets'
 import { decrypt, encrypt } from './crypto'
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
 import { CodecString, FPNumber, NumberLike } from './fp'
@@ -32,7 +17,9 @@ import { SwapModule } from './swap'
 import { RewardsModule } from './rewards'
 import { PoolXykModule } from './poolXyk'
 import { ReferralSystemModule } from './referralSystem'
-import { PoolTokens } from './poolXyk/consts'
+import { AssetsModule } from './assets'
+import { AccountAsset, Asset } from './assets/types'
+import { XOR } from './assets/consts'
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
@@ -43,178 +30,12 @@ export class Api extends BaseApi {
   public readonly seedLength = 12
 
   public readonly bridge: BridgeApi = new BridgeApi()
+
   public readonly swap: SwapModule = new SwapModule(this)
   public readonly rewards: RewardsModule = new RewardsModule(this)
   public readonly poolXyk: PoolXykModule = new PoolXykModule(this)
   public readonly referralSystem: ReferralSystemModule = new ReferralSystemModule(this)
-
-  // Default assets addresses of account - list of NativeAssets addresses
-  public accountDefaultAssetsAddresses: Array<string> = NativeAssets.map(asset => asset.address)
-
-  private _assets: Array<AccountAsset> = []
-  private _accountAssetsAddresses: Array<string> = []
-
-  private balanceSubscriptions: Array<Subscription> = []
-  private assetsBalanceSubject = new Subject<void>()
-  public assetsBalanceUpdated = this.assetsBalanceSubject.asObservable()
-
-  // # Account assets methods
-
-  public get accountAssets (): Array<AccountAsset> {
-    if (this.storage) {
-      this._assets = JSON.parse(this.storage.get('assets')) as Array<AccountAsset> || []
-    }
-    return this._assets
-  }
-
-  public set accountAssets (assets: Array<AccountAsset>) {
-    this.storage?.set('assets', JSON.stringify(assets))
-    this._assets = [...assets]
-  }
-
-  private addToAccountAssetsList (asset: AccountAsset): void {
-    const assetsCopy = [...this.accountAssets]
-    const index = assetsCopy.findIndex(item => item.address === asset.address)
-
-    ~index ? assetsCopy[index] = asset : assetsCopy.push(asset)
-
-    this.accountAssets = assetsCopy
-  }
-
-  private removeFromAccountAssetsList (address: string): void {
-    this.accountAssets = this.accountAssets.filter(item => item.address !== address)
-  }
-
-  public addAccountAsset (asset: AccountAsset): void {
-    this.addToAccountAssetsList(asset)
-    this.addToAccountAssetsAddressesList(asset.address)
-  }
-
-  private removeAccountAsset (address: string): void {
-    this.removeFromAccountAssetsList(address)
-    this.removeFromAccountAssetsAddressesList(address)
-  }
-
-  public removeAsset (address: string): void {
-    this.removeAccountAsset(address)
-    this.updateAccountAssets()
-  }
-
-  public getAsset (address: string): AccountAsset | null {
-    return this.accountAssets.find(asset => asset.address === address) ?? null
-  }
-
-  public getAssetBalanceObservable (asset: AccountAsset): Observable<AccountBalance> {
-    return getAssetBalanceObservable(this.apiRx, this.account.pair.address, asset.address, asset.decimals)
-  }
-
-  /**
-   * Set subscriptions for balance updates of the account asset list
-   */
-  public updateAccountAssets (): void {
-    this.unsubscribeFromAllBalancesUpdates()
-    assert(this.account, Messages.connectWallet)
-    for (const asset of this.accountAssets) {
-      const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
-        asset.balance = accountBalance
-        this.addAccountAsset(asset)
-        this.assetsBalanceSubject.next()
-      })
-      this.balanceSubscriptions.push(subscription)
-    }
-  }
-
-  /**
-   * Get asset information
-   * @param address asset address
-   */
-  public async getAssetInfo (address: string): Promise<Asset> {
-    const knownAsset = KnownAssets.get(address)
-    if (knownAsset) {
-      return knownAsset
-    }
-    const existingAsset = this.getAsset(address) || this.poolXyk.accountLiquidity.find(asset => asset.address === address)
-    if (existingAsset) {
-      return {
-        address: existingAsset.address,
-        decimals: existingAsset.decimals,
-        symbol: existingAsset.symbol,
-        name: existingAsset.name
-      } as Asset
-    }
-    return await getAssetInfo(this.api, address)
-  }
-
-  /**
-   * Get account asset information.
-   * You can just check balance of any asset
-   * @param address asset address
-   * @param addToList should asset be added to list or not
-   */
-  public async getAccountAsset (address: string, addToList = false): Promise<AccountAsset> {
-    assert(this.account, Messages.connectWallet)
-    const { decimals, symbol, name } = await this.getAssetInfo(address)
-    const asset = { address, decimals, symbol, name } as AccountAsset
-    const result = await getAssetBalance(this.api, this.account.pair.address, address, decimals)
-    asset.balance = result
-    if (addToList) {
-      this.addAccountAsset(asset)
-      this.updateAccountAssets()
-    }
-    return asset
-  }
-
-  /**
-   * Get a list of all assets from default account assets array & from account storage
-   */
-  public async getKnownAccountAssets (): Promise<Array<AccountAsset>> {
-    assert(this.account, Messages.connectWallet)
-
-    const knownAssets: Array<AccountAsset> = []
-    const assetsAddresses = new Set([...this.accountDefaultAssetsAddresses, ...this.accountAssetsAddresses])
-
-    for (const assetAddress of assetsAddresses) {
-      const asset = await this.getAccountAsset(assetAddress)
-      this.addAccountAsset(asset)
-      knownAssets.push(asset)
-    }
-
-    return knownAssets
-  }
-
-  private unsubscribeFromAllBalancesUpdates (): void {
-    for (const subscription of this.balanceSubscriptions) {
-      subscription.unsubscribe()
-    }
-    this.balanceSubscriptions = []
-  }
-
-  // # Account assets addresses
-
-  private get accountAssetsAddresses (): Array<string> {
-    if (this.accountStorage) {
-      this._accountAssetsAddresses = JSON.parse(this.accountStorage.get('assetsAddresses')) as Array<string> || []
-    }
-    return this._accountAssetsAddresses
-  }
-
-  private set accountAssetsAddresses (assetsAddresses: Array<string>) {
-    this.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses))
-    this._accountAssetsAddresses = [...assetsAddresses]
-  }
-
-  private addToAccountAssetsAddressesList (assetAddress: string): void {
-    const assetsAddressesCopy = [...this.accountAssetsAddresses]
-    const index = assetsAddressesCopy.findIndex(address => address === assetAddress)
-
-    ~index ? assetsAddressesCopy[index] = assetAddress : assetsAddressesCopy.push(assetAddress)
-
-    this.accountAssetsAddresses = assetsAddressesCopy
-  }
-
-  private removeFromAccountAssetsAddressesList (address: string): void {
-    this.accountAssetsAddresses = this.accountAssetsAddresses.filter(item => item !== address)
-  }
+  public readonly assets: AssetsModule = new AssetsModule(this)
 
   // # History methods
 
@@ -509,13 +330,13 @@ export class Api extends BaseApi {
 
   /**
    * Transfer amount from account
-   * @param assetAddress Asset address
+   * @param asset Asset object
    * @param toAddress Account address
    * @param amount Amount value
    */
-  public async transfer (assetAddress: string, toAddress: string, amount: NumberLike): Promise<void> {
+  public async transfer (asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<void> {
     assert(this.account, Messages.connectWallet)
-    const asset = await this.getAssetInfo(assetAddress)
+    const assetAddress = asset.address
     const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.formatAddress(toAddress)
     await this.submitExtrinsic(
       this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
@@ -552,16 +373,6 @@ export class Api extends BaseApi {
     )
   }
 
-  /**
-   * Get all tokens list registered in the blockchain network
-   * @param whitelist set of whitelist tokens
-   * @param withPoolTokens `false` by default
-   */
-  public async getAssets (whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
-    const assets = await getAssets(this.api, whitelist)
-    return withPoolTokens ? assets : assets.filter(asset => asset.symbol !== PoolTokens.XYKPOOL)
-  }
-
   public getSystemBlockNumberObservable (): Observable<string> {
     return this.apiRx.query.system.number().pipe(map(codec => codec.toString()))
   }
@@ -573,7 +384,7 @@ export class Api extends BaseApi {
   // # Logout & reset methods
 
   public unsubscribeAll (): void {
-    this.unsubscribeFromAllBalancesUpdates()
+    this.assets.unsubscribeFromAllBalancesUpdates()
     this.poolXyk.unsubscribeFromAllUpdates()
   }
 
@@ -585,7 +396,7 @@ export class Api extends BaseApi {
     keyring.forgetAccount(address)
     keyring.forgetAddress(address)
 
-    this.accountAssets = []
+    this.assets.accountAssets = []
     this.poolXyk.accountLiquidity = []
 
     this.unsubscribeAll()

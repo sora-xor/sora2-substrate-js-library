@@ -1,12 +1,11 @@
-import { XOR } from '../assets';
-import { LiquiditySourceTypes } from './consts';
-import { RewardReason } from '../rewards';
+import { XOR } from '../assets/consts';
+import { RewardReason } from '../rewards/consts';
 import { FPNumber } from '../fp';
-import { SwapConsts as Consts } from './consts';
+import { LiquiditySourceTypes, Consts } from './consts';
 
 import type { CodecString } from '../fp';
-import type { LPRewardsInfo } from '../rewards';
-import type { Asset } from '../assets';
+import type { LPRewardsInfo } from '../rewards/types';
+import type { Asset } from '../assets/types';
 import type { QuotePayload, QuoteResult, QuotePrimaryMarketResult, QuotePaths, Distribution, SwapResult } from './types';
 
 // UTILS
