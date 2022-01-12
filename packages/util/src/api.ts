@@ -12,14 +12,14 @@ import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './B
 import { CodecString, FPNumber, NumberLike } from './fp'
 import { Messages } from './logger'
 import { BridgeApi } from './BridgeApi'
-import { Storage } from './storage'
 import { SwapModule } from './swap'
 import { RewardsModule } from './rewards'
 import { PoolXykModule } from './poolXyk'
 import { ReferralSystemModule } from './referralSystem'
 import { AssetsModule } from './assets'
-import { AccountAsset, Asset } from './assets/types'
 import { XOR } from './assets/consts'
+import type { Storage } from './storage'
+import type { AccountAsset, Asset } from './assets/types'
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
@@ -262,71 +262,6 @@ export class Api extends BaseApi {
   }
 
   // # API methods
-
-  private async calcRegisterAssetParams (
-    symbol: string,
-    name: string,
-    totalSupply: NumberLike,
-    extensibleSupply: boolean,
-    nft = {
-      isNft: false,
-      content: null,
-      description: null
-    }) {
-    assert(this.account, Messages.connectWallet)
-    // TODO: add assert for symbol, name and totalSupply params
-    const supply = nft.isNft ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply)
-    return {
-      args: [
-        symbol,
-        name,
-        supply.toCodecString(),
-        extensibleSupply,
-        nft.isNft,
-        nft.content,
-        nft.description
-      ]
-    }
-  }
-
-  public async getNftContent(address): Promise<string>{
-    const content = await this.api.query.assets.assetContentSource(address)
-    return `${content.toHuman()}`
-  }
-
-  public async getNftDescription(address): Promise<string> {
-    const desc = await this.api.query.assets.assetDescription(address)
-    return `${desc.toHuman()}`
-  }
-
-  /**
-   * Register asset
-   * @param symbol string with asset symbol
-   * @param name string with asset name
-   * @param totalSupply
-   * @param extensibleSupply
-   */
-  public async registerAsset (
-    symbol: string,
-    name: string,
-    totalSupply: NumberLike,
-    extensibleSupply = false,
-    nft = {
-      isNft: false,
-      content: null,
-      description: null
-    }
-  ): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nft)
-    await this.submitExtrinsic(
-      (this.api.tx.assets.register as any)(...params.args),
-      this.account.pair,
-      {
-        symbol,
-        type: Operation.RegisterAsset
-      }
-    )
-  }
 
   /**
    * Transfer amount from account

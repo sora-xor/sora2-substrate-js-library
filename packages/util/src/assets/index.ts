@@ -2,16 +2,17 @@ import { assert } from '@polkadot/util'
 import { map } from '@polkadot/x-rxjs/operators';
 import { combineLatest } from '@polkadot/x-rxjs';
 import { Subject } from '@polkadot/x-rxjs'
-import type { ApiPromise, ApiRx } from '@polkadot/api';
+import type { ApiPromise } from '@polkadot/api';
 import type { Codec, Observable } from '@polkadot/types/types';
 import type { AccountData } from '@polkadot/types/interfaces/balances';
 import type { OrmlAccountData } from '@open-web3/orml-types/interfaces/tokens';
 import type { Subscription } from '@polkadot/x-rxjs'
 
-import { FPNumber } from '../fp';
+import { FPNumber, NumberLike } from '../fp';
 import { KnownAssets, NativeAssets, XOR } from './consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
+import { Operation } from '../BaseApi';
 import type { AccountAsset, AccountBalance, Asset, Whitelist, WhitelistArrayItem } from './types';
 import type { Api } from '../api';
 
@@ -340,5 +341,77 @@ export class AssetsModule {
    public async getAssets (whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
     const assets = await getAssets(this.root.api, whitelist)
     return withPoolTokens ? assets : assets.filter(asset => asset.symbol !== PoolTokens.XYKPOOL)
+  }
+
+  private async calcRegisterAssetParams (
+    symbol: string,
+    name: string,
+    totalSupply: NumberLike,
+    extensibleSupply: boolean,
+    nft = {
+      isNft: false,
+      content: null,
+      description: null
+    }) {
+    assert(this.root.account, Messages.connectWallet)
+    const supply = nft.isNft ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply)
+    return {
+      args: [
+        symbol,
+        name,
+        supply.toCodecString(),
+        extensibleSupply,
+        nft.isNft,
+        nft.content,
+        nft.description
+      ]
+    }
+  }
+
+  /**
+   * Register asset
+   * @param symbol string with asset symbol
+   * @param name string with asset name
+   * @param totalSupply
+   * @param extensibleSupply
+   */
+   public async register (
+    symbol: string,
+    name: string,
+    totalSupply: NumberLike,
+    extensibleSupply = false,
+    nft = {
+      isNft: false,
+      content: null,
+      description: null
+    }
+  ): Promise<void> {
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nft)
+    await this.root.submitExtrinsic(
+      (this.root.api.tx.assets.register as any)(...params.args),
+      this.root.account.pair,
+      {
+        symbol,
+        type: Operation.RegisterAsset
+      }
+    )
+  }
+
+  /**
+   * Get NFT content
+   * @param assetId Asset ID
+   */
+  public async getNftContent (assetId: string): Promise<string> {
+    const content = await this.root.api.query.assets.assetContentSource(assetId)
+    return `${content.toHuman()}`
+  }
+
+  /**
+   * Get NFT description
+   * @param assetId Asset ID
+   */
+  public async getNftDescription (assetId: string): Promise<string> {
+    const desc = await this.root.api.query.assets.assetDescription(assetId)
+    return `${desc.toHuman()}`
   }
 }

@@ -18,7 +18,7 @@ async function main(): Promise<void> {
     'namename'
   );
 
-  await api.registerAsset(nftSymbol, nftName, '150', false, {
+  await api.assets.register(nftSymbol, nftName, '150', false, {
     isNft: true,
     content: 'link',
     description: 'description'
@@ -32,8 +32,8 @@ async function main(): Promise<void> {
   const nftAsset = assets.find(asset => asset.symbol === nftSymbol);
   console.log(`nftAsset`, nftAsset);
 
-  console.log(`api.getNftContent()`, await api.getNftContent(nftAsset.address));
-  console.log(`api.getNftDesc()`, await api.getNftDescription(nftAsset.address));
+  console.log(`api.getNftContent()`, await api.assets.getNftContent(nftAsset.address));
+  console.log(`api.getNftDesc()`, await api.assets.getNftDescription(nftAsset.address));
 
   await connection.close();
 }
