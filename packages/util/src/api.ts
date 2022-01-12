@@ -415,13 +415,14 @@ export class Api extends BaseApi {
       return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
     }
     // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.getAsset(XOR.address)
+    const xorAccountAsset = this.assets.getAsset(XOR.address)
     if (!xorAccountAsset) {
       return false
     }
     const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance.transferable, xorDecimals)
     return FPNumber.lte(fpFee, xorBalance)
   }
+
   /**
    * Divide the first asset by the second
    * @param firstAssetAddress
@@ -431,15 +432,38 @@ export class Api extends BaseApi {
    * @param reversed If `true`: the second by the first (`false` by default)
    * @returns Formatted string
    */
-  public async divideAssets (
+   public async divideAssets (
     firstAssetAddress: string,
     secondAssetAddress: string,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
+    reversed: boolean
+  ): Promise<string>;
+  /**
+   * Divide the first asset by the second
+   * @param firstAsset
+   * @param secondAsset
+   * @param firstAmount
+   * @param secondAmount
+   * @param reversed If `true`: the second by the first (`false` by default)
+   * @returns Formatted string
+   */
+   public async divideAssets (
+    firstAsset: Asset | AccountAsset,
+    secondAsset: Asset | AccountAsset,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    reversed: boolean
+  ): Promise<string>;
+  public async divideAssets (
+    first: Asset | AccountAsset | string,
+    second: Asset | AccountAsset | string,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
     reversed = false
   ): Promise<string> {
-    const firstAsset = await this.getAssetInfo(firstAssetAddress)
-    const secondAsset = await this.getAssetInfo(secondAssetAddress)
+    const firstAsset = typeof first === 'string' ? await this.assets.getAssetInfo(first) : first;
+    const secondAsset = typeof second === 'string' ? await this.assets.getAssetInfo(second) : second;
     const decimals = Math.max(firstAsset.decimals, secondAsset.decimals)
     const one = new FPNumber(1, decimals)
     const firstAmountNum = new FPNumber(firstAmount, decimals)
