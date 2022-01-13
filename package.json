@@ -26,7 +26,7 @@
     "transfers": "ts-node --project ./tsconfig.json scripts/transfers.ts",
     "verify-pool-account-gen": "ts-node --project ./tsconfig.json scripts/verifyPoolAccountGeneration.ts",
     "demo": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
-    "run": "ts-node --project ./tsconfig.json scripts/examples/registerAsset.ts",
+    "example": "wrap () { ts-node --project ./tsconfig.json scripts/examples/\"$*\".ts; }; wrap",
     "publish-workspaces": "lerna publish from-package",
     "generate-doc": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/exportApi.ts",
     "bump-version": "lerna version patch --no-push --no-git-tag-version",
