@@ -3,7 +3,7 @@ import { api } from '@sora-substrate/util';
 import { delay, withConnectedAccount } from './util';
 
 async function main(): Promise<void> {
-  withConnectedAccount(async () => {
+  await withConnectedAccount(async () => {
     // Register MYTOKEN token with 200 extensible sypply.
     // You, as token owner, can mint this token any time.
     const tokenSymbol = 'MYTOKEN';
