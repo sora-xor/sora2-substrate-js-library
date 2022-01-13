@@ -65,6 +65,8 @@ import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AccountId32Junction, AccountIndex64Junction, AccountKey20Junction, AssetInstance, BodyId, BodyPart, BodyPartAtLeastProportion, BodyPartFraction, BodyPartMoreThanProportion, DoubleEncodedCall, InboundStatus, Junction, MultiAsset, MultiAssetAbstractFungible, MultiAssetAbstractNonFungible, MultiAssetConcreteFungible, MultiAssetConcreteNonFungible, MultiLocation, NetworkId, OutboundStatus, Outcome, PluralityJunction, QueueConfigData, VersionedMultiAsset, VersionedMultiLocation, VersionedXcm, Xcm, XcmAssetEffects, XcmError, XcmHrmpChannelAccepted, XcmHrmpChannelClosing, XcmHrmpNewChannelOpenRequest, XcmOrder, XcmOrderBuyExecution, XcmOrderDepositAsset, XcmOrderDepositReserveAsset, XcmOrderExchangeAsset, XcmOrderInitiateReserveWithdraw, XcmOrderInitiateTeleport, XcmOrderQueryHolding, XcmOriginKind, XcmQueryResponse, XcmRelayedFrom, XcmReserveAssetDeposit, XcmResponse, XcmTeleportAsset, XcmTransact, XcmTransferAsset, XcmTransferReserveAsset, XcmWithdrawAsset, XcmpMessageFormat } from '@polkadot/types/interfaces/xcm';
 import type { AssetInfo, AssetNameStr, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
+import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
+import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
@@ -681,6 +683,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<LoadIncomingTransactionRequest>': Option<LoadIncomingTransactionRequest>;
     'Option<LocalValidationData>': Option<LocalValidationData>;
     'Option<LockIdentifier>': Option<LockIdentifier>;
+    'Option<LockInfo>': Option<LockInfo>;
     'Option<LookupSource>': Option<LookupSource>;
     'Option<LookupTarget>': Option<LookupTarget>;
     'Option<LotteryConfig>': Option<LotteryConfig>;
@@ -1015,6 +1018,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<SpanIndex>': Option<SpanIndex>;
     'Option<SpanRecord>': Option<SpanRecord>;
     'Option<Sr25519Signature>': Option<Sr25519Signature>;
+    'Option<StakingInfo>': Option<StakingInfo>;
     'Option<StakingLedger>': Option<StakingLedger>;
     'Option<StakingLedgerTo223>': Option<StakingLedgerTo223>;
     'Option<StakingLedgerTo240>': Option<StakingLedgerTo240>;
@@ -1691,6 +1695,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<LoadIncomingTransactionRequest>': Vec<LoadIncomingTransactionRequest>;
     'Vec<LocalValidationData>': Vec<LocalValidationData>;
     'Vec<LockIdentifier>': Vec<LockIdentifier>;
+    'Vec<LockInfo>': Vec<LockInfo>;
     'Vec<LookupSource>': Vec<LookupSource>;
     'Vec<LookupTarget>': Vec<LookupTarget>;
     'Vec<LotteryConfig>': Vec<LotteryConfig>;
@@ -2025,6 +2030,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<SpanIndex>': Vec<SpanIndex>;
     'Vec<SpanRecord>': Vec<SpanRecord>;
     'Vec<Sr25519Signature>': Vec<Sr25519Signature>;
+    'Vec<StakingInfo>': Vec<StakingInfo>;
     'Vec<StakingLedger>': Vec<StakingLedger>;
     'Vec<StakingLedgerTo223>': Vec<StakingLedgerTo223>;
     'Vec<StakingLedgerTo240>': Vec<StakingLedgerTo240>;
@@ -2701,6 +2707,7 @@ declare module '@polkadot/types/types/registry' {
     LoadIncomingTransactionRequest: LoadIncomingTransactionRequest;
     LocalValidationData: LocalValidationData;
     LockIdentifier: LockIdentifier;
+    LockInfo: LockInfo;
     LookupSource: LookupSource;
     LookupTarget: LookupTarget;
     LotteryConfig: LotteryConfig;
@@ -3035,6 +3042,7 @@ declare module '@polkadot/types/types/registry' {
     SpanIndex: SpanIndex;
     SpanRecord: SpanRecord;
     Sr25519Signature: Sr25519Signature;
+    StakingInfo: StakingInfo;
     StakingLedger: StakingLedger;
     StakingLedgerTo223: StakingLedgerTo223;
     StakingLedgerTo240: StakingLedgerTo240;
