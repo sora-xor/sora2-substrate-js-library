@@ -22,6 +22,8 @@ import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, La
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig } from '@polkadot/types/interfaces/utility';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
+import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
+import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
@@ -173,6 +175,31 @@ export interface StorageType extends BaseStorageType {
      * The set of open multisig operations.
      **/
     multisigs: StorageDoubleMap<AccountId | string, U8aFixed | string, Option<Multisig>>;
+  };
+  ceresLiquidityLocker: {    /**
+     * Account which has permissions for changing CERES amount fee
+     **/
+    authorityAccount: AccountIdOf | null;
+    /**
+     * Account for collecting fees from Option 1
+     **/
+    feesOptionOneAccount: AccountIdOf | null;
+    /**
+     * Account for collecting fees from Option 2
+     **/
+    feesOptionTwoAccount: AccountIdOf | null;
+    /**
+     * Amount of CERES for locker fees option two
+     **/
+    feesOptionTwoCeresAmount: Balance | null;
+    lockerData: StorageMap<AccountIdOf | string, Vec<LockInfo>>;
+  };
+  ceresStaking: {    rewardsRemaining: Balance | null;
+    /**
+     * AccountId -> StakingInfo
+     **/
+    stakers: StorageMap<AccountIdOf | string, StakingInfo>;
+    totalDeposited: Balance | null;
   };
   council: {    /**
      * The current members of the collective. This is stored sorted (just by value).
@@ -1137,7 +1164,7 @@ export interface StorageType extends BaseStorageType {
     xorToVal: Balance | null;
   };
   xstPool: {    /**
-     * Base fee in XOR which is deducted on all trades, currently it's burned: 0.7%.
+     * Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
      **/
     baseFee: Fixed | null;
     /**
