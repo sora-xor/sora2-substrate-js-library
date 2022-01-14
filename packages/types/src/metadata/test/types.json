@@ -262,6 +262,12 @@
         "kind": "IncomingTransactionRequestKind",
         "network_id": "BridgeNetworkId"
     },
+    "LockInfo": {
+        "pool_tokens": "Balance",
+        "unlocking_block": "BlockNumber",
+        "asset_a": "AssetId",
+        "asset_b": "AssetId"
+    },
     "LookupSource": "AccountId",
     "MarketMakerInfo": {
         "count": "u32",
@@ -526,6 +532,10 @@
         "v": "u8"
     },
     "SmoothPriceState": "Null",
+    "StakingInfo": {
+        "deposited": "Balance",
+        "rewards": "Balance"
+    },
     "StorageVersion": "Null",
     "SwapAction": "Null",
     "SwapAmount": {
