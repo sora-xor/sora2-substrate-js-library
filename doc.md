@@ -10,7 +10,7 @@
 * [randomnessCollectiveFlip](#randomnesscollectiveflip-pallet)
 * [transactionPayment](#transactionpayment-pallet)
 * [permissions](#permissions-pallet)
-* [referrals](#referrals-pallet)
+* [referralSystem](#referralsystem-pallet)
 * [rewards](#rewards-pallet)
 * [xorFee](#xorfee-pallet)
 * [bridgeMultisig](#bridgemultisig-pallet)
@@ -907,13 +907,13 @@ arguments:
 returns: `Vec<PermissionId>`
 <hr>
 
-## Referrals pallet
+## ReferralSystem pallet
 
 
 ### *State Queries*
 
 
-#### **api.query.referrals.referrers**
+#### **api.query.referralSystem.referrers**
 
 
 
@@ -8372,6 +8372,16 @@ returns: `Option<SwapOutcomeInfo>`
 }
 ```
 
+### LockInfo
+```
+{
+    pool_tokens: "Balance",
+    unlocking_block: "BlockNumber",
+    asset_a: "AssetId",
+    asset_b: "AssetId"
+}
+```
+
 ### LookupSource
 ```
 "AccountId"
@@ -8818,6 +8828,14 @@ returns: `Option<SwapOutcomeInfo>`
 ### SmoothPriceState
 ```
 "Null"
+```
+
+### StakingInfo
+```
+{
+    deposited: "Balance",
+    rewards: "Balance"
+}
 ```
 
 ### StorageVersion
