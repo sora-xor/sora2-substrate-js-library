@@ -1,12 +1,12 @@
-import * as PoolXykConsts from './poolXyk/consts'
-import * as PoolXykTypes from './poolXyk/types'
-import * as PoolXykAccount from './poolXyk/account'
-import * as RewardsConsts from './rewards/consts'
-import * as RewardsTypes from './rewards/types'
-import * as SwapConsts from './swap/consts'
-import * as SwapTypes from './swap/types'
-import * as AssetsConsts from './assets/consts'
-import * as AssetsTypes from './assets/types'
+import './poolXyk/consts'
+import './poolXyk/types'
+import './poolXyk/account'
+import './rewards/consts'
+import './rewards/types'
+import './swap/consts'
+import './swap/types'
+import './assets/consts'
+import './assets/types'
 
 export * from './api'
 export * from './BaseApi'
@@ -16,15 +16,3 @@ export * from './FaucetApi'
 export * from './storage'
 export * from './http'
 export { FPNumber, CodecString } from './fp'
-
-export {
-  PoolXykConsts,
-  PoolXykTypes,
-  PoolXykAccount,
-  RewardsConsts,
-  RewardsTypes,
-  SwapConsts,
-  SwapTypes,
-  AssetsConsts,
-  AssetsTypes
-}

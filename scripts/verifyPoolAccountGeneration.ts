@@ -1,7 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
-import { PoolXykAccount } from '@sora-substrate/util';
+import { poolAccountIdFromAssetPair } from '@sora-substrate/util/poolXyk/account';
 
 async function main(): Promise<void> {
   const provider = new WsProvider('wss://ws.mof.sora.org');
@@ -13,7 +13,7 @@ async function main(): Promise<void> {
   for (let entry in properties) {
     const targetAsset = api.createType("AssetId", properties[entry][0].slice(-32)).toString();
     const actualAccount = properties[entry][1].toJSON()[0].toString();
-    const generatedAccount = PoolXykAccount.poolAccountIdFromAssetPair(api, baseAsset, targetAsset).toString()
+    const generatedAccount = poolAccountIdFromAssetPair(api, baseAsset, targetAsset).toString()
     console.log(targetAsset, actualAccount, generatedAccount, actualAccount == generatedAccount?'OK':'ERROR');
     if (actualAccount != generatedAccount) {
       throw new Error('Found pool account mismatch!');

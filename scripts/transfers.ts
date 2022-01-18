@@ -1,4 +1,5 @@
-import { api, connection, FPNumber, AssetsConsts, TransactionStatus } from '@sora-substrate/util'
+import { api, connection, FPNumber, TransactionStatus } from '@sora-substrate/util'
+import { KnownAssets, KnownSymbols } from '@sora-substrate/util/assets/consts'
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
@@ -29,7 +30,7 @@ This file should be located in "scripts" directory. If you want to skip it - jus
   const transferParams = []
   for (const accountData of accountDataArray) {
     const [_, toAddress, amount] = accountData.split(',')
-    transferParams.push({ toAddress, amount, assetAddress: AssetsConsts.KnownAssets.get(assetSymbol).address })
+    transferParams.push({ toAddress, amount, assetAddress: KnownAssets.get(assetSymbol).address })
   }
   return transferParams
 }
@@ -52,9 +53,9 @@ async function main(): Promise<void> {
 ______________________________________________________________\n`
     )
   // Get data from files
-  const xorParams = await getTransferParams(rl, AssetsConsts.KnownSymbols.XOR)
-  const valParams = await getTransferParams(rl, AssetsConsts.KnownSymbols.VAL)
-  const pswapParams = await getTransferParams(rl, AssetsConsts.KnownSymbols.PSWAP)
+  const xorParams = await getTransferParams(rl, KnownSymbols.XOR)
+  const valParams = await getTransferParams(rl, KnownSymbols.VAL)
+  const pswapParams = await getTransferParams(rl, KnownSymbols.PSWAP)
   const transferParams = [...xorParams, ...valParams, ...pswapParams]
   if (!transferParams.length) {
     throw new Error('There is no data. Please try again')
