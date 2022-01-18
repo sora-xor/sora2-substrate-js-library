@@ -1,4 +1,5 @@
-import { api, connection, FPNumber, KnownAssets, KnownSymbols, TransactionStatus } from '@sora-substrate/util'
+import { api, connection, FPNumber, TransactionStatus } from '@sora-substrate/util'
+import { KnownAssets, KnownSymbols } from '@sora-substrate/util/assets/consts'
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'

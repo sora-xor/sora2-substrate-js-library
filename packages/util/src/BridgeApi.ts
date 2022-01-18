@@ -5,9 +5,10 @@ import { assert } from '@polkadot/util'
 
 import { BaseApi, Operation, History, isBridgeOperation } from './BaseApi'
 import { Messages } from './logger'
-import { getAssets, Asset, AccountAsset, isNativeAsset } from './assets'
+import { getAssets, isNativeAsset } from './assets'
 import { CodecString, FPNumber } from './fp'
 import { encrypt } from './crypto'
+import type { AccountAsset, Asset } from './assets/types'
 
 export interface RegisteredAccountAsset extends AccountAsset {
   externalAddress: string;

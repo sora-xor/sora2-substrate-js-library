@@ -9,12 +9,12 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types'
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types'
 
 import { AccountStorage, Storage } from './storage'
-import { XOR } from './assets'
+import { XOR } from './assets/consts'
 import { CodecString, FPNumber } from './fp'
 import { encrypt, toHmacSHA256 } from './crypto'
 import { connection } from './connection'
-import { BridgeHistory } from './BridgeApi'
-import { RewardClaimHistory } from './rewards'
+import type { BridgeHistory } from './BridgeApi'
+import type { RewardClaimHistory } from './rewards/types'
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -67,7 +67,7 @@ export class BaseApi {
   } as NetworkFeesObject
 
   protected readonly prefix = 69
-  protected readonly defaultDEXId = 0
+  public readonly defaultDEXId = 0
 
   private _history: Array<History> = []
   private _historySyncTimestamp: number = 0
@@ -75,9 +75,9 @@ export class BaseApi {
   private _restored: boolean = false
 
   protected signer?: Signer
-  protected storage?: Storage // common data storage
-  protected accountStorage?: AccountStorage // account data storage
-  protected account: CreateResult
+  public storage?: Storage // common data storage
+  public accountStorage?: AccountStorage // account data storage
+  public account: CreateResult
 
   constructor () {}
 
@@ -274,6 +274,8 @@ export class BaseApi {
     }
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address)
     const { account, options } = this.getAccountWithOptions()
+    // TODO: Add ERA only for SWAP
+    // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce })
     history.txId = signedTx.hash.toString()
     const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn)
@@ -341,7 +343,7 @@ export class BaseApi {
    * @param params
    * @returns value * 10 ^ decimals
    */
-  protected async getNetworkFee (type: Operation, ...params: Array<any>): Promise<CodecString> {
+  public async getNetworkFee (type: Operation, ...params: Array<any>): Promise<CodecString> {
     let extrinsicParams = params
     let extrinsic = null
     switch (type) {
