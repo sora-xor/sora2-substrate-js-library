@@ -358,22 +358,23 @@ export class Api extends BaseApi {
     return FPNumber.lte(fpFee, xorBalance);
   }
 
-  /**
-   * Divide the first asset by the second
-   * @param firstAssetAddress
-   * @param secondAssetAddress
-   * @param firstAmount
-   * @param secondAmount
-   * @param reversed If `true`: the second by the first (`false` by default)
-   * @returns Formatted string
-   */
-  public async divideAssets(
-    firstAssetAddress: string,
-    secondAssetAddress: string,
+  private divideAssetsInternal(
+    firstAsset: Asset | AccountAsset,
+    secondAsset: Asset | AccountAsset,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     reversed: boolean
-  ): Promise<string>;
+  ): string {
+    const decimals = Math.max(firstAsset.decimals, secondAsset.decimals);
+    const one = new FPNumber(1, decimals);
+    const firstAmountNum = new FPNumber(firstAmount, decimals);
+    const secondAmountNum = new FPNumber(secondAmount, decimals);
+    const result = !reversed
+      ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
+      : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one);
+    return result.format();
+  }
+
   /**
    * Divide the first asset by the second
    * @param firstAsset
@@ -383,30 +384,35 @@ export class Api extends BaseApi {
    * @param reversed If `true`: the second by the first (`false` by default)
    * @returns Formatted string
    */
-  public async divideAssets(
+  public divideAssets(
     firstAsset: Asset | AccountAsset,
     secondAsset: Asset | AccountAsset,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
-    reversed: boolean
-  ): Promise<string>;
-  public async divideAssets(
-    first: Asset | AccountAsset | string,
-    second: Asset | AccountAsset | string,
+    reversed = false
+  ): string {
+    return this.divideAssetsInternal(firstAsset, secondAsset, firstAmount, secondAmount, reversed);
+  }
+
+  /**
+   * Divide the first asset by the second
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   * @param firstAmount
+   * @param secondAmount
+   * @param reversed If `true`: the second by the first (`false` by default)
+   * @returns Promise with formatted string
+   */
+  public async divideAssetsByAssetIds(
+    firstAssetAddress: string,
+    secondAssetAddress: string,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     reversed = false
   ): Promise<string> {
-    const firstAsset = typeof first === 'string' ? await this.assets.getAssetInfo(first) : first;
-    const secondAsset = typeof second === 'string' ? await this.assets.getAssetInfo(second) : second;
-    const decimals = Math.max(firstAsset.decimals, secondAsset.decimals);
-    const one = new FPNumber(1, decimals);
-    const firstAmountNum = new FPNumber(firstAmount, decimals);
-    const secondAmountNum = new FPNumber(secondAmount, decimals);
-    const result = !reversed
-      ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
-      : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one);
-    return result.format();
+    const firstAsset = await this.assets.getAssetInfo(firstAssetAddress);
+    const secondAsset = await this.assets.getAssetInfo(secondAssetAddress);
+    return this.divideAssetsInternal(firstAsset, secondAsset, firstAmount, secondAmount, reversed);
   }
 }
 
