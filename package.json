@@ -62,7 +62,7 @@
     "tsconfig-paths": "^3.9.0"
   },
   "lint-staged": {
-    "*.{js,ts,json,md}": [
+    "!(packages/types/**/*)*.{js,ts,json,md}": [
       "prettier --write",
       "git add"
     ]
