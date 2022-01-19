@@ -1,9 +1,9 @@
 export default {
-    rpc: {},
-    types: {
-        StakingInfo: {
-            deposited: "Balance",
-            rewards: "Balance",
-        },
-    }
-}
+  rpc: {},
+  types: {
+    StakingInfo: {
+      deposited: 'Balance',
+      rewards: 'Balance',
+    },
+  },
+};

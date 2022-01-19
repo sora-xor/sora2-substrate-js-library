@@ -1,8 +1,8 @@
 import type { CodecString } from '../fp';
 
 export type Whitelist = {
-  [key: string]: WhitelistItem
-}
+  [key: string]: WhitelistItem;
+};
 
 export interface WhitelistItem {
   symbol: string;

@@ -4,7 +4,18 @@
 import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
-import type { AccountId, AssetId, AssetName, AssetSymbol, Balance, BalancePrecision, BlockNumber, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
+import type {
+  AccountId,
+  AssetId,
+  AssetName,
+  AssetSymbol,
+  Balance,
+  BalancePrecision,
+  BlockNumber,
+  H160,
+  H256,
+  Index,
+} from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetKind */
 export interface AssetKind extends Enum {

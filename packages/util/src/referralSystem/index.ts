@@ -1,4 +1,4 @@
-import { assert } from '@polkadot/util'
+import { assert } from '@polkadot/util';
 
 import { Messages } from '../logger';
 import { FPNumber, NumberLike } from '../fp';
@@ -7,16 +7,16 @@ import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 
 export class ReferralSystemModule {
-  constructor (private readonly root: Api) {}
+  constructor(private readonly root: Api) {}
 
   /**
    * Returns the referral of the invited user by Id
    * @param invitedUserId address of invited account
    * @returns referral
    */
-   public async getReferral (invitedUserId: string): Promise<string> {
-    const referral = await this.root.api.query.referrals.referrers(invitedUserId) as any
-    return !referral ? '' : referral.toString()
+  public async getReferral(invitedUserId: string): Promise<string> {
+    const referral = (await this.root.api.query.referrals.referrers(invitedUserId)) as any;
+    return !referral ? '' : referral.toString();
   }
 
   /**
@@ -24,8 +24,8 @@ export class ReferralSystemModule {
    * @param referralId address of referral account
    * @returns array of invited users
    */
-  public async getInvitedUsers (referralId: string): Promise<Array<string>> {
-    return await this.root.api.query.referrals.referrals(referralId) as any
+  public async getInvitedUsers(referralId: string): Promise<Array<string>> {
+    return (await this.root.api.query.referrals.referrals(referralId)) as any;
   }
 
   /**
@@ -33,26 +33,26 @@ export class ReferralSystemModule {
    * This balance can be used by referrals to pay the fee
    * @param amount balance to reserve
    */
-   public async reserveXor (amount: NumberLike): Promise<void> {
-    assert(this.root.account, Messages.connectWallet)
+  public async reserveXor(amount: NumberLike): Promise<void> {
+    assert(this.root.account, Messages.connectWallet);
     await this.root.submitExtrinsic(
       this.root.api.tx.referrals.reserve(new FPNumber(amount, XOR.decimals).toCodecString()),
       this.root.account.pair,
       { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralReserveXor }
-    )
+    );
   }
 
   /**
    * Unreserve XOR balance
    * @param amount balance to unreserve
    */
-  public async unreserveXor (amount: NumberLike): Promise<void> {
-    assert(this.root.account, Messages.connectWallet)
+  public async unreserveXor(amount: NumberLike): Promise<void> {
+    assert(this.root.account, Messages.connectWallet);
     await this.root.submitExtrinsic(
       this.root.api.tx.referrals.unreserve(new FPNumber(amount, XOR.decimals).toCodecString()),
       this.root.account.pair,
       { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralUnreserveXor }
-    )
+    );
   }
 
   /**
@@ -61,13 +61,12 @@ export class ReferralSystemModule {
    * otherwise the extrinsic fails and the fee is paid by the invited user
    * @param referralId address of referral account
    */
-   public async setInvitedUser (referralId: string): Promise<void> {
-    assert(this.root.account, Messages.connectWallet)
-    const formattedToAddress = referralId.slice(0, 2) === 'cn' ? referralId : this.root.formatAddress(referralId)
-    await this.root.submitExtrinsic(
-      this.root.api.tx.referrals.setReferrer(referralId),
-      this.root.account.pair,
-      { to: formattedToAddress, type: Operation.ReferralSetInvitedUser }
-    )
+  public async setInvitedUser(referralId: string): Promise<void> {
+    assert(this.root.account, Messages.connectWallet);
+    const formattedToAddress = referralId.slice(0, 2) === 'cn' ? referralId : this.root.formatAddress(referralId);
+    await this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referralId), this.root.account.pair, {
+      to: formattedToAddress,
+      type: Operation.ReferralSetInvitedUser,
+    });
   }
 }

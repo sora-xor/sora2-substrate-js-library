@@ -1,18 +1,18 @@
-import { derive as ormlDerives } from '@open-web3/orml-api-derive'
-import { derive as soraDerives } from '@sora-substrate/api-derive'
+import { derive as ormlDerives } from '@open-web3/orml-api-derive';
+import { derive as soraDerives } from '@sora-substrate/api-derive';
 
 import {
   rpc as soraRpc,
   types as soraTypes,
   typesAlias as soraTypesAlias,
-  typesBundle as soraTypesBundle
-} from '@sora-substrate/types'
-import { ApiOptions } from '@polkadot/api/types'
+  typesBundle as soraTypesBundle,
+} from '@sora-substrate/types';
+import { ApiOptions } from '@polkadot/api/types';
 
 export const defaultOptions: ApiOptions = {
   types: soraTypes,
-  rpc: soraRpc
-}
+  rpc: soraRpc,
+};
 
 export const options = ({
   types = {},
@@ -23,19 +23,19 @@ export const options = ({
 }: ApiOptions = {}): ApiOptions => ({
   types: {
     ...soraTypes,
-    ...types
+    ...types,
   },
   rpc: {
     ...soraRpc,
-    ...rpc
+    ...rpc,
   },
   typesAlias: {
     ...soraTypesAlias,
-    ...typesAlias
+    ...typesAlias,
   },
   derives: {
     ...ormlDerives,
-    ...soraDerives
+    ...soraDerives,
   },
   typesBundle: {
     ...typesBundle,
@@ -43,17 +43,17 @@ export const options = ({
       ...typesBundle.spec,
       sora: {
         ...soraTypesBundle?.spec?.sora,
-        ...typesBundle?.spec?.sora
-      }
-    }
+        ...typesBundle?.spec?.sora,
+      },
+    },
   },
   signedExtensions: {
     ChargeTransactionPayment2: {
       extrinsic: {
-        charge_fee_info: 'ChargeFeeInfo'
+        charge_fee_info: 'ChargeFeeInfo',
       },
-      payload: {}
-    }
+      payload: {},
+    },
   },
-  ...otherOptions
-})
+  ...otherOptions,
+});

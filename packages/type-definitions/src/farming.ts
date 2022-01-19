@@ -1,10 +1,10 @@
 export default {
-    rpc: {},
-    types: {
-        PoolFarmer: {
-            account: 'AccountId',
-            block: 'BlockNumber',
-            weight: 'Balance',
-        },
-    }
-}
+  rpc: {},
+  types: {
+    PoolFarmer: {
+      account: 'AccountId',
+      block: 'BlockNumber',
+      weight: 'Balance',
+    },
+  },
+};

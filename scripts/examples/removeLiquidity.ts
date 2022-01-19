@@ -5,7 +5,7 @@ import { delay, withConnectedAccount } from './util';
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {
     // REMOVE LIQUIDITY TX
-  })
+  });
 }
 
 main()

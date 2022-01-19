@@ -11,7 +11,7 @@
     "build:interfaces:prod": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts prod",
     "check-deps": "./node_modules/@open-web3/util/scripts/check-deps.js yarn.lock @polkadot/ @open-web3/",
     "clean": "polkadot-dev-clean-build",
-    "lint": "eslint '*.ts'",
+    "lint": "prettier --write .",
     "postinstall": "polkadot-dev-yarn-only",
     "test": "jest --testPathIgnorePatterns",
     "test:all": "yarn build && yarn test",
@@ -30,7 +30,8 @@
     "publish-workspaces": "lerna publish from-package",
     "generate-doc": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/exportApi.ts",
     "bump-version": "lerna version patch --no-push --no-git-tag-version",
-    "set-version": "lerna version --no-push --no-git-tag-version"
+    "set-version": "lerna version --no-push --no-git-tag-version",
+    "prepare": "husky install"
   },
   "engines": {
     "yarn": "^1.10.1"
@@ -50,9 +51,20 @@
     "@polkadot/dev": "^0.32.17",
     "@polkadot/ts": "^0.2.1",
     "@types/jest": "^26.0.19",
+    "eslint": "^7.32.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "husky": "^7.0.0",
     "jest": "^26.6.3",
+    "lint-staged": "^11.1.2",
+    "prettier": "^2.2.1",
     "ts-jest": "^26.4.4",
     "ts-node": "^8.6.1",
     "tsconfig-paths": "^3.9.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
   }
 }

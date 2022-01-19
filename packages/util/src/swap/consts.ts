@@ -31,12 +31,9 @@ export class Consts {
   /** 2.5 billion pswap reserved for tbc rewards */
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
 
-  static readonly ASSETS_HAS_XYK_POOL = [
-    Consts.PSWAP,
-    Consts.VAL,
-    Consts.DAI,
-    Consts.ETH
-  ].map(asset => asset.address);
+  static readonly ASSETS_HAS_XYK_POOL = [Consts.PSWAP, Consts.VAL, Consts.DAI, Consts.ETH].map(
+    (asset) => asset.address
+  );
   /** Just `1` as `FPNumber` object */
   static readonly ONE = new FPNumber(1);
 }
@@ -45,5 +42,5 @@ export enum LiquiditySourceTypes {
   Default = '',
   XYKPool = 'XYKPool',
   XSTPool = 'XSTPool',
-  MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool'
+  MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool',
 }

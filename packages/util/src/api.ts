@@ -1,61 +1,61 @@
-import { assert, isHex } from '@polkadot/util'
-import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto'
-import keyring from '@polkadot/ui-keyring'
-import { map } from '@polkadot/x-rxjs/operators'
-import type { KeypairType } from '@polkadot/util-crypto/types'
-import type { CreateResult } from '@polkadot/ui-keyring/types'
-import type { KeyringPair$Json } from '@polkadot/keyring/types'
-import type { Signer, Observable } from '@polkadot/types/types'
+import { assert, isHex } from '@polkadot/util';
+import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
+import keyring from '@polkadot/ui-keyring';
+import { map } from '@polkadot/x-rxjs/operators';
+import type { KeypairType } from '@polkadot/util-crypto/types';
+import type { CreateResult } from '@polkadot/ui-keyring/types';
+import type { KeyringPair$Json } from '@polkadot/keyring/types';
+import type { Signer, Observable } from '@polkadot/types/types';
 
-import { decrypt, encrypt } from './crypto'
-import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi'
-import { CodecString, FPNumber, NumberLike } from './fp'
-import { Messages } from './logger'
-import { BridgeApi } from './BridgeApi'
-import { SwapModule } from './swap'
-import { RewardsModule } from './rewards'
-import { PoolXykModule } from './poolXyk'
-import { ReferralSystemModule } from './referralSystem'
-import { AssetsModule } from './assets'
-import { XOR } from './assets/consts'
-import type { Storage } from './storage'
-import type { AccountAsset, Asset } from './assets/types'
+import { decrypt, encrypt } from './crypto';
+import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi';
+import { CodecString, FPNumber, NumberLike } from './fp';
+import { Messages } from './logger';
+import { BridgeApi } from './BridgeApi';
+import { SwapModule } from './swap';
+import { RewardsModule } from './rewards';
+import { PoolXykModule } from './poolXyk';
+import { ReferralSystemModule } from './referralSystem';
+import { AssetsModule } from './assets';
+import { XOR } from './assets/consts';
+import type { Storage } from './storage';
+import type { AccountAsset, Asset } from './assets/types';
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
  */
 export class Api extends BaseApi {
-  private readonly type: KeypairType = KeyringType
-  public readonly defaultSlippageTolerancePercent = 0.5
-  public readonly seedLength = 12
+  private readonly type: KeypairType = KeyringType;
+  public readonly defaultSlippageTolerancePercent = 0.5;
+  public readonly seedLength = 12;
 
-  public readonly bridge: BridgeApi = new BridgeApi()
+  public readonly bridge: BridgeApi = new BridgeApi();
 
-  public readonly swap: SwapModule = new SwapModule(this)
-  public readonly rewards: RewardsModule = new RewardsModule(this)
-  public readonly poolXyk: PoolXykModule = new PoolXykModule(this)
-  public readonly referralSystem: ReferralSystemModule = new ReferralSystemModule(this)
-  public readonly assets: AssetsModule = new AssetsModule(this)
+  public readonly swap: SwapModule = new SwapModule(this);
+  public readonly rewards: RewardsModule = new RewardsModule(this);
+  public readonly poolXyk: PoolXykModule = new PoolXykModule(this);
+  public readonly referralSystem: ReferralSystemModule = new ReferralSystemModule(this);
+  public readonly assets: AssetsModule = new AssetsModule(this);
 
   // # History methods
 
-  public get accountHistory (): Array<History> {
-    return this.history.filter(({ type }) => !isBridgeOperation(type))
+  public get accountHistory(): Array<History> {
+    return this.history.filter(({ type }) => !isBridgeOperation(type));
   }
 
-  public initAccountStorage () {
-    super.initAccountStorage()
-    this.bridge.initAccountStorage()
+  public initAccountStorage() {
+    super.initAccountStorage();
+    this.bridge.initAccountStorage();
 
     // transfer old history to accountStorage
     if (this.storage) {
-      const oldHistory = JSON.parse(this.storage.get('history')) || []
+      const oldHistory = JSON.parse(this.storage.get('history')) || [];
 
       if (oldHistory.length) {
-        this.history = oldHistory
+        this.history = oldHistory;
       }
 
-      this.storage.remove('history')
+      this.storage.remove('history');
     }
   }
 
@@ -63,19 +63,21 @@ export class Api extends BaseApi {
    * Remove all history except bridge history
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
-  public clearHistory (assetAddress?: string) {
-    this.history = this.history.filter((item) =>
-      isBridgeOperation(item.type) || (!!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress))
-    )
+  public clearHistory(assetAddress?: string) {
+    this.history = this.history.filter(
+      (item) =>
+        isBridgeOperation(item.type) ||
+        (!!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress))
+    );
   }
 
   /**
    * Set storage if it should be used as data storage
    * @param storage
    */
-  public setStorage (storage: Storage): void {
-    super.setStorage(storage)
-    this.bridge.setStorage(storage)
+  public setStorage(storage: Storage): void {
+    super.setStorage(storage);
+    this.bridge.setStorage(storage);
   }
 
   // # Account management methods
@@ -84,61 +86,61 @@ export class Api extends BaseApi {
    * Set signer if the pair is locked (For polkadot js extension usage)
    * @param signer
    */
-  public setSigner (signer: Signer): void {
-    super.setSigner(signer)
-    this.bridge.setSigner(signer)
+  public setSigner(signer: Signer): void {
+    super.setSigner(signer);
+    this.bridge.setSigner(signer);
   }
 
   /**
    * Set account data
    * @param account
    */
-  public setAccount (account: CreateResult): void {
-    super.setAccount(account)
-    this.bridge.setAccount(account)
+  public setAccount(account: CreateResult): void {
+    super.setAccount(account);
+    this.bridge.setAccount(account);
   }
 
   /**
    * The first method you should run. Includes initialization process
    */
-  public initialize (): void {
-    const address = this.storage?.get('address')
-    const password = this.storage?.get('password')
-    const name = this.storage?.get('name')
-    const isExternal = Boolean(this.storage?.get('isExternal'))
-    keyring.loadAll({ type: KeyringType })
+  public initialize(): void {
+    const address = this.storage?.get('address');
+    const password = this.storage?.get('password');
+    const name = this.storage?.get('name');
+    const isExternal = Boolean(this.storage?.get('isExternal'));
+    keyring.loadAll({ type: KeyringType });
     if (!address) {
-      return
+      return;
     }
-    const defaultAddress = this.formatAddress(address, false)
-    const soraAddress = this.formatAddress(address)
-    this.storage?.set('address', soraAddress)
-    const pair = keyring.getPair(defaultAddress)
+    const defaultAddress = this.formatAddress(address, false);
+    const soraAddress = this.formatAddress(address);
+    this.storage?.set('address', soraAddress);
+    const pair = keyring.getPair(defaultAddress);
 
     const account = !isExternal
       ? keyring.addPair(pair, decrypt(password))
-      : keyring.addExternal(defaultAddress, name ? { name } : {})
+      : keyring.addExternal(defaultAddress, name ? { name } : {});
 
-    this.setAccount(account)
-    this.initAccountStorage()
+    this.setAccount(account);
+    this.initAccountStorage();
   }
 
   /**
    * Before use the seed for wallet connection you may want to check its correctness
    * @param suri Seed which is set by the user
    */
-  public checkSeed (suri: string): { address: string; suri: string } {
-    const { phrase } = keyExtractSuri(suri)
+  public checkSeed(suri: string): { address: string; suri: string } {
+    const { phrase } = keyExtractSuri(suri);
     if (isHex(phrase)) {
-      assert(isHex(phrase, 256), 'Hex seed is not 256-bits')
+      assert(isHex(phrase, 256), 'Hex seed is not 256-bits');
     } else {
-      assert(String(phrase).split(' ').length === this.seedLength, `Mnemonic should contain ${this.seedLength} words`)
-      assert(mnemonicValidate(phrase), 'There is no valid mnemonic seed')
+      assert(String(phrase).split(' ').length === this.seedLength, `Mnemonic should contain ${this.seedLength} words`);
+      assert(mnemonicValidate(phrase), 'There is no valid mnemonic seed');
     }
     return {
       address: keyring.createFromUri(suri, {}, this.type).address,
-      suri
-    }
+      suri,
+    };
   }
 
   /**
@@ -147,23 +149,19 @@ export class Api extends BaseApi {
    * @param name Name of the wallet account
    * @param password Password which will be set for the wallet
    */
-  public importAccount (
-    suri: string,
-    name: string,
-    password: string
-  ): void {
-    const account = keyring.addUri(suri, password, { name }, this.type)
+  public importAccount(suri: string, name: string, password: string): void {
+    const account = keyring.addUri(suri, password, { name }, this.type);
 
-    this.setAccount(account)
+    this.setAccount(account);
 
     if (this.storage) {
-      this.storage.set('name', name)
-      this.storage.set('password', encrypt(password))
-      const soraAddress = this.formatAddress(account.pair.address)
-      this.storage.set('address', soraAddress)
+      this.storage.set('name', name);
+      this.storage.set('password', encrypt(password));
+      const soraAddress = this.formatAddress(account.pair.address);
+      this.storage.set('address', soraAddress);
     }
 
-    this.initAccountStorage()
+    this.initAccountStorage();
   }
 
   /**
@@ -172,19 +170,19 @@ export class Api extends BaseApi {
    * @param oldPassword
    * @param newPassword
    */
-  public changePassword (oldPassword: string, newPassword: string): void {
-    const pair = this.accountPair
+  public changePassword(oldPassword: string, newPassword: string): void {
+    const pair = this.accountPair;
     try {
       if (!pair.isLocked) {
-        pair.lock()
+        pair.lock();
       }
-      pair.decodePkcs8(oldPassword)
+      pair.decodePkcs8(oldPassword);
     } catch (error) {
-      throw new Error('Old password is invalid')
+      throw new Error('Old password is invalid');
     }
-    keyring.encryptAccount(pair, newPassword)
+    keyring.encryptAccount(pair, newPassword);
     if (this.storage) {
-      this.storage.set('password', encrypt(newPassword))
+      this.storage.set('password', encrypt(newPassword));
     }
   }
 
@@ -193,11 +191,11 @@ export class Api extends BaseApi {
    * TODO: check it, polkadot-js extension doesn't change account name
    * @param name New name
    */
-  public changeName (name: string): void {
-    const pair = this.accountPair
-    keyring.saveAccountMeta(pair, { ...pair.meta, name })
+  public changeName(name: string): void {
+    const pair = this.accountPair;
+    keyring.saveAccountMeta(pair, { ...pair.meta, name });
     if (this.storage) {
-      this.storage.set('name', name)
+      this.storage.set('name', name);
     }
   }
 
@@ -207,12 +205,12 @@ export class Api extends BaseApi {
    * @param json
    * @param password
    */
-  public restoreFromJson (json: KeyringPair$Json, password: string): { address: string, name: string } {
+  public restoreFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
     try {
-      const pair = keyring.restoreAccount(json, password)
-      return { address: pair.address, name: ((pair.meta || {}).name || '') as string }
+      const pair = keyring.restoreAccount(json, password);
+      return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
     } catch (error) {
-      throw new Error((error as Error).message)
+      throw new Error((error as Error).message);
     }
   }
 
@@ -221,24 +219,24 @@ export class Api extends BaseApi {
    * @param password
    * @param encrypted If `true` then it will be decrypted. `false` by default
    */
-  public exportAccount (password: string, encrypted = false): string {
-    let pass = password
+  public exportAccount(password: string, encrypted = false): string {
+    let pass = password;
     if (encrypted) {
-      pass = decrypt(password)
+      pass = decrypt(password);
     }
-    const pair = this.accountPair
-    return JSON.stringify(keyring.backupAccount(pair, pass))
+    const pair = this.accountPair;
+    return JSON.stringify(keyring.backupAccount(pair, pass));
   }
 
   /**
    * Create seed phrase. It returns `{ address, seed }` object.
    */
-  public createSeed (): { address: string, seed: string } {
-    const seed = mnemonicGenerate(this.seedLength)
+  public createSeed(): { address: string; seed: string } {
+    const seed = mnemonicGenerate(this.seedLength);
     return {
       address: keyring.createFromUri(seed, {}, this.type).address,
-      seed
-    }
+      seed,
+    };
   }
 
   /**
@@ -246,19 +244,19 @@ export class Api extends BaseApi {
    * @param address
    * @param name
    */
-  public importByPolkadotJs (address: string, name: string): void {
-    const account = keyring.addExternal(address, { name: name || '' })
+  public importByPolkadotJs(address: string, name: string): void {
+    const account = keyring.addExternal(address, { name: name || '' });
 
-    this.setAccount(account)
+    this.setAccount(account);
 
     if (this.storage) {
-      const soraAddress = this.formatAddress(account.pair.address)
-      this.storage.set('name', name)
-      this.storage.set('address', soraAddress)
-      this.storage.set('isExternal', true)
+      const soraAddress = this.formatAddress(account.pair.address);
+      this.storage.set('name', name);
+      this.storage.set('address', soraAddress);
+      this.storage.set('isExternal', true);
     }
 
-    this.initAccountStorage()
+    this.initAccountStorage();
   }
 
   // # API methods
@@ -269,93 +267,95 @@ export class Api extends BaseApi {
    * @param toAddress Account address
    * @param amount Amount value
    */
-  public async transfer (asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<void> {
-    assert(this.account, Messages.connectWallet)
-    const assetAddress = asset.address
-    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.formatAddress(toAddress)
+  public async transfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<void> {
+    assert(this.account, Messages.connectWallet);
+    const assetAddress = asset.address;
+    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.formatAddress(toAddress);
     await this.submitExtrinsic(
       this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.account.pair,
       { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
-    )
+    );
   }
 
-  private async prepareTransferAllTxs (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>) {
-    assert(this.account, Messages.connectWallet)
-    assert(data.length, Messages.noTransferData)
+  private async prepareTransferAllTxs(data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>) {
+    assert(this.account, Messages.connectWallet);
+    assert(data.length, Messages.noTransferData);
 
-    return data.map(item => {
-      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString())
-    })
+    return data.map((item) => {
+      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString());
+    });
   }
 
-  public async getTransferAllNetworkFee (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<CodecString> {
-    const transactions = await this.prepareTransferAllTxs(data)
-    return await this.getNetworkFee(Operation.TransferAll, transactions)
+  public async getTransferAllNetworkFee(
+    data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>
+  ): Promise<CodecString> {
+    const transactions = await this.prepareTransferAllTxs(data);
+    return await this.getNetworkFee(Operation.TransferAll, transactions);
   }
 
   /**
    * Transfer all data from array
    * @param data Transfer data
    */
-   public async transferAll (data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike; }>): Promise<void> {
-    const transactions = await this.prepareTransferAllTxs(data)
+  public async transferAll(
+    data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>
+  ): Promise<void> {
+    const transactions = await this.prepareTransferAllTxs(data);
 
-    await this.submitExtrinsic(
-      this.api.tx.utility.batchAll(transactions),
-      this.account.pair,
-      { type: Operation.TransferAll }
-    )
+    await this.submitExtrinsic(this.api.tx.utility.batchAll(transactions), this.account.pair, {
+      type: Operation.TransferAll,
+    });
   }
 
-  public getSystemBlockNumberObservable (): Observable<string> {
-    return this.apiRx.query.system.number().pipe(map(codec => codec.toString()))
+  public getSystemBlockNumberObservable(): Observable<string> {
+    return this.apiRx.query.system.number().pipe(map((codec) => codec.toString()));
   }
 
-  public getRuntimeVersionObservable (): Observable<number> {
-    return this.apiRx.query.system.lastRuntimeUpgrade().pipe(map(value => (value.toJSON() as any).specVersion))
+  public getRuntimeVersionObservable(): Observable<number> {
+    return this.apiRx.query.system.lastRuntimeUpgrade().pipe(map((value) => (value.toJSON() as any).specVersion));
   }
 
   // # Logout & reset methods
 
-  public unsubscribeAll (): void {
-    this.assets.unsubscribeFromAllBalancesUpdates()
-    this.poolXyk.unsubscribeFromAllUpdates()
+  public unsubscribeAll(): void {
+    this.assets.unsubscribeFromAllBalancesUpdates();
+    this.poolXyk.unsubscribeFromAllUpdates();
   }
 
   /**
    * Remove all wallet data
    */
-  public logout (): void {
-    const address = this.account.pair.address
-    keyring.forgetAccount(address)
-    keyring.forgetAddress(address)
+  public logout(): void {
+    const address = this.account.pair.address;
+    keyring.forgetAccount(address);
+    keyring.forgetAddress(address);
 
-    this.assets.accountAssets = []
-    this.poolXyk.accountLiquidity = []
+    this.assets.accountAssets = [];
+    this.poolXyk.accountLiquidity = [];
 
-    this.unsubscribeAll()
+    this.unsubscribeAll();
 
-    super.logout()
-    this.bridge.logout()
+    super.logout();
+    this.bridge.logout();
   }
 
   // # Formatter methods
-  public hasEnoughXor (asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
-    const xorDecimals = XOR.decimals
-    const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals)
+  public hasEnoughXor(asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
+    const xorDecimals = XOR.decimals;
+    const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals);
     if (asset.address === XOR.address) {
-      const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals)
-      const fpAmount = new FPNumber(amount, xorDecimals)
-      return FPNumber.lte(fpFee, fpBalance.sub(fpAmount))
+      const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals);
+      const fpAmount = new FPNumber(amount, xorDecimals);
+      return FPNumber.lte(fpFee, fpBalance.sub(fpAmount));
     }
     // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.assets.getAsset(XOR.address)
+    const xorAccountAsset = this.assets.getAsset(XOR.address);
     if (!xorAccountAsset) {
-      return false
+      return false;
     }
-    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance.transferable, xorDecimals)
-    return FPNumber.lte(fpFee, xorBalance)
+    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance.transferable, xorDecimals);
+    return FPNumber.lte(fpFee, xorBalance);
   }
 
   /**
@@ -367,7 +367,7 @@ export class Api extends BaseApi {
    * @param reversed If `true`: the second by the first (`false` by default)
    * @returns Formatted string
    */
-   public async divideAssets (
+  public async divideAssets(
     firstAssetAddress: string,
     secondAssetAddress: string,
     firstAmount: NumberLike,
@@ -383,14 +383,14 @@ export class Api extends BaseApi {
    * @param reversed If `true`: the second by the first (`false` by default)
    * @returns Formatted string
    */
-   public async divideAssets (
+  public async divideAssets(
     firstAsset: Asset | AccountAsset,
     secondAsset: Asset | AccountAsset,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     reversed: boolean
   ): Promise<string>;
-  public async divideAssets (
+  public async divideAssets(
     first: Asset | AccountAsset | string,
     second: Asset | AccountAsset | string,
     firstAmount: NumberLike,
@@ -399,16 +399,16 @@ export class Api extends BaseApi {
   ): Promise<string> {
     const firstAsset = typeof first === 'string' ? await this.assets.getAssetInfo(first) : first;
     const secondAsset = typeof second === 'string' ? await this.assets.getAssetInfo(second) : second;
-    const decimals = Math.max(firstAsset.decimals, secondAsset.decimals)
-    const one = new FPNumber(1, decimals)
-    const firstAmountNum = new FPNumber(firstAmount, decimals)
-    const secondAmountNum = new FPNumber(secondAmount, decimals)
+    const decimals = Math.max(firstAsset.decimals, secondAsset.decimals);
+    const one = new FPNumber(1, decimals);
+    const firstAmountNum = new FPNumber(firstAmount, decimals);
+    const secondAmountNum = new FPNumber(secondAmount, decimals);
     const result = !reversed
       ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
-      : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one)
-    return result.format()
+      : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one);
+    return result.format();
   }
 }
 
 /** Api object */
-export const api = new Api()
+export const api = new Api();

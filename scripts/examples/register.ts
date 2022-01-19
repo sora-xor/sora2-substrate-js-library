@@ -13,7 +13,7 @@ async function main(): Promise<void> {
     await api.assets.register(nftSymbol, 'My NFT Token', 1, false, {
       isNft: true,
       content: 'link_to_nft_content',
-      description: 'Some description of this NFT'
+      description: 'Some description of this NFT',
     });
 
     await delay();
@@ -22,15 +22,15 @@ async function main(): Promise<void> {
 
     const assets = await api.assets.getAssets();
 
-    const token = assets.find(asset => asset.symbol === tokenSymbol);
-    const nftToken = assets.find(asset => asset.symbol === nftSymbol);
+    const token = assets.find((asset) => asset.symbol === tokenSymbol);
+    const nftToken = assets.find((asset) => asset.symbol === nftSymbol);
 
     console.log(`${tokenSymbol} was found:`, token);
     console.log(`${nftSymbol} was found:`, nftToken);
 
     console.log(`${nftSymbol} content:`, await api.assets.getNftContent(nftToken.address));
     console.log(`${nftSymbol} description:`, await api.assets.getNftDescription(nftToken.address));
-  })
+  });
 }
 
 main()

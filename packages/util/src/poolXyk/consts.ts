@@ -1,3 +1,3 @@
 export enum PoolTokens {
-  XYKPOOL = 'XYKPOOL'
+  XYKPOOL = 'XYKPOOL',
 }

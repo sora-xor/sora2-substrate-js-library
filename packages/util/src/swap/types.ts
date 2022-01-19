@@ -3,7 +3,7 @@ import type { LiquiditySourceTypes } from './consts';
 import type { LPRewardsInfo } from '../rewards/types';
 
 export type PrimaryMarketsEnabledAssets = {
-  [key: string]: Array<string>
+  [key: string]: Array<string>;
 };
 
 export interface SwapResult {
@@ -49,9 +49,9 @@ export type QuoteResult = {
 export type QuotePrimaryMarketResult = {
   market: LiquiditySourceTypes;
   result: QuoteResult;
-}
+};
 
 export type PathsAndPairLiquiditySources = {
   paths: QuotePaths;
   liquiditySources: Array<LiquiditySourceTypes>;
-}
+};

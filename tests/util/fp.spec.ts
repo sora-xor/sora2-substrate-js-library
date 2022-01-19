@@ -1,18 +1,17 @@
-import { connection, FPNumber } from '@sora-substrate/util'
+import { connection, FPNumber } from '@sora-substrate/util';
 
-const TEST_ENDPOINT = 'wss://ws.stage.sora2.soramitsu.co.jp'
+const TEST_ENDPOINT = 'wss://ws.stage.sora2.soramitsu.co.jp';
 
 describe('FPNumber', () => {
-
   beforeAll(async (done) => {
-    await connection.open(TEST_ENDPOINT)
-    done()
-  })
+    await connection.open(TEST_ENDPOINT);
+    done();
+  });
 
   afterAll(async (done) => {
-    await connection.close()
-    done()
-  })
+    await connection.close();
+    done();
+  });
 
   it.each([
     ['0', 18, '0'],
@@ -29,11 +28,11 @@ describe('FPNumber', () => {
     [Number.NaN, 1, 'NaN'],
     ['Infinity', 1, 'Infinity'],
     ['-Infinity', 1, '-Infinity'],
-    ['NaN', 1, 'NaN']
+    ['NaN', 1, 'NaN'],
   ])('[toString] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.toString()).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.toString()).toBe(result);
+  });
 
   it.each([
     ['0', 18, '0'],
@@ -56,11 +55,11 @@ describe('FPNumber', () => {
     [Number.NaN, 1, 'NaN'],
     ['Infinity', 1, 'Infinity'],
     ['-Infinity', 1, '-Infinity'],
-    ['NaN', 1, 'NaN']
+    ['NaN', 1, 'NaN'],
   ])('[format] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.format()).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.format()).toBe(result);
+  });
 
   it.each([
     ['0', 18, '0'],
@@ -75,11 +74,11 @@ describe('FPNumber', () => {
     ['1234.123456', 1, '1,234.1'],
     [1234.123456, 1, '1,234.1'],
     ['1234567.123456', undefined, '1,234,567.123456'],
-    [1234567.123456, undefined, '1,234,567.123456']
+    [1234567.123456, undefined, '1,234,567.123456'],
   ])('[toLocaleString] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.toLocaleString()).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.toLocaleString()).toBe(result);
+  });
 
   it.each([
     [1234.5678, 4, '1,234.5678'],
@@ -93,17 +92,20 @@ describe('FPNumber', () => {
     [0.0009, 3, '0.0009'],
     ['0.0009', 3, '0.0009'],
     [0.0019, 3, '0.001'],
-    ['0.0019', 3, '0.001']
-  ])('[format with params: dp "%s", custom formatting] instance of "%s" with precision "4" should display "%s"', (value, dp, result) => {
-    const format = {
-      decimalSeparator: '.',
-      groupSeparator: ',',
-      groupSize: 3,
-      fractionGroupSeparator: ''
+    ['0.0019', 3, '0.001'],
+  ])(
+    '[format with params: dp "%s", custom formatting] instance of "%s" with precision "4" should display "%s"',
+    (value, dp, result) => {
+      const format = {
+        decimalSeparator: '.',
+        groupSeparator: ',',
+        groupSize: 3,
+        fractionGroupSeparator: '',
+      };
+      const instance = new FPNumber(value, 4);
+      expect(instance.format(dp, format)).toBe(result);
     }
-    const instance = new FPNumber(value, 4)
-    expect(instance.format(dp, format)).toBe(result)
-  })
+  );
 
   it.each([
     ['0', 18, '0.000'],
@@ -120,22 +122,25 @@ describe('FPNumber', () => {
     [Number.NaN, 1, 'NaN'],
     ['Infinity', 1, 'Infinity'],
     ['-Infinity', 1, '-Infinity'],
-    ['NaN', 1, 'NaN']
+    ['NaN', 1, 'NaN'],
   ])('[toFixed] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.toFixed(3)).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.toFixed(3)).toBe(result);
+  });
 
   it.each([
     ['1234567890', 8, '12.3456789'],
     ['12345678912', 10, '1.2345678912'],
     ['1000000000', 9, '1'],
-    ['1000000000', 10, '0.1']
-  ])('[toString from Codec object] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
-    const codec = connection.api.createType('Balance', value)
-    const instance = new FPNumber(codec, precision)
-    expect(instance.toString()).toBe(result)
-  })
+    ['1000000000', 10, '0.1'],
+  ])(
+    '[toString from Codec object] instance of "%s" with precision "%s" should display "%s"',
+    (value, precision, result) => {
+      const codec = connection.api.createType('Balance', value);
+      const instance = new FPNumber(codec, precision);
+      expect(instance.toString()).toBe(result);
+    }
+  );
 
   it.each([
     ['0', 18, '0'],
@@ -152,11 +157,11 @@ describe('FPNumber', () => {
     [Number.NaN, 1, 'NaN'],
     ['Infinity', 1, 'Infinity'],
     ['-Infinity', 1, '-Infinity'],
-    ['NaN', 1, 'NaN']
+    ['NaN', 1, 'NaN'],
   ])('[toCodecString] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.toCodecString()).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.toCodecString()).toBe(result);
+  });
 
   it.each([
     [1, 18, 2, 18, '3'],
@@ -175,12 +180,12 @@ describe('FPNumber', () => {
     ['Infinity', 10, '-Infinity', 18, 'NaN'],
     ['-Infinity', 10, 'Infinity', 18, 'NaN'],
     ['-Infinity', 10, '-Infinity', 18, '-Infinity'],
-    ['NaN', 10, 'NaN', 18, 'NaN']
+    ['NaN', 10, 'NaN', 18, 'NaN'],
   ])('[add] (value "%s", precision "%s") + (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
-    const instance1 = new FPNumber(num1, pr1)
-    const instance2 = new FPNumber(num2, pr2)
-    expect(instance1.add(instance2).toString()).toBe(result)
-  })
+    const instance1 = new FPNumber(num1, pr1);
+    const instance2 = new FPNumber(num2, pr2);
+    expect(instance1.add(instance2).toString()).toBe(result);
+  });
 
   it.each([
     [1, 18, 2, 18, '-1'],
@@ -202,12 +207,12 @@ describe('FPNumber', () => {
     ['Infinity', 10, 'Infinity', 18, 'NaN'],
     ['Infinity', 10, '-Infinity', 18, 'Infinity'],
     ['-Infinity', 10, '-Infinity', 18, 'NaN'],
-    ['NaN', 10, 'NaN', 18, 'NaN']
+    ['NaN', 10, 'NaN', 18, 'NaN'],
   ])('[sub] (value "%s", precision "%s") - (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
-    const instance1 = new FPNumber(num1, pr1)
-    const instance2 = new FPNumber(num2, pr2)
-    expect(instance1.sub(instance2).toString()).toBe(result)
-  })
+    const instance1 = new FPNumber(num1, pr1);
+    const instance2 = new FPNumber(num2, pr2);
+    expect(instance1.sub(instance2).toString()).toBe(result);
+  });
 
   it.each([
     [1, 18, 2, 18, '2'],
@@ -227,12 +232,12 @@ describe('FPNumber', () => {
     ['Infinity', 10, '-Infinity', 10, '-Infinity'],
     ['-Infinity', 10, '-Infinity', 10, 'Infinity'],
     ['Infinity', 10, 'NaN', 10, 'NaN'],
-    ['NaN', 10, 'NaN', 10, 'NaN']
+    ['NaN', 10, 'NaN', 10, 'NaN'],
   ])('[mul] (value "%s", precision "%s") * (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
-    const instance1 = new FPNumber(num1, pr1)
-    const instance2 = new FPNumber(num2, pr2)
-    expect(instance1.mul(instance2).toString()).toBe(result)
-  })
+    const instance1 = new FPNumber(num1, pr1);
+    const instance2 = new FPNumber(num2, pr2);
+    expect(instance1.mul(instance2).toString()).toBe(result);
+  });
 
   it.each([
     [1, 18, 2, 18, '0.5'],
@@ -253,12 +258,12 @@ describe('FPNumber', () => {
     ['NaN', 10, 0, 10, 'NaN'],
     ['Infinity', 10, 'Infinity', 10, 'NaN'],
     ['Infinity', 10, '-Infinity', 10, 'NaN'],
-    ['Infinity', 10, 'NaN', 10, 'NaN']
+    ['Infinity', 10, 'NaN', 10, 'NaN'],
   ])('[div] (value "%s", precision "%s") / (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
-    const instance1 = new FPNumber(num1, pr1)
-    const instance2 = new FPNumber(num2, pr2)
-    expect(instance1.div(instance2).toString()).toBe(result)
-  })
+    const instance1 = new FPNumber(num1, pr1);
+    const instance2 = new FPNumber(num2, pr2);
+    expect(instance1.div(instance2).toString()).toBe(result);
+  });
 
   it.each([
     [1, 18, 2, 18, '2'],
@@ -276,12 +281,12 @@ describe('FPNumber', () => {
     [Number.NEGATIVE_INFINITY, 10, 'Infinity', 10, 'Infinity'],
     [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, 'NaN'],
     [Number.POSITIVE_INFINITY, 10, 'NaN', 10, 'NaN'],
-    [Number.NaN, 10, 'NaN', 10, 'NaN']
+    [Number.NaN, 10, 'NaN', 10, 'NaN'],
   ])('[max] max (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
-    const instance1 = new FPNumber(num1, pr1)
-    const instance2 = new FPNumber(num2, pr2)
-    expect(FPNumber.max(instance1, instance2).toString()).toBe(result)
-  })
+    const instance1 = new FPNumber(num1, pr1);
+    const instance2 = new FPNumber(num2, pr2);
+    expect(FPNumber.max(instance1, instance2).toString()).toBe(result);
+  });
 
   it.each([
     [1, 18, 2, 18, '1'],
@@ -299,12 +304,12 @@ describe('FPNumber', () => {
     [Number.NEGATIVE_INFINITY, 10, 'Infinity', 10, '-Infinity'],
     [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, 'NaN'],
     [Number.POSITIVE_INFINITY, 10, 'NaN', 10, 'NaN'],
-    [Number.NaN, 10, 'NaN', 10, 'NaN']
+    [Number.NaN, 10, 'NaN', 10, 'NaN'],
   ])('[min] min (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
-    const instance1 = new FPNumber(num1, pr1)
-    const instance2 = new FPNumber(num2, pr2)
-    expect(FPNumber.min(instance1, instance2).toString()).toBe(result)
-  })
+    const instance1 = new FPNumber(num1, pr1);
+    const instance2 = new FPNumber(num2, pr2);
+    expect(FPNumber.min(instance1, instance2).toString()).toBe(result);
+  });
 
   it.each([
     [1, 18, 2, 18, true],
@@ -325,12 +330,15 @@ describe('FPNumber', () => {
     [Number.NEGATIVE_INFINITY, 10, 'Infinity', 18, true],
     ['Infinity', 10, Number.NEGATIVE_INFINITY, 10, false],
     ['Infinity', 10, Number.NaN, 10, false],
-    [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, false]
-  ])('[lt - isLessThan] (value "%s", precision "%s") < (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
-    const instance1 = new FPNumber(num1, pr1)
-    const instance2 = new FPNumber(num2, pr2)
-    expect(FPNumber.lt(instance1, instance2)).toBe(result)
-  })
+    [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, false],
+  ])(
+    '[lt - isLessThan] (value "%s", precision "%s") < (value "%s", precision "%s") -> "%s"',
+    (num1, pr1, num2, pr2, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      expect(FPNumber.lt(instance1, instance2)).toBe(result);
+    }
+  );
 
   it.each([
     [1, 18, 2, 18, false],
@@ -351,12 +359,15 @@ describe('FPNumber', () => {
     [Number.NEGATIVE_INFINITY, 10, '-Infinity', 18, false],
     ['Infinity', 10, Number.NEGATIVE_INFINITY, 10, true],
     ['Infinity', 10, Number.NaN, 10, false],
-    [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, false]
-  ])('[gt - isGreaterThan] (value "%s", precision "%s") > (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
-    const instance1 = new FPNumber(num1, pr1)
-    const instance2 = new FPNumber(num2, pr2)
-    expect(FPNumber.gt(instance1, instance2)).toBe(result)
-  })
+    [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, false],
+  ])(
+    '[gt - isGreaterThan] (value "%s", precision "%s") > (value "%s", precision "%s") -> "%s"',
+    (num1, pr1, num2, pr2, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      expect(FPNumber.gt(instance1, instance2)).toBe(result);
+    }
+  );
 
   it.each([
     [2, 18, 2, 18, true],
@@ -373,12 +384,15 @@ describe('FPNumber', () => {
     [Number.NEGATIVE_INFINITY, 10, '-Infinity', 18, true],
     ['Infinity', 10, Number.NEGATIVE_INFINITY, 10, false],
     ['Infinity', 10, Number.NaN, 10, false],
-    [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, false]
-  ])('[eq - isEqual] (value "%s", precision "%s") === (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
-    const instance1 = new FPNumber(num1, pr1)
-    const instance2 = new FPNumber(num2, pr2)
-    expect(FPNumber.eq(instance1, instance2)).toBe(result)
-  })
+    [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, false],
+  ])(
+    '[eq - isEqual] (value "%s", precision "%s") === (value "%s", precision "%s") -> "%s"',
+    (num1, pr1, num2, pr2, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      expect(FPNumber.eq(instance1, instance2)).toBe(result);
+    }
+  );
 
   it.each([
     [2, 18, '-2'],
@@ -398,11 +412,11 @@ describe('FPNumber', () => {
     [-0.123456, 18, '0.123456'],
     ['Infinity', 18, '-Infinity'],
     ['-Infinity', 18, 'Infinity'],
-    ['NaN', 18, 'NaN']
+    ['NaN', 18, 'NaN'],
   ])('[negative] !(value "%s", precision "%s") = "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.negative().toString()).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.negative().toString()).toBe(result);
+  });
 
   it.each([
     [4, 17, '2'],
@@ -420,11 +434,11 @@ describe('FPNumber', () => {
     ['148.84', 17, '12.2'],
     ['Infinity', 17, 'Infinity'],
     ['-Infinity', 17, 'NaN'],
-    ['NaN', 17, 'NaN']
+    ['NaN', 17, 'NaN'],
   ])('[sqrt] sqrt(value "%s", precision "%s") = "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.sqrt().toString()).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.sqrt().toString()).toBe(result);
+  });
 
   it.each([
     [0.000000000000000001, 18, false],
@@ -446,9 +460,9 @@ describe('FPNumber', () => {
     ['-Infinity', 18, false],
     ['NaN', 18, false],
   ])('[isZero] (value "%s", precision "%s") === 0 -> "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.isZero()).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.isZero()).toBe(result);
+  });
 
   it.each([
     ['0', 18, false],
@@ -458,11 +472,11 @@ describe('FPNumber', () => {
     [0, 18, false],
     [Number.POSITIVE_INFINITY, 18, false],
     [Number.NEGATIVE_INFINITY, 18, false],
-    [Number.NaN, 18, true]
+    [Number.NaN, 18, true],
   ])('[isNaN] (value "%s", precision "%s") is NaN -> "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.isNaN()).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.isNaN()).toBe(result);
+  });
 
   it.each([
     ['0', 18, true],
@@ -472,23 +486,23 @@ describe('FPNumber', () => {
     [0, 18, true],
     [Number.POSITIVE_INFINITY, 18, false],
     [Number.NEGATIVE_INFINITY, 18, false],
-    [Number.NaN, 18, false]
+    [Number.NaN, 18, false],
   ])('[isFinity] (value "%s", precision "%s") is Finity -> "%s"', (value, precision, result) => {
-    const instance = new FPNumber(value, precision)
-    expect(instance.isFinity()).toBe(result)
-  })
+    const instance = new FPNumber(value, precision);
+    expect(instance.isFinity()).toBe(result);
+  });
 
   it.each([
     [0, FPNumber.ZERO],
-    [100, FPNumber.HUNDRED]
+    [100, FPNumber.HUNDRED],
   ])('[FPNumber static] (value "%s") is equal to new FPNumber("%s")', (value, staticValue) => {
-    const instance = new FPNumber(value)
+    const instance = new FPNumber(value);
 
-    expect(FPNumber.isEqualTo(instance, staticValue)).toBe(true)
+    expect(FPNumber.isEqualTo(instance, staticValue)).toBe(true);
 
-    expect(instance.toString()).toBe(staticValue.toString())
-    expect(instance.toCodecString()).toBe(staticValue.toCodecString())
-    expect(instance.toLocaleString()).toBe(staticValue.toLocaleString())
-    expect(instance.toFixed()).toBe(staticValue.toFixed())
-  })
-})
+    expect(instance.toString()).toBe(staticValue.toString());
+    expect(instance.toCodecString()).toBe(staticValue.toCodecString());
+    expect(instance.toLocaleString()).toBe(staticValue.toLocaleString());
+    expect(instance.toFixed()).toBe(staticValue.toFixed());
+  });
+});
