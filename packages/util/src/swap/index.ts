@@ -11,11 +11,17 @@ import { NumberLike, FPNumber, CodecString } from '../fp';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
-import type { PathsAndPairLiquiditySources, PrimaryMarketsEnabledAssets, QuotePaths, QuotePayload, SwapResult } from './types';
+import type {
+  PathsAndPairLiquiditySources,
+  PrimaryMarketsEnabledAssets,
+  QuotePaths,
+  QuotePayload,
+  SwapResult,
+} from './types';
 import type { AccountAsset, Asset } from '../assets/types';
 
 export class SwapModule {
-  constructor (private readonly root: Api) {}
+  constructor(private readonly root: Api) {}
 
   /**
    * Get available list of sources for the selected asset
@@ -23,14 +29,15 @@ export class SwapModule {
    * @param payload Quote payload
    * @param enabledAssets List of enabled assets
    */
-  private getSources (
+  private getSources(
     address: string,
     payload: QuotePayload,
     enabledAssets: PrimaryMarketsEnabledAssets
   ): Array<LiquiditySourceTypes> {
     const rules = {
       [LiquiditySourceTypes.MulticollateralBondingCurvePool]: () => enabledAssets.tbc.includes(address),
-      [LiquiditySourceTypes.XYKPool]: () => payload.reserves.xyk[address].every((tokenReserve) => !!Number(tokenReserve)),
+      [LiquiditySourceTypes.XYKPool]: () =>
+        payload.reserves.xyk[address].every((tokenReserve) => !!Number(tokenReserve)),
       [LiquiditySourceTypes.XSTPool]: () => enabledAssets.xst.includes(address),
     };
 
@@ -43,8 +50,8 @@ export class SwapModule {
     }, []);
   }
 
-  private prepareSourcesForSwapParams (liquiditySource: LiquiditySourceTypes): Array<LiquiditySourceTypes> {
-    return liquiditySource ? [liquiditySource] : []
+  private prepareSourcesForSwapParams(liquiditySource: LiquiditySourceTypes): Array<LiquiditySourceTypes> {
+    return liquiditySource ? [liquiditySource] : [];
   }
 
   /**
@@ -54,7 +61,7 @@ export class SwapModule {
    * @param payload Quote payload
    * @param enabledAssets List of enabled assets
    */
-  public getPathsAndPairLiquiditySources (
+  public getPathsAndPairLiquiditySources(
     inputAssetId: string,
     outputAssetId: string,
     payload: QuotePayload,
@@ -64,7 +71,7 @@ export class SwapModule {
     const liquiditySources: Array<LiquiditySourceTypes> = [];
 
     if (!(inputAssetId && outputAssetId)) {
-      return { paths, liquiditySources }
+      return { paths, liquiditySources };
     }
     const xor = XOR.address;
 
@@ -85,10 +92,10 @@ export class SwapModule {
         paths[outputAssetId] = outputPaths;
         liquiditySources.push(...intersection(inputPaths, outputPaths));
       }
-      return { paths, liquiditySources }
+      return { paths, liquiditySources };
     } catch (error) {
       console.error(error);
-      return { paths: {}, liquiditySources: [] }
+      return { paths: {}, liquiditySources: [] };
     }
   }
 
@@ -102,7 +109,7 @@ export class SwapModule {
    * else - Exchange A and it calculates min received
    * @param slippageTolerance
    */
-  public getMinMaxValue (
+  public getMinMaxValue(
     tokenFrom: Asset | AccountAsset,
     tokenTo: Asset | AccountAsset,
     fromValue: string,
@@ -110,7 +117,6 @@ export class SwapModule {
     isExchangeB: boolean,
     slippageTolerance: NumberLike
   ): CodecString {
-
     const value = isExchangeB ? fromValue : toValue;
     const token = isExchangeB ? tokenFrom : tokenTo;
 
@@ -132,7 +138,7 @@ export class SwapModule {
    * @param amountWithoutImpact Amount without impact
    * @param isExchangeB
    */
-  public getPriceImpact (
+  public getPriceImpact(
     tokenFrom: Asset | AccountAsset,
     tokenTo: Asset | AccountAsset,
     fromValue: string,
@@ -140,7 +146,6 @@ export class SwapModule {
     amountWithoutImpact: CodecString,
     isExchangeB: boolean
   ): string {
-
     const token = isExchangeB ? tokenFrom : tokenTo;
     const value = isExchangeB ? fromValue : toValue;
 
@@ -167,7 +172,7 @@ export class SwapModule {
    * @param paths Available paths
    * @param payload Quote payload
    */
-  public getResult (
+  public getResult(
     inputAsset: Asset,
     outputAsset: Asset,
     value: string,
@@ -183,15 +188,17 @@ export class SwapModule {
    * Get primary markets enabled assets observable
    */
   public subscribeOnPrimaryMarketsEnabledAssets(): Observable<PrimaryMarketsEnabledAssets> {
-    const toJSON = (o: Observable<any>) => o.pipe(map(data => data.toJSON()));
+    const toJSON = (o: Observable<any>) => o.pipe(map((data) => data.toJSON()));
 
     const tbc = toJSON(this.root.apiRx.query.multicollateralBondingCurvePool.enabledTargets());
     const xst = toJSON(this.root.apiRx.query.xstPool.enabledSynthetics());
 
-    return combineLatest([tbc, xst]).pipe(map(data => ({
-      tbc: data[0],
-      xst: data[1]
-    })));
+    return combineLatest([tbc, xst]).pipe(
+      map((data) => ({
+        tbc: data[0],
+        xst: data[1],
+      }))
+    );
   }
 
   /**
@@ -200,21 +207,23 @@ export class SwapModule {
    * @param secondAssetAddress Asset B address
    * @param selectedLiquiditySource Selected liquidity source
    */
-  public subscribeOnReserves (
+  public subscribeOnReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
     selectedLiquiditySource = LiquiditySourceTypes.Default
   ): Observable<QuotePayload> {
-
     const xor = XOR.address;
     const dai = SwapConsts.DAI.address;
     const xstusd = SwapConsts.XSTUSD.address;
 
-    const toCodec = (o: Observable<any>) => o.pipe(map(codec => {
-      return Array.isArray(codec) ? codec.map(item => item.toString()) : codec.toString()
-    }));
+    const toCodec = (o: Observable<any>) =>
+      o.pipe(
+        map((codec) => {
+          return Array.isArray(codec) ? codec.map((item) => item.toString()) : codec.toString();
+        })
+      );
 
-    const toAveragePrice = (o: Observable<any>) => o.pipe(map(codec => codec.value.average_price.toString()));
+    const toAveragePrice = (o: Observable<any>) => o.pipe(map((codec) => codec.value.average_price.toString()));
 
     const getAssetAveragePrice = (assetAddress: string): Observable<any> => {
       if (assetAddress === dai || assetAddress === xstusd) {
@@ -229,67 +238,73 @@ export class SwapModule {
 
     // is TBC or XST sources used
     const isSourceUsed = (source: LiquiditySourceTypes): boolean =>
-      selectedLiquiditySource === source ||
-      selectedLiquiditySource === LiquiditySourceTypes.Default;
+      selectedLiquiditySource === source || selectedLiquiditySource === LiquiditySourceTypes.Default;
 
     const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key: string]: T } =>
-      values.reduce((result, value, index) => ({
-        ...result,
-        [keys[index]]: value
-      }), {});
+      values.reduce(
+        (result, value, index) => ({
+          ...result,
+          [keys[index]]: value,
+        }),
+        {}
+      );
 
     // Assets that have XYK reserves (XOR - asset) or TBC collateral reserves (not XOR)
-    const assetsWithReserves = [firstAssetAddress, secondAssetAddress].filter(address => address !== xor);
+    const assetsWithReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== xor);
     // Assets that have average price data (storage has prices only for KnownAssets)
-    const assetsWithPrices = [...assetsWithReserves, xor].filter(address => KnownAssets.contains(address));
+    const assetsWithPrices = [...assetsWithReserves, xor].filter((address) => KnownAssets.contains(address));
     // Assets for which we need to know the total supply
     const assetsWithIssuances = [xor, xstusd];
 
     const tbcUsed = isSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
     const xstUsed = isSourceUsed(LiquiditySourceTypes.XSTPool);
 
-    const xykReserves = assetsWithReserves.map(address => toCodec(this.root.apiRx.query.poolXyk.reserves(xor, address)));
+    const xykReserves = assetsWithReserves.map((address) =>
+      toCodec(this.root.apiRx.query.poolXyk.reserves(xor, address))
+    );
 
     // fill array if TBC source available
     const tbcReserves = tbcUsed
-      ? assetsWithReserves.map(address => toCodec(this.root.apiRx.query.multicollateralBondingCurvePool.collateralReserves(address)))
+      ? assetsWithReserves.map((address) =>
+          toCodec(this.root.apiRx.query.multicollateralBondingCurvePool.collateralReserves(address))
+        )
       : [];
 
     // fill array if TBC or XST source available
-    const assetsPrices = (tbcUsed || xstUsed)
-      ? assetsWithPrices.map(address => getAssetAveragePrice(address))
-      : [];
+    const assetsPrices = tbcUsed || xstUsed ? assetsWithPrices.map((address) => getAssetAveragePrice(address)) : [];
 
     // if TBC source available
     const assetsIssuances = tbcUsed
       ? [
-        toCodec(this.root.apiRx.query.balances.totalIssuance()),
-        toCodec(this.root.apiRx.query.tokens.totalIssuance(xstusd))
-      ]
+          toCodec(this.root.apiRx.query.balances.totalIssuance()),
+          toCodec(this.root.apiRx.query.tokens.totalIssuance(xstusd)),
+        ]
       : [];
 
-    return combineLatest([...assetsIssuances, ...assetsPrices, ...tbcReserves, ...xykReserves]).pipe(map(data => {
-      let position = assetsIssuances.length;
+    return combineLatest([...assetsIssuances, ...assetsPrices, ...tbcReserves, ...xykReserves]).pipe(
+      map((data) => {
+        let position = assetsIssuances.length;
 
-      const issuances: Array<string> = data.slice(0, position);
-      const prices: Array<string> = data.slice(position, position += assetsPrices.length);
-      const tbc: Array<string> = data.slice(position, position += tbcReserves.length);
-      const xyk: Array<[string, string]> = data.slice(position, position += xykReserves.length);
+        const issuances: Array<string> = data.slice(0, position);
+        const prices: Array<string> = data.slice(position, (position += assetsPrices.length));
+        const tbc: Array<string> = data.slice(position, (position += tbcReserves.length));
+        const xyk: Array<[string, string]> = data.slice(position, (position += xykReserves.length));
 
-      const payload: QuotePayload = {
-        reserves: {
-          xyk: combineValuesWithKeys(xyk, assetsWithReserves),
-          tbc: combineValuesWithKeys(tbc, assetsWithReserves),
-        },
-        prices: combineValuesWithKeys(prices, assetsWithPrices),
-        issuances: combineValuesWithKeys(issuances, assetsWithIssuances),
-      }
+        const payload: QuotePayload = {
+          reserves: {
+            xyk: combineValuesWithKeys(xyk, assetsWithReserves),
+            tbc: combineValuesWithKeys(tbc, assetsWithReserves),
+          },
+          prices: combineValuesWithKeys(prices, assetsWithPrices),
+          issuances: combineValuesWithKeys(issuances, assetsWithIssuances),
+        };
 
-      return payload;
-    }));
+        return payload;
+      })
+    );
   }
 
-  private async calcTxParams (
+  private async calcTxParams(
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -298,24 +313,24 @@ export class SwapModule {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ) {
-    assert(this.root.account, Messages.connectWallet)
-    const desiredDecimals = (!isExchangeB ? assetA : assetB).decimals
-    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals
-    const desiredCodecString = (new FPNumber(!isExchangeB ? amountA : amountB, desiredDecimals)).toCodecString()
-    const result = new FPNumber(!isExchangeB ? amountB : amountA, resultDecimals)
-    const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100))
-    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource)
-    const params = {} as any
+    assert(this.root.account, Messages.connectWallet);
+    const desiredDecimals = (!isExchangeB ? assetA : assetB).decimals;
+    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals;
+    const desiredCodecString = new FPNumber(!isExchangeB ? amountA : amountB, desiredDecimals).toCodecString();
+    const result = new FPNumber(!isExchangeB ? amountB : amountA, resultDecimals);
+    const resultMulSlippage = result.mul(new FPNumber(Number(slippageTolerance) / 100));
+    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
+    const params = {} as any;
     if (!isExchangeB) {
       params.WithDesiredInput = {
         desired_amount_in: desiredCodecString,
-        min_amount_out: result.sub(resultMulSlippage).toCodecString()
-      }
+        min_amount_out: result.sub(resultMulSlippage).toCodecString(),
+      };
     } else {
       params.WithDesiredOutput = {
         desired_amount_out: desiredCodecString,
-        max_amount_in: result.add(resultMulSlippage).toCodecString()
-      }
+        max_amount_in: result.add(resultMulSlippage).toCodecString(),
+      };
     }
     return {
       args: [
@@ -324,9 +339,9 @@ export class SwapModule {
         assetB.address,
         params,
         liquiditySources,
-        liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
-      ]
-    }
+        liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected',
+      ],
+    };
   }
 
   /**
@@ -338,7 +353,7 @@ export class SwapModule {
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    */
-  public async execute (
+  public async execute(
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -347,10 +362,18 @@ export class SwapModule {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
-    const params = await this.calcTxParams(assetA, assetB, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
+    const params = await this.calcTxParams(
+      assetA,
+      assetB,
+      amountA,
+      amountB,
+      slippageTolerance,
+      isExchangeB,
+      liquiditySource
+    );
     if (!this.root.assets.getAsset(assetB.address)) {
-      this.root.assets.addAccountAsset({ ...assetB, balance: ZeroBalance })
-      this.root.assets.updateAccountAssets()
+      this.root.assets.addAccountAsset({ ...assetB, balance: ZeroBalance });
+      this.root.assets.updateAccountAssets();
     }
     await this.root.submitExtrinsic(
       (this.root.api.tx.liquidityProxy as any).swap(...params.args),
@@ -363,9 +386,9 @@ export class SwapModule {
         asset2Address: assetB.address,
         amount2: `${amountB}`,
         liquiditySource,
-        type: Operation.Swap
+        type: Operation.Swap,
       }
-    )
+    );
   }
 
   /**
@@ -379,7 +402,7 @@ export class SwapModule {
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    */
-   public async executeSwapAndSend (
+  public async executeSwapAndSend(
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -390,32 +413,40 @@ export class SwapModule {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
-    const params = await this.calcTxParams(assetA, assetB, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource)
+    const params = await this.calcTxParams(
+      assetA,
+      assetB,
+      amountA,
+      amountB,
+      slippageTolerance,
+      isExchangeB,
+      liquiditySource
+    );
     if (!this.root.assets.getAsset(assetB.address)) {
-      this.root.assets.addAccountAsset({ ...assetB, balance: ZeroBalance })
-      this.root.assets.updateAccountAssets()
+      this.root.assets.addAccountAsset({ ...assetB, balance: ZeroBalance });
+      this.root.assets.updateAccountAssets();
     }
 
-    const swap = (this.root.api.tx.liquidityProxy as any).swap(...params.args)
-    const transfer = this.root.api.tx.assets.transfer(assetB.address, accountId, new FPNumber(swapResultValue, assetB.decimals).toCodecString())
+    const swap = (this.root.api.tx.liquidityProxy as any).swap(...params.args);
+    const transfer = this.root.api.tx.assets.transfer(
+      assetB.address,
+      accountId,
+      new FPNumber(swapResultValue, assetB.decimals).toCodecString()
+    );
 
-    const formattedToAddress = accountId.slice(0, 2) === 'cn' ? accountId : this.root.formatAddress(accountId)
+    const formattedToAddress = accountId.slice(0, 2) === 'cn' ? accountId : this.root.formatAddress(accountId);
 
-    await this.root.submitExtrinsic(
-      this.root.api.tx.utility.batchAll([swap, transfer]),
-      this.root.account.pair,
-      {
-        symbol: assetA.symbol,
-        assetAddress: assetA.address,
-        amount: `${amountA}`,
-        symbol2: assetB.symbol,
-        asset2Address: assetB.address,
-        amount2: `${amountB}`,
-        liquiditySource,
-        to: formattedToAddress,
-        type: Operation.SwapAndSend
-      }
-    )
+    await this.root.submitExtrinsic(this.root.api.tx.utility.batchAll([swap, transfer]), this.root.account.pair, {
+      symbol: assetA.symbol,
+      assetAddress: assetA.address,
+      amount: `${amountA}`,
+      symbol2: assetB.symbol,
+      asset2Address: assetB.address,
+      amount2: `${amountB}`,
+      liquiditySource,
+      to: formattedToAddress,
+      type: Operation.SwapAndSend,
+    });
   }
 
   /**
@@ -431,16 +462,16 @@ export class SwapModule {
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param liquiditySource Selected liquidity source
    */
-  public async getResultFromBackned (
+  public async getResultFromBackned(
     assetAAddress: string,
     assetBAddress: string,
     amount: NumberLike,
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<SwapResult> {
-    const assetA = await this.root.assets.getAssetInfo(assetAAddress)
-    const assetB = await this.root.assets.getAssetInfo(assetBAddress)
-    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource)
+    const assetA = await this.root.assets.getAssetInfo(assetAAddress);
+    const assetB = await this.root.assets.getAssetInfo(assetBAddress);
+    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
     const result = await (this.root.api.rpc as any).liquidityProxy.quote(
       this.root.defaultDEXId,
       assetAAddress,
@@ -449,14 +480,17 @@ export class SwapModule {
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
       liquiditySources,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
-    )
-    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amount_without_impact: 0 }
+    );
+    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amount_without_impact: 0 };
     return {
       amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
-      amountWithoutImpact: new FPNumber(value.amount_without_impact, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
-    } as SwapResult
+      amountWithoutImpact: new FPNumber(
+        value.amount_without_impact,
+        (!isExchangeB ? assetB : assetA).decimals
+      ).toCodecString(),
+    } as SwapResult;
   }
 
   /**
@@ -467,8 +501,14 @@ export class SwapModule {
    * @param secondAssetAddress
    * @returns availability of swap operation
    */
-   public async checkSwap (firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
-    return (await (this.root.api.rpc as any).liquidityProxy.isPathAvailable(this.root.defaultDEXId, firstAssetAddress, secondAssetAddress)).isTrue
+  public async checkSwap(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
+    return (
+      await (this.root.api.rpc as any).liquidityProxy.isPathAvailable(
+        this.root.defaultDEXId,
+        firstAssetAddress,
+        secondAssetAddress
+      )
+    ).isTrue;
   }
 
   /**
@@ -478,19 +518,21 @@ export class SwapModule {
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public async getEnabledLiquiditySourcesForPair (
+  public async getEnabledLiquiditySourcesForPair(
     firstAssetAddress: string,
     secondAssetAddress: string
   ): Promise<Array<LiquiditySourceTypes>> {
-    const baseAssetId = secondAssetAddress === XOR.address ? secondAssetAddress : firstAssetAddress
-    const targetAssetId = baseAssetId === secondAssetAddress ? firstAssetAddress : secondAssetAddress
-    const list = (await (this.root.api.rpc as any).tradingPair.listEnabledSourcesForPair(
-      this.root.defaultDEXId,
-      baseAssetId,
-      targetAssetId
-    )).toJSON()
+    const baseAssetId = secondAssetAddress === XOR.address ? secondAssetAddress : firstAssetAddress;
+    const targetAssetId = baseAssetId === secondAssetAddress ? firstAssetAddress : secondAssetAddress;
+    const list = (
+      await (this.root.api.rpc as any).tradingPair.listEnabledSourcesForPair(
+        this.root.defaultDEXId,
+        baseAssetId,
+        targetAssetId
+      )
+    ).toJSON();
 
-    return (list as Array<LiquiditySourceTypes>)
+    return list as Array<LiquiditySourceTypes>;
   }
 
   /**
@@ -501,18 +543,20 @@ export class SwapModule {
    * @param secondAssetAddress
    * @param liquiditySource
    */
-  public async checkLiquiditySourceIsEnabledForPair (
+  public async checkLiquiditySourceIsEnabledForPair(
     firstAssetAddress: string,
     secondAssetAddress: string,
     liquiditySource: LiquiditySourceTypes
   ): Promise<boolean> {
-    const isEnabled = (await (this.root.api.rpc as any).tradingPair.isSourceEnabledForPair(
-      this.root.defaultDEXId,
-      firstAssetAddress,
-      secondAssetAddress,
-      liquiditySource
-    )).toJSON()
+    const isEnabled = (
+      await (this.root.api.rpc as any).tradingPair.isSourceEnabledForPair(
+        this.root.defaultDEXId,
+        firstAssetAddress,
+        secondAssetAddress,
+        liquiditySource
+      )
+    ).toJSON();
 
-    return isEnabled
+    return isEnabled;
   }
 }

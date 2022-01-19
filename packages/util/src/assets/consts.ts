@@ -1,7 +1,7 @@
-import { FPNumber } from '../fp'
-import type { AccountBalance, Asset } from './types'
+import { FPNumber } from '../fp';
+import type { AccountBalance, Asset } from './types';
 
-export const MaxTotalSupply = '170141183460469231731.687303715884105727'
+export const MaxTotalSupply = '170141183460469231731.687303715884105727';
 
 export enum KnownSymbols {
   XOR = 'XOR',
@@ -12,14 +12,14 @@ export enum KnownSymbols {
   XSTUSD = 'XSTUSD',
 }
 
-const ZERO_STR = '0'
+const ZERO_STR = '0';
 export const ZeroBalance = {
   frozen: ZERO_STR,
   locked: ZERO_STR,
   total: ZERO_STR,
   transferable: ZERO_STR,
-  bonded: ZERO_STR
-} as AccountBalance
+  bonded: ZERO_STR,
+} as AccountBalance;
 
 export enum BalanceType {
   Transferable = 'transferable',
@@ -27,25 +27,25 @@ export enum BalanceType {
   Locked = 'locked',
   Reserved = 'reserved',
   Total = 'total',
-  Bonded = 'bonded'
+  Bonded = 'bonded',
 }
 
 class ArrayLike<T> extends Array<T> {
   constructor(items?: Array<T>) {
-    super()
-    items && this.addItems(items)
+    super();
+    items && this.addItems(items);
   }
-  private addItems (items: Array<T>): void {
+  private addItems(items: Array<T>): void {
     if (!(items instanceof Array)) {
-      return
+      return;
     }
-    this.push(...items)
+    this.push(...items);
   }
-  public contains (info: string): boolean {
-    return !!this.find((asset: any) => [asset.address, asset.symbol].includes(info))
+  public contains(info: string): boolean {
+    return !!this.find((asset: any) => [asset.address, asset.symbol].includes(info));
   }
-  public get (info: string): T {
-    return this.find((asset: any) => [asset.address, asset.symbol].includes(info))
+  public get(info: string): T {
+    return this.find((asset: any) => [asset.address, asset.symbol].includes(info));
   }
 }
 
@@ -55,21 +55,21 @@ export const NativeAssets = new ArrayLike<Asset>([
     symbol: KnownSymbols.XOR,
     name: 'SORA',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: '700000'
+    totalSupply: '700000',
   },
   {
     address: '0x0200040000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.VAL,
     name: 'SORA Validator Token',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: '100000000'
+    totalSupply: '100000000',
   },
   {
     address: '0x0200050000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.PSWAP,
     name: 'Polkaswap',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: '10000000000'
+    totalSupply: '10000000000',
   },
   {
     address: '0x0200080000000000000000000000000000000000000000000000000000000000',
@@ -78,9 +78,9 @@ export const NativeAssets = new ArrayLike<Asset>([
     decimals: FPNumber.DEFAULT_PRECISION,
     totalSupply: MaxTotalSupply,
   },
-])
+]);
 
-export const XOR = NativeAssets.get(KnownSymbols.XOR)
+export const XOR = NativeAssets.get(KnownSymbols.XOR);
 
 export const KnownAssets = new ArrayLike<Asset>([
   ...NativeAssets,
@@ -98,4 +98,4 @@ export const KnownAssets = new ArrayLike<Asset>([
     decimals: FPNumber.DEFAULT_PRECISION,
     totalSupply: MaxTotalSupply,
   },
-])
+]);

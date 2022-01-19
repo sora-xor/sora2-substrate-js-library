@@ -1,12 +1,12 @@
-import { assert } from '@polkadot/util'
+import { assert } from '@polkadot/util';
 import { map } from '@polkadot/x-rxjs/operators';
 import { combineLatest } from '@polkadot/x-rxjs';
-import { Subject } from '@polkadot/x-rxjs'
+import { Subject } from '@polkadot/x-rxjs';
 import type { ApiPromise } from '@polkadot/api';
 import type { Codec, Observable } from '@polkadot/types/types';
 import type { AccountData } from '@polkadot/types/interfaces/balances';
 import type { OrmlAccountData } from '@open-web3/orml-types/interfaces/tokens';
-import type { Subscription } from '@polkadot/x-rxjs'
+import type { Subscription } from '@polkadot/x-rxjs';
 
 import { FPNumber, NumberLike } from '../fp';
 import { KnownAssets, NativeAssets, XOR } from './consts';
@@ -16,106 +16,117 @@ import { Operation } from '../BaseApi';
 import type { AccountAsset, AccountBalance, Asset, Whitelist, WhitelistArrayItem } from './types';
 import type { Api } from '../api';
 
-function formatBalance (data: AccountData | OrmlAccountData, assetDecimals?: number, bondedData?: Codec): AccountBalance {
-  const free = new FPNumber(data.free || 0, assetDecimals)
-  const reserved = new FPNumber(data.reserved || 0, assetDecimals)
-  const miscFrozen = new FPNumber((data as AccountData).miscFrozen || 0, assetDecimals)
-  const feeFrozen = new FPNumber((data as AccountData).feeFrozen || 0, assetDecimals)
-  const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals)
-  const locked = FPNumber.max(miscFrozen, feeFrozen)
-  const bonded = new FPNumber(bondedData || 0, assetDecimals)
-  const freeAndReserved = free.add(reserved)
-  const hasBonded = bonded.isFinity()
+function formatBalance(
+  data: AccountData | OrmlAccountData,
+  assetDecimals?: number,
+  bondedData?: Codec
+): AccountBalance {
+  const free = new FPNumber(data.free || 0, assetDecimals);
+  const reserved = new FPNumber(data.reserved || 0, assetDecimals);
+  const miscFrozen = new FPNumber((data as AccountData).miscFrozen || 0, assetDecimals);
+  const feeFrozen = new FPNumber((data as AccountData).feeFrozen || 0, assetDecimals);
+  const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals);
+  const locked = FPNumber.max(miscFrozen, feeFrozen);
+  const bonded = new FPNumber(bondedData || 0, assetDecimals);
+  const freeAndReserved = free.add(reserved);
+  const hasBonded = bonded.isFinity();
   return {
     reserved: reserved.toCodecString(),
     locked: locked.toCodecString(),
     total: (hasBonded ? freeAndReserved.add(bonded) : freeAndReserved).toCodecString(),
     transferable: free.sub(locked).toCodecString(),
     frozen: (frozen.isZero() ? locked.add(reserved) : frozen).toCodecString(),
-    bonded: hasBonded ? bonded.toCodecString() : '0'
-  } as AccountBalance
+    bonded: hasBonded ? bonded.toCodecString() : '0',
+  } as AccountBalance;
 }
 
-async function getAssetInfo (api: ApiPromise, address: string): Promise<Asset> {
-  const [symbol, name, decimals, _] = (await api.query.assets.assetInfos(address)).toHuman() as any
-  return { address, symbol, name, decimals: +decimals } as Asset
+async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
+  const [symbol, name, decimals, _] = (await api.query.assets.assetInfos(address)).toHuman() as any;
+  return { address, symbol, name, decimals: +decimals } as Asset;
 }
 
-async function getAssetBalance (api: ApiPromise, accountAddress: string, assetAddress: string, assetDecimals: number): Promise<AccountBalance> {
+async function getAssetBalance(
+  api: ApiPromise,
+  accountAddress: string,
+  assetAddress: string,
+  assetDecimals: number
+): Promise<AccountBalance> {
   if (assetAddress === XOR.address) {
-    const accountInfo = await api.query.system.account(accountAddress)
-    const bondedBalance = await api.query.referrals.referrerBalances(accountAddress)
-    return formatBalance(accountInfo.data, assetDecimals, bondedBalance)
+    const accountInfo = await api.query.system.account(accountAddress);
+    const bondedBalance = await api.query.referrals.referrerBalances(accountAddress);
+    return formatBalance(accountInfo.data, assetDecimals, bondedBalance);
   }
-  const accountData = await api.query.tokens.accounts(accountAddress, assetAddress)
-  return formatBalance(accountData, assetDecimals)
+  const accountData = await api.query.tokens.accounts(accountAddress, assetAddress);
+  return formatBalance(accountData, assetDecimals);
 }
 
-function isRegisteredAsset (asset: any, whitelist: Whitelist): boolean {
+function isRegisteredAsset(asset: any, whitelist: Whitelist): boolean {
   if (!asset.address) {
-    return false
+    return false;
   }
-  return !!whitelist[asset.address]
+  return !!whitelist[asset.address];
 }
 
 /**
  * Used *ONLY* for faucet
  */
-export async function getBalance (api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
-  return await (api.rpc as any).assets.usableBalance(accountAddress, assetAddress) // BalanceInfo
+export async function getBalance(api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
+  return await (api.rpc as any).assets.usableBalance(accountAddress, assetAddress); // BalanceInfo
 }
 
-export function isNativeAsset (asset: any): boolean {
+export function isNativeAsset(asset: any): boolean {
   if (!asset.address) {
-    return false
+    return false;
   }
-  return !!NativeAssets.get(asset.address)
+  return !!NativeAssets.get(asset.address);
 }
 
-export async function getAssets (api: ApiPromise, whitelist?: Whitelist): Promise<Array<Asset>> {
+export async function getAssets(api: ApiPromise, whitelist?: Whitelist): Promise<Array<Asset>> {
   const assets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
-    const [address] = key.toHuman() as any
-    const [symbol, name, decimals, _] = codec.toHuman() as any
-    return { address, symbol, name, decimals: +decimals }
-  }) as Array<Asset>
-  return !whitelist ? assets : assets.sort((a, b) => {
-    const isNativeA = isNativeAsset(a)
-    const isNativeB = isNativeAsset(b)
-    const isRegisteredA = isRegisteredAsset(a, whitelist)
-    const isRegisteredB = isRegisteredAsset(b, whitelist)
-    if ((isNativeA && !isNativeB) || (isRegisteredA && !isRegisteredB)) {
-      return -1
-    }
-    if ((!isNativeA && isNativeB) || (!isRegisteredA && isRegisteredB)) {
-      return 1
-    }
-    if (a.symbol < b.symbol) {
-      return -1
-    }
-    if (a.symbol > b.symbol) {
-      return 1
-    }
-    return 0
-  })
+    const [address] = key.toHuman() as any;
+    const [symbol, name, decimals, _] = codec.toHuman() as any;
+    return { address, symbol, name, decimals: +decimals };
+  }) as Array<Asset>;
+  return !whitelist
+    ? assets
+    : assets.sort((a, b) => {
+        const isNativeA = isNativeAsset(a);
+        const isNativeB = isNativeAsset(b);
+        const isRegisteredA = isRegisteredAsset(a, whitelist);
+        const isRegisteredB = isRegisteredAsset(b, whitelist);
+        if ((isNativeA && !isNativeB) || (isRegisteredA && !isRegisteredB)) {
+          return -1;
+        }
+        if ((!isNativeA && isNativeB) || (!isRegisteredA && isRegisteredB)) {
+          return 1;
+        }
+        if (a.symbol < b.symbol) {
+          return -1;
+        }
+        if (a.symbol > b.symbol) {
+          return 1;
+        }
+        return 0;
+      });
 }
 
 export class AssetsModule {
-  constructor (private readonly root: Api) {}
+  constructor(private readonly root: Api) {}
 
   /**
    * Get whitelist assets object
    * @param whitelist Whitelist array
    */
-  getWhitelist (whitelist: Array<WhitelistArrayItem>): Whitelist {
+  getWhitelist(whitelist: Array<WhitelistArrayItem>): Whitelist {
     return whitelist.reduce<Whitelist>((acc, asset) => {
       acc[asset.address] = {
         name: asset.name,
         symbol: asset.symbol,
         decimals: asset.decimals,
-        icon: asset.icon
-      }
-      return acc
-    }, {})
+        icon: asset.icon,
+      };
+      return acc;
+    }, {});
   }
 
   /**
@@ -123,19 +134,19 @@ export class AssetsModule {
    * @param asset Asset object
    * @param whitelist Whitelist assets object
    */
-  isWhitelist (asset: Partial<Asset>, whitelist: Whitelist): boolean {
-    return isRegisteredAsset(asset, whitelist)
+  isWhitelist(asset: Partial<Asset>, whitelist: Whitelist): boolean {
+    return isRegisteredAsset(asset, whitelist);
   }
 
   /**
    * Get whitelist object by symbol as keys
    * @param whitelist Whitelist array
    */
-  getWhitelistIdsBySymbol (whitelist: Array<WhitelistArrayItem>) {
+  getWhitelistIdsBySymbol(whitelist: Array<WhitelistArrayItem>) {
     return whitelist.reduce<any>((acc, asset) => {
-      acc[asset.symbol.toUpperCase()] = asset.address
-      return acc
-    }, {})
+      acc[asset.symbol.toUpperCase()] = asset.address;
+      return acc;
+    }, {});
   }
 
   /**
@@ -143,101 +154,101 @@ export class AssetsModule {
    * @param asset Asset object
    * @param whitelistIdsBySymbol whitelist object by symbol as keys
    */
-  isBlacklist (asset: Partial<Asset>, whitelistIdsBySymbol: any): boolean {
+  isBlacklist(asset: Partial<Asset>, whitelistIdsBySymbol: any): boolean {
     if (!asset.address || !asset.symbol) {
-      return false
+      return false;
     }
-    const address = whitelistIdsBySymbol[asset.symbol]
+    const address = whitelistIdsBySymbol[asset.symbol];
     if (!address) {
-      return false
+      return false;
     }
-    return address !== asset.address
+    return address !== asset.address;
   }
 
   // Default assets addresses of account - list of NativeAssets addresses
-  public accountDefaultAssetsAddresses: Array<string> = NativeAssets.map(asset => asset.address)
+  public accountDefaultAssetsAddresses: Array<string> = NativeAssets.map((asset) => asset.address);
 
-  private _assets: Array<AccountAsset> = []
-  private _accountAssetsAddresses: Array<string> = []
+  private _assets: Array<AccountAsset> = [];
+  private _accountAssetsAddresses: Array<string> = [];
 
-  private balanceSubscriptions: Array<Subscription> = []
-  private balanceSubject = new Subject<void>()
-  public balanceUpdated = this.balanceSubject.asObservable()
+  private balanceSubscriptions: Array<Subscription> = [];
+  private balanceSubject = new Subject<void>();
+  public balanceUpdated = this.balanceSubject.asObservable();
 
   // # Account assets methods
 
-  public get accountAssets (): Array<AccountAsset> {
+  public get accountAssets(): Array<AccountAsset> {
     if (this.root.storage) {
-      this._assets = JSON.parse(this.root.storage.get('assets')) as Array<AccountAsset> || []
+      this._assets = (JSON.parse(this.root.storage.get('assets')) as Array<AccountAsset>) || [];
     }
-    return this._assets
+    return this._assets;
   }
 
-  public set accountAssets (assets: Array<AccountAsset>) {
-    this.root.storage?.set('assets', JSON.stringify(assets))
-    this._assets = [...assets]
+  public set accountAssets(assets: Array<AccountAsset>) {
+    this.root.storage?.set('assets', JSON.stringify(assets));
+    this._assets = [...assets];
   }
 
-  private addToAccountAssetsList (asset: AccountAsset): void {
-    const assetsCopy = [...this.accountAssets]
-    const index = assetsCopy.findIndex(item => item.address === asset.address)
+  private addToAccountAssetsList(asset: AccountAsset): void {
+    const assetsCopy = [...this.accountAssets];
+    const index = assetsCopy.findIndex((item) => item.address === asset.address);
 
-    ~index ? assetsCopy[index] = asset : assetsCopy.push(asset)
+    ~index ? (assetsCopy[index] = asset) : assetsCopy.push(asset);
 
-    this.accountAssets = assetsCopy
+    this.accountAssets = assetsCopy;
   }
 
-  private removeFromAccountAssetsList (address: string): void {
-    this.accountAssets = this.accountAssets.filter(item => item.address !== address)
+  private removeFromAccountAssetsList(address: string): void {
+    this.accountAssets = this.accountAssets.filter((item) => item.address !== address);
   }
 
-  public addAccountAsset (asset: AccountAsset): void {
-    this.addToAccountAssetsList(asset)
-    this.addToAccountAssetsAddressesList(asset.address)
+  public addAccountAsset(asset: AccountAsset): void {
+    this.addToAccountAssetsList(asset);
+    this.addToAccountAssetsAddressesList(asset.address);
   }
 
-  private removeAccountAsset (address: string): void {
-    this.removeFromAccountAssetsList(address)
-    this.removeFromAccountAssetsAddressesList(address)
+  private removeAccountAsset(address: string): void {
+    this.removeFromAccountAssetsList(address);
+    this.removeFromAccountAssetsAddressesList(address);
   }
 
-  public removeAsset (address: string): void {
-    this.removeAccountAsset(address)
-    this.updateAccountAssets()
+  public removeAsset(address: string): void {
+    this.removeAccountAsset(address);
+    this.updateAccountAssets();
   }
 
-  public getAsset (address: string): AccountAsset | null {
-    return this.accountAssets.find(asset => asset.address === address) ?? null
+  public getAsset(address: string): AccountAsset | null {
+    return this.accountAssets.find((asset) => asset.address === address) ?? null;
   }
 
-  public getAssetBalanceObservable (asset: AccountAsset): Observable<AccountBalance> {
+  public getAssetBalanceObservable(asset: AccountAsset): Observable<AccountBalance> {
     const accountAddress = this.root.account.pair.address;
     if (asset.address === XOR.address) {
       const accountInfo = this.root.apiRx.query.system.account(accountAddress);
       const bondedBalance = this.root.apiRx.query.referrals.referrerBalances(accountAddress);
-  
+
       return combineLatest([accountInfo, bondedBalance]).pipe(
         map((result) => formatBalance(result[0].data, asset.decimals, result[1]))
       );
     }
-    return this.root.apiRx.query.tokens.accounts(accountAddress, asset.address).pipe(
-      map(accountData => formatBalance(accountData, asset.decimals))
-    );
+    return this.root.apiRx.query.tokens
+      .accounts(accountAddress, asset.address)
+      .pipe(map((accountData) => formatBalance(accountData, asset.decimals)));
   }
 
   /**
    * Set subscriptions for balance updates of the account asset list
    */
-  public updateAccountAssets (): void {
-    this.unsubscribeFromAllBalancesUpdates()
-    assert(this.root.account, Messages.connectWallet)
+  public updateAccountAssets(): void {
+    this.unsubscribeFromAllBalancesUpdates();
+    assert(this.root.account, Messages.connectWallet);
     for (const asset of this.accountAssets) {
       const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
-        asset.balance = accountBalance
-        this.addAccountAsset(asset)
-        this.balanceSubject.next()
-      })
-      this.balanceSubscriptions.push(subscription)
+        asset.balance = accountBalance;
+        this.addAccountAsset(asset);
+        this.balanceSubject.next();
+      });
+      this.balanceSubscriptions.push(subscription);
     }
   }
 
@@ -245,21 +256,22 @@ export class AssetsModule {
    * Get asset information
    * @param address asset address
    */
-  public async getAssetInfo (address: string): Promise<Asset> {
-    const knownAsset = KnownAssets.get(address)
+  public async getAssetInfo(address: string): Promise<Asset> {
+    const knownAsset = KnownAssets.get(address);
     if (knownAsset) {
-      return knownAsset
+      return knownAsset;
     }
-    const existingAsset = this.getAsset(address) || this.root.poolXyk.accountLiquidity.find(asset => asset.address === address)
+    const existingAsset =
+      this.getAsset(address) || this.root.poolXyk.accountLiquidity.find((asset) => asset.address === address);
     if (existingAsset) {
       return {
         address: existingAsset.address,
         decimals: existingAsset.decimals,
         symbol: existingAsset.symbol,
-        name: existingAsset.name
-      } as Asset
+        name: existingAsset.name,
+      } as Asset;
     }
-    return await getAssetInfo(this.root.api, address)
+    return await getAssetInfo(this.root.api, address);
   }
 
   /**
@@ -268,69 +280,70 @@ export class AssetsModule {
    * @param address asset address
    * @param addToList should asset be added to list or not
    */
-  public async getAccountAsset (address: string, addToList = false): Promise<AccountAsset> {
-    assert(this.root.account, Messages.connectWallet)
-    const { decimals, symbol, name } = await this.getAssetInfo(address)
-    const asset = { address, decimals, symbol, name } as AccountAsset
-    const result = await getAssetBalance(this.root.api, this.root.account.pair.address, address, decimals)
-    asset.balance = result
+  public async getAccountAsset(address: string, addToList = false): Promise<AccountAsset> {
+    assert(this.root.account, Messages.connectWallet);
+    const { decimals, symbol, name } = await this.getAssetInfo(address);
+    const asset = { address, decimals, symbol, name } as AccountAsset;
+    const result = await getAssetBalance(this.root.api, this.root.account.pair.address, address, decimals);
+    asset.balance = result;
     if (addToList) {
-      this.addAccountAsset(asset)
-      this.updateAccountAssets()
+      this.addAccountAsset(asset);
+      this.updateAccountAssets();
     }
-    return asset
+    return asset;
   }
 
   /**
    * Get a list of all assets from default account assets array & from account storage
    */
-  public async getKnownAccountAssets (): Promise<Array<AccountAsset>> {
-    assert(this.root.account, Messages.connectWallet)
+  public async getKnownAccountAssets(): Promise<Array<AccountAsset>> {
+    assert(this.root.account, Messages.connectWallet);
 
-    const knownAssets: Array<AccountAsset> = []
-    const assetsAddresses = new Set([...this.accountDefaultAssetsAddresses, ...this.accountAssetsAddresses])
+    const knownAssets: Array<AccountAsset> = [];
+    const assetsAddresses = new Set([...this.accountDefaultAssetsAddresses, ...this.accountAssetsAddresses]);
 
     for (const assetAddress of assetsAddresses) {
-      const asset = await this.getAccountAsset(assetAddress)
-      this.addAccountAsset(asset)
-      knownAssets.push(asset)
+      const asset = await this.getAccountAsset(assetAddress);
+      this.addAccountAsset(asset);
+      knownAssets.push(asset);
     }
 
-    return knownAssets
+    return knownAssets;
   }
 
-  public unsubscribeFromAllBalancesUpdates (): void {
+  public unsubscribeFromAllBalancesUpdates(): void {
     for (const subscription of this.balanceSubscriptions) {
-      subscription.unsubscribe()
+      subscription.unsubscribe();
     }
-    this.balanceSubscriptions = []
+    this.balanceSubscriptions = [];
   }
 
   // # Account assets addresses
 
-  private get accountAssetsAddresses (): Array<string> {
+  private get accountAssetsAddresses(): Array<string> {
     if (this.root.accountStorage) {
-      this._accountAssetsAddresses = JSON.parse(this.root.accountStorage.get('assetsAddresses')) as Array<string> || []
+      this._accountAssetsAddresses =
+        (JSON.parse(this.root.accountStorage.get('assetsAddresses')) as Array<string>) || [];
     }
-    return this._accountAssetsAddresses
+    return this._accountAssetsAddresses;
   }
 
-  private set accountAssetsAddresses (assetsAddresses: Array<string>) {
-    this.root.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses))
-    this._accountAssetsAddresses = [...assetsAddresses]
+  private set accountAssetsAddresses(assetsAddresses: Array<string>) {
+    this.root.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses));
+    this._accountAssetsAddresses = [...assetsAddresses];
   }
 
-  private addToAccountAssetsAddressesList (assetAddress: string): void {
-    const assetsAddressesCopy = [...this.accountAssetsAddresses]
-    const index = assetsAddressesCopy.findIndex(address => address === assetAddress)
+  private addToAccountAssetsAddressesList(assetAddress: string): void {
+    const assetsAddressesCopy = [...this.accountAssetsAddresses];
+    const index = assetsAddressesCopy.findIndex((address) => address === assetAddress);
 
-    ~index ? assetsAddressesCopy[index] = assetAddress : assetsAddressesCopy.push(assetAddress)
+    ~index ? (assetsAddressesCopy[index] = assetAddress) : assetsAddressesCopy.push(assetAddress);
 
-    this.accountAssetsAddresses = assetsAddressesCopy
+    this.accountAssetsAddresses = assetsAddressesCopy;
   }
 
-  private removeFromAccountAssetsAddressesList (address: string): void {
-    this.accountAssetsAddresses = this.accountAssetsAddresses.filter(item => item !== address)
+  private removeFromAccountAssetsAddressesList(address: string): void {
+    this.accountAssetsAddresses = this.accountAssetsAddresses.filter((item) => item !== address);
   }
 
   /**
@@ -338,12 +351,12 @@ export class AssetsModule {
    * @param whitelist set of whitelist tokens
    * @param withPoolTokens `false` by default
    */
-   public async getAssets (whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
-    const assets = await getAssets(this.root.api, whitelist)
-    return withPoolTokens ? assets : assets.filter(asset => asset.symbol !== PoolTokens.XYKPOOL)
+  public async getAssets(whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
+    const assets = await getAssets(this.root.api, whitelist);
+    return withPoolTokens ? assets : assets.filter((asset) => asset.symbol !== PoolTokens.XYKPOOL);
   }
 
-  private async calcRegisterAssetParams (
+  private async calcRegisterAssetParams(
     symbol: string,
     name: string,
     totalSupply: NumberLike,
@@ -351,21 +364,14 @@ export class AssetsModule {
     nft = {
       isNft: false,
       content: null,
-      description: null
-    }) {
-    assert(this.root.account, Messages.connectWallet)
-    const supply = nft.isNft ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply)
-    return {
-      args: [
-        symbol,
-        name,
-        supply.toCodecString(),
-        extensibleSupply,
-        nft.isNft,
-        nft.content,
-        nft.description
-      ]
+      description: null,
     }
+  ) {
+    assert(this.root.account, Messages.connectWallet);
+    const supply = nft.isNft ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply);
+    return {
+      args: [symbol, name, supply.toCodecString(), extensibleSupply, nft.isNft, nft.content, nft.description],
+    };
   }
 
   /**
@@ -375,7 +381,7 @@ export class AssetsModule {
    * @param totalSupply
    * @param extensibleSupply
    */
-   public async register (
+  public async register(
     symbol: string,
     name: string,
     totalSupply: NumberLike,
@@ -383,35 +389,31 @@ export class AssetsModule {
     nft = {
       isNft: false,
       content: null,
-      description: null
+      description: null,
     }
   ): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nft)
-    await this.root.submitExtrinsic(
-      (this.root.api.tx.assets.register as any)(...params.args),
-      this.root.account.pair,
-      {
-        symbol,
-        type: Operation.RegisterAsset
-      }
-    )
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nft);
+    await this.root.submitExtrinsic((this.root.api.tx.assets.register as any)(...params.args), this.root.account.pair, {
+      symbol,
+      type: Operation.RegisterAsset,
+    });
   }
 
   /**
    * Get NFT content
    * @param assetId Asset ID
    */
-  public async getNftContent (assetId: string): Promise<string> {
-    const content = await this.root.api.query.assets.assetContentSource(assetId)
-    return `${content.toHuman()}`
+  public async getNftContent(assetId: string): Promise<string> {
+    const content = await this.root.api.query.assets.assetContentSource(assetId);
+    return `${content.toHuman()}`;
   }
 
   /**
    * Get NFT description
    * @param assetId Asset ID
    */
-  public async getNftDescription (assetId: string): Promise<string> {
-    const desc = await this.root.api.query.assets.assetDescription(assetId)
-    return `${desc.toHuman()}`
+  public async getNftDescription(assetId: string): Promise<string> {
+    const desc = await this.root.api.query.assets.assetDescription(assetId);
+    return `${desc.toHuman()}`;
   }
 }

@@ -1,20 +1,20 @@
-import { rpc as ormlRpc, types as ormlTypes, typesAlias as ormlAlias } from '@open-web3/orml-type-definitions'
-import { jsonrpcFromDefs, typesAliasFromDefs, typesFromDefs } from '@open-web3/orml-type-definitions/utils'
+import { rpc as ormlRpc, types as ormlTypes, typesAlias as ormlAlias } from '@open-web3/orml-type-definitions';
+import { jsonrpcFromDefs, typesAliasFromDefs, typesFromDefs } from '@open-web3/orml-type-definitions/utils';
 
-import runtime from './runtime'
-import dexApi from './dexApi'
-import dexManager from './dexManager'
-import tradingPair from './tradingPair'
-import template from './template'
-import assets from './assets'
-import irohaMigration from './irohaMigration'
-import liquidityProxy from './liquidityProxy'
-import ethBridge from './ethBridge'
-import pswapDistribution from './pswapDistribution'
-import rewards from './rewards'
-import farming from './farming'
-import ceresStaking from './ceresStaking'
-import ceresLiquidityLocker from './ceresLiquidityLocker'
+import runtime from './runtime';
+import dexApi from './dexApi';
+import dexManager from './dexManager';
+import tradingPair from './tradingPair';
+import template from './template';
+import assets from './assets';
+import irohaMigration from './irohaMigration';
+import liquidityProxy from './liquidityProxy';
+import ethBridge from './ethBridge';
+import pswapDistribution from './pswapDistribution';
+import rewards from './rewards';
+import farming from './farming';
+import ceresStaking from './ceresStaking';
+import ceresLiquidityLocker from './ceresLiquidityLocker';
 
 import versionedOverrides from './versioned';
 
@@ -32,8 +32,8 @@ const soraDefs = {
   rewards,
   runtime,
   template,
-  tradingPair
-}
+  tradingPair,
+};
 
 const overrides = {
   Address: 'AccountId',
@@ -45,30 +45,30 @@ const overrides = {
   TAssetBalance: 'Balance',
   MultiCurrencyBalance: 'Balance',
   MultiCurrencyBalanceOf: 'MultiCurrencyBalance',
-  AccountInfo: 'AccountInfoWithDualRefCount'
+  AccountInfo: 'AccountInfoWithDualRefCount',
 };
 
 export const types = {
   ...ormlTypes,
   ...typesFromDefs(soraDefs),
-  ...overrides
-}
+  ...overrides,
+};
 
 export const localTypes = {
   ...typesFromDefs(soraDefs),
-  ...overrides
-}
+  ...overrides,
+};
 
 export const typesBundle = {
   spec: {
     sora: {
-      types
-    } as any
-  }
-}
+      types,
+    } as any,
+  },
+};
 
-export const rpc = jsonrpcFromDefs(soraDefs, { ...ormlRpc })
-export const typesAlias = typesAliasFromDefs(soraDefs, { ...ormlAlias })
+export const rpc = jsonrpcFromDefs(soraDefs, { ...ormlRpc });
+export const typesAlias = typesAliasFromDefs(soraDefs, { ...ormlAlias });
 
 export const slimOverrideBundle = {
   spec: {
@@ -78,13 +78,13 @@ export const slimOverrideBundle = {
           minmax: version.minmax,
           types: {
             ...types,
-            ...version.types
-          }
+            ...version.types,
+          },
         };
-      })
-    }
-  }
-}
+      }),
+    },
+  },
+};
 
 export const fullOverrideBundle = {
   spec: {
@@ -96,10 +96,10 @@ export const fullOverrideBundle = {
           minmax: version.minmax,
           types: {
             ...types,
-            ...version.types
-          }
+            ...version.types,
+          },
         };
-      })
-    }
-  }
-}
+      }),
+    },
+  },
+};

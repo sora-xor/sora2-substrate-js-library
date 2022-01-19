@@ -6,7 +6,14 @@ import { LiquiditySourceTypes, Consts } from './consts';
 import type { CodecString } from '../fp';
 import type { LPRewardsInfo } from '../rewards/types';
 import type { Asset } from '../assets/types';
-import type { QuotePayload, QuoteResult, QuotePrimaryMarketResult, QuotePaths, Distribution, SwapResult } from './types';
+import type {
+  QuotePayload,
+  QuoteResult,
+  QuotePrimaryMarketResult,
+  QuotePaths,
+  Distribution,
+  SwapResult,
+} from './types';
 
 // UTILS
 const toFp = (item: CodecString): FPNumber => FPNumber.fromCodecValue(item);
@@ -28,7 +35,7 @@ export const getXykReserves = (inputAsset: Asset, outputAsset: Asset, payload: Q
 
 const safeDivide = (value: FPNumber, divider: FPNumber): FPNumber => {
   if (divider.isZero() || divider.isNaN()) {
-    throw new Error(`[liquidityProxy] Division error: ${value.toString()} / ${divider.toString()}`)
+    throw new Error(`[liquidityProxy] Division error: ${value.toString()} / ${divider.toString()}`);
   } else {
     return value.div(divider);
   }
@@ -54,7 +61,7 @@ const safeQuoteResult = (amount: FPNumber, market: LiquiditySourceTypes): QuoteR
  * This function is used to determine particular asset price in terms of a reference asset, which is set for
  * bonding curve (there could be only single token chosen as reference for all comparisons). Basically, the
  * reference token is expected to be a USD-bound stablecoin, e.g. DAI.
- * 
+ *
  * Example use: understand actual value of two tokens in terms of USD.
  */
 const tbcReferencePrice = (asset: Asset, payload: QuotePayload): FPNumber => {
@@ -74,7 +81,7 @@ const tbcReferencePrice = (asset: Asset, payload: QuotePayload): FPNumber => {
  * XOR is also referred as main asset.
  * Value of `delta` is assumed to be either positive or negative.
  * For every `price_change_step` tokens the price goes up by `price_change_rate`.
- * 
+ *
  * `buy_price_usd = (xor_total_supply + xor_supply_delta) / (price_change_step * price_change_rate) + initial_price_usd`
  */
 const tbcBuyFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
@@ -85,14 +92,12 @@ const tbcBuyFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
   return safeDivide(xorIssuance.add(xstXorLiability).add(delta), Consts.PRICE_CHANGE_COEFF).add(Consts.INITIAL_PRICE);
 };
 
-
-
 /**
  * Sell function with regards to asset total supply and its change delta. It represents the amount of
  * output collateral tokens received by User by indicating exact sold XOR amount. I.e. the price User sells at.
  * Value of `delta` is assumed to be either positive or negative.
  * Sell function is `sell_price_coefficient`% of buy function (see `tbcBuyFunction`).
- * 
+ *
  * `sell_price = sell_price_coefficient * buy_price`
  */
 const tbcSellFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
@@ -104,7 +109,7 @@ const tbcSellFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
 /**
  * Calculate USD price for all XOR in network, this is done by applying ideal sell function to XOR total supply.
  * `delta` is a XOR supply offset from current total supply.
- * 
+ *
  * `((initial_price + current_state) / 2) * (xor_issuance + delta)`
  */
 const idealReservesReferencePrice = (delta: FPNumber, payload: QuotePayload): FPNumber => {
@@ -132,11 +137,20 @@ const actualReservesReferencePrice = (collateralAsset: Asset, payload: QuotePayl
 const mapCollateralizedFractionToPenalty = (fraction: FPNumber): FPNumber => {
   if (FPNumber.isLessThan(fraction, new FPNumber(0.05))) {
     return new FPNumber(0.09);
-  } else if (FPNumber.isGreaterThanOrEqualTo(fraction, new FPNumber(0.05)) && FPNumber.isLessThan(fraction, new FPNumber(0.1))) {
+  } else if (
+    FPNumber.isGreaterThanOrEqualTo(fraction, new FPNumber(0.05)) &&
+    FPNumber.isLessThan(fraction, new FPNumber(0.1))
+  ) {
     return new FPNumber(0.06);
-  } else if (FPNumber.isGreaterThanOrEqualTo(fraction, new FPNumber(0.1)) && FPNumber.isLessThan(fraction, new FPNumber(0.2))) {
+  } else if (
+    FPNumber.isGreaterThanOrEqualTo(fraction, new FPNumber(0.1)) &&
+    FPNumber.isLessThan(fraction, new FPNumber(0.2))
+  ) {
     return new FPNumber(0.03);
-  } else if (FPNumber.isGreaterThanOrEqualTo(fraction, new FPNumber(0.2)) && FPNumber.isLessThan(fraction, new FPNumber(0.3))) {
+  } else if (
+    FPNumber.isGreaterThanOrEqualTo(fraction, new FPNumber(0.2)) &&
+    FPNumber.isLessThan(fraction, new FPNumber(0.3))
+  ) {
     return new FPNumber(0.01);
   } else {
     return FPNumber.ZERO;
@@ -160,8 +174,6 @@ const sellPenalty = (collateralAsset: Asset, payload: QuotePayload): FPNumber =>
 
   return penalty;
 };
-
-
 
 /**
  * Calculates and returns the current sell price, assuming that input is the main asset and output is the collateral asset.
@@ -206,8 +218,6 @@ const tbcSellPrice = (
     return outputXor;
   }
 };
-
-
 
 /**
 Calculates and returns the current buy price, assuming that input is the collateral asset and output is the main asset.
@@ -266,7 +276,9 @@ const tbcBuyPrice = (
   if (isDesiredInput) {
     const collateralReferenceIn = collateralPrice.mul(amount);
     const underPow = currentState.mul(Consts.PRICE_CHANGE_COEFF).mul(new FPNumber(2));
-    const underSqrt = underPow.mul(underPow).add(new FPNumber(8).mul(Consts.PRICE_CHANGE_COEFF).mul(collateralReferenceIn));
+    const underSqrt = underPow
+      .mul(underPow)
+      .add(new FPNumber(8).mul(Consts.PRICE_CHANGE_COEFF).mul(collateralReferenceIn));
     const xorOut = safeDivide(underSqrt.sqrt(), new FPNumber(2)).sub(Consts.PRICE_CHANGE_COEFF.mul(currentState));
     return getMaxPositive(xorOut);
   } else {
@@ -497,12 +509,7 @@ const xstSellPriceWithFee = (amount: FPNumber, isDesiredInput: boolean, payload:
   }
 };
 
-const xstQuote = (
-  inputAsset: Asset,
-  amount: FPNumber,
-  isDesiredInput: boolean,
-  payload: QuotePayload
-): QuoteResult => {
+const xstQuote = (inputAsset: Asset, amount: FPNumber, isDesiredInput: boolean, payload: QuotePayload): QuoteResult => {
   try {
     if (isXorAsset(inputAsset)) {
       return xstSellPriceWithFee(amount, isDesiredInput, payload);
@@ -573,7 +580,9 @@ const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
  */
 const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
-    throw new Error(`[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `);
+    throw new Error(
+      `[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `
+    );
   }
 
   const x1 = safeDivide(x.mul(yOut), y.sub(yOut));
@@ -603,7 +612,9 @@ const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   const y1 = safeDivide(yOut, Consts.ONE.sub(Consts.XYK_FEE));
 
   if (FPNumber.isGreaterThanOrEqualTo(y1, y)) {
-    throw new Error(`[liquidityProxy] xykQuote: output amount ${y1.toString()} is larger than reserves ${y.toString()}.`);
+    throw new Error(
+      `[liquidityProxy] xykQuote: output amount ${y1.toString()} is larger than reserves ${y.toString()}.`
+    );
   }
 
   const xIn = safeDivide(x.mul(y1), y.sub(y1));
@@ -683,13 +694,11 @@ const primaryMarketAmountBuyingXor = (
   payload: QuotePayload
 ): FPNumber => {
   try {
-    const secondaryPrice = isGreaterThanZero(xorReserve)
-      ? safeDivide(otherReserve, xorReserve)
-      : Consts.MAX;
+    const secondaryPrice = isGreaterThanZero(xorReserve) ? safeDivide(otherReserve, xorReserve) : Consts.MAX;
 
     const primaryBuyPrice = isAsset(collateralAsset, Consts.XSTUSD)
-        ? xstBuyPriceNoVolume(collateralAsset, payload)
-        : tbcBuyPriceNoVolume(collateralAsset, payload);
+      ? xstBuyPriceNoVolume(collateralAsset, payload)
+      : tbcBuyPriceNoVolume(collateralAsset, payload);
 
     const k = xorReserve.mul(otherReserve);
 
@@ -742,13 +751,11 @@ const primaryMarketAmountSellingXor = (
   payload: QuotePayload
 ): FPNumber => {
   try {
-    const secondaryPrice = isGreaterThanZero(xorReserve)
-      ? safeDivide(otherReserve, xorReserve)
-      : FPNumber.ZERO;
+    const secondaryPrice = isGreaterThanZero(xorReserve) ? safeDivide(otherReserve, xorReserve) : FPNumber.ZERO;
 
     const primarySellPrice = isAsset(collateralAsset, Consts.XSTUSD)
-        ? xstSellPriceNoVolume(collateralAsset, payload)
-        : tbcSellPriceNoVolume(collateralAsset, payload);
+      ? xstSellPriceNoVolume(collateralAsset, payload)
+      : tbcSellPriceNoVolume(collateralAsset, payload);
 
     const k = xorReserve.mul(otherReserve);
 
@@ -790,9 +797,7 @@ const isBetter = (isDesiredInput: boolean, amountA: FPNumber, amountB: FPNumber)
   if (isDesiredInput) {
     return FPNumber.isGreaterThan(amountA, amountB);
   } else {
-    return (
-      isGreaterThanZero(amountA) && (amountB.isZero() || FPNumber.isLessThan(amountA, amountB))
-    );
+    return isGreaterThanZero(amountA) && (amountB.isZero() || FPNumber.isLessThan(amountA, amountB));
   }
 };
 
@@ -1108,8 +1113,8 @@ export const quote = (
       amount: FPNumber.ZERO.toCodecString(),
       fee: FPNumber.ZERO.toCodecString(),
       rewards: [],
-      amountWithoutImpact: FPNumber.ZERO.toCodecString()
-    }
+      amountWithoutImpact: FPNumber.ZERO.toCodecString(),
+    };
   }
 };
 
@@ -1234,7 +1239,13 @@ const quoteWithoutImpactSingle = (
 
     if (market === LiquiditySourceTypes.XYKPool) {
       const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload);
-      const value = xykQuoteWithoutImpact(inputReserves, outputReserves, amount, isDesiredInput, isXorAsset(inputAsset));
+      const value = xykQuoteWithoutImpact(
+        inputReserves,
+        outputReserves,
+        amount,
+        isDesiredInput,
+        isXorAsset(inputAsset)
+      );
 
       return result.add(value);
     }
@@ -1256,25 +1267,25 @@ const quoteWithoutImpactSingle = (
 
 /**
  * Calculate amount of PSWAP rewarded for collateralizing XOR in TBC.
- * 
+ *
  * `ideal_reserves_before = sell_function(0 to xor_total_supply_before_trade)`
- * 
+ *
  * `ideal_reserves_after = sell_function(0 to xor_total_supply_after_trade)`
- * 
+ *
  * `actual_reserves_before = collateral_asset_reserves * collateral_asset_usd_price`
- * 
+ *
  * `actual_reserves_after = actual_reserves_before + collateral_asset_input_amount * collateral_asset_usd_price`
- * 
+ *
  * `unfunded_liabilities = (ideal_reserves_before - actual_reserves_before)`
- * 
+ *
  * `a = unfunded_liabilities / ideal_reserves_before`
- * 
+ *
  * `b = unfunded_liabilities / ideal_reserves_after`
- * 
+ *
  * `P = initial_pswap_rewards`
- * 
+ *
  * `N = enabled reserve currencies except PSWAP and VAL`
- * 
+ *
  * `reward_pswap = ((a - b) * mean(a, b) * P) / N`
  */
 const checkRewards = (collateralAsset: Asset, xorAmount: FPNumber, payload: QuotePayload): Array<LPRewardsInfo> => {
@@ -1292,7 +1303,10 @@ const checkRewards = (collateralAsset: Asset, xorAmount: FPNumber, payload: Quot
   const b = safeDivide(unfundedLiabilities, idealAfter);
 
   const mean = safeDivide(a.add(b), new FPNumber(2));
-  const amount = safeDivide(a.sub(b).mul(Consts.initialPswapTbcRewardsAmount).mul(mean), Consts.incentivizedCurrenciesNum);
+  const amount = safeDivide(
+    a.sub(b).mul(Consts.initialPswapTbcRewardsAmount).mul(mean),
+    Consts.incentivizedCurrenciesNum
+  );
 
   if (amount.isZero()) {
     return [];

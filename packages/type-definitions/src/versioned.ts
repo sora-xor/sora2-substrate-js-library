@@ -5,11 +5,9 @@ const versioned: OverrideVersionedType[] = [
     minmax: [2, undefined],
     types: {
       RewardReason: {
-        _enum: [
-          "Unspecified", "BuyOnBondingCurve", "LiquidityProvisionFarming", "MarketMakerVolume"
-        ]
+        _enum: ['Unspecified', 'BuyOnBondingCurve', 'LiquidityProvisionFarming', 'MarketMakerVolume'],
       },
-    }
+    },
   },
 ];
 

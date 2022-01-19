@@ -39,7 +39,7 @@ jobs:
         with:
           branch: types-autoupdate
           title: 'Types autoupdate'
-          body: "Types checked and update is required"
+          body: 'Types checked and update is required'
           reviewers: |
             stefashkaa
             Nikita-Polyakov

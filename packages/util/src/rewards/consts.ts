@@ -6,10 +6,10 @@ export enum RewardingEvents {
   BuyOnBondingCurve = 'BuyOnBondingCurve',
   LiquidityProvisionFarming = 'LiquidityProvisionFarming', // not used yet
   MarketMakerVolume = 'MarketMakerVolume', // not used yet
-  Unspecified = 'Unspecified'
+  Unspecified = 'Unspecified',
 }
 
 export enum RewardReason {
   Unspecified = 'Unspecified',
-  BuyOnBondingCurve = 'BuyOnBondingCurve'
+  BuyOnBondingCurve = 'BuyOnBondingCurve',
 }

@@ -1,4 +1,4 @@
-import { Definitions } from '@polkadot/types/types'
-import irohaMigration from '@sora-substrate/type-definitions/irohaMigration'
+import { Definitions } from '@polkadot/types/types';
+import irohaMigration from '@sora-substrate/type-definitions/irohaMigration';
 
-export default irohaMigration as Definitions
+export default irohaMigration as Definitions;

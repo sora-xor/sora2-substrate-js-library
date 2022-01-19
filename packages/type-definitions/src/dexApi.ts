@@ -5,27 +5,27 @@ export default {
       params: [
         {
           name: 'dexId',
-          type: 'DEXId'
+          type: 'DEXId',
         },
         {
           name: 'liquiditySourceType',
-          type: 'LiquiditySourceType'
+          type: 'LiquiditySourceType',
         },
         {
           name: 'inputAssetId',
-          type: 'AssetId'
+          type: 'AssetId',
         },
         {
           name: 'outputAssetId',
-          type: 'AssetId'
+          type: 'AssetId',
         },
         {
-            name: 'at',
-            type: 'BlockHash',
-            isOptional: true
+          name: 'at',
+          type: 'BlockHash',
+          isOptional: true,
         },
       ],
-      type: 'bool'
+      type: 'bool',
     },
     listSupportedSources: {
       description: 'List liquidity source types enabled on chain.',
@@ -33,46 +33,46 @@ export default {
         {
           name: 'at',
           type: 'BlockHash',
-          isOptional: true
+          isOptional: true,
         },
       ],
-      type: 'Vec<LiquiditySourceType>'
+      type: 'Vec<LiquiditySourceType>',
     },
     quote: {
       description: 'Get price for a given input or output token amount.',
       params: [
         {
           name: 'dexId',
-          type: 'DEXId'
+          type: 'DEXId',
         },
         {
           name: 'liquiditySourceType',
-          type: 'LiquiditySourceType'
+          type: 'LiquiditySourceType',
         },
         {
           name: 'inputAssetId',
-          type: 'AssetId'
+          type: 'AssetId',
         },
         {
           name: 'outputAssetId',
-          type: 'AssetId'
+          type: 'AssetId',
         },
         {
           name: 'amount',
-          type: 'String'
+          type: 'String',
         },
         {
           name: 'swapVariant',
-          type: 'SwapVariant'
+          type: 'SwapVariant',
         },
         {
-            name: 'at',
-            type: 'BlockHash',
-            isOptional: true
+          name: 'at',
+          type: 'BlockHash',
+          isOptional: true,
         },
       ],
-      type: 'Option<SwapOutcomeInfo>'
-    }
+      type: 'Option<SwapOutcomeInfo>',
+    },
   },
-  types: {}
-}
+  types: {},
+};
