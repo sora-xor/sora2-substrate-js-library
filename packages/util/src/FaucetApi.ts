@@ -29,7 +29,7 @@ export class FaucetApi extends BaseApi {
   }
 
   public get historyList(): Array<History> {
-    return this.history;
+    return Object.values(this.history);
   }
 
   /**

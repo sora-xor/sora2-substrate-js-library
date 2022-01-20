@@ -1,5 +1,6 @@
 import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
+import omit from 'lodash/fp/omit';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
@@ -28,6 +29,12 @@ export type SaveHistoryOptions = {
 
 export type NetworkFeesObject = {
   [key in Operation]: CodecString;
+};
+
+export type HistoryItem = History | BridgeHistory | RewardClaimHistory;
+
+export type AccountHistory<T> = {
+  [key: string]: T;
 };
 
 export const isBridgeOperation = (operation: Operation) =>
@@ -65,7 +72,8 @@ export class BaseApi {
   protected readonly prefix = 69;
   public readonly defaultDEXId = 0;
 
-  private _history: Array<History> = [];
+  public readonly historyNamespace: string;
+  private _history: AccountHistory<HistoryItem> = {};
   private _historySyncTimestamp: number = 0;
   private _historySyncOperations: Array<Operation> = [];
   private _restored: boolean = false;
@@ -75,7 +83,9 @@ export class BaseApi {
   public accountStorage?: AccountStorage; // account data storage
   public account: CreateResult;
 
-  constructor() {}
+  constructor({ historyNamespace = 'history' } = {}) {
+    this.historyNamespace = historyNamespace;
+  }
 
   public get api(): ApiPromise {
     return connection.api;
@@ -110,7 +120,7 @@ export class BaseApi {
     this.account = null;
     this.accountStorage = null;
     this.signer = null;
-    this.history = [];
+    this.history = {};
     if (this.storage) {
       this.storage.clear();
     }
@@ -125,16 +135,16 @@ export class BaseApi {
   }
 
   // methods for working with history
-  public get history(): Array<History> {
+  public get history(): AccountHistory<HistoryItem> {
     if (this.accountStorage) {
-      this._history = (JSON.parse(this.accountStorage.get('history')) as Array<History>) || [];
+      this._history = (JSON.parse(this.accountStorage.get(this.historyNamespace)) as AccountHistory<HistoryItem>) || {};
     }
     return this._history;
   }
 
-  public set history(value: Array<History>) {
-    this.accountStorage?.set('history', JSON.stringify(value));
-    this._history = [...value];
+  public set history(value: AccountHistory<HistoryItem>) {
+    this.accountStorage?.set(this.historyNamespace, JSON.stringify(value));
+    this._history = { ...value };
   }
 
   public get restored(): boolean {
@@ -174,16 +184,28 @@ export class BaseApi {
     this._historySyncOperations = [...value];
   }
 
-  public getHistory(id: string): History | null {
-    if (!id) return null;
-
-    return this.history.find((item) => item.id === id) ?? null;
+  public getHistory(id: string): HistoryItem | null {
+    return this.history[id] ?? null;
   }
 
-  public saveHistory(historyItem: History, options?: SaveHistoryOptions): void {
+  public getFilteredHistory(filterFn: (item: HistoryItem) => boolean): AccountHistory<HistoryItem> {
+    const current = this.history;
+    const filtered: AccountHistory<HistoryItem> = {};
+
+    for (const id in current) {
+      const item = current[id];
+      if (filterFn(item)) {
+        filtered[id] = item;
+      }
+    }
+
+    return filtered;
+  }
+
+  public saveHistory(historyItem: HistoryItem, options?: SaveHistoryOptions): void {
     if (!historyItem || !historyItem.id) return;
 
-    let historyCopy: Array<History>;
+    let historyCopy: AccountHistory<HistoryItem>;
     let addressStorage: Storage;
 
     const hasAccessToStorage = !!this.storage;
@@ -197,24 +219,22 @@ export class BaseApi {
 
     if (needToUpdateAddressStorage) {
       addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress));
-      historyCopy = JSON.parse(addressStorage.get('history')) || [];
+      historyCopy = JSON.parse(addressStorage.get(this.historyNamespace)) || {};
     } else {
-      historyCopy = [...this.history];
+      historyCopy = { ...this.history };
     }
 
-    const index = historyCopy.findIndex((item) => item.id === historyItem.id);
-
-    const item = ~index ? { ...historyCopy[index], ...historyItem } : historyItem;
+    const item = { ...(historyCopy[historyItem.id] || {}), ...historyItem };
 
     if (options?.wasNotGenerated) {
       // Tx was failed on the static validation and wasn't generated in the network
       delete item.txId;
     }
 
-    ~index ? (historyCopy[index] = item) : historyCopy.push(item);
+    historyCopy[historyItem.id] = item;
 
     if (needToUpdateAddressStorage && addressStorage) {
-      addressStorage.set('history', JSON.stringify(historyCopy));
+      addressStorage.set(this.historyNamespace, JSON.stringify(historyCopy));
     } else {
       this.history = historyCopy;
     }
@@ -223,7 +243,11 @@ export class BaseApi {
   public removeHistory(id: string): void {
     if (!id) return;
 
-    this.history = this.history.filter((item) => item.id !== id);
+    this.history = omit([id], this.history);
+  }
+
+  public clearHistory(): void {
+    this.history = {};
   }
 
   /**
@@ -261,7 +285,7 @@ export class BaseApi {
   public async submitExtrinsic(
     extrinsic: SubmittableExtrinsic,
     signer: KeyringPair,
-    historyData?: History | BridgeHistory | RewardClaimHistory,
+    historyData?: HistoryItem,
     unsigned = false
   ): Promise<void> {
     const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;

@@ -20,6 +20,8 @@ import { AssetsModule } from './assets';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
+import type { AccountHistory, HistoryItem } from './BaseApi';
+import type { RewardClaimHistory } from './rewards/types';
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
@@ -39,8 +41,11 @@ export class Api extends BaseApi {
 
   // # History methods
 
-  public get accountHistory(): Array<History> {
-    return this.history.filter(({ type }) => !isBridgeOperation(type));
+  // **DEPRECATED**
+  public get accountHistory(): AccountHistory<History | RewardClaimHistory> {
+    const filterFn = (item: HistoryItem) => !isBridgeOperation(item.type);
+
+    return this.getFilteredHistory(filterFn);
   }
 
   public initAccountStorage() {
@@ -57,6 +62,24 @@ export class Api extends BaseApi {
 
       this.storage.remove('history');
     }
+    // since 1.7.15 history should be saved as object
+    if (this.accountStorage && Array.isArray(this.history)) {
+      const history = {};
+      const bridgeHistory = {};
+      const current = [...this.history];
+
+      for (const item of current) {
+        if (!item.id) continue;
+        if (isBridgeOperation(item.type)) {
+          bridgeHistory[item.id] = item;
+        } else {
+          history[item.id] = item;
+        }
+      }
+
+      this.history = history;
+      this.bridge.history = bridgeHistory;
+    }
   }
 
   /**
@@ -64,11 +87,14 @@ export class Api extends BaseApi {
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
   public clearHistory(assetAddress?: string) {
-    this.history = this.history.filter(
-      (item) =>
-        isBridgeOperation(item.type) ||
-        (!!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress))
-    );
+    if (assetAddress) {
+      const filterFn = (item: HistoryItem) =>
+        !!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress);
+
+      this.history = this.getFilteredHistory(filterFn);
+    } else {
+      super.clearHistory();
+    }
   }
 
   /**
