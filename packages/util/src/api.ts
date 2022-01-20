@@ -39,15 +39,6 @@ export class Api extends BaseApi {
   public readonly referralSystem: ReferralSystemModule = new ReferralSystemModule(this);
   public readonly assets: AssetsModule = new AssetsModule(this);
 
-  // # History methods
-
-  // **DEPRECATED**
-  public get accountHistory(): AccountHistory<History | RewardClaimHistory> {
-    const filterFn = (item: HistoryItem) => !isBridgeOperation(item.type);
-
-    return this.getFilteredHistory(filterFn);
-  }
-
   public initAccountStorage() {
     super.initAccountStorage();
     this.bridge.initAccountStorage();
@@ -82,8 +73,10 @@ export class Api extends BaseApi {
     }
   }
 
+  // # History methods
+
   /**
-   * Remove all history except bridge history
+   * Remove all history
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
   public clearHistory(assetAddress?: string) {

@@ -9,7 +9,7 @@ import { getAssets, isNativeAsset } from './assets';
 import { CodecString, FPNumber } from './fp';
 import { encrypt } from './crypto';
 import type { AccountAsset, Asset } from './assets/types';
-import type { AccountHistory, History, HistoryItem } from './BaseApi';
+import type { History } from './BaseApi';
 
 export interface RegisteredAccountAsset extends AccountAsset {
   externalAddress: string;
@@ -152,13 +152,6 @@ export class BridgeApi extends BaseApi {
     const key = 'externalNetwork';
     this.storage.set(key, networkId);
     this._externalNetwork = networkId;
-  }
-
-  // **DEPRECATED**
-  public get accountHistory(): AccountHistory<BridgeHistory> {
-    const filterFn = (item: HistoryItem) => isBridgeOperation(item.type);
-
-    return this.getFilteredHistory(filterFn) as AccountHistory<BridgeHistory>;
   }
 
   public generateHistoryItem(params: BridgeHistory): BridgeHistory | null {
