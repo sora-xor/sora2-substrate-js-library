@@ -7,7 +7,6 @@ import { BaseApi, Operation, isBridgeOperation } from './BaseApi';
 import { Messages } from './logger';
 import { getAssets, isNativeAsset } from './assets';
 import { CodecString, FPNumber } from './fp';
-import { encrypt } from './crypto';
 import type { AccountAsset, Asset } from './assets/types';
 import type { History } from './BaseApi';
 
@@ -160,7 +159,7 @@ export class BridgeApi extends BaseApi {
     }
     const historyItem = (params || {}) as BridgeHistory;
     historyItem.startTime = historyItem.startTime || Date.now();
-    historyItem.id = encrypt(`${historyItem.startTime}`);
+    historyItem.id = this.encrypt(`${historyItem.startTime}`);
     historyItem.transactionStep = historyItem.transactionStep || 1;
     historyItem.transactionState = historyItem.transactionState || 'INITIAL';
     this.saveHistory(historyItem);

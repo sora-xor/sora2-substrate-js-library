@@ -193,11 +193,11 @@ export class BaseApi {
   }
 
   public getFilteredHistory(filterFn: (item: HistoryItem) => boolean): AccountHistory<HistoryItem> {
-    const current = this.history;
+    const currentHistory = this.history;
     const filtered: AccountHistory<HistoryItem> = {};
 
-    for (const id in current) {
-      const item = current[id];
+    for (const id in currentHistory) {
+      const item = currentHistory[id];
       if (filterFn(item)) {
         filtered[id] = item;
       }
