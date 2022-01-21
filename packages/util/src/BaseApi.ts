@@ -297,16 +297,21 @@ export class BaseApi {
     if (isNotFaucetOperation && signer) {
       history.from = this.address;
     }
-    if (!history.id) {
-      history.startTime = Date.now();
-      history.id = this.encrypt(`${history.startTime}`);
-    }
+
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
     const { account, options } = this.getAccountWithOptions();
     // TODO: Add ERA only for SWAP
     // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
+
     history.txId = signedTx.hash.toString();
+
+    // History id value will be equal to transaction hash
+    if (!history.id) {
+      history.startTime = Date.now();
+      history.id = history.txId;
+    }
+
     const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn);
     const unsub = await extrinsicFn((result: ISubmittableResult) => {
       if (isBridgeOperation(history.type)) {
@@ -354,11 +359,15 @@ export class BaseApi {
         unsub();
       }
     }).catch((e: Error) => {
+      // override history 'id' to 'startTime', because we will delete history 'txId' below
+      history.id = this.encrypt(`${history.startTime}`);
       history.status = TransactionStatus.Error;
       history.endTime = Date.now();
       const errorParts = e.message.split(':');
       const errorInfo = last(errorParts).trim();
       history.errorMessage = errorInfo;
+      // at the moment the history has not yet been saved;
+      // save history and then delete 'txId'
       this.saveHistory(history, {
         wasNotGenerated: true,
       });

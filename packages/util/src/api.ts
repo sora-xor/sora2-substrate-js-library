@@ -66,7 +66,8 @@ export class Api extends BaseApi {
       if (isBridgeOperation(item.type)) {
         bridgeHistory[item.id] = item;
       } else {
-        history[item.id] = item;
+        // 'txId' has higher priority
+        history[item.txId || item.id] = item;
       }
     }
 
