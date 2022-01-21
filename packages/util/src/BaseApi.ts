@@ -147,6 +147,10 @@ export class BaseApi {
     this._history = { ...value };
   }
 
+  public get historyList(): Array<HistoryItem> {
+    return Object.values(this.history);
+  }
+
   public get restored(): boolean {
     if (this.accountStorage) {
       this._restored = JSON.parse(this.accountStorage.get('restored')) || false;

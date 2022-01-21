@@ -28,10 +28,6 @@ export class FaucetApi extends BaseApi {
     );
   }
 
-  public get historyList(): Array<History> {
-    return Object.values(this.history);
-  }
-
   /**
    * **NOT USED** will be removed soon, seems that we don't need it
    * @param assetAddress

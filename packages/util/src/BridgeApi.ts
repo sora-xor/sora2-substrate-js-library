@@ -219,7 +219,7 @@ export class BridgeApi extends BaseApi {
    */
   public async requestFromEth(hash: string, type: RequestType = RequestType.Transfer): Promise<void> {
     assert(this.account, Messages.connectWallet);
-    const historyItem = Object.values(this.history).find((item: BridgeHistory) => item.hash === hash);
+    const historyItem = this.historyList.find((item: BridgeHistory) => item.hash === hash);
     const kind = { [IncomingRequestKind.Transaction]: type };
     await this.submitExtrinsic(
       this.api.tx.ethBridge.requestFromSidechain(hash, kind, this.externalNetwork),
