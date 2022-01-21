@@ -72,7 +72,6 @@ export class BaseApi {
   protected readonly prefix = 69;
   public readonly defaultDEXId = 0;
 
-  public readonly historyNamespace: string;
   private _history: AccountHistory<HistoryItem> = {};
   private _historySyncTimestamp: number = 0;
   private _historySyncOperations: Array<Operation> = [];
@@ -83,9 +82,7 @@ export class BaseApi {
   public accountStorage?: AccountStorage; // account data storage
   public account: CreateResult;
 
-  constructor({ historyNamespace = 'history' } = {}) {
-    this.historyNamespace = historyNamespace;
-  }
+  constructor(public readonly historyNamespace = 'history') {}
 
   public get api(): ApiPromise {
     return connection.api;

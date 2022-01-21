@@ -131,7 +131,7 @@ export class BridgeApi extends BaseApi {
   private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
 
   constructor() {
-    super({ historyNamespace: 'bridgeHistory' });
+    super('bridgeHistory');
   }
 
   /**
