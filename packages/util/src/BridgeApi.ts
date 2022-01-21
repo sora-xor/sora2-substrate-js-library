@@ -3,12 +3,12 @@ import last from 'lodash/fp/last';
 import BigNumber from 'bignumber.js';
 import { assert } from '@polkadot/util';
 
-import { BaseApi, Operation, History, isBridgeOperation } from './BaseApi';
+import { BaseApi, Operation, isBridgeOperation } from './BaseApi';
 import { Messages } from './logger';
 import { getAssets, isNativeAsset } from './assets';
 import { CodecString, FPNumber } from './fp';
-import { encrypt } from './crypto';
 import type { AccountAsset, Asset } from './assets/types';
+import type { History } from './BaseApi';
 
 export interface RegisteredAccountAsset extends AccountAsset {
   externalAddress: string;
@@ -131,7 +131,7 @@ export class BridgeApi extends BaseApi {
   private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
 
   constructor() {
-    super();
+    super('bridgeHistory');
   }
 
   /**
@@ -153,17 +153,13 @@ export class BridgeApi extends BaseApi {
     this._externalNetwork = networkId;
   }
 
-  public get accountHistory(): Array<BridgeHistory> {
-    return (this.history as Array<BridgeHistory>).filter(({ type }) => isBridgeOperation(type));
-  }
-
   public generateHistoryItem(params: BridgeHistory): BridgeHistory | null {
     if (!params.type) {
       return null;
     }
     const historyItem = (params || {}) as BridgeHistory;
     historyItem.startTime = historyItem.startTime || Date.now();
-    historyItem.id = encrypt(`${historyItem.startTime}`);
+    historyItem.id = this.encrypt(`${historyItem.startTime}`);
     historyItem.transactionStep = historyItem.transactionStep || 1;
     historyItem.transactionState = historyItem.transactionState || 'INITIAL';
     this.saveHistory(historyItem);
@@ -175,14 +171,6 @@ export class BridgeApi extends BaseApi {
       return;
     }
     super.saveHistory(history);
-  }
-
-  public getHistory(id: string): BridgeHistory | null {
-    return this.accountHistory.find((item) => item.id === id) ?? null;
-  }
-
-  public clearHistory(): void {
-    this.history = this.history.filter(({ type }) => !isBridgeOperation(type));
   }
 
   private async calcTransferToEthParams(asset: RegisteredAsset, to: string, amount: string | number) {
@@ -230,7 +218,7 @@ export class BridgeApi extends BaseApi {
    */
   public async requestFromEth(hash: string, type: RequestType = RequestType.Transfer): Promise<void> {
     assert(this.account, Messages.connectWallet);
-    const historyItem = this.accountHistory.find((item) => item.hash === hash);
+    const historyItem = this.historyList.find((item: BridgeHistory) => item.hash === hash);
     const kind = { [IncomingRequestKind.Transaction]: type };
     await this.submitExtrinsic(
       this.api.tx.ethBridge.requestFromSidechain(hash, kind, this.externalNetwork),

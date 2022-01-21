@@ -18,7 +18,7 @@ async function main(): Promise<void> {
 
     await delay();
 
-    console.log('Account History', api.accountHistory);
+    console.log('Account History', api.historyList);
 
     const assets = await api.assets.getAssets();
 

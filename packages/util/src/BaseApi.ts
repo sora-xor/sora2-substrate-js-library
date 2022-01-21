@@ -1,5 +1,6 @@
 import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
+import omit from 'lodash/fp/omit';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
@@ -28,6 +29,12 @@ export type SaveHistoryOptions = {
 
 export type NetworkFeesObject = {
   [key in Operation]: CodecString;
+};
+
+export type HistoryItem = History | BridgeHistory | RewardClaimHistory;
+
+export type AccountHistory<T> = {
+  [key: string]: T;
 };
 
 export const isBridgeOperation = (operation: Operation) =>
@@ -65,7 +72,7 @@ export class BaseApi {
   protected readonly prefix = 69;
   public readonly defaultDEXId = 0;
 
-  private _history: Array<History> = [];
+  private _history: AccountHistory<HistoryItem> = {};
   private _historySyncTimestamp: number = 0;
   private _historySyncOperations: Array<Operation> = [];
   private _restored: boolean = false;
@@ -75,7 +82,7 @@ export class BaseApi {
   public accountStorage?: AccountStorage; // account data storage
   public account: CreateResult;
 
-  constructor() {}
+  constructor(public readonly historyNamespace = 'history') {}
 
   public get api(): ApiPromise {
     return connection.api;
@@ -110,7 +117,7 @@ export class BaseApi {
     this.account = null;
     this.accountStorage = null;
     this.signer = null;
-    this.history = [];
+    this.history = {};
     if (this.storage) {
       this.storage.clear();
     }
@@ -125,16 +132,20 @@ export class BaseApi {
   }
 
   // methods for working with history
-  public get history(): Array<History> {
+  public get history(): AccountHistory<HistoryItem> {
     if (this.accountStorage) {
-      this._history = (JSON.parse(this.accountStorage.get('history')) as Array<History>) || [];
+      this._history = (JSON.parse(this.accountStorage.get(this.historyNamespace)) as AccountHistory<HistoryItem>) || {};
     }
     return this._history;
   }
 
-  public set history(value: Array<History>) {
-    this.accountStorage?.set('history', JSON.stringify(value));
-    this._history = [...value];
+  public set history(value: AccountHistory<HistoryItem>) {
+    this.accountStorage?.set(this.historyNamespace, JSON.stringify(value));
+    this._history = { ...value };
+  }
+
+  public get historyList(): Array<HistoryItem> {
+    return Object.values(this.history);
   }
 
   public get restored(): boolean {
@@ -174,16 +185,28 @@ export class BaseApi {
     this._historySyncOperations = [...value];
   }
 
-  public getHistory(id: string): History | null {
-    if (!id) return null;
-
-    return this.history.find((item) => item.id === id) ?? null;
+  public getHistory(id: string): HistoryItem | null {
+    return this.history[id] ?? null;
   }
 
-  public saveHistory(historyItem: History, options?: SaveHistoryOptions): void {
+  public getFilteredHistory(filterFn: (item: HistoryItem) => boolean): AccountHistory<HistoryItem> {
+    const currentHistory = this.history;
+    const filtered: AccountHistory<HistoryItem> = {};
+
+    for (const id in currentHistory) {
+      const item = currentHistory[id];
+      if (filterFn(item)) {
+        filtered[id] = item;
+      }
+    }
+
+    return filtered;
+  }
+
+  public saveHistory(historyItem: HistoryItem, options?: SaveHistoryOptions): void {
     if (!historyItem || !historyItem.id) return;
 
-    let historyCopy: Array<History>;
+    let historyCopy: AccountHistory<HistoryItem>;
     let addressStorage: Storage;
 
     const hasAccessToStorage = !!this.storage;
@@ -197,24 +220,22 @@ export class BaseApi {
 
     if (needToUpdateAddressStorage) {
       addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress));
-      historyCopy = JSON.parse(addressStorage.get('history')) || [];
+      historyCopy = JSON.parse(addressStorage.get(this.historyNamespace)) || {};
     } else {
-      historyCopy = [...this.history];
+      historyCopy = { ...this.history };
     }
 
-    const index = historyCopy.findIndex((item) => item.id === historyItem.id);
-
-    const item = ~index ? { ...historyCopy[index], ...historyItem } : historyItem;
+    const item = { ...(historyCopy[historyItem.id] || {}), ...historyItem };
 
     if (options?.wasNotGenerated) {
       // Tx was failed on the static validation and wasn't generated in the network
       delete item.txId;
     }
 
-    ~index ? (historyCopy[index] = item) : historyCopy.push(item);
+    historyCopy[historyItem.id] = item;
 
     if (needToUpdateAddressStorage && addressStorage) {
-      addressStorage.set('history', JSON.stringify(historyCopy));
+      addressStorage.set(this.historyNamespace, JSON.stringify(historyCopy));
     } else {
       this.history = historyCopy;
     }
@@ -223,7 +244,11 @@ export class BaseApi {
   public removeHistory(id: string): void {
     if (!id) return;
 
-    this.history = this.history.filter((item) => item.id !== id);
+    this.history = omit([id], this.history);
+  }
+
+  public clearHistory(): void {
+    this.history = {};
   }
 
   /**
@@ -261,7 +286,7 @@ export class BaseApi {
   public async submitExtrinsic(
     extrinsic: SubmittableExtrinsic,
     signer: KeyringPair,
-    historyData?: History | BridgeHistory | RewardClaimHistory,
+    historyData?: HistoryItem,
     unsigned = false
   ): Promise<void> {
     const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
@@ -269,16 +294,21 @@ export class BaseApi {
     if (isNotFaucetOperation && signer) {
       history.from = this.address;
     }
-    if (!history.id) {
-      history.startTime = Date.now();
-      history.id = encrypt(`${history.startTime}`);
-    }
+
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
     const { account, options } = this.getAccountWithOptions();
     // TODO: Add ERA only for SWAP
     // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
+
     history.txId = signedTx.hash.toString();
+
+    // History id value will be equal to transaction hash
+    if (!history.id) {
+      history.startTime = Date.now();
+      history.id = history.txId;
+    }
+
     const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn);
     const unsub = await extrinsicFn((result: ISubmittableResult) => {
       if (isBridgeOperation(history.type)) {
@@ -326,11 +356,15 @@ export class BaseApi {
         unsub();
       }
     }).catch((e: Error) => {
+      // override history 'id' to 'startTime', because we will delete history 'txId' below
+      history.id = this.encrypt(`${history.startTime}`);
       history.status = TransactionStatus.Error;
       history.endTime = Date.now();
       const errorParts = e.message.split(':');
       const errorInfo = last(errorParts).trim();
       history.errorMessage = errorInfo;
+      // at the moment the history has not yet been saved;
+      // save history and then delete 'txId'
       this.saveHistory(history, {
         wasNotGenerated: true,
       });
@@ -549,6 +583,15 @@ export class BaseApi {
     const publicKey = decodeAddress(address, false);
 
     return Buffer.from(publicKey).toString('hex');
+  }
+
+  /**
+   * Generate unique string from value
+   * @param value
+   * @returns
+   */
+  public encrypt(value: string): string {
+    return encrypt(value);
   }
 }
 

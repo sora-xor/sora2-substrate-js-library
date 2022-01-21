@@ -20,6 +20,7 @@ import { AssetsModule } from './assets';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
+import type { HistoryItem } from './BaseApi';
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
@@ -37,38 +38,56 @@ export class Api extends BaseApi {
   public readonly referralSystem: ReferralSystemModule = new ReferralSystemModule(this);
   public readonly assets: AssetsModule = new AssetsModule(this);
 
-  // # History methods
-
-  public get accountHistory(): Array<History> {
-    return this.history.filter(({ type }) => !isBridgeOperation(type));
-  }
-
   public initAccountStorage() {
     super.initAccountStorage();
     this.bridge.initAccountStorage();
 
-    // transfer old history to accountStorage
-    if (this.storage) {
-      const oldHistory = JSON.parse(this.storage.get('history')) || [];
+    // since 1.7.15 history should be saved as object
+    if (this.accountStorage) {
+      const oldHistory = this.history;
 
-      if (oldHistory.length) {
-        this.history = oldHistory;
+      if (Array.isArray(oldHistory)) {
+        this.runHistoryListToObjectMigration(oldHistory);
       }
-
-      this.storage.remove('history');
     }
   }
 
+  // # History methods
   /**
-   * Remove all history except bridge history
+   * Save history items in storage as object
+   * @param list array of history items
+   */
+  private runHistoryListToObjectMigration(list: Array<HistoryItem>) {
+    const history = {};
+    const bridgeHistory = {};
+
+    for (const item of list) {
+      if (!item.id) continue;
+      if (isBridgeOperation(item.type)) {
+        bridgeHistory[item.id] = item;
+      } else {
+        // 'txId' has higher priority
+        history[item.txId || item.id] = item;
+      }
+    }
+
+    this.history = history;
+    this.bridge.history = bridgeHistory;
+  }
+
+  /**
+   * Remove all history
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
   public clearHistory(assetAddress?: string) {
-    this.history = this.history.filter(
-      (item) =>
-        isBridgeOperation(item.type) ||
-        (!!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress))
-    );
+    if (assetAddress) {
+      const filterFn = (item: HistoryItem) =>
+        !!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress);
+
+      this.history = this.getFilteredHistory(filterFn);
+    } else {
+      super.clearHistory();
+    }
   }
 
   /**
