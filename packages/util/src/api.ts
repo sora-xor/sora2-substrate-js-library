@@ -20,8 +20,7 @@ import { AssetsModule } from './assets';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
-import type { AccountHistory, HistoryItem } from './BaseApi';
-import type { RewardClaimHistory } from './rewards/types';
+import type { HistoryItem } from './BaseApi';
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
@@ -43,37 +42,37 @@ export class Api extends BaseApi {
     super.initAccountStorage();
     this.bridge.initAccountStorage();
 
-    // transfer old history to accountStorage
-    if (this.storage) {
-      const oldHistory = JSON.parse(this.storage.get('history')) || [];
-
-      if (oldHistory.length) {
-        this.history = oldHistory;
-      }
-
-      this.storage.remove('history');
-    }
     // since 1.7.15 history should be saved as object
-    if (this.accountStorage && Array.isArray(this.history)) {
-      const history = {};
-      const bridgeHistory = {};
-      const current = [...this.history];
+    if (this.accountStorage) {
+      const oldHistory = this.history;
 
-      for (const item of current) {
-        if (!item.id) continue;
-        if (isBridgeOperation(item.type)) {
-          bridgeHistory[item.id] = item;
-        } else {
-          history[item.id] = item;
-        }
+      if (Array.isArray(oldHistory)) {
+        this.runHistoryListToObjectMigration(oldHistory);
       }
-
-      this.history = history;
-      this.bridge.history = bridgeHistory;
     }
   }
 
   // # History methods
+  /**
+   * Save history items in storage as object
+   * @param list array of history items
+   */
+  private runHistoryListToObjectMigration(list: Array<HistoryItem>) {
+    const history = {};
+    const bridgeHistory = {};
+
+    for (const item of list) {
+      if (!item.id) continue;
+      if (isBridgeOperation(item.type)) {
+        bridgeHistory[item.id] = item;
+      } else {
+        history[item.id] = item;
+      }
+    }
+
+    this.history = history;
+    this.bridge.history = bridgeHistory;
+  }
 
   /**
    * Remove all history

@@ -299,7 +299,7 @@ export class BaseApi {
     }
     if (!history.id) {
       history.startTime = Date.now();
-      history.id = encrypt(`${history.startTime}`);
+      history.id = this.encrypt(`${history.startTime}`);
     }
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
     const { account, options } = this.getAccountWithOptions();
@@ -577,6 +577,15 @@ export class BaseApi {
     const publicKey = decodeAddress(address, false);
 
     return Buffer.from(publicKey).toString('hex');
+  }
+
+  /**
+   * Generate unique string from value
+   * @param value
+   * @returns
+   */
+  public encrypt(value: string): string {
+    return encrypt(value);
   }
 }
 
