@@ -48,6 +48,8 @@ export class Api extends BaseApi {
 
       if (Array.isArray(oldHistory)) {
         this.runHistoryListToObjectMigration(oldHistory);
+        this.historySyncTimestamp = 0;
+        this.accountStorage.remove('historySyncOperations');
       }
     }
   }

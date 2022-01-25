@@ -74,7 +74,6 @@ export class BaseApi {
 
   private _history: AccountHistory<HistoryItem> = {};
   private _historySyncTimestamp: number = 0;
-  private _historySyncOperations: Array<Operation> = [];
   private _restored: boolean = false;
 
   protected signer?: Signer;
@@ -172,19 +171,6 @@ export class BaseApi {
     this._historySyncTimestamp = value;
   }
 
-  public get historySyncOperations(): Array<Operation> {
-    if (this.accountStorage) {
-      this._historySyncOperations =
-        (JSON.parse(this.accountStorage.get('historySyncOperations')) as Array<Operation>) || [];
-    }
-    return this._historySyncOperations;
-  }
-
-  public set historySyncOperations(value: Array<Operation>) {
-    this.accountStorage?.set('historySyncOperations', JSON.stringify(value));
-    this._historySyncOperations = [...value];
-  }
-
   public getHistory(id: string): HistoryItem | null {
     return this.history[id] ?? null;
   }
@@ -241,10 +227,10 @@ export class BaseApi {
     }
   }
 
-  public removeHistory(id: string): void {
-    if (!id) return;
+  public removeHistory(...ids: Array<string>): void {
+    if (!ids.length) return;
 
-    this.history = omit([id], this.history);
+    this.history = omit(ids, this.history);
   }
 
   public clearHistory(): void {
