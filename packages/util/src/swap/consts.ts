@@ -17,14 +17,9 @@ export class Consts {
 
   static readonly XYK_FEE = new FPNumber(0.003);
   static readonly XST_FEE = new FPNumber(0.007);
-  static readonly TBC_FEE = Consts.XYK_FEE;
+  static readonly TBC_FEE = new FPNumber(0.003);
   /** Max `Rust` number value */
   static readonly MAX = new FPNumber(MaxTotalSupply);
-
-  // TBC
-  static readonly INITIAL_PRICE = new FPNumber(634);
-  static readonly PRICE_CHANGE_COEFF = new FPNumber(1337);
-  static readonly SELL_PRICE_COEFF = new FPNumber(0.8);
 
   /** 4 registered - pswap and val which are not incentivized */
   static readonly incentivizedCurrenciesNum = new FPNumber(2);

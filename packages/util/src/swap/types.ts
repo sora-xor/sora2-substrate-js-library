@@ -32,6 +32,13 @@ export type QuotePayload = {
   issuances: {
     [key: string]: CodecString;
   };
+  consts: {
+    tbc: {
+      initialPrice: CodecString;
+      priceChangeStep: CodecString;
+      sellPriceCoefficient: CodecString;
+    };
+  };
 };
 
 export type Distribution = {
