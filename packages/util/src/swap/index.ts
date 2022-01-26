@@ -281,7 +281,13 @@ export class SwapModule {
         ]
       : [];
 
-    return combineLatest([...assetsIssuances, ...assetsPrices, ...tbcReserves, ...xykReserves]).pipe(
+    const tbcConsts = [
+      toCodec(this.root.apiRx.query.multicollateralBondingCurvePool.initialPrice()),
+      toCodec(this.root.apiRx.query.multicollateralBondingCurvePool.priceChangeStep()),
+      toCodec(this.root.apiRx.query.multicollateralBondingCurvePool.sellPriceCoefficient()),
+    ];
+
+    return combineLatest([...assetsIssuances, ...assetsPrices, ...tbcReserves, ...xykReserves, ...tbcConsts]).pipe(
       map((data) => {
         let position = assetsIssuances.length;
 
@@ -289,6 +295,10 @@ export class SwapModule {
         const prices: Array<string> = data.slice(position, (position += assetsPrices.length));
         const tbc: Array<string> = data.slice(position, (position += tbcReserves.length));
         const xyk: Array<[string, string]> = data.slice(position, (position += xykReserves.length));
+        const [initialPrice, priceChangeStep, sellPriceCoefficient] = data.slice(
+          position,
+          (position += tbcConsts.length)
+        );
 
         const payload: QuotePayload = {
           reserves: {
@@ -297,6 +307,13 @@ export class SwapModule {
           },
           prices: combineValuesWithKeys(prices, assetsWithPrices),
           issuances: combineValuesWithKeys(issuances, assetsWithIssuances),
+          consts: {
+            tbc: {
+              initialPrice,
+              priceChangeStep,
+              sellPriceCoefficient,
+            },
+          },
         };
 
         return payload;

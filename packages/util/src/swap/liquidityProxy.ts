@@ -89,7 +89,9 @@ const tbcBuyFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
   const xorIssuance = FPNumber.fromCodecValue(payload.issuances[XOR.address]);
   const xorPrice = FPNumber.fromCodecValue(payload.prices[XOR.address]);
   const xstXorLiability = safeDivide(xstusdIssuance, xorPrice);
-  return safeDivide(xorIssuance.add(xstXorLiability).add(delta), Consts.PRICE_CHANGE_COEFF).add(Consts.INITIAL_PRICE);
+  const initialPrice = FPNumber.fromCodecValue(payload.consts.tbc.initialPrice);
+  const priceChangeStep = FPNumber.fromCodecValue(payload.consts.tbc.priceChangeStep);
+  return safeDivide(xorIssuance.add(xstXorLiability).add(delta), priceChangeStep).add(initialPrice);
 };
 
 /**
@@ -102,8 +104,9 @@ const tbcBuyFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
  */
 const tbcSellFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
   const buyFunctionResult = tbcBuyFunction(delta, payload);
+  const sellPriceCoefficient = FPNumber.fromCodecValue(payload.consts.tbc.sellPriceCoefficient);
 
-  return buyFunctionResult.mul(Consts.SELL_PRICE_COEFF);
+  return buyFunctionResult.mul(sellPriceCoefficient);
 };
 
 /**
@@ -114,9 +117,10 @@ const tbcSellFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
  */
 const idealReservesReferencePrice = (delta: FPNumber, payload: QuotePayload): FPNumber => {
   const xorIssuance = FPNumber.fromCodecValue(payload.issuances[XOR.address]);
+  const initialPrice = FPNumber.fromCodecValue(payload.consts.tbc.initialPrice);
   const currentState = tbcBuyFunction(delta, payload);
 
-  return safeDivide(Consts.INITIAL_PRICE.add(currentState), new FPNumber(2)).mul(xorIssuance.add(delta));
+  return safeDivide(initialPrice.add(currentState), new FPNumber(2)).mul(xorIssuance.add(delta));
 };
 
 /**
@@ -272,14 +276,13 @@ const tbcBuyPrice = (
 ): FPNumber => {
   const currentState = tbcBuyFunction(FPNumber.ZERO, payload);
   const collateralPrice = tbcReferencePrice(collateralAsset, payload);
+  const priceChangeStep = FPNumber.fromCodecValue(payload.consts.tbc.priceChangeStep);
 
   if (isDesiredInput) {
     const collateralReferenceIn = collateralPrice.mul(amount);
-    const underPow = currentState.mul(Consts.PRICE_CHANGE_COEFF).mul(new FPNumber(2));
-    const underSqrt = underPow
-      .mul(underPow)
-      .add(new FPNumber(8).mul(Consts.PRICE_CHANGE_COEFF).mul(collateralReferenceIn));
-    const xorOut = safeDivide(underSqrt.sqrt(), new FPNumber(2)).sub(Consts.PRICE_CHANGE_COEFF.mul(currentState));
+    const underPow = currentState.mul(priceChangeStep).mul(new FPNumber(2));
+    const underSqrt = underPow.mul(underPow).add(new FPNumber(8).mul(priceChangeStep).mul(collateralReferenceIn));
+    const xorOut = safeDivide(underSqrt.sqrt(), new FPNumber(2)).sub(priceChangeStep.mul(currentState));
     return getMaxPositive(xorOut);
   } else {
     const newState = tbcBuyFunction(amount, payload);
