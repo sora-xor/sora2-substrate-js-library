@@ -47,21 +47,29 @@ export class RewardsModule {
     return rewardInfo;
   }
 
-  private prepareRewardsInfo(
+  private prepareVestedRewardsInfo(
     limit: CodecString | number,
     total: CodecString | number,
     rewards: any
-  ): RewardsInfo | null {
+  ): RewardsInfo {
     const asset = KnownAssets.get(KnownSymbols.PSWAP);
-    const buffer = [];
+    // reward table with zero amount for each event
+    const buffer = [
+      RewardingEvents.BuyOnBondingCurve,
+      RewardingEvents.LiquidityProvisionFarming,
+      RewardingEvents.MarketMakerVolume,
+    ].reduce((result, key) => {
+      return {
+        ...result,
+        [key]: this.prepareRewardInfo(key, 0),
+      };
+    }, {});
 
+    // update reward table with real values
     for (const [event, balance] of rewards.entries()) {
-      buffer.push(this.prepareRewardInfo(event.toString(), balance));
+      const key = event.toString();
+      buffer[key] = this.prepareRewardInfo(key, balance);
     }
-
-    const claimableRewards = buffer.filter((item) => this.isClaimableReward(item));
-
-    if (claimableRewards.length === 0) return null;
 
     const fpLimit = new FPNumber(limit, asset.decimals);
     const fpTotal = new FPNumber(total, asset.decimals);
@@ -69,7 +77,7 @@ export class RewardsModule {
     return {
       limit: fpLimit.toCodecString(),
       total: fpTotal.toCodecString(),
-      rewards: claimableRewards,
+      rewards: Object.values(buffer),
     };
   }
 
@@ -93,27 +101,25 @@ export class RewardsModule {
   }
 
   /**
-   * Check rewards for providing liquidity
-   * @returns rewards array with not zero amount
+   * Check reward for providing liquidity
+   * @returns liquidity provision RewardInfo
    */
-  public async checkLiquidityProvision(): Promise<Array<RewardInfo>> {
+  public async checkLiquidityProvision(): Promise<RewardInfo> {
     assert(this.root.account, Messages.connectWallet);
 
     const { address } = this.root.account.pair;
 
     const liquidityProvisionAmount = await (this.root.api.rpc as any).pswapDistribution.claimableAmount(address); // Balance
 
-    const rewards = [this.prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount)].filter(
-      (item) => this.isClaimableReward(item)
-    );
+    const reward = this.prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount);
 
-    return rewards;
+    return reward;
   }
 
   /**
    * Check vested rewards
    */
-  public async checkVested(): Promise<RewardsInfo | null> {
+  public async checkVested(): Promise<RewardsInfo> {
     assert(this.root.account, Messages.connectWallet);
 
     const { address } = this.root.account.pair;
@@ -124,7 +130,7 @@ export class RewardsModule {
       rewards, // "BTreeMap<RewardReason, Balance>"
     } = await (this.root.api.query as any).vestedRewards.rewards(address);
 
-    const rewardsInfo = this.prepareRewardsInfo(limit, total, rewards);
+    const rewardsInfo = this.prepareVestedRewardsInfo(limit, total, rewards);
 
     return rewardsInfo;
   }

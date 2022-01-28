@@ -4,8 +4,8 @@ export enum RewardingEvents {
   NftAirdrop = 'NftAirdrop',
   LiquidityProvision = 'LiquidityProvision',
   BuyOnBondingCurve = 'BuyOnBondingCurve',
-  LiquidityProvisionFarming = 'LiquidityProvisionFarming', // not used yet
-  MarketMakerVolume = 'MarketMakerVolume', // not used yet
+  LiquidityProvisionFarming = 'LiquidityProvisionFarming',
+  MarketMakerVolume = 'MarketMakerVolume',
   Unspecified = 'Unspecified',
 }
 
