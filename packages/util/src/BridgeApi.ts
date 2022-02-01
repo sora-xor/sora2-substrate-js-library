@@ -2,6 +2,9 @@ import first from 'lodash/fp/first';
 import last from 'lodash/fp/last';
 import BigNumber from 'bignumber.js';
 import { assert } from '@polkadot/util';
+import { map } from '@polkadot/x-rxjs/operators';
+import { combineLatest } from '@polkadot/x-rxjs';
+import type { Observable } from '@polkadot/types/types';
 
 import { BaseApi, Operation, isBridgeOperation } from './BaseApi';
 import { Messages } from './logger';
@@ -393,5 +396,44 @@ export class BridgeApi extends BaseApi {
   public async getApprovals(hashes: Array<string>) {
     const data = (await (this.api.rpc as any).ethBridge.getApprovals(hashes, this.externalNetwork)).toJSON();
     return this.getData(data);
+  }
+
+  /**
+   * Creates a subscription to bridge request status
+   * @param networkId external network id
+   * @param hash sora or evm transaction hash
+   * @returns BridgeRequest status
+   */
+  public subscribeOnRequestStatus(networkId: number, hash: string): Observable<BridgeTxStatus | null> {
+    return this.apiRx.query.ethBridge
+      .requestStatuses(networkId, hash)
+      .pipe(map((data) => data.toHuman() as BridgeTxStatus));
+  }
+
+  /**
+   * Creates a subscription to bridge request data
+   * @param networkId external network id
+   * @param hash sora or evm transaction hash
+   * @returns BridgeRequest not formatted body
+   */
+  public subscribeOnRequestData(networkId: number, hash: string): Observable<any> {
+    return this.apiRx.query.ethBridge.requests(networkId, hash).pipe(map((data) => data.toJSON()));
+  }
+
+  /**
+   * Creates a subscription to bridge request
+   * @param networkId external network id
+   * @param hash sora or evm transaction hash
+   * @returns BridgeRequest if request is registered
+   */
+  public subscribeOnRequest(networkId: number, hash: string): Observable<BridgeRequest | null> {
+    const data = this.subscribeOnRequestData(networkId, hash);
+    const status = this.subscribeOnRequestStatus(networkId, hash);
+
+    return combineLatest([data, status]).pipe(
+      map(([data, status]) => {
+        return !!data && !!status ? this.formatRequest([data, status]) : null;
+      })
+    );
   }
 }
