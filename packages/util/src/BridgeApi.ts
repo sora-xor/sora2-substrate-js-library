@@ -448,7 +448,7 @@ export class BridgeApi extends BaseApi {
   public subscribeOnRequestStatus(networkId: number, hash: string): Observable<BridgeTxStatus | null> {
     return this.apiRx.query.ethBridge
       .requestStatuses(networkId, hash)
-      .pipe(map((data) => data.toHuman() as BridgeTxStatus));
+      .pipe(map((data) => (data.toHuman() as BridgeTxStatus) || null));
   }
 
   /**
@@ -461,7 +461,7 @@ export class BridgeApi extends BaseApi {
     return this.apiRx.query.ethBridge.requests(networkId, hash).pipe(
       map((data) => {
         const requestData = data.toJSON() as unknown;
-        return requestData as OffchainRequest;
+        return (requestData as OffchainRequest) || null;
       })
     );
   }
