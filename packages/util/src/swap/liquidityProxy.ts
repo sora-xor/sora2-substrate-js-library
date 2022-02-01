@@ -401,7 +401,7 @@ const xstReferencePrice = (asset: Asset, payload: QuotePayload): FPNumber => {
     const avgPrice = FPNumber.fromCodecValue(payload.prices[asset.address]);
 
     if (isXorAsset(asset)) {
-      return FPNumber.max(avgPrice, FPNumber.HUNDRED);
+      return FPNumber.max(avgPrice, Consts.XOR_MIN_PRICE);
     }
 
     return avgPrice;
