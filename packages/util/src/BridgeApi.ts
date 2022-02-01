@@ -2,6 +2,9 @@ import first from 'lodash/fp/first';
 import last from 'lodash/fp/last';
 import BigNumber from 'bignumber.js';
 import { assert } from '@polkadot/util';
+import { map } from '@polkadot/x-rxjs/operators';
+import { combineLatest } from '@polkadot/x-rxjs';
+import type { Observable } from '@polkadot/types/types';
 
 import { BaseApi, Operation, isBridgeOperation } from './BaseApi';
 import { Messages } from './logger';
@@ -113,6 +116,47 @@ export interface BridgeApprovedRequest {
   s: Array<string>;
   v: Array<number>;
 }
+
+export interface OutgoingOffchainRequest {
+  [BridgeDirection.Outgoing]: [
+    {
+      [RequestType.Transfer]: {
+        from: string;
+        to: string;
+        asset_id: string;
+        amount: number;
+        nonce: number;
+        network_id: number;
+        timepoint: {
+          height: {
+            thischain: number;
+          };
+          index: number;
+        };
+      };
+    },
+    string
+  ];
+}
+
+export interface LoadIncomingOffchainRequest {
+  [BridgeDirection.LoadIncoming]: {
+    [IncomingRequestKind.Transaction]: {
+      author: string;
+      hash: string;
+      kind: string;
+      network_id: number;
+      timepoint: {
+        height: {
+          sidechain: number;
+        };
+        index: number;
+      };
+    };
+  };
+}
+
+export type OffchainRequest = OutgoingOffchainRequest | LoadIncomingOffchainRequest;
 
 /**
  * Bridge api implementation.
@@ -393,5 +437,49 @@ export class BridgeApi extends BaseApi {
   public async getApprovals(hashes: Array<string>) {
     const data = (await (this.api.rpc as any).ethBridge.getApprovals(hashes, this.externalNetwork)).toJSON();
     return this.getData(data);
+  }
+
+  /**
+   * Creates a subscription to bridge request status
+   * @param networkId external network id
+   * @param hash sora or evm transaction hash
+   * @returns BridgeRequest status
+   */
+  public subscribeOnRequestStatus(networkId: number, hash: string): Observable<BridgeTxStatus | null> {
+    return this.apiRx.query.ethBridge
+      .requestStatuses(networkId, hash)
+      .pipe(map((data) => (data.toHuman() as BridgeTxStatus) || null));
+  }
+
+  /**
+   * Creates a subscription to bridge request data
+   * @param networkId external network id
+   * @param hash sora or evm transaction hash
+   * @returns BridgeRequest not formatted body
+   */
+  public subscribeOnRequestData(networkId: number, hash: string): Observable<OffchainRequest | null> {
+    return this.apiRx.query.ethBridge.requests(networkId, hash).pipe(
+      map((data) => {
+        const requestData = data.toJSON() as unknown;
+        return (requestData as OffchainRequest) || null;
+      })
+    );
+  }
+
+  /**
+   * Creates a subscription to bridge request
+   * @param networkId external network id
+   * @param hash sora or evm transaction hash
+   * @returns BridgeRequest if request is registered
+   */
+  public subscribeOnRequest(networkId: number, hash: string): Observable<BridgeRequest | null> {
+    const data = this.subscribeOnRequestData(networkId, hash);
+    const status = this.subscribeOnRequestStatus(networkId, hash);
+
+    return combineLatest([data, status]).pipe(
+      map(([data, status]) => {
+        return !!data && !!status ? this.formatRequest([data, status]) : null;
+      })
+    );
   }
 }
