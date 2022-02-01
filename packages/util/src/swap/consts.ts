@@ -15,9 +15,10 @@ export class Consts {
   /** XST-USD token */
   static readonly XSTUSD = KnownAssets.get(KnownSymbols.XSTUSD);
 
+  /** XYK, TBC, XST fees the same */
   static readonly XYK_FEE = new FPNumber(0.003);
-  static readonly XST_FEE = new FPNumber(0.003);
-  static readonly TBC_FEE = new FPNumber(0.003);
+  static readonly XST_FEE = Consts.XYK_FEE;
+  static readonly TBC_FEE = Consts.XYK_FEE;
   /** Max `Rust` number value */
   static readonly MAX = new FPNumber(MaxTotalSupply);
 
