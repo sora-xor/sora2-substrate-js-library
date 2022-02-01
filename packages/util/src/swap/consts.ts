@@ -16,7 +16,7 @@ export class Consts {
   static readonly XSTUSD = KnownAssets.get(KnownSymbols.XSTUSD);
 
   static readonly XYK_FEE = new FPNumber(0.003);
-  static readonly XST_FEE = new FPNumber(0.007);
+  static readonly XST_FEE = new FPNumber(0.003);
   static readonly TBC_FEE = new FPNumber(0.003);
   /** Max `Rust` number value */
   static readonly MAX = new FPNumber(MaxTotalSupply);
