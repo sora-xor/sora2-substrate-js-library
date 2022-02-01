@@ -117,6 +117,47 @@ export interface BridgeApprovedRequest {
   v: Array<number>;
 }
 
+export interface OutgoingOffchainRequest {
+  [BridgeDirection.Outgoing]: [
+    {
+      [RequestType.Transfer]: {
+        from: string;
+        to: string;
+        asset_id: string;
+        amount: number;
+        nonce: number;
+        network_id: number;
+        timepoint: {
+          height: {
+            thischain: number;
+          };
+          index: number;
+        };
+      };
+    },
+    string
+  ];
+}
+
+export interface LoadIncomingOffchainRequest {
+  [BridgeDirection.LoadIncoming]: {
+    [IncomingRequestKind.Transaction]: {
+      author: string;
+      hash: string;
+      kind: string;
+      network_id: number;
+      timepoint: {
+        height: {
+          sidechain: number;
+        };
+        index: number;
+      };
+    };
+  };
+}
+
+export type OffchainRequest = OutgoingOffchainRequest | LoadIncomingOffchainRequest;
+
 /**
  * Bridge api implementation.
  *
@@ -416,8 +457,13 @@ export class BridgeApi extends BaseApi {
    * @param hash sora or evm transaction hash
    * @returns BridgeRequest not formatted body
    */
-  public subscribeOnRequestData(networkId: number, hash: string): Observable<any> {
-    return this.apiRx.query.ethBridge.requests(networkId, hash).pipe(map((data) => data.toJSON()));
+  public subscribeOnRequestData(networkId: number, hash: string): Observable<OffchainRequest | null> {
+    return this.apiRx.query.ethBridge.requests(networkId, hash).pipe(
+      map((data) => {
+        const requestData = data.toJSON() as unknown;
+        return requestData as OffchainRequest;
+      })
+    );
   }
 
   /**
