@@ -29,3 +29,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw*
+
+# CSV files
+*.csv
+!scripts/example.csv
