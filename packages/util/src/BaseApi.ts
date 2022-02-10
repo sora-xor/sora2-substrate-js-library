@@ -404,8 +404,8 @@ export class BaseApi {
         extrinsicParams = params[0].args;
         break;
       case Operation.TransferAll:
-        extrinsic = this.api.tx.utility.batchAll;
-        extrinsicParams = params;
+        extrinsic = params[0];
+        extrinsicParams = null;
         break;
       case Operation.SwapAndSend:
         extrinsic = this.api.tx.utility.batchAll;
@@ -429,7 +429,8 @@ export class BaseApi {
         throw new Error('Unknown function');
     }
     const { account, options } = this.getAccountWithOptions();
-    const res = await (extrinsic(...extrinsicParams) as SubmittableExtrinsic).paymentInfo(account, options);
+    const tx = type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic);
+    const res = await tx.paymentInfo(account, options);
     return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
   }
 
@@ -538,6 +539,10 @@ export class BaseApi {
     }
   }
 
+  /**
+   * Format address
+   * @param withSoraPrefix `true` by default
+   */
   public formatAddress(address: string, withSoraPrefix = true): string {
     const publicKey = decodeAddress(address, false);
 

@@ -6,6 +6,7 @@ import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, Observable } from '@polkadot/types/types';
+import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 
 import { decrypt, encrypt } from './crypto';
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi';
@@ -299,34 +300,67 @@ export class Api extends BaseApi {
     );
   }
 
-  private async prepareTransferAllTxs(data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>) {
-    assert(this.account, Messages.connectWallet);
+  /**
+   * Returns batch tx
+   * @param data List with data for Transfer All Tx
+   */
+  public prepareTransferAllAsMstCall(
+    data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>
+  ): SubmittableExtrinsic {
     assert(data.length, Messages.noTransferData);
 
-    return data.map((item) => {
+    const txs = data.map((item) => {
       return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString());
     });
-  }
-
-  public async getTransferAllNetworkFee(
-    data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>
-  ): Promise<CodecString> {
-    const transactions = await this.prepareTransferAllTxs(data);
-    return await this.getNetworkFee(Operation.TransferAll, transactions);
+    return this.api.tx.utility.batchAll(txs);
   }
 
   /**
-   * Transfer all data from array
-   * @param data Transfer data
+   * Returns the final extrinsic for Trnaser All MST transaction
+   * @param call `api.prepareTransferAllAsMstCall` result
+   * @param threshold Minimum number of signers
+   * @param coSigners List of co-signers
    */
-  public async transferAll(
-    data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>
-  ): Promise<void> {
-    const transactions = await this.prepareTransferAllTxs(data);
+  public prepareTransferAllAsMstExtrinsic(
+    call: SubmittableExtrinsic,
+    threshold: number,
+    coSigners: Array<string>
+  ): SubmittableExtrinsic {
+    assert(this.account, Messages.connectWallet);
+    const MAX_WEIGHT = 640000000;
 
-    await this.submitExtrinsic(this.api.tx.utility.batchAll(transactions), this.account.pair, {
+    return this.api.tx.multisig.approveAsMulti(threshold, coSigners, null, call.method.hash, MAX_WEIGHT);
+  }
+
+  /**
+   * Get network fee for Transfer All MST Tx
+   * @param extrinsic `api.prepareTransferAllAsMstExtrinsic` result
+   */
+  public async getTransferAllAsMstNetworkFee(extrinsic: SubmittableExtrinsic): Promise<CodecString> {
+    return await this.getNetworkFee(Operation.TransferAll, extrinsic);
+  }
+
+  /**
+   * Transfer all data from array as MST
+   * @param extrinsic `api.prepareTransferAllAsMstExtrinsic` result
+   */
+  public async transferAllAsMst(extrinsic: SubmittableExtrinsic): Promise<void> {
+    await this.submitExtrinsic(extrinsic, this.account.pair, {
       type: Operation.TransferAll,
     });
+  }
+
+  /**
+   * Get the last (frist from array of multisigns) pending TX from MST
+   * @param mstAccount MST account
+   */
+  public async getLastMstPendingTx(mstAccount: string): Promise<string | null> {
+    try {
+      const pendingData = await this.api.query.multisig.multisigs.entries(mstAccount);
+      return pendingData.map(([item, _]) => item.args[1].toString())[0];
+    } catch {
+      return null;
+    }
   }
 
   public getSystemBlockNumberObservable(): Observable<string> {
