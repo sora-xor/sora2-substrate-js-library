@@ -455,12 +455,7 @@ export class BaseApi {
       case Operation.EthBridgeOutgoing:
         return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0);
       case Operation.RegisterAsset:
-        try {
-          return this.api.tx.assets.register('', '', '0', false, false, null, null);
-        } catch (error) {
-          // TODO: remove this hack when nft tokens will be supported
-          return this.api.tx.assets.register('', '', '0', false);
-        }
+        return this.api.tx.assets.register('', '', '0', false, false, null, null);
       case Operation.RemoveLiquidity:
         return this.api.tx.poolXyk.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0');
       case Operation.Swap:
@@ -613,7 +608,8 @@ export enum Operation {
   ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards',
   /** it's used for calc network fee */
   ClaimExternalRewards = 'ClaimExternalRewards',
-  TransferAll = 'TransferAll', // Batch with transfers
+  /** it's used for internal needs as the MST batch with transfers  */
+  TransferAll = 'TransferAll',
   SwapAndSend = 'SwapAndSend',
   ReferralReserveXor = 'ReferralReserveXor',
   ReferralUnreserveXor = 'ReferralUnreserveXor',
