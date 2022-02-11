@@ -126,13 +126,16 @@ export class Api extends BaseApi {
 
   /**
    * The first method you should run. Includes initialization process
+   * @param withKeyringLoading `true` by default
    */
-  public initialize(): void {
+  public initialize(withKeyringLoading = true): void {
     const address = this.storage?.get('address');
     const password = this.storage?.get('password');
     const name = this.storage?.get('name');
     const isExternal = Boolean(this.storage?.get('isExternal'));
-    keyring.loadAll({ type: KeyringType });
+    if (withKeyringLoading) {
+      keyring.loadAll({ type: KeyringType });
+    }
     if (!address) {
       return;
     }
