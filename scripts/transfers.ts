@@ -113,9 +113,9 @@ ______________________________________________________________\n`
   console.log('______________________________________________________________');
   console.log(`Your Multisig Address: ${multisig}\n`);
   // Display network fee & MST TX preparation
-  const call = api.prepareTransferAllAsMstCall(transferParams);
-  const extrinsic = api.prepareTransferAllAsMstExtrinsic(call, threshold, coSigners);
-  const fee = await api.getTransferAllAsMstNetworkFee(extrinsic);
+  const call = api.mstTransfers.prepareCall(transferParams);
+  const extrinsic = api.mstTransfers.prepareExtrinsic(call, threshold, coSigners);
+  const fee = await api.mstTransfers.getNetworkFee(extrinsic);
   console.log(`Network fee is ${FPNumber.fromCodecValue(fee).toLocaleString()} XOR\n`);
   await question(
     rl,
@@ -125,10 +125,10 @@ If everything is OK, just press "Enter"\n
 ______________________________________________________________\n`
   );
   // Submit transfers
-  await api.transferAllAsMst(extrinsic);
+  await api.mstTransfers.submit(extrinsic);
   await delay();
   const historyItem = Object.values(api.history)[0];
-  const lastPendingTx = await api.getLastMstPendingTx(multisig);
+  const lastPendingTx = await api.mstTransfers.getLastPendingTx(multisig);
   if (historyItem.status === TransactionStatus.Error || !lastPendingTx) {
     throw new Error('Something went wrong\n\n' + historyItem.errorMessage);
   }
