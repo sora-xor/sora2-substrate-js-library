@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, U8aFixed, UInt, Vec, bool, i128, u16, u32, u64, u8 } from '@polkadot/types';
+import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, Text, U8aFixed, UInt, Vec, bool, i128, u16, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { Signature } from '@polkadot/types/interfaces/extrinsics';
@@ -95,7 +95,7 @@ export interface Consensus extends ITuple<[ConsensusEngineId, Bytes]> {}
 export interface ConsensusEngineId extends GenericConsensusEngineId {}
 
 /** @name ContentSource */
-export interface ContentSource extends Bytes {}
+export interface ContentSource extends Text {}
 
 /** @name CurrencyId */
 export interface CurrencyId extends AssetId {}
@@ -104,7 +104,7 @@ export interface CurrencyId extends AssetId {}
 export interface CurrencyIdOf extends AssetId {}
 
 /** @name Description */
-export interface Description extends Bytes {}
+export interface Description extends Text {}
 
 /** @name DEXId */
 export interface DEXId extends u32 {}
