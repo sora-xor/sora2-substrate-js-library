@@ -9,7 +9,7 @@
 - [randomnessCollectiveFlip](#randomnesscollectiveflip-pallet)
 - [transactionPayment](#transactionpayment-pallet)
 - [permissions](#permissions-pallet)
-- [referralSystem](#referralsystem-pallet)
+- [referrals](#referrals-pallet)
 - [rewards](#rewards-pallet)
 - [xorFee](#xorfee-pallet)
 - [bridgeMultisig](#bridgemultisig-pallet)
@@ -43,6 +43,7 @@
 - [xstPool](#xstpool-pallet)
 - [priceTools](#pricetools-pallet)
 - [ceresStaking](#ceresstaking-pallet)
+- [ceresLiquidityLocker](#ceresliquiditylocker-pallet)
 - [utility](#utility-pallet)
 - [currencies](#currencies-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
@@ -905,16 +906,6 @@ returns: `Vec<OwnerId>`
 
 <hr>
 
-#### **api.query.permissions.modes**
-
-arguments:
-
-- key: `PermissionId`
-
-returns: `Mode`
-
-<hr>
-
 #### **api.query.permissions.permissions**
 
 arguments:
@@ -926,11 +917,11 @@ returns: `Vec<PermissionId>`
 
 <hr>
 
-## ReferralSystem pallet
+## Referrals pallet
 
 ### _State Queries_
 
-#### **api.query.referralSystem.referrers**
+#### **api.query.referrals.referrers**
 
 arguments:
 
@@ -938,6 +929,55 @@ arguments:
 
 returns: `AccountId`
 
+<hr>
+
+#### **api.query.referrals.referrerBalances**
+
+arguments:
+
+- key: `AccountId`
+
+returns: `Balance`
+
+<hr>
+
+#### **api.query.referrals.referrals**
+
+arguments:
+
+- key: `AccountId`
+
+returns: `Vec<AccountId>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.referrals.reserve**
+
+> Reserves the balance from the account for a special balance that can be used to pay referrals' fees
+
+arguments:
+
+- balance: `Balance`
+<hr>
+
+#### **api.tx.referrals.unreserve**
+
+> Unreserves the balance and transfers it back to the account
+
+arguments:
+
+- balance: `Balance`
+<hr>
+
+#### **api.tx.referrals.setReferrer**
+
+> Sets the referrer for the account
+
+arguments:
+
+- referrer: `AccountId`
 <hr>
 
 ## Rewards pallet
@@ -1137,7 +1177,7 @@ returns: `(OpaqueCall,AccountId,BalanceOf)`
 arguments:
 
 - key1: `[u8;32]`
-- key2: `Timepoint`
+- key2: `BridgeTimepoint`
 
 returns: `()`
 
@@ -1239,7 +1279,7 @@ arguments:
 
 - id: `AccountId`
 - call: `Call`
-- timepoint: `Timepoint`
+- timepoint: `BridgeTimepoint`
 <hr>
 
 #### **api.tx.bridgeMultisig.asMulti**
@@ -1303,7 +1343,7 @@ arguments:
 arguments:
 
 - id: `AccountId`
-- maybe_timepoint: `Option<Timepoint>`
+- maybe_timepoint: `Option<BridgeTimepoint>`
 - call: `OpaqueCall`
 - store_call: `bool`
 - max_weight: `Weight`
@@ -1358,7 +1398,7 @@ arguments:
 arguments:
 
 - id: `AccountId`
-- maybe_timepoint: `Option<Timepoint>`
+- maybe_timepoint: `Option<BridgeTimepoint>`
 - call_hash: `[u8;32]`
 - max_weight: `Weight`
 <hr>
@@ -1400,7 +1440,7 @@ arguments:
 arguments:
 
 - id: `AccountId`
-- timepoint: `Timepoint`
+- timepoint: `BridgeTimepoint`
 - call_hash: `[u8;32]`
 <hr>
 
@@ -3236,7 +3276,7 @@ returns: `AccountId`
 
 #### **api.query.assets.assetInfos**
 
-> Asset Id -> (Symbol, Precision, Is Mintable)
+> Asset Id -> (Symbol, Name, Precision, Is Mintable)
 
 arguments:
 
@@ -3258,6 +3298,30 @@ returns: `AssetRecord`
 
 <hr>
 
+#### **api.query.assets.assetContentSource**
+
+> Asset Id -> Content Source
+
+arguments:
+
+- key: `AssetId`
+
+returns: `ContentSource`
+
+<hr>
+
+#### **api.query.assets.assetDescription**
+
+> Asset Id -> Description
+
+arguments:
+
+- key: `AssetId`
+
+returns: `Description`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.assets.register**
@@ -3274,6 +3338,9 @@ arguments:
 - name: `AssetName`
 - initial_supply: `TAssetBalance`
 - is_mintable: `bool`
+- is_nft: `bool`
+- opt_content_src: `Option<ContentSource>`
+- opt_desc: `Option<Description>`
 <hr>
 
 #### **api.tx.assets.transfer**
@@ -3684,6 +3751,25 @@ arguments:
 
 - collateral_asset_id: `AssetId`
 - multiplier: `Option<Fixed>`
+<hr>
+
+#### **api.tx.multicollateralBondingCurvePool.setPriceBias**
+
+> Changes `initial_price` used as bias in XOR-DAI(reference asset) price calculation
+
+arguments:
+
+- price_bias: `Balance`
+<hr>
+
+#### **api.tx.multicollateralBondingCurvePool.setPriceChangeConfig**
+
+> Changes price change rate and step
+
+arguments:
+
+- price_change_rate: `Balance`
+- price_change_step: `Balance`
 <hr>
 
 ## PoolXyk pallet
@@ -5331,6 +5417,8 @@ arguments:
 
 > Add a Thischain asset to the bridge whitelist.
 >
+> Can only be called by root.
+>
 > Parameters:
 >
 > - `asset_id` - Thischain asset identifier.
@@ -6718,6 +6806,19 @@ returns: `MarketMakerInfo`
 
 <hr>
 
+#### **api.query.vestedRewards.marketMakingPairs**
+
+> Market making pairs storage.
+
+arguments:
+
+- key1: `AssetId`
+- key2: `AssetId`
+
+returns: `()`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.vestedRewards.claimRewards**
@@ -6735,6 +6836,17 @@ arguments: -
 arguments:
 
 - snapshot: `Vec<(AccountId,u32,Balance)>`
+<hr>
+
+#### **api.tx.vestedRewards.setAssetPair**
+
+> Allow/disallow a market making pair.
+
+arguments:
+
+- from_asset_id: `AssetId`
+- to_asset_id: `AssetId`
+- market_making_rewards_allowed: `bool`
 <hr>
 
 ## Identity pallet
@@ -7191,16 +7303,6 @@ returns: `Vec<PoolFarmer>`
 
 <hr>
 
-#### **api.query.farming.savedValues**
-
-arguments:
-
-- key: `BlockNumber`
-
-returns: `Vec<(AccountId,Vec<PoolFarmer>)>`
-
-<hr>
-
 ### _Extrinsics_
 
 #### **api.tx.farming.migrateTo11**
@@ -7351,6 +7453,84 @@ arguments:
 
 arguments: -
 
+<hr>
+
+## CeresLiquidityLocker pallet
+
+### _State Queries_
+
+#### **api.query.ceresLiquidityLocker.feesOptionOneAccount**
+
+> Account for collecting fees from Option 1
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
+#### **api.query.ceresLiquidityLocker.feesOptionTwoAccount**
+
+> Account for collecting fees from Option 2
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
+#### **api.query.ceresLiquidityLocker.feesOptionTwoCeresAmount**
+
+> Amount of CERES for locker fees option two
+
+arguments: -
+
+returns: `Balance`
+
+<hr>
+
+#### **api.query.ceresLiquidityLocker.authorityAccount**
+
+> Account which has permissions for changing CERES amount fee
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
+#### **api.query.ceresLiquidityLocker.lockerData**
+
+arguments:
+
+- key: `AccountIdOf`
+
+returns: `Vec<LockInfo>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.ceresLiquidityLocker.lockLiquidity**
+
+> Lock liquidity
+
+arguments:
+
+- asset_a: `AssetIdOf`
+- asset_b: `AssetIdOf`
+- unlocking_block: `BlockNumber`
+- percentage_of_pool_tokens: `Balance`
+- option: `bool`
+<hr>
+
+#### **api.tx.ceresLiquidityLocker.changeCeresFee**
+
+> Change CERES fee
+
+arguments:
+
+- ceres_fee: `Balance`
 <hr>
 
 ## Utility pallet
@@ -8272,7 +8452,7 @@ returns: `Option<SwapOutcomeInfo>`
 ### ContentSource
 
 ```
-"Vec<u8>"
+"Text"
 ```
 
 ### CurrencyId
@@ -8331,7 +8511,7 @@ returns: `Option<SwapOutcomeInfo>`
 ### Description
 
 ```
-"Vec<u8>"
+"Text"
 ```
 
 ### DispatchErrorWithPostInfoTPostDispatchInfo
