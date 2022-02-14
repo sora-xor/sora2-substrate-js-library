@@ -1,11 +1,10 @@
 import { assert, isHex } from '@polkadot/util';
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
 import keyring from '@polkadot/ui-keyring';
-import { map } from '@polkadot/x-rxjs/operators';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair$Json } from '@polkadot/keyring/types';
-import type { Signer, Observable } from '@polkadot/types/types';
+import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
 import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi';
@@ -17,6 +16,7 @@ import { RewardsModule } from './rewards';
 import { PoolXykModule } from './poolXyk';
 import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
+import { SystemModule } from './system';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
@@ -37,6 +37,7 @@ export class Api extends BaseApi {
   public readonly poolXyk: PoolXykModule = new PoolXykModule(this);
   public readonly referralSystem: ReferralSystemModule = new ReferralSystemModule(this);
   public readonly assets: AssetsModule = new AssetsModule(this);
+  public readonly system: SystemModule = new SystemModule(this);
 
   public initAccountStorage() {
     super.initAccountStorage();
@@ -327,14 +328,6 @@ export class Api extends BaseApi {
     await this.submitExtrinsic(this.api.tx.utility.batchAll(transactions), this.account.pair, {
       type: Operation.TransferAll,
     });
-  }
-
-  public getSystemBlockNumberObservable(): Observable<string> {
-    return this.apiRx.query.system.number().pipe(map((codec) => codec.toString()));
-  }
-
-  public getRuntimeVersionObservable(): Observable<number> {
-    return this.apiRx.query.system.lastRuntimeUpgrade().pipe(map((value) => (value.toJSON() as any).specVersion));
   }
 
   // # Logout & reset methods
