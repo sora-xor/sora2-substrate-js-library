@@ -1,4 +1,5 @@
 import { api, connection } from '@sora-substrate/util';
+// import { mnemonicGenerate } from '@polkadot/util-crypto'; TODO: use it within the faucet
 
 export async function delay(ms = 40000): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));

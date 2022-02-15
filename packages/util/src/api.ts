@@ -7,7 +7,7 @@ import type { KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
-import { BaseApi, Operation, KeyringType, isBridgeOperation, History } from './BaseApi';
+import { BaseApi, Operation, KeyringType, isBridgeOperation } from './BaseApi';
 import { CodecString, FPNumber, NumberLike } from './fp';
 import { Messages } from './logger';
 import { BridgeApi } from './BridgeApi';
@@ -16,6 +16,7 @@ import { RewardsModule } from './rewards';
 import { PoolXykModule } from './poolXyk';
 import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
+import { MstTransfersModule } from './mstTransfers';
 import { SystemModule } from './system';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
@@ -37,6 +38,8 @@ export class Api extends BaseApi {
   public readonly poolXyk: PoolXykModule = new PoolXykModule(this);
   public readonly referralSystem: ReferralSystemModule = new ReferralSystemModule(this);
   public readonly assets: AssetsModule = new AssetsModule(this);
+  /** This module is used for internal needs */
+  public readonly mstTransfers: MstTransfersModule = new MstTransfersModule(this);
   public readonly system: SystemModule = new SystemModule(this);
 
   public initAccountStorage() {
@@ -124,13 +127,16 @@ export class Api extends BaseApi {
 
   /**
    * The first method you should run. Includes initialization process
+   * @param withKeyringLoading `true` by default
    */
-  public initialize(): void {
+  public initialize(withKeyringLoading = true): void {
     const address = this.storage?.get('address');
     const password = this.storage?.get('password');
     const name = this.storage?.get('name');
     const isExternal = Boolean(this.storage?.get('isExternal'));
-    keyring.loadAll({ type: KeyringType });
+    if (withKeyringLoading) {
+      keyring.loadAll({ type: KeyringType });
+    }
     if (!address) {
       return;
     }
@@ -298,36 +304,6 @@ export class Api extends BaseApi {
       this.account.pair,
       { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
     );
-  }
-
-  private async prepareTransferAllTxs(data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>) {
-    assert(this.account, Messages.connectWallet);
-    assert(data.length, Messages.noTransferData);
-
-    return data.map((item) => {
-      return this.api.tx.assets.transfer(item.assetAddress, item.toAddress, new FPNumber(item.amount).toCodecString());
-    });
-  }
-
-  public async getTransferAllNetworkFee(
-    data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>
-  ): Promise<CodecString> {
-    const transactions = await this.prepareTransferAllTxs(data);
-    return await this.getNetworkFee(Operation.TransferAll, transactions);
-  }
-
-  /**
-   * Transfer all data from array
-   * @param data Transfer data
-   */
-  public async transferAll(
-    data: Array<{ assetAddress: string; toAddress: string; amount: NumberLike }>
-  ): Promise<void> {
-    const transactions = await this.prepareTransferAllTxs(data);
-
-    await this.submitExtrinsic(this.api.tx.utility.batchAll(transactions), this.account.pair, {
-      type: Operation.TransferAll,
-    });
   }
 
   // # Logout & reset methods

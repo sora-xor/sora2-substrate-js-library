@@ -32,3 +32,4 @@ yarn-error.log*
 
 # CSV files
 *.csv
+!scripts/example.csv
