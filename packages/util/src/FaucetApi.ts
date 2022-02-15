@@ -1,7 +1,7 @@
 import keyring from '@polkadot/ui-keyring';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 
-import { BaseApi, History, Operation, KeyringType } from './BaseApi';
+import { BaseApi, Operation, KeyringType } from './BaseApi';
 import { getBalance } from './assets';
 import { FPNumber, NumberLike } from './fp';
 import { KnownAssets } from './assets/consts';
@@ -16,16 +16,19 @@ export class FaucetApi extends BaseApi {
 
   private faucetSigner?: CreateResult;
 
-  constructor() {
+  constructor(withKeyringLoading = true) {
     super();
     // Fake account initialization
-    keyring.loadAll({ type: KeyringType });
+    if (withKeyringLoading) {
+      keyring.loadAll({ type: KeyringType });
+    }
     this.faucetSigner = keyring.addUri(
       this.fausetSignerSeed,
       this.faucetSignerPassword,
       { name: this.faucetSignerName },
       KeyringType
     );
+    this.setAccount(this.faucetSigner);
   }
 
   /**

@@ -52,7 +52,7 @@
         "tip": "Compact<Balance>",
         "target_asset_id": "AssetId"
     },
-    "ContentSource": "Vec<u8>",
+    "ContentSource": "Text",
     "CurrencyId": "AssetId",
     "CurrencyIdEncoded": {
         "_enum": {
@@ -71,7 +71,7 @@
         "default_fee": "BasisPoints",
         "default_protocol_fee": "BasisPoints"
     },
-    "Description": "Vec<u8>",
+    "Description": "Text",
     "DispatchErrorWithPostInfoTPostDispatchInfo": {
         "post_info": "PostDispatchInfo",
         "error": "DispatchError"
