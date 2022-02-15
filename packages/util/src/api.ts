@@ -1,11 +1,10 @@
 import { assert, isHex } from '@polkadot/util';
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
 import keyring from '@polkadot/ui-keyring';
-import { map } from '@polkadot/x-rxjs/operators';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair$Json } from '@polkadot/keyring/types';
-import type { Signer, Observable } from '@polkadot/types/types';
+import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
 import { BaseApi, Operation, KeyringType, isBridgeOperation } from './BaseApi';
@@ -18,6 +17,7 @@ import { PoolXykModule } from './poolXyk';
 import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
 import { MstTransfersModule } from './mstTransfers';
+import { SystemModule } from './system';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
@@ -40,6 +40,7 @@ export class Api extends BaseApi {
   public readonly assets: AssetsModule = new AssetsModule(this);
   /** This module is used for internal needs */
   public readonly mstTransfers: MstTransfersModule = new MstTransfersModule(this);
+  public readonly system: SystemModule = new SystemModule(this);
 
   public initAccountStorage() {
     super.initAccountStorage();
@@ -303,14 +304,6 @@ export class Api extends BaseApi {
       this.account.pair,
       { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
     );
-  }
-
-  public getSystemBlockNumberObservable(): Observable<string> {
-    return this.apiRx.query.system.number().pipe(map((codec) => codec.toString()));
-  }
-
-  public getRuntimeVersionObservable(): Observable<number> {
-    return this.apiRx.query.system.lastRuntimeUpgrade().pipe(map((value) => (value.toJSON() as any).specVersion));
   }
 
   // # Logout & reset methods
