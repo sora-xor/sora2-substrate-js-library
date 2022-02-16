@@ -236,6 +236,11 @@ export class PoolXykModule {
     this.subscriptions = [];
   }
 
+  public clearAccountLiquidity(): void {
+    this.unsubscribeFromAllUpdates();
+    this.accountLiquidity = [];
+  }
+
   /**
    * Set subscriptions for balance updates of the account asset list
    * @param targetAssetIds
