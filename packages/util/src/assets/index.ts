@@ -168,26 +168,13 @@ export class AssetsModule {
   // Default assets addresses of account - list of NativeAssets addresses
   public accountDefaultAssetsAddresses: Array<string> = NativeAssets.map((asset) => asset.address);
 
-  private _assets: Array<AccountAsset> = [];
   private _accountAssetsAddresses: Array<string> = [];
-
   private balanceSubscriptions: Array<Subscription> = [];
   private balanceSubject = new Subject<void>();
   public balanceUpdated = this.balanceSubject.asObservable();
+  public accountAssets: Array<AccountAsset> = [];
 
   // # Account assets methods
-
-  public get accountAssets(): Array<AccountAsset> {
-    if (this.root.storage) {
-      this._assets = (JSON.parse(this.root.storage.get('assets')) as Array<AccountAsset>) || [];
-    }
-    return this._assets;
-  }
-
-  public set accountAssets(assets: Array<AccountAsset>) {
-    this.root.storage?.set('assets', JSON.stringify(assets));
-    this._assets = [...assets];
-  }
 
   private addToAccountAssetsList(asset: AccountAsset): void {
     const assetsCopy = [...this.accountAssets];
