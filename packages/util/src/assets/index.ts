@@ -178,7 +178,7 @@ export class AssetsModule {
 
   private subscribeToAssetBalance(asset: AccountAsset): void {
     const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
-      (asset as AccountAsset).balance = accountBalance;
+      asset.balance = accountBalance;
       this.balanceSubject.next();
     });
     this.balanceSubscriptions.set(asset.address, subscription);
@@ -263,17 +263,20 @@ export class AssetsModule {
     assert(this.root.account, Messages.connectWallet);
 
     if (!this.accountAssetsAddresses.length) {
-      this.accountAssetsAddresses = [...this.accountDefaultAssetsAddresses];
+      this.accountAssetsAddresses = this.accountDefaultAssetsAddresses;
     }
 
-    const current = this.accountAssets.map((asset) => asset.address);
-    const excluded = current.filter((address) => !this.accountAssetsAddresses.includes(address));
+    const included = this.accountAssetsAddresses;
+    const excluded = this.accountAssets.reduce<string[]>(
+      (result, { address }) => (included.includes(address) ? result : [...result, address]),
+      []
+    );
 
     for (const assetAddress of excluded) {
       this.removeFromAccountAssetsList(assetAddress);
     }
 
-    for (const assetAddress of this.accountAssetsAddresses) {
+    for (const assetAddress of included) {
       this.addToAccountAssetsList(assetAddress);
     }
   }
