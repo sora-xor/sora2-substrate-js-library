@@ -176,15 +176,26 @@ export class AssetsModule {
 
   // # Account assets methods
 
+  private subscribeToAssetBalance(asset: AccountAsset): void {
+    const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
+      (asset as AccountAsset).balance = accountBalance;
+      this.balanceSubject.next();
+    });
+    this.balanceSubscriptions.set(asset.address, subscription);
+  }
+
+  private unsubscribeFromAssetBalance(address: string): void {
+    if (this.balanceSubscriptions.has(address)) {
+      this.balanceSubscriptions.get(address).unsubscribe();
+      this.balanceSubscriptions.delete(address);
+    }
+  }
+
   private async addToAccountAssetsList(address: string): Promise<void> {
     if (!this.getAsset(address)) {
-      const asset = (await this.getAssetInfo(address)) as AccountAsset;
-      const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
-        (asset as AccountAsset).balance = accountBalance;
-        this.balanceSubject.next();
-      });
-      this.balanceSubscriptions.set(address, subscription);
+      const asset = await this.getAccountAsset(address);
       this.accountAssets.push(asset);
+      this.subscribeToAssetBalance(asset);
     }
   }
 
@@ -194,16 +205,27 @@ export class AssetsModule {
     this.balanceSubject.next();
   }
 
+  /**
+   * Add account asset & create balance subscription
+   * @param address asset address
+   */
   public async addAccountAsset(address: string): Promise<void> {
     this.addToAccountAssetsAddressesList(address);
     await this.addToAccountAssetsList(address);
   }
 
+  /**
+   * Remove account asset & it's balance subscription
+   * @param address asset address
+   */
   public removeAccountAsset(address: string): void {
     this.removeFromAccountAssetsAddressesList(address);
     this.removeFromAccountAssetsList(address);
   }
 
+  /**
+   * Clear account assets & their balance subscriptions
+   */
   public clearAccountAssets() {
     for (const address of this.balanceSubscriptions.keys()) {
       this.unsubscribeFromAssetBalance(address);
@@ -211,6 +233,10 @@ export class AssetsModule {
     this.accountAssets = [];
   }
 
+  /**
+   * Find account asset in account assets list
+   * @param address asset address
+   */
   public getAsset(address: string): AccountAsset | null {
     return this.accountAssets.find((asset) => asset.address === address) ?? null;
   }
@@ -231,7 +257,7 @@ export class AssetsModule {
   }
 
   /**
-   * Set subscriptions for balance updates of the account asset list
+   * Sync account assets with account assets address list
    */
   public async updateAccountAssets(): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
@@ -278,7 +304,6 @@ export class AssetsModule {
    * Get account asset information.
    * You can just check balance of any asset
    * @param address asset address
-   * @param addToList should asset be added to list or not
    */
   public async getAccountAsset(address: string): Promise<AccountAsset> {
     assert(this.root.account, Messages.connectWallet);
@@ -288,13 +313,6 @@ export class AssetsModule {
     asset.balance = result;
 
     return asset;
-  }
-
-  private unsubscribeFromAssetBalance(address: string): void {
-    if (this.balanceSubscriptions.has(address)) {
-      this.balanceSubscriptions.get(address).unsubscribe();
-      this.balanceSubscriptions.delete(address);
-    }
   }
 
   // # Account assets addresses
