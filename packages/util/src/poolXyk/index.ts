@@ -338,8 +338,7 @@ export class PoolXykModule {
   ): Promise<void> {
     const params = await this.calcAddTxParams(firstAsset, secondAsset, firstAmount, secondAmount, slippageTolerance);
     if (!this.root.assets.getAsset(secondAsset.address)) {
-      this.root.assets.addAccountAsset({ ...secondAsset, balance: ZeroBalance });
-      this.root.assets.updateAccountAssets();
+      this.root.assets.addAccountAsset(secondAsset.address);
     }
     await this.root.submitExtrinsic(this.root.api.tx.poolXyk.depositLiquidity(...params.args), this.root.account.pair, {
       type: Operation.AddLiquidity,
@@ -422,8 +421,7 @@ export class PoolXykModule {
       ]
     );
     if (!this.root.assets.getAsset(secondAsset.address)) {
-      this.root.assets.addAccountAsset({ ...secondAsset, balance: ZeroBalance });
-      this.root.assets.updateAccountAssets();
+      this.root.assets.addAccountAsset(secondAsset.address);
     }
     await this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
       type: Operation.CreatePair,

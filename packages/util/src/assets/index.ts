@@ -274,6 +274,22 @@ export class AssetsModule {
     return await getAssetInfo(this.root.api, address);
   }
 
+  /**
+   * Get account asset information.
+   * You can just check balance of any asset
+   * @param address asset address
+   * @param addToList should asset be added to list or not
+   */
+  public async getAccountAsset(address: string): Promise<AccountAsset> {
+    assert(this.root.account, Messages.connectWallet);
+    const { decimals, symbol, name } = await this.getAssetInfo(address);
+    const asset = { address, decimals, symbol, name } as AccountAsset;
+    const result = await getAssetBalance(this.root.api, this.root.account.pair.address, address, decimals);
+    asset.balance = result;
+
+    return asset;
+  }
+
   private unsubscribeFromAssetBalance(address: string): void {
     if (this.balanceSubscriptions.has(address)) {
       this.balanceSubscriptions.get(address).unsubscribe();
