@@ -185,10 +185,8 @@ export class AssetsModule {
   }
 
   private unsubscribeFromAssetBalance(address: string): void {
-    if (this.balanceSubscriptions.has(address)) {
-      this.balanceSubscriptions.get(address).unsubscribe();
-      this.balanceSubscriptions.delete(address);
-    }
+    this.balanceSubscriptions.get(address)?.unsubscribe();
+    this.balanceSubscriptions.delete(address);
   }
 
   private async addToAccountAssetsList(address: string): Promise<void> {
@@ -258,6 +256,8 @@ export class AssetsModule {
 
   /**
    * Sync account assets with account assets address list
+   * During update process, assets should be removed according to 'excludedAddresses'
+   * and exists in accounts assets list according to 'currentAddresses'
    */
   public async updateAccountAssets(): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
@@ -266,17 +266,17 @@ export class AssetsModule {
       this.accountAssetsAddresses = this.accountDefaultAssetsAddresses;
     }
 
-    const included = this.accountAssetsAddresses;
-    const excluded = this.accountAssets.reduce<string[]>(
-      (result, { address }) => (included.includes(address) ? result : [...result, address]),
+    const currentAddresses = this.accountAssetsAddresses;
+    const excludedAddresses = this.accountAssets.reduce<string[]>(
+      (result, { address }) => (currentAddresses.includes(address) ? result : [...result, address]),
       []
     );
 
-    for (const assetAddress of excluded) {
+    for (const assetAddress of excludedAddresses) {
       this.removeFromAccountAssetsList(assetAddress);
     }
 
-    for (const assetAddress of included) {
+    for (const assetAddress of currentAddresses) {
       this.addToAccountAssetsList(assetAddress);
     }
   }
