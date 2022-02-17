@@ -277,7 +277,7 @@ export class AssetsModule {
     }
 
     for (const assetAddress of currentAddresses) {
-      this.addToAccountAssetsList(assetAddress);
+      await this.addToAccountAssetsList(assetAddress);
     }
   }
 
