@@ -308,11 +308,6 @@ export class Api extends BaseApi {
 
   // # Logout & reset methods
 
-  public unsubscribeAll(): void {
-    this.assets.unsubscribeFromAllBalancesUpdates();
-    this.poolXyk.unsubscribeFromAllUpdates();
-  }
-
   /**
    * Remove all wallet data
    */
@@ -321,10 +316,8 @@ export class Api extends BaseApi {
     keyring.forgetAccount(address);
     keyring.forgetAddress(address);
 
-    this.assets.accountAssets = [];
-    this.poolXyk.accountLiquidity = [];
-
-    this.unsubscribeAll();
+    this.assets.clearAccountAssets();
+    this.poolXyk.clearAccountLiquidity();
 
     super.logout();
     this.bridge.logout();
