@@ -1,9 +1,5 @@
 import type { CodecString } from '../fp';
 
-export type Whitelist = {
-  [key: string]: WhitelistItem;
-};
-
 export interface WhitelistItem {
   symbol: string;
   name: string;
@@ -15,13 +11,9 @@ export interface WhitelistArrayItem extends WhitelistItem {
   address: string;
 }
 
-export interface AccountAsset {
-  address: string;
-  balance: AccountBalance;
-  symbol?: string;
-  name?: string;
-  decimals?: number;
-}
+export type Whitelist = {
+  [key: string]: WhitelistItem;
+};
 
 /**
  * Account Balance structure. Each value === value * 10 ^ decimals
@@ -43,10 +35,19 @@ export interface AccountBalance {
   bonded: CodecString;
 }
 
-export interface Asset {
+interface AssetBase {
   address: string;
   symbol: string;
   name: string;
   decimals: number;
+  content?: string;
+  description?: string;
+}
+
+export interface Asset extends AssetBase {
   totalSupply?: string;
+}
+
+export interface AccountAsset extends AssetBase {
+  balance: AccountBalance;
 }
