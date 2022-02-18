@@ -27,9 +27,6 @@ async function main(): Promise<void> {
 
     console.log(`${tokenSymbol} was found:`, token);
     console.log(`${nftSymbol} was found:`, nftToken);
-
-    console.log(`${nftSymbol} content:`, await api.assets.getNftContent(nftToken.address));
-    console.log(`${nftSymbol} description:`, await api.assets.getNftDescription(nftToken.address));
   });
 }
 
