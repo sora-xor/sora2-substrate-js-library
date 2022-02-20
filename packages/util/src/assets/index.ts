@@ -170,11 +170,11 @@ export class AssetsModule {
   /**
    * Checks if asset is NFT or not.
    *
-   * **Asset is NFT if it's non-divisible OR it has content and description fields**
+   * **Asset is NFT if it has content and description fields**
    * @param asset
    */
   isNft(asset: Asset | AccountAsset): boolean {
-    return asset.decimals === 0 || !!(asset.content && asset.description);
+    return !!(asset.content && asset.description);
   }
 
   // Default assets addresses of account - list of NativeAssets addresses
