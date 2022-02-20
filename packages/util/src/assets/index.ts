@@ -170,11 +170,11 @@ export class AssetsModule {
   /**
    * Checks if asset is NFT or not.
    *
-   * **Asset is NFT if it's non-divisible OR it has content and description fields**
+   * **Asset is NFT if it has content and description fields**
    * @param asset
    */
   isNft(asset: Asset | AccountAsset): boolean {
-    return asset.decimals === 0 || !!(asset.content && asset.description);
+    return !!(asset.content && asset.description);
   }
 
   // Default assets addresses of account - list of NativeAssets addresses
@@ -375,16 +375,16 @@ export class AssetsModule {
     name: string,
     totalSupply: NumberLike,
     extensibleSupply: boolean,
+    nonDivisible: boolean,
     nft = {
-      isNft: false,
       content: null,
       description: null,
     }
   ) {
     assert(this.root.account, Messages.connectWallet);
-    const supply = nft.isNft ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply);
+    const supply = nonDivisible ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply);
     return {
-      args: [symbol, name, supply.toCodecString(), extensibleSupply, nft.isNft, nft.content, nft.description],
+      args: [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description],
     };
   }
 
@@ -392,21 +392,23 @@ export class AssetsModule {
    * Register asset
    * @param symbol string with asset symbol
    * @param name string with asset name
-   * @param totalSupply
-   * @param extensibleSupply
+   * @param totalSupply total token supply
+   * @param extensibleSupply `true` means that token can be mintable any time by the owner of that token. `false` by default
+   * @param nonDivisible `false` by default
+   * @param nft Nft params object which contains content & description
    */
   public async register(
     symbol: string,
     name: string,
     totalSupply: NumberLike,
     extensibleSupply = false,
+    nonDivisible = false,
     nft = {
-      isNft: false,
       content: null,
       description: null,
     }
   ): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nft);
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nonDivisible, nft);
     await this.root.submitExtrinsic((this.root.api.tx.assets.register as any)(...params.args), this.root.account.pair, {
       symbol,
       type: Operation.RegisterAsset,

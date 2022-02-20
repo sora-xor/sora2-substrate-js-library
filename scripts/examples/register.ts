@@ -10,8 +10,7 @@ async function main(): Promise<void> {
     await api.assets.register(tokenSymbol, 'My Test Token', 200, true);
     // Register NFTTKN nft token
     const nftSymbol = 'NFTTKN';
-    await api.assets.register(nftSymbol, 'My NFT Token', 1, false, {
-      isNft: true,
+    await api.assets.register(nftSymbol, 'My NFT Token', 1, false, true, {
       content: 'link_to_nft_content',
       description: 'Some description of this NFT',
     });
