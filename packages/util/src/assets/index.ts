@@ -41,8 +41,10 @@ function formatBalance(
 }
 
 async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
-  const [symbol, name, decimals, _] = (await api.query.assets.assetInfos(address)).toHuman() as any;
-  return { address, symbol, name, decimals: +decimals } as Asset;
+  const [symbol, name, decimals, _, content, description] = (
+    await api.query.assets.assetInfos(address)
+  ).toHuman() as any;
+  return { address, symbol, name, decimals: +decimals, content, description } as Asset;
 }
 
 async function getAssetBalance(
@@ -84,8 +86,8 @@ export function isNativeAsset(asset: any): boolean {
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist): Promise<Array<Asset>> {
   const assets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
     const [address] = key.toHuman() as any;
-    const [symbol, name, decimals, _] = codec.toHuman() as any;
-    return { address, symbol, name, decimals: +decimals };
+    const [symbol, name, decimals, _, content, description] = codec.toHuman() as any;
+    return { address, symbol, name, decimals: +decimals, content, description };
   }) as Array<Asset>;
   return !whitelist
     ? assets
@@ -165,58 +167,86 @@ export class AssetsModule {
     return address !== asset.address;
   }
 
+  /**
+   * Checks if asset is NFT or not.
+   *
+   * **Asset is NFT if it's non-divisible OR it has content and description fields**
+   * @param asset
+   */
+  isNft(asset: Asset | AccountAsset): boolean {
+    return asset.decimals === 0 || !!(asset.content && asset.description);
+  }
+
   // Default assets addresses of account - list of NativeAssets addresses
   public accountDefaultAssetsAddresses: Array<string> = NativeAssets.map((asset) => asset.address);
 
-  private _assets: Array<AccountAsset> = [];
   private _accountAssetsAddresses: Array<string> = [];
-
-  private balanceSubscriptions: Array<Subscription> = [];
+  private balanceSubscriptions: Map<string, Subscription> = new Map();
   private balanceSubject = new Subject<void>();
   public balanceUpdated = this.balanceSubject.asObservable();
+  public accountAssets: Array<AccountAsset> = [];
 
   // # Account assets methods
 
-  public get accountAssets(): Array<AccountAsset> {
-    if (this.root.storage) {
-      this._assets = (JSON.parse(this.root.storage.get('assets')) as Array<AccountAsset>) || [];
+  private subscribeToAssetBalance(asset: AccountAsset): void {
+    const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
+      asset.balance = accountBalance;
+      this.balanceSubject.next();
+    });
+    this.balanceSubscriptions.set(asset.address, subscription);
+  }
+
+  private unsubscribeFromAssetBalance(address: string): void {
+    this.balanceSubscriptions.get(address)?.unsubscribe();
+    this.balanceSubscriptions.delete(address);
+  }
+
+  private async addToAccountAssetsList(address: string): Promise<void> {
+    if (!this.getAsset(address)) {
+      const asset = await this.getAccountAsset(address);
+      this.accountAssets.push(asset);
+      this.subscribeToAssetBalance(asset);
     }
-    return this._assets;
-  }
-
-  public set accountAssets(assets: Array<AccountAsset>) {
-    this.root.storage?.set('assets', JSON.stringify(assets));
-    this._assets = [...assets];
-  }
-
-  private addToAccountAssetsList(asset: AccountAsset): void {
-    const assetsCopy = [...this.accountAssets];
-    const index = assetsCopy.findIndex((item) => item.address === asset.address);
-
-    ~index ? (assetsCopy[index] = asset) : assetsCopy.push(asset);
-
-    this.accountAssets = assetsCopy;
   }
 
   private removeFromAccountAssetsList(address: string): void {
+    this.unsubscribeFromAssetBalance(address);
     this.accountAssets = this.accountAssets.filter((item) => item.address !== address);
+    this.balanceSubject.next();
   }
 
-  public addAccountAsset(asset: AccountAsset): void {
-    this.addToAccountAssetsList(asset);
-    this.addToAccountAssetsAddressesList(asset.address);
+  /**
+   * Add account asset & create balance subscription
+   * @param address asset address
+   */
+  public async addAccountAsset(address: string): Promise<void> {
+    this.addToAccountAssetsAddressesList(address);
+    await this.addToAccountAssetsList(address);
   }
 
-  private removeAccountAsset(address: string): void {
-    this.removeFromAccountAssetsList(address);
+  /**
+   * Remove account asset & it's balance subscription
+   * @param address asset address
+   */
+  public removeAccountAsset(address: string): void {
     this.removeFromAccountAssetsAddressesList(address);
+    this.removeFromAccountAssetsList(address);
   }
 
-  public removeAsset(address: string): void {
-    this.removeAccountAsset(address);
-    this.updateAccountAssets();
+  /**
+   * Clear account assets & their balance subscriptions
+   */
+  public clearAccountAssets() {
+    for (const address of this.balanceSubscriptions.keys()) {
+      this.unsubscribeFromAssetBalance(address);
+    }
+    this.accountAssets = [];
   }
 
+  /**
+   * Find account asset in account assets list
+   * @param address asset address
+   */
   public getAsset(address: string): AccountAsset | null {
     return this.accountAssets.find((asset) => asset.address === address) ?? null;
   }
@@ -237,18 +267,29 @@ export class AssetsModule {
   }
 
   /**
-   * Set subscriptions for balance updates of the account asset list
+   * Sync account assets with account assets address list
+   * During update process, assets should be removed according to 'excludedAddresses'
+   * and exists in accounts assets list according to 'currentAddresses'
    */
-  public updateAccountAssets(): void {
-    this.unsubscribeFromAllBalancesUpdates();
+  public async updateAccountAssets(): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
-    for (const asset of this.accountAssets) {
-      const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
-        asset.balance = accountBalance;
-        this.addAccountAsset(asset);
-        this.balanceSubject.next();
-      });
-      this.balanceSubscriptions.push(subscription);
+
+    if (!this.accountAssetsAddresses.length) {
+      this.accountAssetsAddresses = this.accountDefaultAssetsAddresses;
+    }
+
+    const currentAddresses = this.accountAssetsAddresses;
+    const excludedAddresses = this.accountAssets.reduce<string[]>(
+      (result, { address }) => (currentAddresses.includes(address) ? result : [...result, address]),
+      []
+    );
+
+    for (const assetAddress of excludedAddresses) {
+      this.removeFromAccountAssetsList(assetAddress);
+    }
+
+    for (const assetAddress of currentAddresses) {
+      await this.addToAccountAssetsList(assetAddress);
     }
   }
 
@@ -269,6 +310,8 @@ export class AssetsModule {
         decimals: existingAsset.decimals,
         symbol: existingAsset.symbol,
         name: existingAsset.name,
+        content: (existingAsset as AccountAsset).content, // will be undefined,
+        description: (existingAsset as AccountAsset).description, // if there are no such props
       } as Asset;
     }
     return await getAssetInfo(this.root.api, address);
@@ -278,44 +321,15 @@ export class AssetsModule {
    * Get account asset information.
    * You can just check balance of any asset
    * @param address asset address
-   * @param addToList should asset be added to list or not
    */
-  public async getAccountAsset(address: string, addToList = false): Promise<AccountAsset> {
+  public async getAccountAsset(address: string): Promise<AccountAsset> {
     assert(this.root.account, Messages.connectWallet);
-    const { decimals, symbol, name } = await this.getAssetInfo(address);
-    const asset = { address, decimals, symbol, name } as AccountAsset;
+    const { decimals, symbol, name, content, description } = await this.getAssetInfo(address);
+    const asset = { address, decimals, symbol, name, content, description } as AccountAsset;
     const result = await getAssetBalance(this.root.api, this.root.account.pair.address, address, decimals);
     asset.balance = result;
-    if (addToList) {
-      this.addAccountAsset(asset);
-      this.updateAccountAssets();
-    }
+
     return asset;
-  }
-
-  /**
-   * Get a list of all assets from default account assets array & from account storage
-   */
-  public async getKnownAccountAssets(): Promise<Array<AccountAsset>> {
-    assert(this.root.account, Messages.connectWallet);
-
-    const knownAssets: Array<AccountAsset> = [];
-    const assetsAddresses = new Set([...this.accountDefaultAssetsAddresses, ...this.accountAssetsAddresses]);
-
-    for (const assetAddress of assetsAddresses) {
-      const asset = await this.getAccountAsset(assetAddress);
-      this.addAccountAsset(asset);
-      knownAssets.push(asset);
-    }
-
-    return knownAssets;
-  }
-
-  public unsubscribeFromAllBalancesUpdates(): void {
-    for (const subscription of this.balanceSubscriptions) {
-      subscription.unsubscribe();
-    }
-    this.balanceSubscriptions = [];
   }
 
   // # Account assets addresses
@@ -397,23 +411,5 @@ export class AssetsModule {
       symbol,
       type: Operation.RegisterAsset,
     });
-  }
-
-  /**
-   * Get NFT content
-   * @param assetId Asset ID
-   */
-  public async getNftContent(assetId: string): Promise<string> {
-    const content = await this.root.api.query.assets.assetContentSource(assetId);
-    return `${content.toHuman()}`;
-  }
-
-  /**
-   * Get NFT description
-   * @param assetId Asset ID
-   */
-  public async getNftDescription(assetId: string): Promise<string> {
-    const desc = await this.root.api.query.assets.assetDescription(assetId);
-    return `${desc.toHuman()}`;
   }
 }

@@ -15,22 +15,10 @@ import type { Asset, AccountAsset } from '../assets/types';
 export class PoolXykModule {
   constructor(private readonly root: Api) {}
 
-  private _liquidity: Array<AccountLiquidity> = [];
   private subscriptions: Array<Subscription> = [];
   private subject = new Subject<void>();
   public updated = this.subject.asObservable();
-
-  public get accountLiquidity(): Array<AccountLiquidity> {
-    if (this.root.storage) {
-      this._liquidity = (JSON.parse(this.root.storage.get('liquidity')) as Array<AccountLiquidity>) || [];
-    }
-    return this._liquidity;
-  }
-
-  public set accountLiquidity(liquidity: Array<AccountLiquidity>) {
-    this.root.storage?.set('liquidity', JSON.stringify(liquidity));
-    this._liquidity = [...liquidity];
-  }
+  public accountLiquidity: Array<AccountLiquidity> = [];
 
   private addToLiquidityList(asset: AccountLiquidity): void {
     const liquidityCopy = [...this.accountLiquidity];
@@ -248,6 +236,11 @@ export class PoolXykModule {
     this.subscriptions = [];
   }
 
+  public clearAccountLiquidity(): void {
+    this.unsubscribeFromAllUpdates();
+    this.accountLiquidity = [];
+  }
+
   /**
    * Set subscriptions for balance updates of the account asset list
    * @param targetAssetIds
@@ -345,8 +338,7 @@ export class PoolXykModule {
   ): Promise<void> {
     const params = await this.calcAddTxParams(firstAsset, secondAsset, firstAmount, secondAmount, slippageTolerance);
     if (!this.root.assets.getAsset(secondAsset.address)) {
-      this.root.assets.addAccountAsset({ ...secondAsset, balance: ZeroBalance });
-      this.root.assets.updateAccountAssets();
+      this.root.assets.addAccountAsset(secondAsset.address);
     }
     await this.root.submitExtrinsic(this.root.api.tx.poolXyk.depositLiquidity(...params.args), this.root.account.pair, {
       type: Operation.AddLiquidity,
@@ -429,8 +421,7 @@ export class PoolXykModule {
       ]
     );
     if (!this.root.assets.getAsset(secondAsset.address)) {
-      this.root.assets.addAccountAsset({ ...secondAsset, balance: ZeroBalance });
-      this.root.assets.updateAccountAssets();
+      this.root.assets.addAccountAsset(secondAsset.address);
     }
     await this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
       type: Operation.CreatePair,

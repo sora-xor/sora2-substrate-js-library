@@ -389,8 +389,7 @@ export class SwapModule {
       liquiditySource
     );
     if (!this.root.assets.getAsset(assetB.address)) {
-      this.root.assets.addAccountAsset({ ...assetB, balance: ZeroBalance });
-      this.root.assets.updateAccountAssets();
+      this.root.assets.addAccountAsset(assetB.address);
     }
     await this.root.submitExtrinsic(
       (this.root.api.tx.liquidityProxy as any).swap(...params.args),
@@ -440,8 +439,7 @@ export class SwapModule {
       liquiditySource
     );
     if (!this.root.assets.getAsset(assetB.address)) {
-      this.root.assets.addAccountAsset({ ...assetB, balance: ZeroBalance });
-      this.root.assets.updateAccountAssets();
+      this.root.assets.addAccountAsset(assetB.address);
     }
 
     const swap = (this.root.api.tx.liquidityProxy as any).swap(...params.args);
