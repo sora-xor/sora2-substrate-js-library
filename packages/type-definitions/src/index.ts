@@ -15,19 +15,19 @@ import rewards from './rewards';
 import farming from './farming';
 import ceresStaking from './ceresStaking';
 import ceresLiquidityLocker from './ceresLiquidityLocker';
+import ceresTokenLocker from './ceresTokenLocker';
 import ceresGovernancePlatform from './ceresGovernancePlatform';
 import ceresLaunchpad from './ceresLaunchpad';
-import ceresTokenLocker from './ceresTokenLocker';
 
 import versionedOverrides from './versioned';
 
 const soraDefs = {
   assets,
   ceresGovernancePlatform,
-  ceresLaunchpad,
   ceresLiquidityLocker,
   ceresStaking,
   ceresTokenLocker,
+  ceresLaunchpad,
   dexApi,
   dexManager,
   ethBridge,
