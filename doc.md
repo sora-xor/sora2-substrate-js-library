@@ -8455,6 +8455,12 @@ returns: `Option<SwapOutcomeInfo>`
 "Text"
 ```
 
+### ContributionInfo
+
+```
+"Null"
+```
+
 ### CurrencyId
 
 ```
@@ -8608,6 +8614,12 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 "AccountId"
+```
+
+### ILOInfo
+
+```
+"Null"
 ```
 
 ### IncomingAddToken
@@ -9217,6 +9229,12 @@ returns: `Option<SwapOutcomeInfo>`
 "u32"
 ```
 
+### PollInfo
+
+```
+"Null"
+```
+
 ### PoolFarmer
 
 ```
@@ -9518,6 +9536,12 @@ returns: `Option<SwapOutcomeInfo>`
 }
 ```
 
+### TokenLockInfo
+
+```
+"Null"
+```
+
 ### TradingPair
 
 ```
@@ -9528,6 +9552,12 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 
 ### ValidationFunction
+
+```
+"Null"
+```
+
+### VotingInfo
 
 ```
 "Null"
