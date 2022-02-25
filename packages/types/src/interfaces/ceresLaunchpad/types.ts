@@ -2,6 +2,7 @@
 /* eslint-disable */
 
 import type { Struct, bool, u32 } from '@polkadot/types';
+import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AccountId, Balance, BlockNumber } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name ContributionInfo */
@@ -37,13 +38,6 @@ export interface ILOInfo extends Struct {
   readonly lp_tokens: Balance;
   readonly claimed_lp_tokens: bool;
   readonly finish_block: BlockNumber;
-}
-
-/** @name VestingInfo */
-export interface VestingInfo extends Struct {
-  readonly first_release_percent: Balance;
-  readonly vesting_period: BlockNumber;
-  readonly vesting_percent: Balance;
 }
 
 export type PHANTOM_CERESLAUNCHPAD = 'ceresLaunchpad';
