@@ -1,4 +1,5 @@
 import { assert } from '@polkadot/util';
+import type { Observable } from '@polkadot/types/types';
 
 import { Messages } from '../logger';
 import { FPNumber, NumberLike } from '../fp';
@@ -20,12 +21,20 @@ export class ReferralSystemModule {
   }
 
   /**
-   * Returns invited users of the referral
-   * @param referralId address of referral account
+   * Returns invited users of the referrer
+   * @param referrerId address of referrer account
    * @returns array of invited users
    */
-  public async getInvitedUsers(referralId: string): Promise<Array<string>> {
-    return (await this.root.api.query.referrals.referrals(referralId)) as any;
+  public async getInvitedUsers(referrerId: string): Promise<Array<string>> {
+    return (await this.root.api.query.referrals.referrals(referrerId)) as any;
+  }
+
+  /**
+   * Referrer's invited users subscription
+   * @param referrerId address of referrer account
+   */
+  public subscribeOnInvitedUsers(referrerId: string): Observable<Array<string>> {
+    return this.root.apiRx.query.referrals.referrals(referrerId) as unknown as Observable<Array<string>>;
   }
 
   /**
