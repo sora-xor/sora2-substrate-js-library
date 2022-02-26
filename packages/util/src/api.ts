@@ -193,7 +193,9 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Get all imported accounts
+   * Get all imported accounts.
+   * It returns list of imported accounts
+   * added via api.importAccount()
    *
    */
   public async getAccounts(): Promise<KeyringAddress[]> {
