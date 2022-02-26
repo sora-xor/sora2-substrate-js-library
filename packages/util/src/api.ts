@@ -2,7 +2,7 @@ import { assert, isHex } from '@polkadot/util';
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
 import keyring from '@polkadot/ui-keyring';
 import type { KeypairType } from '@polkadot/util-crypto/types';
-import type { CreateResult } from '@polkadot/ui-keyring/types';
+import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
 import type { KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
@@ -190,6 +190,16 @@ export class Api extends BaseApi {
     }
 
     this.initAccountStorage();
+  }
+
+  /**
+   * Get all imported accounts.
+   * It returns list of imported accounts
+   * added via api.importAccount()
+   *
+   */
+  public async getAccounts(): Promise<KeyringAddress[]> {
+    return keyring.getAccounts()
   }
 
   /**
