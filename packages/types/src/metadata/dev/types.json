@@ -53,6 +53,7 @@
         "target_asset_id": "AssetId"
     },
     "ContentSource": "Text",
+    "ContributionInfo": "Null",
     "CurrencyId": "AssetId",
     "CurrencyIdEncoded": {
         "_enum": {
@@ -103,6 +104,7 @@
     "Fixed": "FixedU128",
     "FixedBytes": "Vec<u8>",
     "HolderId": "AccountId",
+    "ILOInfo": "Null",
     "IncomingAddToken": {
         "token_address": "EthereumAddress",
         "asset_id": "AssetId",
@@ -455,6 +457,7 @@
     },
     "Permission": "Null",
     "PermissionId": "u32",
+    "PollInfo": "Null",
     "PoolFarmer": {
         "account": "AccountId",
         "block": "BlockNumber",
@@ -596,9 +599,11 @@
         "base_asset_id": "TechAssetId",
         "target_asset_id": "TechAssetId"
     },
+    "TokenLockInfo": "Null",
     "TradingPair": {
         "base_asset_id": "AssetId",
         "target_asset_id": "AssetId"
     },
-    "ValidationFunction": "Null"
+    "ValidationFunction": "Null",
+    "VotingInfo": "Null"
 }

@@ -22,8 +22,11 @@ import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, La
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig } from '@polkadot/types/interfaces/utility';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
+import type { PollInfo, VotingInfo } from '@sora-substrate/types/interfaces/ceresGovernancePlatform';
+import type { ContributionInfo, ILOInfo } from '@sora-substrate/types/interfaces/ceresLaunchpad';
 import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
 import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
+import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
@@ -32,17 +35,9 @@ import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/a
 
 export interface StorageType extends BaseStorageType {
   assets: {    /**
-     * Asset Id -> Content Source
+     * Asset Id -> (Symbol, Name, Precision, Is Mintable, Content Source, Description)
      **/
-    assetContentSource: StorageMap<AssetId | AnyNumber, Option<ContentSource>>;
-    /**
-     * Asset Id -> Description
-     **/
-    assetDescription: StorageMap<AssetId | AnyNumber, Option<Description>>;
-    /**
-     * Asset Id -> (Symbol, Name, Precision, Is Mintable)
-     **/
-    assetInfos: StorageMap<AssetId | AnyNumber, ITuple<[AssetSymbol, AssetName, BalancePrecision, bool]>>;
+    assetInfos: StorageMap<AssetId | AnyNumber, ITuple<[AssetSymbol, AssetName, BalancePrecision, bool, Option<ContentSource>, Option<Description>, ]>>;
     /**
      * Asset Id -> Owner Account Id
      **/
@@ -176,6 +171,31 @@ export interface StorageType extends BaseStorageType {
      **/
     multisigs: StorageDoubleMap<AccountId | string, U8aFixed | string, Option<Multisig>>;
   };
+  ceresGovernancePlatform: {    pollData: StorageMap<Bytes | string, PollInfo>;
+    /**
+     * A vote of a particular user for a particular poll
+     **/
+    voting: StorageDoubleMap<Bytes | string, AccountIdOf | string, VotingInfo>;
+  };
+  ceresLaunchpad: {    /**
+     * Account which has permissions for changing CERES burn amount fee
+     **/
+    authorityAccount: AccountIdOf | null;
+    /**
+     * Amount of CERES for burn fee
+     **/
+    ceresBurnFeeAmount: Balance | null;
+    /**
+     * Amount of CERES for contribution in ILO
+     **/
+    ceresForContributionInIlo: Balance | null;
+    contributions: StorageDoubleMap<AssetIdOf | AnyNumber, AccountIdOf | string, ContributionInfo>;
+    ilOs: StorageMap<AssetIdOf | AnyNumber, ILOInfo>;
+    /**
+     * Account for collecting penalties
+     **/
+    penaltiesAccount: AccountIdOf | null;
+  };
   ceresLiquidityLocker: {    /**
      * Account which has permissions for changing CERES amount fee
      **/
@@ -194,12 +214,30 @@ export interface StorageType extends BaseStorageType {
     feesOptionTwoCeresAmount: Balance | null;
     lockerData: StorageMap<AccountIdOf | string, Vec<LockInfo>>;
   };
-  ceresStaking: {    rewardsRemaining: Balance | null;
+  ceresStaking: {    /**
+     * Account which has permissions for changing remaining rewards
+     **/
+    authorityAccount: AccountIdOf | null;
+    rewardsRemaining: Balance | null;
     /**
      * AccountId -> StakingInfo
      **/
     stakers: StorageMap<AccountIdOf | string, StakingInfo>;
     totalDeposited: Balance | null;
+  };
+  ceresTokenLocker: {    /**
+     * Account which has permissions for changing fee
+     **/
+    authorityAccount: AccountIdOf | null;
+    /**
+     * Amount of CERES for locker fees option two
+     **/
+    feeAmount: Balance | null;
+    /**
+     * Account for collecting fees
+     **/
+    feesAccount: AccountIdOf | null;
+    tokenLockerData: StorageMap<AccountIdOf | string, Vec<TokenLockInfo>>;
   };
   council: {    /**
      * The current members of the collective. This is stored sorted (just by value).
