@@ -1,5 +1,6 @@
 {
     "runtime_id": 26,
+    "types": {},
     "versioning": [
         {
             "runtime_range": [
@@ -7,6 +8,10 @@
                 null
             ],
             "types": {
+                "String": "Text",
+                "FixedU128": "u128",
+                "U256": "u256",
+                "SessionKeys2": "(AccountId, AccountId)",
                 "AccountInfo": "AccountInfoWithDualRefCount",
                 "Address": "AccountId",
                 "Amount": "i128",
