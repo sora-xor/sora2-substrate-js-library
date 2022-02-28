@@ -173,11 +173,12 @@ export class Api extends BaseApi {
 
   /**
    * Import wallet operation
+   * It returns account creation result
    * @param suri Seed of the wallet
    * @param name Name of the wallet account
    * @param password Password which will be set for the wallet
    */
-  public importAccount(suri: string, name: string, password: string): void {
+  public async importAccount(suri: string, name: string, password: string): Promise<CreateResult> {
     const account = keyring.addUri(suri, password, { name }, this.type);
 
     this.setAccount(account);
@@ -190,6 +191,8 @@ export class Api extends BaseApi {
     }
 
     this.initAccountStorage();
+
+    return account;
   }
 
   /**
