@@ -22,8 +22,11 @@ import type { AccountInfo, ConsumedWeight, DigestOf, EventIndex, EventRecord, La
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { Multisig } from '@polkadot/types/interfaces/utility';
 import type { AssetRecord } from '@sora-substrate/types/interfaces/assets';
+import type { PollInfo, VotingInfo } from '@sora-substrate/types/interfaces/ceresGovernancePlatform';
+import type { ContributionInfo, ILOInfo } from '@sora-substrate/types/interfaces/ceresLaunchpad';
 import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
 import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
+import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';

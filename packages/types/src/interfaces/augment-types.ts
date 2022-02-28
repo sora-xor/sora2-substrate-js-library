@@ -65,8 +65,11 @@ import type { Multisig, Timepoint } from '@polkadot/types/interfaces/utility';
 import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AccountId32Junction, AccountIndex64Junction, AccountKey20Junction, AssetInstance, BodyId, BodyPart, BodyPartAtLeastProportion, BodyPartFraction, BodyPartMoreThanProportion, DoubleEncodedCall, InboundStatus, Junction, MultiAsset, MultiAssetAbstractFungible, MultiAssetAbstractNonFungible, MultiAssetConcreteFungible, MultiAssetConcreteNonFungible, MultiLocation, NetworkId, OutboundStatus, Outcome, PluralityJunction, QueueConfigData, VersionedMultiAsset, VersionedMultiLocation, VersionedXcm, Xcm, XcmAssetEffects, XcmError, XcmHrmpChannelAccepted, XcmHrmpChannelClosing, XcmHrmpNewChannelOpenRequest, XcmOrder, XcmOrderBuyExecution, XcmOrderDepositAsset, XcmOrderDepositReserveAsset, XcmOrderExchangeAsset, XcmOrderInitiateReserveWithdraw, XcmOrderInitiateTeleport, XcmOrderQueryHolding, XcmOriginKind, XcmQueryResponse, XcmRelayedFrom, XcmReserveAssetDeposit, XcmResponse, XcmTeleportAsset, XcmTransact, XcmTransferAsset, XcmTransferReserveAsset, XcmWithdrawAsset, XcmpMessageFormat } from '@polkadot/types/interfaces/xcm';
 import type { AssetInfo, AssetNameStr, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
+import type { PollInfo, VotingInfo } from '@sora-substrate/types/interfaces/ceresGovernancePlatform';
+import type { ContributionInfo, ILOInfo } from '@sora-substrate/types/interfaces/ceresLaunchpad';
 import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
 import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
+import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
@@ -387,6 +390,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<ContractStorageKey>': Option<ContractStorageKey>;
     'Option<ContractStorageLayout>': Option<ContractStorageLayout>;
     'Option<ContractTypeSpec>': Option<ContractTypeSpec>;
+    'Option<ContributionInfo>': Option<ContributionInfo>;
     'Option<Conviction>': Option<Conviction>;
     'Option<CoreAssignment>': Option<CoreAssignment>;
     'Option<CoreIndex>': Option<CoreIndex>;
@@ -623,6 +627,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<IdentityInfo>': Option<IdentityInfo>;
     'Option<IdentityInfoAdditional>': Option<IdentityInfoAdditional>;
     'Option<IdentityJudgement>': Option<IdentityJudgement>;
+    'Option<ILOInfo>': Option<ILOInfo>;
     'Option<ImmortalEra>': Option<ImmortalEra>;
     'Option<ImportedAux>': Option<ImportedAux>;
     'Option<InboundDownwardMessage>': Option<InboundDownwardMessage>;
@@ -858,6 +863,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<PhragmenScore>': Option<PhragmenScore>;
     'Option<PluralityJunction>': Option<PluralityJunction>;
     'Option<Points>': Option<Points>;
+    'Option<PollInfo>': Option<PollInfo>;
     'Option<PoolFarmer>': Option<PoolFarmer>;
     'Option<PoolInfo>': Option<PoolInfo>;
     'Option<PostDispatchInfo>': Option<PostDispatchInfo>;
@@ -1092,6 +1098,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<TimestampedValue>': Option<TimestampedValue>;
     'Option<TimestampedValueOf>': Option<TimestampedValueOf>;
     'Option<TokenError>': Option<TokenError>;
+    'Option<TokenLockInfo>': Option<TokenLockInfo>;
     'Option<TombstoneContractInfo>': Option<TombstoneContractInfo>;
     'Option<TP>': Option<TP>;
     'Option<TraceBlockResponse>': Option<TraceBlockResponse>;
@@ -1163,6 +1170,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<VotingDelegating>': Option<VotingDelegating>;
     'Option<VotingDirect>': Option<VotingDirect>;
     'Option<VotingDirectVote>': Option<VotingDirectVote>;
+    'Option<VotingInfo>': Option<VotingInfo>;
     'Option<VouchingStatus>': Option<VouchingStatus>;
     'Option<VrfData>': Option<VrfData>;
     'Option<VrfOutput>': Option<VrfOutput>;
@@ -1399,6 +1407,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<ContractStorageKey>': Vec<ContractStorageKey>;
     'Vec<ContractStorageLayout>': Vec<ContractStorageLayout>;
     'Vec<ContractTypeSpec>': Vec<ContractTypeSpec>;
+    'Vec<ContributionInfo>': Vec<ContributionInfo>;
     'Vec<Conviction>': Vec<Conviction>;
     'Vec<CoreAssignment>': Vec<CoreAssignment>;
     'Vec<CoreIndex>': Vec<CoreIndex>;
@@ -1635,6 +1644,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<IdentityInfo>': Vec<IdentityInfo>;
     'Vec<IdentityInfoAdditional>': Vec<IdentityInfoAdditional>;
     'Vec<IdentityJudgement>': Vec<IdentityJudgement>;
+    'Vec<ILOInfo>': Vec<ILOInfo>;
     'Vec<ImmortalEra>': Vec<ImmortalEra>;
     'Vec<ImportedAux>': Vec<ImportedAux>;
     'Vec<InboundDownwardMessage>': Vec<InboundDownwardMessage>;
@@ -1870,6 +1880,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<PhragmenScore>': Vec<PhragmenScore>;
     'Vec<PluralityJunction>': Vec<PluralityJunction>;
     'Vec<Points>': Vec<Points>;
+    'Vec<PollInfo>': Vec<PollInfo>;
     'Vec<PoolFarmer>': Vec<PoolFarmer>;
     'Vec<PoolInfo>': Vec<PoolInfo>;
     'Vec<PostDispatchInfo>': Vec<PostDispatchInfo>;
@@ -2104,6 +2115,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<TimestampedValue>': Vec<TimestampedValue>;
     'Vec<TimestampedValueOf>': Vec<TimestampedValueOf>;
     'Vec<TokenError>': Vec<TokenError>;
+    'Vec<TokenLockInfo>': Vec<TokenLockInfo>;
     'Vec<TombstoneContractInfo>': Vec<TombstoneContractInfo>;
     'Vec<TP>': Vec<TP>;
     'Vec<TraceBlockResponse>': Vec<TraceBlockResponse>;
@@ -2175,6 +2187,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<VotingDelegating>': Vec<VotingDelegating>;
     'Vec<VotingDirect>': Vec<VotingDirect>;
     'Vec<VotingDirectVote>': Vec<VotingDirectVote>;
+    'Vec<VotingInfo>': Vec<VotingInfo>;
     'Vec<VouchingStatus>': Vec<VouchingStatus>;
     'Vec<VrfData>': Vec<VrfData>;
     'Vec<VrfOutput>': Vec<VrfOutput>;
@@ -2411,6 +2424,7 @@ declare module '@polkadot/types/types/registry' {
     ContractStorageKey: ContractStorageKey;
     ContractStorageLayout: ContractStorageLayout;
     ContractTypeSpec: ContractTypeSpec;
+    ContributionInfo: ContributionInfo;
     Conviction: Conviction;
     CoreAssignment: CoreAssignment;
     CoreIndex: CoreIndex;
@@ -2647,6 +2661,7 @@ declare module '@polkadot/types/types/registry' {
     IdentityInfo: IdentityInfo;
     IdentityInfoAdditional: IdentityInfoAdditional;
     IdentityJudgement: IdentityJudgement;
+    ILOInfo: ILOInfo;
     ImmortalEra: ImmortalEra;
     ImportedAux: ImportedAux;
     InboundDownwardMessage: InboundDownwardMessage;
@@ -2882,6 +2897,7 @@ declare module '@polkadot/types/types/registry' {
     PhragmenScore: PhragmenScore;
     PluralityJunction: PluralityJunction;
     Points: Points;
+    PollInfo: PollInfo;
     PoolFarmer: PoolFarmer;
     PoolInfo: PoolInfo;
     PostDispatchInfo: PostDispatchInfo;
@@ -3116,6 +3132,7 @@ declare module '@polkadot/types/types/registry' {
     TimestampedValue: TimestampedValue;
     TimestampedValueOf: TimestampedValueOf;
     TokenError: TokenError;
+    TokenLockInfo: TokenLockInfo;
     TombstoneContractInfo: TombstoneContractInfo;
     TP: TP;
     TraceBlockResponse: TraceBlockResponse;
@@ -3187,6 +3204,7 @@ declare module '@polkadot/types/types/registry' {
     VotingDelegating: VotingDelegating;
     VotingDirect: VotingDirect;
     VotingDirectVote: VotingDirectVote;
+    VotingInfo: VotingInfo;
     VouchingStatus: VouchingStatus;
     VrfData: VrfData;
     VrfOutput: VrfOutput;

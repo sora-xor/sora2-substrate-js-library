@@ -41,8 +41,10 @@ function formatBalance(
 }
 
 async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
-  const [symbol, name, decimals, _] = (await api.query.assets.assetInfos(address)).toHuman() as any;
-  return { address, symbol, name, decimals: +decimals } as Asset;
+  const [symbol, name, decimals, _, content, description] = (
+    await api.query.assets.assetInfos(address)
+  ).toHuman() as any;
+  return { address, symbol, name, decimals: +decimals, content, description } as Asset;
 }
 
 async function getAssetBalance(
@@ -84,8 +86,8 @@ export function isNativeAsset(asset: any): boolean {
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist): Promise<Array<Asset>> {
   const assets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
     const [address] = key.toHuman() as any;
-    const [symbol, name, decimals, _] = codec.toHuman() as any;
-    return { address, symbol, name, decimals: +decimals };
+    const [symbol, name, decimals, _, content, description] = codec.toHuman() as any;
+    return { address, symbol, name, decimals: +decimals, content, description };
   }) as Array<Asset>;
   return !whitelist
     ? assets
@@ -163,6 +165,16 @@ export class AssetsModule {
       return false;
     }
     return address !== asset.address;
+  }
+
+  /**
+   * Checks if asset is NFT or not.
+   *
+   * **Asset is NFT if it has content and description fields**
+   * @param asset
+   */
+  isNft(asset: Asset | AccountAsset): boolean {
+    return !!(asset.content && asset.description);
   }
 
   // Default assets addresses of account - list of NativeAssets addresses
@@ -277,7 +289,7 @@ export class AssetsModule {
     }
 
     for (const assetAddress of currentAddresses) {
-      this.addToAccountAssetsList(assetAddress);
+      await this.addToAccountAssetsList(assetAddress);
     }
   }
 
@@ -298,6 +310,8 @@ export class AssetsModule {
         decimals: existingAsset.decimals,
         symbol: existingAsset.symbol,
         name: existingAsset.name,
+        content: (existingAsset as AccountAsset).content, // will be undefined,
+        description: (existingAsset as AccountAsset).description, // if there are no such props
       } as Asset;
     }
     return await getAssetInfo(this.root.api, address);
@@ -310,8 +324,8 @@ export class AssetsModule {
    */
   public async getAccountAsset(address: string): Promise<AccountAsset> {
     assert(this.root.account, Messages.connectWallet);
-    const { decimals, symbol, name } = await this.getAssetInfo(address);
-    const asset = { address, decimals, symbol, name } as AccountAsset;
+    const { decimals, symbol, name, content, description } = await this.getAssetInfo(address);
+    const asset = { address, decimals, symbol, name, content, description } as AccountAsset;
     const result = await getAssetBalance(this.root.api, this.root.account.pair.address, address, decimals);
     asset.balance = result;
 
@@ -361,16 +375,16 @@ export class AssetsModule {
     name: string,
     totalSupply: NumberLike,
     extensibleSupply: boolean,
+    nonDivisible: boolean,
     nft = {
-      isNft: false,
       content: null,
       description: null,
     }
   ) {
     assert(this.root.account, Messages.connectWallet);
-    const supply = nft.isNft ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply);
+    const supply = nonDivisible ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply);
     return {
-      args: [symbol, name, supply.toCodecString(), extensibleSupply, nft.isNft, nft.content, nft.description],
+      args: [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description],
     };
   }
 
@@ -378,42 +392,26 @@ export class AssetsModule {
    * Register asset
    * @param symbol string with asset symbol
    * @param name string with asset name
-   * @param totalSupply
-   * @param extensibleSupply
+   * @param totalSupply total token supply
+   * @param extensibleSupply `true` means that token can be mintable any time by the owner of that token. `false` by default
+   * @param nonDivisible `false` by default
+   * @param nft Nft params object which contains content & description
    */
   public async register(
     symbol: string,
     name: string,
     totalSupply: NumberLike,
     extensibleSupply = false,
+    nonDivisible = false,
     nft = {
-      isNft: false,
       content: null,
       description: null,
     }
   ): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nft);
+    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nonDivisible, nft);
     await this.root.submitExtrinsic((this.root.api.tx.assets.register as any)(...params.args), this.root.account.pair, {
       symbol,
       type: Operation.RegisterAsset,
     });
-  }
-
-  /**
-   * Get NFT content
-   * @param assetId Asset ID
-   */
-  public async getNftContent(assetId: string): Promise<string> {
-    const content = await this.root.api.query.assets.assetContentSource(assetId);
-    return `${content.toHuman()}`;
-  }
-
-  /**
-   * Get NFT description
-   * @param assetId Asset ID
-   */
-  public async getNftDescription(assetId: string): Promise<string> {
-    const desc = await this.root.api.query.assets.assetDescription(assetId);
-    return `${desc.toHuman()}`;
   }
 }
