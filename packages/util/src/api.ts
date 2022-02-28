@@ -177,7 +177,7 @@ export class Api extends BaseApi {
    * @param name Name of the wallet account
    * @param password Password which will be set for the wallet
    */
-  public async importAccount(suri: string, name: string, password: string): void {
+  public importAccount(suri: string, name: string, password: string): void {
     const account = keyring.addUri(suri, password, { name }, this.type);
 
     this.setAccount(account);
