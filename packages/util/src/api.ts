@@ -18,6 +18,7 @@ import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
 import { MstTransfersModule } from './mstTransfers';
 import { SystemModule } from './system';
+import { StakingModule } from './staking';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
@@ -41,6 +42,7 @@ export class Api extends BaseApi {
   /** This module is used for internal needs */
   public readonly mstTransfers: MstTransfersModule = new MstTransfersModule(this);
   public readonly system: SystemModule = new SystemModule(this);
+  public readonly staking: StakingModule = new StakingModule(this);
 
   public initAccountStorage() {
     super.initAccountStorage();
@@ -192,29 +194,29 @@ export class Api extends BaseApi {
     this.initAccountStorage();
   }
 
-   /**
+  /**
    * Import wallet operation
    * It returns account creation result
    * @param suri Seed of the wallet
    * @param name Name of the wallet account
    * @param password Password which will be set for the wallet
    */
-    public async createAccount(suri: string, name: string, password: string): Promise<CreateResult> {
-      const account = keyring.addUri(suri, password, { name }, this.type);
-  
-      this.setAccount(account);
-  
-      if (this.storage) {
-        this.storage.set('name', name);
-        this.storage.set('password', encrypt(password));
-        const soraAddress = this.formatAddress(account.pair.address);
-        this.storage.set('address', soraAddress);
-      }
-  
-      this.initAccountStorage();
-  
-      return account;
+  public async createAccount(suri: string, name: string, password: string): Promise<CreateResult> {
+    const account = keyring.addUri(suri, password, { name }, this.type);
+
+    this.setAccount(account);
+
+    if (this.storage) {
+      this.storage.set('name', name);
+      this.storage.set('password', encrypt(password));
+      const soraAddress = this.formatAddress(account.pair.address);
+      this.storage.set('address', soraAddress);
     }
+
+    this.initAccountStorage();
+
+    return account;
+  }
 
   /**
    * Get all imported accounts.
@@ -223,7 +225,7 @@ export class Api extends BaseApi {
    *
    */
   public async getAccounts(): Promise<KeyringAddress[]> {
-    return keyring.getAccounts()
+    return keyring.getAccounts();
   }
 
   /**
