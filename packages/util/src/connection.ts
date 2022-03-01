@@ -14,8 +14,8 @@ export interface ConnectionRunOptions {
 }
 
 class Connection {
-  public api: ApiPromise;
-  public endpoint: string;
+  public api: ApiPromise | null = null;
+  public endpoint = '';
   public loading = false;
   public eventHandlers: Array<Function> = [];
 
@@ -64,6 +64,7 @@ class Connection {
 
       await Promise.race(connectionRequests);
 
+      // check race condition case: another call of 'run' was faster
       if (!connectionEndpointIsStable()) {
         api.disconnect();
         return;
@@ -93,9 +94,10 @@ class Connection {
     }
   }
 
-  private async stop(): Promise<void> {
-    if (this.api) {
-      this.unsubscribeEventHandlers();
+  private async stop(isConnected = true): Promise<void> {
+    this.unsubscribeEventHandlers();
+    // close the connection manually
+    if (isConnected && this.api) {
       try {
         await this.api.disconnect();
       } catch (error) {
@@ -110,15 +112,29 @@ class Connection {
     return !!this.api;
   }
 
+  /**
+   * Open connection
+   * @param endpoint address of node
+   * @param options
+   */
   public async open(endpoint?: string, options?: ConnectionRunOptions): Promise<void> {
     assert(endpoint || this.endpoint, Messages.endpointIsUndefined);
     await this.withLoading(async () => await this.run(endpoint || this.endpoint, options));
   }
 
-  public async close(): Promise<void> {
-    await this.withLoading(async () => await this.stop());
+  /**
+   * Close connection
+   * @param isConnected is current connection stable (node is connected)
+   */
+  public async close(isConnected = true): Promise<void> {
+    await this.withLoading(async () => await this.stop(isConnected));
   }
 
+  /**
+   * Close connection and open to new endpoint
+   * @param endpoint address of node
+   * @param options
+   */
   public async restart(endpoint: string, options?: ConnectionRunOptions): Promise<void> {
     await this.withLoading(async () => {
       await this.stop();
