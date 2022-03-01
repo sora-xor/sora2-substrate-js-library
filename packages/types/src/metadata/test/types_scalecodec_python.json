@@ -69,6 +69,7 @@
                 },
                 "BalancePrecision": "u8",
                 "BasisPoints": "u16",
+                "NetworkId": "BridgeNetworkId",
                 "BridgeNetworkId": "u32",
                 "BridgeStatus": {
                     "type": "enum",
