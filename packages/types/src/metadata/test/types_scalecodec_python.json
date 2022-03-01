@@ -1819,6 +1819,27 @@
                     ]
                 },
                 "ValidationFunction": "Null",
+                "BTreeMap<RewardReason,Balance>": "Vec<(RewardReason,Balance)>",
+                "BTreeSet<SignatureParams>": "Vec<SignatureParams>",
+                "BTreeSet<H256>": "Vec<H256>",
+                "BTreeSet<AssetId>": "Vec<AssetId>",
+                "BTreeSet<AssetIdOf>": "Vec<AssetIdOf>",
+                "BTreeSet<AccountId>": "Vec<AccountId>",
+                "BTreeSet<LiquiditySourceType>": "Vec<LiquiditySourceType>",
+                "ecdsa::Public": "[u8; 33]",
+                "Result<IncomingRequest, DispatchError>": {
+                  "type": "enum",
+                  "type_mapping": [
+                    [
+                      "Ok",
+                      "IncomingRequest"
+                    ],
+                    [
+                      "Err",
+                      "DispatchError"
+                    ]
+                  ]
+                },
                 "VotingInfo": {
                     "type": "struct",
                     "type_mapping": [
