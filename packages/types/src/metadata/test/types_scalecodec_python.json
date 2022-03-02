@@ -1829,17 +1829,17 @@
                 "BTreeSet<LiquiditySourceType>": "Vec<LiquiditySourceType>",
                 "ecdsa::Public": "[u8; 33]",
                 "Result<IncomingRequest, DispatchError>": {
-                  "type": "enum",
-                  "type_mapping": [
-                    [
-                      "Ok",
-                      "IncomingRequest"
-                    ],
-                    [
-                      "Err",
-                      "DispatchError"
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "Ok",
+                            "IncomingRequest"
+                        ],
+                        [
+                            "Err",
+                            "DispatchError"
+                        ]
                     ]
-                  ]
                 },
                 "VotingInfo": {
                     "type": "struct",
