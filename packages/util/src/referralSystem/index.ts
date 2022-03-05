@@ -66,12 +66,19 @@ export class ReferralSystemModule {
 
   /**
    * Sets invited user to their referral if the account doesn’t have a referral yet.
-   * This extrinsic is paid by the special balance of the referral if the invited user doesn’t have a referral,
-   * otherwise the extrinsic fails and the fee is paid by the invited user
+   * This extrinsic is paid by the bonded balance of the referral if the invited user doesn’t have a referral,
+   * otherwise the extrinsic fails and the fee is paid by the invited user. Also, if referral doesn't have enough
+   * bonded balance for this call, then this method will fail.
    * @param referralId address of referral account
    */
   public async setInvitedUser(referralId: string): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
+    // Check the ability for paying fee
+    const bondedData = await this.root.api.query.referrals.referrerBalances(referralId);
+    const bonded = new FPNumber(bondedData || 0);
+    const requiredFeeValue = FPNumber.fromCodecValue(this.root.NetworkFee.ReferralSetInvitedUser || 0);
+    assert(FPNumber.gte(bonded, requiredFeeValue), Messages.inabilityOfReferrerToPayFee);
+
     const formattedToAddress = referralId.slice(0, 2) === 'cn' ? referralId : this.root.formatAddress(referralId);
     await this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referralId), this.root.account.pair, {
       to: formattedToAddress,
