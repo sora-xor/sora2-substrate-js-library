@@ -16,6 +16,7 @@ import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
 import type { RewardClaimHistory } from './rewards/types';
+import type { StakingHistory } from './staking/types';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -31,7 +32,7 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
-export type HistoryItem = History | BridgeHistory | RewardClaimHistory;
+export type HistoryItem = History | BridgeHistory | RewardClaimHistory | StakingHistory;
 
 export type AccountHistory<T> = {
   [key: string]: T;
@@ -614,6 +615,16 @@ export enum Operation {
   ReferralReserveXor = 'ReferralReserveXor',
   ReferralUnreserveXor = 'ReferralUnreserveXor',
   ReferralSetInvitedUser = 'ReferralSetInvitedUser',
+  StakingBond = 'StakingBond',
+  StakingBondExtra = 'StakingBondExtra',
+  StakingRebond = 'StakingRebond',
+  StakingUnbond = 'StakingUnbond',
+  StakingWithdrawUnbonded = 'StakingWithdrawUnbonded',
+  StakingNominate = 'StakingNominate',
+  StakingChill = 'StakingChill',
+  StakingSetPayee = 'StakingSetPayee',
+  StakingSetController = 'StakingSetController',
+  StakingPayout = 'StakingPayout',
 }
 
 export interface History {
