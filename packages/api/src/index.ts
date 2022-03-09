@@ -8,6 +8,7 @@ import {
   typesBundle as soraTypesBundle,
 } from '@sora-substrate/types';
 import { ApiOptions } from '@polkadot/api/types';
+export type { KeyringPair$Json } from '@polkadot/keyring/types';
 
 export const defaultOptions: ApiOptions = {
   types: soraTypes,
