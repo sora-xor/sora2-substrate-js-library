@@ -247,16 +247,21 @@ export class StakingModule {
   /**
    * **CONTROLLER**
    * Moves unlocked value to the free balance of the stash account
-   * @param slashingSpans parameter is needed to ensure
-   * that the user agrees that staking information will be removed when there is no unlocking items pending
-   * and active value goes below minimum_balance due to slashing.
+   * @param value amount to withdraw - not used in extrinsic call, but can be passed to save this value in history
    */
-  public async withdrawUndonded(slashingSpans = 0): Promise<void> {
+  public async withdrawUndonded(value?: NumberLike): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
+    /**
+     * slashingSpans parameter is needed to ensure
+     * that the user agrees that staking information will be removed when there is no unlocking items pending
+     * and active value goes below minimum_balance due to slashing.
+     */
+    const slashingSpans = 0;
     await this.root.submitExtrinsic(this.root.api.tx.staking.withdrawUnbonded(slashingSpans), this.root.account.pair, {
       type: Operation.StakingWithdrawUnbonded,
       symbol: XOR.symbol,
       assetAddress: XOR.address,
+      amount: value ? `${value}` : undefined,
     });
   }
 
