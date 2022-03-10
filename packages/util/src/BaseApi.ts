@@ -18,7 +18,7 @@ import type { BridgeHistory } from './BridgeApi';
 import type { RewardClaimHistory } from './rewards/types';
 import type { StakingHistory } from './staking/types';
 
-type AccountWithOptions = {
+type AccountPairOrAddressWithOptions = {
   account: AddressOrPair;
   options: Partial<SignerOptions>;
 };
@@ -263,9 +263,11 @@ export class BaseApi {
     this.storage = storage;
   }
 
-  private getAccountWithOptions(): AccountWithOptions {
+  private getAccountPairOrAddressWithOptions(keyringPair?: KeyringPair): AccountPairOrAddressWithOptions {
+    const pair = keyringPair ?? this.accountPair;
+
     return {
-      account: this.accountPair.isLocked ? this.accountPair.address : this.accountPair,
+      account: pair.isLocked ? pair.address : pair,
       options: { signer: this.signer },
     };
   }
@@ -279,11 +281,11 @@ export class BaseApi {
     const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
     if (isNotFaucetOperation && signer) {
-      history.from = this.address;
+      history.from = signer.address;
     }
 
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
-    const { account, options } = this.getAccountWithOptions();
+    const { account, options } = this.getAccountPairOrAddressWithOptions(signer);
     // TODO: Add ERA only for SWAP
     // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
@@ -429,7 +431,7 @@ export class BaseApi {
       default:
         throw new Error('Unknown function');
     }
-    const { account, options } = this.getAccountWithOptions();
+    const { account, options } = this.getAccountPairOrAddressWithOptions();
     const tx = type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic);
     const res = await tx.paymentInfo(account, options);
     return new FPNumber(res.partialFee, XOR.decimals).toCodecString();

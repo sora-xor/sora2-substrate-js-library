@@ -7,7 +7,8 @@ export interface StakingHistory extends History {
 }
 
 export enum StakingRewardsDestination {
-  Staked = 'Staked',
+  /** not used in sora */
+  // Staked = 'Staked',
   Stash = 'Stash',
   Controller = 'Controller',
   Account = 'Account',

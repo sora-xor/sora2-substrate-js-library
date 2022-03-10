@@ -19,7 +19,6 @@ import type {
   AccountStakingLedger,
   AccountStakingLedgerUnlock,
 } from './types';
-import { add } from 'lodash';
 
 export class StakingModule {
   constructor(private readonly root: Api) {}
@@ -89,14 +88,14 @@ export class StakingModule {
 
   /**
    * **CONTROLLER**
-   * Get observable information about locked funds and claimed rewards
+   * CONTROLLER - STASH relation
+   * Get observable information about stash address, locked funds and claimed rewards
+   * @param accountAddress address of controller account
    */
-  public getAccountLedgerObservable(): Observable<AccountStakingLedger> {
-    assert(this.root.account, Messages.connectWallet);
-
+  public getAccountLedgerObservable(accountAddress: string): Observable<AccountStakingLedger> {
     const toCodecString = (value: string) => FPNumber.fromCodecValue(value).toCodecString();
 
-    return this.root.apiRx.query.staking.ledger(this.root.account.pair.address).pipe(
+    return this.root.apiRx.query.staking.ledger(accountAddress).pipe(
       map((data) => {
         const { stash, total, active, unlocking } = data.toJSON() as any;
 
@@ -114,11 +113,14 @@ export class StakingModule {
 
   /**
    * **STASH**
+   * STASH - CONTROLLER relation
    * Get observable controller account address for stash account
-   * @param stashAddress address of stash accout
    */
-  public getControllerObservable(stashAddress: string): Observable<string | null> {
-    return this.root.apiRx.query.staking.bonded(stashAddress).pipe(map((data) => data.toHuman() as string | null));
+  public getControllerObservable(): Observable<string | null> {
+    assert(this.root.account, Messages.connectWallet);
+    return this.root.apiRx.query.staking
+      .bonded(this.root.account.pair.address)
+      .pipe(map((data) => data.toHuman() as string | null));
   }
 
   /**
