@@ -4,4 +4,5 @@ export const Messages = {
   endpointIsUndefined: 'You should set endpoint for connection',
   pairAlreadyCreated: 'Token pair was already created',
   noTransferData: 'There is no data for transfers',
+  provideAccountPair: 'You should provide account pair to sign transaction',
 };

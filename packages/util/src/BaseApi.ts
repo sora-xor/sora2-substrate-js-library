@@ -2,6 +2,7 @@ import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { Keyring } from '@polkadot/api';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
@@ -581,6 +582,23 @@ export class BaseApi {
    */
   public encrypt(value: string): string {
     return encrypt(value);
+  }
+
+  /**
+   * Get pair of account by address
+   * @param accountAddress address of account
+   * @returns account pair or throws error
+   */
+  public getAccountPair(accountAddress: string): KeyringPair | null {
+    try {
+      const keyringInstance = new Keyring({ type: KeyringType });
+      const pair = keyringInstance.addFromAddress(accountAddress);
+
+      return pair;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   }
 }
 
