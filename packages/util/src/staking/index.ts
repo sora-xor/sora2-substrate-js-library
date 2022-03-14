@@ -17,9 +17,14 @@ import type {
   ActiveEra,
   EraElectionStatus,
   EraRewardPoints,
+  ElectedValidator,
+  NominatorInfo,
   AccountStakingLedger,
   AccountStakingLedgerUnlock,
 } from './types';
+
+const toCodecString = (value: string) => FPNumber.fromCodecValue(value).toCodecString();
+const fromCodec = (value: any) => new FPNumber(value).toCodecString();
 
 export class StakingModule {
   constructor(private readonly root: Api) {}
@@ -34,6 +39,36 @@ export class StakingModule {
     assert(pair, Messages.provideAccountPair);
 
     return pair;
+  }
+
+  /**
+   * Get observable session index
+   *
+   * Each era is divided into sessions.
+   * Session defines an interval during which validators must submit heartbeat if they don’t produce blocks.
+   * Another usage of sessions is that reward points are calculated per session.
+   * Reward points are used to calculate reward for validators at the end of each era.
+   * @returns session index
+   */
+  public getCurrentSessionObservable(): Observable<number> {
+    return this.root.apiRx.query.session.currentIndex().pipe(
+      map((data) => {
+        return data.toNumber();
+      })
+    );
+  }
+
+  /**
+   * Get observable preferred validator count
+   * Staking module provides a variable that describes the preferred number of validators needs to be elected per era
+   * @returns validator count (69)
+   */
+  public getPreferredValidatorCountObservable(): Observable<number> {
+    return this.root.apiRx.query.staking.validatorCount().pipe(
+      map((data) => {
+        return data.toNumber();
+      })
+    );
   }
 
   /**
@@ -55,7 +90,7 @@ export class StakingModule {
   public getCurrentEraObservable(): Observable<number> {
     return this.root.apiRx.query.staking.currentEra().pipe(
       map((data) => {
-        return data.toHuman() as number;
+        return data.toJSON() as number;
       })
     );
   }
@@ -106,8 +141,6 @@ export class StakingModule {
    * @param controllerAddress address of controller account
    */
   public getAccountLedgerObservable(controllerAddress: string): Observable<AccountStakingLedger | null> {
-    const toCodecString = (value: string) => FPNumber.fromCodecValue(value).toCodecString();
-
     return this.root.apiRx.query.staking.ledger(controllerAddress).pipe(
       map((data) => {
         const ledger = data.toJSON() as any;
@@ -139,17 +172,54 @@ export class StakingModule {
   }
 
   /**
-   * Get list of validators infos (address, commission, blocked)
+   * Get all accounts which want to be a validator
+   * @returns list of validators infos (address, commission, blocked)
    */
-  public async getValidatorInfos(): Promise<ValidatorInfo[]> {
+  public async getWannabeValidators(): Promise<ValidatorInfo[]> {
     const validators = (await this.root.api.query.staking.validators.entries()).map(([key, codec]) => {
       const [address] = key.toHuman() as any;
-      const { commission, blocked } = codec.toHuman();
+      const { commission, blocked } = codec;
 
-      return { address, commission, blocked };
+      return {
+        address: address as string,
+        blocked: blocked.isTrue,
+        commission: commission.toHuman() as string,
+      };
     });
 
-    return validators as ValidatorInfo[];
+    return validators;
+  }
+
+  /**
+   * Get a set of validators elected for a given era
+   * @param eraIndex index of era
+   * @returns a list of elected validators
+   */
+  public async getElectedValidators(eraIndex: number): Promise<ElectedValidator[]> {
+    const validators = (await this.root.api.query.staking.erasStakers.entries(eraIndex)).map(([key, codec]) => {
+      const [eraIdx, address] = key.toHuman() as any;
+      const { total, own, others } = codec;
+
+      return {
+        address,
+        total: fromCodec(total),
+        own: fromCodec(own),
+        others: others.map((item) => ({ who: item.who.toString(), value: fromCodec(item.value) })),
+      };
+    });
+
+    return validators;
+  }
+
+  /**
+   * New set of validators for the current era starts working from the second session of the era and until the first session of the next era.
+   * This request is used to fetch validators when EraStakers returns no validators during transition to the new era.
+   * @returns list of validator addresses
+   */
+  public async getSessionValidators(): Promise<string[]> {
+    const data = (await this.root.api.query.session.validators()).toHuman() as any;
+
+    return data as string[];
   }
 
   /**

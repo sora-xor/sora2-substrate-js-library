@@ -21,6 +21,21 @@ export type ValidatorInfo = {
   blocked: boolean;
 };
 
+export type NominatorInfo = {
+  who: string;
+  value: string;
+};
+
+export type ElectedValidator = {
+  address: string;
+  total: string;
+  own: string;
+  others: {
+    who: string;
+    value: string;
+  }[];
+};
+
 export type StashNominatorsInfo = {
   submittedIn: number; // era in which account submitted the decision to nominate
   suppressed: boolean; // not used currently by substrate and designed for future
