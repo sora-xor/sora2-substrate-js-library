@@ -21,20 +21,18 @@ export type ValidatorInfo = {
   blocked: boolean;
 };
 
-export type NominatorInfo = {
-  who: string;
-  value: string;
-};
-
-export type ElectedValidator = {
-  address: string;
+export interface ValidatorExposure {
   total: string;
   own: string;
   others: {
     who: string;
     value: string;
   }[];
-};
+}
+
+export interface ElectedValidator extends ValidatorExposure {
+  address: string;
+}
 
 export type StashNominatorsInfo = {
   submittedIn: number; // era in which account submitted the decision to nominate

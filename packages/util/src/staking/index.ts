@@ -7,6 +7,8 @@ import { Operation } from '../BaseApi';
 import { XOR } from '../assets/consts';
 import { StakingRewardsDestination } from './types';
 
+import type { Exposure } from '@polkadot/types/interfaces/staking';
+
 import type { Observable } from '@polkadot/types/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
 import type { Api } from '../api';
@@ -17,22 +19,28 @@ import type {
   ActiveEra,
   EraElectionStatus,
   EraRewardPoints,
+  ValidatorExposure,
   ElectedValidator,
-  NominatorInfo,
   AccountStakingLedger,
-  AccountStakingLedgerUnlock,
 } from './types';
 
-const toCodecString = (value: string) => FPNumber.fromCodecValue(value).toCodecString();
-const fromCodec = (value: any) => new FPNumber(value).toCodecString();
+// UTILS
+const formatBalance = (value: any) => new FPNumber(value).toCodecString();
+
+const formatValidatorExposure = (codec: Exposure): ValidatorExposure => {
+  return {
+    total: formatBalance(codec.total),
+    own: formatBalance(codec.own),
+    others: codec.others.map((item) => ({ who: item.who.toString(), value: formatBalance(item.value) })),
+  };
+};
+
+const formatPayee = (payee: StakingRewardsDestination | string): string | { Account: string } => {
+  return payee in StakingRewardsDestination ? payee : { Account: payee };
+};
 
 export class StakingModule {
   constructor(private readonly root: Api) {}
-
-  // UTILS
-  public formatPayee(payee: StakingRewardsDestination | string): string | { Account: string } {
-    return payee in StakingRewardsDestination ? payee : { Account: payee };
-  }
 
   public getSignerPair(signerPair?: KeyringPair) {
     const pair = signerPair || this.root.account.pair;
@@ -142,20 +150,16 @@ export class StakingModule {
    */
   public getAccountLedgerObservable(controllerAddress: string): Observable<AccountStakingLedger | null> {
     return this.root.apiRx.query.staking.ledger(controllerAddress).pipe(
-      map((data) => {
-        const ledger = data.toJSON() as any;
+      map((codec) => {
+        if (codec.isEmpty) return null;
 
-        if (!ledger) return null;
-
-        const { stash, total, active, unlocking } = ledger;
+        const data = codec.unwrap();
 
         return {
-          stash,
-          total: toCodecString(total),
-          active: toCodecString(active),
-          unlocking: unlocking.map(
-            (item) => ({ value: toCodecString(item.value), era: item.era } as AccountStakingLedgerUnlock)
-          ),
+          stash: data.stash.toString(),
+          total: formatBalance(data.total),
+          active: formatBalance(data.active),
+          unlocking: data.unlocking.map((item) => ({ value: formatBalance(item.value), era: item.era.toNumber() })),
         };
       })
     );
@@ -193,22 +197,43 @@ export class StakingModule {
   /**
    * Get a set of validators elected for a given era
    * @param eraIndex index of era
+   * @param clipped flag to reduce 'others' list to biggest stakers
    * @returns a list of elected validators
    */
-  public async getElectedValidators(eraIndex: number): Promise<ElectedValidator[]> {
-    const validators = (await this.root.api.query.staking.erasStakers.entries(eraIndex)).map(([key, codec]) => {
-      const [eraIdx, address] = key.toHuman() as any;
-      const { total, own, others } = codec;
+  public async getElectedValidators(eraIndex: number, clipped = false): Promise<ElectedValidator[]> {
+    const storage = clipped ? this.root.api.query.staking.erasStakersClipped : this.root.api.query.staking.erasStakers;
 
-      return {
-        address,
-        total: fromCodec(total),
-        own: fromCodec(own),
-        others: others.map((item) => ({ who: item.who.toString(), value: fromCodec(item.value) })),
-      };
+    const validators = (await storage.entries(eraIndex)).map(([key, codec]) => {
+      const [eraIdx, accountId] = key.args;
+      const data = formatValidatorExposure(codec);
+
+      return { address: accountId.toString(), ...data };
     });
 
     return validators;
+  }
+
+  /**
+   * Get validator exposure observable
+   * @param eraIndex index of era
+   * @param validatorAddress address of validator
+   * @param clipped flag to reduce 'others' list to biggest stakers
+   * @returns validator exposure
+   */
+  public getElectedValidatorObservable(
+    eraIndex: number,
+    validatorAddress: string,
+    clipped = false
+  ): Observable<ValidatorExposure> {
+    const observable = clipped
+      ? this.root.apiRx.query.staking.erasStakersClipped
+      : this.root.apiRx.query.staking.erasStakers;
+
+    return observable(eraIndex, validatorAddress).pipe(
+      map((codec) => {
+        return formatValidatorExposure(codec);
+      })
+    );
   }
 
   /**
@@ -228,7 +253,7 @@ export class StakingModule {
    * @param stashAddress address of stash account
    * @returns The structure with the list of validators, eraIndex
    */
-  public async getStashNominators(stashAddress: string): Promise<StashNominatorsInfo> {
+  public async getNominations(stashAddress: string): Promise<StashNominatorsInfo> {
     const data = (await this.root.api.query.staking.nominators(stashAddress)).toJSON() as any;
 
     return data as StashNominatorsInfo;
@@ -247,7 +272,7 @@ export class StakingModule {
     payee: StakingRewardsDestination | string
   ): [string, string, string | { Account: string }] {
     const amount = new FPNumber(value, XOR.decimals).toCodecString();
-    const destination = this.formatPayee(payee);
+    const destination = formatPayee(payee);
 
     return [controller, amount, destination];
   }
@@ -396,7 +421,7 @@ export class StakingModule {
    */
   public async setPayee(args: { payee: StakingRewardsDestination }, signerPair?: KeyringPair): Promise<void> {
     const pair = this.getSignerPair(signerPair);
-    const destination = this.formatPayee(args.payee);
+    const destination = formatPayee(args.payee);
 
     await this.root.submitExtrinsic(this.root.api.tx.staking.setPayee(destination), pair, {
       type: Operation.StakingSetPayee,
