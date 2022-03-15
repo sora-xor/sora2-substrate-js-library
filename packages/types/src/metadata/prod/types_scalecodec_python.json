@@ -1,5 +1,5 @@
 {
-    "runtime_id": 23,
+    "runtime_id": 26,
     "versioning": [
         {
             "runtime_range": [
@@ -69,8 +69,8 @@
                 },
                 "BalancePrecision": "u8",
                 "BasisPoints": "u16",
-                "BridgeNetworkId": "u32",
                 "NetworkId": "BridgeNetworkId",
+                "BridgeNetworkId": "u32",
                 "BridgeStatus": {
                     "type": "enum",
                     "value_list": [
@@ -1897,6 +1897,10 @@
         [
             3939851,
             23
+        ],
+        [
+          4470062,
+          26
         ]
     ]
 }
