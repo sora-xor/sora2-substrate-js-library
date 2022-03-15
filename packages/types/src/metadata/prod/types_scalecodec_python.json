@@ -1,5 +1,5 @@
 {
-    "runtime_id": 26,
+    "runtime_id": 23,
     "versioning": [
         {
             "runtime_range": [
@@ -71,6 +71,7 @@
                 "BasisPoints": "u16",
                 "NetworkId": "BridgeNetworkId",
                 "BridgeNetworkId": "u32",
+                "NetworkId": "BridgeNetworkId",
                 "BridgeStatus": {
                     "type": "enum",
                     "value_list": [
