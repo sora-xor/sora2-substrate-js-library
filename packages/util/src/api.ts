@@ -328,14 +328,6 @@ export class Api extends BaseApi {
     this.initAccountStorage();
   }
 
-   /**
-   * Unlock account to sign tx
-   * @param password
-   */
-  public unlockPair(password: string): void {
-    super.unlockPair(password);
-  }
-
   // # API methods
 
   /**
