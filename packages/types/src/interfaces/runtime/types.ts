@@ -97,6 +97,18 @@ export interface ConsensusEngineId extends GenericConsensusEngineId {}
 /** @name ContentSource */
 export interface ContentSource extends Text {}
 
+/** @name CrowdloanReward */
+export interface CrowdloanReward extends Struct {
+  readonly id: Bytes;
+  readonly address: Bytes;
+  readonly contribution: Fixed;
+  readonly xor_reward: Fixed;
+  readonly val_reward: Fixed;
+  readonly pswap_reward: Fixed;
+  readonly xstusd_reward: Fixed;
+  readonly percent: Fixed;
+}
+
 /** @name CurrencyId */
 export interface CurrencyId extends AssetId {}
 
