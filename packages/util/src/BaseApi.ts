@@ -249,14 +249,14 @@ export class BaseApi {
    * Unlock pair to sign tx
    * @param password
    */
-  protected unlockPair(password: string): void {
+  public unlockPair(password: string): void {
     this.account.pair.unlock(password);
   }
 
   /**
    * Lock pair
    */
-  protected lockPair(): void {
+  public lockPair(): void {
     if (!this.account.pair?.isLocked) { 
       this.account.pair.lock();
     }
