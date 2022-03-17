@@ -246,6 +246,23 @@ export class BaseApi {
   }
 
   /**
+   * Unlock pair to sign tx
+   * @param password
+   */
+  protected unlockPair(password: string): void {
+    this.account.pair.unlock(password);
+  }
+
+  /**
+   * Lock pair
+   */
+  protected lockPair(): void {
+    if (!this.account.pair?.isLocked) { 
+      this.account.pair.lock();
+    }
+  }
+
+  /**
    * Set signer if the pair is locked (For polkadot js extension usage)
    * @param signer
    */
@@ -286,6 +303,8 @@ export class BaseApi {
     // TODO: Add ERA only for SWAP
     // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
+
+    this.lockPair();
 
     history.txId = signedTx.hash.toString();
 

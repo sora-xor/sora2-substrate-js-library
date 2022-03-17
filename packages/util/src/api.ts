@@ -305,9 +305,16 @@ export class Api extends BaseApi {
    * Import account by PolkadotJs extension
    * @param address
    * @param name
+   * @param isDesktop
    */
-  public importByPolkadotJs(address: string, name: string): void {
-    const account = keyring.addExternal(address, { name: name || '' });
+  public importByPolkadotJs(address: string, name: string, isDesktop = false): void {
+    let account;
+    if (isDesktop) {
+      const pair = keyring.getPair(address);
+      account = { pair };
+    } else {
+      account = keyring.addExternal(address, { name: name || '' });
+    }
 
     this.setAccount(account);
 
@@ -315,7 +322,7 @@ export class Api extends BaseApi {
       const soraAddress = this.formatAddress(account.pair.address);
       this.storage.set('name', name);
       this.storage.set('address', soraAddress);
-      this.storage.set('isExternal', true);
+      this.storage.set('isExternal', !isDesktop);
     }
 
     this.initAccountStorage();
