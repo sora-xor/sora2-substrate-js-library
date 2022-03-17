@@ -1178,6 +1178,15 @@ export interface StorageType extends BaseStorageType {
     storageVersion: Releases | null;
   };
   vestedRewards: {    /**
+     * This storage keeps the last block number, when the user (the first) claimed a reward for
+     * asset (the second key).
+     **/
+    crowdloanClaimHistory: StorageDoubleMap<AccountId | string, AssetId | AnyNumber, BlockNumber>;
+    /**
+     * Crowdloan vested rewards storage.
+     **/
+    crowdloanRewards: StorageMap<AccountId | string, CrowdloanReward>;
+    /**
      * Registry of market makers with large transaction volumes (>1 XOR per transaction).
      **/
     marketMakersRegistry: StorageMap<AccountId | string, MarketMakerInfo>;
