@@ -192,29 +192,29 @@ export class Api extends BaseApi {
     this.initAccountStorage();
   }
 
-   /**
+  /**
    * Import wallet operation
    * It returns account creation result
    * @param suri Seed of the wallet
    * @param name Name of the wallet account
    * @param password Password which will be set for the wallet
    */
-    public async createAccount(suri: string, name: string, password: string): Promise<CreateResult> {
-      const account = keyring.addUri(suri, password, { name }, this.type);
-  
-      this.setAccount(account);
-  
-      if (this.storage) {
-        this.storage.set('name', name);
-        this.storage.set('password', encrypt(password));
-        const soraAddress = this.formatAddress(account.pair.address);
-        this.storage.set('address', soraAddress);
-      }
-  
-      this.initAccountStorage();
-  
-      return account;
+  public async createAccount(suri: string, name: string, password: string): Promise<CreateResult> {
+    const account = keyring.addUri(suri, password, { name }, this.type);
+
+    this.setAccount(account);
+
+    if (this.storage) {
+      this.storage.set('name', name);
+      this.storage.set('password', encrypt(password));
+      const soraAddress = this.formatAddress(account.pair.address);
+      this.storage.set('address', soraAddress);
     }
+
+    this.initAccountStorage();
+
+    return account;
+  }
 
   /**
    * Get all imported accounts.
@@ -223,7 +223,7 @@ export class Api extends BaseApi {
    *
    */
   public async getAccounts(): Promise<KeyringAddress[]> {
-    return keyring.getAccounts()
+    return keyring.getAccounts();
   }
 
   /**
@@ -305,9 +305,16 @@ export class Api extends BaseApi {
    * Import account by PolkadotJs extension
    * @param address
    * @param name
+   * @param isDesktop
    */
-  public importByPolkadotJs(address: string, name: string): void {
-    const account = keyring.addExternal(address, { name: name || '' });
+  public importByPolkadotJs(address: string, name: string, isDesktop = false): void {
+    let account;
+    if (isDesktop) {
+      const pair = keyring.getPair(address);
+      account = { pair };
+    } else {
+      account = keyring.addExternal(address, { name: name || '' });
+    }
 
     this.setAccount(account);
 
@@ -315,7 +322,7 @@ export class Api extends BaseApi {
       const soraAddress = this.formatAddress(account.pair.address);
       this.storage.set('name', name);
       this.storage.set('address', soraAddress);
-      this.storage.set('isExternal', true);
+      this.storage.set('isExternal', !isDesktop);
     }
 
     this.initAccountStorage();
