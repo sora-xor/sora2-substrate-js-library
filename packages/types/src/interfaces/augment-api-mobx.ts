@@ -30,7 +30,7 @@ import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenL
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
@@ -1178,6 +1178,15 @@ export interface StorageType extends BaseStorageType {
     storageVersion: Releases | null;
   };
   vestedRewards: {    /**
+     * This storage keeps the last block number, when the user (the first) claimed a reward for
+     * asset (the second key).
+     **/
+    crowdloanClaimHistory: StorageDoubleMap<AccountId | string, AssetId | AnyNumber, BlockNumber>;
+    /**
+     * Crowdloan vested rewards storage.
+     **/
+    crowdloanRewards: StorageMap<AccountId | string, CrowdloanReward>;
+    /**
      * Registry of market makers with large transaction volumes (>1 XOR per transaction).
      **/
     marketMakersRegistry: StorageMap<AccountId | string, MarketMakerInfo>;

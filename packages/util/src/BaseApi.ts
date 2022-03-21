@@ -257,7 +257,7 @@ export class BaseApi {
    * Lock pair
    */
   public lockPair(): void {
-    if (!this.account.pair?.isLocked) { 
+    if (!this.account.pair?.isLocked) {
       this.account.pair.lock();
     }
   }

@@ -44,6 +44,9 @@
 - [priceTools](#pricetools-pallet)
 - [ceresStaking](#ceresstaking-pallet)
 - [ceresLiquidityLocker](#ceresliquiditylocker-pallet)
+- [ceresTokenLocker](#cerestokenlocker-pallet)
+- [ceresGovernancePlatform](#ceresgovernanceplatform-pallet)
+- [ceresLaunchpad](#cereslaunchpad-pallet)
 - [utility](#utility-pallet)
 - [currencies](#currencies-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
@@ -3276,13 +3279,13 @@ returns: `AccountId`
 
 #### **api.query.assets.assetInfos**
 
-> Asset Id -> (Symbol, Name, Precision, Is Mintable)
+> Asset Id -> (Symbol, Name, Precision, Is Mintable, Content Source, Description)
 
 arguments:
 
 - key: `AssetId`
 
-returns: `(AssetSymbol,AssetName,BalancePrecision,bool)`
+returns: `(AssetSymbol,AssetName,BalancePrecision,bool,Option<ContentSource>,Option<Description>,)`
 
 <hr>
 
@@ -3295,30 +3298,6 @@ arguments:
 - key: `AssetId`
 
 returns: `AssetRecord`
-
-<hr>
-
-#### **api.query.assets.assetContentSource**
-
-> Asset Id -> Content Source
-
-arguments:
-
-- key: `AssetId`
-
-returns: `ContentSource`
-
-<hr>
-
-#### **api.query.assets.assetDescription**
-
-> Asset Id -> Description
-
-arguments:
-
-- key: `AssetId`
-
-returns: `Description`
 
 <hr>
 
@@ -3338,7 +3317,7 @@ arguments:
 - name: `AssetName`
 - initial_supply: `TAssetBalance`
 - is_mintable: `bool`
-- is_nft: `bool`
+- is_indivisible: `bool`
 - opt_content_src: `Option<ContentSource>`
 - opt_desc: `Option<Description>`
 <hr>
@@ -7412,6 +7391,16 @@ returns: `PriceInfo`
 
 ### _State Queries_
 
+#### **api.query.ceresStaking.authorityAccount**
+
+> Account which has permissions for changing remaining rewards
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
 #### **api.query.ceresStaking.stakers**
 
 > AccountId -> StakingInfo
@@ -7453,6 +7442,15 @@ arguments:
 
 arguments: -
 
+<hr>
+
+#### **api.tx.ceresStaking.changeRewardsRemaining**
+
+> Change RewardsRemaining
+
+arguments:
+
+- rewards_remaining: `Balance`
 <hr>
 
 ## CeresLiquidityLocker pallet
@@ -7531,6 +7529,308 @@ arguments:
 arguments:
 
 - ceres_fee: `Balance`
+<hr>
+
+## CeresTokenLocker pallet
+
+### _State Queries_
+
+#### **api.query.ceresTokenLocker.feesAccount**
+
+> Account for collecting fees
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
+#### **api.query.ceresTokenLocker.authorityAccount**
+
+> Account which has permissions for changing fee
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
+#### **api.query.ceresTokenLocker.feeAmount**
+
+> Amount of CERES for locker fees option two
+
+arguments: -
+
+returns: `Balance`
+
+<hr>
+
+#### **api.query.ceresTokenLocker.tokenLockerData**
+
+arguments:
+
+- key: `AccountIdOf`
+
+returns: `Vec<TokenLockInfo>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.ceresTokenLocker.lockTokens**
+
+> Lock tokens
+
+arguments:
+
+- asset_id: `AssetIdOf`
+- unlocking_block: `BlockNumber`
+- number_of_tokens: `Balance`
+<hr>
+
+#### **api.tx.ceresTokenLocker.withdrawTokens**
+
+> Withdraw tokens
+
+arguments:
+
+- asset_id: `AssetIdOf`
+- unlocking_block: `BlockNumber`
+- number_of_tokens: `Balance`
+<hr>
+
+#### **api.tx.ceresTokenLocker.changeFee**
+
+> Change fee
+
+arguments:
+
+- new_fee: `Balance`
+<hr>
+
+## CeresGovernancePlatform pallet
+
+### _State Queries_
+
+#### **api.query.ceresGovernancePlatform.voting**
+
+> A vote of a particular user for a particular poll
+
+arguments:
+
+- key1: `Bytes`
+- key2: `AccountIdOf`
+
+returns: `VotingInfo`
+
+<hr>
+
+#### **api.query.ceresGovernancePlatform.pollData**
+
+arguments:
+
+- key: `Bytes`
+
+returns: `PollInfo`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.ceresGovernancePlatform.vote**
+
+> Voting for option
+
+arguments:
+
+- poll_id: `Bytes`
+- voting_option: `u32`
+- number_of_votes: `Balance`
+<hr>
+
+#### **api.tx.ceresGovernancePlatform.createPoll**
+
+> Create poll
+
+arguments:
+
+- poll_id: `Bytes`
+- number_of_options: `u32`
+- poll_start_block: `BlockNumber`
+- poll_end_block: `BlockNumber`
+<hr>
+
+#### **api.tx.ceresGovernancePlatform.withdraw**
+
+> Withdraw voting funds
+
+arguments:
+
+- poll_id: `Bytes`
+<hr>
+
+## CeresLaunchpad pallet
+
+### _State Queries_
+
+#### **api.query.ceresLaunchpad.penaltiesAccount**
+
+> Account for collecting penalties
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.ceresBurnFeeAmount**
+
+> Amount of CERES for burn fee
+
+arguments: -
+
+returns: `Balance`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.ceresForContributionInILO**
+
+> Amount of CERES for contribution in ILO
+
+arguments: -
+
+returns: `Balance`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.authorityAccount**
+
+> Account which has permissions for changing CERES burn amount fee
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.iLOs**
+
+arguments:
+
+- key: `AssetIdOf`
+
+returns: `ILOInfo`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.contributions**
+
+arguments:
+
+- key1: `AssetIdOf`
+- key2: `AccountIdOf`
+
+returns: `ContributionInfo`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.ceresLaunchpad.createIlo**
+
+> Create ILO
+
+arguments:
+
+- asset_id: `AssetIdOf`
+- tokens_for_ilo: `Balance`
+- tokens_for_liquidity: `Balance`
+- ilo_price: `Balance`
+- soft_cap: `Balance`
+- hard_cap: `Balance`
+- min_contribution: `Balance`
+- max_contribution: `Balance`
+- refund_type: `bool`
+- liquidity_percent: `Balance`
+- listing_price: `Balance`
+- lockup_days: `u32`
+- start_block: `BlockNumber`
+- end_block: `BlockNumber`
+- first_release_percent: `Balance`
+- vesting_period: `BlockNumber`
+- vesting_percent: `Balance`
+<hr>
+
+#### **api.tx.ceresLaunchpad.contribute**
+
+> Contribute
+
+arguments:
+
+- asset_id: `AssetIdOf`
+- funds_to_contribute: `Balance`
+<hr>
+
+#### **api.tx.ceresLaunchpad.emergencyWithdraw**
+
+> Emergency withdraw
+
+arguments:
+
+- asset_id: `AssetIdOf`
+<hr>
+
+#### **api.tx.ceresLaunchpad.finishIlo**
+
+> Finish ILO
+
+arguments:
+
+- asset_id: `AssetIdOf`
+<hr>
+
+#### **api.tx.ceresLaunchpad.claimLpTokens**
+
+> Claim LP tokens
+
+arguments:
+
+- asset_id: `AssetIdOf`
+<hr>
+
+#### **api.tx.ceresLaunchpad.claim**
+
+> Claim tokens
+
+arguments:
+
+- asset_id: `AssetIdOf`
+<hr>
+
+#### **api.tx.ceresLaunchpad.changeCeresBurnFee**
+
+> Change CERES burn fee
+
+arguments:
+
+- ceres_fee: `Balance`
+<hr>
+
+#### **api.tx.ceresLaunchpad.changeCeresContributionFee**
+
+> Change CERES contribution fee
+
+arguments:
+
+- ceres_fee: `Balance`
+<hr>
+
+#### **api.tx.ceresLaunchpad.claimPswapRewards**
+
+> Claim PSWAP rewards
+
+arguments: -
+
 <hr>
 
 ## Utility pallet
@@ -8464,6 +8764,21 @@ returns: `Option<SwapOutcomeInfo>`
     tokens_claimed: "Balance",
     claiming_finished: "bool",
     number_of_claims: "u32"
+}
+```
+
+### CrowdloanReward
+
+```
+{
+    id: "Vec<u8>",
+    address: "Vec<u8>",
+    contribution: "Fixed",
+    xor_reward: "Fixed",
+    val_reward: "Fixed",
+    pswap_reward: "Fixed",
+    xstusd_reward: "Fixed",
+    percent: "Fixed"
 }
 ```
 

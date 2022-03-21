@@ -127,6 +127,16 @@ export default {
       count: 'u32',
       volume: 'Balance',
     },
+    CrowdloanReward: {
+      id: 'Vec<u8>',
+      address: 'Vec<u8>',
+      contribution: 'Fixed',
+      xor_reward: 'Fixed',
+      val_reward: 'Fixed',
+      pswap_reward: 'Fixed',
+      xstusd_reward: 'Fixed',
+      percent: 'Fixed',
+    },
     PredefinedAssetId: {
       _enum: [
         // Order must match rust definition
