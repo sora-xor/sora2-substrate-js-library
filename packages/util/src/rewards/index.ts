@@ -4,11 +4,12 @@ import type { Observable } from '@polkadot/types/types';
 
 import { RewardingEvents } from './consts';
 import { CodecString, FPNumber } from '../fp';
-import { KnownAssets, KnownSymbols } from '../assets/consts';
+import { XOR, VAL, PSWAP, XSTUSD } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 import type { AccountMarketMakerInfo, RewardInfo, RewardsInfo } from './types';
+import type { Asset } from '../assets/types';
 
 export class RewardsModule {
   constructor(private readonly root: Api) {}
@@ -32,11 +33,13 @@ export class RewardsModule {
   }
 
   private prepareRewardInfo(type: RewardingEvents, amount: CodecString | number): RewardInfo {
-    const [val, pswap] = [KnownAssets.get(KnownSymbols.VAL), KnownAssets.get(KnownSymbols.PSWAP)];
     const asset =
       {
-        [RewardingEvents.XorErc20]: val,
-      }[type] ?? pswap;
+        [RewardingEvents.XorErc20]: VAL,
+        [RewardingEvents.CrowdloanVAL]: VAL,
+        [RewardingEvents.CrowdloanXOR]: XOR,
+        [RewardingEvents.CrowdloanXSTUSD]: XSTUSD,
+      }[type] ?? PSWAP;
 
     const rewardInfo = {
       type,
@@ -52,7 +55,7 @@ export class RewardsModule {
     total: CodecString | number,
     rewards: any
   ): RewardsInfo {
-    const asset = KnownAssets.get(KnownSymbols.PSWAP);
+    const asset = PSWAP;
     // reward table with zero amount for each event
     const buffer = [
       RewardingEvents.BuyOnBondingCurve,
@@ -136,6 +139,31 @@ export class RewardsModule {
   }
 
   /**
+   * Check crowdloan rewards
+   */
+  public async checkCrowdloan(): Promise<Array<RewardInfo>> {
+    assert(this.root.account, Messages.connectWallet);
+
+    const { address } = this.root.account.pair;
+
+    const {
+      xor_reward: xor,
+      val_reward: val,
+      pswap_reward: pswap,
+      xstusd_reward: xstusd,
+    } = (await this.root.api.query.vestedRewards.crowdloanRewards(address)) as any;
+
+    const rewards = [
+      this.prepareRewardInfo(RewardingEvents.CrowdloanXOR, xor),
+      this.prepareRewardInfo(RewardingEvents.CrowdloanVAL, val),
+      this.prepareRewardInfo(RewardingEvents.CrowdloanPSWAP, pswap),
+      this.prepareRewardInfo(RewardingEvents.CrowdloanXSTUSD, xstusd),
+    ];
+
+    return rewards;
+  }
+
+  /**
    * Returns a params object { extrinsic, args }
    * @param rewards claiming rewards
    * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
@@ -143,12 +171,15 @@ export class RewardsModule {
   private calcTxParams(rewards: Array<RewardInfo | RewardsInfo>, signature = ''): any {
     const transactions = [];
 
+    // liquidity provision
     if (this.containsRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
       transactions.push({
         extrinsic: this.root.api.tx.pswapDistribution.claimIncentive,
         args: [],
       });
     }
+
+    // vested
     if (
       this.containsRewardsForEvents(rewards, [
         RewardingEvents.BuyOnBondingCurve,
@@ -161,6 +192,8 @@ export class RewardsModule {
         args: [],
       });
     }
+
+    // external
     if (
       this.containsRewardsForEvents(rewards, [
         RewardingEvents.SoraFarmHarvest,
@@ -173,6 +206,21 @@ export class RewardsModule {
         args: [signature],
       });
     }
+
+    // crowdloan
+    [
+      [RewardingEvents.CrowdloanXOR, XOR],
+      [RewardingEvents.CrowdloanVAL, VAL],
+      [RewardingEvents.CrowdloanPSWAP, PSWAP],
+      [RewardingEvents.CrowdloanXSTUSD, XSTUSD],
+    ].forEach((item: [RewardingEvents, Asset]) => {
+      if (this.containsRewardsForEvents(rewards, [item[0]])) {
+        transactions.push({
+          extrinsic: this.root.api.tx.vestedRewards.claimCrowdloanRewards,
+          args: [item[1].address],
+        });
+      }
+    });
 
     if (transactions.length > 1)
       return {
@@ -200,6 +248,8 @@ export class RewardsModule {
         return this.root.NetworkFee[Operation.ClaimLiquidityProvisionRewards];
       case this.root.api.tx.vestedRewards.claimRewards:
         return this.root.NetworkFee[Operation.ClaimVestedRewards];
+      case this.root.api.tx.vestedRewards.claimCrowdloanRewards:
+        return this.root.NetworkFee[Operation.ClaimCrowdloanRewards];
       case this.root.api.tx.rewards.claim:
         return this.root.NetworkFee[Operation.ClaimExternalRewards];
       default:

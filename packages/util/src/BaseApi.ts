@@ -62,6 +62,7 @@ export class BaseApi {
     [Operation.SwapAndSend]: '0',
     [Operation.Transfer]: '0',
     [Operation.ClaimVestedRewards]: '0',
+    [Operation.ClaimCrowdloanRewards]: '0',
     [Operation.ClaimLiquidityProvisionRewards]: '0',
     [Operation.ClaimExternalRewards]: '0',
     [Operation.ReferralReserveXor]: '0',
@@ -502,6 +503,8 @@ export class BaseApi {
         return this.api.tx.assets.transfer('', '', '0');
       case Operation.ClaimVestedRewards:
         return this.api.tx.vestedRewards.claimRewards();
+      case Operation.ClaimCrowdloanRewards:
+        return this.api.tx.vestedRewards.claimCrowdloanRewards(XOR.address);
       case Operation.ClaimLiquidityProvisionRewards:
         return this.api.tx.pswapDistribution.claimIncentive();
       case Operation.ClaimExternalRewards:
@@ -536,6 +539,7 @@ export class BaseApi {
       Operation.SwapAndSend,
       Operation.Transfer,
       Operation.ClaimVestedRewards,
+      Operation.ClaimCrowdloanRewards,
       Operation.ClaimLiquidityProvisionRewards,
       Operation.ClaimExternalRewards,
       Operation.ReferralReserveXor,
@@ -623,6 +627,8 @@ export enum Operation {
   ClaimRewards = 'ClaimRewards',
   /** it's used for calc network fee */
   ClaimVestedRewards = 'ClaimVestedRewards',
+  /** it's used for calc network fee */
+  ClaimCrowdloanRewards = 'ClaimCrowdloanRewards',
   /** it's used for calc network fee */
   ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards',
   /** it's used for calc network fee */
