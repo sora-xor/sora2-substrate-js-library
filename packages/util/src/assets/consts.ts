@@ -81,6 +81,9 @@ export const NativeAssets = new ArrayLike<Asset>([
 ]);
 
 export const XOR = NativeAssets.get(KnownSymbols.XOR);
+export const VAL = NativeAssets.get(KnownSymbols.VAL);
+export const PSWAP = NativeAssets.get(KnownSymbols.PSWAP);
+export const XSTUSD = NativeAssets.get(KnownSymbols.XSTUSD);
 
 export const KnownAssets = new ArrayLike<Asset>([
   ...NativeAssets,

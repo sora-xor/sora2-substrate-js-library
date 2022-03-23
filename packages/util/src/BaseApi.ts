@@ -624,6 +624,8 @@ export enum Operation {
   /** it's used for calc network fee */
   ClaimVestedRewards = 'ClaimVestedRewards',
   /** it's used for calc network fee */
+  ClaimCrowdloanRewards = 'ClaimCrowdloanRewards',
+  /** it's used for calc network fee */
   ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards',
   /** it's used for calc network fee */
   ClaimExternalRewards = 'ClaimExternalRewards',
