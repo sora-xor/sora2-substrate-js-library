@@ -352,11 +352,13 @@ export class Api extends BaseApi {
   /**
    * Remove all wallet data
    */
-  public logout(): void {
-    const address = this.account.pair.address;
-    keyring.forgetAccount(address);
-    keyring.forgetAddress(address);
-
+  public logout(onDesktop = false): void {
+    if (!onDesktop) {
+      const address = this.account.pair.address;
+      keyring.forgetAccount(address);
+      keyring.forgetAddress(address);
+    }
+    
     this.assets.clearAccountAssets();
     this.poolXyk.clearAccountLiquidity();
 
