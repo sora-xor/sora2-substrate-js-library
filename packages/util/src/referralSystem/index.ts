@@ -11,13 +11,13 @@ export class ReferralSystemModule {
   constructor(private readonly root: Api) {}
 
   /**
-   * Returns the referral of the invited user by Id
+   * Returns the referrer of the invited user by Id
    * @param invitedUserId address of invited account
-   * @returns referral
+   * @returns referrer
    */
-  public async getReferral(invitedUserId: string): Promise<string> {
-    const referral = (await this.root.api.query.referrals.referrers(invitedUserId)) as any;
-    return !referral ? '' : referral.toString();
+  public async getReferrer(invitedUserId: string): Promise<string> {
+    const referrer = (await this.root.api.query.referrals.referrers(invitedUserId)) as any;
+    return !referrer ? '' : referrer.toString();
   }
 
   /**
@@ -65,22 +65,22 @@ export class ReferralSystemModule {
   }
 
   /**
-   * Sets invited user to their referral if the account doesn’t have a referral yet.
-   * This extrinsic is paid by the bonded balance of the referral if the invited user doesn’t have a referral,
-   * otherwise the extrinsic fails and the fee is paid by the invited user. Also, if referral doesn't have enough
+   * Sets invited user to their referrer if the account doesn’t have a referrer yet.
+   * This extrinsic is paid by the bonded balance of the referrer if the invited user doesn’t have a referrer,
+   * otherwise the extrinsic fails and the fee is paid by the invited user. Also, if referrer doesn't have enough
    * bonded balance for this call, then this method will fail.
-   * @param referralId address of referral account
+   * @param referrerId address of referrer account
    */
-  public async setInvitedUser(referralId: string): Promise<void> {
+  public async setInvitedUser(referrerId: string): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
     // Check the ability for paying fee
-    const bondedData = await this.root.api.query.referrals.referrerBalances(referralId);
+    const bondedData = await this.root.api.query.referrals.referrerBalances(referrerId);
     const bonded = new FPNumber(bondedData || 0);
     const requiredFeeValue = FPNumber.fromCodecValue(this.root.NetworkFee.ReferralSetInvitedUser || 0);
     assert(FPNumber.gte(bonded, requiredFeeValue), Messages.inabilityOfReferrerToPayFee);
 
-    const formattedToAddress = referralId.slice(0, 2) === 'cn' ? referralId : this.root.formatAddress(referralId);
-    await this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referralId), this.root.account.pair, {
+    const formattedToAddress = referrerId.slice(0, 2) === 'cn' ? referrerId : this.root.formatAddress(referrerId);
+    await this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referrerId), this.root.account.pair, {
       to: formattedToAddress,
       type: Operation.ReferralSetInvitedUser,
     });
