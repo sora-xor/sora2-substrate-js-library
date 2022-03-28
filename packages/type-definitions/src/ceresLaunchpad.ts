@@ -1,6 +1,17 @@
 export default {
   rpc: {},
   types: {
+    ContributorsVesting: {
+      first_release_percent: 'Balance',
+      vesting_period: 'BlockNumber',
+      vesting_percent: 'Balance',
+    },
+    TeamVesting: {
+      team_vesting_total_tokens: 'Balance',
+      team_vesting_first_release_percent: 'Balance',
+      team_vesting_period: 'BlockNumber',
+      team_vesting_percent: 'Balance',
+    },
     ContributionInfo: {
       funds_contributed: 'Balance',
       tokens_bought: 'Balance',
@@ -8,7 +19,7 @@ export default {
       claiming_finished: 'bool',
       number_of_claims: 'u32',
     },
-    ILOInfo: {
+    ILOInfo:  {
       ilo_organizer: 'AccountId',
       tokens_for_ilo: 'Balance',
       tokens_for_liquidity: 'Balance',
@@ -23,7 +34,8 @@ export default {
       lockup_days: 'u32',
       start_block: 'BlockNumber',
       end_block: 'BlockNumber',
-      token_vesting: 'VestingInfo',
+      contributors_vesting: 'ContributorsVesting',
+      team_vesting: 'TeamVesting',
       sold_tokens: 'Balance',
       funds_raised: 'Balance',
       succeeded: 'bool',
@@ -31,6 +43,6 @@ export default {
       lp_tokens: 'Balance',
       claimed_lp_tokens: 'bool',
       finish_block: 'BlockNumber',
-    },
-  },
+    }
+  }
 };

@@ -4,6 +4,7 @@ export { default as ceresLiquidityLocker } from './ceresLiquidityLocker/definiti
 export { default as ceresTokenLocker } from './ceresTokenLocker/definitions';
 export { default as ceresGovernancePlatform } from './ceresGovernancePlatform/definitions';
 export { default as ceresLaunchpad } from './ceresLaunchpad/definitions';
+export { default as demeterFarmingPlatform } from './demeterFarmingPlatform/definitions';
 export { default as dexApi } from './dexApi/definitions';
 export { default as dexManager } from './dexManager/definitions';
 export { default as ethBridge } from './ethBridge/definitions';

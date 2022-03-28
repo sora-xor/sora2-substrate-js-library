@@ -7,6 +7,7 @@ export * from './ceresLiquidityLocker/types';
 export * from './ceresTokenLocker/types';
 export * from './ceresGovernancePlatform/types';
 export * from './ceresLaunchpad/types';
+export * from './demeterFarmingPlatform/types';
 export * from './dexApi/types';
 export * from './dexManager/types';
 export * from './ethBridge/types';
