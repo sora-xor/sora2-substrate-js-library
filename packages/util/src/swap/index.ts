@@ -321,7 +321,7 @@ export class SwapModule {
     );
   }
 
-  private async calcTxParams(
+  private calcTxParams(
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -379,15 +379,7 @@ export class SwapModule {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
-    const params = await this.calcTxParams(
-      assetA,
-      assetB,
-      amountA,
-      amountB,
-      slippageTolerance,
-      isExchangeB,
-      liquiditySource
-    );
+    const params = this.calcTxParams(assetA, assetB, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource);
     if (!this.root.assets.getAsset(assetB.address)) {
       this.root.assets.addAccountAsset(assetB.address);
     }
@@ -409,59 +401,46 @@ export class SwapModule {
 
   /**
    * Run swap & send batch operation
+   * @param receiver Receiver account address
    * @param assetA Asset A
    * @param assetB Asset B
    * @param amountA Amount A value
    * @param amountB Amount B value
-   * @param swapResultValue getMinMaxValue() -> min received if exchange A, otherwise - user's input when Exchange B
-   * @param accountId Account Id address
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    */
   public async executeSwapAndSend(
+    receiver: string,
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
     amountB: NumberLike,
-    swapResultValue: string,
-    accountId: string,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent,
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<void> {
-    const params = await this.calcTxParams(
-      assetA,
-      assetB,
-      amountA,
-      amountB,
-      slippageTolerance,
-      isExchangeB,
-      liquiditySource
-    );
+    const params = this.calcTxParams(assetA, assetB, amountA, amountB, slippageTolerance, isExchangeB, liquiditySource);
     if (!this.root.assets.getAsset(assetB.address)) {
       this.root.assets.addAccountAsset(assetB.address);
     }
 
-    const swap = (this.root.api.tx.liquidityProxy as any).swap(...params.args);
-    const transfer = this.root.api.tx.assets.transfer(
-      assetB.address,
-      accountId,
-      new FPNumber(swapResultValue, assetB.decimals).toCodecString()
+    const formattedToAddress = receiver.slice(0, 2) === 'cn' ? receiver : this.root.formatAddress(receiver);
+
+    await this.root.submitExtrinsic(
+      (this.root.api.tx.liquidityProxy as any).swapTransfer(receiver, ...params.args),
+      this.root.account.pair,
+      {
+        symbol: assetA.symbol,
+        assetAddress: assetA.address,
+        amount: `${amountA}`,
+        symbol2: assetB.symbol,
+        asset2Address: assetB.address,
+        amount2: `${amountB}`,
+        liquiditySource,
+        to: formattedToAddress,
+        type: Operation.SwapAndSend,
+      }
     );
-
-    const formattedToAddress = accountId.slice(0, 2) === 'cn' ? accountId : this.root.formatAddress(accountId);
-
-    await this.root.submitExtrinsic(this.root.api.tx.utility.batchAll([swap, transfer]), this.root.account.pair, {
-      symbol: assetA.symbol,
-      assetAddress: assetA.address,
-      amount: `${amountA}`,
-      symbol2: assetB.symbol,
-      asset2Address: assetB.address,
-      amount2: `${amountB}`,
-      liquiditySource,
-      to: formattedToAddress,
-      type: Operation.SwapAndSend,
-    });
   }
 
   /**
