@@ -195,6 +195,8 @@ export interface StorageType extends BaseStorageType {
      * Account for collecting penalties
      **/
     penaltiesAccount: AccountIdOf | null;
+    whitelistedContributors: Vec<AccountIdOf> | null;
+    whitelistedIloOrganizers: Vec<AccountIdOf> | null;
   };
   ceresLiquidityLocker: {    /**
      * Account which has permissions for changing CERES amount fee
