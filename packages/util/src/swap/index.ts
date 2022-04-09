@@ -173,8 +173,8 @@ export class SwapModule {
    * @param payload Quote payload
    */
   public getResult(
-    inputAsset: Asset,
-    outputAsset: Asset,
+    inputAsset: Asset | AccountAsset,
+    outputAsset: Asset | AccountAsset,
     value: string,
     isExchangeB: boolean,
     selectedSources: Array<LiquiditySourceTypes>,
