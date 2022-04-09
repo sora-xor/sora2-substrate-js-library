@@ -329,6 +329,12 @@ export class BaseApi {
         history.endTime = Date.now();
         this.saveHistory(history);
         result.events.forEach(({ event: { data, method, section } }: any) => {
+          if (method === 'AssetRegistered' && section === 'assets') {
+            const [assetId, _] = data;
+            history.assetAddress = assetId.toString();
+            this.saveHistory(history);
+          }
+
           if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
             const [assetId, from, to, amount] = data;
 
@@ -344,6 +350,7 @@ export class BaseApi {
             history.hash = first(data.toJSON());
             this.saveHistory(history);
           }
+
           if (section === 'system' && method === 'ExtrinsicFailed') {
             history.status = TransactionStatus.Error;
             history.endTime = Date.now();
