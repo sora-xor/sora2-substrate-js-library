@@ -26,6 +26,7 @@ import type { ContributionInfo, ILOInfo } from '@sora-substrate/types/interfaces
 import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
 import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
 import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
+import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interfaces/demeterFarmingPlatform';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthAddress, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
