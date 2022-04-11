@@ -70,7 +70,7 @@ import type { ContributionInfo, ILOInfo } from '@sora-substrate/types/interfaces
 import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
 import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
 import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthAddress, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
 import type { LPRewardsInfo, LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
@@ -472,6 +472,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<ErrorMetadataV13>': Option<ErrorMetadataV13>;
     'Option<ErrorMetadataV9>': Option<ErrorMetadataV9>;
     'Option<EthAccount>': Option<EthAccount>;
+    'Option<EthAddress>': Option<EthAddress>;
     'Option<EthBlock>': Option<EthBlock>;
     'Option<EthBloom>': Option<EthBloom>;
     'Option<EthBridgeStorageVersion>': Option<EthBridgeStorageVersion>;
@@ -1490,6 +1491,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<ErrorMetadataV13>': Vec<ErrorMetadataV13>;
     'Vec<ErrorMetadataV9>': Vec<ErrorMetadataV9>;
     'Vec<EthAccount>': Vec<EthAccount>;
+    'Vec<EthAddress>': Vec<EthAddress>;
     'Vec<EthBlock>': Vec<EthBlock>;
     'Vec<EthBloom>': Vec<EthBloom>;
     'Vec<EthBridgeStorageVersion>': Vec<EthBridgeStorageVersion>;
@@ -2508,6 +2510,7 @@ declare module '@polkadot/types/types/registry' {
     ErrorMetadataV13: ErrorMetadataV13;
     ErrorMetadataV9: ErrorMetadataV9;
     EthAccount: EthAccount;
+    EthAddress: EthAddress;
     EthBlock: EthBlock;
     EthBloom: EthBloom;
     EthBridgeStorageVersion: EthBridgeStorageVersion;

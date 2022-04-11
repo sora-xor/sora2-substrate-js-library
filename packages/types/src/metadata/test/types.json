@@ -96,6 +96,7 @@
     "DispatchResultWithPostInfo": "Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>",
     "DistributionAccounts": "Null",
     "Duration": "Null",
+    "EthAddress": "H160",
     "EthBridgeStorageVersion": {
         "_enum": [
             "V1",
@@ -145,7 +146,7 @@
         "finish_block": "BlockNumber"
     },
     "IncomingAddToken": {
-        "token_address": "EthereumAddress",
+        "token_address": "EthAddress",
         "asset_id": "AssetId",
         "precision": "BalancePrecision",
         "symbol": "AssetSymbol",
@@ -169,7 +170,7 @@
     },
     "IncomingChangePeers": {
         "peer_account_id": "AccountId",
-        "peer_address": "EthereumAddress",
+        "peer_address": "EthAddress",
         "added": "bool",
         "author": "AccountId",
         "tx_hash": "H256",
@@ -179,7 +180,7 @@
     },
     "IncomingChangePeersCompat": {
         "peer_account_id": "AccountId",
-        "peer_address": "EthereumAddress",
+        "peer_address": "EthAddress",
         "added": "bool",
         "contract": "ChangePeersContract",
         "author": "AccountId",
@@ -203,7 +204,7 @@
         ]
     },
     "IncomingMigrate": {
-        "new_contract_address": "EthereumAddress",
+        "new_contract_address": "EthAddress",
         "author": "AccountId",
         "tx_hash": "H256",
         "at_height": "u64",
@@ -248,7 +249,7 @@
         ]
     },
     "IncomingTransfer": {
-        "from": "EthereumAddress",
+        "from": "EthAddress",
         "to": "AccountId",
         "asset_id": "AssetId",
         "asset_kind": "AssetKind",
@@ -360,7 +361,7 @@
     },
     "OutgoingAddPeer": {
         "author": "AccountId",
-        "peer_address": "EthereumAddress",
+        "peer_address": "EthAddress",
         "peer_account_id": "AccountId",
         "nonce": "Index",
         "network_id": "BridgeNetworkId",
@@ -368,21 +369,21 @@
     },
     "OutgoingAddPeerCompat": {
         "author": "AccountId",
-        "peer_address": "EthereumAddress",
+        "peer_address": "EthAddress",
         "peer_account_id": "AccountId",
         "nonce": "Index",
         "network_id": "BridgeNetworkId",
         "timepoint": "BridgeTimepoint"
     },
     "OutgoingAddPeerEncoded": {
-        "peer_address": "EthereumAddress",
+        "peer_address": "EthAddress",
         "tx_hash": "H256",
         "network_id": "H256",
         "raw": "Vec<u8>"
     },
     "OutgoingAddToken": {
         "author": "AccountId",
-        "token_address": "EthereumAddress",
+        "token_address": "EthAddress",
         "ticker": "String",
         "name": "String",
         "decimals": "u8",
@@ -391,7 +392,7 @@
         "timepoint": "BridgeTimepoint"
     },
     "OutgoingAddTokenEncoded": {
-        "token_address": "EthereumAddress",
+        "token_address": "EthAddress",
         "ticker": "String",
         "name": "String",
         "decimals": "u8",
@@ -401,17 +402,17 @@
     },
     "OutgoingMigrate": {
         "author": "AccountId",
-        "new_contract_address": "EthereumAddress",
-        "erc20_native_tokens": "Vec<EthereumAddress>",
+        "new_contract_address": "EthAddress",
+        "erc20_native_tokens": "Vec<EthAddress>",
         "nonce": "Index",
         "network_id": "BridgeNetworkId",
         "timepoint": "BridgeTimepoint"
     },
     "OutgoingMigrateEncoded": {
-        "this_contract_address": "EthereumAddress",
+        "this_contract_address": "EthAddress",
         "tx_hash": "H256",
-        "new_contract_address": "EthereumAddress",
-        "erc20_native_tokens": "Vec<EthereumAddress>",
+        "new_contract_address": "EthAddress",
+        "erc20_native_tokens": "Vec<EthAddress>",
         "network_id": "H256",
         "raw": "Vec<u8>"
     },
@@ -422,7 +423,7 @@
         "timepoint": "BridgeTimepoint"
     },
     "OutgoingPrepareForMigrationEncoded": {
-        "this_contract_address": "EthereumAddress",
+        "this_contract_address": "EthAddress",
         "tx_hash": "H256",
         "network_id": "H256",
         "raw": "Vec<u8>"
@@ -430,7 +431,7 @@
     "OutgoingRemovePeer": {
         "author": "AccountId",
         "peer_account_id": "AccountId",
-        "peer_address": "EthereumAddress",
+        "peer_address": "EthAddress",
         "nonce": "Index",
         "network_id": "BridgeNetworkId",
         "timepoint": "BridgeTimepoint"
@@ -438,13 +439,13 @@
     "OutgoingRemovePeerCompat": {
         "author": "AccountId",
         "peer_account_id": "AccountId",
-        "peer_address": "EthereumAddress",
+        "peer_address": "EthAddress",
         "nonce": "Index",
         "network_id": "BridgeNetworkId",
         "timepoint": "BridgeTimepoint"
     },
     "OutgoingRemovePeerEncoded": {
-        "peer_address": "EthereumAddress",
+        "peer_address": "EthAddress",
         "tx_hash": "H256",
         "network_id": "H256",
         "raw": "Vec<u8>"
@@ -473,7 +474,7 @@
     },
     "OutgoingTransfer": {
         "from": "AccountId",
-        "to": "EthereumAddress",
+        "to": "EthAddress",
         "asset_id": "AssetId",
         "amount": "Balance",
         "nonce": "Index",
@@ -483,8 +484,8 @@
     "OutgoingTransferEncoded": {
         "currency_id": "CurrencyIdEncoded",
         "amount": "U256",
-        "to": "EthereumAddress",
-        "from": "EthereumAddress",
+        "to": "EthAddress",
+        "from": "EthAddress",
         "tx_hash": "H256",
         "network_id": "H256",
         "raw": "Vec<u8>"
