@@ -5,7 +5,7 @@ import type { Subscription } from '@polkadot/x-rxjs';
 
 import { CodecString, FPNumber, NumberLike } from '../fp';
 import { poolAccountIdFromAssetPair } from './account';
-import { XOR, ZeroBalance } from '../assets/consts';
+import { XOR } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
