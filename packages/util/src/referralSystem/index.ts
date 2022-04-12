@@ -1,4 +1,5 @@
 import { assert } from '@polkadot/util';
+import { map } from '@polkadot/x-rxjs/operators';
 import type { Observable } from '@polkadot/types/types';
 
 import { Messages } from '../logger';
@@ -16,8 +17,16 @@ export class ReferralSystemModule {
    * @returns referrer
    */
   public async getReferrer(invitedUserId: string): Promise<string> {
-    const referrer = (await this.root.api.query.referrals.referrers(invitedUserId)) as any;
+    const referrer = await this.root.api.query.referrals.referrers(invitedUserId);
     return !referrer ? '' : referrer.toString();
+  }
+
+  /**
+   * Returns the referrer of the account
+   * @returns referrer
+   */
+  public async getAccountReferrer(): Promise<string> {
+    return this.getReferrer(this.root.account.pair.address);
   }
 
   /**
@@ -26,7 +35,7 @@ export class ReferralSystemModule {
    * @returns array of invited users
    */
   public async getInvitedUsers(referrerId: string): Promise<Array<string>> {
-    return (await this.root.api.query.referrals.referrals(referrerId)) as any;
+    return (await this.root.api.query.referrals.referrals(referrerId)).map((accountId) => accountId.toString());
   }
 
   /**
@@ -34,7 +43,16 @@ export class ReferralSystemModule {
    * @param referrerId address of referrer account
    */
   public subscribeOnInvitedUsers(referrerId: string): Observable<Array<string>> {
-    return this.root.apiRx.query.referrals.referrals(referrerId) as unknown as Observable<Array<string>>;
+    return this.root.apiRx.query.referrals
+      .referrals(referrerId)
+      .pipe(map((data) => data.map((accountId) => accountId.toString())));
+  }
+
+  /**
+   * Account's invited users subscription
+   */
+  public subscribeOnAccountInvitedUsers(): Observable<Array<string>> {
+    return this.subscribeOnInvitedUsers(this.root.account.pair.address);
   }
 
   /**
