@@ -66,11 +66,12 @@ import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AccountId32Junction, AccountIndex64Junction, AccountKey20Junction, AssetInstance, BodyId, BodyPart, BodyPartAtLeastProportion, BodyPartFraction, BodyPartMoreThanProportion, DoubleEncodedCall, InboundStatus, Junction, MultiAsset, MultiAssetAbstractFungible, MultiAssetAbstractNonFungible, MultiAssetConcreteFungible, MultiAssetConcreteNonFungible, MultiLocation, NetworkId, OutboundStatus, Outcome, PluralityJunction, QueueConfigData, VersionedMultiAsset, VersionedMultiLocation, VersionedXcm, Xcm, XcmAssetEffects, XcmError, XcmHrmpChannelAccepted, XcmHrmpChannelClosing, XcmHrmpNewChannelOpenRequest, XcmOrder, XcmOrderBuyExecution, XcmOrderDepositAsset, XcmOrderDepositReserveAsset, XcmOrderExchangeAsset, XcmOrderInitiateReserveWithdraw, XcmOrderInitiateTeleport, XcmOrderQueryHolding, XcmOriginKind, XcmQueryResponse, XcmRelayedFrom, XcmReserveAssetDeposit, XcmResponse, XcmTeleportAsset, XcmTransact, XcmTransferAsset, XcmTransferReserveAsset, XcmWithdrawAsset, XcmpMessageFormat } from '@polkadot/types/interfaces/xcm';
 import type { AssetInfo, AssetNameStr, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { PollInfo, VotingInfo } from '@sora-substrate/types/interfaces/ceresGovernancePlatform';
-import type { ContributionInfo, ILOInfo } from '@sora-substrate/types/interfaces/ceresLaunchpad';
+import type { ContributionInfo, ContributorsVesting, ILOInfo, TeamVesting } from '@sora-substrate/types/interfaces/ceresLaunchpad';
 import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
 import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
 import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interfaces/demeterFarmingPlatform';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthAddress, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
 import type { LPRewardsInfo, LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
@@ -391,6 +392,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<ContractStorageLayout>': Option<ContractStorageLayout>;
     'Option<ContractTypeSpec>': Option<ContractTypeSpec>;
     'Option<ContributionInfo>': Option<ContributionInfo>;
+    'Option<ContributorsVesting>': Option<ContributorsVesting>;
     'Option<Conviction>': Option<Conviction>;
     'Option<CoreAssignment>': Option<CoreAssignment>;
     'Option<CoreIndex>': Option<CoreIndex>;
@@ -472,6 +474,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<ErrorMetadataV13>': Option<ErrorMetadataV13>;
     'Option<ErrorMetadataV9>': Option<ErrorMetadataV9>;
     'Option<EthAccount>': Option<EthAccount>;
+    'Option<EthAddress>': Option<EthAddress>;
     'Option<EthBlock>': Option<EthBlock>;
     'Option<EthBloom>': Option<EthBloom>;
     'Option<EthBridgeStorageVersion>': Option<EthBridgeStorageVersion>;
@@ -865,6 +868,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<PluralityJunction>': Option<PluralityJunction>;
     'Option<Points>': Option<Points>;
     'Option<PollInfo>': Option<PollInfo>;
+    'Option<PoolData>': Option<PoolData>;
     'Option<PoolFarmer>': Option<PoolFarmer>;
     'Option<PoolInfo>': Option<PoolInfo>;
     'Option<PostDispatchInfo>': Option<PostDispatchInfo>;
@@ -1088,6 +1092,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<TaskAddress>': Option<TaskAddress>;
     'Option<TAssetBalance>': Option<TAssetBalance>;
     'Option<TAssetDepositBalance>': Option<TAssetDepositBalance>;
+    'Option<TeamVesting>': Option<TeamVesting>;
     'Option<TechAccountId>': Option<TechAccountId>;
     'Option<TechAmount>': Option<TechAmount>;
     'Option<TechAssetId>': Option<TechAssetId>;
@@ -1099,6 +1104,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<TimestampedValue>': Option<TimestampedValue>;
     'Option<TimestampedValueOf>': Option<TimestampedValueOf>;
     'Option<TokenError>': Option<TokenError>;
+    'Option<TokenInfo>': Option<TokenInfo>;
     'Option<TokenLockInfo>': Option<TokenLockInfo>;
     'Option<TombstoneContractInfo>': Option<TombstoneContractInfo>;
     'Option<TP>': Option<TP>;
@@ -1131,6 +1137,7 @@ declare module '@polkadot/types/types/registry' {
     'Option<UnknownTransaction>': Option<UnknownTransaction>;
     'Option<UnlockChunk>': Option<UnlockChunk>;
     'Option<UpwardMessage>': Option<UpwardMessage>;
+    'Option<UserInfo>': Option<UserInfo>;
     'Option<usize>': Option<usize>;
     'Option<USize>': Option<USize>;
     'Option<ValidationCode>': Option<ValidationCode>;
@@ -1409,6 +1416,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<ContractStorageLayout>': Vec<ContractStorageLayout>;
     'Vec<ContractTypeSpec>': Vec<ContractTypeSpec>;
     'Vec<ContributionInfo>': Vec<ContributionInfo>;
+    'Vec<ContributorsVesting>': Vec<ContributorsVesting>;
     'Vec<Conviction>': Vec<Conviction>;
     'Vec<CoreAssignment>': Vec<CoreAssignment>;
     'Vec<CoreIndex>': Vec<CoreIndex>;
@@ -1490,6 +1498,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<ErrorMetadataV13>': Vec<ErrorMetadataV13>;
     'Vec<ErrorMetadataV9>': Vec<ErrorMetadataV9>;
     'Vec<EthAccount>': Vec<EthAccount>;
+    'Vec<EthAddress>': Vec<EthAddress>;
     'Vec<EthBlock>': Vec<EthBlock>;
     'Vec<EthBloom>': Vec<EthBloom>;
     'Vec<EthBridgeStorageVersion>': Vec<EthBridgeStorageVersion>;
@@ -1883,6 +1892,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<PluralityJunction>': Vec<PluralityJunction>;
     'Vec<Points>': Vec<Points>;
     'Vec<PollInfo>': Vec<PollInfo>;
+    'Vec<PoolData>': Vec<PoolData>;
     'Vec<PoolFarmer>': Vec<PoolFarmer>;
     'Vec<PoolInfo>': Vec<PoolInfo>;
     'Vec<PostDispatchInfo>': Vec<PostDispatchInfo>;
@@ -2106,6 +2116,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<TaskAddress>': Vec<TaskAddress>;
     'Vec<TAssetBalance>': Vec<TAssetBalance>;
     'Vec<TAssetDepositBalance>': Vec<TAssetDepositBalance>;
+    'Vec<TeamVesting>': Vec<TeamVesting>;
     'Vec<TechAccountId>': Vec<TechAccountId>;
     'Vec<TechAmount>': Vec<TechAmount>;
     'Vec<TechAssetId>': Vec<TechAssetId>;
@@ -2117,6 +2128,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<TimestampedValue>': Vec<TimestampedValue>;
     'Vec<TimestampedValueOf>': Vec<TimestampedValueOf>;
     'Vec<TokenError>': Vec<TokenError>;
+    'Vec<TokenInfo>': Vec<TokenInfo>;
     'Vec<TokenLockInfo>': Vec<TokenLockInfo>;
     'Vec<TombstoneContractInfo>': Vec<TombstoneContractInfo>;
     'Vec<TP>': Vec<TP>;
@@ -2149,6 +2161,7 @@ declare module '@polkadot/types/types/registry' {
     'Vec<UnknownTransaction>': Vec<UnknownTransaction>;
     'Vec<UnlockChunk>': Vec<UnlockChunk>;
     'Vec<UpwardMessage>': Vec<UpwardMessage>;
+    'Vec<UserInfo>': Vec<UserInfo>;
     'Vec<usize>': Vec<usize>;
     'Vec<USize>': Vec<USize>;
     'Vec<ValidationCode>': Vec<ValidationCode>;
@@ -2427,6 +2440,7 @@ declare module '@polkadot/types/types/registry' {
     ContractStorageLayout: ContractStorageLayout;
     ContractTypeSpec: ContractTypeSpec;
     ContributionInfo: ContributionInfo;
+    ContributorsVesting: ContributorsVesting;
     Conviction: Conviction;
     CoreAssignment: CoreAssignment;
     CoreIndex: CoreIndex;
@@ -2508,6 +2522,7 @@ declare module '@polkadot/types/types/registry' {
     ErrorMetadataV13: ErrorMetadataV13;
     ErrorMetadataV9: ErrorMetadataV9;
     EthAccount: EthAccount;
+    EthAddress: EthAddress;
     EthBlock: EthBlock;
     EthBloom: EthBloom;
     EthBridgeStorageVersion: EthBridgeStorageVersion;
@@ -2901,6 +2916,7 @@ declare module '@polkadot/types/types/registry' {
     PluralityJunction: PluralityJunction;
     Points: Points;
     PollInfo: PollInfo;
+    PoolData: PoolData;
     PoolFarmer: PoolFarmer;
     PoolInfo: PoolInfo;
     PostDispatchInfo: PostDispatchInfo;
@@ -3124,6 +3140,7 @@ declare module '@polkadot/types/types/registry' {
     TaskAddress: TaskAddress;
     TAssetBalance: TAssetBalance;
     TAssetDepositBalance: TAssetDepositBalance;
+    TeamVesting: TeamVesting;
     TechAccountId: TechAccountId;
     TechAmount: TechAmount;
     TechAssetId: TechAssetId;
@@ -3135,6 +3152,7 @@ declare module '@polkadot/types/types/registry' {
     TimestampedValue: TimestampedValue;
     TimestampedValueOf: TimestampedValueOf;
     TokenError: TokenError;
+    TokenInfo: TokenInfo;
     TokenLockInfo: TokenLockInfo;
     TombstoneContractInfo: TombstoneContractInfo;
     TP: TP;
@@ -3167,6 +3185,7 @@ declare module '@polkadot/types/types/registry' {
     UnknownTransaction: UnknownTransaction;
     UnlockChunk: UnlockChunk;
     UpwardMessage: UpwardMessage;
+    UserInfo: UserInfo;
     usize: usize;
     USize: USize;
     ValidationCode: ValidationCode;

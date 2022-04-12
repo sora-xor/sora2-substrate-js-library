@@ -3,7 +3,6 @@
 
 import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
 import type { ITuple } from '@polkadot/types/types';
-import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
 import type { AccountId, AssetId, AssetName, AssetSymbol, Balance, BalancePrecision, BlockNumber, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetKind */
@@ -42,6 +41,9 @@ export interface CurrencyIdEncoded extends Enum {
   readonly asTokenAddress: H160;
 }
 
+/** @name EthAddress */
+export interface EthAddress extends H160 {}
+
 /** @name EthBridgeStorageVersion */
 export interface EthBridgeStorageVersion extends Enum {
   readonly isV1: boolean;
@@ -60,7 +62,7 @@ export interface FixedBytes extends Bytes {}
 
 /** @name IncomingAddToken */
 export interface IncomingAddToken extends Struct {
-  readonly token_address: EthereumAddress;
+  readonly token_address: EthAddress;
   readonly asset_id: AssetId;
   readonly precision: BalancePrecision;
   readonly symbol: AssetSymbol;
@@ -88,7 +90,7 @@ export interface IncomingCancelOutgoingRequest extends Struct {
 /** @name IncomingChangePeers */
 export interface IncomingChangePeers extends Struct {
   readonly peer_account_id: AccountId;
-  readonly peer_address: EthereumAddress;
+  readonly peer_address: EthAddress;
   readonly added: bool;
   readonly author: AccountId;
   readonly tx_hash: H256;
@@ -100,7 +102,7 @@ export interface IncomingChangePeers extends Struct {
 /** @name IncomingChangePeersCompat */
 export interface IncomingChangePeersCompat extends Struct {
   readonly peer_account_id: AccountId;
-  readonly peer_address: EthereumAddress;
+  readonly peer_address: EthAddress;
   readonly added: bool;
   readonly contract: ChangePeersContract;
   readonly author: AccountId;
@@ -128,7 +130,7 @@ export interface IncomingMetaRequestKind extends Enum {
 
 /** @name IncomingMigrate */
 export interface IncomingMigrate extends Struct {
-  readonly new_contract_address: EthereumAddress;
+  readonly new_contract_address: EthAddress;
   readonly author: AccountId;
   readonly tx_hash: H256;
   readonly at_height: u64;
@@ -186,7 +188,7 @@ export interface IncomingTransactionRequestKind extends Enum {
 
 /** @name IncomingTransfer */
 export interface IncomingTransfer extends Struct {
-  readonly from: EthereumAddress;
+  readonly from: EthAddress;
   readonly to: AccountId;
   readonly asset_id: AssetId;
   readonly asset_kind: AssetKind;
@@ -267,7 +269,7 @@ export interface OutgoingAddAssetEncoded extends Struct {
 /** @name OutgoingAddPeer */
 export interface OutgoingAddPeer extends Struct {
   readonly author: AccountId;
-  readonly peer_address: EthereumAddress;
+  readonly peer_address: EthAddress;
   readonly peer_account_id: AccountId;
   readonly nonce: Index;
   readonly network_id: BridgeNetworkId;
@@ -277,7 +279,7 @@ export interface OutgoingAddPeer extends Struct {
 /** @name OutgoingAddPeerCompat */
 export interface OutgoingAddPeerCompat extends Struct {
   readonly author: AccountId;
-  readonly peer_address: EthereumAddress;
+  readonly peer_address: EthAddress;
   readonly peer_account_id: AccountId;
   readonly nonce: Index;
   readonly network_id: BridgeNetworkId;
@@ -286,7 +288,7 @@ export interface OutgoingAddPeerCompat extends Struct {
 
 /** @name OutgoingAddPeerEncoded */
 export interface OutgoingAddPeerEncoded extends Struct {
-  readonly peer_address: EthereumAddress;
+  readonly peer_address: EthAddress;
   readonly tx_hash: H256;
   readonly network_id: H256;
   readonly raw: Bytes;
@@ -295,7 +297,7 @@ export interface OutgoingAddPeerEncoded extends Struct {
 /** @name OutgoingAddToken */
 export interface OutgoingAddToken extends Struct {
   readonly author: AccountId;
-  readonly token_address: EthereumAddress;
+  readonly token_address: EthAddress;
   readonly ticker: Text;
   readonly name: Text;
   readonly decimals: u8;
@@ -306,7 +308,7 @@ export interface OutgoingAddToken extends Struct {
 
 /** @name OutgoingAddTokenEncoded */
 export interface OutgoingAddTokenEncoded extends Struct {
-  readonly token_address: EthereumAddress;
+  readonly token_address: EthAddress;
   readonly ticker: Text;
   readonly name: Text;
   readonly decimals: u8;
@@ -318,8 +320,8 @@ export interface OutgoingAddTokenEncoded extends Struct {
 /** @name OutgoingMigrate */
 export interface OutgoingMigrate extends Struct {
   readonly author: AccountId;
-  readonly new_contract_address: EthereumAddress;
-  readonly erc20_native_tokens: Vec<EthereumAddress>;
+  readonly new_contract_address: EthAddress;
+  readonly erc20_native_tokens: Vec<EthAddress>;
   readonly nonce: Index;
   readonly network_id: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
@@ -327,10 +329,10 @@ export interface OutgoingMigrate extends Struct {
 
 /** @name OutgoingMigrateEncoded */
 export interface OutgoingMigrateEncoded extends Struct {
-  readonly this_contract_address: EthereumAddress;
+  readonly this_contract_address: EthAddress;
   readonly tx_hash: H256;
-  readonly new_contract_address: EthereumAddress;
-  readonly erc20_native_tokens: Vec<EthereumAddress>;
+  readonly new_contract_address: EthAddress;
+  readonly erc20_native_tokens: Vec<EthAddress>;
   readonly network_id: H256;
   readonly raw: Bytes;
 }
@@ -345,7 +347,7 @@ export interface OutgoingPrepareForMigration extends Struct {
 
 /** @name OutgoingPrepareForMigrationEncoded */
 export interface OutgoingPrepareForMigrationEncoded extends Struct {
-  readonly this_contract_address: EthereumAddress;
+  readonly this_contract_address: EthAddress;
   readonly tx_hash: H256;
   readonly network_id: H256;
   readonly raw: Bytes;
@@ -355,7 +357,7 @@ export interface OutgoingPrepareForMigrationEncoded extends Struct {
 export interface OutgoingRemovePeer extends Struct {
   readonly author: AccountId;
   readonly peer_account_id: AccountId;
-  readonly peer_address: EthereumAddress;
+  readonly peer_address: EthAddress;
   readonly nonce: Index;
   readonly network_id: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
@@ -365,7 +367,7 @@ export interface OutgoingRemovePeer extends Struct {
 export interface OutgoingRemovePeerCompat extends Struct {
   readonly author: AccountId;
   readonly peer_account_id: AccountId;
-  readonly peer_address: EthereumAddress;
+  readonly peer_address: EthAddress;
   readonly nonce: Index;
   readonly network_id: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
@@ -373,7 +375,7 @@ export interface OutgoingRemovePeerCompat extends Struct {
 
 /** @name OutgoingRemovePeerEncoded */
 export interface OutgoingRemovePeerEncoded extends Struct {
-  readonly peer_address: EthereumAddress;
+  readonly peer_address: EthAddress;
   readonly tx_hash: H256;
   readonly network_id: H256;
   readonly raw: Bytes;
@@ -418,7 +420,7 @@ export interface OutgoingRequestEncoded extends Enum {
 /** @name OutgoingTransfer */
 export interface OutgoingTransfer extends Struct {
   readonly from: AccountId;
-  readonly to: EthereumAddress;
+  readonly to: EthAddress;
   readonly asset_id: AssetId;
   readonly amount: Balance;
   readonly nonce: Index;
@@ -430,8 +432,8 @@ export interface OutgoingTransfer extends Struct {
 export interface OutgoingTransferEncoded extends Struct {
   readonly currency_id: CurrencyIdEncoded;
   readonly amount: U256;
-  readonly to: EthereumAddress;
-  readonly from: EthereumAddress;
+  readonly to: EthAddress;
+  readonly from: EthAddress;
   readonly tx_hash: H256;
   readonly network_id: H256;
   readonly raw: Bytes;
