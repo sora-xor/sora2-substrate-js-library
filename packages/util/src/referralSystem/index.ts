@@ -27,7 +27,7 @@ export class ReferralSystemModule {
    * @returns array of invited users
    */
   public async getInvitedUsers(referrerId: string): Promise<Array<string>> {
-    return (await this.root.api.query.referrals.referrals(referrerId)).map((account) => account.toString());
+    return (await this.root.api.query.referrals.referrals(referrerId)).map((accountId) => accountId.toString());
   }
 
   /**
@@ -44,9 +44,7 @@ export class ReferralSystemModule {
    * Account's invited users subscription
    */
   public subscribeOnAccountInvitedUsers(): Observable<Array<string>> {
-    return this.root.apiRx.query.referrals
-      .referrals(this.root.account.pair.address)
-      .pipe(map((data) => data.map((accountId) => accountId.toString())));
+    return this.subscribeOnInvitedUsers(this.root.account.pair.address);
   }
 
   /**
