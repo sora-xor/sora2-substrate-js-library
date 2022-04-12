@@ -17,8 +17,16 @@ export class ReferralSystemModule {
    * @returns referrer
    */
   public async getReferrer(invitedUserId: string): Promise<string> {
-    const referrer = (await this.root.api.query.referrals.referrers(invitedUserId)) as any;
+    const referrer = await this.root.api.query.referrals.referrers(invitedUserId);
     return !referrer ? '' : referrer.toString();
+  }
+
+  /**
+   * Returns the referrer of the account
+   * @returns referrer
+   */
+  public async getAccountReferrer(): Promise<string> {
+    return this.getReferrer(this.root.account.pair.address);
   }
 
   /**
