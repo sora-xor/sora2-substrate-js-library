@@ -779,6 +779,18 @@ export interface StorageType extends BaseStorageType {
      **/
     totalValRewards: Balance | null;
     /**
+     * Stores whether address already claimed UMI NFT rewards.
+     **/
+    umiNftClaimed: StorageMap<EthAddress | string, bool>;
+    /**
+     * UMI NFT receivers storage
+     **/
+    umiNftReceivers: StorageMap<EthAddress | string, Vec<Balance>>;
+    /**
+     * The storage of available UMI NFTs.
+     **/
+    umiNfts: Vec<AssetId> | null;
+    /**
      * Amount of VAL burned since last vesting
      **/
     valBurnedSinceLastVesting: Balance | null;
