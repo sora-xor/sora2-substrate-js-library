@@ -305,8 +305,6 @@ export class BaseApi {
     // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
 
-    this.lockPair();
-
     history.txId = signedTx.hash.toString();
 
     // History id value will be equal to transaction hash
