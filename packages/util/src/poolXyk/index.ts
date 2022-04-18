@@ -274,7 +274,7 @@ export class PoolXykModule {
    * Set subscriptions for balance updates of the account asset list
    * @param targetAssetIds
    */
-  public async updateAccountLiquidity(targetAssetIds: Array<string>): Promise<void> {
+  private async updateAccountLiquiditySubscriptions(targetAssetIds: Array<string>): Promise<void> {
     this.unsubscribeFromAllUpdates();
     assert(this.root.account, Messages.connectWallet);
     // Update list of current account liquidity and execute next()
@@ -313,7 +313,7 @@ export class PoolXykModule {
 
     return this.root.apiRx.query.poolXyk.accountPools(this.root.accountPair.address).subscribe(async (result) => {
       const targetIds = result.toJSON() as Array<string>;
-      await this.updateAccountLiquidity(targetIds);
+      await this.updateAccountLiquiditySubscriptions(targetIds);
 
       this.accountLiquidityLoaded.complete();
     });
