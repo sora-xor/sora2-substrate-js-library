@@ -2,6 +2,7 @@ import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { CodecString, FPNumber } from '@sora-substrate/math';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
@@ -11,7 +12,6 @@ import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/typ
 
 import { AccountStorage, Storage } from './storage';
 import { XOR } from './assets/consts';
-import { CodecString, FPNumber } from './fp';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';

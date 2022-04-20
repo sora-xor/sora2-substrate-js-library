@@ -1,9 +1,9 @@
 import { assert } from '@polkadot/util';
 import { Subject } from '@polkadot/x-rxjs';
+import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { Codec } from '@polkadot/types/types';
 import type { Subscription } from '@polkadot/x-rxjs';
 
-import { CodecString, FPNumber, NumberLike } from '../fp';
 import { poolAccountIdFromAssetPair } from './account';
 import { XOR } from '../assets/consts';
 import { Messages } from '../logger';
