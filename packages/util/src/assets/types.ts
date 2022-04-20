@@ -24,7 +24,7 @@ export type Whitelist = {
  *
  * transferable = free - locked
  *
- * frozen = locked + reserved
+ * frozen = locked + reserved + bonded
  */
 export interface AccountBalance {
   reserved: CodecString;
