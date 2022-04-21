@@ -27,7 +27,8 @@ function formatBalance(
   const feeFrozen = new FPNumber((data as AccountData).feeFrozen || 0, assetDecimals);
   const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals);
   const locked = FPNumber.max(miscFrozen, feeFrozen);
-  const bonded = new FPNumber(bondedData || 0, assetDecimals);
+  // bondedData can be NaN, it can be checked by isEmpty===true
+  const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
   const freeAndReserved = free.add(reserved);
   return {
     reserved: reserved.toCodecString(),
