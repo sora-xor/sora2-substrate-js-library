@@ -12,7 +12,6 @@
     "@open-web3/orml-api-derive": "^0.8.2-9",
     "@polkadot/api": "^4.10.1",
     "@polkadot/rpc-core": "^4.10.1",
-    "@sora-substrate/api-derive": "^1.8.23",
     "@sora-substrate/types": "^1.8.23"
   }
 }
