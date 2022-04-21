@@ -32,7 +32,7 @@ export class RewardsModule {
     });
   }
 
-  private prepareRewardInfo(type: RewardingEvents, amount: CodecString | number): RewardInfo {
+  private prepareRewardInfo(type: RewardingEvents, amount: CodecString | number, total?: CodecString): RewardInfo {
     const asset =
       {
         [RewardingEvents.XorErc20]: VAL,
@@ -138,6 +138,30 @@ export class RewardsModule {
     return rewardsInfo;
   }
 
+  public async getAssetCrowdloanClaimHistory(accountAddress: string, assetAddress: string): Promise<number> {
+    return (
+      await this.root.api.query.vestedRewards.crowdloanClaimHistory(accountAddress, assetAddress)
+    ).toJSON() as number;
+  }
+
+  private getCrowdloanAssetTotalLimit(vested: FPNumber, lastClaimBlock: number, currentBlock: number) {
+    const blocksPerDay = 14_400;
+    // TODO: wait for storage
+    const leaseStartBlock = 0;
+    const leaseTotalDays = 319;
+
+    const daily = vested.div(new FPNumber(leaseTotalDays));
+    const claimablePeriod = new FPNumber(Math.floor(currentBlock - (lastClaimBlock || leaseStartBlock) / blocksPerDay));
+    const claimedPeriod = new FPNumber(
+      Math.floor(((lastClaimBlock || leaseStartBlock) - leaseStartBlock) / blocksPerDay)
+    );
+
+    const limit = daily.mul(claimablePeriod).toCodecString();
+    const total = vested.sub(daily.mul(claimedPeriod)).toCodecString();
+
+    return { limit, total };
+  }
+
   /**
    * Check crowdloan rewards
    */
@@ -146,6 +170,8 @@ export class RewardsModule {
 
     const { address } = this.root.account.pair;
 
+    const currentBlock = Number(await this.root.api.query.system.number());
+
     const {
       xor_reward: xor,
       val_reward: val,
@@ -153,11 +179,36 @@ export class RewardsModule {
       xstusd_reward: xstusd,
     } = (await this.root.api.query.vestedRewards.crowdloanRewards(address)) as any;
 
+    const [xorLastClaim, valLastClaim, pswapLastClaim, xstusdLastClaim] = await Promise.all(
+      [XOR.address, VAL.address, PSWAP.address, XSTUSD.address].map((assetAddress) =>
+        this.getAssetCrowdloanClaimHistory(address, assetAddress)
+      )
+    );
+
+    const xorTotalLimit = this.getCrowdloanAssetTotalLimit(new FPNumber(xor, XOR.decimals), xorLastClaim, currentBlock);
+    const valTotalLimit = this.getCrowdloanAssetTotalLimit(new FPNumber(val, VAL.decimals), valLastClaim, currentBlock);
+    const pswapTotalLimit = this.getCrowdloanAssetTotalLimit(
+      new FPNumber(pswap, PSWAP.decimals),
+      pswapLastClaim,
+      currentBlock
+    );
+    const xstusdTotalLimit = this.getCrowdloanAssetTotalLimit(
+      new FPNumber(xstusd, XSTUSD.decimals),
+      xstusdLastClaim,
+      currentBlock
+    );
+
     const rewards = [
-      this.prepareRewardInfo(RewardingEvents.CrowdloanXOR, xor),
-      this.prepareRewardInfo(RewardingEvents.CrowdloanVAL, val),
-      this.prepareRewardInfo(RewardingEvents.CrowdloanPSWAP, pswap),
-      this.prepareRewardInfo(RewardingEvents.CrowdloanXSTUSD, xstusd),
+      { ...this.prepareRewardInfo(RewardingEvents.CrowdloanXOR, xorTotalLimit.limit), total: xorTotalLimit.total },
+      { ...this.prepareRewardInfo(RewardingEvents.CrowdloanVAL, valTotalLimit.limit), total: valTotalLimit.total },
+      {
+        ...this.prepareRewardInfo(RewardingEvents.CrowdloanPSWAP, pswapTotalLimit.limit),
+        total: pswapTotalLimit.total,
+      },
+      {
+        ...this.prepareRewardInfo(RewardingEvents.CrowdloanXSTUSD, xstusdTotalLimit.limit),
+        total: xstusdTotalLimit.total,
+      },
     ];
 
     return rewards;
