@@ -1,4 +1,4 @@
-import type { CodecString } from '../fp';
+import type { CodecString } from '@sora-substrate/math';
 
 export interface WhitelistItem {
   symbol: string;

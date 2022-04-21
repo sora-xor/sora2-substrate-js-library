@@ -1,5 +1,5 @@
 {
-  "name": "@sora-substrate/api-derive",
+  "name": "@sora-substrate/math",
   "version": "1.8.23",
   "license": "Apache-2.0",
   "main": "./build/index.js",
@@ -8,9 +8,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@babel/runtime": "^7.10.2",
-    "@polkadot/api-derive": "^4.10.1",
-    "@sora-substrate/types": "^1.8.23",
-    "rxjs": "^6.5.5"
+    "@polkadot/types": "^4.10.1",
+    "bignumber.js": "^9.0.1",
+    "lodash": "^4.17.15"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.150"
   }
 }
