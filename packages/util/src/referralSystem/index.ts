@@ -1,9 +1,9 @@
 import { assert } from '@polkadot/util';
 import { map } from '@polkadot/x-rxjs/operators';
+import { FPNumber, NumberLike } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 
 import { Messages } from '../logger';
-import { FPNumber, NumberLike } from '../fp';
 import { XOR } from '../assets/consts';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';

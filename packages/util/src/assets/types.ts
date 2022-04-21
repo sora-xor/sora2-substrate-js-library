@@ -1,4 +1,4 @@
-import type { CodecString } from '../fp';
+import type { CodecString } from '@sora-substrate/math';
 
 export interface WhitelistItem {
   symbol: string;
@@ -24,7 +24,7 @@ export type Whitelist = {
  *
  * transferable = free - locked
  *
- * frozen = locked + reserved
+ * frozen = locked + reserved + bonded
  */
 export interface AccountBalance {
   reserved: CodecString;

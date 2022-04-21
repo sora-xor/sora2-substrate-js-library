@@ -1,4 +1,5 @@
-import { FPNumber } from '../fp';
+import { FPNumber } from '@sora-substrate/math';
+
 import type { AccountBalance, Asset } from './types';
 
 export const MaxTotalSupply = '170141183460469231731.687303715884105727';

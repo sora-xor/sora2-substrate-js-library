@@ -4,12 +4,12 @@ import BigNumber from 'bignumber.js';
 import { assert } from '@polkadot/util';
 import { map } from '@polkadot/x-rxjs/operators';
 import { combineLatest } from '@polkadot/x-rxjs';
+import { CodecString, FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 
 import { BaseApi, Operation, isBridgeOperation } from './BaseApi';
 import { Messages } from './logger';
 import { getAssets, isNativeAsset } from './assets';
-import { CodecString, FPNumber } from './fp';
 import type { AccountAsset, Asset } from './assets/types';
 import type { History } from './BaseApi';
 
