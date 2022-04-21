@@ -29,15 +29,13 @@ function formatBalance(
   const locked = FPNumber.max(miscFrozen, feeFrozen);
   const bonded = new FPNumber(bondedData || 0, assetDecimals);
   const freeAndReserved = free.add(reserved);
-  const hasBonded = bonded.isFinity();
-  const calculatedFrozen = frozen.isZero() ? locked.add(reserved) : frozen;
   return {
     reserved: reserved.toCodecString(),
     locked: locked.toCodecString(),
-    total: (hasBonded ? freeAndReserved.add(bonded) : freeAndReserved).toCodecString(),
+    total: freeAndReserved.add(bonded).toCodecString(),
     transferable: free.sub(locked).toCodecString(),
-    frozen: (hasBonded ? calculatedFrozen.add(bonded) : calculatedFrozen).toCodecString(),
-    bonded: hasBonded ? bonded.toCodecString() : '0',
+    frozen: (frozen.isZero() ? locked.add(reserved) : frozen).add(bonded).toCodecString(),
+    bonded: bonded.toCodecString(),
   } as AccountBalance;
 }
 
