@@ -1,6 +1,6 @@
 import { assert } from '@polkadot/util';
 import { map } from '@polkadot/x-rxjs/operators';
-import type { Observable } from '@polkadot/types/types';
+import type { Observable, Codec } from '@polkadot/types/types';
 
 import { RewardingEvents } from './consts';
 import { CodecString, FPNumber } from '../fp';
@@ -32,7 +32,11 @@ export class RewardsModule {
     });
   }
 
-  private prepareRewardInfo(type: RewardingEvents, amount: CodecString | number, total?: CodecString): RewardInfo {
+  private prepareRewardInfo(
+    type: RewardingEvents,
+    amount: Codec | CodecString | number,
+    total?: CodecString
+  ): RewardInfo {
     const asset =
       {
         [RewardingEvents.XorErc20]: VAL,
@@ -104,38 +108,33 @@ export class RewardsModule {
   }
 
   /**
-   * Check reward for providing liquidity
-   * @returns liquidity provision RewardInfo
+   * Get observable reward for liqudity provision
+   * @returns observable liquidity provision RewardInfo
    */
-  public async checkLiquidityProvision(): Promise<RewardInfo> {
+  public getLiquidityProvisionSubscription(): Observable<RewardInfo> {
     assert(this.root.account, Messages.connectWallet);
 
-    const { address } = this.root.account.pair;
-
-    const liquidityProvisionAmount = await (this.root.api.rpc as any).pswapDistribution.claimableAmount(address); // Balance
-
-    const reward = this.prepareRewardInfo(RewardingEvents.LiquidityProvision, liquidityProvisionAmount);
-
-    return reward;
+    return this.root.apiRx.query.pswapDistribution.shareholderAccounts(this.root.account.pair.address).pipe(
+      map((balance) => {
+        return this.prepareRewardInfo(RewardingEvents.LiquidityProvision, balance);
+      })
+    );
   }
 
-  /**
-   * Check vested rewards
-   */
-  public async checkVested(): Promise<RewardsInfo> {
+  public getVestedRewardsSubscription(): Observable<RewardsInfo> {
     assert(this.root.account, Messages.connectWallet);
 
-    const { address } = this.root.account.pair;
+    return this.root.apiRx.query.vestedRewards.rewards(this.root.account.pair.address).pipe(
+      map((data) => {
+        const {
+          limit, // "Balance"
+          total_available: total, // "Balance"
+          rewards, // "BTreeMap<RewardReason, Balance>"
+        } = data as any;
 
-    const {
-      limit, // "Balance"
-      total_available: total, // "Balance"
-      rewards, // "BTreeMap<RewardReason, Balance>"
-    } = await (this.root.api.query as any).vestedRewards.rewards(address);
-
-    const rewardsInfo = this.prepareVestedRewardsInfo(limit, total, rewards);
-
-    return rewardsInfo;
+        return this.prepareVestedRewardsInfo(limit, total, rewards);
+      })
+    );
   }
 
   public async getAssetCrowdloanClaimHistory(accountAddress: string, assetAddress: string): Promise<number> {
@@ -171,13 +170,12 @@ export class RewardsModule {
     const { address } = this.root.account.pair;
 
     const currentBlock = Number(await this.root.api.query.system.number());
+    const totalVested = (await this.root.api.query.vestedRewards.crowdloanRewards(address)) as any;
 
-    const {
-      xor_reward: xor,
-      val_reward: val,
-      pswap_reward: pswap,
-      xstusd_reward: xstusd,
-    } = (await this.root.api.query.vestedRewards.crowdloanRewards(address)) as any;
+    const xor = new FPNumber(totalVested.xor_reward, XOR.decimals);
+    const val = new FPNumber(totalVested.val_reward, VAL.decimals);
+    const pswap = new FPNumber(totalVested.pswap_reward, PSWAP.decimals);
+    const xstusd = new FPNumber(totalVested.xstusd_reward, XSTUSD.decimals);
 
     const [xorLastClaim, valLastClaim, pswapLastClaim, xstusdLastClaim] = await Promise.all(
       [XOR.address, VAL.address, PSWAP.address, XSTUSD.address].map((assetAddress) =>
@@ -185,29 +183,21 @@ export class RewardsModule {
       )
     );
 
-    const xorTotalLimit = this.getCrowdloanAssetTotalLimit(new FPNumber(xor, XOR.decimals), xorLastClaim, currentBlock);
-    const valTotalLimit = this.getCrowdloanAssetTotalLimit(new FPNumber(val, VAL.decimals), valLastClaim, currentBlock);
-    const pswapTotalLimit = this.getCrowdloanAssetTotalLimit(
-      new FPNumber(pswap, PSWAP.decimals),
-      pswapLastClaim,
-      currentBlock
-    );
-    const xstusdTotalLimit = this.getCrowdloanAssetTotalLimit(
-      new FPNumber(xstusd, XSTUSD.decimals),
-      xstusdLastClaim,
-      currentBlock
-    );
+    const xorAmounts = this.getCrowdloanAssetTotalLimit(xor, xorLastClaim, currentBlock);
+    const valAmounts = this.getCrowdloanAssetTotalLimit(val, valLastClaim, currentBlock);
+    const pswapAmounts = this.getCrowdloanAssetTotalLimit(pswap, pswapLastClaim, currentBlock);
+    const xstusdAmounts = this.getCrowdloanAssetTotalLimit(xstusd, xstusdLastClaim, currentBlock);
 
     const rewards = [
-      { ...this.prepareRewardInfo(RewardingEvents.CrowdloanXOR, xorTotalLimit.limit), total: xorTotalLimit.total },
-      { ...this.prepareRewardInfo(RewardingEvents.CrowdloanVAL, valTotalLimit.limit), total: valTotalLimit.total },
+      { ...this.prepareRewardInfo(RewardingEvents.CrowdloanXOR, xorAmounts.limit), total: xorAmounts.total },
+      { ...this.prepareRewardInfo(RewardingEvents.CrowdloanVAL, valAmounts.limit), total: valAmounts.total },
       {
-        ...this.prepareRewardInfo(RewardingEvents.CrowdloanPSWAP, pswapTotalLimit.limit),
-        total: pswapTotalLimit.total,
+        ...this.prepareRewardInfo(RewardingEvents.CrowdloanPSWAP, pswapAmounts.limit),
+        total: pswapAmounts.total,
       },
       {
-        ...this.prepareRewardInfo(RewardingEvents.CrowdloanXSTUSD, xstusdTotalLimit.limit),
-        total: xstusdTotalLimit.total,
+        ...this.prepareRewardInfo(RewardingEvents.CrowdloanXSTUSD, xstusdAmounts.limit),
+        total: xstusdAmounts.total,
       },
     ];
 
