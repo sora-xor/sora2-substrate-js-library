@@ -1,11 +1,11 @@
 import { assert } from '@polkadot/util';
 import { Subject } from '@polkadot/x-rxjs';
+import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { Codec } from '@polkadot/types/types';
 import type { Subscription } from '@polkadot/x-rxjs';
 
-import { CodecString, FPNumber, NumberLike } from '../fp';
 import { poolAccountIdFromAssetPair } from './account';
-import { XOR, ZeroBalance } from '../assets/consts';
+import { XOR } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
@@ -19,6 +19,7 @@ export class PoolXykModule {
   private subject = new Subject<void>();
   public updated = this.subject.asObservable();
   public accountLiquidity: Array<AccountLiquidity> = [];
+  public accountLiquidityLoaded!: Subject<void>;
 
   private addToLiquidityList(asset: AccountLiquidity): void {
     const liquidityCopy = [...this.accountLiquidity];
@@ -175,6 +176,34 @@ export class PoolXykModule {
     return [result.toCodecString(), pts.toCodecString()];
   }
 
+  private subscribeOnAccountLiquidity(liquidity: Partial<AccountLiquidity>, afterUpdate?: VoidFunction): Subscription {
+    const getReserve = (reserve: Codec) => new FPNumber(reserve).toCodecString();
+    const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) =>
+      (this.accountLiquidity = this.accountLiquidity.filter((item) => item.secondAddress !== liquidity.secondAddress));
+
+    return this.root.apiRx.query.poolXyk.reserves(XOR.address, liquidity.secondAddress).subscribe(async (reserves) => {
+      if (!reserves || !(reserves[0] || reserves[1])) {
+        removeLiquidityItem(liquidity); // Remove it from list if something was wrong
+      } else {
+        const reserveA = getReserve(reserves[0]);
+        const reserveB = getReserve(reserves[1]);
+        const updatedLiquidity = await this.getAccountLiquidityItem(
+          XOR.address,
+          liquidity.secondAddress,
+          reserveA,
+          reserveB
+        );
+        if (updatedLiquidity) {
+          this.addToLiquidityList(updatedLiquidity);
+        } else {
+          removeLiquidityItem(liquidity); // Remove it from list if something was wrong
+        }
+      }
+
+      afterUpdate?.();
+    });
+  }
+
   private async getAccountLiquidityItem(
     firstAddress: string,
     secondAddress: string,
@@ -245,42 +274,30 @@ export class PoolXykModule {
    * Set subscriptions for balance updates of the account asset list
    * @param targetAssetIds
    */
-  public updateAccountLiquidity(targetAssetIds: Array<string>): void {
-    const getReserve = (reserve: Codec) => new FPNumber(reserve).toCodecString();
-    const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) =>
-      (this.accountLiquidity = this.accountLiquidity.filter((item) => item.secondAddress !== liquidity.secondAddress));
+  private async updateAccountLiquiditySubscriptions(targetAssetIds: Array<string>): Promise<void> {
     this.unsubscribeFromAllUpdates();
     assert(this.root.account, Messages.connectWallet);
     // Update list of current account liquidity and execute next()
     const liquidityList = targetAssetIds.map((id) => ({ secondAddress: id }));
     this.accountLiquidity = this.accountLiquidity.filter((item) => targetAssetIds.includes(item.secondAddress));
     this.subject.next();
-    // Refresh all required subscriptions
-    for (const liquidity of liquidityList) {
-      const subscription = this.root.apiRx.query.poolXyk
-        .reserves(XOR.address, liquidity.secondAddress)
-        .subscribe(async (reserves) => {
-          if (!reserves || !(reserves[0] || reserves[1])) {
-            removeLiquidityItem(liquidity); // Remove it from list if something was wrong
-          } else {
-            const reserveA = getReserve(reserves[0]);
-            const reserveB = getReserve(reserves[1]);
-            const updatedLiquidity = await this.getAccountLiquidityItem(
-              XOR.address,
-              liquidity.secondAddress,
-              reserveA,
-              reserveB
-            );
-            if (updatedLiquidity) {
-              this.addToLiquidityList(updatedLiquidity);
-            } else {
-              removeLiquidityItem(liquidity); // Remove it from list if something was wrong
-            }
-          }
-          this.subject.next();
-        });
-      this.subscriptions.push(subscription);
-    }
+
+    // Waiting until refresh all required subscriptions
+    await Promise.all(
+      liquidityList.map(
+        (liquidity) =>
+          new Promise<void>((resolve) => {
+            const afterUpdate = (): void => {
+              this.subject.next();
+              resolve();
+            };
+
+            const subscription = this.subscribeOnAccountLiquidity(liquidity, afterUpdate);
+
+            this.subscriptions.push(subscription);
+          })
+      )
+    );
   }
 
   /**
@@ -291,9 +308,14 @@ export class PoolXykModule {
    */
   public getUserPoolsSubscription(): Subscription {
     assert(this.root.account, Messages.connectWallet);
-    return this.root.apiRx.query.poolXyk.accountPools(this.root.accountPair.address).subscribe((result) => {
+
+    this.accountLiquidityLoaded = new Subject<void>();
+
+    return this.root.apiRx.query.poolXyk.accountPools(this.root.accountPair.address).subscribe(async (result) => {
       const targetIds = result.toJSON() as Array<string>;
-      this.updateAccountLiquidity(targetIds);
+      await this.updateAccountLiquiditySubscriptions(targetIds);
+
+      this.accountLiquidityLoaded.complete();
     });
   }
 

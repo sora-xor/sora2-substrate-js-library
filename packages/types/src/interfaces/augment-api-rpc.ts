@@ -10,7 +10,6 @@ import type { EpochAuthorship } from '@polkadot/types/interfaces/babe';
 import type { BeefySignedCommitment } from '@polkadot/types/interfaces/beefy';
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import type { PrefixedStorageKey } from '@polkadot/types/interfaces/childstate';
-import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { ContractCallRequest, ContractExecResult, ContractInstantiateResult, InstantiateRequest } from '@polkadot/types/interfaces/contracts';
 import type { CreatedBlock } from '@polkadot/types/interfaces/engine';
@@ -24,7 +23,7 @@ import type { RpcMethods } from '@polkadot/types/interfaces/rpc';
 import type { ReadProof, RuntimeVersion, TraceBlockResponse } from '@polkadot/types/interfaces/state';
 import type { ApplyExtrinsicResult, ChainProperties, ChainType, DispatchError, Health, NetworkState, NodeRole, PeerInfo, SyncState } from '@polkadot/types/interfaces/system';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
-import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, EthAddress, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
 import type { AccountId, AssetId, BalancePrecision, BlockNumber, DEXId, FilterMode, Fixed, H160, H256, H64, Hash, Header, Index, Justification, KeyValue, LiquiditySourceType, OracleKey, SignedBlock, StorageData, SwapOutcomeInfo, SwapVariant, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
@@ -489,7 +488,7 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
       /**
        * Get claimable rewards
        **/
-      claimables: AugmentedRpc<(eth_address: EthereumAddress | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BalanceInfo>>>;
+      claimables: AugmentedRpc<(eth_address: EthAddress | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BalanceInfo>>>;
     };
     rpc: {
       /**

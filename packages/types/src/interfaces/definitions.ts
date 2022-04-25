@@ -15,3 +15,4 @@ export { default as rewards } from './rewards/definitions';
 export { default as runtime } from './runtime/definitions';
 export { default as template } from './template/definitions';
 export { default as tradingPair } from './tradingPair/definitions';
+export { default as demeterFarmingPlatform } from './demeterFarmingPlatform/definitions';

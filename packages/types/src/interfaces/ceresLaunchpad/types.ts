@@ -2,7 +2,6 @@
 /* eslint-disable */
 
 import type { Struct, bool, u32 } from '@polkadot/types';
-import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AccountId, Balance, BlockNumber } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name ContributionInfo */
@@ -12,6 +11,13 @@ export interface ContributionInfo extends Struct {
   readonly tokens_claimed: Balance;
   readonly claiming_finished: bool;
   readonly number_of_claims: u32;
+}
+
+/** @name ContributorsVesting */
+export interface ContributorsVesting extends Struct {
+  readonly first_release_percent: Balance;
+  readonly vesting_period: BlockNumber;
+  readonly vesting_percent: Balance;
 }
 
 /** @name ILOInfo */
@@ -30,7 +36,8 @@ export interface ILOInfo extends Struct {
   readonly lockup_days: u32;
   readonly start_block: BlockNumber;
   readonly end_block: BlockNumber;
-  readonly token_vesting: VestingInfo;
+  readonly contributors_vesting: ContributorsVesting;
+  readonly team_vesting: TeamVesting;
   readonly sold_tokens: Balance;
   readonly funds_raised: Balance;
   readonly succeeded: bool;
@@ -38,6 +45,14 @@ export interface ILOInfo extends Struct {
   readonly lp_tokens: Balance;
   readonly claimed_lp_tokens: bool;
   readonly finish_block: BlockNumber;
+}
+
+/** @name TeamVesting */
+export interface TeamVesting extends Struct {
+  readonly team_vesting_total_tokens: Balance;
+  readonly team_vesting_first_release_percent: Balance;
+  readonly team_vesting_period: BlockNumber;
+  readonly team_vesting_percent: Balance;
 }
 
 export type PHANTOM_CERESLAUNCHPAD = 'ceresLaunchpad';

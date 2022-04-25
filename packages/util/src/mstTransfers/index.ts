@@ -1,8 +1,8 @@
 import { assert } from '@polkadot/util';
+import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 
 import { Messages } from '../logger';
-import { FPNumber, NumberLike, CodecString } from '../fp';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 

@@ -2,12 +2,12 @@ import intersection from 'lodash/fp/intersection';
 import { assert } from '@polkadot/util';
 import { combineLatest, of } from '@polkadot/x-rxjs';
 import { map } from '@polkadot/x-rxjs/operators';
+import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 
 import { LiquiditySourceTypes, Consts as SwapConsts } from './consts';
 import { isDirectExchange, quote } from './liquidityProxy';
-import { KnownAssets, XOR, ZeroBalance } from '../assets/consts';
-import { NumberLike, FPNumber, CodecString } from '../fp';
+import { KnownAssets, XOR } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
@@ -173,8 +173,8 @@ export class SwapModule {
    * @param payload Quote payload
    */
   public getResult(
-    inputAsset: Asset,
-    outputAsset: Asset,
+    inputAsset: Asset | AccountAsset,
+    outputAsset: Asset | AccountAsset,
     value: string,
     isExchangeB: boolean,
     selectedSources: Array<LiquiditySourceTypes>,

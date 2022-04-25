@@ -1115,7 +1115,7 @@ arguments:
 
 arguments:
 
-- eth_address: `EthereumAddress`
+- eth_address: `EthAddress`
 - at: `BlockHash`
 
 returns: `Vec<BalanceInfo>`
@@ -8767,6 +8767,16 @@ returns: `Option<SwapOutcomeInfo>`
 }
 ```
 
+### ContributorsVesting
+
+```
+{
+    first_release_percent: "Balance",
+    vesting_period: "BlockNumber",
+    vesting_percent: "Balance"
+}
+```
+
 ### CrowdloanReward
 
 ```
@@ -8868,6 +8878,12 @@ returns: `Option<SwapOutcomeInfo>`
 "Null"
 ```
 
+### EthAddress
+
+```
+"H160"
+```
+
 ### EthBridgeStorageVersion
 
 ```
@@ -8955,7 +8971,8 @@ returns: `Option<SwapOutcomeInfo>`
     lockup_days: "u32",
     start_block: "BlockNumber",
     end_block: "BlockNumber",
-    token_vesting: "VestingInfo",
+    contributors_vesting: "ContributorsVesting",
+    team_vesting: "TeamVesting",
     sold_tokens: "Balance",
     funds_raised: "Balance",
     succeeded: "bool",
@@ -8970,7 +8987,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    token_address: "EthereumAddress",
+    token_address: "EthAddress",
     asset_id: "AssetId",
     precision: "BalancePrecision",
     symbol: "AssetSymbol",
@@ -9004,7 +9021,7 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     peer_account_id: "AccountId",
-    peer_address: "EthereumAddress",
+    peer_address: "EthAddress",
     added: "bool",
     author: "AccountId",
     tx_hash: "H256",
@@ -9019,7 +9036,7 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     peer_account_id: "AccountId",
-    peer_address: "EthereumAddress",
+    peer_address: "EthAddress",
     added: "bool",
     contract: "ChangePeersContract",
     author: "AccountId",
@@ -9058,7 +9075,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    new_contract_address: "EthereumAddress",
+    new_contract_address: "EthAddress",
     author: "AccountId",
     tx_hash: "H256",
     at_height: "u64",
@@ -9128,7 +9145,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    from: "EthereumAddress",
+    from: "EthAddress",
     to: "AccountId",
     asset_id: "AssetId",
     asset_kind: "AssetKind",
@@ -9340,7 +9357,7 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    peer_address: "EthereumAddress",
+    peer_address: "EthAddress",
     peer_account_id: "AccountId",
     nonce: "Index",
     network_id: "BridgeNetworkId",
@@ -9353,7 +9370,7 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    peer_address: "EthereumAddress",
+    peer_address: "EthAddress",
     peer_account_id: "AccountId",
     nonce: "Index",
     network_id: "BridgeNetworkId",
@@ -9365,7 +9382,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    peer_address: "EthereumAddress",
+    peer_address: "EthAddress",
     tx_hash: "H256",
     network_id: "H256",
     raw: "Vec<u8>"
@@ -9377,7 +9394,7 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    token_address: "EthereumAddress",
+    token_address: "EthAddress",
     ticker: "String",
     name: "String",
     decimals: "u8",
@@ -9391,7 +9408,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    token_address: "EthereumAddress",
+    token_address: "EthAddress",
     ticker: "String",
     name: "String",
     decimals: "u8",
@@ -9406,8 +9423,8 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    new_contract_address: "EthereumAddress",
-    erc20_native_tokens: "Vec<EthereumAddress>",
+    new_contract_address: "EthAddress",
+    erc20_native_tokens: "Vec<EthAddress>",
     nonce: "Index",
     network_id: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
@@ -9418,10 +9435,10 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    this_contract_address: "EthereumAddress",
+    this_contract_address: "EthAddress",
     tx_hash: "H256",
-    new_contract_address: "EthereumAddress",
-    erc20_native_tokens: "Vec<EthereumAddress>",
+    new_contract_address: "EthAddress",
+    erc20_native_tokens: "Vec<EthAddress>",
     network_id: "H256",
     raw: "Vec<u8>"
 }
@@ -9442,7 +9459,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    this_contract_address: "EthereumAddress",
+    this_contract_address: "EthAddress",
     tx_hash: "H256",
     network_id: "H256",
     raw: "Vec<u8>"
@@ -9455,7 +9472,7 @@ returns: `Option<SwapOutcomeInfo>`
 {
     author: "AccountId",
     peer_account_id: "AccountId",
-    peer_address: "EthereumAddress",
+    peer_address: "EthAddress",
     nonce: "Index",
     network_id: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
@@ -9468,7 +9485,7 @@ returns: `Option<SwapOutcomeInfo>`
 {
     author: "AccountId",
     peer_account_id: "AccountId",
-    peer_address: "EthereumAddress",
+    peer_address: "EthAddress",
     nonce: "Index",
     network_id: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
@@ -9479,7 +9496,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    peer_address: "EthereumAddress",
+    peer_address: "EthAddress",
     tx_hash: "H256",
     network_id: "H256",
     raw: "Vec<u8>"
@@ -9523,7 +9540,7 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     from: "AccountId",
-    to: "EthereumAddress",
+    to: "EthAddress",
     asset_id: "AssetId",
     amount: "Balance",
     nonce: "Index",
@@ -9538,8 +9555,8 @@ returns: `Option<SwapOutcomeInfo>`
 {
     currency_id: "CurrencyIdEncoded",
     amount: "U256",
-    to: "EthereumAddress",
-    from: "EthereumAddress",
+    to: "EthAddress",
+    from: "EthAddress",
     tx_hash: "H256",
     network_id: "H256",
     raw: "Vec<u8>"
@@ -9580,6 +9597,21 @@ returns: `Option<SwapOutcomeInfo>`
     number_of_options: "u32",
     poll_start_block: "BlockNumber",
     poll_end_block: "BlockNumber"
+}
+```
+
+### PoolData
+
+```
+{
+    multiplier: "u32",
+    deposit_fee: "Balance",
+    is_core: "bool",
+    is_farm: "bool",
+    total_tokens_in_pool: "Balance",
+    rewards: "Balance",
+    rewards_to_be_distributed: "Balance",
+    is_removed: "bool"
 }
 ```
 
@@ -9826,6 +9858,17 @@ returns: `Option<SwapOutcomeInfo>`
 "TradingPair"
 ```
 
+### TeamVesting
+
+```
+{
+    team_vesting_total_tokens: "Balance",
+    team_vesting_first_release_percent: "Balance",
+    team_vesting_period: "BlockNumber",
+    team_vesting_percent: "Balance"
+}
+```
+
 ### TechAccountId
 
 ```
@@ -9884,6 +9927,20 @@ returns: `Option<SwapOutcomeInfo>`
 }
 ```
 
+### TokenInfo
+
+```
+{
+    farms_total_multiplier: "u32",
+    staking_total_multiplier: "u32",
+    token_per_block: "Balance",
+    farms_allocation: "Balance",
+    staking_allocation: "Balance",
+    team_allocation: "Balance",
+    team_account: "AccountId"
+}
+```
+
 ### TokenLockInfo
 
 ```
@@ -9900,6 +9957,18 @@ returns: `Option<SwapOutcomeInfo>`
 {
     base_asset_id: "AssetId",
     target_asset_id: "AssetId"
+}
+```
+
+### UserInfo
+
+```
+{
+    pool_asset: "AssetId",
+    reward_asset: "AssetId",
+    is_farm: "bool",
+    pooled_tokens: "Balance",
+    rewards: "Balance"
 }
 ```
 

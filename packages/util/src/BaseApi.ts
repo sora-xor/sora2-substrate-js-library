@@ -2,6 +2,7 @@ import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { CodecString, FPNumber } from '@sora-substrate/math';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
@@ -11,7 +12,6 @@ import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/typ
 
 import { AccountStorage, Storage } from './storage';
 import { XOR } from './assets/consts';
-import { CodecString, FPNumber } from './fp';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
@@ -305,8 +305,6 @@ export class BaseApi {
     // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
 
-    this.lockPair();
-
     history.txId = signedTx.hash.toString();
 
     // History id value will be equal to transaction hash
@@ -329,6 +327,12 @@ export class BaseApi {
         history.endTime = Date.now();
         this.saveHistory(history);
         result.events.forEach(({ event: { data, method, section } }: any) => {
+          if (method === 'AssetRegistered' && section === 'assets') {
+            const [assetId, _] = data;
+            history.assetAddress = assetId.toString();
+            this.saveHistory(history);
+          }
+
           if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
             const [assetId, from, to, amount] = data;
 
@@ -344,6 +348,7 @@ export class BaseApi {
             history.hash = first(data.toJSON());
             this.saveHistory(history);
           }
+
           if (section === 'system' && method === 'ExtrinsicFailed') {
             history.status = TransactionStatus.Error;
             history.endTime = Date.now();

@@ -6,7 +6,6 @@ import type { AnyNumber, ITuple } from '@polkadot/types/types';
 import type { UncleEntryItem } from '@polkadot/types/interfaces/authorship';
 import type { BabeAuthorityWeight, MaybeRandomness, NextConfigDescriptor, Randomness } from '@polkadot/types/interfaces/babe';
 import type { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
-import type { EthereumAddress } from '@polkadot/types/interfaces/claims';
 import type { Votes } from '@polkadot/types/interfaces/collective';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { PreimageStatus, PropIndex, Proposal, ReferendumIndex, ReferendumInfo, Voting } from '@polkadot/types/interfaces/democracy';
@@ -27,10 +26,11 @@ import type { ContributionInfo, ILOInfo } from '@sora-substrate/types/interfaces
 import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
 import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
 import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interfaces/demeterFarmingPlatform';
+import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthAddress, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, AccountIdOf, Address, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
@@ -195,6 +195,8 @@ export interface StorageType extends BaseStorageType {
      * Account for collecting penalties
      **/
     penaltiesAccount: AccountIdOf | null;
+    whitelistedContributors: Vec<AccountIdOf> | null;
+    whitelistedIloOrganizers: Vec<AccountIdOf> | null;
   };
   ceresLiquidityLocker: {    /**
      * Account which has permissions for changing CERES amount fee
@@ -263,6 +265,15 @@ export interface StorageType extends BaseStorageType {
      * Votes on a given proposal, if it is ongoing.
      **/
     voting: StorageMap<Hash | string, Option<Votes>>;
+  };
+  demeterFarmingPlatform: {    authorityAccount: AccountIdOf | null;
+    /**
+     * Account for fees
+     **/
+    feeAccount: AccountIdOf | null;
+    pools: StorageDoubleMap<AssetIdOf | AnyNumber, AssetIdOf | AnyNumber, Vec<PoolData>>;
+    tokenInfos: StorageMap<AssetIdOf | AnyNumber, Option<TokenInfo>>;
+    userInfos: StorageMap<AccountIdOf | string, Vec<UserInfo>>;
   };
   democracy: {    /**
      * A record of who vetoed what. Maps proposal hash to a possible existent block number
@@ -392,7 +403,7 @@ export interface StorageType extends BaseStorageType {
     /**
      * Smart-contract address on Sidechain.
      **/
-    bridgeContractAddress: StorageMap<BridgeNetworkId | AnyNumber, Address>;
+    bridgeContractAddress: StorageMap<BridgeNetworkId | AnyNumber, EthAddress>;
     /**
      * Bridge status.
      **/
@@ -413,11 +424,11 @@ export interface StorageType extends BaseStorageType {
     /**
      * Peer account ID on Thischain.
      **/
-    peerAccountId: StorageDoubleMap<BridgeNetworkId | AnyNumber, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, AccountId>;
+    peerAccountId: StorageDoubleMap<BridgeNetworkId | AnyNumber, EthAddress | string, AccountId>;
     /**
      * Peer address on Sidechain.
      **/
-    peerAddress: StorageDoubleMap<BridgeNetworkId | AnyNumber, AccountId | string, Address>;
+    peerAddress: StorageDoubleMap<BridgeNetworkId | AnyNumber, AccountId | string, EthAddress>;
     /**
      * Network peers set.
      **/
@@ -437,11 +448,11 @@ export interface StorageType extends BaseStorageType {
     /**
      * Registered token `AssetId` on Thischain.
      **/
-    registeredSidechainAsset: StorageDoubleMap<BridgeNetworkId | AnyNumber, Address | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string, Option<AssetId>>;
+    registeredSidechainAsset: StorageDoubleMap<BridgeNetworkId | AnyNumber, EthAddress | string, Option<AssetId>>;
     /**
      * Registered asset address on Sidechain.
      **/
-    registeredSidechainToken: StorageDoubleMap<BridgeNetworkId | AnyNumber, AssetId | AnyNumber, Option<Address>>;
+    registeredSidechainToken: StorageDoubleMap<BridgeNetworkId | AnyNumber, AssetId | AnyNumber, Option<EthAddress>>;
     /**
      * Outgoing requests approvals.
      **/
@@ -470,11 +481,11 @@ export interface StorageType extends BaseStorageType {
     /**
      * Sora VAL master contract address.
      **/
-    valMasterContractAddress: Address | null;
+    valMasterContractAddress: EthAddress | null;
     /**
      * Sora XOR master contract address.
      **/
-    xorMasterContractAddress: Address | null;
+    xorMasterContractAddress: EthAddress | null;
   };
   farming: {    /**
      * Farmers of the pool. Pool => Farmers
@@ -751,13 +762,13 @@ export interface StorageType extends BaseStorageType {
     /**
      * All addresses are split in batches, `AddressBatches` maps batch number to a set of addresses
      **/
-    ethAddresses: StorageMap<u32 | AnyNumber, Vec<EthereumAddress>>;
+    ethAddresses: StorageMap<u32 | AnyNumber, Vec<EthAddress>>;
     /**
      * A flag indicating whether VAL rewards data migration has been finalized
      **/
     migrationPending: bool | null;
-    pswapFarmOwners: StorageMap<EthereumAddress | string, Balance>;
-    pswapWaifuOwners: StorageMap<EthereumAddress | string, Balance>;
+    pswapFarmOwners: StorageMap<EthAddress | string, Balance>;
+    pswapWaifuOwners: StorageMap<EthAddress | string, Balance>;
     reservesAcc: TechAccountId | null;
     /**
      * Total amount of VAL that can be claimed by users at current point in time
@@ -768,13 +779,25 @@ export interface StorageType extends BaseStorageType {
      **/
     totalValRewards: Balance | null;
     /**
+     * Stores whether address already claimed UMI NFT rewards.
+     **/
+    umiNftClaimed: StorageMap<EthAddress | string, bool>;
+    /**
+     * UMI NFT receivers storage
+     **/
+    umiNftReceivers: StorageMap<EthAddress | string, Vec<Balance>>;
+    /**
+     * The storage of available UMI NFTs.
+     **/
+    umiNfts: Vec<AssetId> | null;
+    /**
      * Amount of VAL burned since last vesting
      **/
     valBurnedSinceLastVesting: Balance | null;
     /**
      * A map EthAddresses -> RewardInfo, that is claimable and remaining vested amounts per address
      **/
-    valOwners: StorageMap<EthereumAddress | string, RewardInfo>;
+    valOwners: StorageMap<EthAddress | string, RewardInfo>;
   };
   scheduler: {    /**
      * Items to be executed, indexed by the block number that they should be executed on.

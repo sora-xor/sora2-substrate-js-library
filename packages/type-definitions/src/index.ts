@@ -18,6 +18,7 @@ import ceresLiquidityLocker from './ceresLiquidityLocker';
 import ceresTokenLocker from './ceresTokenLocker';
 import ceresGovernancePlatform from './ceresGovernancePlatform';
 import ceresLaunchpad from './ceresLaunchpad';
+import demeterFarmingPlatform from './demeterFarmingPlatform';
 
 import versionedOverrides from './versioned';
 
@@ -28,6 +29,7 @@ const soraDefs = {
   ceresStaking,
   ceresTokenLocker,
   ceresLaunchpad,
+  demeterFarmingPlatform,
   dexApi,
   dexManager,
   ethBridge,

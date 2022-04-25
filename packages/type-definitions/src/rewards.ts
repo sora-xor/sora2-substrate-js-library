@@ -5,7 +5,7 @@ export default {
       params: [
         {
           name: 'eth_address',
-          type: 'EthereumAddress',
+          type: 'EthAddress',
         },
         {
           name: 'at',
