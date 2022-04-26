@@ -157,9 +157,10 @@ export class RewardsModule {
     assert(this.root.account, Messages.connectWallet);
 
     const consts = await this.root.api.rpc.vestedRewards.crowdloanLease();
-    const startBlock = Number(consts.start_block);
+    const blocksPerDay = Number(consts.blocks_per_day);
     const totalDays = Number(consts.total_days);
-    const blocksPerDay = 14_400;
+    const startBlock = Number(consts.start_block);
+    const endBlock = startBlock + totalDays * blocksPerDay;
 
     const currentBlockObservable = this.root.system.getBlockNumberObservable();
     const vestedObservable = this.getCrowdloanRewardsVestedObservable();
@@ -171,19 +172,20 @@ export class RewardsModule {
       map(([currentBlock, totalVested, ...lastClaims]) => {
         return CrowdloanRewardsCollection.map(({ asset, type }, index) => {
           const vested: FPNumber = totalVested[asset.address];
-          const lastClaimBlock = (lastClaims[index] as number) || startBlock;
-          const lastClaimIsValid = lastClaimBlock >= startBlock;
 
-          const claimablePeriod = lastClaimIsValid
-            ? new FPNumber(Math.floor(Number(currentBlock) - lastClaimBlock / blocksPerDay))
-            : FPNumber.ZERO;
-          const claimedPeriod = lastClaimIsValid
-            ? new FPNumber(Math.floor((lastClaimBlock - startBlock) / blocksPerDay))
-            : FPNumber.ZERO;
+          const currBlock = Math.min(Math.max(Number(currentBlock), startBlock), endBlock);
+          const lastBlock = Math.min(Math.max(Number(lastClaims[index]), startBlock), endBlock);
+
+          // days period for claim
+          const claimableDays = new FPNumber(Math.floor((currBlock - lastBlock) / blocksPerDay));
+          // days period already claimed
+          const claimedDays = new FPNumber(Math.floor((lastBlock - startBlock) / blocksPerDay));
 
           const daily = vested.div(new FPNumber(totalDays));
-          const amount = daily.mul(claimablePeriod).toCodecString();
-          const total = vested.sub(daily.mul(claimedPeriod)).toCodecString();
+          // available to claim
+          const amount = daily.mul(claimableDays).toCodecString();
+          // remaining to claim
+          const total = vested.sub(daily.mul(claimedDays)).toCodecString();
 
           return { type, asset, amount, total };
         });

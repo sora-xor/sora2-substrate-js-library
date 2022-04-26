@@ -19,6 +19,7 @@ import ceresTokenLocker from './ceresTokenLocker';
 import ceresGovernancePlatform from './ceresGovernancePlatform';
 import ceresLaunchpad from './ceresLaunchpad';
 import demeterFarmingPlatform from './demeterFarmingPlatform';
+import vestedRewards from './vestedRewards';
 
 import versionedOverrides from './versioned';
 
@@ -41,6 +42,7 @@ const soraDefs = {
   runtime,
   template,
   tradingPair,
+  vestedRewards,
 };
 
 const overrides = {
