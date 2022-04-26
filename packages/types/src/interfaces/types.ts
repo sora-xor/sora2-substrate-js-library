@@ -19,3 +19,4 @@ export * from './runtime/types';
 export * from './template/types';
 export * from './tradingPair/types';
 export * from './demeterFarmingPlatform/types';
+export * from './vestedRewards/types';
