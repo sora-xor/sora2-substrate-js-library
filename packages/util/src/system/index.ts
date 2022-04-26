@@ -13,8 +13,8 @@ export class SystemModule {
   private subject = new Subject<Vec<EventRecord>>();
   public updated = this.subject.asObservable();
 
-  public getBlockNumberObservable(): Observable<string> {
-    return this.root.apiRx.query.system.number().pipe(map((codec) => codec.toString()));
+  public getBlockNumberObservable(): Observable<number> {
+    return this.root.apiRx.query.system.number().pipe(map((codec) => codec.toNumber()));
   }
 
   public getRuntimeVersionObservable(): Observable<number> {

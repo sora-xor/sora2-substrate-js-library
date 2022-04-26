@@ -1,9 +1,11 @@
 import { assert } from '@polkadot/util';
 import { map } from '@polkadot/x-rxjs/operators';
+import { combineLatest } from '@polkadot/x-rxjs';
 import { FPNumber, CodecString } from '@sora-substrate/math';
 import type { Observable, Codec } from '@polkadot/types/types';
+import type { CrowdloanReward } from '@sora-substrate/types/interfaces/runtime/types';
 
-import { RewardingEvents } from './consts';
+import { RewardingEvents, CrowdloanRewardsCollection } from './consts';
 import { XOR, VAL, PSWAP, XSTUSD } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
@@ -32,11 +34,7 @@ export class RewardsModule {
     });
   }
 
-  private prepareRewardInfo(
-    type: RewardingEvents,
-    amount: Codec | CodecString | number,
-    total?: CodecString
-  ): RewardInfo {
+  private prepareRewardInfo(type: RewardingEvents, amount: Codec | CodecString | number): RewardInfo {
     const asset =
       {
         [RewardingEvents.XorErc20]: VAL,
@@ -137,71 +135,69 @@ export class RewardsModule {
     );
   }
 
-  public async getAssetCrowdloanClaimHistory(accountAddress: string, assetAddress: string): Promise<number> {
-    return (
-      await this.root.api.query.vestedRewards.crowdloanClaimHistory(accountAddress, assetAddress)
-    ).toJSON() as number;
-  }
-
-  private getCrowdloanAssetTotalLimit(vested: FPNumber, lastClaimBlock: number, currentBlock: number) {
-    const blocksPerDay = 14_400;
-    // TODO: wait for storage
-    const leaseStartBlock = 0;
-    const leaseTotalDays = 319;
-
-    const daily = vested.div(new FPNumber(leaseTotalDays));
-    const claimablePeriod = new FPNumber(Math.floor(currentBlock - (lastClaimBlock || leaseStartBlock) / blocksPerDay));
-    const claimedPeriod = new FPNumber(
-      Math.floor(((lastClaimBlock || leaseStartBlock) - leaseStartBlock) / blocksPerDay)
-    );
-
-    const limit = daily.mul(claimablePeriod).toCodecString();
-    const total = vested.sub(daily.mul(claimedPeriod)).toCodecString();
-
-    return { limit, total };
+  /**
+   * Get observable last block number, when the user claimed a reward for asset
+   * @param accountAddress account address
+   * @param assetAddress asset address
+   */
+  public getCrowdloanClaimHistoryObservable(accountAddress: string, assetAddress: string): Observable<number> {
+    return this.root.apiRx.query.vestedRewards
+      .crowdloanClaimHistory(accountAddress, assetAddress)
+      .pipe(map((data) => data.toJSON() as number));
   }
 
   /**
-   * Check crowdloan rewards
+   * Get observable rewards map vested for crowdloan
+   * @param accountAddress account address
    */
-  public async checkCrowdloan(): Promise<Array<RewardInfo>> {
+  public getCrowdloanRewardsVestedObservable(accountAddress: string): Observable<{ [key: string]: FPNumber }> {
+    return this.root.apiRx.query.vestedRewards.crowdloanRewards(accountAddress).pipe(
+      map((data: CrowdloanReward) => ({
+        [XOR.address]: new FPNumber(data.xor_reward, XOR.decimals),
+        [VAL.address]: new FPNumber(data.val_reward, VAL.decimals),
+        [PSWAP.address]: new FPNumber(data.pswap_reward, PSWAP.decimals),
+        [XSTUSD.address]: new FPNumber(data.xstusd_reward, XSTUSD.decimals),
+      }))
+    );
+  }
+
+  /**
+   * Get observable crowdloan rewards
+   */
+  public getCrowdloanRewardsSubscription(): Observable<RewardInfo[]> {
     assert(this.root.account, Messages.connectWallet);
 
     const { address } = this.root.account.pair;
 
-    const currentBlock = Number(await this.root.api.query.system.number());
-    const totalVested = (await this.root.api.query.vestedRewards.crowdloanRewards(address)) as any;
+    // TODO: wait for RPC
+    const blocksPerDay = 14_400;
+    const startBlock = 0;
+    const totalDays = 319;
 
-    const xor = new FPNumber(totalVested.xor_reward, XOR.decimals);
-    const val = new FPNumber(totalVested.val_reward, VAL.decimals);
-    const pswap = new FPNumber(totalVested.pswap_reward, PSWAP.decimals);
-    const xstusd = new FPNumber(totalVested.xstusd_reward, XSTUSD.decimals);
-
-    const [xorLastClaim, valLastClaim, pswapLastClaim, xstusdLastClaim] = await Promise.all(
-      [XOR.address, VAL.address, PSWAP.address, XSTUSD.address].map((assetAddress) =>
-        this.getAssetCrowdloanClaimHistory(address, assetAddress)
-      )
+    const currentBlockObservable = this.root.system.getBlockNumberObservable();
+    const vestedObservable = this.getCrowdloanRewardsVestedObservable(address);
+    const lastClaimBlockObservables = CrowdloanRewardsCollection.map(({ asset }) =>
+      this.getCrowdloanClaimHistoryObservable(address, asset.address)
     );
 
-    const xorAmounts = this.getCrowdloanAssetTotalLimit(xor, xorLastClaim, currentBlock);
-    const valAmounts = this.getCrowdloanAssetTotalLimit(val, valLastClaim, currentBlock);
-    const pswapAmounts = this.getCrowdloanAssetTotalLimit(pswap, pswapLastClaim, currentBlock);
-    const xstusdAmounts = this.getCrowdloanAssetTotalLimit(xstusd, xstusdLastClaim, currentBlock);
+    return combineLatest([currentBlockObservable, vestedObservable, ...lastClaimBlockObservables]).pipe(
+      map(([currentBlock, totalVested, ...lastClaims]) => {
+        return CrowdloanRewardsCollection.map(({ asset, type }, index) => {
+          const vested: FPNumber = totalVested[asset.address];
+          const lastClaimBlock = lastClaims[index] as number;
+          const daily = vested.div(new FPNumber(totalDays));
+          const claimablePeriod = new FPNumber(
+            Math.floor(Number(currentBlock) - (lastClaimBlock || startBlock) / blocksPerDay)
+          );
+          const claimedPeriod = new FPNumber(Math.floor(((lastClaimBlock || startBlock) - startBlock) / blocksPerDay));
 
-    const rewards = [
-      { ...this.prepareRewardInfo(RewardingEvents.CrowdloanXOR, xorAmounts.limit), total: xorAmounts.total },
-      { ...this.prepareRewardInfo(RewardingEvents.CrowdloanVAL, valAmounts.limit), total: valAmounts.total },
-      {
-        ...this.prepareRewardInfo(RewardingEvents.CrowdloanPSWAP, pswapAmounts.limit),
-        total: pswapAmounts.total,
-      },
-      {
-        ...this.prepareRewardInfo(RewardingEvents.CrowdloanXSTUSD, xstusdAmounts.limit),
-        total: xstusdAmounts.total,
-      },
-    ];
+          const amount = daily.mul(claimablePeriod).toCodecString();
+          const total = vested.sub(daily.mul(claimedPeriod)).toCodecString();
 
-    return rewards;
+          return { type, asset, amount, total };
+        });
+      })
+    );
   }
 
   /**
