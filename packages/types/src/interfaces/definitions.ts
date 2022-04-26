@@ -16,3 +16,4 @@ export { default as runtime } from './runtime/definitions';
 export { default as template } from './template/definitions';
 export { default as tradingPair } from './tradingPair/definitions';
 export { default as demeterFarmingPlatform } from './demeterFarmingPlatform/definitions';
+export { default as vestedRewards } from './vestedRewards/definitions';
