@@ -156,7 +156,11 @@ export class RewardsModule {
   public getCrowdloanRewardsSubscription(): Observable<RewardInfo[]> {
     assert(this.root.account, Messages.connectWallet);
 
-    // TODO: wait for RPC
+    // const {
+    //   blocks_per_day: blocksPerDay,
+    //   start_block: startBlock,
+    //   total_days: totalDays
+    // } = (await this.root.api.rpc.vestedRewards.crowdloadLease()).toJSON();
     const blocksPerDay = 14_400;
     const startBlock = 0;
     const totalDays = 319;
