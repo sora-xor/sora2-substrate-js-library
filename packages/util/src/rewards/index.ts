@@ -109,7 +109,7 @@ export class RewardsModule {
    * Get observable reward for liqudity provision
    * @returns observable liquidity provision RewardInfo
    */
-  public getLiquidityProvisionSubscription(): Observable<RewardInfo> {
+  public getLiquidityProvisionRewardsSubscription(): Observable<RewardInfo> {
     assert(this.root.account, Messages.connectWallet);
 
     return this.root.apiRx.query.pswapDistribution.shareholderAccounts(this.root.account.pair.address).pipe(
@@ -184,13 +184,17 @@ export class RewardsModule {
       map(([currentBlock, totalVested, ...lastClaims]) => {
         return CrowdloanRewardsCollection.map(({ asset, type }, index) => {
           const vested: FPNumber = totalVested[asset.address];
-          const lastClaimBlock = lastClaims[index] as number;
-          const daily = vested.div(new FPNumber(totalDays));
-          const claimablePeriod = new FPNumber(
-            Math.floor(Number(currentBlock) - (lastClaimBlock || startBlock) / blocksPerDay)
-          );
-          const claimedPeriod = new FPNumber(Math.floor(((lastClaimBlock || startBlock) - startBlock) / blocksPerDay));
+          const lastClaimBlock = (lastClaims[index] as number) || startBlock;
+          const lastClaimIsValid = lastClaimBlock >= startBlock;
 
+          const claimablePeriod = lastClaimIsValid
+            ? new FPNumber(Math.floor(Number(currentBlock) - lastClaimBlock / blocksPerDay))
+            : FPNumber.ZERO;
+          const claimedPeriod = lastClaimIsValid
+            ? new FPNumber(Math.floor((lastClaimBlock - startBlock) / blocksPerDay))
+            : FPNumber.ZERO;
+
+          const daily = vested.div(new FPNumber(totalDays));
           const amount = daily.mul(claimablePeriod).toCodecString();
           const total = vested.sub(daily.mul(claimedPeriod)).toCodecString();
 
