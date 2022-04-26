@@ -32,9 +32,6 @@ export default {
     },
   },
   types: {
-    BalanceInfo: {
-      balance: 'Balance',
-    },
     CrowdloanLease: {
       start_block: 'String',
       total_days: 'String',

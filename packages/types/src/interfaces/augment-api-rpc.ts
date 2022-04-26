@@ -27,6 +27,7 @@ import type { AssetKind, BridgeNetworkId, EthAddress, OffchainRequest, OutgoingR
 import type { LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
 import type { AccountId, AssetId, BalancePrecision, BlockNumber, DEXId, FilterMode, Fixed, H160, H256, H64, Hash, Header, Index, Justification, KeyValue, LiquiditySourceType, OracleKey, SignedBlock, StorageData, SwapOutcomeInfo, SwapVariant, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
+import type { CrowdloanLease } from '@sora-substrate/types/interfaces/vestedRewards';
 
 declare module '@polkadot/rpc-core/types.jsonrpc' {
   export interface RpcInterface {
@@ -685,6 +686,16 @@ declare module '@polkadot/rpc-core/types.jsonrpc' {
        * List enabled liquidity sources for trading pair.
        **/
       listEnabledSourcesForPair: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, baseAssetId: AssetId | AnyNumber | Uint8Array, targetAssetId: AssetId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<LiquiditySourceType>>>;
+    };
+    vestedRewards: {
+      /**
+       * Get available crowdloan reward for a user.
+       **/
+      crowdloanClaimable: AugmentedRpc<(accountId: AccountId | string | Uint8Array, assetId: AssetId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Option<BalanceInfo>>>;
+      /**
+       * Get crowdloan rewards lease period info.
+       **/
+      crowdloanLease: AugmentedRpc<(at?: BlockHash | string | Uint8Array) => Observable<CrowdloanLease>>;
     };
     web3: {
       /**

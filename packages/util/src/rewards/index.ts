@@ -153,17 +153,13 @@ export class RewardsModule {
   /**
    * Get observable crowdloan rewards
    */
-  public getCrowdloanRewardsSubscription(): Observable<RewardInfo[]> {
+  public async getCrowdloanRewardsSubscription(): Promise<Observable<RewardInfo[]>> {
     assert(this.root.account, Messages.connectWallet);
 
-    // const {
-    //   blocks_per_day: blocksPerDay,
-    //   start_block: startBlock,
-    //   total_days: totalDays
-    // } = (await this.root.api.rpc.vestedRewards.crowdloadLease()).toJSON();
+    const consts = await this.root.api.rpc.vestedRewards.crowdloanLease();
+    const startBlock = Number(consts.start_block);
+    const totalDays = Number(consts.total_days);
     const blocksPerDay = 14_400;
-    const startBlock = 0;
-    const totalDays = 319;
 
     const currentBlockObservable = this.root.system.getBlockNumberObservable();
     const vestedObservable = this.getCrowdloanRewardsVestedObservable();
