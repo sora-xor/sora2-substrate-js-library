@@ -7,7 +7,7 @@ import type { AccountData, BalanceLock } from '@polkadot/types/interfaces/balanc
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, Balance, BlockNumber, CurrencyId, DEXId, DEXInfo, Hash, HolderId, LiquiditySourceType, Moment, OwnerId, PermissionId, Releases, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AssetId, Balance, BlockNumber, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Hash, HolderId, LiquiditySourceType, MarketMakerInfo, Moment, OwnerId, PermissionId, Releases, RewardInfo, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/storage' {
@@ -158,6 +158,39 @@ declare module '@polkadot/api/types/storage' {
     transactionPayment: {
       nextFeeMultiplier: AugmentedQuery<ApiType, () => Observable<Multiplier>, []> & QueryableStorageEntry<ApiType, []>;
       storageVersion: AugmentedQuery<ApiType, () => Observable<Releases>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>;
+    };
+    vestedRewards: {
+      /**
+       * This storage keeps the last block number, when the user (the first) claimed a reward for
+       * asset (the second key).
+       **/
+      crowdloanClaimHistory: AugmentedQuery<ApiType, (arg1: AccountId | string | Uint8Array, arg2: AssetId | AnyNumber | Uint8Array) => Observable<BlockNumber>, [AccountId, AssetId]> & QueryableStorageEntry<ApiType, [AccountId, AssetId]>;
+      /**
+       * Crowdloan vested rewards storage.
+       **/
+      crowdloanRewards: AugmentedQuery<ApiType, (arg: AccountId | string | Uint8Array) => Observable<CrowdloanReward>, [AccountId]> & QueryableStorageEntry<ApiType, [AccountId]>;
+      /**
+       * Registry of market makers with large transaction volumes (>1 XOR per transaction).
+       **/
+      marketMakersRegistry: AugmentedQuery<ApiType, (arg: AccountId | string | Uint8Array) => Observable<MarketMakerInfo>, [AccountId]> & QueryableStorageEntry<ApiType, [AccountId]>;
+      /**
+       * Market making pairs storage.
+       **/
+      marketMakingPairs: AugmentedQuery<ApiType, (arg1: AssetId | AnyNumber | Uint8Array, arg2: AssetId | AnyNumber | Uint8Array) => Observable<ITuple<[]>>, [AssetId, AssetId]> & QueryableStorageEntry<ApiType, [AssetId, AssetId]>;
+      /**
+       * Reserved for future use
+       * Mapping between users and their owned rewards of different kinds, which are vested.
+       **/
+      rewards: AugmentedQuery<ApiType, (arg: AccountId | string | Uint8Array) => Observable<RewardInfo>, [AccountId]> & QueryableStorageEntry<ApiType, [AccountId]>;
+      /**
+       * Reserved for future use
+       * Total amount of PSWAP pending rewards.
+       **/
+      totalRewards: AugmentedQuery<ApiType, () => Observable<Balance>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * Generic query
        **/

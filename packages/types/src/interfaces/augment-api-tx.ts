@@ -1,8 +1,8 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
-import type { Compact, Text, Vec } from '@polkadot/types';
-import type { AnyNumber } from '@polkadot/types/types';
+import type { Compact, Text, Vec, bool, u32 } from '@polkadot/types';
+import type { AnyNumber, ITuple } from '@polkadot/types/types';
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import type { AccountId, AmountOf, AssetId, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, LiquiditySourceType, LookupSource, Moment, SwapAmount } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
@@ -212,6 +212,25 @@ declare module '@polkadot/api/types/submittable' {
        * - `target_asset_id`: target asset ID.
        **/
       register: AugmentedSubmittable<(dexId: DEXId | AnyNumber | Uint8Array, baseAssetId: AssetId | AnyNumber | Uint8Array, targetAssetId: AssetId | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [DEXId, AssetId, AssetId]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
+    vestedRewards: {
+      claimCrowdloanRewards: AugmentedSubmittable<(assetId: AssetId | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetId]>;
+      /**
+       * Claim all available PSWAP rewards by account signing this transaction.
+       **/
+      claimRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      /**
+       * Inject market makers snapshot into storage.
+       **/
+      injectMarketMakers: AugmentedSubmittable<(snapshot: Vec<ITuple<[AccountId, u32, Balance]>> | ([AccountId | string | Uint8Array, u32 | AnyNumber | Uint8Array, Balance | AnyNumber | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[AccountId, u32, Balance]>>]>;
+      /**
+       * Allow/disallow a market making pair.
+       **/
+      setAssetPair: AugmentedSubmittable<(fromAssetId: AssetId | AnyNumber | Uint8Array, toAssetId: AssetId | AnyNumber | Uint8Array, marketMakingRewardsAllowed: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetId, AssetId, bool]>;
       /**
        * Generic tx
        **/
