@@ -2,12 +2,6 @@
 /* eslint-disable */
 
 import type { Struct, Text } from '@polkadot/types';
-import type { Balance } from '@sora-substrate/types/interfaces/runtime';
-
-/** @name BalanceInfo */
-export interface BalanceInfo extends Struct {
-  readonly balance: Balance;
-}
 
 /** @name CrowdloanLease */
 export interface CrowdloanLease extends Struct {
