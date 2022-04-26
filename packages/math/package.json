@@ -1,5 +1,5 @@
 {
-  "name": "@sora-substrate/type-definitions",
+  "name": "@sora-substrate/math",
   "version": "1.8.25",
   "license": "Apache-2.0",
   "main": "./build/index.js",
@@ -8,6 +8,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@open-web3/orml-type-definitions": "^0.9.4-35"
+    "@polkadot/types": "^4.10.1",
+    "bignumber.js": "^9.0.1",
+    "lodash": "^4.17.15"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.150"
   }
 }

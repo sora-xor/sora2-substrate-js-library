@@ -2,13 +2,13 @@ import { assert } from '@polkadot/util';
 import { map } from '@polkadot/x-rxjs/operators';
 import { combineLatest } from '@polkadot/x-rxjs';
 import { Subject } from '@polkadot/x-rxjs';
+import { FPNumber, NumberLike } from '@sora-substrate/math';
 import type { ApiPromise } from '@polkadot/api';
 import type { Codec, Observable } from '@polkadot/types/types';
 import type { AccountData } from '@polkadot/types/interfaces/balances';
 import type { OrmlAccountData } from '@open-web3/orml-types/interfaces/tokens';
 import type { Subscription } from '@polkadot/x-rxjs';
 
-import { FPNumber, NumberLike } from '../fp';
 import { KnownAssets, NativeAssets, XOR } from './consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
@@ -27,16 +27,16 @@ function formatBalance(
   const feeFrozen = new FPNumber((data as AccountData).feeFrozen || 0, assetDecimals);
   const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals);
   const locked = FPNumber.max(miscFrozen, feeFrozen);
-  const bonded = new FPNumber(bondedData || 0, assetDecimals);
+  // bondedData can be NaN, it can be checked by isEmpty===true
+  const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
   const freeAndReserved = free.add(reserved);
-  const hasBonded = bonded.isFinity();
   return {
     reserved: reserved.toCodecString(),
     locked: locked.toCodecString(),
-    total: (hasBonded ? freeAndReserved.add(bonded) : freeAndReserved).toCodecString(),
+    total: freeAndReserved.add(bonded).toCodecString(),
     transferable: free.sub(locked).toCodecString(),
-    frozen: (frozen.isZero() ? locked.add(reserved) : frozen).toCodecString(),
-    bonded: hasBonded ? bonded.toCodecString() : '0',
+    frozen: (frozen.isZero() ? locked.add(reserved) : frozen).add(bonded).toCodecString(),
+    bonded: bonded.toCodecString(),
   } as AccountBalance;
 }
 

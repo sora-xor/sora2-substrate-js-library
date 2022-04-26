@@ -1,4 +1,5 @@
-import { FPNumber } from '../fp';
+import { FPNumber } from '@sora-substrate/math';
+
 import { KnownAssets, KnownSymbols, MaxTotalSupply } from '../assets/consts';
 
 export class Consts {

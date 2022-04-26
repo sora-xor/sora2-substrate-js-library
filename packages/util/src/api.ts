@@ -1,6 +1,7 @@
 import { assert, isHex } from '@polkadot/util';
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
 import keyring from '@polkadot/ui-keyring';
+import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
 import type { KeyringPair$Json } from '@polkadot/keyring/types';
@@ -8,7 +9,6 @@ import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
 import { BaseApi, Operation, KeyringType, isBridgeOperation } from './BaseApi';
-import { CodecString, FPNumber, NumberLike } from './fp';
 import { Messages } from './logger';
 import { BridgeApi } from './BridgeApi';
 import { SwapModule } from './swap';
@@ -358,7 +358,7 @@ export class Api extends BaseApi {
       keyring.forgetAccount(address);
       keyring.forgetAddress(address);
     }
-    
+
     this.assets.clearAccountAssets();
     this.poolXyk.clearAccountLiquidity();
 

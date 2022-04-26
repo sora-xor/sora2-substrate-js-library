@@ -1,5 +1,6 @@
+import type { CodecString } from '@sora-substrate/math';
+
 import type { Asset } from '../assets/types';
-import type { CodecString } from '../fp';
 import type { RewardingEvents, RewardReason } from './consts';
 import type { History } from '../BaseApi';
 

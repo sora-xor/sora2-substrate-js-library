@@ -1,9 +1,8 @@
 import { XOR } from '../assets/consts';
 import { RewardReason } from '../rewards/consts';
-import { FPNumber } from '../fp';
+import { FPNumber, CodecString } from '@sora-substrate/math';
 import { LiquiditySourceTypes, Consts } from './consts';
 
-import type { CodecString } from '../fp';
 import type { LPRewardsInfo } from '../rewards/types';
 import type { Asset } from '../assets/types';
 import type {
