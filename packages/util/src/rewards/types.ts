@@ -14,6 +14,7 @@ export interface RewardInfo {
   type: RewardingEvents;
   asset: Asset;
   amount: CodecString;
+  total?: CodecString;
 }
 
 export interface LPRewardsInfo {
