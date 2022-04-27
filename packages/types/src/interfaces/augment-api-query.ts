@@ -166,7 +166,7 @@ declare module '@polkadot/api/types/storage' {
     vestedRewards: {
       /**
        * This storage keeps the last block number, when the user (the first) claimed a reward for
-       * asset (the second key).
+       * asset (the second key). The block is rounded to days.
        **/
       crowdloanClaimHistory: AugmentedQuery<ApiType, (arg1: AccountId | string | Uint8Array, arg2: AssetId | AnyNumber | Uint8Array) => Observable<BlockNumber>, [AccountId, AssetId]> & QueryableStorageEntry<ApiType, [AccountId, AssetId]>;
       /**

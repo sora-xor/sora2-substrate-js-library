@@ -1202,7 +1202,7 @@ export interface StorageType extends BaseStorageType {
   };
   vestedRewards: {    /**
      * This storage keeps the last block number, when the user (the first) claimed a reward for
-     * asset (the second key).
+     * asset (the second key). The block is rounded to days.
      **/
     crowdloanClaimHistory: StorageDoubleMap<AccountId | string, AssetId | AnyNumber, BlockNumber>;
     /**
