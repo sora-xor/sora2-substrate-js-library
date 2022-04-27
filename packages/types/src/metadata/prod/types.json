@@ -65,6 +65,11 @@
         "vesting_period": "BlockNumber",
         "vesting_percent": "Balance"
     },
+    "CrowdloanLease": {
+        "start_block": "String",
+        "total_days": "String",
+        "blocks_per_day": "String"
+    },
     "CrowdloanReward": {
         "id": "Vec<u8>",
         "address": "Vec<u8>",
