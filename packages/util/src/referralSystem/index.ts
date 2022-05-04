@@ -34,7 +34,7 @@ export class ReferralSystemModule {
    * @param invitedUserId address of invited account
    */
   public subscribeOnReferrer(invitedUserId: string): Observable<string> {
-    return this.root.apiRx.query.referrals.referrers(invitedUserId) as unknown as Observable<string>;
+    return this.root.apiRx.query.referrals.referrers(invitedUserId).pipe(map((data) => data.toString()));
   }
 
   /**
