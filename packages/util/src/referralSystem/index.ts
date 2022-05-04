@@ -30,6 +30,16 @@ export class ReferralSystemModule {
   }
 
   /**
+   * Returns the referrer subscription
+   * @param invitedUserId address of invited account
+   */
+  public subscribeOnReferrer(invitedUserId: string): Observable<string> {
+    return this.root.apiRx.query.referrals
+      .referrers(invitedUserId)
+      .pipe(map((codec) => codec.toJSON() as null | string));
+  }
+
+  /**
    * Returns invited users of the referrer
    * @param referrerId address of referrer account
    * @returns array of invited users
