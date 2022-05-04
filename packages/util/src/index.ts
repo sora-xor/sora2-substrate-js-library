@@ -15,4 +15,15 @@ export * from './connection';
 export * from './FaucetApi';
 export * from './storage';
 export * from './http';
+
+export {
+  quote,
+  xykQuote,
+  xykQuoteWithoutImpact,
+  tbcQuote,
+  tbcQuoteWithoutImpact,
+  xstQuote,
+  xstQuoteWithoutImpact,
+} from './swap/liquidityProxy';
+
 export { FPNumber, CodecString } from '@sora-substrate/math';
