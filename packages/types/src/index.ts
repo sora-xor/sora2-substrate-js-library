@@ -18,6 +18,7 @@ import './interfaces/augment-api-query';
 import './interfaces/augment-api-tx';
 import './interfaces/augment-types';
 
+export * from './interfaces';
 export * from './interfaces/augment-api-mobx';
 
 export const types: RegistryTypes = soraTypes;

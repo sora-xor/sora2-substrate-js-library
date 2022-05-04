@@ -2,7 +2,7 @@ import xxhash64AsBn from '@polkadot/util-crypto/xxhash/xxhash64/asBn';
 import type { ApiPromise } from '@polkadot/api';
 
 import { types } from '@sora-substrate/type-definitions';
-import type { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types/interfaces';
+import type { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types';
 
 const predefinedAssets = types['PredefinedAssetId']['_enum'];
 
