@@ -374,7 +374,7 @@ const tbcBuyPriceWithFee = (
   }
 };
 
-const tbcQuote = (
+export const tbcQuote = (
   inputAsset: Asset,
   outputAsset: Asset,
   amount: FPNumber,
@@ -511,7 +511,12 @@ const xstSellPriceWithFee = (amount: FPNumber, isDesiredInput: boolean, payload:
   }
 };
 
-const xstQuote = (inputAsset: Asset, amount: FPNumber, isDesiredInput: boolean, payload: QuotePayload): QuoteResult => {
+export const xstQuote = (
+  inputAsset: Asset,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload
+): QuoteResult => {
   try {
     if (isXorAsset(inputAsset)) {
       return xstSellPriceWithFee(amount, isDesiredInput, payload);
@@ -634,7 +639,7 @@ const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   };
 };
 
-const xykQuote = (
+export const xykQuote = (
   inputReserves: FPNumber,
   outputReserves: FPNumber,
   amount: FPNumber,
@@ -1121,7 +1126,7 @@ export const quote = (
 };
 
 // PRICE IMPACT
-const xykQuoteWithoutImpact = (
+export const xykQuoteWithoutImpact = (
   inputReserves: FPNumber,
   outputReserves: FPNumber,
   amount: FPNumber,
@@ -1169,7 +1174,7 @@ const tbcSellPriceNoVolume = (collateralAsset: Asset, payload: QuotePayload): FP
   return safeDivide(xorPrice, collateralPrice);
 };
 
-const tbcQuoteWithoutImpact = (
+export const tbcQuoteWithoutImpact = (
   inputAsset: Asset,
   outputAsset: Asset,
   amount: FPNumber,
@@ -1213,7 +1218,7 @@ const tbcQuoteWithoutImpact = (
   }
 };
 
-const xstQuoteWithoutImpact = (
+export const xstQuoteWithoutImpact = (
   inputAsset: Asset,
   amount: FPNumber,
   isDesiredInput: boolean,
