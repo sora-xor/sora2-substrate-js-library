@@ -40,6 +40,13 @@ export class ReferralSystemModule {
   }
 
   /**
+   * Returns the referrer subscription
+   */
+  public subscribeOnAccountReferrer(): Observable<null | string> {
+    return this.subscribeOnReferrer(this.root.account.pair.address);
+  }
+
+  /**
    * Returns invited users of the referrer
    * @param referrerId address of referrer account
    * @returns array of invited users
