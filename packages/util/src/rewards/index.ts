@@ -87,9 +87,9 @@ export class RewardsModule {
    * @returns rewards array with not zero amount
    */
   public async checkForExternalAccount(externalAddress: string): Promise<Array<RewardInfo>> {
-    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await this.root.api.rpc.rewards.claimables(
-      externalAddress
-    );
+    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (
+      this.root.api.rpc as any
+    ).rewards.claimables(externalAddress);
 
     const rewards = [
       this.prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount),
@@ -156,7 +156,7 @@ export class RewardsModule {
   public async getCrowdloanRewardsSubscription(): Promise<Observable<RewardInfo[]>> {
     assert(this.root.account, Messages.connectWallet);
 
-    const consts = await this.root.api.rpc.vestedRewards.crowdloanLease();
+    const consts = await (this.root.api.rpc as any).vestedRewards.crowdloanLease();
     const blocksPerDay = Number(consts.blocks_per_day);
     const totalDays = Number(consts.total_days);
     const startBlock = Number(consts.start_block);
