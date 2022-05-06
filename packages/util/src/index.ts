@@ -4,7 +4,6 @@ import './poolXyk/account';
 import './rewards/consts';
 import './rewards/types';
 import './swap/consts';
-import './swap/types';
 import './assets/consts';
 import './assets/types';
 
