@@ -15,11 +15,6 @@ export enum RewardingEvents {
   Unspecified = 'Unspecified',
 }
 
-export enum RewardReason {
-  Unspecified = 'Unspecified',
-  BuyOnBondingCurve = 'BuyOnBondingCurve',
-}
-
 export const CrowdloanRewardsCollection = [
   {
     asset: XOR,
