@@ -8,6 +8,7 @@ module.exports = {
     '<rootDir>/packages/types/build',
     '<rootDir>/packages/type-definitions/build',
     '<rootDir>/packages/util/build',
+    '<rootDir>/packages/liquidity-proxy/build',
   ],
   verbose: true,
   transform: {

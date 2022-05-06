@@ -1,7 +1,5 @@
 import type { FPNumber, CodecString } from '@sora-substrate/math';
-
-import type { LiquiditySourceTypes } from './consts';
-import type { LPRewardsInfo } from '../rewards/types';
+import type { LiquiditySourceTypes, RewardReason } from './consts';
 
 export type PrimaryMarketsEnabledAssets = {
   [key: string]: Array<string>;
@@ -63,3 +61,9 @@ export type PathsAndPairLiquiditySources = {
   paths: QuotePaths;
   liquiditySources: Array<LiquiditySourceTypes>;
 };
+
+export interface LPRewardsInfo {
+  amount: CodecString;
+  currency: string;
+  reason: RewardReason;
+}

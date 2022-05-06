@@ -63,6 +63,11 @@ export class FPNumber {
   public static ZERO = FPNumber.fromNatural(0);
 
   /**
+   * One value (1)
+   */
+  public static ONE = FPNumber.fromNatural(1);
+
+  /**
    * Hundred value (100)
    */
   public static HUNDRED = FPNumber.fromNatural(100);

@@ -3,21 +3,21 @@ import { assert } from '@polkadot/util';
 import { combineLatest, of } from '@polkadot/x-rxjs';
 import { map } from '@polkadot/x-rxjs/operators';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
-import type { Observable } from '@polkadot/types/types';
-
-import { LiquiditySourceTypes, Consts as SwapConsts } from './consts';
-import { isDirectExchange, quote } from './liquidityProxy';
-import { KnownAssets, XOR } from '../assets/consts';
-import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
-import type { Api } from '../api';
+import { isDirectExchange, quote, LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
 import type {
   PathsAndPairLiquiditySources,
   PrimaryMarketsEnabledAssets,
   QuotePaths,
   QuotePayload,
   SwapResult,
-} from './types';
+} from '@sora-substrate/liquidity-proxy';
+import type { Observable } from '@polkadot/types/types';
+
+import { Consts as SwapConsts } from './consts';
+import { KnownAssets, XOR, DAI, XSTUSD } from '../assets/consts';
+import { Messages } from '../logger';
+import { Operation } from '../BaseApi';
+import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 
 export class SwapModule {
@@ -157,7 +157,7 @@ export class SwapModule {
 
     const amount = new FPNumber(value, token.decimals);
     const impact = isExchangeB ? withoutImpact.div(amount) : amount.div(withoutImpact);
-    const result = SwapConsts.ONE.sub(impact).mul(FPNumber.HUNDRED);
+    const result = FPNumber.ONE.sub(impact).mul(FPNumber.HUNDRED);
 
     return FPNumber.lte(result, FPNumber.ZERO) ? SwapConsts.ZERO_STR : FPNumber.ZERO.sub(result).toFixed(2);
   }
@@ -181,7 +181,10 @@ export class SwapModule {
     paths: QuotePaths,
     payload: QuotePayload
   ): SwapResult {
-    return quote(inputAsset, outputAsset, value, !isExchangeB, selectedSources, paths, payload);
+    const valueDecimals = !isExchangeB ? inputAsset.decimals : outputAsset.decimals;
+    const amount = FPNumber.fromCodecValue(new FPNumber(value, valueDecimals).toCodecString());
+
+    return quote(inputAsset.address, outputAsset.address, amount, !isExchangeB, selectedSources, paths, payload);
   }
 
   /**
@@ -213,8 +216,8 @@ export class SwapModule {
     selectedLiquiditySource = LiquiditySourceTypes.Default
   ): Observable<QuotePayload> {
     const xor = XOR.address;
-    const dai = SwapConsts.DAI.address;
-    const xstusd = SwapConsts.XSTUSD.address;
+    const dai = DAI.address;
+    const xstusd = XSTUSD.address;
 
     const toCodec = (o: Observable<any>) =>
       o.pipe(
