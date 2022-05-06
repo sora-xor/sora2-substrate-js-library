@@ -433,13 +433,7 @@ export class BaseApi {
         extrinsicParams = null;
         break;
       case Operation.SwapAndSend:
-        extrinsic = this.api.tx.utility.batchAll;
-        extrinsicParams = [
-          [
-            (this.api.tx.liquidityProxy as any).swap(...params[0].args),
-            (this.api.tx.assets as any).transfer(...params[0].transferArgs),
-          ],
-        ];
+        extrinsic = this.api.tx.liquidityProxy.swapTransfer;
         break;
       case Operation.ReferralReserveXor:
         extrinsic = this.api.tx.referrals.reserve;
@@ -493,17 +487,15 @@ export class BaseApi {
           'Disabled'
         );
       case Operation.SwapAndSend:
-        return this.api.tx.utility.batchAll([
-          this.api.tx.liquidityProxy.swap(
-            this.defaultDEXId,
-            '',
-            '',
-            { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } },
-            [],
-            'Disabled'
-          ),
-          this.api.tx.assets.transfer('', '', '0'),
-        ]);
+        return this.api.tx.liquidityProxy.swapTransfer(
+          '',
+          this.defaultDEXId,
+          '',
+          '',
+          { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } },
+          [],
+          'Disabled'
+        );
       case Operation.Transfer:
         return this.api.tx.assets.transfer('', '', '0');
       case Operation.ClaimVestedRewards:
