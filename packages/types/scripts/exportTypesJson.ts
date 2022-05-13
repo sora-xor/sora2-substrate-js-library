@@ -5,6 +5,10 @@ import { options } from '@sora-substrate/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { SORA_ENV } from './consts';
 
+function stringify(value: any): string {
+  return JSON.stringify(value, null, 4);
+}
+
 function sortObjectByKey(value) {
   return Object.keys(value)
     .sort()
@@ -18,7 +22,7 @@ function sortObjectByKey(value) {
 export async function generateTypesJson(env?: string) {
   console.log('NOTE: Make sure `yarn build` was run with latest types');
   let sortedTypes = sortObjectByKey(localTypes);
-  const data = JSON.stringify(sortedTypes, null, 4);
+  const data = stringify(sortedTypes);
   const provider = new WsProvider(SORA_ENV[env]);
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
@@ -29,18 +33,18 @@ export async function generateTypesJson(env?: string) {
     const currentTypes = JSON.parse(
       fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`, 'utf-8')
     );
-    typesScalecodec_mobile = JSON.stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes), null, 4);
+    typesScalecodec_mobile = stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes));
   } else {
-    typesScalecodec_mobile = JSON.stringify(convertTypes(sortedTypes, 1, {}), null, 4);
+    typesScalecodec_mobile = stringify(convertTypes(sortedTypes, 1, {}));
   }
   let typesScalecodec_python: string | NodeJS.ArrayBufferView;
   if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`)) {
     const currentTypes = JSON.parse(
       fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`, 'utf-8')
     );
-    typesScalecodec_python = JSON.stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes), null, 4);
+    typesScalecodec_python = stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes));
   } else {
-    typesScalecodec_python = JSON.stringify(convertTypes(sortedTypes, 1, {}), null, 4);
+    typesScalecodec_python = stringify(convertTypes(sortedTypes, 1, {}));
   }
   fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types.json`, data);
   fs.writeFileSync(
@@ -76,7 +80,7 @@ function convertTypes(inputContent: object, specVersion: number, currentTypes: o
       console.log(property);
       if (property === 'Address' || property === 'AccountInfo') {
         //Address and AccountInfo should not be changed
-        break;
+        continue;
       }
       let typeAlreadyDefined = false;
       for (let version in currentTypes['versioning']) {
