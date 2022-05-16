@@ -33,7 +33,7 @@ export class Consts {
   );
   /** Just `1` as `FPNumber` object */
   static readonly ONE = new FPNumber(1);
-  static readonly XOR_MIN_PRICE = new FPNumber(11);
+  static readonly XOR_MIN_PRICE = new FPNumber(3);
 }
 
 export enum LiquiditySourceTypes {
