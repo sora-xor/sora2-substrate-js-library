@@ -27,7 +27,7 @@
     "verify-pool-account-gen": "ts-node --project ./tsconfig.json scripts/verifyPoolAccountGeneration.ts",
     "demo": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
     "example": "wrap () { node -r ts-node/register -r tsconfig-paths/register scripts/examples/\"$*\".ts; }; wrap",
-    "publish-workspaces": "lerna publish from-package",
+    "publish-workspaces": "lerna publish --exact from-package",
     "generate-doc": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/exportApi.ts",
     "bump-version": "lerna version patch --no-push --no-git-tag-version",
     "set-version": "lerna version --no-push --no-git-tag-version",
