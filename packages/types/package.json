@@ -14,7 +14,7 @@
     "@polkadot/api": "^4.10.1",
     "@polkadot/typegen": "^4.10.1",
     "@polkadot/types": "^4.10.1",
-    "@sora-substrate/type-definitions": "^1.8.33"
+    "@sora-substrate/type-definitions": "1.8.33"
   },
   "devDependencies": {
     "@types/websocket": "^1.0.0",
