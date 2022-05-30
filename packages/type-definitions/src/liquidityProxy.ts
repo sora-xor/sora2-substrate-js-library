@@ -98,5 +98,9 @@ export default {
       currency: 'AssetId',
       reason: 'RewardReason',
     },
+    LiquiditySourceIdOf: {
+      dex_id: 'DEXId',
+      liquidity_source_index: 'LiquiditySourceType',
+    },
   },
 };
