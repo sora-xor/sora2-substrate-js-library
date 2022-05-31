@@ -2,7 +2,13 @@
 /* eslint-disable */
 
 import type { Struct, Vec } from '@polkadot/types';
-import type { AssetId, Balance, RewardReason } from '@sora-substrate/types/interfaces/runtime';
+import type { AssetId, Balance, DEXId, LiquiditySourceType, RewardReason } from '@sora-substrate/types/interfaces/runtime';
+
+/** @name LiquiditySourceIdOf */
+export interface LiquiditySourceIdOf extends Struct {
+  readonly dex_id: DEXId;
+  readonly liquidity_source_index: LiquiditySourceType;
+}
 
 /** @name LPRewardsInfo */
 export interface LPRewardsInfo extends Struct {
