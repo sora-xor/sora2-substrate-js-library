@@ -68,6 +68,9 @@ export class BaseApi {
     [Operation.ReferralReserveXor]: '0',
     [Operation.ReferralUnreserveXor]: '0',
     [Operation.ReferralSetInvitedUser]: '0',
+    [Operation.DemeterFarmingDeposit]: '0',
+    [Operation.DemeterFarmingWithdraw]: '0',
+    [Operation.DemeterFarmingGetRewards]: '0',
   } as NetworkFeesObject;
 
   protected readonly prefix = 69;
@@ -444,6 +447,15 @@ export class BaseApi {
       case Operation.ReferralSetInvitedUser:
         extrinsic = this.api.tx.referrals.setReferrer;
         break;
+      case Operation.DemeterFarmingDeposit:
+        extrinsic = this.api.tx.demeterFarmingPlatform.deposit;
+        break;
+      case Operation.DemeterFarmingWithdraw:
+        extrinsic = this.api.tx.demeterFarmingPlatform.withdraw;
+        break;
+      case Operation.DemeterFarmingGetRewards:
+        extrinsic = this.api.tx.demeterFarmingPlatform.getRewards;
+        break;
       default:
         throw new Error('Unknown function');
     }
@@ -514,6 +526,12 @@ export class BaseApi {
         return this.api.tx.referrals.unreserve('0');
       case Operation.ReferralSetInvitedUser:
         return this.api.tx.referrals.setReferrer('');
+      case Operation.DemeterFarmingDeposit:
+        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, true, 0);
+      case Operation.DemeterFarmingWithdraw:
+        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, 0, true);
+      case Operation.DemeterFarmingGetRewards:
+        return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, true);
       default:
         return null;
     }
@@ -542,6 +560,9 @@ export class BaseApi {
       Operation.ReferralReserveXor,
       Operation.ReferralUnreserveXor,
       Operation.ReferralSetInvitedUser,
+      Operation.DemeterFarmingDeposit,
+      Operation.DemeterFarmingWithdraw,
+      Operation.DemeterFarmingGetRewards,
     ];
     // We don't need to know real account address for checking network fees
     const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
@@ -636,6 +657,10 @@ export enum Operation {
   ReferralReserveXor = 'ReferralReserveXor',
   ReferralUnreserveXor = 'ReferralUnreserveXor',
   ReferralSetInvitedUser = 'ReferralSetInvitedUser',
+  /** Demeter Farming Platform  */
+  DemeterFarmingDeposit = 'DemeterFarmingDeposit',
+  DemeterFarmingWithdraw = 'DemeterFarmingWithdraw',
+  DemeterFarmingGetRewards = 'DemeterFarmingGetRewards',
 }
 
 export interface History {
