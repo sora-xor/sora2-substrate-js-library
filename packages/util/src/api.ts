@@ -18,6 +18,7 @@ import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
 import { MstTransfersModule } from './mstTransfers';
 import { SystemModule } from './system';
+import { DemeterFarmingModule } from './demeterFarming';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
@@ -41,6 +42,7 @@ export class Api extends BaseApi {
   /** This module is used for internal needs */
   public readonly mstTransfers: MstTransfersModule = new MstTransfersModule(this);
   public readonly system: SystemModule = new SystemModule(this);
+  public readonly demeterFarming: DemeterFarmingModule = new DemeterFarmingModule(this);
 
   public initAccountStorage() {
     super.initAccountStorage();

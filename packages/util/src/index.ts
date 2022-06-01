@@ -6,6 +6,7 @@ import './rewards/types';
 import './swap/consts';
 import './assets/consts';
 import './assets/types';
+import './demeterFarming/types';
 
 export * from './api';
 export * from './BaseApi';

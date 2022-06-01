@@ -1,5 +1,5 @@
 import { assert } from '@polkadot/util';
-import { Subject } from '@polkadot/x-rxjs';
+import { Subject, combineLatest } from '@polkadot/x-rxjs';
 import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { Codec } from '@polkadot/types/types';
 import type { Subscription } from '@polkadot/x-rxjs';
@@ -181,43 +181,52 @@ export class PoolXykModule {
     const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) =>
       (this.accountLiquidity = this.accountLiquidity.filter((item) => item.secondAddress !== liquidity.secondAddress));
 
-    return this.root.apiRx.query.poolXyk.reserves(XOR.address, liquidity.secondAddress).subscribe(async (reserves) => {
-      if (!reserves || !(reserves[0] || reserves[1])) {
-        removeLiquidityItem(liquidity); // Remove it from list if something was wrong
-      } else {
-        const reserveA = getReserve(reserves[0]);
-        const reserveB = getReserve(reserves[1]);
-        const updatedLiquidity = await this.getAccountLiquidityItem(
-          XOR.address,
-          liquidity.secondAddress,
-          reserveA,
-          reserveB
-        );
-        if (updatedLiquidity) {
-          this.addToLiquidityList(updatedLiquidity);
-        } else {
-          removeLiquidityItem(liquidity); // Remove it from list if something was wrong
-        }
-      }
+    const poolAccount = poolAccountIdFromAssetPair(this.root.api, XOR.address, liquidity.secondAddress).toString();
+    const accountPoolBalanceObservable = this.root.apiRx.query.poolXyk.poolProviders(
+      poolAccount,
+      this.root.account.pair.address
+    );
+    const poolReservesObservable = this.root.apiRx.query.poolXyk.reserves(XOR.address, liquidity.secondAddress);
 
-      afterUpdate?.();
-    });
+    return combineLatest([poolReservesObservable, accountPoolBalanceObservable]).subscribe(
+      async ([reserves, balance]) => {
+        if (!reserves || !(reserves[0] || reserves[1]) || !balance) {
+          removeLiquidityItem(liquidity); // Remove it from list if something was wrong
+        } else {
+          const reserveA = getReserve(reserves[0]);
+          const reserveB = getReserve(reserves[1]);
+          const updatedLiquidity = await this.getAccountLiquidityItem(
+            poolAccount,
+            XOR.address,
+            liquidity.secondAddress,
+            reserveA,
+            reserveB,
+            balance
+          );
+          if (updatedLiquidity) {
+            this.addToLiquidityList(updatedLiquidity);
+          } else {
+            removeLiquidityItem(liquidity); // Remove it from list if something was wrong
+          }
+        }
+
+        afterUpdate?.();
+      }
+    );
   }
 
   private async getAccountLiquidityItem(
+    poolAccount: string,
     firstAddress: string,
     secondAddress: string,
     reserveA: CodecString,
-    reserveB: CodecString
+    reserveB: CodecString,
+    balanceCodec: Codec
   ): Promise<AccountLiquidity | null> {
-    const poolAccount = poolAccountIdFromAssetPair(this.root.api, firstAddress, secondAddress).toString();
     const { decimals, symbol, name } = this.getInfoByPoolAccount(poolAccount);
-    const balanceCodec = await this.root.api.query.poolXyk.poolProviders(poolAccount, this.root.accountPair.address); // BalanceInfo
     const firstAsset = await this.root.assets.getAssetInfo(firstAddress);
     const secondAsset = await this.root.assets.getAssetInfo(secondAddress);
-    if (!balanceCodec) {
-      return null;
-    }
+
     const balanceFPNumber = new FPNumber(balanceCodec, decimals);
     if (balanceFPNumber.isZero()) {
       return null;

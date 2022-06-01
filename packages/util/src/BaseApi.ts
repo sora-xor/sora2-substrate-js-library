@@ -68,6 +68,11 @@ export class BaseApi {
     [Operation.ReferralReserveXor]: '0',
     [Operation.ReferralUnreserveXor]: '0',
     [Operation.ReferralSetInvitedUser]: '0',
+    [Operation.DemeterFarmingDepositLiquidity]: '0',
+    [Operation.DemeterFarmingWithdrawLiquidity]: '0',
+    [Operation.DemeterFarmingStakeToken]: '0',
+    [Operation.DemeterFarmingUnstakeToken]: '0',
+    [Operation.DemeterFarmingGetRewards]: '0',
   } as NetworkFeesObject;
 
   protected readonly prefix = 69;
@@ -444,6 +449,17 @@ export class BaseApi {
       case Operation.ReferralSetInvitedUser:
         extrinsic = this.api.tx.referrals.setReferrer;
         break;
+      case Operation.DemeterFarmingDepositLiquidity:
+      case Operation.DemeterFarmingStakeToken:
+        extrinsic = this.api.tx.demeterFarmingPlatform.deposit;
+        break;
+      case Operation.DemeterFarmingWithdrawLiquidity:
+      case Operation.DemeterFarmingUnstakeToken:
+        extrinsic = this.api.tx.demeterFarmingPlatform.withdraw;
+        break;
+      case Operation.DemeterFarmingGetRewards:
+        extrinsic = this.api.tx.demeterFarmingPlatform.getRewards;
+        break;
       default:
         throw new Error('Unknown function');
     }
@@ -514,6 +530,16 @@ export class BaseApi {
         return this.api.tx.referrals.unreserve('0');
       case Operation.ReferralSetInvitedUser:
         return this.api.tx.referrals.setReferrer('');
+      case Operation.DemeterFarmingDepositLiquidity:
+        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, true, 0);
+      case Operation.DemeterFarmingWithdrawLiquidity:
+        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, 0, true);
+      case Operation.DemeterFarmingStakeToken:
+        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, false, 0);
+      case Operation.DemeterFarmingUnstakeToken:
+        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, 0, false);
+      case Operation.DemeterFarmingGetRewards:
+        return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, true);
       default:
         return null;
     }
@@ -542,6 +568,11 @@ export class BaseApi {
       Operation.ReferralReserveXor,
       Operation.ReferralUnreserveXor,
       Operation.ReferralSetInvitedUser,
+      Operation.DemeterFarmingDepositLiquidity,
+      Operation.DemeterFarmingWithdrawLiquidity,
+      Operation.DemeterFarmingStakeToken,
+      Operation.DemeterFarmingUnstakeToken,
+      Operation.DemeterFarmingGetRewards,
     ];
     // We don't need to know real account address for checking network fees
     const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
@@ -636,6 +667,12 @@ export enum Operation {
   ReferralReserveXor = 'ReferralReserveXor',
   ReferralUnreserveXor = 'ReferralUnreserveXor',
   ReferralSetInvitedUser = 'ReferralSetInvitedUser',
+  /** Demeter Farming Platform  */
+  DemeterFarmingDepositLiquidity = 'DemeterFarmingDepositLiquidity',
+  DemeterFarmingWithdrawLiquidity = 'DemeterFarmingWithdrawLiquidity',
+  DemeterFarmingStakeToken = 'DemeterFarmingStakeToken',
+  DemeterFarmingUnstakeToken = 'DemeterFarmingUnstakeToken',
+  DemeterFarmingGetRewards = 'DemeterFarmingGetRewards',
 }
 
 export interface History {
