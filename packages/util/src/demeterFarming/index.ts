@@ -258,8 +258,8 @@ export class DemeterFarmingModule {
       this.root.account.pair,
       {
         type: Operation.DemeterFarmingGetRewards,
-        symbol: asset.symbol,
-        assetAddress: asset.address,
+        symbol: rewardAsset.symbol,
+        assetAddress: rewardAsset.address,
         amount: amount ? `${amount}` : undefined,
       }
     );
