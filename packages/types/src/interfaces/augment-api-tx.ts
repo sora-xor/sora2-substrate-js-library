@@ -121,6 +121,10 @@ declare module '@polkadot/api/types/submittable' {
        **/
       addPool: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, multiplier: u32 | AnyNumber | Uint8Array, depositFee: Balance | AnyNumber | Uint8Array, isCore: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool, u32, Balance, bool]>;
       /**
+       * Change info
+       **/
+      changeInfo: AugmentedSubmittable<(changedUser: AccountIdOf | string | Uint8Array, poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, poolTokens: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountIdOf, AssetIdOf, AssetIdOf, bool, Balance]>;
+      /**
        * Change pool deposit fee
        **/
       changePoolDepositFee: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, depositFee: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool, Balance]>;
@@ -132,6 +136,10 @@ declare module '@polkadot/api/types/submittable' {
        * Change token info
        **/
       changeTokenInfo: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, tokenPerBlock: Balance | AnyNumber | Uint8Array, farmsAllocation: Balance | AnyNumber | Uint8Array, stakingAllocation: Balance | AnyNumber | Uint8Array, teamAllocation: Balance | AnyNumber | Uint8Array, teamAccount: AccountIdOf | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, Balance, Balance, Balance, Balance, AccountIdOf]>;
+      /**
+       * Change total tokens
+       **/
+      changeTotalTokens: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, totalTokens: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool, Balance]>;
       /**
        * Deposit to pool
        **/

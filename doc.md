@@ -47,6 +47,7 @@
 - [ceresTokenLocker](#cerestokenlocker-pallet)
 - [ceresGovernancePlatform](#ceresgovernanceplatform-pallet)
 - [ceresLaunchpad](#cereslaunchpad-pallet)
+- [demeterFarmingPlatform](#demeterfarmingplatform-pallet)
 - [utility](#utility-pallet)
 - [currencies](#currencies-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
@@ -1001,7 +1002,7 @@ returns: `TechAccountId`
 
 arguments:
 
-- key: `EthereumAddress`
+- key: `EthAddress`
 
 returns: `RewardInfo`
 
@@ -1011,7 +1012,7 @@ returns: `RewardInfo`
 
 arguments:
 
-- key: `EthereumAddress`
+- key: `EthAddress`
 
 returns: `Balance`
 
@@ -1021,9 +1022,21 @@ returns: `Balance`
 
 arguments:
 
-- key: `EthereumAddress`
+- key: `EthAddress`
 
 returns: `Balance`
+
+<hr>
+
+#### **api.query.rewards.umiNftReceivers**
+
+> UMI NFT receivers storage
+
+arguments:
+
+- key: `EthAddress`
+
+returns: `Vec<Balance>`
 
 <hr>
 
@@ -1055,7 +1068,7 @@ arguments:
 
 - key: `u32`
 
-returns: `Vec<EthereumAddress>`
+returns: `Vec<EthAddress>`
 
 <hr>
 
@@ -1089,9 +1102,33 @@ returns: `bool`
 
 <hr>
 
+#### **api.query.rewards.umiNfts**
+
+> The storage of available UMI NFTs.
+
+arguments: -
+
+returns: `Vec<AssetId>`
+
+<hr>
+
+#### **api.query.rewards.umiNftClaimed**
+
+> Stores whether address already claimed UMI NFT rewards.
+
+arguments:
+
+- key: `EthAddress`
+
+returns: `bool`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.rewards.claim**
+
+> Claim the reward with signature.
 
 arguments:
 
@@ -1104,7 +1141,16 @@ arguments:
 
 arguments:
 
-- amounts: `Vec<(EthereumAddress,Balance)>`
+- amounts: `Vec<(EthAddress,Balance)>`
+<hr>
+
+#### **api.tx.rewards.addUmiNftReceivers**
+
+> Add addresses, who will receive UMI NFT rewards.
+
+arguments:
+
+- receivers: `Vec<EthAddress>`
 <hr>
 
 ### _Custom RPCs_
@@ -5053,34 +5099,6 @@ returns: `Vec<LiquiditySourceType>`
 
 <hr>
 
-### _Extrinsics_
-
-#### **api.tx.dexapi.swap**
-
-> Perform swap with specified parameters. Gateway for invoking liquidity source exchanges.
->
-> - `dex_id`: ID of the exchange.
-> - `liquidity_source_type`: Type of liquidity source to perform swap on.
-> - `input_asset_id`: ID of Asset to be deposited from sender account into pool reserves.
-> - `output_asset_id`: ID of Asset t0 be withdrawn from pool reserves into receiver account.
-> - `amount`: Either amount of desired input or output tokens, determined by `swap_variant` parameter.
-> - `limit`: Either maximum input amount or minimum output amount tolerated for successful swap,
->   determined by `swap_variant` parameter.
-> - `swap_variant`: Either 'WithDesiredInput' or 'WithDesiredOutput', indicates amounts purpose.
-> - `receiver`: Optional value, indicates AccountId for swap receiver. If not set, default is `sender`.
-
-arguments:
-
-- dex_id: `DEXId`
-- liquidity_source_type: `LiquiditySourceType`
-- input_asset_id: `AssetId`
-- output_asset_id: `AssetId`
-- amount: `Balance`
-- limit: `Balance`
-- swap_variant: `SwapVariant`
-- receiver: `Option<AccountId>`
-<hr>
-
 ## EthBridge pallet
 
 ### _State Queries_
@@ -5208,7 +5226,7 @@ returns: `BalancePrecision`
 arguments:
 
 - key1: `BridgeNetworkId`
-- key2: `Address`
+- key2: `EthAddress`
 
 returns: `AssetId`
 
@@ -5223,7 +5241,7 @@ arguments:
 - key1: `BridgeNetworkId`
 - key2: `AssetId`
 
-returns: `Address`
+returns: `EthAddress`
 
 <hr>
 
@@ -5268,7 +5286,7 @@ returns: `EthPeersSync`
 arguments:
 
 - key1: `BridgeNetworkId`
-- key2: `Address`
+- key2: `EthAddress`
 
 returns: `AccountId`
 
@@ -5283,7 +5301,7 @@ arguments:
 - key1: `BridgeNetworkId`
 - key2: `AccountId`
 
-returns: `Address`
+returns: `EthAddress`
 
 <hr>
 
@@ -5329,7 +5347,7 @@ arguments:
 
 - key: `BridgeNetworkId`
 
-returns: `Address`
+returns: `EthAddress`
 
 <hr>
 
@@ -5339,7 +5357,7 @@ returns: `Address`
 
 arguments: -
 
-returns: `Address`
+returns: `EthAddress`
 
 <hr>
 
@@ -5349,7 +5367,7 @@ returns: `Address`
 
 arguments: -
 
-returns: `Address`
+returns: `EthAddress`
 
 <hr>
 
@@ -5388,7 +5406,7 @@ returns: `Vec<H256>`
 
 arguments:
 
-- bridge_contract_address: `EthereumAddress`
+- bridge_contract_address: `EthAddress`
 - initial_peers: `Vec<AccountId>`
 <hr>
 
@@ -5423,7 +5441,7 @@ arguments:
 
 arguments:
 
-- token_address: `EthereumAddress`
+- token_address: `EthAddress`
 - symbol: `Text`
 - name: `Text`
 - decimals: `u8`
@@ -5451,7 +5469,7 @@ arguments:
 arguments:
 
 - asset_id: `AssetIdOf`
-- to: `EthereumAddress`
+- to: `EthAddress`
 - amount: `Balance`
 - network_id: `BridgeNetworkId`
 <hr>
@@ -5503,7 +5521,7 @@ arguments:
 arguments:
 
 - account_id: `AccountId`
-- address: `EthereumAddress`
+- address: `EthAddress`
 - network_id: `BridgeNetworkId`
 <hr>
 
@@ -5519,6 +5537,7 @@ arguments:
 arguments:
 
 - account_id: `AccountId`
+- peer_address: `Option<EthAddress>`
 - network_id: `BridgeNetworkId`
 <hr>
 
@@ -5551,8 +5570,8 @@ arguments:
 
 arguments:
 
-- new_contract_address: `EthereumAddress`
-- erc20_native_tokens: `Vec<EthereumAddress>`
+- new_contract_address: `EthAddress`
+- erc20_native_tokens: `Vec<EthAddress>`
 - network_id: `BridgeNetworkId`
 <hr>
 
@@ -5625,7 +5644,7 @@ arguments:
 arguments:
 
 - who: `AccountId`
-- address: `EthereumAddress`
+- address: `EthAddress`
 - network_id: `BridgeNetworkId`
 <hr>
 
@@ -5633,6 +5652,31 @@ arguments:
 
 arguments: -
 
+<hr>
+
+#### **api.tx.ethBridge.removeSidechainAsset**
+
+> Remove asset
+>
+> Can only be called by root.
+
+arguments:
+
+- asset_id: `AssetIdOf`
+- network_id: `BridgeNetworkId`
+<hr>
+
+#### **api.tx.ethBridge.registerExistingSidechainAsset**
+
+> Register existing asset
+>
+> Can only be called by root.
+
+arguments:
+
+- asset_id: `AssetIdOf`
+- token_address: `EthAddress`
+- network_id: `BridgeNetworkId`
 <hr>
 
 ### _Custom RPCs_
@@ -6798,6 +6842,32 @@ returns: `()`
 
 <hr>
 
+#### **api.query.vestedRewards.crowdloanRewards**
+
+> Crowdloan vested rewards storage.
+
+arguments:
+
+- key: `AccountId`
+
+returns: `CrowdloanReward`
+
+<hr>
+
+#### **api.query.vestedRewards.crowdloanClaimHistory**
+
+> This storage keeps the last block number, when the user (the first) claimed a reward for
+> asset (the second key). The block is rounded to days.
+
+arguments:
+
+- key1: `AccountId`
+- key2: `AssetId`
+
+returns: `BlockNumber`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.vestedRewards.claimRewards**
@@ -6806,6 +6876,13 @@ returns: `()`
 
 arguments: -
 
+<hr>
+
+#### **api.tx.vestedRewards.claimCrowdloanRewards**
+
+arguments:
+
+- asset_id: `AssetId`
 <hr>
 
 #### **api.tx.vestedRewards.injectMarketMakers**
@@ -6826,6 +6903,34 @@ arguments:
 - from_asset_id: `AssetId`
 - to_asset_id: `AssetId`
 - market_making_rewards_allowed: `bool`
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.vestedRewards.crowdloanClaimable**
+
+> Get available crowdloan reward for a user.
+
+arguments:
+
+- accountId: `AccountId`
+- assetId: `AssetId`
+- at: `BlockHash`
+
+returns: `Option<BalanceInfo>`
+
+<hr>
+
+#### **api.rpc.vestedRewards.crowdloanLease**
+
+> Get crowdloan rewards lease period info.
+
+arguments:
+
+- at: `BlockHash`
+
+returns: `CrowdloanLease`
+
 <hr>
 
 ## Identity pallet
@@ -7734,6 +7839,22 @@ returns: `ContributionInfo`
 
 <hr>
 
+#### **api.query.ceresLaunchpad.whitelistedContributors**
+
+arguments: -
+
+returns: `Vec<AccountIdOf>`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.whitelistedIloOrganizers**
+
+arguments: -
+
+returns: `Vec<AccountIdOf>`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.ceresLaunchpad.createIlo**
@@ -7756,6 +7877,10 @@ arguments:
 - lockup_days: `u32`
 - start_block: `BlockNumber`
 - end_block: `BlockNumber`
+- team_vesting_total_tokens: `Balance`
+- team_vesting_first_release_percent: `Balance`
+- team_vesting_period: `BlockNumber`
+- team_vesting_percent: `Balance`
 - first_release_percent: `Balance`
 - vesting_period: `BlockNumber`
 - vesting_percent: `Balance`
@@ -7831,6 +7956,234 @@ arguments:
 
 arguments: -
 
+<hr>
+
+#### **api.tx.ceresLaunchpad.addWhitelistedContributor**
+
+> Add whitelisted contributor
+
+arguments:
+
+- contributor: `AccountIdOf`
+<hr>
+
+#### **api.tx.ceresLaunchpad.removeWhitelistedContributor**
+
+> Remove whitelisted contributor
+
+arguments:
+
+- contributor: `AccountIdOf`
+<hr>
+
+#### **api.tx.ceresLaunchpad.addWhitelistedIloOrganizer**
+
+> Add whitelisted ILO organizer
+
+arguments:
+
+- ilo_organizer: `AccountIdOf`
+<hr>
+
+#### **api.tx.ceresLaunchpad.removeWhitelistedIloOrganizer**
+
+> Remove whitelisted ILO organizer
+
+arguments:
+
+- ilo_organizer: `AccountIdOf`
+<hr>
+
+## DemeterFarmingPlatform pallet
+
+### _State Queries_
+
+#### **api.query.demeterFarmingPlatform.tokenInfos**
+
+arguments:
+
+- key: `AssetIdOf`
+
+returns: `TokenInfo`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.userInfos**
+
+arguments:
+
+- key: `AccountIdOf`
+
+returns: `Vec<UserInfo>`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.pools**
+
+arguments:
+
+- key1: `AssetIdOf`
+- key2: `AssetIdOf`
+
+returns: `Vec<PoolData>`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.authorityAccount**
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.feeAccount**
+
+> Account for fees
+
+arguments: -
+
+returns: `AccountIdOf`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.demeterFarmingPlatform.registerToken**
+
+> Register token for farming
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- token_per_block: `Balance`
+- farms_allocation: `Balance`
+- staking_allocation: `Balance`
+- team_allocation: `Balance`
+- team_account: `AccountIdOf`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.addPool**
+
+> Add pool
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- reward_asset: `AssetIdOf`
+- is_farm: `bool`
+- multiplier: `u32`
+- deposit_fee: `Balance`
+- is_core: `bool`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.deposit**
+
+> Deposit to pool
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- reward_asset: `AssetIdOf`
+- is_farm: `bool`
+- pooled_tokens: `Balance`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.getRewards**
+
+> Get rewards
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- reward_asset: `AssetIdOf`
+- is_farm: `bool`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.withdraw**
+
+> Withdraw
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- reward_asset: `AssetIdOf`
+- pooled_tokens: `Balance`
+- is_farm: `bool`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.removePool**
+
+> Remove pool
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- reward_asset: `AssetIdOf`
+- is_farm: `bool`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changePoolMultiplier**
+
+> Change pool multiplier
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- reward_asset: `AssetIdOf`
+- is_farm: `bool`
+- new_multiplier: `u32`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changeTotalTokens**
+
+> Change total tokens
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- reward_asset: `AssetIdOf`
+- is_farm: `bool`
+- total_tokens: `Balance`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changeInfo**
+
+> Change info
+
+arguments:
+
+- changed_user: `AccountIdOf`
+- pool_asset: `AssetIdOf`
+- reward_asset: `AssetIdOf`
+- is_farm: `bool`
+- pool_tokens: `Balance`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changePoolDepositFee**
+
+> Change pool deposit fee
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- reward_asset: `AssetIdOf`
+- is_farm: `bool`
+- deposit_fee: `Balance`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changeTokenInfo**
+
+> Change token info
+
+arguments:
+
+- pool_asset: `AssetIdOf`
+- token_per_block: `Balance`
+- farms_allocation: `Balance`
+- staking_allocation: `Balance`
+- team_allocation: `Balance`
+- team_account: `AccountIdOf`
 <hr>
 
 ## Utility pallet
@@ -7972,6 +8325,30 @@ arguments:
 
 arguments:
 
+- dex_id: `DEXId`
+- input_asset_id: `AssetId`
+- output_asset_id: `AssetId`
+- swap_amount: `SwapAmount`
+- selected_source_types: `Vec<LiquiditySourceType>`
+- filter_mode: `FilterMode`
+<hr>
+
+#### **api.tx.liquidityProxy.swapTransfer**
+
+> Perform swap of tokens (input/output defined via SwapAmount direction).
+>
+> - `origin`: the account on whose behalf the transaction is being executed,
+> - `receiver`: the account that receives the output,
+> - `dex_id`: DEX ID for which liquidity sources aggregation is being done,
+> - `input_asset_id`: ID of the asset being sold,
+> - `output_asset_id`: ID of the asset being bought,
+> - `swap_amount`: the exact amount to be sold (either in input_asset_id or output_asset_id units with corresponding slippage tolerance absolute bound),
+> - `selected_source_types`: list of selected LiquiditySource types, selection effect is determined by filter_mode,
+> - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
+
+arguments:
+
+- receiver: `AccountId`
 - dex_id: `DEXId`
 - input_asset_id: `AssetId`
 - output_asset_id: `AssetId`
@@ -9192,6 +9569,15 @@ returns: `Option<SwapOutcomeInfo>`
     fee: "Balance",
     rewards: "Vec<LPRewardsInfo>",
     amount_without_impact: "Balance"
+}
+```
+
+### LiquiditySourceIdOf
+
+```
+{
+    dex_id: "DEXId",
+    liquidity_source_index: "LiquiditySourceType"
 }
 ```
 
