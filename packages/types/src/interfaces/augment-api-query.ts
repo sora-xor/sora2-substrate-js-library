@@ -5,9 +5,10 @@ import type { BTreeSet, Option, Text, Vec, bool, u8 } from '@polkadot/types';
 import type { AnyNumber, ITuple, Observable } from '@polkadot/types/types';
 import type { AccountData, BalanceLock } from '@polkadot/types/interfaces/balances';
 import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
+import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interfaces/demeterFarmingPlatform';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, AssetId, Balance, BlockNumber, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Hash, HolderId, LiquiditySourceType, MarketMakerInfo, Moment, OwnerId, PermissionId, Releases, RewardInfo, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, AssetId, AssetIdOf, Balance, BlockNumber, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Hash, HolderId, LiquiditySourceType, MarketMakerInfo, Moment, OwnerId, PermissionId, Releases, RewardInfo, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/storage' {
@@ -34,6 +35,20 @@ declare module '@polkadot/api/types/storage' {
        * The total units issued in the system.
        **/
       totalIssuance: AugmentedQuery<ApiType, () => Observable<Balance>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Generic query
+       **/
+      [key: string]: QueryableStorageEntry<ApiType>;
+    };
+    demeterFarmingPlatform: {
+      authorityAccount: AugmentedQuery<ApiType, () => Observable<AccountIdOf>, []> & QueryableStorageEntry<ApiType, []>;
+      /**
+       * Account for fees
+       **/
+      feeAccount: AugmentedQuery<ApiType, () => Observable<AccountIdOf>, []> & QueryableStorageEntry<ApiType, []>;
+      pools: AugmentedQuery<ApiType, (arg1: AssetIdOf | AnyNumber | Uint8Array, arg2: AssetIdOf | AnyNumber | Uint8Array) => Observable<Vec<PoolData>>, [AssetIdOf, AssetIdOf]> & QueryableStorageEntry<ApiType, [AssetIdOf, AssetIdOf]>;
+      tokenInfos: AugmentedQuery<ApiType, (arg: AssetIdOf | AnyNumber | Uint8Array) => Observable<Option<TokenInfo>>, [AssetIdOf]> & QueryableStorageEntry<ApiType, [AssetIdOf]>;
+      userInfos: AugmentedQuery<ApiType, (arg: AccountIdOf | string | Uint8Array) => Observable<Vec<UserInfo>>, [AccountIdOf]> & QueryableStorageEntry<ApiType, [AccountIdOf]>;
       /**
        * Generic query
        **/

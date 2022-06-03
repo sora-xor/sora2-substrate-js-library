@@ -1,5 +1,5 @@
 {
-    "runtime_id": 33,
+    "runtime_id": 35,
     "versioning": [
         {
             "runtime_range": [
@@ -2626,6 +2626,27 @@
                         [
                             "ceres_withdrawn",
                             "bool"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "runtime_range": [
+                35,
+                null
+            ],
+            "types": {
+                "LiquiditySourceIdOf": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "dex_id",
+                            "DEXId"
+                        ],
+                        [
+                            "liquidity_source_index",
+                            "LiquiditySourceType"
                         ]
                     ]
                 }

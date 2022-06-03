@@ -4,7 +4,7 @@
 import type { Compact, Text, Vec, bool, u32 } from '@polkadot/types';
 import type { AnyNumber, ITuple } from '@polkadot/types/types';
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
-import type { AccountId, AmountOf, AssetId, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, LiquiditySourceType, LookupSource, Moment, SwapAmount } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, AmountOf, AssetId, AssetIdOf, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, LiquiditySourceType, LookupSource, Moment, SwapAmount } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/submittable' {
@@ -110,6 +110,56 @@ declare module '@polkadot/api/types/submittable' {
        * The dispatch origin of this call must be _Root_.
        **/
       updateBalance: AugmentedSubmittable<(who: LookupSource | { Id: any } | { Index: any } | { Raw: any } | { Address32: any } | { Address20: any } | string | Uint8Array, currencyId: CurrencyIdOf | AnyNumber | Uint8Array, amount: AmountOf | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [LookupSource, CurrencyIdOf, AmountOf]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
+    demeterFarmingPlatform: {
+      /**
+       * Add pool
+       **/
+      addPool: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, multiplier: u32 | AnyNumber | Uint8Array, depositFee: Balance | AnyNumber | Uint8Array, isCore: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool, u32, Balance, bool]>;
+      /**
+       * Change info
+       **/
+      changeInfo: AugmentedSubmittable<(changedUser: AccountIdOf | string | Uint8Array, poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, poolTokens: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountIdOf, AssetIdOf, AssetIdOf, bool, Balance]>;
+      /**
+       * Change pool deposit fee
+       **/
+      changePoolDepositFee: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, depositFee: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool, Balance]>;
+      /**
+       * Change pool multiplier
+       **/
+      changePoolMultiplier: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, newMultiplier: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool, u32]>;
+      /**
+       * Change token info
+       **/
+      changeTokenInfo: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, tokenPerBlock: Balance | AnyNumber | Uint8Array, farmsAllocation: Balance | AnyNumber | Uint8Array, stakingAllocation: Balance | AnyNumber | Uint8Array, teamAllocation: Balance | AnyNumber | Uint8Array, teamAccount: AccountIdOf | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, Balance, Balance, Balance, Balance, AccountIdOf]>;
+      /**
+       * Change total tokens
+       **/
+      changeTotalTokens: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, totalTokens: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool, Balance]>;
+      /**
+       * Deposit to pool
+       **/
+      deposit: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array, pooledTokens: Balance | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool, Balance]>;
+      /**
+       * Get rewards
+       **/
+      getRewards: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool]>;
+      /**
+       * Register token for farming
+       **/
+      registerToken: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, tokenPerBlock: Balance | AnyNumber | Uint8Array, farmsAllocation: Balance | AnyNumber | Uint8Array, stakingAllocation: Balance | AnyNumber | Uint8Array, teamAllocation: Balance | AnyNumber | Uint8Array, teamAccount: AccountIdOf | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, Balance, Balance, Balance, Balance, AccountIdOf]>;
+      /**
+       * Remove pool
+       **/
+      removePool: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, bool]>;
+      /**
+       * Withdraw
+       **/
+      withdraw: AugmentedSubmittable<(poolAsset: AssetIdOf | AnyNumber | Uint8Array, rewardAsset: AssetIdOf | AnyNumber | Uint8Array, pooledTokens: Balance | AnyNumber | Uint8Array, isFarm: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetIdOf, AssetIdOf, Balance, bool]>;
       /**
        * Generic tx
        **/
