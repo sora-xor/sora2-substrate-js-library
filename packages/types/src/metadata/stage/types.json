@@ -283,6 +283,10 @@
         "rewards": "Vec<LPRewardsInfo>",
         "amount_without_impact": "Balance"
     },
+    "LiquiditySourceIdOf": {
+        "dex_id": "DEXId",
+        "liquidity_source_index": "LiquiditySourceType"
+    },
     "LiquiditySourceType": {
         "_enum": [
             "XYKPool",
