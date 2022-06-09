@@ -140,9 +140,18 @@ export class Api extends BaseApi {
     if (withKeyringLoading) {
       keyring.loadAll({ type: KeyringType });
     }
+
+    // [1.9.9]: Migration from 'isExternal' to 'source' in localstorage
+    if (Boolean(this.storage?.get('isExternal'))) {
+      this.storage?.remove('isExternal');
+      this.logout();
+      return;
+    }
+
     if (!address) {
       return;
     }
+
     const defaultAddress = this.formatAddress(address, false);
     const soraAddress = this.formatAddress(address);
     this.storage?.set('address', soraAddress);
