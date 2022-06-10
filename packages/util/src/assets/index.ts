@@ -334,7 +334,7 @@ export class AssetsModule {
 
   // # Account assets addresses
 
-  private get accountAssetsAddresses(): Array<string> {
+  public get accountAssetsAddresses(): Array<string> {
     if (this.root.accountStorage) {
       this._accountAssetsAddresses =
         (JSON.parse(this.root.accountStorage.get('assetsAddresses')) as Array<string>) || [];
@@ -342,7 +342,7 @@ export class AssetsModule {
     return this._accountAssetsAddresses;
   }
 
-  private set accountAssetsAddresses(assetsAddresses: Array<string>) {
+  public set accountAssetsAddresses(assetsAddresses: Array<string>) {
     this.root.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses));
     this._accountAssetsAddresses = [...assetsAddresses];
   }
