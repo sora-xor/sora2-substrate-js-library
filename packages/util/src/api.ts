@@ -366,7 +366,7 @@ export class Api extends BaseApi {
    * Remove all wallet data
    */
   public logout(onDesktop = false): void {
-    if (!onDesktop) {
+    if (!onDesktop && this.account) {
       const address = this.account.pair.address;
       keyring.forgetAccount(address);
       keyring.forgetAddress(address);
