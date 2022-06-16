@@ -27,6 +27,11 @@ export type SaveHistoryOptions = {
   toCurrentAccount?: boolean;
 };
 
+export type ErrorMessageFields = {
+  section: string;
+  name: string;
+};
+
 export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
@@ -694,7 +699,7 @@ export interface History {
   endTime?: number;
   from?: string;
   status?: string;
-  errorMessage?: string;
+  errorMessage?: ErrorMessageFields;
   liquiditySource?: string;
   liquidityProviderFee?: CodecString;
   soraNetworkFee?: CodecString;
