@@ -699,7 +699,7 @@ export interface History {
   endTime?: number;
   from?: string;
   status?: string;
-  errorMessage?: ErrorMessageFields;
+  errorMessage?: ErrorMessageFields | string;
   liquiditySource?: string;
   liquidityProviderFee?: CodecString;
   soraNetworkFee?: CodecString;
