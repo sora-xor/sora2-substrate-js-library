@@ -8,10 +8,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@babel/runtime": "^7.10.2",
     "@open-web3/orml-api-derive": "^0.8.2-9",
-    "@polkadot/api": "^4.10.1",
-    "@polkadot/rpc-core": "^4.10.1",
+    "@polkadot/api": "^8.7.1",
     "@sora-substrate/types": "1.9.8"
+  },
+  "devDependencies": {
+    "@babel/runtime": "^7.10.2"
   }
 }

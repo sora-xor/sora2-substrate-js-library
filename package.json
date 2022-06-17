@@ -3,7 +3,10 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "build": "yarn build:interfaces && polkadot-dev-build-ts",
+    "build": "yarn build:interfaces-new && polkadot-dev-build-ts",
+    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package sample-polkadotjs-typegen/interfaces --input ./src/interfaces --endpoint wss://ws.framenode-1.sub4.dev.sora2.soramitsu.co.jp",
+    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package sample-polkadotjs-typegen/interfaces --endpoint wss://ws.framenode-1.sub4.dev.sora2.soramitsu.co.jp --output ./src/interfaces --strict",
+    "build:interfaces-new": "yarn generate:defs && yarn generate:meta",
     "build:interfaces": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts",
     "build:interfaces:dev": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts dev",
     "build:interfaces:stage": "node -r ts-node/register -r tsconfig-paths/register packages/types/scripts/generate.ts stage",
@@ -40,7 +43,7 @@
     "packages/*"
   ],
   "resolutions": {
-    "typescript": "3.9.7"
+    "typescript": "4.7.3"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
@@ -48,7 +51,7 @@
     "@babel/runtime": "^7.10.2",
     "@lerna/publish": "^3.22.1",
     "@open-web3/util": "^0.8.2-9",
-    "@polkadot/dev": "^0.32.17",
+    "@polkadot/dev": "^0.66.34",
     "@polkadot/ts": "^0.2.1",
     "@types/jest": "^26.0.19",
     "eslint": "^7.32.0",
