@@ -271,8 +271,18 @@ export class AssetsModule {
    * During update process, assets should be removed according to 'excludedAddresses'
    * and exists in accounts assets list according to 'currentAddresses'
    */
-  public async updateAccountAssets(): Promise<void> {
+  public async updateAccountAssets(assetsAddresses: Array<string> = []): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
+
+    if (assetsAddresses.length) {
+      const assetsToUpdate = await Promise.all(
+        assetsAddresses.map((address) => {
+          return this.getAccountAsset(address);
+        })
+      );
+
+      this.accountAssets = assetsToUpdate;
+    }
 
     if (!this.accountAssetsAddresses.length) {
       this.accountAssetsAddresses = this.accountDefaultAssetsAddresses;
