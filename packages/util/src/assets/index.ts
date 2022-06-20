@@ -202,16 +202,26 @@ export class AssetsModule {
   }
 
   private async addToAccountAssetsList(address: string): Promise<void> {
-    if (!this.getAsset(address)) {
+    const accountAsset = this.getAsset(address);
+
+    if (!accountAsset) {
       const asset = await this.getAccountAsset(address);
       this.accountAssets.push(asset);
       this.subscribeToAssetBalance(asset);
+    } else {
+      // move asset to the end of list
+      this.removeFromAccountAssets(address);
+      this.accountAssets.push(accountAsset);
     }
+  }
+
+  private removeFromAccountAssets(address: string): void {
+    this.accountAssets = this.accountAssets.filter((item) => item.address !== address);
   }
 
   private removeFromAccountAssetsList(address: string): void {
     this.unsubscribeFromAssetBalance(address);
-    this.accountAssets = this.accountAssets.filter((item) => item.address !== address);
+    this.removeFromAccountAssets(address);
     this.balanceSubject.next();
   }
 
@@ -271,18 +281,8 @@ export class AssetsModule {
    * During update process, assets should be removed according to 'excludedAddresses'
    * and exists in accounts assets list according to 'currentAddresses'
    */
-  public async updateAccountAssets(assetsAddresses: Array<string> = []): Promise<void> {
+  public async updateAccountAssets(): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
-
-    if (assetsAddresses.length) {
-      const assetsToUpdate = await Promise.all(
-        assetsAddresses.map((address) => {
-          return this.getAccountAsset(address);
-        })
-      );
-
-      this.accountAssets = assetsToUpdate;
-    }
 
     if (!this.accountAssetsAddresses.length) {
       this.accountAssetsAddresses = this.accountDefaultAssetsAddresses;
