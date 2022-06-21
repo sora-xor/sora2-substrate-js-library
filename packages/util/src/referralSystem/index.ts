@@ -1,5 +1,5 @@
 import { assert } from '@polkadot/util';
-import { map } from '@polkadot/x-rxjs/operators';
+import { map } from 'rxjs';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 

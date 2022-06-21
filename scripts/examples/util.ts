@@ -6,7 +6,7 @@ export async function delay(ms = 40000): Promise<void> {
 }
 
 async function connectAndImportAccount(): Promise<void> {
-  await connection.open('wss://ws.framenode-3.s3.dev.sora2.soramitsu.co.jp');
+  await connection.open('wss://ws.framenode-1.sub4.dev.sora2.soramitsu.co.jp/');
   api.initialize();
   api.importAccount('salon muscle select culture inform pen typical object fox fruit culture civil', 'name', 'pass');
 }

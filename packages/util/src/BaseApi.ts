@@ -360,8 +360,8 @@ export class BaseApi {
             const [error] = data;
             if (error.isModule) {
               const decoded = this.api.registry.findMetaError(error.asModule);
-              const { documentation } = decoded;
-              history.errorMessage = documentation.join(' ').trim();
+              const { docs } = decoded;
+              history.errorMessage = docs.join(' ').trim();
             } else {
               // Other, CannotLookup, BadOrigin, no extra info
               history.errorMessage = error.toString();

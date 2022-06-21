@@ -1,8 +1,8 @@
 import { assert } from '@polkadot/util';
-import { Subject, combineLatest } from '@polkadot/x-rxjs';
+import { Subject, combineLatest } from 'rxjs';
 import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { Codec } from '@polkadot/types/types';
-import type { Subscription } from '@polkadot/x-rxjs';
+import type { Subscription } from 'rxjs';
 
 import { poolAccountIdFromAssetPair } from './account';
 import { XOR } from '../assets/consts';

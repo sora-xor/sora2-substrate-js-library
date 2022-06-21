@@ -101,7 +101,7 @@ function extractTxns(api: ApiPromise): Array<CallDoc> {
 
   for (const section in data) {
     for (const method in data[section]) {
-      const documentation: Array<string> = data[section][method]['meta'].documentation.map((a) => a.toString());
+      const documentation: Array<string> = data[section][method]['meta'].docs.map((a) => a.toString());
       const args: Array<[string, string]> = data[section][method]['meta'].args.map((a) => [
         a.name.toString(),
         a.type.toString(),

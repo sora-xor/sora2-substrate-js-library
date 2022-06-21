@@ -2,7 +2,6 @@
   "extends": "./node_modules/@polkadot/dev/config/tsconfig",
   "compilerOptions": {
     "module": "none",
-    "moduleResolution": "node",
     "strict": false,
     "strictFunctionTypes": false,
     "strictPropertyInitialization": false,
@@ -16,6 +15,7 @@
     "noUnusedLocals": false,
     "downlevelIteration": true,
     "baseUrl": ".",
+    "outDir": "./build",
     "paths": {
       "@sora-substrate/api": ["packages/api/src"],
       "@sora-substrate/api/*": ["packages/api/src/*"],

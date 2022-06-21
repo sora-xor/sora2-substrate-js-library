@@ -1,9 +1,8 @@
-import { map } from '@polkadot/x-rxjs/operators';
-import { Subject } from '@polkadot/x-rxjs';
+import { map, Subject } from 'rxjs';
 import type { EventRecord } from '@polkadot/types/interfaces/system';
-import type { Vec } from '@polkadot/types/codec';
 import type { Observable } from '@polkadot/types/types';
-import type { Subscription } from '@polkadot/x-rxjs';
+import type { Subscription } from 'rxjs';
+import type { u32, Vec } from '@polkadot/types-codec';
 
 import type { Api } from '../api';
 
@@ -14,11 +13,13 @@ export class SystemModule {
   public updated = this.subject.asObservable();
 
   public getBlockNumberObservable(): Observable<number> {
-    return this.root.apiRx.query.system.number().pipe(map((codec) => codec.toNumber()));
+    return this.root.apiRx.query.system.number().pipe(map<u32, number>((codec) => codec.toNumber()));
   }
 
   public getRuntimeVersionObservable(): Observable<number> {
-    return this.root.apiRx.query.system.lastRuntimeUpgrade().pipe(map((value) => (value.toJSON() as any).specVersion));
+    return this.root.apiRx.query.system
+      .lastRuntimeUpgrade()
+      .pipe<number>(map((data) => data.value.specVersion.toNumber()));
   }
 
   public getEventsSubscription(): Subscription {

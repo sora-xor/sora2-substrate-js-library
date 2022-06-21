@@ -3,6 +3,7 @@ import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import { Keyring } from '@polkadot/api';
 import { strictEqual, ok } from 'assert';
+import { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 async function demo(): Promise<void> {
   console.log('INITIALIZING API');
@@ -27,10 +28,18 @@ async function demo(): Promise<void> {
   console.log(root.address.toString());
 
   // Creating types is not necessary, they will be automatically created if string is passed directly into function.
-  const XORAssetId = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000000');
-  const USDAssetId = api.createType('AssetId', '0x0200030000000000000000000000000000000000000000000000000000000000');
-  const VALAssetId = api.createType('AssetId', '0x0200040000000000000000000000000000000000000000000000000000000000');
-  const PSWAPAssetId = api.createType('AssetId', '0x0200050000000000000000000000000000000000000000000000000000000000');
+  const XORAssetId = api.createType(
+    'AssetId',
+    '0x0200000000000000000000000000000000000000000000000000000000000000'
+  ) as unknown as CommonPrimitivesAssetId32;
+  const VALAssetId = api.createType(
+    'AssetId',
+    '0x0200040000000000000000000000000000000000000000000000000000000000'
+  ) as unknown as CommonPrimitivesAssetId32;
+  const PSWAPAssetId = api.createType(
+    'AssetId',
+    '0x0200050000000000000000000000000000000000000000000000000000000000'
+  ) as unknown as CommonPrimitivesAssetId32;
   const DAIAssetId = api.createType('AssetId', '0x0200060000000000000000000000000000000000000000000000000000000000');
 
   // register pair
@@ -139,8 +148,8 @@ async function inner_submitExtrinsic(api: ApiPromise, extrinsic: any, signer: an
           const [error] = data;
           if (error.isModule) {
             const decoded = api.registry.findMetaError(error.asModule);
-            const { documentation, name, section } = decoded;
-            console.log(`${section}.${name}: ${documentation.join(' ')}`);
+            const { docs, name, section } = decoded;
+            console.log(`${section}.${name}: ${docs.join(' ')}`);
           } else {
             // Other, CannotLookup, BadOrigin, no extra info
             console.log(error.toString());

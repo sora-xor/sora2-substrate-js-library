@@ -1,6 +1,5 @@
 import { assert } from '@polkadot/util';
-import { map } from '@polkadot/x-rxjs/operators';
-import { combineLatest } from '@polkadot/x-rxjs';
+import { map, combineLatest } from 'rxjs';
 import { FPNumber, CodecString } from '@sora-substrate/math';
 import type { Observable, Codec } from '@polkadot/types/types';
 
@@ -117,7 +116,7 @@ export class RewardsModule {
 
     return this.root.apiRx.query.vestedRewards
       .rewards(this.root.account.pair.address)
-      .pipe(map((data) => this.prepareVestedRewardsInfo(data.limit, data.total_available, data.rewards)));
+      .pipe(map((data) => this.prepareVestedRewardsInfo(data.limit, data.totalAvailable, data.rewards)));
   }
 
   /**
@@ -142,10 +141,10 @@ export class RewardsModule {
 
     return this.root.apiRx.query.vestedRewards.crowdloanRewards(this.root.account.pair.address).pipe(
       map((data) => ({
-        [XOR.address]: new FPNumber(data.xor_reward, XOR.decimals),
-        [VAL.address]: new FPNumber(data.val_reward, VAL.decimals),
-        [PSWAP.address]: new FPNumber(data.pswap_reward, PSWAP.decimals),
-        [XSTUSD.address]: new FPNumber(data.xstusd_reward, XSTUSD.decimals),
+        [XOR.address]: new FPNumber(data.xorReward, XOR.decimals),
+        [VAL.address]: new FPNumber(data.valReward, VAL.decimals),
+        [PSWAP.address]: new FPNumber(data.pswapReward, PSWAP.decimals),
+        [XSTUSD.address]: new FPNumber(data.xstusdReward, XSTUSD.decimals),
       }))
     );
   }

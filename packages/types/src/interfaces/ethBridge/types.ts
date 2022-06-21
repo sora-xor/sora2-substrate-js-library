@@ -1,8 +1,8 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types';
-import type { ITuple } from '@polkadot/types/types';
+import type { Bytes, Enum, Struct, Text, U256, U8aFixed, Vec, bool, u32, u64, u8 } from '@polkadot/types-codec';
+import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId, AssetId, AssetName, AssetSymbol, Balance, BalancePrecision, BlockNumber, H160, H256, Index } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetKind */
@@ -10,6 +10,7 @@ export interface AssetKind extends Enum {
   readonly isThischain: boolean;
   readonly isSidechain: boolean;
   readonly isSidechainOwned: boolean;
+  readonly type: 'Thischain' | 'Sidechain' | 'SidechainOwned';
 }
 
 /** @name BridgeNetworkId */
@@ -19,6 +20,7 @@ export interface BridgeNetworkId extends u32 {}
 export interface BridgeStatus extends Enum {
   readonly isInitialized: boolean;
   readonly isMigrating: boolean;
+  readonly type: 'Initialized' | 'Migrating';
 }
 
 /** @name BridgeTimepoint */
@@ -31,6 +33,7 @@ export interface BridgeTimepoint extends Struct {
 export interface ChangePeersContract extends Enum {
   readonly isXor: boolean;
   readonly isVal: boolean;
+  readonly type: 'Xor' | 'Val';
 }
 
 /** @name CurrencyIdEncoded */
@@ -39,6 +42,7 @@ export interface CurrencyIdEncoded extends Enum {
   readonly asAssetId: H256;
   readonly isTokenAddress: boolean;
   readonly asTokenAddress: H160;
+  readonly type: 'AssetId' | 'TokenAddress';
 }
 
 /** @name EthAddress */
@@ -48,6 +52,7 @@ export interface EthAddress extends H160 {}
 export interface EthBridgeStorageVersion extends Enum {
   readonly isV1: boolean;
   readonly isV2RemovePendingTransfers: boolean;
+  readonly type: 'V1' | 'V2RemovePendingTransfers';
 }
 
 /** @name EthPeersSync */
@@ -126,6 +131,7 @@ export interface IncomingMarkAsDoneRequest extends Struct {
 export interface IncomingMetaRequestKind extends Enum {
   readonly isCancelOutgoingRequest: boolean;
   readonly isMarkAsDone: boolean;
+  readonly type: 'CancelOutgoingRequest' | 'MarkAsDone';
 }
 
 /** @name IncomingMigrate */
@@ -163,6 +169,7 @@ export interface IncomingRequest extends Enum {
   readonly asPrepareForMigration: IncomingPrepareForMigration;
   readonly isMigrate: boolean;
   readonly asMigrate: IncomingMigrate;
+  readonly type: 'Transfer' | 'AddToken' | 'ChangePeers' | 'CancelOutgoingRequest' | 'MarkAsDone' | 'PrepareForMigration' | 'Migrate';
 }
 
 /** @name IncomingRequestKind */
@@ -171,6 +178,7 @@ export interface IncomingRequestKind extends Enum {
   readonly asTransaction: IncomingTransactionRequestKind;
   readonly isMeta: boolean;
   readonly asMeta: IncomingMetaRequestKind;
+  readonly type: 'Transaction' | 'Meta';
 }
 
 /** @name IncomingTransactionRequestKind */
@@ -183,7 +191,8 @@ export interface IncomingTransactionRequestKind extends Enum {
   readonly isMigrate: boolean;
   readonly isAddPeerCompat: boolean;
   readonly isRemovePeerCompat: boolean;
-  readonly isTransferXor: boolean;
+  readonly isTransferXOR: boolean;
+  readonly type: 'Transfer' | 'AddAsset' | 'AddPeer' | 'RemovePeer' | 'PrepareForMigration' | 'Migrate' | 'AddPeerCompat' | 'RemovePeerCompat' | 'TransferXOR';
 }
 
 /** @name IncomingTransfer */
@@ -215,6 +224,7 @@ export interface LoadIncomingRequest extends Enum {
   readonly asTransaction: LoadIncomingTransactionRequest;
   readonly isMeta: boolean;
   readonly asMeta: ITuple<[LoadIncomingMetaRequest, H256]>;
+  readonly type: 'Transaction' | 'Meta';
 }
 
 /** @name LoadIncomingTransactionRequest */
@@ -232,6 +242,7 @@ export interface MultiChainHeight extends Enum {
   readonly asThischain: BlockNumber;
   readonly isSidechain: boolean;
   readonly asSidechain: u64;
+  readonly type: 'Thischain' | 'Sidechain';
 }
 
 /** @name OffchainRequest */
@@ -242,6 +253,7 @@ export interface OffchainRequest extends Enum {
   readonly asLoadIncoming: LoadIncomingRequest;
   readonly isIncoming: boolean;
   readonly asIncoming: ITuple<[IncomingRequest, H256]>;
+  readonly type: 'Outgoing' | 'LoadIncoming' | 'Incoming';
 }
 
 /** @name OutgoingAddAsset */
@@ -397,6 +409,7 @@ export interface OutgoingRequest extends Enum {
   readonly asPrepareForMigration: OutgoingPrepareForMigration;
   readonly isMigrate: boolean;
   readonly asMigrate: OutgoingMigrate;
+  readonly type: 'Transfer' | 'AddAsset' | 'AddToken' | 'AddPeer' | 'RemovePeer' | 'PrepareForMigration' | 'Migrate';
 }
 
 /** @name OutgoingRequestEncoded */
@@ -415,6 +428,7 @@ export interface OutgoingRequestEncoded extends Enum {
   readonly asPrepareForMigration: OutgoingPrepareForMigrationEncoded;
   readonly isMigrate: boolean;
   readonly asMigrate: OutgoingMigrateEncoded;
+  readonly type: 'Transfer' | 'AddAsset' | 'AddToken' | 'AddPeer' | 'RemovePeer' | 'PrepareForMigration' | 'Migrate';
 }
 
 /** @name OutgoingTransfer */
@@ -446,6 +460,7 @@ export interface RequestStatus extends Enum {
   readonly isApprovalsReady: boolean;
   readonly isFailed: boolean;
   readonly isDone: boolean;
+  readonly type: 'Pending' | 'Frozen' | 'ApprovalsReady' | 'Failed' | 'Done';
 }
 
 /** @name SignatureParams */

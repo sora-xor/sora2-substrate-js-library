@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Struct, bool, u32 } from '@polkadot/types';
+import type { Struct, bool, u32 } from '@polkadot/types-codec';
 import type { Balance, BlockNumber } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name PollInfo */

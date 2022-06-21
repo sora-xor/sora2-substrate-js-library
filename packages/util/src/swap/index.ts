@@ -1,7 +1,6 @@
 import intersection from 'lodash/fp/intersection';
 import { assert } from '@polkadot/util';
-import { combineLatest, of } from '@polkadot/x-rxjs';
-import { map } from '@polkadot/x-rxjs/operators';
+import { combineLatest, of, map } from 'rxjs';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
 import { isDirectExchange, quote, LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
 import type {

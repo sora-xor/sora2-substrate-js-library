@@ -1,14 +1,21 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericLookupSource, GenericMultiAddress, Int, Null, Option, Result, StorageKey, Struct, Text, U8aFixed, UInt, Vec, bool, i128, u16, u32, u64, u8 } from '@polkadot/types';
-import type { ITuple } from '@polkadot/types/types';
+import type { GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericEthereumAccountId, GenericLookupSource, GenericMultiAddress, StorageKey } from '@polkadot/types';
+import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, Int, Null, Option, Result, Struct, Text, U8aFixed, UInt, Vec, bool, i128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { ITuple } from '@polkadot/types-codec/types';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { Signature } from '@polkadot/types/interfaces/extrinsics';
 import type { DispatchError, SystemOrigin } from '@polkadot/types/interfaces/system';
 
 /** @name AccountId */
-export interface AccountId extends GenericAccountId {}
+export interface AccountId extends AccountId32 {}
+
+/** @name AccountId20 */
+export interface AccountId20 extends GenericEthereumAccountId {}
+
+/** @name AccountId32 */
+export interface AccountId32 extends GenericAccountId {}
 
 /** @name AccountIdOf */
 export interface AccountIdOf extends AccountId {}
@@ -58,6 +65,12 @@ export interface Block extends GenericBlock {}
 /** @name BlockNumber */
 export interface BlockNumber extends u32 {}
 
+/** @name BlockNumberFor */
+export interface BlockNumberFor extends BlockNumber {}
+
+/** @name BlockNumberOf */
+export interface BlockNumberOf extends BlockNumber {}
+
 /** @name Call */
 export interface Call extends GenericCall {}
 
@@ -77,6 +90,7 @@ export interface ChangesTrieConfiguration extends Struct {
 export interface ChangesTrieSignal extends Enum {
   readonly isNewConfiguration: boolean;
   readonly asNewConfiguration: Option<ChangesTrieConfiguration>;
+  readonly type: 'NewConfiguration';
 }
 
 /** @name ChargeFeeInfo */
@@ -96,6 +110,13 @@ export interface ConsensusEngineId extends GenericConsensusEngineId {}
 
 /** @name ContentSource */
 export interface ContentSource extends Text {}
+
+/** @name CrateVersion */
+export interface CrateVersion extends Struct {
+  readonly major: u16;
+  readonly minor: u8;
+  readonly patch: u8;
+}
 
 /** @name CrowdloanReward */
 export interface CrowdloanReward extends Struct {
@@ -154,6 +175,8 @@ export interface DigestItem extends Enum {
   readonly asPreRuntime: PreRuntime;
   readonly isChangesTrieSignal: boolean;
   readonly asChangesTrieSignal: ChangesTrieSignal;
+  readonly isRuntimeEnvironmentUpdated: boolean;
+  readonly type: 'Other' | 'AuthoritiesChange' | 'ChangesTrieRoot' | 'SealV0' | 'Consensus' | 'Seal' | 'PreRuntime' | 'ChangesTrieSignal' | 'RuntimeEnvironmentUpdated';
 }
 
 /** @name DispatchErrorWithPostInfoTPostDispatchInfo */
@@ -203,6 +226,7 @@ export interface FilterMode extends Enum {
   readonly isDisabled: boolean;
   readonly isForbidSelected: boolean;
   readonly isAllowSelected: boolean;
+  readonly type: 'Disabled' | 'ForbidSelected' | 'AllowSelected';
 }
 
 /** @name Fixed */
@@ -302,6 +326,7 @@ export interface LiquiditySourceType extends Enum {
   readonly isMockPool3: boolean;
   readonly isMockPool4: boolean;
   readonly isXstPool: boolean;
+  readonly type: 'XykPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XstPool';
 }
 
 /** @name LockIdentifier */
@@ -323,6 +348,7 @@ export interface MarketMakerInfo extends Struct {
 export interface Mode extends Enum {
   readonly isPermit: boolean;
   readonly isForbid: boolean;
+  readonly type: 'Permit' | 'Forbid';
 }
 
 /** @name ModuleId */
@@ -351,6 +377,7 @@ export interface MultiSigner extends Enum {
   readonly asSr25519: U8aFixed;
   readonly isEcdsa: boolean;
   readonly asEcdsa: U8aFixed;
+  readonly type: 'Ed25519' | 'Sr25519' | 'Ecdsa';
 }
 
 /** @name OpaqueCall */
@@ -366,6 +393,7 @@ export interface Origin extends DoNotConstruct {}
 export interface OriginCaller extends Enum {
   readonly isSystem: boolean;
   readonly asSystem: SystemOrigin;
+  readonly type: 'System';
 }
 
 /** @name OwnerId */
@@ -388,6 +416,7 @@ export interface PalletVersion extends Struct {
 export interface Pays extends Enum {
   readonly isYes: boolean;
   readonly isNo: boolean;
+  readonly type: 'Yes' | 'No';
 }
 
 /** @name Perbill */
@@ -434,6 +463,7 @@ export interface PredefinedAssetId extends Enum {
   readonly isDai: boolean;
   readonly isEth: boolean;
   readonly isXstusd: boolean;
+  readonly type: 'Xor' | 'Dot' | 'Ksm' | 'Usdt' | 'Val' | 'Pswap' | 'Dai' | 'Eth' | 'Xstusd';
 }
 
 /** @name PreRuntime */
@@ -457,6 +487,7 @@ export interface QuoteAmount extends Enum {
   readonly asWithDesiredInput: QuoteWithDesiredInput;
   readonly isWithDesiredOutput: boolean;
   readonly asWithDesiredOutput: QuoteWithDesiredOutput;
+  readonly type: 'WithDesiredInput' | 'WithDesiredOutput';
 }
 
 /** @name QuoteWithDesiredInput */
@@ -481,6 +512,7 @@ export interface Releases extends Enum {
   readonly isV8: boolean;
   readonly isV9: boolean;
   readonly isV10: boolean;
+  readonly type: 'V1' | 'V2' | 'V3' | 'V4' | 'V5' | 'V6' | 'V7' | 'V8' | 'V9' | 'V10';
 }
 
 /** @name RewardInfo */
@@ -496,6 +528,7 @@ export interface RewardReason extends Enum {
   readonly isBuyOnBondingCurve: boolean;
   readonly isLiquidityProvisionFarming: boolean;
   readonly isMarketMakerVolume: boolean;
+  readonly type: 'Unspecified' | 'BuyOnBondingCurve' | 'LiquidityProvisionFarming' | 'MarketMakerVolume';
 }
 
 /** @name RuntimeDbWeight */
@@ -509,6 +542,7 @@ export interface Scope extends Enum {
   readonly isLimited: boolean;
   readonly asLimited: H512;
   readonly isUnlimited: boolean;
+  readonly type: 'Limited' | 'Unlimited';
 }
 
 /** @name Seal */
@@ -558,6 +592,7 @@ export interface SwapAmount extends Enum {
   readonly asWithDesiredInput: SwapWithDesiredInput;
   readonly isWithDesiredOutput: boolean;
   readonly asWithDesiredOutput: SwapWithDesiredOutput;
+  readonly type: 'WithDesiredInput' | 'WithDesiredOutput';
 }
 
 /** @name SwapOutcome */
@@ -576,6 +611,7 @@ export interface SwapOutcomeInfo extends Struct {
 export interface SwapVariant extends Enum {
   readonly isWithDesiredInput: boolean;
   readonly isWithDesiredOutput: boolean;
+  readonly type: 'WithDesiredInput' | 'WithDesiredOutput';
 }
 
 /** @name SwapWithDesiredInput */
@@ -600,6 +636,7 @@ export interface TechAccountId extends Enum {
   readonly asWrapped: AccountId;
   readonly isWrappedRepr: boolean;
   readonly asWrappedRepr: AccountId;
+  readonly type: 'Pure' | 'Generic' | 'Wrapped' | 'WrappedRepr';
 }
 
 /** @name TechAmount */
@@ -611,6 +648,7 @@ export interface TechAssetId extends Enum {
   readonly asWrapped: PredefinedAssetId;
   readonly isEscaped: boolean;
   readonly asEscaped: AssetId;
+  readonly type: 'Wrapped' | 'Escaped';
 }
 
 /** @name TechBalance */
@@ -625,6 +663,7 @@ export interface TechPurpose extends Enum {
   readonly asLiquidityKeeper: TechTradingPair;
   readonly isIdentifier: boolean;
   readonly asIdentifier: Bytes;
+  readonly type: 'FeeCollector' | 'FeeCollectorForPair' | 'LiquidityKeeper' | 'Identifier';
 }
 
 /** @name TechTradingPair */
@@ -639,8 +678,22 @@ export interface TradingPair extends Struct {
   readonly target_asset_id: AssetId;
 }
 
+/** @name TransactionInfo */
+export interface TransactionInfo extends Struct {
+  readonly chunkRoot: H256;
+  readonly contentHash: H256;
+  readonly dataSize: u32;
+  readonly blockChunks: u32;
+}
+
 /** @name TransactionPriority */
 export interface TransactionPriority extends u64 {}
+
+/** @name TransactionStorageProof */
+export interface TransactionStorageProof extends Struct {
+  readonly chunk: Bytes;
+  readonly proof: Vec<Bytes>;
+}
 
 /** @name U32F32 */
 export interface U32F32 extends UInt {}
