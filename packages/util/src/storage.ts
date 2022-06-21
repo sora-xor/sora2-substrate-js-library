@@ -10,7 +10,7 @@ export class Storage {
   }
 
   public get(key: string): string {
-    return localStorage.getItem(`${this.namespace}.${key}`);
+    return localStorage.getItem(`${this.namespace}.${key}`) ?? '';
   }
 
   public set(key: string, value: any): void {

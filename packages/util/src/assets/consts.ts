@@ -45,8 +45,11 @@ class ArrayLike<T> extends Array<T> {
   public contains(info: string): boolean {
     return !!this.find((asset: any) => [asset.address, asset.symbol].includes(info));
   }
+  /**
+   * **ONLY** for known assets
+   */
   public get(info: string): T {
-    return this.find((asset: any) => [asset.address, asset.symbol].includes(info));
+    return this.find((asset: any) => [asset.address, asset.symbol].includes(info)) as T;
   }
 }
 

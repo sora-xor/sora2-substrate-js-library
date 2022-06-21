@@ -147,8 +147,12 @@ export class Api extends BaseApi {
     this.storage?.set('address', soraAddress);
     const pair = keyring.getPair(defaultAddress);
 
+    if (!isExternal && !password) {
+      return;
+    }
+
     const account = !isExternal
-      ? keyring.addPair(pair, decrypt(password))
+      ? keyring.addPair(pair, decrypt(password as string))
       : keyring.addExternal(defaultAddress, name ? { name } : {});
 
     this.setAccount(account);

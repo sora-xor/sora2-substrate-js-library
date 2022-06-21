@@ -32,7 +32,7 @@ This file should be located in "scripts" directory.\n\n`
     return [];
   }
   const accountDataArray = data.split(/\r?\n/).filter((item, index) => item && index);
-  const transferParams = [];
+  const transferParams: Array<any> = [];
   for (const accountData of accountDataArray) {
     const [_, toAddress, amount, symbolOrAssetId] = accountData.split(';');
     const asset = NativeAssets.get(symbolOrAssetId);

@@ -13,7 +13,7 @@ import type {
 
 // UTILS
 const toFp = (item: CodecString): FPNumber => FPNumber.fromCodecValue(item);
-const getMaxPositive = (value: FPNumber) => FPNumber.max(value, FPNumber.ZERO);
+const getMaxPositive = (value: FPNumber) => FPNumber.max(value, FPNumber.ZERO) as FPNumber;
 const isGreaterThanZero = (value: FPNumber) => FPNumber.isGreaterThan(value, FPNumber.ZERO);
 const isLessThanOrEqualToZero = (value: FPNumber) => FPNumber.isLessThanOrEqualTo(value, FPNumber.ZERO);
 const isAssetAddress = (a: string, b: string) => a === b;
@@ -401,7 +401,7 @@ const xstReferencePrice = (assetAddress: string, payload: QuotePayload): FPNumbe
     const avgPrice = FPNumber.fromCodecValue(payload.prices[assetAddress]);
 
     if (isXorAsset(assetAddress)) {
-      return FPNumber.max(avgPrice, Consts.XOR_MIN_PRICE);
+      return FPNumber.max(avgPrice, Consts.XOR_MIN_PRICE) as FPNumber;
     }
 
     return avgPrice;

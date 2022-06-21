@@ -70,7 +70,7 @@ function extractQueries(api: ApiPromise): Array<CallDoc> {
     for (const method in data[section]) {
       const documentation: Array<string> = data[section][method]['meta'].documentation.map((a) => a.toString());
       const type = data[section][method]['meta'].type;
-      let args = [];
+      let args: Array<any> = [];
       let ret = '';
       if (type.isPlain) {
         ret = type.asPlain.toString();
@@ -106,7 +106,7 @@ function extractTxns(api: ApiPromise): Array<CallDoc> {
         a.name.toString(),
         a.type.toString(),
       ]);
-      let doc = new CallDoc(CallType.Extrinsic, section, method, documentation, args, null);
+      let doc = new CallDoc(CallType.Extrinsic, section, method, documentation, args, undefined);
       txns.push(doc);
     }
   }

@@ -49,7 +49,7 @@ export class PoolXykModule {
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public getInfo(firstAssetAddress: string, secondAssetAddress: string): Asset {
+  public getInfo(firstAssetAddress: string, secondAssetAddress: string): Asset | null {
     const poolTokenAccount = poolAccountIdFromAssetPair(
       this.root.api,
       firstAssetAddress,
@@ -169,10 +169,10 @@ export class PoolXykModule {
       const inaccuracy = new FPNumber('0.000000000000001');
       return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()];
     }
-    const poolToken = this.getInfo(firstAsset.address, secondAsset.address);
+    const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
     const totalSupply = await this.root.api.query.poolXyk.totalIssuances(poolToken.address); // BalanceInfo
     const pts = new FPNumber(totalSupply, poolToken.decimals);
-    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b));
+    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b)) as FPNumber;
     return [result.toCodecString(), pts.toCodecString()];
   }
 
@@ -198,7 +198,7 @@ export class PoolXykModule {
           const updatedLiquidity = await this.getAccountLiquidityItem(
             poolAccount,
             XOR.address,
-            liquidity.secondAddress,
+            liquidity.secondAddress ?? '',
             reserveA,
             reserveB,
             balance
@@ -251,7 +251,7 @@ export class PoolXykModule {
     const minted = FPNumber.max(
       fpBalanceA.mul(pts).div(FPNumber.fromCodecValue(reserveA, firstAsset.decimals)),
       fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, secondAsset.decimals))
-    );
+    ) as FPNumber;
     return {
       address: poolAccount,
       firstAddress,
@@ -441,7 +441,7 @@ export class PoolXykModule {
         secondAsset.address
       )
     ).isTrue as boolean;
-    const transactions = [];
+    const transactions: Array<any> = [];
     if (!isPairAlreadyCreated) {
       transactions.push((this.root.api.tx.tradingPair as any).register(...params.pairCreationArgs));
     }
@@ -475,7 +475,7 @@ export class PoolXykModule {
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ) {
     assert(this.root.account, Messages.connectWallet);
-    const poolToken = this.getInfo(firstAsset.address, secondAsset.address);
+    const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
     const desired = new FPNumber(desiredMarker, poolToken.decimals);
     const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals);
     const reserveB = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals);

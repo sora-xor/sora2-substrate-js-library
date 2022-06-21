@@ -84,7 +84,7 @@ const toCamelCase = (str: string) => str[0].toLowerCase() + str.slice(1);
 
 const stringToCaseInsensitiveArray = (str: string) => [str, toCamelCase(str)];
 
-const arrayToCaseInsensitiveArray = (arr: Array<string>) => arr.flatMap((str) => stringToCaseInsensitiveArray(str));
+// const arrayToCaseInsensitiveArray = (arr: Array<string>) => arr.flatMap((str) => stringToCaseInsensitiveArray(str));
 
 const caseInsensitiveValue = (obj: any, key: string) => obj[key] || obj[toCamelCase(key)];
 
@@ -192,7 +192,7 @@ export class BridgeApi extends BaseApi {
 
   public set externalNetwork(networkId: BridgeNetworks) {
     const key = 'externalNetwork';
-    this.storage.set(key, networkId);
+    this.storage?.set(key, networkId);
     this._externalNetwork = networkId;
   }
 
@@ -259,7 +259,7 @@ export class BridgeApi extends BaseApi {
     await this.submitExtrinsic(
       this.api.tx.ethBridge.requestFromSidechain(hash, kind, this.externalNetwork),
       this.account.pair,
-      historyItem || {
+      historyItem ?? {
         type: Operation.EthBridgeIncoming,
         hash,
       }
@@ -276,7 +276,7 @@ export class BridgeApi extends BaseApi {
     return this.getData(data)
       .map(([_, soraAsset, externalAsset]) => {
         const soraAssetId = first(soraAsset);
-        const asset = assets.find((a) => a.address === soraAssetId);
+        const asset = assets.find((a) => a.address === soraAssetId) as Asset;
         return {
           address: soraAssetId,
           externalAddress: first(externalAsset),

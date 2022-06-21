@@ -119,9 +119,9 @@ export class BaseApi {
   }
 
   public logout(): void {
-    this.account = null;
-    this.accountStorage = null;
-    this.signer = null;
+    this.account = undefined;
+    this.accountStorage = undefined;
+    this.signer = undefined;
     this.history = {};
     if (this.storage) {
       this.storage.clear();
@@ -377,7 +377,7 @@ export class BaseApi {
       history.status = TransactionStatus.Error;
       history.endTime = Date.now();
       const errorParts = e.message.split(':');
-      const errorInfo = last(errorParts).trim();
+      const errorInfo = last(errorParts)?.trim();
       history.errorMessage = errorInfo;
       // at the moment the history has not yet been saved;
       // save history and then delete 'txId'
@@ -395,8 +395,8 @@ export class BaseApi {
    * @returns value * 10 ^ decimals
    */
   public async getNetworkFee(type: Operation, ...params: Array<any>): Promise<CodecString> {
-    let extrinsicParams = params;
-    let extrinsic = null;
+    let extrinsicParams: any = params;
+    let extrinsic: any = null;
     switch (type) {
       case Operation.Transfer:
         extrinsic = this.api.tx.assets.transfer;

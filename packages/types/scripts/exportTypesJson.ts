@@ -19,7 +19,7 @@ function sortObjectByKey(value) {
     }, {});
 }
 
-export async function generateTypesJson(env?: string) {
+export async function generateTypesJson(env: string) {
   console.log('NOTE: Make sure `yarn build` was run with latest types');
   let sortedTypes = sortObjectByKey(localTypes);
   const data = stringify(sortedTypes);

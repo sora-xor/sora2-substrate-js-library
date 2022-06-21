@@ -2,7 +2,6 @@ import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import { Keyring } from '@polkadot/api';
-import { strictEqual, ok } from 'assert';
 import { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 async function demo(): Promise<void> {
@@ -18,7 +17,7 @@ async function demo(): Promise<void> {
   const keyring = new Keyring({ type: 'sr25519' });
   // NOTE: replace to use specific keys
   const root = keyring.addFromUri('//Alice', { name: 'Root' });
-  const user_a = keyring.addFromUri('//Bob', { name: 'UserA' });
+  // const user_a = keyring.addFromUri('//Bob', { name: 'UserA' });
   // not a secret, specifically generated mnemonic for this demo
   const user_b = keyring.addFromMnemonic(
     'shield shed shallow chase peace blade erosion poem health foil federal cushion',
