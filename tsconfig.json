@@ -17,6 +17,7 @@
     "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
+      "@polkadot/types/lookup": ["packages/types/src/interfaces/types-lookup.ts"],
       "@sora-substrate/api": ["packages/api/src"],
       "@sora-substrate/api/*": ["packages/api/src/*"],
       "@sora-substrate/types": ["packages/types/src"],
