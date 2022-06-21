@@ -2,8 +2,7 @@ import first from 'lodash/fp/first';
 import last from 'lodash/fp/last';
 import BigNumber from 'bignumber.js';
 import { assert } from '@polkadot/util';
-import { map } from '@polkadot/x-rxjs/operators';
-import { combineLatest } from '@polkadot/x-rxjs';
+import { map, combineLatest } from 'rxjs';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 
@@ -217,16 +216,6 @@ export class BridgeApi extends BaseApi {
     super.saveHistory(history);
   }
 
-  private async calcTransferToEthParams(asset: RegisteredAsset, to: string, amount: string | number) {
-    assert(this.account, Messages.connectWallet);
-    // Trim useless decimals
-    const balance = new FPNumber(new FPNumber(amount, +asset.externalDecimals).toString(), asset.decimals);
-    return {
-      args: [asset.address, to, balance.toCodecString(), this.externalNetwork],
-      asset,
-    };
-  }
-
   /**
    * Transfer through the bridge operation
    * @param asset RegisteredAsset
@@ -240,15 +229,18 @@ export class BridgeApi extends BaseApi {
     amount: string | number,
     historyId?: string
   ): Promise<void> {
-    const params = await this.calcTransferToEthParams(asset, to, amount);
+    assert(this.account, Messages.connectWallet);
+    // Trim useless decimals
+    const balance = new FPNumber(new FPNumber(amount, +asset.externalDecimals).toString(), asset.decimals);
+
     const historyItem = this.getHistory(historyId);
 
     await this.submitExtrinsic(
-      this.api.tx.ethBridge.transferToSidechain(...params.args),
+      this.api.tx.ethBridge.transferToSidechain(asset.address, to, balance.toCodecString(), this.externalNetwork),
       this.account.pair,
       historyItem || {
-        symbol: params.asset.symbol,
-        assetAddress: params.asset.address,
+        symbol: asset.symbol,
+        assetAddress: asset.address,
         amount: `${amount}`,
         type: Operation.EthBridgeOutgoing,
       }
@@ -458,12 +450,9 @@ export class BridgeApi extends BaseApi {
    * @returns BridgeRequest not formatted body
    */
   public subscribeOnRequestData(networkId: number, hash: string): Observable<OffchainRequest | null> {
-    return this.apiRx.query.ethBridge.requests(networkId, hash).pipe(
-      map((data) => {
-        const requestData = data.toJSON() as unknown;
-        return (requestData as OffchainRequest) || null;
-      })
-    );
+    return this.apiRx.query.ethBridge
+      .requests(networkId, hash)
+      .pipe(map((data) => (data.toJSON() as unknown as OffchainRequest) || null));
   }
 
   /**
