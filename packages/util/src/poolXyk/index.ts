@@ -68,7 +68,7 @@ export class PoolXykModule {
    */
   public async check(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
     const props = (
-      await this.root.api.query.poolXyk.properties(firstAssetAddress, secondAssetAddress)
+      await this.root.api.query.poolXYK.properties(firstAssetAddress, secondAssetAddress)
     ).toJSON() as Array<string>;
     if (!props || !props.length) {
       return false;
@@ -90,7 +90,7 @@ export class PoolXykModule {
     firstAssetDecimals?: number,
     secondAssetDecimals?: number
   ): Promise<Array<CodecString>> {
-    const result = (await this.root.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress)) as any; // Array<Balance>
+    const result = await this.root.api.query.poolXYK.reserves(firstAssetAddress, secondAssetAddress);
     if (!result || result.length !== 2) {
       return ['0', '0'];
     }
@@ -134,7 +134,7 @@ export class PoolXykModule {
       return ['0', '0'];
     }
     const pIn = FPNumber.fromCodecValue(amount);
-    const totalSupply = await this.root.api.query.poolXyk.totalIssuances(poolTokenAddress); // BalanceInfo
+    const totalSupply = await this.root.api.query.poolXYK.totalIssuances(poolTokenAddress);
     const pts = new FPNumber(totalSupply);
     const ptsFirstAsset = new FPNumber(totalSupply, firstAssetDecimals);
     const ptsSecondAsset = new FPNumber(totalSupply, secondAssetDecimals);
@@ -170,7 +170,7 @@ export class PoolXykModule {
       return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()];
     }
     const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
-    const totalSupply = await this.root.api.query.poolXyk.totalIssuances(poolToken.address); // BalanceInfo
+    const totalSupply = await this.root.api.query.poolXYK.totalIssuances(poolToken.address);
     const pts = new FPNumber(totalSupply, poolToken.decimals);
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b)) as FPNumber;
     return [result.toCodecString(), pts.toCodecString()];
@@ -182,11 +182,11 @@ export class PoolXykModule {
       (this.accountLiquidity = this.accountLiquidity.filter((item) => item.secondAddress !== liquidity.secondAddress));
 
     const poolAccount = poolAccountIdFromAssetPair(this.root.api, XOR.address, liquidity.secondAddress).toString();
-    const accountPoolBalanceObservable = this.root.apiRx.query.poolXyk.poolProviders(
+    const accountPoolBalanceObservable = this.root.apiRx.query.poolXYK.poolProviders(
       poolAccount,
       this.root.account.pair.address
     );
-    const poolReservesObservable = this.root.apiRx.query.poolXyk.reserves(XOR.address, liquidity.secondAddress);
+    const poolReservesObservable = this.root.apiRx.query.poolXYK.reserves(XOR.address, liquidity.secondAddress);
 
     return combineLatest([poolReservesObservable, accountPoolBalanceObservable]).subscribe(
       async ([reserves, balance]) => {
@@ -320,7 +320,7 @@ export class PoolXykModule {
 
     this.accountLiquidityLoaded = new Subject<void>();
 
-    return this.root.apiRx.query.poolXyk.accountPools(this.root.accountPair.address).subscribe(async (result) => {
+    return this.root.apiRx.query.poolXYK.accountPools(this.root.accountPair.address).subscribe(async (result) => {
       const targetIds = result.toJSON() as Array<string>;
       await this.updateAccountLiquiditySubscriptions(targetIds);
 
@@ -371,17 +371,21 @@ export class PoolXykModule {
     if (!this.root.assets.getAsset(secondAsset.address)) {
       this.root.assets.addAccountAsset(secondAsset.address);
     }
-    await this.root.submitExtrinsic(this.root.api.tx.poolXyk.depositLiquidity(...params.args), this.root.account.pair, {
-      type: Operation.AddLiquidity,
-      symbol: firstAsset.symbol,
-      assetAddress: firstAsset.address,
-      symbol2: secondAsset.symbol,
-      asset2Address: secondAsset.address,
-      amount: `${firstAmount}`,
-      amount2: `${secondAmount}`,
-      decimals: firstAsset.decimals,
-      decimals2: secondAsset.decimals,
-    });
+    await this.root.submitExtrinsic(
+      (this.root.api.tx.poolXYK as any).depositLiquidity(...params.args),
+      this.root.account.pair,
+      {
+        type: Operation.AddLiquidity,
+        symbol: firstAsset.symbol,
+        assetAddress: firstAsset.address,
+        symbol2: secondAsset.symbol,
+        asset2Address: secondAsset.address,
+        amount: `${firstAmount}`,
+        amount2: `${secondAmount}`,
+        decimals: firstAsset.decimals,
+        decimals2: secondAsset.decimals,
+      }
+    );
   }
 
   private async calcCreateTxParams(
@@ -447,8 +451,8 @@ export class PoolXykModule {
     }
     transactions.push(
       ...[
-        this.root.api.tx.poolXyk.initializePool(...params.pairCreationArgs),
-        this.root.api.tx.poolXyk.depositLiquidity(...params.addLiquidityArgs),
+        (this.root.api.tx.poolXYK as any).initializePool(...params.pairCreationArgs),
+        (this.root.api.tx.poolXYK as any).depositLiquidity(...params.addLiquidityArgs),
       ]
     );
     if (!this.root.assets.getAsset(secondAsset.address)) {
@@ -527,7 +531,7 @@ export class PoolXykModule {
       slippageTolerance
     );
     await this.root.submitExtrinsic(
-      this.root.api.tx.poolXyk.withdrawLiquidity(...params.args),
+      (this.root.api.tx.poolXYK as any).withdrawLiquidity(...params.args),
       this.root.account.pair,
       {
         type: Operation.RemoveLiquidity,

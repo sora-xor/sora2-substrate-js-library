@@ -405,18 +405,18 @@ export class BaseApi {
         extrinsic = this.api.tx.liquidityProxy.swap;
         break;
       case Operation.AddLiquidity:
-        extrinsic = this.api.tx.poolXyk.depositLiquidity;
+        extrinsic = this.api.tx.poolXYK.depositLiquidity;
         break;
       case Operation.RemoveLiquidity:
-        extrinsic = this.api.tx.poolXyk.withdrawLiquidity;
+        extrinsic = this.api.tx.poolXYK.withdrawLiquidity;
         break;
       case Operation.CreatePair:
         extrinsic = this.api.tx.utility.batchAll;
         extrinsicParams = [
           [
             (this.api.tx.tradingPair as any).register(...params[0].pairCreationArgs),
-            this.api.tx.poolXyk.initializePool(...params[0].pairCreationArgs),
-            this.api.tx.poolXyk.depositLiquidity(...params[0].addLiquidityArgs),
+            (this.api.tx.poolXYK as any).initializePool(...params[0].pairCreationArgs),
+            (this.api.tx.poolXYK as any).depositLiquidity(...params[0].addLiquidityArgs),
           ],
         ];
         break;
@@ -478,12 +478,12 @@ export class BaseApi {
   private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic | null {
     switch (operation) {
       case Operation.AddLiquidity:
-        return this.api.tx.poolXyk.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0');
+        return this.api.tx.poolXYK.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0');
       case Operation.CreatePair:
         return this.api.tx.utility.batchAll([
           this.api.tx.tradingPair.register(this.defaultDEXId, '', ''),
-          this.api.tx.poolXyk.initializePool(this.defaultDEXId, '', ''),
-          this.api.tx.poolXyk.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0'),
+          this.api.tx.poolXYK.initializePool(this.defaultDEXId, '', ''),
+          this.api.tx.poolXYK.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0'),
         ]);
       case Operation.EthBridgeIncoming:
         return this.api.tx.ethBridge.requestFromSidechain('', { Transaction: 'Transfer' }, 0);
@@ -492,7 +492,7 @@ export class BaseApi {
       case Operation.RegisterAsset:
         return this.api.tx.assets.register('', '', '0', false, false, null, null);
       case Operation.RemoveLiquidity:
-        return this.api.tx.poolXyk.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0');
+        return this.api.tx.poolXYK.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0');
       case Operation.Swap:
         return this.api.tx.liquidityProxy.swap(
           this.defaultDEXId,

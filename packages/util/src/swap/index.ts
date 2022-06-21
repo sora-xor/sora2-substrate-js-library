@@ -262,7 +262,7 @@ export class SwapModule {
     const xstUsed = isSourceUsed(LiquiditySourceTypes.XSTPool);
 
     const xykReserves = assetsWithReserves.map((address) =>
-      toCodec(this.root.apiRx.query.poolXyk.reserves(xor, address))
+      toCodec(this.root.apiRx.query.poolXYK.reserves(xor, address))
     );
 
     // fill array if TBC source available

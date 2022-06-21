@@ -47,7 +47,7 @@ async function demo(): Promise<void> {
   // initialize pool
   await submitExtrinsic(
     api,
-    api.tx.poolXyk.initializePool(0, XORAssetId, PSWAPAssetId),
+    api.tx.poolXYK.initializePool(0, XORAssetId, PSWAPAssetId),
     root,
     'Initialize Pool for Pair XOR-DOT'
   );
@@ -69,7 +69,7 @@ async function demo(): Promise<void> {
   // add liquidity
   await submitExtrinsic(
     api,
-    api.tx.poolXyk.depositLiquidity(
+    api.tx.poolXYK.depositLiquidity(
       0,
       XORAssetId,
       PSWAPAssetId,
