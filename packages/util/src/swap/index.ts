@@ -11,6 +11,8 @@ import type {
   SwapResult,
 } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
+import type { PriceToolsPriceInfo } from '@polkadot/types/lookup';
+import type { Option } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
 import { KnownAssets, XOR, DAI, XSTUSD } from '../assets/consts';
@@ -225,9 +227,10 @@ export class SwapModule {
         })
       );
 
-    const toAveragePrice = (o: Observable<any>) => o.pipe(map((codec) => codec.value.average_price.toString()));
+    const toAveragePrice = (o: Observable<Option<PriceToolsPriceInfo>>) =>
+      o.pipe(map((codec) => codec.value.averagePrice.toString()));
 
-    const getAssetAveragePrice = (assetAddress: string): Observable<any> => {
+    const getAssetAveragePrice = (assetAddress: string): Observable<string> => {
       if (assetAddress === dai || assetAddress === xstusd) {
         return of(new FPNumber(1).toCodecString());
       }
