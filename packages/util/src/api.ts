@@ -135,21 +135,32 @@ export class Api extends BaseApi {
     const address = this.storage?.get('address');
     const password = this.storage?.get('password');
     const name = this.storage?.get('name');
-    const isExternal = Boolean(this.storage?.get('isExternal'));
+    const source = this.storage?.get('source');
+
     if (withKeyringLoading) {
       keyring.loadAll({ type: KeyringType });
     }
+
+    // [1.9.9]: Migration from 'isExternal' to 'source' in localstorage
+    if (Boolean(this.storage?.get('isExternal'))) {
+      this.storage?.remove('isExternal');
+      this.logout();
+      return;
+    }
+
     if (!address) {
       return;
     }
+
     const defaultAddress = this.formatAddress(address, false);
     const soraAddress = this.formatAddress(address);
     this.storage?.set('address', soraAddress);
     const pair = keyring.getPair(defaultAddress);
 
-    const account = !isExternal
-      ? keyring.addPair(pair, decrypt(password))
-      : keyring.addExternal(defaultAddress, name ? { name } : {});
+    const account =
+      !source && password
+        ? keyring.addPair(pair, decrypt(password))
+        : keyring.addExternal(defaultAddress, name ? { name } : {});
 
     this.setAccount(account);
     this.initAccountStorage();
@@ -309,9 +320,10 @@ export class Api extends BaseApi {
    * @param name
    * @param isDesktop
    */
-  public importByPolkadotJs(address: string, name: string, isDesktop = false): void {
+  public importByPolkadotJs(address: string, name: string, source: string): void {
     let account;
-    if (isDesktop) {
+
+    if (!source) {
       const pair = keyring.getPair(address);
       account = { pair };
     } else {
@@ -324,7 +336,7 @@ export class Api extends BaseApi {
       const soraAddress = this.formatAddress(account.pair.address);
       this.storage.set('name', name);
       this.storage.set('address', soraAddress);
-      this.storage.set('isExternal', !isDesktop);
+      this.storage.set('source', source);
     }
 
     this.initAccountStorage();
@@ -355,7 +367,7 @@ export class Api extends BaseApi {
    * Remove all wallet data
    */
   public logout(onDesktop = false): void {
-    if (!onDesktop) {
+    if (!onDesktop && this.account) {
       const address = this.account.pair.address;
       keyring.forgetAccount(address);
       keyring.forgetAddress(address);

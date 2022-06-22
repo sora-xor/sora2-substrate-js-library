@@ -202,16 +202,26 @@ export class AssetsModule {
   }
 
   private async addToAccountAssetsList(address: string): Promise<void> {
-    if (!this.getAsset(address)) {
+    const accountAsset = this.getAsset(address);
+
+    if (!accountAsset) {
       const asset = await this.getAccountAsset(address);
       this.accountAssets.push(asset);
       this.subscribeToAssetBalance(asset);
+    } else {
+      // move asset to the end of list
+      this.removeFromAccountAssets(address);
+      this.accountAssets.push(accountAsset);
     }
+  }
+
+  private removeFromAccountAssets(address: string): void {
+    this.accountAssets = this.accountAssets.filter((item) => item.address !== address);
   }
 
   private removeFromAccountAssetsList(address: string): void {
     this.unsubscribeFromAssetBalance(address);
-    this.accountAssets = this.accountAssets.filter((item) => item.address !== address);
+    this.removeFromAccountAssets(address);
     this.balanceSubject.next();
   }
 
@@ -334,7 +344,7 @@ export class AssetsModule {
 
   // # Account assets addresses
 
-  private get accountAssetsAddresses(): Array<string> {
+  public get accountAssetsAddresses(): Array<string> {
     if (this.root.accountStorage) {
       this._accountAssetsAddresses =
         (JSON.parse(this.root.accountStorage.get('assetsAddresses')) as Array<string>) || [];
@@ -342,7 +352,7 @@ export class AssetsModule {
     return this._accountAssetsAddresses;
   }
 
-  private set accountAssetsAddresses(assetsAddresses: Array<string>) {
+  public set accountAssetsAddresses(assetsAddresses: Array<string>) {
     this.root.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses));
     this._accountAssetsAddresses = [...assetsAddresses];
   }
