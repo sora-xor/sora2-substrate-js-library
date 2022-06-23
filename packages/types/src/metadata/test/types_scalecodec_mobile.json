@@ -2698,6 +2698,19 @@
                             "Balance"
                         ]
                     ]
+                },
+                "LiquiditySourceIdOf": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "dex_id",
+                            "DEXId"
+                        ],
+                        [
+                            "liquidity_source_index",
+                            "LiquiditySourceType"
+                        ]
+                    ]
                 }
             }
         }
