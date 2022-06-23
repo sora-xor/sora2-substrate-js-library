@@ -122,10 +122,10 @@ export interface OutgoingOffchainRequest {
       [RequestType.Transfer]: {
         from: string;
         to: string;
-        asset_id: string;
+        assetId: string;
         amount: number;
         nonce: number;
-        network_id: number;
+        networkId: number;
         timepoint: {
           height: {
             thischain: number;
@@ -144,7 +144,7 @@ export interface LoadIncomingOffchainRequest {
       author: string;
       hash: string;
       kind: string;
-      network_id: number;
+      networkId: number;
       timepoint: {
         height: {
           sidechain: number;
@@ -326,7 +326,7 @@ export class BridgeApi extends BaseApi {
     let request = caseInsensitiveValue(body, direction);
     const tx = request.length ? first(request) : request;
     request = caseInsensitiveValue(tx, first(operations)) || caseInsensitiveValue(tx, last(operations));
-    formattedItem.soraAssetAddress = request.asset_id;
+    formattedItem.soraAssetAddress = request.assetId;
     if (request.amount) {
       formattedItem.amount = new FPNumber(new BigNumber(request.amount)).toString();
     }
@@ -337,8 +337,8 @@ export class BridgeApi extends BaseApi {
     } else {
       formattedItem.from = request.author; // TODO: check it
       formattedItem.to = this.account.pair.address;
-      formattedItem.kind = request.asset_kind || request.kind;
-      formattedItem.hash = request.tx_hash || request.hash;
+      formattedItem.kind = request.assetKind || request.kind;
+      formattedItem.hash = request.txHash || request.hash;
     }
     return formattedItem;
   }
@@ -369,12 +369,12 @@ export class BridgeApi extends BaseApi {
     const body = first(item);
     const proofs = last(item) as any;
     const request = caseInsensitiveValue(body, first(operations)) || caseInsensitiveValue(body, last(operations));
-    formattedItem.hash = request.tx_hash;
+    formattedItem.hash = request.txHash;
     formattedItem.from = request.from;
     formattedItem.to = request.to;
     formattedItem.amount = `${request.amount}`.split(',').join('');
     formattedItem.currencyType = stringToCaseInsensitiveArray(BridgeCurrencyType.TokenAddress).includes(
-      first(Object.keys(request.currency_id))
+      first(Object.keys(request.currencyId))
     )
       ? BridgeCurrencyType.TokenAddress
       : BridgeCurrencyType.AssetId;

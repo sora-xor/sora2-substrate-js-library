@@ -345,13 +345,13 @@ export class SwapModule {
     const params = {} as any;
     if (!isExchangeB) {
       params.WithDesiredInput = {
-        desired_amount_in: desiredCodecString,
-        min_amount_out: result.sub(resultMulSlippage).toCodecString(),
+        desiredAmountIn: desiredCodecString,
+        minAmountOut: result.sub(resultMulSlippage).toCodecString(),
       };
     } else {
       params.WithDesiredOutput = {
-        desired_amount_out: desiredCodecString,
-        max_amount_in: result.add(resultMulSlippage).toCodecString(),
+        desiredAmountOut: desiredCodecString,
+        maxAmountIn: result.add(resultMulSlippage).toCodecString(),
       };
     }
     return {
@@ -480,13 +480,13 @@ export class SwapModule {
       liquiditySources,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
     );
-    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amount_without_impact: 0 };
+    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
     return {
       amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
       amountWithoutImpact: new FPNumber(
-        value.amount_without_impact,
+        value.amountWithoutImpact,
         (!isExchangeB ? assetB : assetA).decimals
       ).toCodecString(),
     } as SwapResult;
@@ -502,7 +502,7 @@ export class SwapModule {
    */
   public async checkSwap(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
     return (
-      await (this.root.api.rpc as any).liquidityProxy.isPathAvailable(
+      await this.root.api.rpc.liquidityProxy.isPathAvailable(
         this.root.defaultDEXId,
         firstAssetAddress,
         secondAssetAddress
@@ -524,11 +524,7 @@ export class SwapModule {
     const baseAssetId = secondAssetAddress === XOR.address ? secondAssetAddress : firstAssetAddress;
     const targetAssetId = baseAssetId === secondAssetAddress ? firstAssetAddress : secondAssetAddress;
     const list = (
-      await (this.root.api.rpc as any).tradingPair.listEnabledSourcesForPair(
-        this.root.defaultDEXId,
-        baseAssetId,
-        targetAssetId
-      )
+      await this.root.api.rpc.tradingPair.listEnabledSourcesForPair(this.root.defaultDEXId, baseAssetId, targetAssetId)
     ).toJSON();
 
     return list as Array<LiquiditySourceTypes>;

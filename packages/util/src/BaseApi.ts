@@ -498,7 +498,7 @@ export class BaseApi {
           this.defaultDEXId,
           '',
           '',
-          { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } },
+          { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
           [],
           'Disabled'
         );
@@ -508,7 +508,7 @@ export class BaseApi {
           this.defaultDEXId,
           '',
           '',
-          { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } },
+          { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
           [],
           'Disabled'
         );

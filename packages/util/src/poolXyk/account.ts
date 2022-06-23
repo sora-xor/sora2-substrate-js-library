@@ -35,8 +35,8 @@ export function poolTechAccountIdFromAssetPair(
   const techBaseAsset = assetIdToTechAssetId(api, baseAssetId);
   const techTargetAsset = assetIdToTechAssetId(api, targetAssetId);
   const tradingPair = api.createType('TechTradingPair', {
-    base_asset_id: techBaseAsset,
-    target_asset_id: techTargetAsset,
+    baseAssetId: techBaseAsset,
+    targetAssetId: techTargetAsset,
   });
   const techPurpose = api.createType('TechPurpose', { LiquidityKeeper: tradingPair });
   return api.createType('TechAccountId', { Pure: [0, techPurpose] });
