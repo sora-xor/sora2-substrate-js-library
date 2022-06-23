@@ -2722,6 +2722,27 @@
                     ]
                 }
             }
+        },
+        {
+            "runtime_range": [
+                35,
+                null
+            ],
+            "types": {
+                "LiquiditySourceIdOf": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "dex_id",
+                            "DEXId"
+                        ],
+                        [
+                            "liquidity_source_index",
+                            "LiquiditySourceType"
+                        ]
+                    ]
+                }
+            }
         }
     ],
     "runtime_upgrades": [

@@ -4,7 +4,7 @@
 import type { Compact, Text, Vec, bool, u32 } from '@polkadot/types';
 import type { AnyNumber, ITuple } from '@polkadot/types/types';
 import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
-import type { AccountId, AccountIdOf, AmountOf, AssetId, AssetIdOf, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, LiquiditySourceType, LookupSource, Moment, SwapAmount } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, AmountOf, AssetId, AssetIdOf, Balance, BalanceOf, Call, CurrencyIdOf, DEXId, FilterMode, FixedU128, LiquiditySourceType, LookupSource, Moment, SwapAmount } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes, SubmittableExtrinsic } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/submittable' {
@@ -281,6 +281,16 @@ declare module '@polkadot/api/types/submittable' {
        * Allow/disallow a market making pair.
        **/
       setAssetPair: AugmentedSubmittable<(fromAssetId: AssetId | AnyNumber | Uint8Array, toAssetId: AssetId | AnyNumber | Uint8Array, marketMakingRewardsAllowed: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AssetId, AssetId, bool]>;
+      /**
+       * Generic tx
+       **/
+      [key: string]: SubmittableExtrinsicFunction<ApiType>;
+    };
+    xorFee: {
+      /**
+       * Update the multiplier for weight -> fee conversion.
+       **/
+      updateMultiplier: AugmentedSubmittable<(newMultiplier: FixedU128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [FixedU128]>;
       /**
        * Generic tx
        **/

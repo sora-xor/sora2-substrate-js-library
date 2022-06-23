@@ -8,7 +8,7 @@ import type { Multiplier } from '@polkadot/types/interfaces/txpayment';
 import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interfaces/demeterFarmingPlatform';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, AccountIdOf, AssetId, AssetIdOf, Balance, BlockNumber, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Hash, HolderId, LiquiditySourceType, MarketMakerInfo, Moment, OwnerId, PermissionId, Releases, RewardInfo, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, AssetId, AssetIdOf, Balance, BlockNumber, CrowdloanReward, CurrencyId, DEXId, DEXInfo, FixedU128, Hash, HolderId, LiquiditySourceType, MarketMakerInfo, Moment, OwnerId, PermissionId, Releases, RewardInfo, Scope, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { ApiTypes } from '@polkadot/api/types';
 
 declare module '@polkadot/api/types/storage' {
@@ -212,6 +212,7 @@ declare module '@polkadot/api/types/storage' {
       [key: string]: QueryableStorageEntry<ApiType>;
     };
     xorFee: {
+      multiplier: AugmentedQuery<ApiType, () => Observable<FixedU128>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * The amount of XOR to be reminted and exchanged for VAL at the end of the session
        **/
