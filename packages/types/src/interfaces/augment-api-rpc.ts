@@ -440,6 +440,12 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        **/
       needsMigration: AugmentedRpc<(irohaAddress: Text | string, at?: BlockHash | string | Uint8Array) => Observable<bool>>;
     };
+    leafProvider: {
+      /**
+       * Get logs.
+       **/
+      latestDigest: AugmentedRpc<(at?: BlockHash | string | Uint8Array) => Observable<BridgeTypesAuxiliaryDigest>>;
+    };
     liquidityProxy: {
       /**
        * Check if given two arbitrary tokens can be exchanged via any liquidity sources

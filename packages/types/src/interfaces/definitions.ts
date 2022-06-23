@@ -17,3 +17,4 @@ export { default as template } from './template/definitions';
 export { default as tradingPair } from './tradingPair/definitions';
 export { default as demeterFarmingPlatform } from './demeterFarmingPlatform/definitions';
 export { default as vestedRewards } from './vestedRewards/definitions';
+export { default as leafProvider } from './leafProvider/definitions';

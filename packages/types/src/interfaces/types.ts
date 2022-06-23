@@ -20,3 +20,4 @@ export * from './template/types';
 export * from './tradingPair/types';
 export * from './demeterFarmingPlatform/types';
 export * from './vestedRewards/types';
+export * from './leafProvider/types';

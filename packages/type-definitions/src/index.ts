@@ -20,6 +20,7 @@ import ceresGovernancePlatform from './ceresGovernancePlatform';
 import ceresLaunchpad from './ceresLaunchpad';
 import demeterFarmingPlatform from './demeterFarmingPlatform';
 import vestedRewards from './vestedRewards';
+import leafProvider from './leafProvider';
 
 import versionedOverrides from './versioned';
 
@@ -43,6 +44,7 @@ const soraDefs = {
   template,
   tradingPair,
   vestedRewards,
+  leafProvider,
 };
 
 const overrides = {
