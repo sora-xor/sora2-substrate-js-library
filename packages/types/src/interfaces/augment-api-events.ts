@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import type { ApiTypes } from '@polkadot/api-base/types';
-import type { Bytes, Null, Option, Result, Text, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
+import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256 } from '@polkadot/types/interfaces/runtime';
 import type { BridgeTypesHeaderHeaderId, BridgeTypesMessageId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportScheduleLookupError, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, SpFinalityGrandpaAppPublic, SpRuntimeDispatchError } from '@polkadot/types/lookup';
@@ -451,15 +451,15 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * [network_id, asset_id, sender, recepient, amount]
        **/
-      Burned: AugmentedEvent<ApiType, [u32, CommonPrimitivesAssetId32, AccountId32, H160, u128]>;
+      Burned: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, AccountId32, H160, u128]>;
       /**
        * [network_id, asset_id, sender, recepient, amount]
        **/
-      Minted: AugmentedEvent<ApiType, [u32, CommonPrimitivesAssetId32, H160, AccountId32, u128]>;
+      Minted: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, H160, AccountId32, u128]>;
     };
     ethApp: {
-      Burned: AugmentedEvent<ApiType, [u32, AccountId32, H160, u128]>;
-      Minted: AugmentedEvent<ApiType, [u32, H160, AccountId32, u128]>;
+      Burned: AugmentedEvent<ApiType, [U256, AccountId32, H160, u128]>;
+      Minted: AugmentedEvent<ApiType, [U256, H160, AccountId32, u128]>;
     };
     ethBridge: {
       /**
@@ -492,7 +492,7 @@ declare module '@polkadot/api-base/types/events' {
       RequestRegistered: AugmentedEvent<ApiType, [H256]>;
     };
     ethereumLightClient: {
-      Finalized: AugmentedEvent<ApiType, [u32, BridgeTypesHeaderHeaderId]>;
+      Finalized: AugmentedEvent<ApiType, [U256, BridgeTypesHeaderHeaderId]>;
     };
     faucet: {
       Transferred: AugmentedEvent<ApiType, [AccountId32, u128]>;
@@ -571,7 +571,7 @@ declare module '@polkadot/api-base/types/events' {
     incentivizedInboundChannel: {
     };
     incentivizedOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [u32, u64]>;
+      MessageAccepted: AugmentedEvent<ApiType, [U256, u64]>;
     };
     irohaMigration: {
       /**
@@ -589,9 +589,9 @@ declare module '@polkadot/api-base/types/events' {
       Exchange: AugmentedEvent<ApiType, [AccountId32, u32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128, u128, u128, Vec<CommonPrimitivesLiquiditySourceId>]>;
     };
     migrationApp: {
-      Erc20Migrated: AugmentedEvent<ApiType, [u32, H160]>;
-      EthMigrated: AugmentedEvent<ApiType, [u32, H160]>;
-      SidechainMigrated: AugmentedEvent<ApiType, [u32, H160]>;
+      Erc20Migrated: AugmentedEvent<ApiType, [U256, H160]>;
+      EthMigrated: AugmentedEvent<ApiType, [U256, H160]>;
+      SidechainMigrated: AugmentedEvent<ApiType, [U256, H160]>;
     };
     multicollateralBondingCurvePool: {
       /**

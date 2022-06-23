@@ -115,11 +115,11 @@ export default {
       balance: 'Balance',
     },
     AssetInfo: {
-      asset_id: 'AssetId',
+      assetId: 'AssetId',
       symbol: 'AssetSymbolStr',
       name: 'AssetNameStr',
       precision: 'u8',
-      is_mintable: 'bool',
+      isMintable: 'bool',
     },
     AssetSymbolStr: 'String',
     AssetNameStr: 'String',

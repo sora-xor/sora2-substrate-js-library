@@ -1300,6 +1300,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AncientHeader: AugmentedError<ApiType>;
       /**
+       * Unsupported consensus engine
+       **/
+      ConsensusNotSupported: AugmentedError<ApiType>;
+      /**
        * Log could not be decoded
        **/
       DecodeFailed: AugmentedError<ApiType>;

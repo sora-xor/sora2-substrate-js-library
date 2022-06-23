@@ -6,16 +6,16 @@ import type { Balance, BlockNumber } from '@sora-substrate/types/interfaces/runt
 
 /** @name PollInfo */
 export interface PollInfo extends Struct {
-  readonly number_of_options: u32;
-  readonly poll_start_block: BlockNumber;
-  readonly poll_end_block: BlockNumber;
+  readonly numberOfOptions: u32;
+  readonly pollStartBlock: BlockNumber;
+  readonly pollEndBlock: BlockNumber;
 }
 
 /** @name VotingInfo */
 export interface VotingInfo extends Struct {
-  readonly voting_option: u32;
-  readonly number_of_votes: Balance;
-  readonly ceres_withdrawn: bool;
+  readonly votingOption: u32;
+  readonly numberOfVotes: Balance;
+  readonly ceresWithdrawn: bool;
 }
 
 export type PHANTOM_CERESGOVERNANCEPLATFORM = 'ceresGovernancePlatform';

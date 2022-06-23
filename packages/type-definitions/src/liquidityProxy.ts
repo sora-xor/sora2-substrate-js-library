@@ -91,7 +91,7 @@ export default {
       amount: 'Balance',
       fee: 'Balance',
       rewards: 'Vec<LPRewardsInfo>',
-      amount_without_impact: 'Balance',
+      amountWithoutImpact: 'Balance',
     },
     LPRewardsInfo: {
       amount: 'Balance',
@@ -99,8 +99,8 @@ export default {
       reason: 'RewardReason',
     },
     LiquiditySourceIdOf: {
-      dex_id: 'DEXId',
-      liquidity_source_index: 'LiquiditySourceType',
+      dexId: 'DEXId',
+      liquiditySourceIndex: 'LiquiditySourceType',
     },
   },
 };

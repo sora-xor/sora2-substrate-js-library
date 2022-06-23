@@ -1,10 +1,10 @@
 export default {
-    rpc: {},
-    types: {
-        TokenLockInfo: {
-            tokens: 'Balance',
-            unlocking_block: 'BlockNumber',
-            asset_id: 'AssetId',
-        },
+  rpc: {},
+  types: {
+    TokenLockInfo: {
+      tokens: 'Balance',
+      unlockingBlock: 'BlockNumber',
+      assetId: 'AssetId',
     },
+  },
 };

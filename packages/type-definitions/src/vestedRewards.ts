@@ -33,9 +33,9 @@ export default {
   },
   types: {
     CrowdloanLease: {
-      start_block: 'String',
-      total_days: 'String',
-      blocks_per_day: 'String',
+      startBlock: 'String',
+      totalDays: 'String',
+      blocksPerDay: 'String',
     },
   },
 };

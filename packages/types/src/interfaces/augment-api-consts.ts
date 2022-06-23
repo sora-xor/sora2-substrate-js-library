@@ -5,7 +5,7 @@ import type { ApiTypes } from '@polkadot/api-base/types';
 import type { U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesDifficultyDifficultyConfig, CommonPrimitivesAssetId32, FrameSupportWeightsRuntimeDbWeight, FrameSupportWeightsWeightToFeeCoefficient, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
+import type { CommonPrimitivesAssetId32, FrameSupportWeightsRuntimeDbWeight, FrameSupportWeightsWeightToFeeCoefficient, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/consts' {
   export interface AugmentedConsts<ApiType extends ApiTypes> {
@@ -308,10 +308,6 @@ declare module '@polkadot/api-base/types/consts' {
        * needs to have in order to be considered final.
        **/
       descendantsUntilFinalized: u8 & AugmentedConst<ApiType>;
-      /**
-       * Ethereum network parameters for header difficulty
-       **/
-      difficultyConfig: BridgeTypesDifficultyDifficultyConfig & AugmentedConst<ApiType>;
       /**
        * Determines whether Ethash PoW is verified for headers
        * NOTE: Should only be false for dev

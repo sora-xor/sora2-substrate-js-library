@@ -7,32 +7,32 @@ import type { AccountId, AssetId, Balance } from '@sora-substrate/types/interfac
 /** @name PoolData */
 export interface PoolData extends Struct {
   readonly multiplier: u32;
-  readonly deposit_fee: Balance;
-  readonly is_core: bool;
-  readonly is_farm: bool;
-  readonly total_tokens_in_pool: Balance;
+  readonly depositFee: Balance;
+  readonly isCore: bool;
+  readonly isFarm: bool;
+  readonly totalTokensInPool: Balance;
   readonly rewards: Balance;
-  readonly rewards_to_be_distributed: Balance;
-  readonly is_removed: bool;
+  readonly rewardsToBeDistributed: Balance;
+  readonly isRemoved: bool;
 }
 
 /** @name TokenInfo */
 export interface TokenInfo extends Struct {
-  readonly farms_total_multiplier: u32;
-  readonly staking_total_multiplier: u32;
-  readonly token_per_block: Balance;
-  readonly farms_allocation: Balance;
-  readonly staking_allocation: Balance;
-  readonly team_allocation: Balance;
-  readonly team_account: AccountId;
+  readonly farmsTotalMultiplier: u32;
+  readonly stakingTotalMultiplier: u32;
+  readonly tokenPerBlock: Balance;
+  readonly farmsAllocation: Balance;
+  readonly stakingAllocation: Balance;
+  readonly teamAllocation: Balance;
+  readonly teamAccount: AccountId;
 }
 
 /** @name UserInfo */
 export interface UserInfo extends Struct {
-  readonly pool_asset: AssetId;
-  readonly reward_asset: AssetId;
-  readonly is_farm: bool;
-  readonly pooled_tokens: Balance;
+  readonly poolAsset: AssetId;
+  readonly rewardAsset: AssetId;
+  readonly isFarm: bool;
+  readonly pooledTokens: Balance;
   readonly rewards: Balance;
 }
 

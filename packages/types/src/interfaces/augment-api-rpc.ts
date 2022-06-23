@@ -438,7 +438,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Check if the account needs migration
        **/
-      needsMigration: AugmentedRpc<(iroha_address: Text | string, at?: BlockHash | string | Uint8Array) => Observable<bool>>;
+      needsMigration: AugmentedRpc<(irohaAddress: Text | string, at?: BlockHash | string | Uint8Array) => Observable<bool>>;
     };
     liquidityProxy: {
       /**
@@ -508,7 +508,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Get claimable rewards
        **/
-      claimables: AugmentedRpc<(eth_address: EthAddress | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BalanceInfo>>>;
+      claimables: AugmentedRpc<(ethAddress: EthAddress | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BalanceInfo>>>;
     };
     rpc: {
       /**

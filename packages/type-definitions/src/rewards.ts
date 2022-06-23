@@ -4,7 +4,7 @@ export default {
       description: 'Get claimable rewards',
       params: [
         {
-          name: 'eth_address',
+          name: 'ethAddress',
           type: 'EthAddress',
         },
         {

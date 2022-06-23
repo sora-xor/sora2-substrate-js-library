@@ -57,9 +57,9 @@ export interface EthBridgeStorageVersion extends Enum {
 
 /** @name EthPeersSync */
 export interface EthPeersSync extends Struct {
-  readonly is_bridge_ready: bool;
-  readonly is_xor_ready: bool;
-  readonly is_val_ready: bool;
+  readonly isBridgeReady: bool;
+  readonly isXorReady: bool;
+  readonly isValReady: bool;
 }
 
 /** @name FixedBytes */
@@ -67,64 +67,64 @@ export interface FixedBytes extends Bytes {}
 
 /** @name IncomingAddToken */
 export interface IncomingAddToken extends Struct {
-  readonly token_address: EthAddress;
-  readonly asset_id: AssetId;
+  readonly tokenAddress: EthAddress;
+  readonly assetId: AssetId;
   readonly precision: BalancePrecision;
   readonly symbol: AssetSymbol;
   readonly name: AssetName;
   readonly author: AccountId;
-  readonly tx_hash: H256;
-  readonly at_height: u64;
+  readonly txHash: H256;
+  readonly atHeight: u64;
   readonly timepoint: BridgeTimepoint;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name IncomingCancelOutgoingRequest */
 export interface IncomingCancelOutgoingRequest extends Struct {
-  readonly outgoing_request: OutgoingRequest;
-  readonly outgoing_request_hash: H256;
-  readonly initial_request_hash: H256;
-  readonly tx_input: Bytes;
+  readonly outgoingRequest: OutgoingRequest;
+  readonly outgoingRequestHash: H256;
+  readonly initialRequestHash: H256;
+  readonly txInput: Bytes;
   readonly author: AccountId;
-  readonly tx_hash: H256;
-  readonly at_height: u64;
+  readonly txHash: H256;
+  readonly atHeight: u64;
   readonly timepoint: BridgeTimepoint;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name IncomingChangePeers */
 export interface IncomingChangePeers extends Struct {
-  readonly peer_account_id: AccountId;
-  readonly peer_address: EthAddress;
+  readonly peerAccountId: AccountId;
+  readonly peerAddress: EthAddress;
   readonly added: bool;
   readonly author: AccountId;
-  readonly tx_hash: H256;
-  readonly at_height: u64;
+  readonly txHash: H256;
+  readonly atHeight: u64;
   readonly timepoint: BridgeTimepoint;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name IncomingChangePeersCompat */
 export interface IncomingChangePeersCompat extends Struct {
-  readonly peer_account_id: AccountId;
-  readonly peer_address: EthAddress;
+  readonly peerAccountId: AccountId;
+  readonly peerAddress: EthAddress;
   readonly added: bool;
   readonly contract: ChangePeersContract;
   readonly author: AccountId;
-  readonly tx_hash: H256;
-  readonly at_height: u64;
+  readonly txHash: H256;
+  readonly atHeight: u64;
   readonly timepoint: BridgeTimepoint;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name IncomingMarkAsDoneRequest */
 export interface IncomingMarkAsDoneRequest extends Struct {
-  readonly outgoing_request_hash: H256;
-  readonly initial_request_hash: H256;
+  readonly outgoingRequestHash: H256;
+  readonly initialRequestHash: H256;
   readonly author: AccountId;
-  readonly at_height: u64;
+  readonly atHeight: u64;
   readonly timepoint: BridgeTimepoint;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name IncomingMetaRequestKind */
@@ -136,21 +136,21 @@ export interface IncomingMetaRequestKind extends Enum {
 
 /** @name IncomingMigrate */
 export interface IncomingMigrate extends Struct {
-  readonly new_contract_address: EthAddress;
+  readonly newContractAddress: EthAddress;
   readonly author: AccountId;
-  readonly tx_hash: H256;
-  readonly at_height: u64;
+  readonly txHash: H256;
+  readonly atHeight: u64;
   readonly timepoint: BridgeTimepoint;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name IncomingPrepareForMigration */
 export interface IncomingPrepareForMigration extends Struct {
   readonly author: AccountId;
-  readonly tx_hash: H256;
-  readonly at_height: u64;
+  readonly txHash: H256;
+  readonly atHeight: u64;
   readonly timepoint: BridgeTimepoint;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name IncomingRequest */
@@ -199,14 +199,14 @@ export interface IncomingTransactionRequestKind extends Enum {
 export interface IncomingTransfer extends Struct {
   readonly from: EthAddress;
   readonly to: AccountId;
-  readonly asset_id: AssetId;
-  readonly asset_kind: AssetKind;
+  readonly assetId: AssetId;
+  readonly assetKind: AssetKind;
   readonly amount: Balance;
   readonly author: AccountId;
-  readonly tx_hash: H256;
-  readonly at_height: u64;
+  readonly txHash: H256;
+  readonly atHeight: u64;
   readonly timepoint: BridgeTimepoint;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name LoadIncomingMetaRequest */
@@ -215,7 +215,7 @@ export interface LoadIncomingMetaRequest extends Struct {
   readonly hash: H256;
   readonly timepoint: BridgeTimepoint;
   readonly kind: IncomingMetaRequestKind;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name LoadIncomingRequest */
@@ -233,7 +233,7 @@ export interface LoadIncomingTransactionRequest extends Struct {
   readonly hash: H256;
   readonly timepoint: BridgeTimepoint;
   readonly kind: IncomingTransactionRequestKind;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
 }
 
 /** @name MultiChainHeight */
@@ -259,10 +259,10 @@ export interface OffchainRequest extends Enum {
 /** @name OutgoingAddAsset */
 export interface OutgoingAddAsset extends Struct {
   readonly author: AccountId;
-  readonly asset_id: AssetId;
+  readonly assetId: AssetId;
   readonly supply: Balance;
   readonly nonce: Index;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
 }
 
@@ -272,80 +272,80 @@ export interface OutgoingAddAssetEncoded extends Struct {
   readonly symbol: Text;
   readonly decimal: u8;
   readonly supply: U256;
-  readonly sidechain_asset_id: FixedBytes;
+  readonly sidechainAssetId: FixedBytes;
   readonly hash: H256;
-  readonly network_id: H256;
+  readonly networkId: H256;
   readonly raw: Bytes;
 }
 
 /** @name OutgoingAddPeer */
 export interface OutgoingAddPeer extends Struct {
   readonly author: AccountId;
-  readonly peer_address: EthAddress;
-  readonly peer_account_id: AccountId;
+  readonly peerAddress: EthAddress;
+  readonly peerAccountId: AccountId;
   readonly nonce: Index;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
 }
 
 /** @name OutgoingAddPeerCompat */
 export interface OutgoingAddPeerCompat extends Struct {
   readonly author: AccountId;
-  readonly peer_address: EthAddress;
-  readonly peer_account_id: AccountId;
+  readonly peerAddress: EthAddress;
+  readonly peerAccountId: AccountId;
   readonly nonce: Index;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
 }
 
 /** @name OutgoingAddPeerEncoded */
 export interface OutgoingAddPeerEncoded extends Struct {
-  readonly peer_address: EthAddress;
-  readonly tx_hash: H256;
-  readonly network_id: H256;
+  readonly peerAddress: EthAddress;
+  readonly txHash: H256;
+  readonly networkId: H256;
   readonly raw: Bytes;
 }
 
 /** @name OutgoingAddToken */
 export interface OutgoingAddToken extends Struct {
   readonly author: AccountId;
-  readonly token_address: EthAddress;
+  readonly tokenAddress: EthAddress;
   readonly ticker: Text;
   readonly name: Text;
   readonly decimals: u8;
   readonly nonce: Index;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
 }
 
 /** @name OutgoingAddTokenEncoded */
 export interface OutgoingAddTokenEncoded extends Struct {
-  readonly token_address: EthAddress;
+  readonly tokenAddress: EthAddress;
   readonly ticker: Text;
   readonly name: Text;
   readonly decimals: u8;
   readonly hash: H256;
-  readonly network_id: H256;
+  readonly networkId: H256;
   readonly raw: Bytes;
 }
 
 /** @name OutgoingMigrate */
 export interface OutgoingMigrate extends Struct {
   readonly author: AccountId;
-  readonly new_contract_address: EthAddress;
-  readonly erc20_native_tokens: Vec<EthAddress>;
+  readonly newContractAddress: EthAddress;
+  readonly erc20NativeTokens: Vec<EthAddress>;
   readonly nonce: Index;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
 }
 
 /** @name OutgoingMigrateEncoded */
 export interface OutgoingMigrateEncoded extends Struct {
-  readonly this_contract_address: EthAddress;
-  readonly tx_hash: H256;
-  readonly new_contract_address: EthAddress;
-  readonly erc20_native_tokens: Vec<EthAddress>;
-  readonly network_id: H256;
+  readonly thisContractAddress: EthAddress;
+  readonly txHash: H256;
+  readonly newContractAddress: EthAddress;
+  readonly erc20NativeTokens: Vec<EthAddress>;
+  readonly networkId: H256;
   readonly raw: Bytes;
 }
 
@@ -353,43 +353,43 @@ export interface OutgoingMigrateEncoded extends Struct {
 export interface OutgoingPrepareForMigration extends Struct {
   readonly author: AccountId;
   readonly nonce: Index;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
 }
 
 /** @name OutgoingPrepareForMigrationEncoded */
 export interface OutgoingPrepareForMigrationEncoded extends Struct {
-  readonly this_contract_address: EthAddress;
-  readonly tx_hash: H256;
-  readonly network_id: H256;
+  readonly thisContractAddress: EthAddress;
+  readonly txHash: H256;
+  readonly networkId: H256;
   readonly raw: Bytes;
 }
 
 /** @name OutgoingRemovePeer */
 export interface OutgoingRemovePeer extends Struct {
   readonly author: AccountId;
-  readonly peer_account_id: AccountId;
-  readonly peer_address: EthAddress;
+  readonly peerAccountId: AccountId;
+  readonly peerAddress: EthAddress;
   readonly nonce: Index;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
 }
 
 /** @name OutgoingRemovePeerCompat */
 export interface OutgoingRemovePeerCompat extends Struct {
   readonly author: AccountId;
-  readonly peer_account_id: AccountId;
-  readonly peer_address: EthAddress;
+  readonly peerAccountId: AccountId;
+  readonly peerAddress: EthAddress;
   readonly nonce: Index;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
 }
 
 /** @name OutgoingRemovePeerEncoded */
 export interface OutgoingRemovePeerEncoded extends Struct {
-  readonly peer_address: EthAddress;
-  readonly tx_hash: H256;
-  readonly network_id: H256;
+  readonly peerAddress: EthAddress;
+  readonly txHash: H256;
+  readonly networkId: H256;
   readonly raw: Bytes;
 }
 
@@ -435,21 +435,21 @@ export interface OutgoingRequestEncoded extends Enum {
 export interface OutgoingTransfer extends Struct {
   readonly from: AccountId;
   readonly to: EthAddress;
-  readonly asset_id: AssetId;
+  readonly assetId: AssetId;
   readonly amount: Balance;
   readonly nonce: Index;
-  readonly network_id: BridgeNetworkId;
+  readonly networkId: BridgeNetworkId;
   readonly timepoint: BridgeTimepoint;
 }
 
 /** @name OutgoingTransferEncoded */
 export interface OutgoingTransferEncoded extends Struct {
-  readonly currency_id: CurrencyIdEncoded;
+  readonly currencyId: CurrencyIdEncoded;
   readonly amount: U256;
   readonly to: EthAddress;
   readonly from: EthAddress;
-  readonly tx_hash: H256;
-  readonly network_id: H256;
+  readonly txHash: H256;
+  readonly networkId: H256;
   readonly raw: Bytes;
 }
 

@@ -4,7 +4,7 @@ export default {
       description: 'Check if the account needs migration',
       params: [
         {
-          name: 'iroha_address',
+          name: 'irohaAddress',
           type: 'String',
         },
         {
@@ -18,8 +18,8 @@ export default {
   },
   types: {
     PendingMultisigAccount: {
-      approving_accounts: 'Vec<AccountId>',
-      migrate_at: 'Option<BlockNumber>',
+      approvingAccounts: 'Vec<AccountId>',
+      migrateAt: 'Option<BlockNumber>',
     },
   },
 };

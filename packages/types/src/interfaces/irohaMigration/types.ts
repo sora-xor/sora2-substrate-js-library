@@ -6,8 +6,8 @@ import type { AccountId, BlockNumber } from '@sora-substrate/types/interfaces/ru
 
 /** @name PendingMultisigAccount */
 export interface PendingMultisigAccount extends Struct {
-  readonly approving_accounts: Vec<AccountId>;
-  readonly migrate_at: Option<BlockNumber>;
+  readonly approvingAccounts: Vec<AccountId>;
+  readonly migrateAt: Option<BlockNumber>;
 }
 
 export type PHANTOM_IROHAMIGRATION = 'irohaMigration';

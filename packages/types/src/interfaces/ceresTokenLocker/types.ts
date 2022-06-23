@@ -7,8 +7,8 @@ import type { AssetId, Balance, BlockNumber } from '@sora-substrate/types/interf
 /** @name TokenLockInfo */
 export interface TokenLockInfo extends Struct {
   readonly tokens: Balance;
-  readonly unlocking_block: BlockNumber;
-  readonly asset_id: AssetId;
+  readonly unlockingBlock: BlockNumber;
+  readonly assetId: AssetId;
 }
 
 export type PHANTOM_CERESTOKENLOCKER = 'ceresTokenLocker';

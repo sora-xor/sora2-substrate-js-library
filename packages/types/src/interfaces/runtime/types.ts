@@ -123,10 +123,10 @@ export interface CrowdloanReward extends Struct {
   readonly id: Bytes;
   readonly address: Bytes;
   readonly contribution: Fixed;
-  readonly xor_reward: Fixed;
-  readonly val_reward: Fixed;
-  readonly pswap_reward: Fixed;
-  readonly xstusd_reward: Fixed;
+  readonly xorReward: Fixed;
+  readonly valReward: Fixed;
+  readonly pswapReward: Fixed;
+  readonly xstusdReward: Fixed;
   readonly percent: Fixed;
 }
 
@@ -147,9 +147,9 @@ export interface DEXIdOf extends DEXId {}
 
 /** @name DEXInfo */
 export interface DEXInfo extends Struct {
-  readonly base_asset_id: AssetId;
-  readonly default_fee: BasisPoints;
-  readonly default_protocol_fee: BasisPoints;
+  readonly baseAssetId: AssetId;
+  readonly defaultFee: BasisPoints;
+  readonly defaultProtocolFee: BasisPoints;
 }
 
 /** @name Digest */
@@ -181,7 +181,7 @@ export interface DigestItem extends Enum {
 
 /** @name DispatchErrorWithPostInfoTPostDispatchInfo */
 export interface DispatchErrorWithPostInfoTPostDispatchInfo extends Struct {
-  readonly post_info: PostDispatchInfo;
+  readonly postInfo: PostDispatchInfo;
   readonly error: DispatchError;
 }
 
@@ -448,8 +448,8 @@ export interface PhantomData extends Null {}
 
 /** @name PostDispatchInfo */
 export interface PostDispatchInfo extends Struct {
-  readonly actual_weight: Option<Weight>;
-  readonly pays_fee: Pays;
+  readonly actualWeight: Option<Weight>;
+  readonly paysFee: Pays;
 }
 
 /** @name PredefinedAssetId */
@@ -471,11 +471,11 @@ export interface PreRuntime extends ITuple<[ConsensusEngineId, Bytes]> {}
 
 /** @name PriceInfo */
 export interface PriceInfo extends Struct {
-  readonly price_failures: u32;
-  readonly spot_prices: Vec<Balance>;
-  readonly average_price: Balance;
-  readonly needs_update: bool;
-  readonly last_spot_price: Balance;
+  readonly priceFailures: u32;
+  readonly spotPrices: Vec<Balance>;
+  readonly averagePrice: Balance;
+  readonly needsUpdate: bool;
+  readonly lastSpotPrice: Balance;
 }
 
 /** @name Public */
@@ -492,12 +492,12 @@ export interface QuoteAmount extends Enum {
 
 /** @name QuoteWithDesiredInput */
 export interface QuoteWithDesiredInput extends Struct {
-  readonly desired_amount_in: Balance;
+  readonly desiredAmountIn: Balance;
 }
 
 /** @name QuoteWithDesiredOutput */
 export interface QuoteWithDesiredOutput extends Struct {
-  readonly desired_amount_out: Balance;
+  readonly desiredAmountOut: Balance;
 }
 
 /** @name Releases */
@@ -518,7 +518,7 @@ export interface Releases extends Enum {
 /** @name RewardInfo */
 export interface RewardInfo extends Struct {
   readonly limit: Balance;
-  readonly total_available: Balance;
+  readonly totalAvailable: Balance;
   readonly rewards: BTreeMap<RewardReason, Balance>;
 }
 
@@ -616,14 +616,14 @@ export interface SwapVariant extends Enum {
 
 /** @name SwapWithDesiredInput */
 export interface SwapWithDesiredInput extends Struct {
-  readonly desired_amount_in: Balance;
-  readonly min_amount_out: Balance;
+  readonly desiredAmountIn: Balance;
+  readonly minAmountOut: Balance;
 }
 
 /** @name SwapWithDesiredOutput */
 export interface SwapWithDesiredOutput extends Struct {
-  readonly desired_amount_out: Balance;
-  readonly max_amount_in: Balance;
+  readonly desiredAmountOut: Balance;
+  readonly maxAmountIn: Balance;
 }
 
 /** @name TechAccountId */
@@ -668,14 +668,14 @@ export interface TechPurpose extends Enum {
 
 /** @name TechTradingPair */
 export interface TechTradingPair extends Struct {
-  readonly base_asset_id: TechAssetId;
-  readonly target_asset_id: TechAssetId;
+  readonly baseAssetId: TechAssetId;
+  readonly targetAssetId: TechAssetId;
 }
 
 /** @name TradingPair */
 export interface TradingPair extends Struct {
-  readonly base_asset_id: AssetId;
-  readonly target_asset_id: AssetId;
+  readonly baseAssetId: AssetId;
+  readonly targetAssetId: AssetId;
 }
 
 /** @name TransactionInfo */

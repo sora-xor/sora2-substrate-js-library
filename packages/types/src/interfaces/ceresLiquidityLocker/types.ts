@@ -6,10 +6,10 @@ import type { AssetId, Balance, BlockNumber } from '@sora-substrate/types/interf
 
 /** @name LockInfo */
 export interface LockInfo extends Struct {
-  readonly pool_tokens: Balance;
-  readonly unlocking_block: BlockNumber;
-  readonly asset_a: AssetId;
-  readonly asset_b: AssetId;
+  readonly poolTokens: Balance;
+  readonly unlockingBlock: BlockNumber;
+  readonly assetA: AssetId;
+  readonly assetB: AssetId;
 }
 
 export type PHANTOM_CERESLIQUIDITYLOCKER = 'ceresLiquidityLocker';

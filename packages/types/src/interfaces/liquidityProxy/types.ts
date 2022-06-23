@@ -6,8 +6,8 @@ import type { AssetId, Balance, DEXId, LiquiditySourceType, RewardReason } from 
 
 /** @name LiquiditySourceIdOf */
 export interface LiquiditySourceIdOf extends Struct {
-  readonly dex_id: DEXId;
-  readonly liquidity_source_index: LiquiditySourceType;
+  readonly dexId: DEXId;
+  readonly liquiditySourceIndex: LiquiditySourceType;
 }
 
 /** @name LPRewardsInfo */
@@ -22,7 +22,7 @@ export interface LPSwapOutcomeInfo extends Struct {
   readonly amount: Balance;
   readonly fee: Balance;
   readonly rewards: Vec<LPRewardsInfo>;
-  readonly amount_without_impact: Balance;
+  readonly amountWithoutImpact: Balance;
 }
 
 export type PHANTOM_LIQUIDITYPROXY = 'liquidityProxy';
