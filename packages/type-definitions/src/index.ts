@@ -21,6 +21,8 @@ import ceresLaunchpad from './ceresLaunchpad';
 import demeterFarmingPlatform from './demeterFarmingPlatform';
 import vestedRewards from './vestedRewards';
 import leafProvider from './leafProvider';
+import basicChannel from './basicChannel';
+import intentivizedChannel from './intentivizedChannel';
 
 import versionedOverrides from './versioned';
 
@@ -45,6 +47,8 @@ const soraDefs = {
   tradingPair,
   vestedRewards,
   leafProvider,
+  basicChannel,
+  intentivizedChannel,
 };
 
 const overrides = {

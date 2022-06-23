@@ -1,7 +1,7 @@
 export default {
   rpc: {
     latestDigest: {
-      description: 'Get logs.',
+      description: 'Get leaf provider logs.',
       params: [
         {
           name: 'at',

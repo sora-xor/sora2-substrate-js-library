@@ -26,7 +26,9 @@ import type { MigrationStatusResult, ReadProof, RuntimeVersion, TraceBlockRespon
 import type { ApplyExtrinsicResult, ChainProperties, ChainType, DispatchError, Health, NetworkState, NodeRole, PeerInfo, SyncState } from '@polkadot/types/interfaces/system';
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
+import type { BasicChannelMessage } from '@sora-substrate/types/interfaces/basicChannel';
 import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
 import type { AuxiliaryDigest } from '@sora-substrate/types/interfaces/leafProvider';
 import type { LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
 import type { BalancePrecision, DEXId, FilterMode, Fixed, LiquiditySourceType, SwapOutcomeInfo, SwapVariant, TradingPair } from '@sora-substrate/types/interfaces/runtime';
@@ -104,6 +106,12 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        * Returns data about which slots (primary or secondary) can be claimed in the current epoch with the keys in the keystore
        **/
       epochAuthorship: AugmentedRpc<() => Observable<HashMap<AuthorityId, EpochAuthorship>>>;
+    };
+    basicChannel: {
+      /**
+       * Get basic channel messages.
+       **/
+      commitment: AugmentedRpc<(commitmentHash: H256 | string | Uint8Array) => Observable<Option<Vec<BasicChannelMessage>>>>;
     };
     beefy: {
       /**
@@ -435,6 +443,12 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        **/
       subscribeJustifications: AugmentedRpc<() => Observable<JustificationNotification>>;
     };
+    intentivizedChannel: {
+      /**
+       * Get intentivized channel messages.
+       **/
+      commitment: AugmentedRpc<(commitmentHash: H256 | string | Uint8Array) => Observable<Option<Vec<IntentivizedChannelMessage>>>>;
+    };
     irohaMigration: {
       /**
        * Check if the account needs migration
@@ -443,7 +457,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
     };
     leafProvider: {
       /**
-       * Get logs.
+       * Get leaf provider logs.
        **/
       latestDigest: AugmentedRpc<(at?: BlockHash | string | Uint8Array) => Observable<AuxiliaryDigest>>;
     };
