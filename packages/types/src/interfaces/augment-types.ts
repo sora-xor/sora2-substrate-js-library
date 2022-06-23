@@ -68,6 +68,7 @@ import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interf
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
+import type { AuxiliaryDigest, AuxiliaryDigestItem, ChannelId, EthNetworkId } from '@sora-substrate/types/interfaces/leafProvider';
 import type { LPRewardsInfo, LPSwapOutcomeInfo, LiquiditySourceIdOf } from '@sora-substrate/types/interfaces/liquidityProxy';
 import type { AccountId, AccountId20, AccountId32, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, BlockNumberFor, BlockNumberOf, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChangesTrieSignal, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, ContentSource, CrateVersion, CrowdloanReward, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Description, Digest, DigestItem, DispatchErrorWithPostInfoTPostDispatchInfo, DispatchResultWithPostInfo, DistributionAccounts, Duration, EncodedJustification, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H32, H512, H64, Hash, Header, HeaderPartial, HolderId, I32F32, Index, IndicesLookupSource, Justification, Justifications, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, MarketMakerInfo, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletId, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PostDispatchInfo, PreRuntime, PredefinedAssetId, PriceInfo, Public, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RewardInfo, RewardReason, RuntimeDbWeight, Scope, Seal, SealV0, SignedBlock, SignedBlockWithJustification, SignedBlockWithJustifications, Slot, SmoothPriceState, StorageData, StorageProof, StorageVersion, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAmount, TechAssetId, TechBalance, TechPurpose, TechTradingPair, TradingPair, TransactionInfo, TransactionPriority, TransactionStorageProof, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
@@ -141,6 +142,8 @@ declare module '@polkadot/types/types/registry' {
     AuthoritySetChanges: AuthoritySetChanges;
     AuthoritySignature: AuthoritySignature;
     AuthorityWeight: AuthorityWeight;
+    AuxiliaryDigest: AuxiliaryDigest;
+    AuxiliaryDigestItem: AuxiliaryDigestItem;
     AvailabilityBitfield: AvailabilityBitfield;
     AvailabilityBitfieldRecord: AvailabilityBitfieldRecord;
     BabeAuthorityWeight: BabeAuthorityWeight;
@@ -219,6 +222,7 @@ declare module '@polkadot/types/types/registry' {
     ChangePeersContract: ChangePeersContract;
     ChangesTrieConfiguration: ChangesTrieConfiguration;
     ChangesTrieSignal: ChangesTrieSignal;
+    ChannelId: ChannelId;
     ChargeFeeInfo: ChargeFeeInfo;
     ClassDetails: ClassDetails;
     ClassId: ClassId;
@@ -412,6 +416,7 @@ declare module '@polkadot/types/types/registry' {
     EthFilterTopicInner: EthFilterTopicInner;
     EthHeader: EthHeader;
     EthLog: EthLog;
+    EthNetworkId: EthNetworkId;
     EthPeersSync: EthPeersSync;
     EthReceipt: EthReceipt;
     EthRichBlock: EthRichBlock;

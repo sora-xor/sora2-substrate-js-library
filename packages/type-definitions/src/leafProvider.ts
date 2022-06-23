@@ -9,8 +9,24 @@ export default {
           isOptional: true,
         },
       ],
-      type: 'BridgeTypesAuxiliaryDigest',
+      type: 'AuxiliaryDigest',
     },
   },
-  types: {},
+  types: {
+    AuxiliaryDigest: {
+      logs: 'Vec<AuxiliaryDigestItem>',
+    },
+    AuxiliaryDigestItem: {
+      _enum: {
+        Commitment: '(EthNetworkId, ChannelId, H256)',
+      },
+    },
+    EthNetworkId: 'U256',
+    ChannelId: {
+      _enum: {
+        Basic: null,
+        Incentivized: null,
+      },
+    },
+  },
 };

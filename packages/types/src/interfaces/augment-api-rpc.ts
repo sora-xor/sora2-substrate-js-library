@@ -27,6 +27,7 @@ import type { ApplyExtrinsicResult, ChainProperties, ChainType, DispatchError, H
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AuxiliaryDigest } from '@sora-substrate/types/interfaces/leafProvider';
 import type { LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
 import type { BalancePrecision, DEXId, FilterMode, Fixed, LiquiditySourceType, SwapOutcomeInfo, SwapVariant, TradingPair } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
@@ -444,7 +445,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Get logs.
        **/
-      latestDigest: AugmentedRpc<(at?: BlockHash | string | Uint8Array) => Observable<BridgeTypesAuxiliaryDigest>>;
+      latestDigest: AugmentedRpc<(at?: BlockHash | string | Uint8Array) => Observable<AuxiliaryDigest>>;
     };
     liquidityProxy: {
       /**
