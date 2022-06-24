@@ -52,7 +52,7 @@
     "test": "jest --testPathIgnorePatterns",
     "test:all": "yarn build && yarn test",
     "transfers": "node -r ts-node/register -r tsconfig-paths/register scripts/transfers.ts",
-    "verify-pool-account-gen": "ts-node --project ./tsconfig.json scripts/verifyPoolAccountGeneration.ts"
+    "verify-pool-account-gen": "node -r ts-node/register -r tsconfig-paths/register scripts/verifyPoolAccountGeneration.ts"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",
