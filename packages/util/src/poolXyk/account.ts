@@ -1,4 +1,4 @@
-import { xxhash64 } from '@polkadot/util-crypto/xxhash/xxhash64';
+import { xxhashAsU8a } from '@polkadot/util-crypto/xxhash';
 import type { ApiPromise } from '@polkadot/api';
 
 import { types } from '@sora-substrate/type-definitions';
@@ -46,8 +46,7 @@ export function techAccountIdToAccountId(api: ApiPromise, techAccountId: TechAcc
   const magicPrefix = new Uint8Array([84, 115, 79, 144, 249, 113, 160, 44, 96, 155, 45, 104, 78, 97, 181, 87]);
   const u8a = new Uint8Array(32);
   u8a.set(magicPrefix, 0);
-  u8a.set(xxhash64(techAccountId.toU8a(), 0), 16);
-  u8a.set(xxhash64(techAccountId.toU8a(), 1), 24);
+  u8a.set(xxhashAsU8a(techAccountId.toU8a(), 128), 16);
   return api.createType('AccountId', u8a);
 }
 
