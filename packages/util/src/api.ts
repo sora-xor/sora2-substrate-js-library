@@ -157,13 +157,10 @@ export class Api extends BaseApi {
     this.storage?.set('address', soraAddress);
     const pair = keyring.getPair(defaultAddress);
 
-    if (!source && !password) {
-      return;
-    }
-
-    const account = !source
-      ? keyring.addPair(pair, decrypt(password as string))
-      : keyring.addExternal(defaultAddress, name ? { name } : {});
+    const account =
+      !source && password
+        ? keyring.addPair(pair, decrypt(password as string))
+        : keyring.addExternal(defaultAddress, name ? { name } : {});
 
     this.setAccount(account);
     this.initAccountStorage();
@@ -369,7 +366,7 @@ export class Api extends BaseApi {
    * Remove all wallet data
    */
   public logout(onDesktop = false): void {
-    if (!onDesktop) {
+    if (!onDesktop && this.account) {
       const address = this.account.pair.address;
       keyring.forgetAccount(address);
       keyring.forgetAddress(address);
