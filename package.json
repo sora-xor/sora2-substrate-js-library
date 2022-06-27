@@ -44,8 +44,6 @@
     "postinstall": "polkadot-dev-yarn-only",
     "prepare": "husky install",
     "publish-workspaces": "lerna publish from-package",
-    "pull-metadata": "ts-node --project ./tsconfig.json packages/types/scripts/pullMeta.ts",
-    "pull-metadata:all": "ts-node --project ./tsconfig.json packages/types/scripts/pullMeta.ts all",
     "set-version": "lerna version --no-push --no-git-tag-version",
     "test": "jest --testPathIgnorePatterns",
     "test:all": "yarn build && yarn test",
