@@ -135,7 +135,8 @@ export class Api extends BaseApi {
     const address = this.storage?.get('address');
     const password = this.storage?.get('password');
     const name = this.storage?.get('name');
-    const isExternal = Boolean(this.storage?.get('isExternal'));
+    const source = this.storage?.get('source');
+
     if (withKeyringLoading) {
       keyring.loadAll({ type: KeyringType });
     }
@@ -151,7 +152,7 @@ export class Api extends BaseApi {
       return;
     }
 
-    const account = !isExternal
+    const account = !source
       ? keyring.addPair(pair, decrypt(password as string))
       : keyring.addExternal(defaultAddress, name ? { name } : {});
 
@@ -311,11 +312,11 @@ export class Api extends BaseApi {
    * Import account by PolkadotJs extension
    * @param address
    * @param name
-   * @param isDesktop
+   * @param source
    */
-  public importByPolkadotJs(address: string, name: string, isDesktop = false): void {
+  public importByPolkadotJs(address: string, name: string, source: string): void {
     let account;
-    if (isDesktop) {
+    if (!source) {
       const pair = keyring.getPair(address);
       account = { pair };
     } else {
@@ -328,7 +329,7 @@ export class Api extends BaseApi {
       const soraAddress = this.formatAddress(account.pair.address);
       this.storage.set('name', name);
       this.storage.set('address', soraAddress);
-      this.storage.set('isExternal', !isDesktop);
+      this.storage.set('source', source);
     }
 
     this.initAccountStorage();
