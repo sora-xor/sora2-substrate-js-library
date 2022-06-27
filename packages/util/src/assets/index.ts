@@ -343,8 +343,8 @@ export class AssetsModule {
 
   public get accountAssetsAddresses(): Array<string> {
     if (this.root.accountStorage) {
-      this._accountAssetsAddresses =
-        (JSON.parse(this.root.accountStorage.get('assetsAddresses')) as Array<string>) || [];
+      const addresses = this.root.accountStorage.get('assetsAddresses');
+      this._accountAssetsAddresses = addresses ? (JSON.parse(addresses) as Array<string>) : [];
     }
     return this._accountAssetsAddresses;
   }

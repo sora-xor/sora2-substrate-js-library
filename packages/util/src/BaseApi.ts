@@ -144,7 +144,8 @@ export class BaseApi {
   // methods for working with history
   public get history(): AccountHistory<HistoryItem> {
     if (this.accountStorage) {
-      this._history = (JSON.parse(this.accountStorage.get(this.historyNamespace)) as AccountHistory<HistoryItem>) || {};
+      const history = this.accountStorage.get(this.historyNamespace);
+      this._history = history ? (JSON.parse(history) as AccountHistory<HistoryItem>) : {};
     }
     return this._history;
   }
@@ -160,7 +161,8 @@ export class BaseApi {
 
   public get restored(): boolean {
     if (this.accountStorage) {
-      this._restored = JSON.parse(this.accountStorage.get('restored')) || false;
+      const restored = this.accountStorage.get('restored');
+      this._restored = restored ? JSON.parse(restored) : false;
     }
     return this._restored;
   }
@@ -172,7 +174,8 @@ export class BaseApi {
 
   public get historySyncTimestamp(): number {
     if (this.accountStorage) {
-      this._historySyncTimestamp = JSON.parse(this.accountStorage.get('historySyncTimestamp')) || 0;
+      const historySyncTimestamp = this.accountStorage.get('historySyncTimestamp');
+      this._historySyncTimestamp = historySyncTimestamp ? JSON.parse(historySyncTimestamp) : 0;
     }
     return this._historySyncTimestamp;
   }
@@ -217,7 +220,8 @@ export class BaseApi {
 
     if (needToUpdateAddressStorage) {
       addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress));
-      historyCopy = JSON.parse(addressStorage.get(this.historyNamespace)) || {};
+      const history = addressStorage.get(this.historyNamespace);
+      historyCopy = history ? JSON.parse(history) : {};
     } else {
       historyCopy = { ...this.history };
     }
