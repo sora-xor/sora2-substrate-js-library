@@ -15,6 +15,8 @@ export type Whitelist = {
   [key: string]: WhitelistItem;
 };
 
+export type WhitelistIdsBySymbol = { [key: string]: string };
+
 /**
  * Account Balance structure. Each value === value * 10 ^ decimals
  *
