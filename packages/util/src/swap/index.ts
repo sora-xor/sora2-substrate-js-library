@@ -11,8 +11,8 @@ import type {
   SwapResult,
 } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
-import type { PriceToolsPriceInfo } from '@polkadot/types/lookup';
-import type { Option } from '@polkadot/types-codec';
+import type { CommonPrimitivesAssetId32, FixnumFixedPoint, PriceToolsPriceInfo } from '@polkadot/types/lookup';
+import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
 import { KnownAssets, XOR, DAI, XSTUSD } from '../assets/consts';
@@ -192,15 +192,16 @@ export class SwapModule {
    * Get primary markets enabled assets observable
    */
   public subscribeOnPrimaryMarketsEnabledAssets(): Observable<PrimaryMarketsEnabledAssets> {
-    const toJSON = (o: Observable<any>) => o.pipe(map((data) => data.toJSON()));
+    const toJSON = (o: Observable<BTreeSet<CommonPrimitivesAssetId32>>) => o.pipe(map((data) => data.toJSON()));
+    const assetId32ToString = (o: any) => o.map((item) => item.code);
 
     const tbc = toJSON(this.root.apiRx.query.multicollateralBondingCurvePool.enabledTargets());
     const xst = toJSON(this.root.apiRx.query.xstPool.enabledSynthetics());
 
     return combineLatest([tbc, xst]).pipe(
       map((data) => ({
-        tbc: data[0],
-        xst: data[1],
+        tbc: assetId32ToString(data[0]),
+        xst: assetId32ToString(data[1]),
       }))
     );
   }
@@ -227,12 +228,14 @@ export class SwapModule {
         })
       );
 
+    const fromFixnumToCodec = (o: Observable<FixnumFixedPoint>) => o.pipe(map((codec) => codec.inner.toString()));
+
     const toAveragePrice = (o: Observable<Option<PriceToolsPriceInfo>>) =>
       o.pipe(map((codec) => codec.value.averagePrice.toString()));
 
     const getAssetAveragePrice = (assetAddress: string): Observable<string> => {
       if (assetAddress === dai || assetAddress === xstusd) {
-        return of(new FPNumber(1).toCodecString());
+        return of(FPNumber.ONE.toCodecString());
       }
       if (assetAddress === xor) {
         return toAveragePrice(this.root.apiRx.query.priceTools.priceInfos(dai));
@@ -287,9 +290,9 @@ export class SwapModule {
       : [];
 
     const tbcConsts = [
-      toCodec(this.root.apiRx.query.multicollateralBondingCurvePool.initialPrice()),
-      toCodec(this.root.apiRx.query.multicollateralBondingCurvePool.priceChangeStep()),
-      toCodec(this.root.apiRx.query.multicollateralBondingCurvePool.sellPriceCoefficient()),
+      fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.initialPrice()),
+      fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.priceChangeStep()),
+      fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.sellPriceCoefficient()),
     ];
 
     return combineLatest([...assetsIssuances, ...assetsPrices, ...tbcReserves, ...xykReserves, ...tbcConsts]).pipe(
@@ -471,13 +474,13 @@ export class SwapModule {
     const assetA = await this.root.assets.getAssetInfo(assetAAddress);
     const assetB = await this.root.assets.getAssetInfo(assetBAddress);
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
-    const result = await (this.root.api.rpc as any).liquidityProxy.quote(
+    const result = await this.root.api.rpc.liquidityProxy.quote(
       this.root.defaultDEXId,
       assetAAddress,
       assetBAddress,
       new FPNumber(amount, (!isExchangeB ? assetA : assetB).decimals).toCodecString(),
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
-      liquiditySources,
+      liquiditySources as any,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
     );
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
@@ -544,13 +547,13 @@ export class SwapModule {
     liquiditySource: LiquiditySourceTypes
   ): Promise<boolean> {
     const isEnabled = (
-      await (this.root.api.rpc as any).tradingPair.isSourceEnabledForPair(
+      await this.root.api.rpc.tradingPair.isSourceEnabledForPair(
         this.root.defaultDEXId,
         firstAssetAddress,
         secondAssetAddress,
-        liquiditySource
+        liquiditySource as any
       )
-    ).toJSON();
+    ).isTrue;
 
     return isEnabled;
   }
