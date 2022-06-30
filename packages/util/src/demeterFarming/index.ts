@@ -28,11 +28,11 @@ export class DemeterFarmingModule {
         return poolDataVec.map((poolData) => ({
           poolAsset,
           rewardAsset,
-          multiplier: Number(poolData.multiplier),
+          multiplier: poolData.multiplier.toNumber(),
           isCore: poolData.isCore.isTrue,
           isFarm: poolData.isFarm.isTrue,
           isRemoved: poolData.isRemoved.isTrue,
-          depositFee: new FPNumber(poolData.depositFee).toNumber(),
+          depositFee: poolData.depositFee.toNumber(),
           totalTokensInPool: new FPNumber(poolData.totalTokensInPool),
           rewards: new FPNumber(poolData.rewards),
           rewardsToBeDistributed: new FPNumber(poolData.rewardsToBeDistributed),
@@ -52,8 +52,8 @@ export class DemeterFarmingModule {
       const [poolAssetId, rewardAssetId] = item.args;
 
       return {
-        poolAsset: poolAssetId.toString(),
-        rewardAsset: rewardAssetId.toString(),
+        poolAsset: poolAssetId.code.toString(),
+        rewardAsset: rewardAssetId.code.toString(),
       };
     });
 
@@ -94,7 +94,7 @@ export class DemeterFarmingModule {
   public async getTokenInfosObservable(): Promise<Observable<DemeterRewardToken[]>> {
     const storageKeys = await this.root.api.query.demeterFarmingPlatform.tokenInfos.keys();
 
-    const keys = storageKeys.map((item) => item.args[0].toString());
+    const keys = storageKeys.map((item) => item.args[0].code.toString());
 
     const observables = keys.map((assetId) => this.getTokenInfoObservable(assetId));
 
@@ -112,9 +112,9 @@ export class DemeterFarmingModule {
       map((userInfoVec) => {
         return userInfoVec.map((data) => ({
           isFarm: data.isFarm.isTrue,
-          poolAsset: data.poolAsset.toString(),
+          poolAsset: data.poolAsset.code.toString(),
           pooledTokens: new FPNumber(data.pooledTokens),
-          rewardAsset: data.rewardAsset.toString(),
+          rewardAsset: data.rewardAsset.code.toString(),
           rewards: new FPNumber(data.rewards),
         }));
       })
