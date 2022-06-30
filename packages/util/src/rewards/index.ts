@@ -2,6 +2,7 @@ import { assert } from '@polkadot/util';
 import { map, combineLatest } from 'rxjs';
 import { FPNumber, CodecString } from '@sora-substrate/math';
 import type { Observable, Codec } from '@polkadot/types/types';
+import type { FixnumFixedPoint } from '@polkadot/types/lookup';
 
 import { RewardingEvents, CrowdloanRewardsCollection } from './consts';
 import { XOR, VAL, PSWAP, XSTUSD } from '../assets/consts';
@@ -86,9 +87,9 @@ export class RewardsModule {
    * @returns rewards array with not zero amount
    */
   public async checkForExternalAccount(externalAddress: string): Promise<Array<RewardInfo>> {
-    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (
-      this.root.api.rpc as any
-    ).rewards.claimables(externalAddress);
+    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await this.root.api.rpc.rewards.claimables(
+      externalAddress
+    );
 
     const rewards = [
       this.prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount),
@@ -108,7 +109,7 @@ export class RewardsModule {
 
     return this.root.apiRx.query.pswapDistribution
       .shareholderAccounts(this.root.account.pair.address)
-      .pipe(map((balance) => this.prepareRewardInfo(RewardingEvents.LiquidityProvision, balance)));
+      .pipe(map((balance) => this.prepareRewardInfo(RewardingEvents.LiquidityProvision, balance.inner)));
   }
 
   public getVestedRewardsSubscription(): Observable<RewardsInfo> {
@@ -121,7 +122,6 @@ export class RewardsModule {
 
   /**
    * Get observable last block number, when the user claimed a reward for asset
-   * @param accountAddress account address
    * @param assetAddress asset address
    */
   public getCrowdloanClaimHistoryObservable(assetAddress: string): Observable<number> {
@@ -134,17 +134,17 @@ export class RewardsModule {
 
   /**
    * Get observable rewards map vested for crowdloan
-   * @param accountAddress account address
    */
   public getCrowdloanRewardsVestedObservable(): Observable<{ [key: string]: FPNumber }> {
     assert(this.root.account, Messages.connectWallet);
+    const toString = (num: FixnumFixedPoint) => num.inner.toString();
 
     return this.root.apiRx.query.vestedRewards.crowdloanRewards(this.root.account.pair.address).pipe(
       map((data) => ({
-        [XOR.address]: new FPNumber(data.xorReward, XOR.decimals),
-        [VAL.address]: new FPNumber(data.valReward, VAL.decimals),
-        [PSWAP.address]: new FPNumber(data.pswapReward, PSWAP.decimals),
-        [XSTUSD.address]: new FPNumber(data.xstusdReward, XSTUSD.decimals),
+        [XOR.address]: new FPNumber(toString(data.xorReward), XOR.decimals),
+        [VAL.address]: new FPNumber(toString(data.valReward), VAL.decimals),
+        [PSWAP.address]: new FPNumber(toString(data.pswapReward), PSWAP.decimals),
+        [XSTUSD.address]: new FPNumber(toString(data.xstusdReward), XSTUSD.decimals),
       }))
     );
   }
