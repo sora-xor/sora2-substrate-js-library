@@ -8,6 +8,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@open-web3/orml-type-definitions": "^0.9.4-35"
+    "@open-web3/orml-type-definitions": "0.9.4-26"
   }
 }
