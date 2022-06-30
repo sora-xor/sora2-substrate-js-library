@@ -1,5 +1,5 @@
 {
-    "runtime_id": 33,
+    "runtime_id": 37,
     "types": {},
     "versioning": [
         {
@@ -2696,6 +2696,19 @@
                         [
                             "rewards",
                             "Balance"
+                        ]
+                    ]
+                },
+                "LiquiditySourceIdOf": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "dex_id",
+                            "DEXId"
+                        ],
+                        [
+                            "liquidity_source_index",
+                            "LiquiditySourceType"
                         ]
                     ]
                 }

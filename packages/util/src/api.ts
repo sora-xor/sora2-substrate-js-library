@@ -322,6 +322,7 @@ export class Api extends BaseApi {
    */
   public importByPolkadotJs(address: string, name: string, source: string): void {
     let account;
+
     if (!source) {
       const pair = keyring.getPair(address);
       account = { pair };
