@@ -67,9 +67,7 @@ export class PoolXykModule {
    * @param secondAssetAddress
    */
   public async check(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
-    const props = (
-      await this.root.api.query.poolXYK.properties(firstAssetAddress, secondAssetAddress)
-    ).toJSON() as Array<string>;
+    const props = (await this.root.api.query.poolXYK.properties(firstAssetAddress, secondAssetAddress)).unwrap();
     if (!props || !props.length) {
       return false;
     }
@@ -321,8 +319,8 @@ export class PoolXykModule {
     this.accountLiquidityLoaded = new Subject<void>();
 
     return this.root.apiRx.query.poolXYK.accountPools(this.root.accountPair.address).subscribe(async (result) => {
-      const targetIds = result.toJSON() as Array<string>;
-      await this.updateAccountLiquiditySubscriptions(targetIds);
+      const targetIds = result.toHuman() as Array<{ code: string }>;
+      await this.updateAccountLiquiditySubscriptions(targetIds.map((value) => value.code));
 
       this.accountLiquidityLoaded.complete();
     });
@@ -439,11 +437,7 @@ export class PoolXykModule {
   ): Promise<void> {
     const params = await this.calcCreateTxParams(firstAsset, secondAsset, firstAmount, secondAmount, slippageTolerance);
     const isPairAlreadyCreated = (
-      await (this.root.api.rpc as any).tradingPair.isPairEnabled(
-        this.root.defaultDEXId,
-        firstAsset.address,
-        secondAsset.address
-      )
+      await this.root.api.rpc.tradingPair.isPairEnabled(this.root.defaultDEXId, firstAsset.address, secondAsset.address)
     ).isTrue as boolean;
     const transactions: Array<any> = [];
     if (!isPairAlreadyCreated) {
