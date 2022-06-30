@@ -1550,7 +1550,6 @@ declare module '@polkadot/api-base/types/storage' {
       totalRewards: AugmentedQuery<ApiType, () => Observable<u128>, []>;
     };
     xorFee: {
-      multiplier: AugmentedQuery<ApiType, () => Observable<FixedU128>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * The amount of XOR to be reminted and exchanged for VAL at the end of the session
        **/
