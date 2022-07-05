@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import type { Struct, bool, u32 } from '@polkadot/types';
-import type { AccountId, Balance, BlockNumber } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, Balance, Moment } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name ContributionInfo */
 export interface ContributionInfo extends Struct {
@@ -16,7 +16,7 @@ export interface ContributionInfo extends Struct {
 /** @name ContributorsVesting */
 export interface ContributorsVesting extends Struct {
   readonly first_release_percent: Balance;
-  readonly vesting_period: BlockNumber;
+  readonly vesting_period: Moment;
   readonly vesting_percent: Balance;
 }
 
@@ -34,8 +34,8 @@ export interface ILOInfo extends Struct {
   readonly liquidity_percent: Balance;
   readonly listing_price: Balance;
   readonly lockup_days: u32;
-  readonly start_block: BlockNumber;
-  readonly end_block: BlockNumber;
+  readonly start_timestamp: Moment;
+  readonly end_timestamp: Moment;
   readonly contributors_vesting: ContributorsVesting;
   readonly team_vesting: TeamVesting;
   readonly sold_tokens: Balance;
@@ -44,14 +44,14 @@ export interface ILOInfo extends Struct {
   readonly failed: bool;
   readonly lp_tokens: Balance;
   readonly claimed_lp_tokens: bool;
-  readonly finish_block: BlockNumber;
+  readonly finish_timestamp: Moment;
 }
 
 /** @name TeamVesting */
 export interface TeamVesting extends Struct {
   readonly team_vesting_total_tokens: Balance;
   readonly team_vesting_first_release_percent: Balance;
-  readonly team_vesting_period: BlockNumber;
+  readonly team_vesting_period: Moment;
   readonly team_vesting_percent: Balance;
 }
 

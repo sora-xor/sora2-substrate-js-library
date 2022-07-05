@@ -3,7 +3,7 @@ export default {
     types: {
         TokenLockInfo: {
             tokens: 'Balance',
-            unlocking_block: 'BlockNumber',
+            unlocking_timestamp: 'Moment',
             asset_id: 'AssetId',
         },
     },
