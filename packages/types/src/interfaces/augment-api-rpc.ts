@@ -411,23 +411,23 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Get account requests hashes.
        **/
-      getAccountRequests: AugmentedRpc<(accountId: AccountId | string | Uint8Array, statusFilter: Option<RequestStatus> | null | object | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[BridgeNetworkId, H256]>>, DispatchError>>>;
+      getAccountRequests: AugmentedRpc<(accountId: AccountId | string | Uint8Array, statusFilter?: RequestStatus | 'Pending' | 'Frozen' | 'ApprovalsReady' | 'Failed' | 'Done' | number | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[BridgeNetworkId, H256]>>, DispatchError>>>;
       /**
        * Get approvals of the given requests.
        **/
-      getApprovals: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId: Option<BridgeNetworkId> | null | object | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<Vec<SignatureParams>>, DispatchError>>>;
+      getApprovals: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId?: BridgeNetworkId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<Vec<SignatureParams>>, DispatchError>>>;
       /**
        * Get approved encoded requests and their approvals.
        **/
-      getApprovedRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId: Option<BridgeNetworkId> | null | object | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[OutgoingRequestEncoded, Vec<SignatureParams>]>>, DispatchError>>>;
+      getApprovedRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId?: BridgeNetworkId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[OutgoingRequestEncoded, Vec<SignatureParams>]>>, DispatchError>>>;
       /**
        * Get registered assets and tokens.
        **/
-      getRegisteredAssets: AugmentedRpc<(networkId: Option<BridgeNetworkId> | null | object | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[AssetKind, ITuple<[AssetId, BalancePrecision]>, Option<ITuple<[H160, BalancePrecision]>>]>>, DispatchError>>>;
+      getRegisteredAssets: AugmentedRpc<(networkId?: BridgeNetworkId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[AssetKind, ITuple<[AssetId, BalancePrecision]>, Option<ITuple<[H160, BalancePrecision]>>]>>, DispatchError>>>;
       /**
        * Get registered requests and their statuses.
        **/
-      getRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId: Option<BridgeNetworkId> | null | object | string | Uint8Array, redirectFinishedLoadRequests: Option<bool> | null | object | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[OffchainRequest, RequestStatus]>>, DispatchError>>>;
+      getRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId?: BridgeNetworkId | AnyNumber | Uint8Array, redirectFinishedLoadRequests?: bool | boolean | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[OffchainRequest, RequestStatus]>>, DispatchError>>>;
     };
     grandpa: {
       /**

@@ -9,11 +9,13 @@ export default {
         },
         {
           name: 'networkId',
-          type: 'Option<BridgeNetworkId>',
+          type: 'BridgeNetworkId',
+          isOptional: true,
         },
         {
           name: 'redirectFinishedLoadRequests',
-          type: 'Option<bool>', // default: true
+          type: 'bool', // default: true
+          isOptional: true,
         },
         {
           name: 'at',
@@ -32,7 +34,8 @@ export default {
         },
         {
           name: 'networkId',
-          type: 'Option<BridgeNetworkId>',
+          type: 'BridgeNetworkId',
+          isOptional: true,
         },
         {
           name: 'at',
@@ -51,7 +54,8 @@ export default {
         },
         {
           name: 'networkId',
-          type: 'Option<BridgeNetworkId>',
+          type: 'BridgeNetworkId',
+          isOptional: true,
         },
         {
           name: 'at',
@@ -70,7 +74,8 @@ export default {
         },
         {
           name: 'statusFilter',
-          type: 'Option<RequestStatus>',
+          type: 'RequestStatus',
+          isOptional: true,
         },
         {
           name: 'at',
@@ -85,7 +90,8 @@ export default {
       params: [
         {
           name: 'networkId',
-          type: 'Option<BridgeNetworkId>',
+          type: 'BridgeNetworkId',
+          isOptional: true,
         },
         {
           name: 'at',

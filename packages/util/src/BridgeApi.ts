@@ -1,16 +1,26 @@
 import first from 'lodash/fp/first';
-import last from 'lodash/fp/last';
-import BigNumber from 'bignumber.js';
 import { assert } from '@polkadot/util';
 import { map, combineLatest } from 'rxjs';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
+import type { Vec, Result } from '@polkadot/types';
+import type { OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types';
+import type { EthBridgeRequestsOffchainRequest, CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { BaseApi, Operation, isBridgeOperation } from './BaseApi';
 import { Messages } from './logger';
 import { getAssets, isNativeAsset } from './assets';
 import type { AccountAsset, Asset } from './assets/types';
 import type { History } from './BaseApi';
+
+function assertRequest(result: Result<any, any>, message: string): void {
+  if (!result.isOk) {
+    // Throws error
+    const err = result.asErr.toString();
+    console.error(`[${message}]:`, err);
+    throw err;
+  }
+}
 
 export interface RegisteredAccountAsset extends AccountAsset {
   externalAddress: string;
@@ -53,7 +63,8 @@ export enum BridgeDirection {
 export enum BridgeTxStatus {
   Ready = 'ApprovalsReady',
   Pending = 'Pending',
-  Frozen = 'Frozen', // CancelOutgoingRequest
+  /** CancelOutgoingRequest */
+  Frozen = 'Frozen',
   Failed = 'Failed',
   Done = 'Done',
 }
@@ -62,8 +73,10 @@ export enum BridgeTxStatus {
  * Type of currency for approval request next steps
  */
 export enum BridgeCurrencyType {
-  AssetId = 'AssetId', // -> receiveBySidechainAssetId
-  TokenAddress = 'TokenAddress', // -> receievByEthereumAssetAddress
+  /** For `receiveBySidechainAssetId` */
+  AssetId = 'AssetId',
+  /** For `receievByEthereumAssetAddress` */
+  TokenAddress = 'TokenAddress',
 }
 
 /**
@@ -79,14 +92,6 @@ export enum RequestType {
   CancelOutgoingRequest = 'CancelOutgoingRequest',
   MarkAsDone = 'MarkAsDone',
 }
-
-const toCamelCase = (str: string) => str[0].toLowerCase() + str.slice(1);
-
-const stringToCaseInsensitiveArray = (str: string) => [str, toCamelCase(str)];
-
-// const arrayToCaseInsensitiveArray = (arr: Array<string>) => arr.flatMap((str) => stringToCaseInsensitiveArray(str));
-
-const caseInsensitiveValue = (obj: any, key: string) => obj[key] || obj[toCamelCase(key)];
 
 enum IncomingRequestKind {
   Transaction = 'Transaction',
@@ -107,6 +112,7 @@ export interface BridgeRequest {
 /** Outgoing transfers */
 export interface BridgeApprovedRequest {
   currencyType: BridgeCurrencyType;
+  /** [DEPRECATED] Amount is not used and will be removed */
   amount: CodecString;
   from: string;
   to: string;
@@ -115,47 +121,6 @@ export interface BridgeApprovedRequest {
   s: Array<string>;
   v: Array<number>;
 }
-
-export interface OutgoingOffchainRequest {
-  [BridgeDirection.Outgoing]: [
-    {
-      [RequestType.Transfer]: {
-        from: string;
-        to: string;
-        assetId: string;
-        amount: number;
-        nonce: number;
-        networkId: number;
-        timepoint: {
-          height: {
-            thischain: number;
-          };
-          index: number;
-        };
-      };
-    },
-    string
-  ];
-}
-
-export interface LoadIncomingOffchainRequest {
-  [BridgeDirection.LoadIncoming]: {
-    [IncomingRequestKind.Transaction]: {
-      author: string;
-      hash: string;
-      kind: string;
-      networkId: number;
-      timepoint: {
-        height: {
-          sidechain: number;
-        };
-        index: number;
-      };
-    };
-  };
-}
-
-export type OffchainRequest = OutgoingOffchainRequest | LoadIncomingOffchainRequest;
 
 /**
  * Bridge api implementation.
@@ -175,15 +140,6 @@ export class BridgeApi extends BaseApi {
 
   constructor() {
     super('bridgeHistory');
-  }
-
-  /**
-   * This method will handle error cases.
-   * For now, there is just for camelCase issues with substrate 3
-   * @param data
-   */
-  private getData(data: any): any {
-    return data.ok || data.Ok;
   }
 
   public get externalNetwork(): BridgeNetworks {
@@ -271,19 +227,25 @@ export class BridgeApi extends BaseApi {
    * @returns Array with all registered assets
    */
   public async getRegisteredAssets(): Promise<Array<RegisteredAsset>> {
-    const data = (await (this.api.rpc as any).ethBridge.getRegisteredAssets(this.externalNetwork)).toJSON();
+    const data = await this.api.rpc.ethBridge.getRegisteredAssets(this.externalNetwork);
     const assets = await getAssets(this.api);
-    return this.getData(data)
+    if (!data.isOk) {
+      // Returns an empty list and logs issue
+      console.warn('[api.bridge.getRegisteredAssets]:', data.asErr.toString());
+      return [];
+    }
+    return data.asOk
       .map(([_, soraAsset, externalAsset]) => {
-        const soraAssetId = first(soraAsset);
-        const asset = assets.find((a) => a.address === soraAssetId) as Asset;
+        const soraAssetId = soraAsset[0].toString();
+        const asset = assets.find((a) => a.address === soraAssetId) as Asset; // cannot be undefined
+        const [externalAssetId, externalAssetDecimals] = externalAsset.unwrap();
         return {
           address: soraAssetId,
-          externalAddress: first(externalAsset),
+          externalAddress: externalAssetId.toString(),
           decimals: asset.decimals,
           symbol: asset.symbol,
           name: asset.name,
-          externalDecimals: last(externalAsset),
+          externalDecimals: externalAssetDecimals.toNumber(),
         } as RegisteredAsset;
       })
       .sort((a: RegisteredAsset, b: RegisteredAsset) => {
@@ -305,41 +267,44 @@ export class BridgeApi extends BaseApi {
       });
   }
 
-  private formatRequest(item: any): BridgeRequest {
+  private formatRequest(
+    request: OffchainRequest | EthBridgeRequestsOffchainRequest,
+    status: RequestStatus | BridgeTxStatus
+  ): BridgeRequest {
     const formattedItem = {} as BridgeRequest;
-    formattedItem.status = last(item);
-    const body = first(item) as any;
-    const checkDirection = (value: string) => ~stringToCaseInsensitiveArray(value).findIndex((prop) => prop in body);
-    let direction: BridgeDirection,
-      operations = [RequestType.Transfer, RequestType.TransferXOR];
-    if (checkDirection(BridgeDirection.Outgoing)) {
-      direction = BridgeDirection.Outgoing;
-    } else if (checkDirection(BridgeDirection.Incoming)) {
-      direction = BridgeDirection.Incoming;
-    } else if (checkDirection(BridgeDirection.LoadIncoming)) {
-      direction = BridgeDirection.LoadIncoming;
-      operations = ['Transaction'] as any; // TODO: check it
+    formattedItem.status = status.toString() as BridgeTxStatus;
+    formattedItem.direction = BridgeDirection.Incoming;
+
+    if (request.isIncoming) {
+      const transferRequest = request.asIncoming[0].asTransfer;
+      const assetId = transferRequest.assetId;
+      formattedItem.soraAssetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+      formattedItem.amount = new FPNumber(transferRequest.amount).toString();
+      formattedItem.from = transferRequest.author.toString();
+      formattedItem.to = this.account.pair.address;
+      formattedItem.kind = transferRequest.assetKind.toString();
+      formattedItem.hash = transferRequest.txHash.toString();
+    } else if (request.isLoadIncoming) {
+      const txRequest = request.asLoadIncoming.asTransaction;
+      // TODO: formattedItem.soraAssetAddress is missed here
+      formattedItem.from = txRequest.author.toString();
+      formattedItem.to = this.account.pair.address;
+      formattedItem.kind = txRequest.kind.toString();
+      formattedItem.hash = txRequest.hash.toString();
+    } else if (request.isOutgoing) {
+      formattedItem.direction = BridgeDirection.Outgoing;
+      const outgoingRequest = request.asOutgoing;
+      const transferRequest = outgoingRequest[0].asTransfer;
+      const assetId = transferRequest.assetId;
+      formattedItem.soraAssetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+      formattedItem.amount = new FPNumber(transferRequest.amount).toString();
+      formattedItem.from = transferRequest.from.toString();
+      formattedItem.to = transferRequest.to.toString();
+      formattedItem.hash = outgoingRequest[1].toString();
     } else {
       return null;
     }
-    formattedItem.direction = direction === BridgeDirection.LoadIncoming ? BridgeDirection.Incoming : direction;
-    let request = caseInsensitiveValue(body, direction);
-    const tx = request.length ? first(request) : request;
-    request = caseInsensitiveValue(tx, first(operations)) || caseInsensitiveValue(tx, last(operations));
-    formattedItem.soraAssetAddress = request.assetId;
-    if (request.amount) {
-      formattedItem.amount = new FPNumber(new BigNumber(request.amount)).toString();
-    }
-    if (direction === BridgeDirection.Outgoing) {
-      formattedItem.hash = last(caseInsensitiveValue(body, direction));
-      formattedItem.from = request.from;
-      formattedItem.to = request.to;
-    } else {
-      formattedItem.from = request.author; // TODO: check it
-      formattedItem.to = this.account.pair.address;
-      formattedItem.kind = request.assetKind || request.kind;
-      formattedItem.hash = request.txHash || request.hash;
-    }
+
     return formattedItem;
   }
 
@@ -349,8 +314,9 @@ export class BridgeApi extends BaseApi {
    * @returns History of request
    */
   public async getRequest(hash: string): Promise<BridgeRequest> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests([hash], this.externalNetwork, true)).toJSON();
-    return first(this.getData(data).map((item: any) => this.formatRequest(item)));
+    const data = await this.api.rpc.ethBridge.getRequests([hash], this.externalNetwork, true);
+    assertRequest(data, 'api.bridge.getRequest');
+    return first(data.asOk.map(([request, status]) => this.formatRequest(request, status)));
   }
 
   /**
@@ -359,33 +325,33 @@ export class BridgeApi extends BaseApi {
    * @returns Array with history of requests
    */
   public async getRequests(hashes: Array<string>): Promise<Array<BridgeRequest>> {
-    const data = (await (this.api.rpc as any).ethBridge.getRequests(hashes, this.externalNetwork, true)).toJSON();
-    return this.getData(data).map((item: any) => this.formatRequest(item));
+    const data = await this.api.rpc.ethBridge.getRequests(hashes, this.externalNetwork, true);
+    assertRequest(data, 'api.bridge.getRequests');
+    return data.asOk.map(([request, status]) => this.formatRequest(request, status));
   }
 
-  private formatApprovedRequest(item: any): BridgeApprovedRequest {
+  private formatApprovedRequest(request: OutgoingRequestEncoded, proofs: Vec<SignatureParams>): BridgeApprovedRequest {
     const formattedItem = {} as BridgeApprovedRequest;
-    const operations = [RequestType.Transfer, RequestType.TransferXOR];
-    const body = first(item);
-    const proofs = last(item) as any;
-    const request = caseInsensitiveValue(body, first(operations)) || caseInsensitiveValue(body, last(operations));
-    formattedItem.hash = request.txHash;
-    formattedItem.from = request.from;
-    formattedItem.to = request.to;
-    formattedItem.amount = `${request.amount}`.split(',').join('');
-    formattedItem.currencyType = stringToCaseInsensitiveArray(BridgeCurrencyType.TokenAddress).includes(
-      first(Object.keys(request.currencyId))
-    )
-      ? BridgeCurrencyType.TokenAddress
-      : BridgeCurrencyType.AssetId;
+    const transferRequest = request.asTransfer;
+
+    formattedItem.hash = transferRequest.txHash.toString();
+    formattedItem.from = transferRequest.from.toString();
+    formattedItem.to = transferRequest.to.toString();
+    formattedItem.amount = new FPNumber(transferRequest.amount).toCodecString();
+    formattedItem.currencyType = transferRequest.currencyId.isAssetId
+      ? BridgeCurrencyType.AssetId
+      : BridgeCurrencyType.TokenAddress;
+
     formattedItem.r = [];
     formattedItem.s = [];
     formattedItem.v = [];
+
     proofs.forEach((proof) => {
-      formattedItem.r.push(proof.r);
-      formattedItem.s.push(proof.s);
-      formattedItem.v.push(+proof.v + 27); // TODO: remove this hack
+      formattedItem.r.push(proof.r.toString());
+      formattedItem.s.push(proof.s.toString());
+      formattedItem.v.push(proof.v.toNumber() + 27);
     });
+
     return formattedItem;
   }
 
@@ -395,8 +361,9 @@ export class BridgeApi extends BaseApi {
    * @returns Approved request with proofs
    */
   public async getApprovedRequest(hash: string): Promise<BridgeApprovedRequest> {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests([hash], this.externalNetwork)).toHuman();
-    return first(this.getData(data).map((item) => this.formatApprovedRequest(item)));
+    const data = await this.api.rpc.ethBridge.getApprovedRequests([hash], this.externalNetwork);
+    assertRequest(data, 'api.bridge.getApprovedRequest');
+    return first(data.asOk.map(([request, proofs]) => this.formatApprovedRequest(request, proofs)));
   }
 
   /**
@@ -405,8 +372,9 @@ export class BridgeApi extends BaseApi {
    * @returns Array with approved requests with proofs
    */
   public async getApprovedRequests(hashes: Array<string>): Promise<Array<BridgeApprovedRequest>> {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovedRequests(hashes, this.externalNetwork)).toHuman();
-    return this.getData(data).map((item) => this.formatApprovedRequest(item));
+    const data = await this.api.rpc.ethBridge.getApprovedRequests(hashes, this.externalNetwork);
+    assertRequest(data, 'api.bridge.getApprovedRequests');
+    return data.asOk.map(([request, proofs]) => this.formatApprovedRequest(request, proofs));
   }
 
   /**
@@ -415,20 +383,21 @@ export class BridgeApi extends BaseApi {
    */
   public async getAccountRequests(status = BridgeTxStatus.Ready): Promise<Array<string>> {
     assert(this.account, Messages.connectWallet);
-    const data = (await (this.api.rpc as any).ethBridge.getAccountRequests(this.account.pair.address, status)).toJSON();
-    return this.getData(data)
-      .filter(([networkId, _]) => networkId === this.externalNetwork)
-      .map(([_, hash]) => hash) as Array<string>;
+    const data = await this.api.rpc.ethBridge.getAccountRequests(this.account.pair.address, status);
+    assertRequest(data, 'api.bridge.getAccountRequests');
+    return data.asOk
+      .filter(([networkId, _]) => networkId.toNumber() === this.externalNetwork)
+      .map(([_, hash]) => hash.toString()) as Array<string>;
   }
 
   /**
-   * Not used for now
-   * @param hashes
-   * @returns
+   * Returns bridge request status
+   * @param networkId external network id
+   * @param hash sora or evm transaction hash
+   * @returns BridgeRequest status
    */
-  public async getApprovals(hashes: Array<string>) {
-    const data = (await (this.api.rpc as any).ethBridge.getApprovals(hashes, this.externalNetwork)).toJSON();
-    return this.getData(data);
+  public async getRequestStatus(networkId: number, hash: string): Promise<BridgeTxStatus | null> {
+    return ((await this.api.query.ethBridge.requestStatuses(networkId, hash)).toHuman() as BridgeTxStatus) || null;
   }
 
   /**
@@ -449,10 +418,10 @@ export class BridgeApi extends BaseApi {
    * @param hash sora or evm transaction hash
    * @returns BridgeRequest not formatted body
    */
-  public subscribeOnRequestData(networkId: number, hash: string): Observable<OffchainRequest | null> {
+  private subscribeOnRequestData(networkId: number, hash: string): Observable<EthBridgeRequestsOffchainRequest | null> {
     return this.apiRx.query.ethBridge
       .requests(networkId, hash)
-      .pipe(map((data) => (data.toJSON() as unknown as OffchainRequest) || null));
+      .pipe(map((data) => (data.unwrap() as EthBridgeRequestsOffchainRequest) || null));
   }
 
   /**
@@ -467,8 +436,22 @@ export class BridgeApi extends BaseApi {
 
     return combineLatest([data, status]).pipe(
       map(([data, status]) => {
-        return !!data && !!status ? this.formatRequest([data, status]) : null;
+        return !!data && !!status ? this.formatRequest(data, status) : null;
       })
     );
+  }
+
+  public async getSoraHashByEthereumHash(networkId: BridgeNetworks, ethereumHash: string): Promise<string> {
+    return (await this.api.query.ethBridge.loadToIncomingRequestHash(networkId, ethereumHash)).toString();
+  }
+
+  public async getSoraBlockHashByRequestHash(externalNetworkId: number, requestHash: string): Promise<string> {
+    const soraBlockNumber = (
+      await this.api.query.ethBridge.requestSubmissionHeight(externalNetworkId, requestHash)
+    ).toNumber();
+
+    const soraBlockHash = (await this.api.rpc.chain.getBlockHash(soraBlockNumber)).toString();
+
+    return soraBlockHash;
   }
 }
