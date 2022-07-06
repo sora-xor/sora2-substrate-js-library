@@ -67,8 +67,8 @@ export class PoolXykModule {
    * @param secondAssetAddress
    */
   public async check(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
-    const props = (await this.root.api.query.poolXYK.properties(firstAssetAddress, secondAssetAddress)).unwrap();
-    if (!props || !props.length) {
+    const props = await this.root.api.query.poolXYK.properties(firstAssetAddress, secondAssetAddress);
+    if (!props || !props.isSome) {
       return false;
     }
     return true;
