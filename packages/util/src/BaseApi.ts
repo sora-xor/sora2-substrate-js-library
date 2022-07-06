@@ -9,6 +9,7 @@ import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types';
+import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { AccountStorage, Storage } from './storage';
 import { XOR } from './assets/consts';
@@ -343,7 +344,7 @@ export class BaseApi {
         result.events.forEach(({ event: { data, method, section } }: any) => {
           if (method === 'AssetRegistered' && section === 'assets') {
             const [assetId, _] = data;
-            history.assetAddress = assetId.toString();
+            history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
             this.saveHistory(history);
           }
 
