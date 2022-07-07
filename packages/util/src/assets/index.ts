@@ -40,7 +40,7 @@ function formatBalance(
 
 async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
   const [symbol, name, decimals, _, content, description] = (
-    await api.query.assets.assetInfos(address)
+    await api.query.assets.assetInfos({ code: address })
   ).toHuman() as any;
   return { address, symbol, name, decimals: +decimals, content, description } as Asset;
 }
