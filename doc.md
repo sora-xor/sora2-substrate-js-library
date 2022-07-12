@@ -6209,8 +6209,8 @@ arguments:
 arguments:
 
 - requestHashes: `Vec<H256>`
-- networkId: `Option<BridgeNetworkId>`
-- redirectFinishedLoadRequests: `Option<bool>`
+- networkId: `BridgeNetworkId`
+- redirectFinishedLoadRequests: `bool`
 - at: `BlockHash`
 
 returns: `Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>`
@@ -6224,7 +6224,7 @@ returns: `Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>`
 arguments:
 
 - requestHashes: `Vec<H256>`
-- networkId: `Option<BridgeNetworkId>`
+- networkId: `BridgeNetworkId`
 - at: `BlockHash`
 
 returns: `Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchError>`
@@ -6238,7 +6238,7 @@ returns: `Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchEr
 arguments:
 
 - requestHashes: `Vec<H256>`
-- networkId: `Option<BridgeNetworkId>`
+- networkId: `BridgeNetworkId`
 - at: `BlockHash`
 
 returns: `Result<Vec<Vec<SignatureParams>>, DispatchError>`
@@ -6252,7 +6252,7 @@ returns: `Result<Vec<Vec<SignatureParams>>, DispatchError>`
 arguments:
 
 - accountId: `AccountId`
-- statusFilter: `Option<RequestStatus>`
+- statusFilter: `RequestStatus`
 - at: `BlockHash`
 
 returns: `Result<Vec<(BridgeNetworkId, H256)>, DispatchError>`
@@ -6265,7 +6265,7 @@ returns: `Result<Vec<(BridgeNetworkId, H256)>, DispatchError>`
 
 arguments:
 
-- networkId: `Option<BridgeNetworkId>`
+- networkId: `BridgeNetworkId`
 - at: `BlockHash`
 
 returns: `Result<Vec<(AssetKind, (AssetId, BalancePrecision), Option<(H160, BalancePrecision)>)>, DispatchError>`
@@ -10978,7 +10978,7 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 ```
 {
     firstReleasePercent: "Balance",
-    vestingPeriod: "BlockNumber",
+    vestingPeriod: "Moment",
     vestingPercent: "Balance"
 }
 ```
@@ -11191,8 +11191,8 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
     liquidityPercent: "Balance",
     listingPrice: "Balance",
     lockupDays: "u32",
-    startBlock: "BlockNumber",
-    endBlock: "BlockNumber",
+    startTimestamp: "Moment",
+    endTimestamp: "Moment",
     contributorsVesting: "ContributorsVesting",
     teamVesting: "TeamVesting",
     soldTokens: "Balance",
@@ -11201,7 +11201,7 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
     failed: "bool",
     lpTokens: "Balance",
     claimedLpTokens: "bool",
-    finishBlock: "BlockNumber"
+    finishTimestamp: "Moment"
 }
 ```
 
@@ -11485,7 +11485,7 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 ```
 {
     poolTokens: "Balance",
-    unlockingBlock: "BlockNumber",
+    unlockingTimestamp: "Moment",
     assetA: "AssetId",
     assetB: "AssetId"
 }
@@ -11838,8 +11838,8 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 ```
 {
     numberOfOptions: "u32",
-    pollStartBlock: "BlockNumber",
-    pollEndBlock: "BlockNumber"
+    pollStartTimestamp: "Moment",
+    pollEndTimestamp: "Moment"
 }
 ```
 
@@ -12107,7 +12107,7 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 {
     teamVestingTotalTokens: "Balance",
     teamVestingFirstReleasePercent: "Balance",
-    teamVestingPeriod: "BlockNumber",
+    teamVestingPeriod: "Moment",
     teamVestingPercent: "Balance"
 }
 ```
@@ -12189,7 +12189,7 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 ```
 {
     tokens: "Balance",
-    unlockingBlock: "BlockNumber",
+    unlockingTimestamp: "Moment",
     assetId: "AssetId"
 }
 ```
