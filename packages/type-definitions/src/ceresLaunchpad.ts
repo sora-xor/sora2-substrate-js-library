@@ -3,13 +3,13 @@ export default {
   types: {
     ContributorsVesting: {
       firstReleasePercent: 'Balance',
-      vestingPeriod: 'BlockNumber',
+      vestingPeriod: 'Moment',
       vestingPercent: 'Balance',
     },
     TeamVesting: {
       teamVestingTotalTokens: 'Balance',
       teamVestingFirstReleasePercent: 'Balance',
-      teamVestingPeriod: 'BlockNumber',
+      teamVestingPeriod: 'Moment',
       teamVestingPercent: 'Balance',
     },
     ContributionInfo: {
@@ -32,8 +32,8 @@ export default {
       liquidityPercent: 'Balance',
       listingPrice: 'Balance',
       lockupDays: 'u32',
-      startBlock: 'BlockNumber',
-      endBlock: 'BlockNumber',
+      startTimestamp: 'Moment',
+      endTimestamp: 'Moment',
       contributorsVesting: 'ContributorsVesting',
       teamVesting: 'TeamVesting',
       soldTokens: 'Balance',
@@ -42,7 +42,7 @@ export default {
       failed: 'bool',
       lpTokens: 'Balance',
       claimedLpTokens: 'bool',
-      finishBlock: 'BlockNumber',
+      finishTimestamp: 'Moment',
     },
   },
 };

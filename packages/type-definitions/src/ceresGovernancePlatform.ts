@@ -8,8 +8,8 @@ export default {
     },
     PollInfo: {
       numberOfOptions: 'u32',
-      pollStartBlock: 'BlockNumber',
-      pollEndBlock: 'BlockNumber',
+      pollStartBlock: 'Moment',
+      pollEndBlock: 'Moment',
     },
   },
 };

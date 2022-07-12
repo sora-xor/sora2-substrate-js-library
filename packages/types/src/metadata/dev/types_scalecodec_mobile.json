@@ -2740,7 +2740,7 @@
                         ],
                         [
                             "vestingPeriod",
-                            "BlockNumber"
+                            "Moment"
                         ],
                         [
                             "vestingPercent",
@@ -2902,12 +2902,12 @@
                             "u32"
                         ],
                         [
-                            "startBlock",
-                            "BlockNumber"
+                            "startTimestamp",
+                            "Moment"
                         ],
                         [
-                            "endBlock",
-                            "BlockNumber"
+                            "endTimestamp",
+                            "Moment"
                         ],
                         [
                             "contributorsVesting",
@@ -2942,8 +2942,8 @@
                             "bool"
                         ],
                         [
-                            "finishBlock",
-                            "BlockNumber"
+                            "finishTimestamp",
+                            "Moment"
                         ]
                     ]
                 },
@@ -3343,8 +3343,8 @@
                             "Balance"
                         ],
                         [
-                            "unlockingBlock",
-                            "BlockNumber"
+                            "unlockingTimestamp",
+                            "Moment"
                         ],
                         [
                             "assetA",
@@ -3837,12 +3837,12 @@
                             "u32"
                         ],
                         [
-                            "pollStartBlock",
-                            "BlockNumber"
+                            "pollStartTimestamp",
+                            "Moment"
                         ],
                         [
-                            "pollEndBlock",
-                            "BlockNumber"
+                            "pollEndTimestamp",
+                            "Moment"
                         ]
                     ]
                 },
@@ -3995,7 +3995,7 @@
                         ],
                         [
                             "teamVestingPeriod",
-                            "BlockNumber"
+                            "Moment"
                         ],
                         [
                             "teamVestingPercent",
@@ -4057,8 +4057,8 @@
                             "Balance"
                         ],
                         [
-                            "unlockingBlock",
-                            "BlockNumber"
+                            "unlockingTimestamp",
+                            "Moment"
                         ],
                         [
                             "assetId",

@@ -2,13 +2,13 @@
 /* eslint-disable */
 
 import type { Struct, bool, u32 } from '@polkadot/types-codec';
-import type { Balance, BlockNumber } from '@sora-substrate/types/interfaces/runtime';
+import type { Balance, Moment } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name PollInfo */
 export interface PollInfo extends Struct {
   readonly numberOfOptions: u32;
-  readonly pollStartBlock: BlockNumber;
-  readonly pollEndBlock: BlockNumber;
+  readonly pollStartTimestamp: Moment;
+  readonly pollEndTimestamp: Moment;
 }
 
 /** @name VotingInfo */

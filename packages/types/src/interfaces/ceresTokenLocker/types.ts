@@ -2,12 +2,12 @@
 /* eslint-disable */
 
 import type { Struct } from '@polkadot/types-codec';
-import type { AssetId, Balance, BlockNumber } from '@sora-substrate/types/interfaces/runtime';
+import type { AssetId, Balance, Moment } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name TokenLockInfo */
 export interface TokenLockInfo extends Struct {
   readonly tokens: Balance;
-  readonly unlockingBlock: BlockNumber;
+  readonly unlockingTimestamp: Moment;
   readonly assetId: AssetId;
 }
 

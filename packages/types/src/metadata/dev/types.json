@@ -82,7 +82,7 @@
     },
     "ContributorsVesting": {
         "firstReleasePercent": "Balance",
-        "vestingPeriod": "BlockNumber",
+        "vestingPeriod": "Moment",
         "vestingPercent": "Balance"
     },
     "CrowdloanLease": {
@@ -165,8 +165,8 @@
         "liquidityPercent": "Balance",
         "listingPrice": "Balance",
         "lockupDays": "u32",
-        "startBlock": "BlockNumber",
-        "endBlock": "BlockNumber",
+        "startTimestamp": "Moment",
+        "endTimestamp": "Moment",
         "contributorsVesting": "ContributorsVesting",
         "teamVesting": "TeamVesting",
         "soldTokens": "Balance",
@@ -175,7 +175,7 @@
         "failed": "bool",
         "lpTokens": "Balance",
         "claimedLpTokens": "bool",
-        "finishBlock": "BlockNumber"
+        "finishTimestamp": "Moment"
     },
     "IncomingAddToken": {
         "tokenAddress": "EthAddress",
@@ -349,7 +349,7 @@
     },
     "LockInfo": {
         "poolTokens": "Balance",
-        "unlockingBlock": "BlockNumber",
+        "unlockingTimestamp": "Moment",
         "assetA": "AssetId",
         "assetB": "AssetId"
     },
@@ -542,8 +542,8 @@
     "PermissionId": "u32",
     "PollInfo": {
         "numberOfOptions": "u32",
-        "pollStartBlock": "BlockNumber",
-        "pollEndBlock": "BlockNumber"
+        "pollStartTimestamp": "Moment",
+        "pollEndTimestamp": "Moment"
     },
     "PoolData": {
         "multiplier": "u32",
@@ -671,7 +671,7 @@
     "TeamVesting": {
         "teamVestingTotalTokens": "Balance",
         "teamVestingFirstReleasePercent": "Balance",
-        "teamVestingPeriod": "BlockNumber",
+        "teamVestingPeriod": "Moment",
         "teamVestingPercent": "Balance"
     },
     "TechAccountId": {
@@ -713,7 +713,7 @@
     },
     "TokenLockInfo": {
         "tokens": "Balance",
-        "unlockingBlock": "BlockNumber",
+        "unlockingTimestamp": "Moment",
         "assetId": "AssetId"
     },
     "TradingPair": {

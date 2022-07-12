@@ -3,7 +3,7 @@ export default {
   types: {
     LockInfo: {
       poolTokens: 'Balance',
-      unlockingBlock: 'BlockNumber',
+      unlockingTimestamp: 'Moment',
       assetA: 'AssetId',
       assetB: 'AssetId',
     },
