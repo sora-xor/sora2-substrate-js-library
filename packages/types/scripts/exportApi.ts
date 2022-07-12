@@ -66,14 +66,15 @@ function extractQueries(api: ApiPromise): Array<CallDoc> {
     for (const method in data[section]) {
       const docs: Array<string> = data[section][method]['meta'].docs.map((a) => a.toString());
       const type = data[section][method]['meta'].type;
+      const lookup = type.registry.lookup;
       let args: Array<any> = [];
       if (type.isMap) {
-        const formattedActualTypeKey = getSiName(type.registry.lookup, type.asMap['key'].toJSON());
+        const formattedActualTypeKey = getSiName(lookup, type.asMap['key'].toJSON());
         args.push(['key', formattedActualTypeKey]);
       } else if (type.isDoubleMap) {
         const actualType = type.asDoubleMap;
-        const formattedActualTypeKey1 = getSiName(type.registry.lookup, actualType['key1'].toJSON());
-        const formattedActualTypeKey2 = getSiName(type.registry.lookup, actualType['key2'].toJSON());
+        const formattedActualTypeKey1 = getSiName(lookup, actualType['key1'].toJSON());
+        const formattedActualTypeKey2 = getSiName(lookup, actualType['key2'].toJSON());
         args.push(['key1', formattedActualTypeKey1]);
         args.push(['key2', formattedActualTypeKey2]);
       } else if (!type.isPlain) {
