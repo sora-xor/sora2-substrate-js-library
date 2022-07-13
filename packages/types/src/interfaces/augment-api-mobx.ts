@@ -30,7 +30,7 @@ import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interf
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthAddress, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
-import type { AccountId, AccountIdOf, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, FixedU128, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AccountIdOf, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, FixedU128, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, StorageVersion, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
 import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
 
 export interface StorageType extends BaseStorageType {
@@ -171,7 +171,11 @@ export interface StorageType extends BaseStorageType {
      **/
     multisigs: StorageDoubleMap<AccountId | string, U8aFixed | string, Option<Multisig>>;
   };
-  ceresGovernancePlatform: {    pollData: StorageMap<Bytes | string, PollInfo>;
+  ceresGovernancePlatform: {    /**
+     * Pallet storage version
+     **/
+    palletStorageVersion: StorageVersion | null;
+    pollData: StorageMap<Bytes | string, PollInfo>;
     /**
      * A vote of a particular user for a particular poll
      **/
@@ -214,7 +218,14 @@ export interface StorageType extends BaseStorageType {
      * Amount of CERES for locker fees option two
      **/
     feesOptionTwoCeresAmount: Balance | null;
+    /**
+     * Contains data about lockups for each account
+     **/
     lockerData: StorageMap<AccountIdOf | string, Vec<LockInfo>>;
+    /**
+     * Pallet storage version
+     **/
+    palletStorageVersion: StorageVersion | null;
   };
   ceresStaking: {    /**
      * Account which has permissions for changing remaining rewards
@@ -239,6 +250,10 @@ export interface StorageType extends BaseStorageType {
      * Account for collecting fees
      **/
     feesAccount: AccountIdOf | null;
+    /**
+     * Pallet storage version
+     **/
+    palletStorageVersion: StorageVersion | null;
     tokenLockerData: StorageMap<AccountIdOf | string, Vec<TokenLockInfo>>;
   };
   council: {    /**
