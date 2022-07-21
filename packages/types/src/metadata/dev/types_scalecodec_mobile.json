@@ -10,12 +10,12 @@
       "types": {
         "Balance": "u128",
         "Index": "u32",
-        "Phase": "frame_system::Phase",
+        "Phase": "135",
         "Address": "GenericAccountId",
-        "ExtrinsicSignature": "sp_runtime::MultiSignature",
-        "framenode_runtime::Event": "GenericEvent",
-        "framenode_runtime::Call": "GenericCall",
-        "sp_core::crypto::AccountId32": "GenericAccountId"
+        "ExtrinsicSignature": "719",
+        "17": "GenericEvent",
+        "195": "GenericCall",
+        "0": "GenericAccountId"
       }
     }
   ]
