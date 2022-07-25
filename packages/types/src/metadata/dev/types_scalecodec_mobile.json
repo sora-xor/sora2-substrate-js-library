@@ -11,11 +11,10 @@
         "Balance": "u128",
         "Index": "u32",
         "Phase": "135",
-        "Address": "GenericAccountId",
+        "Address": "0",
         "ExtrinsicSignature": "719",
         "17": "GenericEvent",
-        "195": "GenericCall",
-        "0": "GenericAccountId"
+        "195": "GenericCall"
       }
     }
   ]
