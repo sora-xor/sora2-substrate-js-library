@@ -15,7 +15,7 @@ import type { Asset, AccountAsset } from '../assets/types';
 export class PoolXykModule {
   constructor(private readonly root: Api) {}
 
-  private subscriptions: Array<Subscription> = [];
+  private subscriptions: Map<string, Subscription> = new Map();
   private subject = new Subject<void>();
   public updated = this.subject.asObservable();
   public accountLiquidity: Array<AccountLiquidity> = [];
@@ -176,10 +176,8 @@ export class PoolXykModule {
     return [result.toCodecString(), pts.toCodecString()];
   }
 
-  private subscribeOnAccountLiquidity(liquidity: Partial<AccountLiquidity>, afterUpdate?: VoidFunction): Subscription {
-    const getReserve = (reserve: Codec) => new FPNumber(reserve).toCodecString();
-    const removeLiquidityItem = (liquidity: Partial<AccountLiquidity>) =>
-      (this.accountLiquidity = this.accountLiquidity.filter((item) => item.secondAddress !== liquidity.secondAddress));
+  private async subscribeOnAccountLiquidity(liquidity: Partial<AccountLiquidity>): Promise<void> {
+    if (this.subscriptions.has(liquidity.secondAddress)) return;
 
     const poolAccount = poolAccountIdFromAssetPair(this.root.api, XOR.address, liquidity.secondAddress).toString();
     const accountPoolBalanceObservable = this.root.apiRx.query.poolXyk.poolProviders(
@@ -188,46 +186,48 @@ export class PoolXykModule {
     );
     const poolReservesObservable = this.root.apiRx.query.poolXyk.reserves(XOR.address, liquidity.secondAddress);
 
-    return combineLatest([poolReservesObservable, accountPoolBalanceObservable]).subscribe(
-      async ([reserves, balance]) => {
-        if (!reserves || !(reserves[0] || reserves[1]) || !balance) {
-          removeLiquidityItem(liquidity); // Remove it from list if something was wrong
-        } else {
-          const reserveA = getReserve(reserves[0]);
-          const reserveB = getReserve(reserves[1]);
+    let subscription: Subscription;
+    let isFirstTick = true;
+
+    await new Promise<void>((resolve) => {
+      subscription = combineLatest([poolReservesObservable, accountPoolBalanceObservable]).subscribe(
+        async ([reserves, balance]) => {
           const updatedLiquidity = await this.getAccountLiquidityItem(
             poolAccount,
             XOR.address,
             liquidity.secondAddress,
-            reserveA,
-            reserveB,
+            reserves,
             balance
           );
-          if (updatedLiquidity) {
+          // add or update liquidity only if subscription exists, or this is first subscription result
+          if (updatedLiquidity && (this.subscriptions.has(liquidity.secondAddress) || isFirstTick)) {
             this.addToLiquidityList(updatedLiquidity);
           } else {
-            removeLiquidityItem(liquidity); // Remove it from list if something was wrong
+            this.removeAccountLiquidity(liquidity); // Remove it from list if something was wrong
           }
-        }
 
-        afterUpdate?.();
-      }
-    );
+          isFirstTick = false;
+          this.subject.next();
+          resolve();
+        }
+      );
+    });
+
+    this.subscriptions.set(liquidity.secondAddress, subscription);
   }
 
   private async getAccountLiquidityItem(
     poolAccount: string,
     firstAddress: string,
     secondAddress: string,
-    reserveA: CodecString,
-    reserveB: CodecString,
+    reserves: Codec,
     balanceCodec: Codec
   ): Promise<AccountLiquidity | null> {
-    const { decimals, symbol, name } = this.getInfoByPoolAccount(poolAccount);
-    const firstAsset = await this.root.assets.getAssetInfo(firstAddress);
-    const secondAsset = await this.root.assets.getAssetInfo(secondAddress);
+    if (!reserves || !(reserves[0] || reserves[1]) || !balanceCodec) return null;
 
+    const { decimals, symbol, name } = this.getInfoByPoolAccount(poolAccount);
     const balanceFPNumber = new FPNumber(balanceCodec, decimals);
+
     if (balanceFPNumber.isZero()) {
       return null;
     }
@@ -235,6 +235,10 @@ export class PoolXykModule {
     if (!Number(balance)) {
       return null;
     }
+    const firstAsset = await this.root.assets.getAssetInfo(firstAddress);
+    const secondAsset = await this.root.assets.getAssetInfo(secondAddress);
+    const reserveA = new FPNumber(reserves[0]).toCodecString();
+    const reserveB = new FPNumber(reserves[1]).toCodecString();
     const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(
       firstAddress,
       secondAddress,
@@ -267,11 +271,20 @@ export class PoolXykModule {
     } as AccountLiquidity;
   }
 
+  public unsubscribeFromAccountLiquidity(liquidity: Partial<AccountLiquidity>): void {
+    this.subscriptions.get(liquidity.secondAddress)?.unsubscribe();
+    this.subscriptions.delete(liquidity.secondAddress);
+  }
+
   public unsubscribeFromAllUpdates(): void {
-    for (const subscription of this.subscriptions) {
-      subscription.unsubscribe();
+    for (const secondAddress of this.subscriptions.keys()) {
+      this.unsubscribeFromAccountLiquidity({ secondAddress });
     }
-    this.subscriptions = [];
+  }
+
+  private removeAccountLiquidity(liquidity: Partial<AccountLiquidity>): void {
+    this.unsubscribeFromAccountLiquidity(liquidity);
+    this.accountLiquidity = this.accountLiquidity.filter((item) => item.secondAddress !== liquidity.secondAddress);
   }
 
   public clearAccountLiquidity(): void {
@@ -284,29 +297,25 @@ export class PoolXykModule {
    * @param targetAssetIds
    */
   private async updateAccountLiquiditySubscriptions(targetAssetIds: Array<string>): Promise<void> {
-    this.unsubscribeFromAllUpdates();
     assert(this.root.account, Messages.connectWallet);
-    // Update list of current account liquidity and execute next()
-    const liquidityList = targetAssetIds.map((id) => ({ secondAddress: id }));
-    this.accountLiquidity = this.accountLiquidity.filter((item) => targetAssetIds.includes(item.secondAddress));
-    this.subject.next();
 
-    // Waiting until refresh all required subscriptions
-    await Promise.all(
-      liquidityList.map(
-        (liquidity) =>
-          new Promise<void>((resolve) => {
-            const afterUpdate = (): void => {
-              this.subject.next();
-              resolve();
-            };
-
-            const subscription = this.subscribeOnAccountLiquidity(liquidity, afterUpdate);
-
-            this.subscriptions.push(subscription);
-          })
-      )
+    // liquidities to be subscribed
+    const includedLiquidityList = targetAssetIds.map((id) => ({ secondAddress: id }));
+    // liquidities to be unsubscribed and removed
+    const excludedLiquidityList = this.accountLiquidity.reduce<AccountLiquidity[]>(
+      (result, liquidity) => (targetAssetIds.includes(liquidity.secondAddress) ? result : [...result, liquidity]),
+      []
     );
+
+    for (const liquidity of excludedLiquidityList) {
+      this.removeAccountLiquidity(liquidity);
+    }
+
+    for (const liquidity of includedLiquidityList) {
+      await this.subscribeOnAccountLiquidity(liquidity);
+    }
+
+    this.subject.next();
   }
 
   /**
