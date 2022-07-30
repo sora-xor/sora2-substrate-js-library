@@ -37,6 +37,6 @@ if (process.argv[2] === 'all') {
     promises.push(pullMetadata(endpoint, `packages/types/src/metadata/${name}/latest.ts`));
   });
 } else {
-  promises.push(pullMetadata(SORA_ENV.dev, 'packages/types/src/metadata/latest.ts'));
+  promises.push(pullMetadata(SORA_ENV.prod, 'packages/types/src/metadata/latest.ts'));
 }
 Promise.all(promises).then(() => process.exit(0));
