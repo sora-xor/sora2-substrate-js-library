@@ -1,4 +1,4 @@
-@Library('jenkins-library') _
+@Library('jenkins-library@feature/DOPS-1857') _
 
 def pipeline = new org.js.LibPipeline(
     steps: this,
