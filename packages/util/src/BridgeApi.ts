@@ -421,7 +421,7 @@ export class BridgeApi extends BaseApi {
   private subscribeOnRequestData(networkId: number, hash: string): Observable<EthBridgeRequestsOffchainRequest | null> {
     return this.apiRx.query.ethBridge
       .requests(networkId, hash)
-      .pipe(map((data) => (data.unwrap() as EthBridgeRequestsOffchainRequest) || null));
+      .pipe(map((data) => (data.isSome ? (data.unwrap() as EthBridgeRequestsOffchainRequest) : null)));
   }
 
   /**
