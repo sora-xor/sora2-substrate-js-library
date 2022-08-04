@@ -1,9 +1,5 @@
 @Library('jenkins-library@feature/DOPS-1857') _
 
-def jobParams = [
-    booleanParam(defaultValue: false, description: 'publish packages', name: 'publish')
-]
-
 def pipeline = new org.js.LibPipeline(
     steps: this,
     test: false,
