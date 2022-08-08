@@ -1,0 +1,24 @@
+{
+    "DEFAULT_NETWORKS": [
+        {
+            "chain": "SORA",
+            "name": "framenode-1.s1.dev",
+            "address": "wss://ws.framenode-1.s1.dev.sora2.soramitsu.co.jp"
+        },
+        {
+            "chain": "SORA",
+            "name": "framenode-2.s2.dev",
+            "address": "wss://ws.framenode-2.s2.dev.sora2.soramitsu.co.jp"
+        },
+        {
+            "chain": "SORA",
+            "name": "framenode-3.s3.dev",
+            "address": "wss://ws.framenode-3.s3.dev.sora2.soramitsu.co.jp"
+        },
+        {
+            "chain": "SORA",
+            "name": "framenode-4.s3.dev",
+            "address": "wss://ws.framenode-4.s3.dev.sora2.soramitsu.co.jp"
+        }
+    ]
+}

@@ -1,0 +1,24 @@
+{
+    "DEFAULT_NETWORKS": [
+        {
+            "chain": "SORA",
+            "name": "SORA Parliament Ministry of Finance",
+            "address": "wss://ws.mof.sora.org"
+        },
+        {
+            "chain": "SORA",
+            "name": "SORA Parliament Ministry of Finance",
+            "address": "wss://mof2.sora.org"
+        },
+        {
+            "chain": "SORA",
+            "name": "SORA Parliament Ministry of Finance",
+            "address": "wss://mof3.sora.org"
+        },
+        {
+            "chain": "SORA",
+            "name": "OnFinality",
+            "address": "wss://sora.api.onfinality.io/public-ws"
+        }
+    ]
+}
