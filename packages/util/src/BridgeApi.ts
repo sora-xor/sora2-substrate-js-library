@@ -392,47 +392,45 @@ export class BridgeApi extends BaseApi {
 
   /**
    * Returns bridge request status
-   * @param networkId external network id
    * @param hash sora or evm transaction hash
    * @returns BridgeRequest status
    */
-  public async getRequestStatus(networkId: number, hash: string): Promise<BridgeTxStatus | null> {
-    return ((await this.api.query.ethBridge.requestStatuses(networkId, hash)).toHuman() as BridgeTxStatus) || null;
+  public async getRequestStatus(hash: string): Promise<BridgeTxStatus | null> {
+    return (
+      ((await this.api.query.ethBridge.requestStatuses(this.externalNetwork, hash)).toHuman() as BridgeTxStatus) || null
+    );
   }
 
   /**
    * Creates a subscription to bridge request status
-   * @param networkId external network id
    * @param hash sora or evm transaction hash
    * @returns BridgeRequest status
    */
-  public subscribeOnRequestStatus(networkId: number, hash: string): Observable<BridgeTxStatus | null> {
+  public subscribeOnRequestStatus(hash: string): Observable<BridgeTxStatus | null> {
     return this.apiRx.query.ethBridge
-      .requestStatuses(networkId, hash)
+      .requestStatuses(this.externalNetwork, hash)
       .pipe(map((data) => (data.toHuman() as BridgeTxStatus) || null));
   }
 
   /**
    * Creates a subscription to bridge request data
-   * @param networkId external network id
    * @param hash sora or evm transaction hash
    * @returns BridgeRequest not formatted body
    */
-  private subscribeOnRequestData(networkId: number, hash: string): Observable<EthBridgeRequestsOffchainRequest | null> {
+  private subscribeOnRequestData(hash: string): Observable<EthBridgeRequestsOffchainRequest | null> {
     return this.apiRx.query.ethBridge
-      .requests(networkId, hash)
+      .requests(this.externalNetwork, hash)
       .pipe(map((data) => (data.isSome ? (data.unwrap() as EthBridgeRequestsOffchainRequest) : null)));
   }
 
   /**
    * Creates a subscription to bridge request
-   * @param networkId external network id
    * @param hash sora or evm transaction hash
    * @returns BridgeRequest if request is registered
    */
-  public subscribeOnRequest(networkId: number, hash: string): Observable<BridgeRequest | null> {
-    const data = this.subscribeOnRequestData(networkId, hash);
-    const status = this.subscribeOnRequestStatus(networkId, hash);
+  public subscribeOnRequest(hash: string): Observable<BridgeRequest | null> {
+    const data = this.subscribeOnRequestData(hash);
+    const status = this.subscribeOnRequestStatus(hash);
 
     return combineLatest([data, status]).pipe(
       map(([data, status]) => {
@@ -441,13 +439,13 @@ export class BridgeApi extends BaseApi {
     );
   }
 
-  public async getSoraHashByEthereumHash(networkId: BridgeNetworks, ethereumHash: string): Promise<string> {
-    return (await this.api.query.ethBridge.loadToIncomingRequestHash(networkId, ethereumHash)).toString();
+  public async getSoraHashByEthereumHash(ethereumHash: string): Promise<string> {
+    return (await this.api.query.ethBridge.loadToIncomingRequestHash(this.externalNetwork, ethereumHash)).toString();
   }
 
-  public async getSoraBlockHashByRequestHash(externalNetworkId: number, requestHash: string): Promise<string> {
+  public async getSoraBlockHashByRequestHash(requestHash: string): Promise<string> {
     const soraBlockNumber = (
-      await this.api.query.ethBridge.requestSubmissionHeight(externalNetworkId, requestHash)
+      await this.api.query.ethBridge.requestSubmissionHeight(this.externalNetwork, requestHash)
     ).toNumber();
 
     const soraBlockHash = (await this.api.rpc.chain.getBlockHash(soraBlockNumber)).toString();
