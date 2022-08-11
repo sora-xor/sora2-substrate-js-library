@@ -202,14 +202,20 @@ export class AssetsModule {
   }
 
   private async addToAccountAssetsList(address: string): Promise<void> {
+    // Check asset in account assets list
     const accountAsset = this.getAsset(address);
-
+    // If asset is not added to account assets
     if (!accountAsset) {
+      // Get asset data and balance info
       const asset = await this.getAccountAsset(address);
-      this.accountAssets.push(asset);
-      this.subscribeToAssetBalance(asset);
+      // During async execution of the method above, asset may have already been added
+      // Check again, that asset is not in account assets list
+      if (!this.getAsset(address)) {
+        this.accountAssets.push(asset);
+        this.subscribeToAssetBalance(asset);
+      }
     } else {
-      // move asset to the end of list
+      // Move asset to the end of list, keep balance subscription
       this.removeFromAccountAssets(address);
       this.accountAssets.push(accountAsset);
     }
