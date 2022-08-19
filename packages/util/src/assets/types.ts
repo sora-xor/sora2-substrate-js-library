@@ -13,9 +13,10 @@ export interface WhitelistArrayItem extends WhitelistItem {
 
 export interface BlacklistItem {
   symbol: string;
+  address: string;
   name: string;
   decimals: number;
-  content: string;
+  content?: string;
   description?: string;
 }
 
