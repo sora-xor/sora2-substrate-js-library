@@ -11,8 +11,20 @@ export interface WhitelistArrayItem extends WhitelistItem {
   address: string;
 }
 
+export interface BlacklistItem {
+  symbol: string;
+  name: string;
+  decimals: number;
+  content: string;
+  description?: string;
+}
+
 export type Whitelist = {
   [key: string]: WhitelistItem;
+};
+
+export type Blacklist = {
+  [key: string]: BlacklistItem;
 };
 
 /**

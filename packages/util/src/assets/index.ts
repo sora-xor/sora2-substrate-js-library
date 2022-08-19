@@ -13,7 +13,7 @@ import { KnownAssets, NativeAssets, XOR } from './consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import type { AccountAsset, AccountBalance, Asset, Whitelist, WhitelistArrayItem } from './types';
+import type { AccountAsset, AccountBalance, Asset, Blacklist, Whitelist, WhitelistArrayItem } from './types';
 import type { Api } from '../api';
 
 function formatBalance(
@@ -62,11 +62,11 @@ async function getAssetBalance(
   return formatBalance(accountData, assetDecimals);
 }
 
-function isRegisteredAsset(asset: any, whitelist: Whitelist): boolean {
+function isRegisteredAsset(asset: any, list: Whitelist | Blacklist): boolean {
   if (!asset.address) {
     return false;
   }
-  return !!whitelist[asset.address];
+  return !!list[asset.address];
 }
 
 /**
@@ -175,6 +175,15 @@ export class AssetsModule {
    */
   isNft(asset: Asset | AccountAsset): boolean {
     return !!(asset.content && asset.description);
+  }
+
+  /**
+   * Checks if NFT asset is blacklisted or not.
+   * @param asset Asset object
+   * @param blacklist Blacklist assets object
+   */
+  isNftBlacklisted(asset: Partial<Asset>, blacklist: Blacklist): boolean {
+    return isRegisteredAsset(asset, blacklist);
   }
 
   // Default assets addresses of account - list of NativeAssets addresses
