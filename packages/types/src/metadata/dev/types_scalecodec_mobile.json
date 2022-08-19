@@ -12,7 +12,7 @@
         "Index": "u32",
         "Phase": "135",
         "Address": "0",
-        "ExtrinsicSignature": "719",
+        "ExtrinsicSignature":  "sp_runtime::MultiSignature",
         "17": "GenericEvent",
         "195": "GenericCall"
       }
