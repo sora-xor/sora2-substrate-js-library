@@ -5,7 +5,7 @@ import type { ApiTypes } from '@polkadot/api-base/types';
 import type { U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { CommonPrimitivesAssetId32, FrameSupportWeightsRuntimeDbWeight, FrameSupportWeightsWeightToFeeCoefficient, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
+import type { CommonPrimitivesAssetId32, FrameSupportWeightsRuntimeDbWeight, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/consts' {
   export interface AugmentedConsts<ApiType extends ApiTypes> {
@@ -100,16 +100,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxReserves: u32 & AugmentedConst<ApiType>;
     };
-    basicOutboundChannel: {
-      /**
-       * Max bytes in a message payload
-       **/
-      maxMessagePayloadSize: u64 & AugmentedConst<ApiType>;
-      /**
-       * Max number of messages per commitment
-       **/
-      maxMessagesPerCommit: u64 & AugmentedConst<ApiType>;
-    };
     currencies: {
       getNativeCurrencyId: CommonPrimitivesAssetId32 & AugmentedConst<ApiType>;
     };
@@ -193,20 +183,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxElectingVoters: u32 & AugmentedConst<ApiType>;
       /**
-       * Maximum length (bytes) that the mined solution should consume.
-       * 
-       * The miner will ensure that the total length of the unsigned solution will not exceed
-       * this value.
-       **/
-      minerMaxLength: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum weight that the miner should consume.
-       * 
-       * The miner will ensure that the total weight of the unsigned solution will not exceed
-       * this value, based on [`WeightInfo::submit_unsigned`].
-       **/
-      minerMaxWeight: u64 & AugmentedConst<ApiType>;
-      /**
        * The priority of the unsigned transaction submitted in the unsigned-phase
        **/
       minerTxPriority: u64 & AugmentedConst<ApiType>;
@@ -246,7 +222,9 @@ declare module '@polkadot/api-base/types/consts' {
       /**
        * Maximum weight of a signed solution.
        * 
-       * This should probably be similar to [`Config::MinerMaxWeight`].
+       * If [`Config::MinerConfig`] is being implemented to submit signed solutions (outside of
+       * this pallet), then [`MinerConfig::solution_weight`] is used to compare against
+       * this value.
        **/
       signedMaxWeight: u64 & AugmentedConst<ApiType>;
       /**
@@ -308,6 +286,14 @@ declare module '@polkadot/api-base/types/consts' {
        * needs to have in order to be considered final.
        **/
       descendantsUntilFinalized: u8 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for longevity of unsigned transactions.
+       **/
+      unsignedLongevity: u64 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for base priority of unsigned transactions.
+       **/
+      unsignedPriority: u64 & AugmentedConst<ApiType>;
       /**
        * Determines whether Ethash PoW is verified for headers
        * NOTE: Should only be false for dev
@@ -473,10 +459,6 @@ declare module '@polkadot/api-base/types/consts' {
     };
     transactionPayment: {
       /**
-       * The polynomial that is applied in order to derive fee from length.
-       **/
-      lengthToFee: Vec<FrameSupportWeightsWeightToFeeCoefficient> & AugmentedConst<ApiType>;
-      /**
        * A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
        * `priority`
        * 
@@ -500,10 +482,6 @@ declare module '@polkadot/api-base/types/consts' {
        * transactions.
        **/
       operationalFeeMultiplier: u8 & AugmentedConst<ApiType>;
-      /**
-       * The polynomial that is applied in order to derive fee from weight.
-       **/
-      weightToFee: Vec<FrameSupportWeightsWeightToFeeCoefficient> & AugmentedConst<ApiType>;
     };
     utility: {
       /**

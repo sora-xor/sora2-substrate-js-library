@@ -6,7 +6,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, BTreeSet, Bytes, Null, Option, Text, U256, U8aFixed, Vec, WrapperKeepOpaque, WrapperOpaque, bool, u128, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { AssetsAssetRecord, BasicChannelOutboundMessage, BeefyPrimitivesCryptoPublic, BeefyPrimitivesMmrBeefyNextAuthoritySet, BridgeTypesAssetKind, BridgeTypesAuxiliaryDigest, BridgeTypesHeaderHeaderId, BridgeTypesNetworkParamsNetworkConfig, CeresGovernancePlatformPollInfo, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresStakingStakingInfo, CeresTokenLockerTokenLockInfo, CommonPrimitivesAssetId32, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, EthereumLightClientPruningRange, EthereumLightClientStoredHeader, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportWeightsPerDispatchClassU64, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, IncentivizedChannelOutboundMessage, IrohaMigrationPendingMultisigAccount, MulticollateralBondingCurvePoolDistributionAccounts, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletAuthorshipUncleEntryItem, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReleases, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyPreimageStatus, PalletDemocracyReferendumInfo, PalletDemocracyReleases, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletSchedulerScheduledV3, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingReleases, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsPriceInfo, RewardsRewardInfo, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanReward, VestedRewardsMarketMakerInfo, VestedRewardsRewardInfo } from '@polkadot/types/lookup';
+import type { AssetsAssetRecord, BeefyPrimitivesCryptoPublic, BeefyPrimitivesMmrBeefyNextAuthoritySet, BridgeChannelOutboundMessage, BridgeTypesAssetKind, BridgeTypesAuxiliaryDigest, BridgeTypesHeaderHeaderId, BridgeTypesNetworkConfig, CeresGovernancePlatformPollInfo, CeresGovernancePlatformStorageVersion, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresLiquidityLockerStorageVersion, CeresStakingStakingInfo, CeresTokenLockerStorageVersion, CeresTokenLockerTokenLockInfo, CommonPrimitivesAssetId32, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, EthereumLightClientPruningRange, EthereumLightClientStoredHeader, EvmBridgeProxyBridgeRequest, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportWeightsPerDispatchClassU64, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, IrohaMigrationPendingMultisigAccount, MulticollateralBondingCurvePoolDistributionAccounts, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletAuthorshipUncleEntryItem, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReleases, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyPreimageStatus, PalletDemocracyReferendumInfo, PalletDemocracyReleases, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletSchedulerScheduledV3, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingReleases, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsPriceInfo, RewardsRewardInfo, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanReward, VestedRewardsMarketMakerInfo, VestedRewardsRewardInfo } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 declare module '@polkadot/api-base/types/storage' {
@@ -203,22 +203,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       totalIssuance: AugmentedQuery<ApiType, () => Observable<u128>, []>;
     };
-    basicInboundChannel: {
-      channelAddresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<H160>>, [U256]>;
-      channelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
-    };
-    basicOutboundChannel: {
-      channelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
-      channelOperators: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<bool>, [U256, AccountId32]>;
-      /**
-       * Interval between commitments
-       **/
-      interval: AugmentedQuery<ApiType, () => Observable<u32>, []>;
-      /**
-       * Messages waiting to be committed.
-       **/
-      messageQueue: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Vec<BasicChannelOutboundMessage>>, [U256]>;
-    };
     beefy: {
       /**
        * The current authorities set
@@ -233,6 +217,14 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       validatorSetId: AugmentedQuery<ApiType, () => Observable<u64>, []>;
     };
+    bridgeInboundChannel: {
+      /**
+       * Source channel on the ethereum side
+       **/
+      channelAddresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<H160>>, [U256]>;
+      channelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
+      rewardFraction: AugmentedQuery<ApiType, () => Observable<Perbill>, []>;
+    };
     bridgeMultisig: {
       /**
        * Multisignature accounts.
@@ -245,7 +237,28 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       multisigs: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: U8aFixed | string | Uint8Array) => Observable<Option<PalletMultisigMultisig>>, [AccountId32, U8aFixed]>;
     };
+    bridgeOutboundChannel: {
+      channelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
+      fee: AugmentedQuery<ApiType, () => Observable<u128>, []>;
+      /**
+       * Interval between committing messages.
+       **/
+      interval: AugmentedQuery<ApiType, () => Observable<u32>, []>;
+      /**
+       * Messages waiting to be committed. To update the queue, use `append_message_queue` and `take_message_queue` methods
+       * (to keep correct value in [QueuesTotalGas]).
+       **/
+      messageQueues: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Vec<BridgeChannelOutboundMessage>>, [U256]>;
+      /**
+       * Total gas for each queue. Updated by mutating the queues with methods `append_message_queue` and `take_message_queue`.
+       **/
+      queuesTotalGas: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<U256>, [U256]>;
+    };
     ceresGovernancePlatform: {
+      /**
+       * Pallet storage version
+       **/
+      palletStorageVersion: AugmentedQuery<ApiType, () => Observable<CeresGovernancePlatformStorageVersion>, []>;
       pollData: AugmentedQuery<ApiType, (arg: Bytes | string | Uint8Array) => Observable<CeresGovernancePlatformPollInfo>, [Bytes]>;
       /**
        * A vote of a particular user for a particular poll
@@ -291,7 +304,14 @@ declare module '@polkadot/api-base/types/storage' {
        * Amount of CERES for locker fees option two
        **/
       feesOptionTwoCeresAmount: AugmentedQuery<ApiType, () => Observable<u128>, []>;
+      /**
+       * Contains data about lockups for each account
+       **/
       lockerData: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<CeresLiquidityLockerLockInfo>>, [AccountId32]>;
+      /**
+       * Pallet storage version
+       **/
+      palletStorageVersion: AugmentedQuery<ApiType, () => Observable<CeresLiquidityLockerStorageVersion>, []>;
     };
     ceresStaking: {
       /**
@@ -318,6 +338,10 @@ declare module '@polkadot/api-base/types/storage' {
        * Account for collecting fees
        **/
       feesAccount: AugmentedQuery<ApiType, () => Observable<AccountId32>, []>;
+      /**
+       * Pallet storage version
+       **/
+      palletStorageVersion: AugmentedQuery<ApiType, () => Observable<CeresTokenLockerStorageVersion>, []>;
       tokenLockerData: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Vec<CeresTokenLockerTokenLockInfo>>, [AccountId32]>;
     };
     council: {
@@ -676,7 +700,11 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Network config
        **/
-      networkConfig: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<BridgeTypesNetworkParamsNetworkConfig>>, [U256]>;
+      networkConfig: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<BridgeTypesNetworkConfig>>, [U256]>;
+    };
+    evmBridgeProxy: {
+      transactions: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<Option<EvmBridgeProxyBridgeRequest>>, [U256, H256]>;
+      userTransactions: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Vec<H256>>, [U256, AccountId32]>;
     };
     farming: {
       /**
@@ -775,26 +803,6 @@ declare module '@polkadot/api-base/types/storage' {
        * `WrapperOpaque<BoundedOpaqueNetworkState>`.
        **/
       receivedHeartbeats: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: u32 | AnyNumber | Uint8Array) => Observable<Option<WrapperOpaque<PalletImOnlineBoundedOpaqueNetworkState>>>, [u32, u32]>;
-    };
-    incentivizedInboundChannel: {
-      /**
-       * Source channel on the ethereum side
-       **/
-      channelAddresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<H160>>, [U256]>;
-      channelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
-      rewardFraction: AugmentedQuery<ApiType, () => Observable<Perbill>, []>;
-    };
-    incentivizedOutboundChannel: {
-      channelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
-      fee: AugmentedQuery<ApiType, () => Observable<u128>, []>;
-      /**
-       * Interval between committing messages.
-       **/
-      interval: AugmentedQuery<ApiType, () => Observable<u32>, []>;
-      /**
-       * Messages waiting to be committed.
-       **/
-      messageQueues: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Vec<IncentivizedChannelOutboundMessage>>, [U256]>;
     };
     irohaMigration: {
       account: AugmentedQuery<ApiType, () => Observable<Option<AccountId32>>, []>;
@@ -1550,6 +1558,7 @@ declare module '@polkadot/api-base/types/storage' {
       totalRewards: AugmentedQuery<ApiType, () => Observable<u128>, []>;
     };
     xorFee: {
+      multiplier: AugmentedQuery<ApiType, () => Observable<u128>, []>;
       /**
        * The amount of XOR to be reminted and exchanged for VAL at the end of the session
        **/
