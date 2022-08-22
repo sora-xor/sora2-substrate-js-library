@@ -95,7 +95,7 @@ export function isNativeAsset(asset: any): boolean {
 
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
   const allAssets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
-    const [address] = key.toHuman() as any;
+    const address = key.args[0].code.toString();
     const [symbol, name, decimals, _, content, description] = codec.toHuman() as any;
     return { address, symbol, name, decimals: +decimals, content, description };
   }) as Array<Asset>;
