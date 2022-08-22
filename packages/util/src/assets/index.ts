@@ -62,11 +62,11 @@ async function getAssetBalance(
   return formatBalance(accountData, assetDecimals);
 }
 
-function isRegisteredAsset(asset: any, list: Whitelist | Blacklist): boolean {
+function isRegisteredAsset(asset: any, whitelist: Whitelist): boolean {
   if (!asset.address) {
     return false;
   }
-  return !!list[asset.address];
+  return !!whitelist[asset.address];
 }
 
 /**
@@ -83,12 +83,15 @@ export function isNativeAsset(asset: any): boolean {
   return !!NativeAssets.get(asset.address);
 }
 
-export async function getAssets(api: ApiPromise, whitelist?: Whitelist): Promise<Array<Asset>> {
-  const assets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
+export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
+  const allAssets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
     const [address] = key.toHuman() as any;
     const [symbol, name, decimals, _, content, description] = codec.toHuman() as any;
     return { address, symbol, name, decimals: +decimals, content, description };
   }) as Array<Asset>;
+
+  const assets = blacklist && blacklist.length ? this.getLegalAssets(allAssets, blacklist) : allAssets;
+
   return !whitelist
     ? assets
     : assets.sort((a, b) => {
@@ -183,7 +186,11 @@ export class AssetsModule {
    * @param blacklist Blacklist assets object
    */
   isNftBlacklisted(asset: Partial<Asset>, blacklist: Blacklist): boolean {
-    return isRegisteredAsset(asset, blacklist);
+    if (!asset.address) {
+      return false;
+    }
+
+    return blacklist.includes(asset.address);
   }
 
   // Default assets addresses of account - list of NativeAssets addresses
@@ -388,10 +395,28 @@ export class AssetsModule {
   /**
    * Get all tokens list registered in the blockchain network
    * @param whitelist set of whitelist tokens
+   * @param blacklist set of blacklist tokens
    * @param withPoolTokens `false` by default
    */
-  public async getAssets(whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
-    const assets = await getAssets(this.root.api, whitelist);
+  public async getAssets(
+    list?: Whitelist | Blacklist,
+    blackList?: Blacklist,
+    withPoolTokens = false
+  ): Promise<Array<Asset>> {
+    let whitelist, blacklist;
+
+    if (list && typeof list[0] === 'object') {
+      whitelist = list;
+    }
+
+    if (list && typeof list[0] === 'string') {
+      blacklist = list;
+    }
+
+    if (blackList && typeof blackList[0] === 'string') blacklist = blackList;
+
+    const assets = await getAssets(this.root.api, whitelist, blacklist);
+
     return withPoolTokens ? assets : assets.filter((asset) => asset.symbol !== PoolTokens.XYKPOOL);
   }
 
@@ -411,6 +436,18 @@ export class AssetsModule {
     return {
       args: [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description],
     };
+  }
+
+  private getLegalAssets(allAssets: Array<Asset>, blacklistAddresses: Blacklist) {
+    let legalAssets = [];
+    let legalAssetsIteration = [];
+
+    for (const address of blacklistAddresses) {
+      legalAssetsIteration = allAssets.filter((asset) => asset.address !== address);
+      legalAssets = [...legalAssets, ...legalAssetsIteration];
+    }
+
+    return legalAssets;
   }
 
   /**

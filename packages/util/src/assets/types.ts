@@ -11,22 +11,11 @@ export interface WhitelistArrayItem extends WhitelistItem {
   address: string;
 }
 
-export interface BlacklistItem {
-  symbol: string;
-  address: string;
-  name: string;
-  decimals: number;
-  content?: string;
-  description?: string;
-}
-
 export type Whitelist = {
   [key: string]: WhitelistItem;
 };
 
-export type Blacklist = {
-  [key: string]: BlacklistItem;
-};
+export type Blacklist = Array<string>;
 
 /**
  * Account Balance structure. Each value === value * 10 ^ decimals
