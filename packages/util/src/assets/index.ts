@@ -13,7 +13,7 @@ import { KnownAssets, NativeAssets, XOR } from './consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import type { AccountAsset, AccountBalance, Asset, Whitelist, WhitelistArrayItem } from './types';
+import type { AccountAsset, AccountBalance, Asset, Blacklist, Whitelist, WhitelistArrayItem } from './types';
 import type { Api } from '../api';
 
 function formatBalance(
@@ -83,12 +83,15 @@ export function isNativeAsset(asset: any): boolean {
   return !!NativeAssets.get(asset.address);
 }
 
-export async function getAssets(api: ApiPromise, whitelist?: Whitelist): Promise<Array<Asset>> {
-  const assets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
+export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
+  const allAssets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
     const [address] = key.toHuman() as any;
     const [symbol, name, decimals, _, content, description] = codec.toHuman() as any;
     return { address, symbol, name, decimals: +decimals, content, description };
   }) as Array<Asset>;
+
+  const assets = blacklist?.length ? this.getLegalAssets(allAssets, blacklist) : allAssets;
+
   return !whitelist
     ? assets
     : assets.sort((a, b) => {
@@ -175,6 +178,19 @@ export class AssetsModule {
    */
   isNft(asset: Asset | AccountAsset): boolean {
     return !!(asset.content && asset.description);
+  }
+
+  /**
+   * Checks if NFT asset is blacklisted or not.
+   * @param asset Asset object
+   * @param blacklist Blacklist assets object
+   */
+  isNftBlacklisted(asset: Partial<Asset>, blacklist: Blacklist): boolean {
+    if (!asset.address) {
+      return false;
+    }
+
+    return blacklist.includes(asset.address);
   }
 
   // Default assets addresses of account - list of NativeAssets addresses
@@ -379,10 +395,12 @@ export class AssetsModule {
   /**
    * Get all tokens list registered in the blockchain network
    * @param whitelist set of whitelist tokens
+   * @param blacklist set of blacklist tokens
    * @param withPoolTokens `false` by default
    */
-  public async getAssets(whitelist?: Whitelist, withPoolTokens = false): Promise<Array<Asset>> {
-    const assets = await getAssets(this.root.api, whitelist);
+  public async getAssets(whitelist?: Whitelist, withPoolTokens = false, blacklist?: Blacklist): Promise<Array<Asset>> {
+    const assets = await getAssets(this.root.api, whitelist, blacklist);
+
     return withPoolTokens ? assets : assets.filter((asset) => asset.symbol !== PoolTokens.XYKPOOL);
   }
 
@@ -402,6 +420,17 @@ export class AssetsModule {
     return {
       args: [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description],
     };
+  }
+
+  /**
+   * Get all legal tokens list opted out of blacklist
+   * @param allAssets set of all tokens
+   * @param blacklist set of blacklist tokens
+   */
+  private getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist) {
+    if (!blacklist.length) return allAssets;
+
+    return allAssets.filter(({ address }) => !blacklist.includes(address));
   }
 
   /**
