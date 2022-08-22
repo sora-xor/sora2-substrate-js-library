@@ -438,13 +438,21 @@ export class AssetsModule {
     };
   }
 
+  /**
+   * Get all legal tokens list opted out of blacklist
+   * @param allAssets set of all tokens
+   * @param blacklist set of blacklist tokens
+   */
   private getLegalAssets(allAssets: Array<Asset>, blacklistAddresses: Blacklist) {
     let legalAssets = [];
-    let legalAssetsIteration = [];
+    let legalAssetsIteration = allAssets;
+
+    if (!blacklistAddresses.length) return allAssets;
 
     for (const address of blacklistAddresses) {
-      legalAssetsIteration = allAssets.filter((asset) => asset.address !== address);
-      legalAssets = [...legalAssets, ...legalAssetsIteration];
+      legalAssetsIteration = legalAssetsIteration.filter((asset) => asset.address !== address);
+
+      legalAssets = [...legalAssetsIteration];
     }
 
     return legalAssets;
