@@ -90,7 +90,7 @@ export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklis
     return { address, symbol, name, decimals: +decimals, content, description };
   }) as Array<Asset>;
 
-  const assets = blacklist && blacklist.length ? this.getLegalAssets(allAssets, blacklist) : allAssets;
+  const assets = blacklist?.length ? this.getLegalAssets(allAssets, blacklist) : allAssets;
 
   return !whitelist
     ? assets
@@ -398,23 +398,7 @@ export class AssetsModule {
    * @param blacklist set of blacklist tokens
    * @param withPoolTokens `false` by default
    */
-  public async getAssets(
-    list?: Whitelist | Blacklist,
-    blackList?: Blacklist,
-    withPoolTokens = false
-  ): Promise<Array<Asset>> {
-    let whitelist, blacklist;
-
-    if (list && typeof list[0] === 'object') {
-      whitelist = list;
-    }
-
-    if (list && typeof list[0] === 'string') {
-      blacklist = list;
-    }
-
-    if (blackList && typeof blackList[0] === 'string') blacklist = blackList;
-
+  public async getAssets(whitelist?: Whitelist, withPoolTokens = false, blacklist?: Blacklist): Promise<Array<Asset>> {
     const assets = await getAssets(this.root.api, whitelist, blacklist);
 
     return withPoolTokens ? assets : assets.filter((asset) => asset.symbol !== PoolTokens.XYKPOOL);
@@ -443,19 +427,10 @@ export class AssetsModule {
    * @param allAssets set of all tokens
    * @param blacklist set of blacklist tokens
    */
-  private getLegalAssets(allAssets: Array<Asset>, blacklistAddresses: Blacklist) {
-    let legalAssets = [];
-    let legalAssetsIteration = allAssets;
+  private getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist) {
+    if (!blacklist.length) return allAssets;
 
-    if (!blacklistAddresses.length) return allAssets;
-
-    for (const address of blacklistAddresses) {
-      legalAssetsIteration = legalAssetsIteration.filter((asset) => asset.address !== address);
-
-      legalAssets = [...legalAssetsIteration];
-    }
-
-    return legalAssets;
+    return allAssets.filter(({ address }) => !blacklist.includes(address));
   }
 
   /**
