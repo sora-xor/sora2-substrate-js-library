@@ -11,6 +11,7 @@ import { decrypt, encrypt } from './crypto';
 import { BaseApi, Operation, KeyringType, isBridgeOperation } from './BaseApi';
 import { Messages } from './logger';
 import { BridgeApi } from './BridgeApi';
+import { EvmApi } from './evm';
 import { SwapModule } from './swap';
 import { RewardsModule } from './rewards';
 import { PoolXykModule } from './poolXyk';
@@ -33,6 +34,7 @@ export class Api extends BaseApi {
   public readonly seedLength = 12;
 
   public readonly bridge: BridgeApi = new BridgeApi();
+  public readonly evm: EvmApi = new EvmApi();
 
   public readonly swap: SwapModule = new SwapModule(this);
   public readonly rewards: RewardsModule = new RewardsModule(this);
