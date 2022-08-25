@@ -83,7 +83,7 @@ export function isNativeAsset(asset: any): boolean {
   return !!NativeAssets.get(asset.address);
 }
 
-function getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist) {
+export function getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist): Array<Asset> {
   if (!blacklist.length) return allAssets;
 
   return allAssets.filter(({ address }) => !blacklist.includes(address));
