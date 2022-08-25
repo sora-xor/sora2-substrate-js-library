@@ -93,6 +93,12 @@ export function isNativeAsset(asset: any): boolean {
   return !!NativeAssets.get(asset.address);
 }
 
+export function getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist): Array<Asset> {
+  if (!blacklist.length) return allAssets;
+
+  return allAssets.filter(({ address }) => !blacklist.includes(address));
+}
+
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
   const allAssets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
     const address = key.args[0].code.toString();
@@ -100,7 +106,7 @@ export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklis
     return { address, symbol, name, decimals: +decimals, content, description };
   }) as Array<Asset>;
 
-  const assets = blacklist?.length ? this.getLegalAssets(allAssets, blacklist) : allAssets;
+  const assets = blacklist?.length ? getLegalAssets(allAssets, blacklist) : allAssets;
 
   return !whitelist
     ? assets
@@ -429,17 +435,6 @@ export class AssetsModule {
     return {
       args: [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description],
     };
-  }
-
-  /**
-   * Get all legal tokens list opted out of blacklist
-   * @param allAssets set of all tokens
-   * @param blacklist set of blacklist tokens
-   */
-  private getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist) {
-    if (!blacklist.length) return allAssets;
-
-    return allAssets.filter(({ address }) => !blacklist.includes(address));
   }
 
   /**
