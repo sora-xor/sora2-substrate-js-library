@@ -46,6 +46,9 @@ export type AccountHistory<T> = {
 export const isBridgeOperation = (operation: Operation) =>
   [Operation.EthBridgeIncoming, Operation.EthBridgeOutgoing].includes(operation);
 
+export const isEvmOperation = (operation: Operation) =>
+  [Operation.EvmIncoming, Operation.EvmOutgoing].includes(operation);
+
 const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
 

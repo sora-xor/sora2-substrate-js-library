@@ -8,7 +8,7 @@ import type { KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
-import { BaseApi, Operation, KeyringType, isBridgeOperation } from './BaseApi';
+import { BaseApi, Operation, KeyringType, isBridgeOperation, isEvmOperation } from './BaseApi';
 import { Messages } from './logger';
 import { BridgeApi } from './BridgeApi';
 import { EvmApi } from './evm';
@@ -48,6 +48,7 @@ export class Api extends BaseApi {
 
   public initAccountStorage() {
     super.initAccountStorage();
+    this.evm.initAccountStorage();
     this.bridge.initAccountStorage();
 
     // since 1.7.15 history should be saved as object
@@ -70,10 +71,13 @@ export class Api extends BaseApi {
   private runHistoryListToObjectMigration(list: Array<HistoryItem>) {
     const history = {};
     const bridgeHistory = {};
+    const evmHistory = {};
 
     for (const item of list) {
       if (!item.id) continue;
-      if (isBridgeOperation(item.type)) {
+      if (isEvmOperation(item.type)) {
+        evmHistory[item.id] = item;
+      } else if (isBridgeOperation(item.type)) {
         bridgeHistory[item.id] = item;
       } else {
         // 'txId' has higher priority
@@ -82,6 +86,7 @@ export class Api extends BaseApi {
     }
 
     this.history = history;
+    this.evm.history = evmHistory;
     this.bridge.history = bridgeHistory;
   }
 
@@ -106,6 +111,7 @@ export class Api extends BaseApi {
    */
   public setStorage(storage: Storage): void {
     super.setStorage(storage);
+    this.evm.setStorage(storage);
     this.bridge.setStorage(storage);
   }
 
@@ -117,6 +123,7 @@ export class Api extends BaseApi {
    */
   public setSigner(signer: Signer): void {
     super.setSigner(signer);
+    this.evm.setSigner(signer);
     this.bridge.setSigner(signer);
   }
 
@@ -126,6 +133,7 @@ export class Api extends BaseApi {
    */
   public setAccount(account: CreateResult): void {
     super.setAccount(account);
+    this.evm.setAccount(account);
     this.bridge.setAccount(account);
   }
 
@@ -379,6 +387,7 @@ export class Api extends BaseApi {
     this.poolXyk.clearAccountLiquidity();
 
     super.logout();
+    this.evm.logout();
     this.bridge.logout();
   }
 

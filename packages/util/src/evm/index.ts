@@ -1,58 +1,16 @@
-import { map, Subject } from 'rxjs';
+import { map } from 'rxjs';
 import { assert } from '@polkadot/util';
-import type { Subscription } from 'rxjs';
-import type { EventRecord } from '@polkadot/types/interfaces/system';
+import { CodecString, FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
-import type { GenericExtrinsic } from '@polkadot/types';
-import type { u32, Vec } from '@polkadot/types-codec';
-import type { AnyTuple } from '@polkadot/types-codec/types';
-import type { EvmBridgeProxyBridgeRequest, FrameSystemEventRecord } from '@polkadot/types/lookup';
+import type { EvmBridgeProxyBridgeRequest } from '@polkadot/types/lookup';
 import type { Option } from '@polkadot/types-codec';
 
-import type { Api } from '../api';
-import { BaseApi, isBridgeOperation, Operation } from '../BaseApi';
+import { BaseApi, isEvmOperation, Operation } from '../BaseApi';
 import { Asset } from '../assets/types';
-import { CodecString, FPNumber } from '@sora-substrate/math';
 import { XOR } from '../assets/consts';
 import { Messages } from '../logger';
-import { BridgeDirection } from '../BridgeApi';
-import type { History } from '../BaseApi';
-
-export enum EvmNetwork {
-  Mordor = 63,
-}
-
-export enum EvmDirection {
-  Outgoing = 'Outgoing',
-  Incoming = 'Incoming',
-}
-
-export enum EvmTxStatus {
-  Done = 'Done',
-  Failed = 'Failed',
-  Pending = 'Pending',
-}
-
-/** Made like BridgeRequest */
-export interface EvmTransaction {
-  /** Outgoing = 0, Incoming = 1 */
-  direction: EvmDirection;
-  /** SORA Account ID */
-  from: string;
-  /** EVM Account ID */
-  to: string;
-  soraAssetAddress: string;
-  status: EvmTxStatus;
-  hash: string;
-  amount: CodecString;
-}
-
-export interface EvmHistory extends History {
-  type: Operation.EvmIncoming | Operation.EvmOutgoing;
-  hash?: string;
-  transactionState?: EvmTxStatus;
-  externalNetwork?: EvmNetwork;
-}
+import { EvmDirection, EvmNetwork, EvmTxStatus } from './consts';
+import type { EvmHistory, EvmTransaction } from './types';
 
 function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): EvmTransaction | null {
   if (!data.isSome) {
@@ -63,6 +21,7 @@ function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): E
   const formatted: EvmTransaction = {} as any;
   formatted.hash = hash;
   if (unwrapped.isIncomingTransfer) {
+    // incoming: EVM -> SORA
     const incoming = unwrapped.asIncomingTransfer;
     formatted.from = incoming.source.toString();
     formatted.to = incoming.dest.toString();
@@ -75,7 +34,7 @@ function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): E
       : EvmTxStatus.Pending;
     formatted.direction = EvmDirection.Incoming;
   } else {
-    // outgoing
+    // outgoing: SORA -> EVM
     const outgoing = unwrapped.asOutgoingTransfer;
     formatted.from = outgoing.source.toString();
     formatted.to = outgoing.dest.toString();
@@ -120,12 +79,20 @@ export class EvmApi extends BaseApi {
   }
 
   public saveHistory(history: EvmHistory): void {
-    if (!(history && history.id && isBridgeOperation(history.type))) {
+    if (!(history && history.id && isEvmOperation(history.type))) {
       return;
     }
     super.saveHistory(history);
   }
 
+  /**
+   * Get registered assets object for selected evm network.
+   * Should be called after switching evm network `api.evm.externalNetwork = EvmNetwork.Mordor`
+   *
+   * Format:
+   *
+   * `{ [key: SoraAssetId]: EvmAssetId }`
+   */
   public async getNetworkAssets(): Promise<Record<string, string>> {
     const assetsMap: Record<string, string> = {};
     const native = await this.api.query.ethApp.addresses(this.externalNetwork);
@@ -149,13 +116,14 @@ export class EvmApi extends BaseApi {
     return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
   }
 
-  public async burn(asset: Asset, recipient: string, amount: string): Promise<void> {
+  public async burn(asset: Asset, recipient: string, amount: string | number): Promise<void> {
     // asset should be checked as registered on bridge or not
+    const fpAmount = new FPNumber(amount, asset.decimals);
     await this.submitExtrinsic(
-      this.api.tx.evmBridgeProxy.burn(this.externalNetwork, asset.address, recipient, amount),
+      this.api.tx.evmBridgeProxy.burn(this.externalNetwork, asset.address, recipient, fpAmount.toCodecString()),
       this.account.pair,
       {
-        type: Operation.EthBridgeOutgoing,
+        type: Operation.EvmOutgoing,
         symbol: asset.symbol,
         assetAddress: asset.address,
         amount: `${amount}`,
@@ -163,32 +131,67 @@ export class EvmApi extends BaseApi {
     );
   }
 
+  /**
+   * Get all user transactions hashes, WHERE
+   *
+   * **first** array item represents the **last** transaction
+   */
   public async getUserTxHashes(): Promise<Array<string>> {
     assert(this.account, Messages.connectWallet);
 
     const data = await this.api.query.evmBridgeProxy.userTransactions(this.externalNetwork, this.account.pair.address);
 
-    return data as unknown as Array<string>;
+    return data.map((value) => value.toString()).reverse();
   }
 
+  /**
+   * Subscribe on user transactions hashes.
+   *
+   * **First** array item represents the **last** transaction
+   */
   public subscribeOnUserTxHashes(): Observable<Array<string>> {
     assert(this.account, Messages.connectWallet);
 
-    return this.apiRx.query.evmBridgeProxy.userTransactions(
-      this.externalNetwork,
-      this.account.pair.address
-    ) as unknown as Observable<string[]>;
+    return this.apiRx.query.evmBridgeProxy
+      .userTransactions(this.externalNetwork, this.account.pair.address)
+      .pipe(map((items) => items.map((value) => value.toString()).reverse()));
   }
 
+  /** Get transaction details */
   public async getTxDetails(hash: string): Promise<EvmTransaction | null> {
     const data = await this.api.query.evmBridgeProxy.transactions(this.externalNetwork, hash);
 
     return formatEvmTx(hash, data);
   }
 
+  /** Subscribe on transaction details */
   public subscribeOnTxDetails(hash: string): Observable<EvmTransaction | null> {
     return this.apiRx.query.evmBridgeProxy
       .transactions(this.externalNetwork, hash)
       .pipe(map((value) => formatEvmTx(hash, value)));
+  }
+
+  /**
+   * Get transactions details.
+   *
+   * This method might be used for pageable items
+   */
+  public async getTxsDetails(hashes: Array<string>): Promise<Array<EvmTransaction>> {
+    const params = hashes.map((hash) => [this.externalNetwork, hash]);
+    const data = await this.api.query.evmBridgeProxy.transactions.multi(params);
+
+    return data.map((item, index) => formatEvmTx(hashes[index], item)).filter((item) => !!item);
+  }
+
+  /**
+   * Subscribe on transactions details.
+   *
+   * This method might be used for pageable items
+   */
+  public subscribeOnTxsDetails(hashes: Array<string>): Observable<Array<EvmTransaction>> {
+    const params = hashes.map((hash) => [this.externalNetwork, hash]);
+    return this.apiRx.query.evmBridgeProxy.transactions
+      .multi(params)
+      .pipe(map((value) => value.map((item, index) => formatEvmTx(hashes[index], item)).filter((item) => !!item)));
   }
 }
