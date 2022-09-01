@@ -17,6 +17,8 @@ export type Whitelist = {
 
 export type WhitelistIdsBySymbol = { [key: string]: string };
 
+export type Blacklist = Array<string>;
+
 /**
  * Account Balance structure. Each value === value * 10 ^ decimals
  *
