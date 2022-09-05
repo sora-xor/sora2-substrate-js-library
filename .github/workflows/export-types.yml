@@ -43,9 +43,9 @@ jobs:
           reviewers: |
             stefashkaa
             Nikita-Polyakov
-            pgolovkin
             alexnatalia
             RustemYuzlibaev
+            Tieumsan
 
       - name: send message to telegram # if types changed
         if: ${{ env.types-diff > 0 }}
