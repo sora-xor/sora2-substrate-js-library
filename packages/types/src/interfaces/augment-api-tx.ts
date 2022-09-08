@@ -181,6 +181,18 @@ declare module '@polkadot/api/types/submittable' {
     };
     liquidityProxy: {
       /**
+       * Disables XST or TBC liquidity source. The liquidity source becomes unavailable for swap.
+       * 
+       * - `liquidity_source`: the liquidity source to be disabled.
+       **/
+      disableLiquiditySource: AugmentedSubmittable<(liquiditySource: LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [LiquiditySourceType]>;
+      /**
+       * Enables XST or TBC liquidity source.
+       * 
+       * - `liquidity_source`: the liquidity source to be enabled.
+       **/
+      enableLiquiditySource: AugmentedSubmittable<(liquiditySource: LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [LiquiditySourceType]>;
+      /**
        * Perform swap of tokens (input/output defined via SwapAmount direction).
        * 
        * - `origin`: the account on whose behalf the transaction is being executed,
