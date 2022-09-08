@@ -165,6 +165,7 @@ declare module '@polkadot/api/types/storage' {
     };
     tradingPair: {
       enabledSources: AugmentedQuery<ApiType, (arg1: DEXId | AnyNumber | Uint8Array, arg2: TradingPair | { base_asset_id?: any; target_asset_id?: any } | string | Uint8Array) => Observable<Option<BTreeSet<LiquiditySourceType>>>, [DEXId, TradingPair]> & QueryableStorageEntry<ApiType, [DEXId, TradingPair]>;
+      lockedLiquiditySources: AugmentedQuery<ApiType, () => Observable<Vec<LiquiditySourceType>>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * Generic query
        **/
