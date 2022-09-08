@@ -5,7 +5,7 @@ import type { Codec } from '@polkadot/types/types';
 import type { Subscription } from '@polkadot/x-rxjs';
 
 import { poolAccountIdFromAssetPair } from './account';
-import { XOR } from '../assets/consts';
+import { XOR, XSTUSD } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
@@ -216,6 +216,33 @@ export class PoolXykModule {
     this.subscriptions.set(liquidity.secondAddress, subscription);
   }
 
+  private arrangeAssetsForParams(
+    firstAsset: Asset | AccountAsset,
+    secondAsset: Asset | AccountAsset,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike
+  ) {
+    let baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId;
+
+    if ([XOR.address, XSTUSD.address].includes(firstAsset.address)) {
+      DEXId = firstAsset.address === XOR.address ? this.root.defaultDEXId : this.root.xstDEXId;
+      baseAsset = firstAsset;
+      targetAsset = secondAsset;
+      baseAssetAmount = firstAmount;
+      targetAssetAmount = secondAmount;
+    } else if ([XOR.address, XSTUSD.address].includes(secondAsset.address)) {
+      DEXId = secondAsset.address === XOR.address ? this.root.defaultDEXId : this.root.xstDEXId;
+      baseAsset = secondAsset;
+      targetAsset = firstAsset;
+      baseAssetAmount = secondAmount;
+      targetAssetAmount = firstAmount;
+    } else {
+      assert(false, Messages.xorOrXstIsRequired);
+    }
+
+    return [baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId];
+  }
+
   private async getAccountLiquidityItem(
     poolAccount: string,
     firstAddress: string,
@@ -342,7 +369,8 @@ export class PoolXykModule {
     secondAsset: Asset | AccountAsset,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
-    slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
+    slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent,
+    DEXId = this.root.defaultDEXId
   ) {
     assert(this.root.account, Messages.connectWallet);
     const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals);
@@ -350,7 +378,7 @@ export class PoolXykModule {
     const slippage = new FPNumber(Number(slippageTolerance) / 100);
     return {
       args: [
-        this.root.defaultDEXId,
+        DEXId,
         firstAsset.address,
         secondAsset.address,
         firstAmountNum.toCodecString(),
@@ -376,7 +404,21 @@ export class PoolXykModule {
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ): Promise<void> {
-    const params = await this.calcAddTxParams(firstAsset, secondAsset, firstAmount, secondAmount, slippageTolerance);
+    const [baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId] = this.arrangeAssetsForParams(
+      firstAsset,
+      secondAsset,
+      firstAmount,
+      secondAmount
+    );
+
+    const params = await this.calcAddTxParams(
+      baseAsset,
+      targetAsset,
+      baseAssetAmount,
+      targetAssetAmount,
+      slippageTolerance,
+      DEXId
+    );
     if (!this.root.assets.getAsset(secondAsset.address)) {
       this.root.assets.addAccountAsset(secondAsset.address);
     }
@@ -400,22 +442,26 @@ export class PoolXykModule {
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ) {
-    assert([firstAsset.address, secondAsset.address].includes(XOR.address), Messages.xorIsRequired);
-    const baseAsset = firstAsset.address === XOR.address ? firstAsset : secondAsset;
-    const targetAsset = firstAsset.address !== XOR.address ? firstAsset : secondAsset;
+    const [baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId] = this.arrangeAssetsForParams(
+      firstAsset,
+      secondAsset,
+      firstAmount,
+      secondAmount
+    );
+
     const exists = await this.check(baseAsset.address, targetAsset.address);
     assert(!exists, Messages.pairAlreadyCreated);
-    const baseAssetAmount = baseAsset.address === firstAsset.address ? firstAmount : secondAmount;
-    const targetAssetAmount = targetAsset.address === secondAsset.address ? secondAmount : firstAmount;
+
     const params = await this.calcAddTxParams(
       baseAsset,
       targetAsset,
       baseAssetAmount,
       targetAssetAmount,
-      slippageTolerance
+      slippageTolerance,
+      DEXId
     );
     return {
-      pairCreationArgs: [this.root.defaultDEXId, baseAsset.address, targetAsset.address],
+      pairCreationArgs: [DEXId, baseAsset.address, targetAsset.address],
       addLiquidityArgs: params.args,
       baseAssetAmount,
       targetAssetAmount,
