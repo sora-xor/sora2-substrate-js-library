@@ -55,15 +55,14 @@
 - [beefy](#beefy-pallet)
 - [mmrLeaf](#mmrleaf-pallet)
 - [ethereumLightClient](#ethereumlightclient-pallet)
-- [basicInboundChannel](#basicinboundchannel-pallet)
-- [basicOutboundChannel](#basicoutboundchannel-pallet)
-- [incentivizedInboundChannel](#incentivizedinboundchannel-pallet)
-- [incentivizedOutboundChannel](#incentivizedoutboundchannel-pallet)
+- [bridgeInboundChannel](#bridgeinboundchannel-pallet)
+- [bridgeOutboundChannel](#bridgeoutboundchannel-pallet)
 - [dispatch](#dispatch-pallet)
 - [leafProvider](#leafprovider-pallet)
 - [ethApp](#ethapp-pallet)
 - [erc20App](#erc20app-pallet)
 - [migrationApp](#migrationapp-pallet)
+- [evmBridgeProxy](#evmbridgeproxy-pallet)
 - [utility](#utility-pallet)
 - [currencies](#currencies-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
@@ -76,7 +75,6 @@
 - [rpc](#rpc-pallet)
 - [state](#state-pallet)
 - [dexApi](#dexapi-pallet)
-- [basicChannel](#basicchannel-pallet)
 - [intentivizedChannel](#intentivizedchannel-pallet)
 
 ## Substrate pallet
@@ -1660,6 +1658,25 @@ returns: `u128`
 
 <hr>
 
+#### **api.query.xorFee.multiplier**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.xorFee.updateMultiplier**
+
+> Update the multiplier for weight -> fee conversion.
+
+arguments:
+
+- newMultiplier: `u128`
+<hr>
+
 ## BridgeMultisig pallet
 
 ### _State Queries_
@@ -2744,7 +2761,7 @@ arguments: -
 
 > (Re-)set the payment target for a controller.
 >
-> Effects will be felt at the beginning of the next era.
+> Effects will be felt instantly (as soon as this function is completed successfully).
 >
 > The dispatch origin for this call must be _Signed_ by the controller, not the stash.
 >
@@ -2772,7 +2789,7 @@ arguments:
 
 > (Re-)set the controller of a stash.
 >
-> Effects will be felt at the beginning of the next era.
+> Effects will be felt instantly (as soon as this function is completed successfully).
 >
 > The dispatch origin for this call must be _Signed_ by the stash, not the controller.
 >
@@ -3470,12 +3487,17 @@ arguments:
 
 #### **api.tx.grandpa.noteStalled**
 
-> Note that the current authority set of the GRANDPA finality gadget has
-> stalled. This will trigger a forced authority set change at the beginning
-> of the next session, to be enacted `delay` blocks after that. The delay
-> should be high enough to safely assume that the block signalling the
-> forced change will not be re-orged (e.g. 1000 blocks). The GRANDPA voters
-> will start the new authority set using the given finalized block as base.
+> Note that the current authority set of the GRANDPA finality gadget has stalled.
+>
+> This will trigger a forced authority set change at the beginning of the next session, to
+> be enacted `delay` blocks after that. The `delay` should be high enough to safely assume
+> that the block signalling the forced change will not be re-orged e.g. 1000 blocks.
+> The block production rate (which may be slowed down because of finality lagging) should
+> be taken into account when choosing the `delay`. The GRANDPA voters based on the new
+> authority will start voting on top of `best_finalized_block_number` for new finalized
+> blocks. `best_finalized_block_number` should be the highest of the latest finalized
+> block of all validators of the new authority set.
+>
 > Only callable by root.
 
 arguments:
@@ -8040,7 +8062,19 @@ returns: `AccountId32`
 
 <hr>
 
+#### **api.query.ceresLiquidityLocker.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `CeresLiquidityLockerStorageVersion`
+
+<hr>
+
 #### **api.query.ceresLiquidityLocker.lockerData**
+
+> Contains data about lockups for each account
 
 arguments:
 
@@ -8060,7 +8094,7 @@ arguments:
 
 - assetA: `CommonPrimitivesAssetId32`
 - assetB: `CommonPrimitivesAssetId32`
-- unlockingBlock: `u32`
+- unlockingTimestamp: `u64`
 - percentageOfPoolTokens: `u128`
 - option: `bool`
 <hr>
@@ -8108,6 +8142,16 @@ returns: `AccountId32`
 
 <hr>
 
+#### **api.query.ceresTokenLocker.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `CeresTokenLockerStorageVersion`
+
+<hr>
+
 #### **api.query.ceresTokenLocker.feeAmount**
 
 > Amount of CERES for locker fees option two
@@ -8137,7 +8181,7 @@ returns: `Vec<CeresTokenLockerTokenLockInfo>`
 arguments:
 
 - assetId: `CommonPrimitivesAssetId32`
-- unlockingBlock: `u32`
+- unlockingTimestamp: `u64`
 - numberOfTokens: `u128`
 <hr>
 
@@ -8148,7 +8192,7 @@ arguments:
 arguments:
 
 - assetId: `CommonPrimitivesAssetId32`
-- unlockingBlock: `u32`
+- unlockingTimestamp: `u64`
 - numberOfTokens: `u128`
 <hr>
 
@@ -8197,6 +8241,16 @@ returns: `CeresGovernancePlatformPollInfo`
 
 <hr>
 
+#### **api.query.ceresGovernancePlatform.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `CeresGovernancePlatformStorageVersion`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.ceresGovernancePlatform.vote**
@@ -8218,8 +8272,8 @@ arguments:
 
 - pollId: `Bytes`
 - numberOfOptions: `u32`
-- pollStartBlock: `u32`
-- pollEndBlock: `u32`
+- pollStartTimestamp: `u64`
+- pollEndTimestamp: `u64`
 <hr>
 
 #### **api.tx.ceresGovernancePlatform.withdraw**
@@ -8341,14 +8395,14 @@ arguments:
 - liquidityPercent: `u128`
 - listingPrice: `u128`
 - lockupDays: `u32`
-- startBlock: `u32`
-- endBlock: `u32`
+- startTimestamp: `u64`
+- endTimestamp: `u64`
 - teamVestingTotalTokens: `u128`
 - teamVestingFirstReleasePercent: `u128`
-- teamVestingPeriod: `u32`
+- teamVestingPeriod: `u64`
 - teamVestingPercent: `u128`
 - firstReleasePercent: `u128`
-- vestingPeriod: `u32`
+- vestingPeriod: `u64`
 - vestingPercent: `u128`
 <hr>
 
@@ -8723,8 +8777,10 @@ returns: `PalletBagsListListBag`
 >
 > Anyone can call this function about any potentially dislocated account.
 >
-> Will never return an error; if `dislocated` does not exist or doesn't need a rebag, then
-> it is a noop and fees are still collected from `origin`.
+> Will always update the stored score of `dislocated` to the correct score, based on
+> `ScoreProvider`.
+>
+> If `dislocated` does not exists, it returns an error.
 
 arguments:
 
@@ -9208,7 +9264,7 @@ arguments:
 
 - key: `U256`
 
-returns: `BridgeTypesNetworkParamsNetworkConfig`
+returns: `BridgeTypesNetworkConfig`
 
 <hr>
 
@@ -9242,7 +9298,7 @@ returns: `Vec<H256>`
 
 arguments:
 
-- networkConfig: `BridgeTypesNetworkParamsNetworkConfig`
+- networkConfig: `BridgeTypesNetworkConfig`
 - header: `BridgeTypesHeader`
 - initialDifficulty: `U256`
 <hr>
@@ -9251,7 +9307,7 @@ arguments:
 
 arguments:
 
-- networkConfig: `BridgeTypesNetworkParamsNetworkConfig`
+- networkConfig: `BridgeTypesNetworkConfig`
 <hr>
 
 #### **api.tx.ethereumLightClient.importHeader**
@@ -9275,13 +9331,16 @@ arguments:
 - networkId: `U256`
 - header: `BridgeTypesHeader`
 - proof: `Vec<BridgeTypesEthashproofDoubleNodeWithMerkleProof>`
+- mixNonce: `BridgeTypesEthashproofMixNonce`
+- submitter: `SpRuntimeMultiSigner`
+- signature: `SpRuntimeMultiSignature`
 <hr>
 
-## BasicInboundChannel pallet
+## BridgeInboundChannel pallet
 
 ### _State Queries_
 
-#### **api.query.basicInboundChannel.palletVersion**
+#### **api.query.bridgeInboundChannel.palletVersion**
 
 > Returns the current pallet version from storage
 
@@ -9291,115 +9350,7 @@ returns: `u16`
 
 <hr>
 
-#### **api.query.basicInboundChannel.channelNonces**
-
-arguments:
-
-- key: `U256`
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.basicInboundChannel.channelAddresses**
-
-arguments:
-
-- key: `U256`
-
-returns: `H160`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.basicInboundChannel.submit**
-
-arguments:
-
-- networkId: `U256`
-- message: `BridgeTypesMessage`
-<hr>
-
-#### **api.tx.basicInboundChannel.registerChannel**
-
-arguments:
-
-- networkId: `U256`
-- channel: `H160`
-<hr>
-
-## BasicOutboundChannel pallet
-
-### _State Queries_
-
-#### **api.query.basicOutboundChannel.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.basicOutboundChannel.interval**
-
-> Interval between commitments
-
-arguments: -
-
-returns: `u32`
-
-<hr>
-
-#### **api.query.basicOutboundChannel.messageQueue**
-
-> Messages waiting to be committed.
-
-arguments:
-
-- key: `U256`
-
-returns: `Vec<BasicChannelOutboundMessage>`
-
-<hr>
-
-#### **api.query.basicOutboundChannel.channelNonces**
-
-arguments:
-
-- key: `U256`
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.basicOutboundChannel.channelOperators**
-
-arguments:
-
-- key: `(U256,AccountId32)`
-
-returns: `bool`
-
-<hr>
-
-## IncentivizedInboundChannel pallet
-
-### _State Queries_
-
-#### **api.query.incentivizedInboundChannel.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.incentivizedInboundChannel.channelAddresses**
+#### **api.query.bridgeInboundChannel.channelAddresses**
 
 > Source channel on the ethereum side
 
@@ -9411,7 +9362,7 @@ returns: `H160`
 
 <hr>
 
-#### **api.query.incentivizedInboundChannel.channelNonces**
+#### **api.query.bridgeInboundChannel.channelNonces**
 
 arguments:
 
@@ -9421,7 +9372,7 @@ returns: `u64`
 
 <hr>
 
-#### **api.query.incentivizedInboundChannel.rewardFraction**
+#### **api.query.bridgeInboundChannel.rewardFraction**
 
 arguments: -
 
@@ -9431,7 +9382,7 @@ returns: `Perbill`
 
 ### _Extrinsics_
 
-#### **api.tx.incentivizedInboundChannel.submit**
+#### **api.tx.bridgeInboundChannel.submit**
 
 arguments:
 
@@ -9439,7 +9390,7 @@ arguments:
 - message: `BridgeTypesMessage`
 <hr>
 
-#### **api.tx.incentivizedInboundChannel.registerChannel**
+#### **api.tx.bridgeInboundChannel.registerChannel**
 
 arguments:
 
@@ -9447,18 +9398,18 @@ arguments:
 - channel: `H160`
 <hr>
 
-#### **api.tx.incentivizedInboundChannel.setRewardFraction**
+#### **api.tx.bridgeInboundChannel.setRewardFraction**
 
 arguments:
 
 - fraction: `Perbill`
 <hr>
 
-## IncentivizedOutboundChannel pallet
+## BridgeOutboundChannel pallet
 
 ### _State Queries_
 
-#### **api.query.incentivizedOutboundChannel.palletVersion**
+#### **api.query.bridgeOutboundChannel.palletVersion**
 
 > Returns the current pallet version from storage
 
@@ -9468,7 +9419,7 @@ returns: `u16`
 
 <hr>
 
-#### **api.query.incentivizedOutboundChannel.interval**
+#### **api.query.bridgeOutboundChannel.interval**
 
 > Interval between committing messages.
 
@@ -9478,19 +9429,32 @@ returns: `u32`
 
 <hr>
 
-#### **api.query.incentivizedOutboundChannel.messageQueues**
+#### **api.query.bridgeOutboundChannel.messageQueues**
 
-> Messages waiting to be committed.
+> Messages waiting to be committed. To update the queue, use `append_message_queue` and `take_message_queue` methods
+> (to keep correct value in [QueuesTotalGas]).
 
 arguments:
 
 - key: `U256`
 
-returns: `Vec<IncentivizedChannelOutboundMessage>`
+returns: `Vec<BridgeChannelOutboundMessage>`
 
 <hr>
 
-#### **api.query.incentivizedOutboundChannel.channelNonces**
+#### **api.query.bridgeOutboundChannel.queuesTotalGas**
+
+> Total gas for each queue. Updated by mutating the queues with methods `append_message_queue` and `take_message_queue`.
+
+arguments:
+
+- key: `U256`
+
+returns: `U256`
+
+<hr>
+
+#### **api.query.bridgeOutboundChannel.channelNonces**
 
 arguments:
 
@@ -9500,7 +9464,7 @@ returns: `u64`
 
 <hr>
 
-#### **api.query.incentivizedOutboundChannel.fee**
+#### **api.query.bridgeOutboundChannel.fee**
 
 arguments: -
 
@@ -9591,7 +9555,6 @@ returns: `(H160,CommonPrimitivesAssetId32)`
 arguments:
 
 - networkId: `U256`
-- channelId: `BridgeTypesChannelId`
 - recipient: `H160`
 - amount: `u128`
 <hr>
@@ -9612,6 +9575,7 @@ arguments:
 - networkId: `U256`
 - name: `Bytes`
 - symbol: `Bytes`
+- decimals: `u8`
 - contract: `H160`
 <hr>
 
@@ -9703,7 +9667,6 @@ arguments:
 arguments:
 
 - networkId: `U256`
-- channelId: `BridgeTypesChannelId`
 - assetId: `CommonPrimitivesAssetId32`
 - recipient: `H160`
 - amount: `u128`
@@ -9717,6 +9680,7 @@ arguments:
 - address: `H160`
 - symbol: `Bytes`
 - name: `Bytes`
+- decimals: `u8`
 <hr>
 
 #### **api.tx.erc20App.registerExistingErc20Asset**
@@ -9807,6 +9771,52 @@ arguments:
 
 - networkId: `U256`
 - contract: `H160`
+<hr>
+
+## EvmBridgeProxy pallet
+
+### _State Queries_
+
+#### **api.query.evmBridgeProxy.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.evmBridgeProxy.userTransactions**
+
+arguments:
+
+- key: `(U256,AccountId32)`
+
+returns: `Vec<H256>`
+
+<hr>
+
+#### **api.query.evmBridgeProxy.transactions**
+
+arguments:
+
+- key: `(U256,H256)`
+
+returns: `EvmBridgeProxyBridgeRequest`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.evmBridgeProxy.burn**
+
+arguments:
+
+- networkId: `U256`
+- assetId: `CommonPrimitivesAssetId32`
+- recipient: `H160`
+- amount: `u128`
 <hr>
 
 ## Utility pallet
@@ -10104,6 +10114,13 @@ arguments:
 
 arguments: -
 
+<hr>
+
+#### **api.tx.faucet.updateLimit**
+
+arguments:
+
+- newLimit: `u128`
 <hr>
 
 ## Author pallet
@@ -10710,22 +10727,6 @@ arguments:
 - at: `BlockHash`
 
 returns: `Option<SwapOutcomeInfo>`
-
-<hr>
-
-## BasicChannel pallet
-
-### _Custom RPCs_
-
-#### **api.rpc.basicChannel.commitment**
-
-> Get basic channel messages.
-
-arguments:
-
-- commitmentHash: `H256`
-
-returns: `Option<Vec<BasicChannelMessage>>`
 
 <hr>
 
