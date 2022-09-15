@@ -83,6 +83,7 @@ export class BaseApi {
 
   protected readonly prefix = 69;
   public readonly defaultDEXId = 0;
+  public readonly xstDEXId = 1;
 
   private _history: AccountHistory<HistoryItem> = {};
   private _historySyncTimestamp: number = 0;
