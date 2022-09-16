@@ -28,6 +28,7 @@ import type { IExtrinsic, Observable } from '@polkadot/types/types';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { BasicChannelMessage } from '@sora-substrate/types/interfaces/basicChannel';
 import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AppKind, AppWithSupportedAssets } from '@sora-substrate/types/interfaces/evmBridgeProxy';
 import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
 import type { AuxiliaryDigest } from '@sora-substrate/types/interfaces/leafProvider';
 import type { LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
@@ -428,6 +429,20 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        * Get registered requests and their statuses.
        **/
       getRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId?: BridgeNetworkId | AnyNumber | Uint8Array, redirectFinishedLoadRequests?: bool | boolean | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[OffchainRequest, RequestStatus]>>, DispatchError>>>;
+    };
+    evmBridgeProxy: {
+      /**
+       * Get a list of apps
+       **/
+      listApps: AugmentedRpc<(networkId: Text | string, at?: BlockHash | string | Uint8Array) => Observable<Vec<ITuple<[AppKind, H160]>>>>;
+      /**
+       * Get a list of apps with supported assets
+       **/
+      listAppsWithSupportedAssets: AugmentedRpc<(networkId: Text | string, at?: BlockHash | string | Uint8Array) => Observable<Vec<AppWithSupportedAssets>>>;
+      /**
+       * Get a list of assets
+       **/
+      listAssets: AugmentedRpc<(networkId: Text | string, at?: BlockHash | string | Uint8Array) => Observable<Vec<ITuple<[AppKind, AssetId]>>>>;
     };
     grandpa: {
       /**

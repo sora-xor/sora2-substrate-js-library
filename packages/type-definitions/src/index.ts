@@ -23,6 +23,7 @@ import vestedRewards from './vestedRewards';
 import leafProvider from './leafProvider';
 import basicChannel from './basicChannel';
 import intentivizedChannel from './intentivizedChannel';
+import evmBridgeProxy from './evmBridgeProxy';
 
 import versionedOverrides from './versioned';
 
@@ -49,6 +50,7 @@ const soraDefs = {
   leafProvider,
   basicChannel,
   intentivizedChannel,
+  evmBridgeProxy,
 };
 
 const overrides = {

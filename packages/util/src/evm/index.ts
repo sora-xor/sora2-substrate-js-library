@@ -10,7 +10,7 @@ import { Asset } from '../assets/types';
 import { XOR } from '../assets/consts';
 import { Messages } from '../logger';
 import { EvmDirection, EvmNetwork, EvmTxStatus } from './consts';
-import type { EvmHistory, EvmTransaction } from './types';
+import type { EvmAsset, EvmHistory, EvmTransaction } from './types';
 
 function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): EvmTransaction | null {
   if (!data.isSome) {
@@ -19,12 +19,12 @@ function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): E
   const unwrapped = data.unwrap();
 
   const formatted: EvmTransaction = {} as any;
-  formatted.hash = hash;
+  formatted.soraHash = hash;
   if (unwrapped.isIncomingTransfer) {
     // incoming: EVM -> SORA
     const incoming = unwrapped.asIncomingTransfer;
-    formatted.from = incoming.source.toString();
-    formatted.to = incoming.dest.toString();
+    formatted.evmAccount = incoming.source.toString();
+    formatted.soraAccount = incoming.dest.toString();
     formatted.amount = incoming.amount.toString();
     formatted.soraAssetAddress = incoming.assetId.code.toString();
     formatted.status = incoming.status.isFailed
@@ -36,8 +36,8 @@ function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): E
   } else {
     // outgoing: SORA -> EVM
     const outgoing = unwrapped.asOutgoingTransfer;
-    formatted.from = outgoing.source.toString();
-    formatted.to = outgoing.dest.toString();
+    formatted.soraAccount = outgoing.source.toString();
+    formatted.evmAccount = outgoing.dest.toString();
     formatted.amount = outgoing.amount.toString();
     formatted.soraAssetAddress = outgoing.assetId.code.toString();
     formatted.status = outgoing.status.isFailed
@@ -91,21 +91,24 @@ export class EvmApi extends BaseApi {
    *
    * Format:
    *
-   * `{ [key: SoraAssetId]: EvmAssetId }`
+   * `{ [key: SoraAssetId]: { contract: string; evmAddress: string; } }`
    */
-  public async getNetworkAssets(): Promise<Record<string, string>> {
-    const assetsMap: Record<string, string> = {};
-    const native = await this.api.query.ethApp.addresses(this.externalNetwork);
-    if (native.isSome) {
-      const asset = native.unwrap();
-      assetsMap[asset[1].code.toString()] = asset[0].toString();
-    }
-    const erc20 = await this.api.query.erc20App.assetsByAddresses.entries(this.externalNetwork);
-    erc20.forEach(([evm, assetId]) => {
-      if (assetId.isSome) {
-        assetsMap[assetId.unwrap().code.toString()] = evm.args[1].toString();
-      }
+  public async getNetworkAssets(): Promise<Record<string, EvmAsset>> {
+    const assetsMap: Record<string, EvmAsset> = {};
+    // TODO: NetworkId will be fixed on backend. We should update type and remove this line below
+    const networkId = this.externalNetwork.toString(16);
+
+    const result = await this.api.rpc.evmBridgeProxy.listAppsWithSupportedAssets(networkId);
+
+    result.forEach((app) => {
+      app.supportedAssets.forEach((assetId) => {
+        assetsMap[assetId.toString()] = {
+          contract: app.address.toString(),
+          evmAddress: '', // Here will be evm address after backend updates
+        };
+      });
     });
+
     return assetsMap;
   }
 

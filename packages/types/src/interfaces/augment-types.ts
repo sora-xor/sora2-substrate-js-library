@@ -67,6 +67,7 @@ import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking'
 import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
 import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interfaces/demeterFarmingPlatform';
 import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AppKind, AppWithSupportedAssets } from '@sora-substrate/types/interfaces/evmBridgeProxy';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
@@ -111,9 +112,11 @@ declare module '@polkadot/types/types/registry' {
     AmountOf: AmountOf;
     AnySignature: AnySignature;
     ApiId: ApiId;
+    AppKind: AppKind;
     ApplyExtrinsicResult: ApplyExtrinsicResult;
     ApprovalFlag: ApprovalFlag;
     Approvals: Approvals;
+    AppWithSupportedAssets: AppWithSupportedAssets;
     ArithmeticError: ArithmeticError;
     AssetId: AssetId;
     AssetId32: AssetId32;

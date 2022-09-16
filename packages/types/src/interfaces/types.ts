@@ -23,3 +23,4 @@ export * from './vestedRewards/types';
 export * from './leafProvider/types';
 export * from './basicChannel/types';
 export * from './intentivizedChannel/types';
+export * from './evmBridgeProxy/types';

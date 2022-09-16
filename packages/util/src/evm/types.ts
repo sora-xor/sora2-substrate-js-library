@@ -8,13 +8,17 @@ export interface EvmTransaction {
   /** Outgoing = 0, Incoming = 1 */
   direction: EvmDirection;
   /** SORA Account ID */
-  from: string;
+  soraAccount: string;
   /** EVM Account ID */
-  to: string;
+  evmAccount: string;
   soraAssetAddress: string;
   status: EvmTxStatus;
-  hash: string;
+  soraHash: string;
   amount: CodecString;
+  // TODO: these fields below will be added later
+  evmHash: string;
+  startTimestamp: number;
+  endTimestamp: number;
 }
 
 export interface EvmHistory extends History {
@@ -23,3 +27,8 @@ export interface EvmHistory extends History {
   transactionState?: EvmTxStatus;
   externalNetwork?: EvmNetwork;
 }
+
+export type EvmAsset = {
+  evmAddress: string;
+  contract: string;
+};
