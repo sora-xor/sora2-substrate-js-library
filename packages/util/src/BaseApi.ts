@@ -313,91 +313,133 @@ export class BaseApi {
   ): Promise<void> {
     const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
-    if (isNotFaucetOperation && signer) {
-      history.from = this.address;
-    }
-
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
     const { account, options } = this.getAccountWithOptions();
     // TODO: Add ERA only for SWAP
     // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
 
-    history.txId = signedTx.hash.toString();
+    const txId = signedTx.hash.toString();
+    const from = isNotFaucetOperation && signer ? this.address : '';
+    const id = historyData.id ?? txId; // History id value will be equal to transaction hash
+    const type = historyData.type;
+    const startTime = historyData.startTime ?? Date.now();
 
-    // History id value will be equal to transaction hash
-    if (!history.id) {
-      history.startTime = Date.now();
-      history.id = history.txId;
-    }
+    // save history with passed data & updated params
+    this.saveHistory({ ...history, id, from, startTime, type, txId });
 
     const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn);
     const unsub = await extrinsicFn((result: ISubmittableResult) => {
-      if (isBridgeOperation(history.type)) {
-        history.signed = true;
-      }
-      history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
-      this.saveHistory(history);
+      // update params
+      this.saveHistory({
+        id,
+        type,
+        status: first(Object.keys(result.status.toJSON())).toLowerCase(),
+      });
+
       if (result.status.isInBlock) {
-        history.blockId = result.status.asInBlock.toString();
-        this.saveHistory(history);
+        // update params
+        this.saveHistory({
+          id,
+          type,
+          blockId: result.status.asInBlock.toString(),
+        });
       } else if (result.status.isFinalized) {
-        history.endTime = Date.now();
-        this.saveHistory(history);
+        // update params
+        this.saveHistory({
+          id,
+          type,
+          endTime: Date.now(),
+        });
+
         result.events.forEach(({ event: { data, method, section } }: any) => {
           if (method === 'AssetRegistered' && section === 'assets') {
-            const [assetId, _] = data;
-            history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
-            this.saveHistory(history);
+            const assetId = data[0];
+            const assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+            // update params
+            this.saveHistory({
+              id,
+              type,
+              assetAddress,
+            });
           }
 
-          if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
+          if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(type)) {
             const [assetId, from, to, amount] = data;
-
             const address = assetId.toString();
             const amountFormatted = new FPNumber(amount).toString();
             const amountKey = XOR.address === address ? 'amount' : 'amount2';
-
-            history[amountKey] = amountFormatted;
-            this.saveHistory(history);
+            // update params
+            this.saveHistory({
+              id,
+              type,
+              [amountKey]: amountFormatted,
+            });
           }
 
-          if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
-            history.hash = first(data.toJSON());
-            this.saveHistory(history);
+          if (
+            (method === 'RequestRegistered' && isBridgeOperation(type)) ||
+            (method === 'RequestStatusUpdate' && isEvmOperation(type))
+          ) {
+            // update params
+            this.saveHistory({
+              id,
+              type,
+              hash: first(data.toJSON()),
+            });
           }
 
           if (section === 'system' && method === 'ExtrinsicFailed') {
-            history.status = TransactionStatus.Error;
-            history.endTime = Date.now();
+            const status = TransactionStatus.Error;
+            const endTime = Date.now();
+            let errorMessage = '';
+
             const [error] = data;
             if (error.isModule) {
               const decoded = this.api.registry.findMetaError(error.asModule);
               const { docs } = decoded;
-              history.errorMessage = docs.join(' ').trim();
+              errorMessage = docs.join(' ').trim();
             } else {
               // Other, CannotLookup, BadOrigin, no extra info
-              history.errorMessage = error.toString();
+              errorMessage = error.toString();
             }
-            this.saveHistory(history);
+            // update params
+            this.saveHistory({
+              id,
+              type,
+              endTime,
+              errorMessage,
+              status,
+            });
           }
         });
         unsub();
       }
     }).catch((e: Error) => {
       // override history 'id' to 'startTime', because we will delete history 'txId' below
-      history.id = this.encrypt(`${history.startTime}`);
-      history.status = TransactionStatus.Error;
-      history.endTime = Date.now();
+      const id = this.encrypt(`${history.startTime}`);
+      const status = TransactionStatus.Error;
+      const endTime = Date.now();
+
       const errorParts = e.message.split(':');
-      const errorInfo = last(errorParts)?.trim();
-      history.errorMessage = errorInfo;
+      const errorMessage = last(errorParts)?.trim();
+
       // at the moment the history has not yet been saved;
       // save history and then delete 'txId'
-      this.saveHistory(history, {
-        wasNotGenerated: true,
-      });
-      throw new Error(errorInfo);
+      this.saveHistory(
+        {
+          ...history,
+          id,
+          endTime,
+          errorMessage,
+          status,
+        },
+        {
+          wasNotGenerated: true,
+        }
+      );
+
+      throw new Error(errorMessage);
     });
   }
 

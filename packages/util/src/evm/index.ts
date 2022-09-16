@@ -119,13 +119,14 @@ export class EvmApi extends BaseApi {
     return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
   }
 
-  public async burn(asset: Asset, recipient: string, amount: string | number): Promise<void> {
+  public async burn(asset: Asset, recipient: string, amount: string | number, historyId?: string): Promise<void> {
     // asset should be checked as registered on bridge or not
     const fpAmount = new FPNumber(amount, asset.decimals);
+    const historyItem = this.getHistory(historyId);
     await this.submitExtrinsic(
       this.api.tx.evmBridgeProxy.burn(this.externalNetwork, asset.address, recipient, fpAmount.toCodecString()),
       this.account.pair,
-      {
+      historyItem || {
         type: Operation.EvmOutgoing,
         symbol: asset.symbol,
         assetAddress: asset.address,
