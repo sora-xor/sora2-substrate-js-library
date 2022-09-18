@@ -224,7 +224,13 @@ export class PoolXykModule {
   ) {
     let baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId;
 
-    if ([XOR.address, XSTUSD.address].includes(firstAsset.address)) {
+    if (firstAsset.address === XSTUSD.address && secondAsset.address === XOR.address) {
+      DEXId = this.root.defaultDEXId;
+      baseAsset = secondAsset;
+      targetAsset = firstAsset;
+      baseAssetAmount = secondAmount;
+      targetAssetAmount = firstAmount;
+    } else if ([XOR.address, XSTUSD.address].includes(firstAsset.address)) {
       DEXId = firstAsset.address === XOR.address ? this.root.defaultDEXId : this.root.xstDEXId;
       baseAsset = firstAsset;
       targetAsset = secondAsset;
