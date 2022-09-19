@@ -140,10 +140,10 @@ export class EvmApi extends BaseApi {
    *
    * **first** array item represents the **last** transaction
    */
-  public async getUserTxHashes(): Promise<Array<string>> {
+  public async getUserTxHashes(externalNetwork: EvmNetwork): Promise<Array<string>> {
     assert(this.account, Messages.connectWallet);
 
-    const data = await this.api.query.evmBridgeProxy.userTransactions(this.externalNetwork, this.account.pair.address);
+    const data = await this.api.query.evmBridgeProxy.userTransactions(externalNetwork, this.account.pair.address);
 
     return data.map((value) => value.toString()).reverse();
   }
@@ -153,25 +153,25 @@ export class EvmApi extends BaseApi {
    *
    * **First** array item represents the **last** transaction
    */
-  public subscribeOnUserTxHashes(): Observable<Array<string>> {
+  public subscribeOnUserTxHashes(externalNetwork: EvmNetwork): Observable<Array<string>> {
     assert(this.account, Messages.connectWallet);
 
     return this.apiRx.query.evmBridgeProxy
-      .userTransactions(this.externalNetwork, this.account.pair.address)
+      .userTransactions(externalNetwork, this.account.pair.address)
       .pipe(map((items) => items.map((value) => value.toString()).reverse()));
   }
 
   /** Get transaction details */
-  public async getTxDetails(hash: string): Promise<EvmTransaction | null> {
-    const data = await this.api.query.evmBridgeProxy.transactions(this.externalNetwork, hash);
+  public async getTxDetails(externalNetwork: EvmNetwork, hash: string): Promise<EvmTransaction | null> {
+    const data = await this.api.query.evmBridgeProxy.transactions(externalNetwork, hash);
 
     return formatEvmTx(hash, data);
   }
 
   /** Subscribe on transaction details */
-  public subscribeOnTxDetails(hash: string): Observable<EvmTransaction | null> {
+  public subscribeOnTxDetails(externalNetwork: EvmNetwork, hash: string): Observable<EvmTransaction | null> {
     return this.apiRx.query.evmBridgeProxy
-      .transactions(this.externalNetwork, hash)
+      .transactions(externalNetwork, hash)
       .pipe(map((value) => formatEvmTx(hash, value)));
   }
 
@@ -180,8 +180,8 @@ export class EvmApi extends BaseApi {
    *
    * This method might be used for pageable items
    */
-  public async getTxsDetails(hashes: Array<string>): Promise<Array<EvmTransaction>> {
-    const params = hashes.map((hash) => [this.externalNetwork, hash]);
+  public async getTxsDetails(externalNetwork: EvmNetwork, hashes: Array<string>): Promise<Array<EvmTransaction>> {
+    const params = hashes.map((hash) => [externalNetwork, hash]);
     const data = await this.api.query.evmBridgeProxy.transactions.multi(params);
 
     return data.map((item, index) => formatEvmTx(hashes[index], item)).filter((item) => !!item);
@@ -192,8 +192,8 @@ export class EvmApi extends BaseApi {
    *
    * This method might be used for pageable items
    */
-  public subscribeOnTxsDetails(hashes: Array<string>): Observable<Array<EvmTransaction>> {
-    const params = hashes.map((hash) => [this.externalNetwork, hash]);
+  public subscribeOnTxsDetails(externalNetwork: EvmNetwork, hashes: Array<string>): Observable<Array<EvmTransaction>> {
+    const params = hashes.map((hash) => [externalNetwork, hash]);
     return this.apiRx.query.evmBridgeProxy.transactions
       .multi(params)
       .pipe(map((value) => value.map((item, index) => formatEvmTx(hashes[index], item)).filter((item) => !!item)));
