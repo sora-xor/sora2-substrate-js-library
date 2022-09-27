@@ -419,6 +419,7 @@ export interface StorageType extends BaseStorageType {
      * Smart-contract address on Sidechain.
      **/
     bridgeContractAddress: StorageMap<BridgeNetworkId | AnyNumber, EthAddress>;
+    bridgeSignatureVersions: StorageMap<BridgeNetworkId | AnyNumber, BridgeSignatureVersion>;
     /**
      * Bridge status.
      **/
@@ -448,6 +449,7 @@ export interface StorageType extends BaseStorageType {
      * Network peers set.
      **/
     peers: StorageMap<BridgeNetworkId | AnyNumber, BTreeSet<AccountId>>;
+    pendingBridgeSignatureVersions: StorageMap<BridgeNetworkId | AnyNumber, Option<BridgeSignatureVersion>>;
     /**
      * Used for compatibility with XOR and VAL contracts.
      **/
@@ -1211,6 +1213,7 @@ export interface StorageType extends BaseStorageType {
     totalIssuance: StorageMap<CurrencyId | AnyNumber, Balance>;
   };
   tradingPair: {    enabledSources: StorageDoubleMap<DEXId | AnyNumber, TradingPair | { base_asset_id?: any; target_asset_id?: any } | string, Option<BTreeSet<LiquiditySourceType>>>;
+    lockedLiquiditySources: Vec<LiquiditySourceType> | null;
   };
   transactionPayment: {    nextFeeMultiplier: Multiplier | null;
     storageVersion: Releases | null;
