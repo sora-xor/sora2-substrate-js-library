@@ -131,34 +131,34 @@ export class Api extends BaseApi {
    * The first method you should run. Includes initialization process
    * @param withKeyringLoading `true` by default
    */
-  public initialize(withKeyringLoading = true): void {
+  public async initialize(withKeyringLoading = true): Promise<void> {
     const address = this.storage?.get('address');
     const password = this.storage?.get('password');
     const name = this.storage?.get('name');
     const source = this.storage?.get('source');
 
     if (withKeyringLoading) {
-      cryptoWaitReady().then(() => {
-        keyring.loadAll({ type: KeyringType });
+      await cryptoWaitReady();
 
-        if (!address) {
-          return;
-        }
+      keyring.loadAll({ type: KeyringType });
 
-        const defaultAddress = this.formatAddress(address, false);
-        const soraAddress = this.formatAddress(address);
+      if (!address) {
+        return;
+      }
 
-        this.storage?.set('address', soraAddress);
+      const defaultAddress = this.formatAddress(address, false);
+      const soraAddress = this.formatAddress(address);
 
-        const pair = keyring.getPair(defaultAddress);
-        const account =
-          !source && password
-            ? keyring.addPair(pair, decrypt(password as string))
-            : keyring.addExternal(defaultAddress, name ? { name } : {});
+      this.storage?.set('address', soraAddress);
 
-        this.setAccount(account);
-        this.initAccountStorage();
-      });
+      const pair = keyring.getPair(defaultAddress);
+      const account =
+        !source && password
+          ? keyring.addPair(pair, decrypt(password as string))
+          : keyring.addExternal(defaultAddress, name ? { name } : {});
+
+      this.setAccount(account);
+      this.initAccountStorage();
     }
 
     // [1.9.9]: Migration from 'isExternal' to 'source' in localstorage
