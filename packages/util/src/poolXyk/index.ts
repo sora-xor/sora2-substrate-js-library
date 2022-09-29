@@ -15,9 +15,24 @@ import type { Api } from '../api';
 import type { AccountLiquidity } from './types';
 import type { Asset, AccountAsset } from '../assets/types';
 
+function serializeLPKey(liquidity: Partial<AccountLiquidity>): string {
+  if (!(liquidity.firstAddress && liquidity.secondAddress)) {
+    return '';
+  }
+  return `${liquidity.firstAddress},${liquidity.secondAddress}`;
+}
+
+function deserializeLPKey(key: string): Partial<AccountLiquidity> {
+  const [firstAddress, secondAddress] = key.split(',');
+  if (!(firstAddress && secondAddress)) {
+    return null;
+  }
+  return { firstAddress, secondAddress };
+}
+
 export class PoolXykModule {
   constructor(private readonly root: Api) {}
-
+  /** key = `baseAssetId,targetAssetId` */
   private subscriptions: Map<string, Subscription> = new Map();
   private subject = new Subject<void>();
   public updated = this.subject.asObservable();
@@ -194,7 +209,7 @@ export class PoolXykModule {
   }
 
   private async subscribeOnAccountLiquidity(liquidity: Partial<AccountLiquidity>): Promise<void> {
-    if (this.subscriptions.has(liquidity.secondAddress)) return;
+    if (this.subscriptions.has(serializeLPKey(liquidity))) return;
 
     const poolAccount = poolAccountIdFromAssetPair(
       this.root.api,
@@ -218,13 +233,13 @@ export class PoolXykModule {
         async ([reserves, balance]) => {
           const updatedLiquidity = await this.getAccountLiquidityItem(
             poolAccount,
-            XOR.address,
+            liquidity.firstAddress,
             liquidity.secondAddress,
             reserves,
             balance
           );
           // add or update liquidity only if subscription exists, or this is first subscription result
-          if (updatedLiquidity && (this.subscriptions.has(liquidity.secondAddress) || isFirstTick)) {
+          if (updatedLiquidity && (this.subscriptions.has(serializeLPKey(liquidity)) || isFirstTick)) {
             this.addToLiquidityList(updatedLiquidity);
           } else {
             this.removeAccountLiquidity(liquidity); // Remove it from list if something was wrong
@@ -237,7 +252,7 @@ export class PoolXykModule {
       );
     });
 
-    this.subscriptions.set(liquidity.secondAddress, subscription);
+    this.subscriptions.set(serializeLPKey(liquidity), subscription);
   }
 
   private arrangeAssetsForParams(
@@ -340,13 +355,15 @@ export class PoolXykModule {
   }
 
   public unsubscribeFromAccountLiquidity(liquidity: Partial<AccountLiquidity>): void {
-    this.subscriptions.get(liquidity.secondAddress)?.unsubscribe();
-    this.subscriptions.delete(liquidity.secondAddress);
+    const key = serializeLPKey(liquidity);
+    this.subscriptions.get(key)?.unsubscribe();
+    this.subscriptions.delete(key);
   }
 
   public unsubscribeFromAllUpdates(): void {
-    for (const secondAddress of this.subscriptions.keys()) {
-      this.unsubscribeFromAccountLiquidity({ secondAddress });
+    for (const key of this.subscriptions.keys()) {
+      const liquidity = deserializeLPKey(key);
+      this.unsubscribeFromAccountLiquidity(liquidity);
     }
   }
 
