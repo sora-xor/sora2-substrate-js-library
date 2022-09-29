@@ -320,7 +320,6 @@ export class BaseApi {
     // TODO: Add ERA only for SWAP
     // Check how to add ONLY as immortal era
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
-    this.lockPair();
 
     history.txId = signedTx.hash.toString();
 
