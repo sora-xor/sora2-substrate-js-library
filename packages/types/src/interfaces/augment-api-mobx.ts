@@ -27,7 +27,7 @@ import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLo
 import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking';
 import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
 import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interfaces/demeterFarmingPlatform';
-import type { AssetKind, BridgeNetworkId, BridgeStatus, BridgeTimepoint, EthAddress, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AssetKind, BridgeNetworkId, BridgeSignatureVersion, BridgeStatus, BridgeTimepoint, EthAddress, EthPeersSync, OffchainRequest, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
 import type { AccountId, AccountIdOf, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, FixedU128, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, StorageVersion, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
