@@ -43,11 +43,11 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidAssetSymbol: AugmentedError<ApiType>;
       /**
-       * Content source is not valid. It must be ascii only.
+       * Content source is not valid. It must be ascii only and `common::ASSET_CONTENT_SOURCE_MAX_LENGTH` characters long at max.
        **/
       InvalidContentSource: AugmentedError<ApiType>;
       /**
-       * Description is not valid. It must be 200 characters long at max.
+       * Description is not valid. It must be `common::ASSET_DESCRIPTION_MAX_LENGTH` characters long at max.
        **/
       InvalidDescription: AugmentedError<ApiType>;
       /**
@@ -143,58 +143,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       VestingBalance: AugmentedError<ApiType>;
     };
-    basicInboundChannel: {
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * This channel already exists
-       **/
-      ChannelExists: AugmentedError<ApiType>;
-      /**
-       * Message has an invalid envelope.
-       **/
-      InvalidEnvelope: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid etherem network
-       **/
-      InvalidNetwork: AugmentedError<ApiType>;
-      /**
-       * Message has an unexpected nonce.
-       **/
-      InvalidNonce: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid outbound channel on the Ethereum side.
-       **/
-      InvalidSourceChannel: AugmentedError<ApiType>;
-    };
-    basicOutboundChannel: {
-      /**
-       * This channel already exists
-       **/
-      ChannelExists: AugmentedError<ApiType>;
-      /**
-       * Target network not exists
-       **/
-      InvalidNetwork: AugmentedError<ApiType>;
-      /**
-       * Not authorized to send message
-       **/
-      NotAuthorized: AugmentedError<ApiType>;
-      /**
-       * Cannot increment nonce
-       **/
-      Overflow: AugmentedError<ApiType>;
-      /**
-       * The message payload exceeds byte limit.
-       **/
-      PayloadTooLarge: AugmentedError<ApiType>;
-      /**
-       * No more messages can be queued for the channel during this commit cycle.
-       **/
-      QueueSizeLimitReached: AugmentedError<ApiType>;
-    };
     bridgeMultisig: {
       /**
        * Call is already approved by this signatory.
@@ -287,9 +235,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       FundsAlreadyWithdrawn: AugmentedError<ApiType>;
       /**
-       * Invalid end block
+       * Invalid end timestamp
        **/
-      InvalidEndBlock: AugmentedError<ApiType>;
+      InvalidEndTimestamp: AugmentedError<ApiType>;
       /**
        * Invalid number of option
        **/
@@ -299,9 +247,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidNumberOfVotes: AugmentedError<ApiType>;
       /**
-       * Invalid start block
+       * Invalid start timestamp
        **/
-      InvalidStartBlock: AugmentedError<ApiType>;
+      InvalidStartTimestamp: AugmentedError<ApiType>;
       /**
        * Invalid votes
        **/
@@ -393,9 +341,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ILONotStarted: AugmentedError<ApiType>;
       /**
-       * End block must be greater than start block
+       * End timestamp must be greater than start timestamp
        **/
-      InvalidEndBlock: AugmentedError<ApiType>;
+      InvalidEndTimestamp: AugmentedError<ApiType>;
       /**
        * First release percent can't be zero
        **/
@@ -433,9 +381,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidSoftCap: AugmentedError<ApiType>;
       /**
-       * Start block must be in future
+       * Start timestamp be in future
        **/
-      InvalidStartBlock: AugmentedError<ApiType>;
+      InvalidStartTimestamp: AugmentedError<ApiType>;
       /**
        * Team first release percent can't be zero
        **/
@@ -503,9 +451,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidPercentage: AugmentedError<ApiType>;
       /**
-       * Block number in past,
+       * Unlocking date cannot be in past
        **/
-      InvalidUnlockingBlock: AugmentedError<ApiType>;
+      InvalidUnlockingTimestamp: AugmentedError<ApiType>;
       /**
        * Pool does not exist
        **/
@@ -531,9 +479,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidNumberOfTokens: AugmentedError<ApiType>;
       /**
-       * Block number in past,
+       * Unlocking date cannot be in past
        **/
-      InvalidUnlockingBlock: AugmentedError<ApiType>;
+      InvalidUnlockingTimestamp: AugmentedError<ApiType>;
       /**
        * Lock info does not exist
        **/
@@ -914,44 +862,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnableToVote: AugmentedError<ApiType>;
     };
-    erc20App: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-    };
-    ethApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Destination account is not set.
-       **/
-      DestAccountIsNotSet: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-    };
     ethBridge: {
       /**
        * Account not found.
@@ -1294,61 +1204,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongPendingPeer: AugmentedError<ApiType>;
     };
-    ethereumLightClient: {
-      /**
-       * Header is same height or older than finalized block (we don't support forks).
-       **/
-      AncientHeader: AugmentedError<ApiType>;
-      /**
-       * Unsupported consensus engine
-       **/
-      ConsensusNotSupported: AugmentedError<ApiType>;
-      /**
-       * Log could not be decoded
-       **/
-      DecodeFailed: AugmentedError<ApiType>;
-      /**
-       * Header has already been imported.
-       **/
-      DuplicateHeader: AugmentedError<ApiType>;
-      /**
-       * Header referenced in inclusion proof is not final yet.
-       **/
-      HeaderNotFinalized: AugmentedError<ApiType>;
-      /**
-       * Header is on a stale fork, i.e. it's not a descendant of the latest finalized block
-       **/
-      HeaderOnStaleFork: AugmentedError<ApiType>;
-      /**
-       * One or more header fields are invalid.
-       **/
-      InvalidHeader: AugmentedError<ApiType>;
-      /**
-       * Proof could not be applied / verified.
-       **/
-      InvalidProof: AugmentedError<ApiType>;
-      /**
-       * Header referenced in inclusion proof doesn't exist, e.g. because it's
-       * pruned or older than genesis.
-       **/
-      MissingHeader: AugmentedError<ApiType>;
-      /**
-       * Header's parent has not been imported.
-       **/
-      MissingParentHeader: AugmentedError<ApiType>;
-      /**
-       * Network with given id already registered
-       **/
-      NetworkAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * Unknown network id passed
-       **/
-      NetworkNotFound: AugmentedError<ApiType>;
-      /**
-       * This should never be returned - indicates a bug
-       **/
-      Unknown: AugmentedError<ApiType>;
-    };
     farming: {
       /**
        * Increment account reference error.
@@ -1477,58 +1332,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidKey: AugmentedError<ApiType>;
     };
-    incentivizedInboundChannel: {
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * This contract already exists
-       **/
-      ContractExists: AugmentedError<ApiType>;
-      /**
-       * Message has an invalid envelope.
-       **/
-      InvalidEnvelope: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid network.
-       **/
-      InvalidNetwork: AugmentedError<ApiType>;
-      /**
-       * Message has an unexpected nonce.
-       **/
-      InvalidNonce: AugmentedError<ApiType>;
-      /**
-       * Incorrect reward fraction
-       **/
-      InvalidRewardFraction: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid outbound channel on the Ethereum side.
-       **/
-      InvalidSourceChannel: AugmentedError<ApiType>;
-    };
-    incentivizedOutboundChannel: {
-      /**
-       * This channel already exists
-       **/
-      ChannelExists: AugmentedError<ApiType>;
-      /**
-       * Cannot pay the fee to submit a message.
-       **/
-      NoFunds: AugmentedError<ApiType>;
-      /**
-       * Cannot increment nonce
-       **/
-      Overflow: AugmentedError<ApiType>;
-      /**
-       * The message payload exceeds byte limit.
-       **/
-      PayloadTooLarge: AugmentedError<ApiType>;
-      /**
-       * No more messages can be queued for the channel during this commit cycle.
-       **/
-      QueueSizeLimitReached: AugmentedError<ApiType>;
-    };
     irohaMigration: {
       /**
        * Iroha account is already migrated
@@ -1605,35 +1408,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       SlippageNotTolerated: AugmentedError<ApiType>;
       /**
+       * Unable to swap indivisible assets
+       **/
+      UnableToSwapIndivisibleAssets: AugmentedError<ApiType>;
+      /**
        * No route exists in a given DEX for given parameters to carry out the swap
        **/
       UnavailableExchangePath: AugmentedError<ApiType>;
-    };
-    migrationApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-      /**
-       * Token already registered with another address.
-       **/
-      TokenRegisteredWithAnotherAddress: AugmentedError<ApiType>;
     };
     multicollateralBondingCurvePool: {
       /**
@@ -2011,6 +1792,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Unable to get XOR part from marker asset.
        **/
       UnableToGetXORPartFromMarkerAsset: AugmentedError<ApiType>;
+      /**
+       * Unable to proceed operation with indivisible assets
+       **/
+      UnableToOperateWithIndivisibleAssets: AugmentedError<ApiType>;
       /**
        * Attempt to quote via unsupported path, i.e. both output and input tokens are not XOR.
        **/
@@ -2430,6 +2215,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Not a member.
        **/
       NotMember: AugmentedError<ApiType>;
+      /**
+       * Too many members.
+       **/
+      TooManyMembers: AugmentedError<ApiType>;
     };
     tokens: {
       /**
@@ -2488,6 +2277,10 @@ declare module '@polkadot/api-base/types/errors' {
     };
     vestedRewards: {
       /**
+       * Something is wrong with arithmetic - overflow happened, for example.
+       **/
+      ArithmeticError: AugmentedError<ApiType>;
+      /**
        * Failed to perform reward calculation.
        **/
       CantCalculateReward: AugmentedError<ApiType>;
@@ -2519,6 +2312,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Account has no pending rewards to claim.
        **/
       NothingToClaim: AugmentedError<ApiType>;
+      /**
+       * This error appears on wrong conversion of a number into another type.
+       **/
+      NumberConversionError: AugmentedError<ApiType>;
       /**
        * Account holding dedicated reward reserves is empty. This likely means that some of
        * reward programmes have finished.

@@ -2,10 +2,10 @@
 /* eslint-disable */
 
 import type { ApiTypes } from '@polkadot/api-base/types';
-import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
+import type { Bytes, Null, Option, Result, Text, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, H256 } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesHeaderHeaderId, BridgeTypesMessageId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportScheduleLookupError, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, SpFinalityGrandpaAppPublic, SpRuntimeDispatchError } from '@polkadot/types/lookup';
+import type { AccountId32, H256 } from '@polkadot/types/interfaces/runtime';
+import type { CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportScheduleLookupError, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingValidatorPrefs, SpFinalityGrandpaAppPublic, SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/events' {
   export interface AugmentedEvents<ApiType extends ApiTypes> {
@@ -36,6 +36,10 @@ declare module '@polkadot/api-base/types/events' {
        * Moved an account from one bag to another.
        **/
       Rebagged: AugmentedEvent<ApiType, [who: AccountId32, from: u64, to: u64], { who: AccountId32, from: u64, to: u64 }>;
+      /**
+       * Updated the score of some account to the given amount.
+       **/
+      ScoreUpdated: AugmentedEvent<ApiType, [who: AccountId32, newScore: u64], { who: AccountId32, newScore: u64 }>;
     };
     balances: {
       /**
@@ -81,11 +85,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Withdraw: AugmentedEvent<ApiType, [who: AccountId32, amount: u128], { who: AccountId32, amount: u128 }>;
     };
-    basicInboundChannel: {
-    };
-    basicOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [u64]>;
-    };
     bridgeMultisig: {
       /**
        * A new multisig created. [multisig]
@@ -110,9 +109,9 @@ declare module '@polkadot/api-base/types/events' {
     };
     ceresGovernancePlatform: {
       /**
-       * Create poll [who, option, start_block, end_block]
+       * Create poll [who, option, start_timestamp, end_timestamp]
        **/
-      Created: AugmentedEvent<ApiType, [AccountId32, u32, u32, u32]>;
+      Created: AugmentedEvent<ApiType, [AccountId32, u32, u64, u64]>;
       /**
        * Voting [who, poll, option, balance]
        **/
@@ -174,9 +173,9 @@ declare module '@polkadot/api-base/types/events' {
     };
     ceresLiquidityLocker: {
       /**
-       * Funds Locked [who, amount, block]
+       * Funds Locked [who, amount, timestamp]
        **/
-      Locked: AugmentedEvent<ApiType, [AccountId32, u128, u32]>;
+      Locked: AugmentedEvent<ApiType, [AccountId32, u128, u64]>;
     };
     ceresStaking: {
       /**
@@ -334,6 +333,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       PreimageUsed: AugmentedEvent<ApiType, [proposalHash: H256, provider: AccountId32, deposit: u128], { proposalHash: H256, provider: AccountId32, deposit: u128 }>;
       /**
+       * A proposal got canceled.
+       **/
+      ProposalCanceled: AugmentedEvent<ApiType, [propIndex: u32], { propIndex: u32 }>;
+      /**
        * A motion has been proposed by a public account.
        **/
       Proposed: AugmentedEvent<ApiType, [proposalIndex: u32, deposit: u128], { proposalIndex: u32, deposit: u128 }>;
@@ -361,20 +364,6 @@ declare module '@polkadot/api-base/types/events' {
        * An account has voted in a referendum
        **/
       Voted: AugmentedEvent<ApiType, [voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote], { voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote }>;
-    };
-    dispatch: {
-      /**
-       * We have failed to decode a Call from the message.
-       **/
-      MessageDecodeFailed: AugmentedEvent<ApiType, [BridgeTypesMessageId]>;
-      /**
-       * Message has been dispatched with given result.
-       **/
-      MessageDispatched: AugmentedEvent<ApiType, [BridgeTypesMessageId, Result<Null, SpRuntimeDispatchError>]>;
-      /**
-       * Message has been rejected
-       **/
-      MessageRejected: AugmentedEvent<ApiType, [BridgeTypesMessageId]>;
     };
     electionProviderMultiPhase: {
       /**
@@ -447,20 +436,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       SeatHolderSlashed: AugmentedEvent<ApiType, [seatHolder: AccountId32, amount: u128], { seatHolder: AccountId32, amount: u128 }>;
     };
-    erc20App: {
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Burned: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, AccountId32, H160, u128]>;
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Minted: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, H160, AccountId32, u128]>;
-    };
-    ethApp: {
-      Burned: AugmentedEvent<ApiType, [U256, AccountId32, H160, u128]>;
-      Minted: AugmentedEvent<ApiType, [U256, H160, AccountId32, u128]>;
-    };
     ethBridge: {
       /**
        * The request's approvals have been collected. [Encoded Outgoing Request, Signatures]
@@ -491,10 +466,8 @@ declare module '@polkadot/api-base/types/events' {
        **/
       RequestRegistered: AugmentedEvent<ApiType, [H256]>;
     };
-    ethereumLightClient: {
-      Finalized: AugmentedEvent<ApiType, [U256, BridgeTypesHeaderHeaderId]>;
-    };
     faucet: {
+      LimitUpdated: AugmentedEvent<ApiType, [u128]>;
       Transferred: AugmentedEvent<ApiType, [AccountId32, u128]>;
     };
     grandpa: {
@@ -568,18 +541,11 @@ declare module '@polkadot/api-base/types/events' {
        **/
       SomeOffline: AugmentedEvent<ApiType, [offline: Vec<ITuple<[AccountId32, PalletStakingExposure]>>], { offline: Vec<ITuple<[AccountId32, PalletStakingExposure]>> }>;
     };
-    incentivizedInboundChannel: {
-    };
-    incentivizedOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [U256, u64]>;
-    };
     irohaMigration: {
       /**
        * Migrated. [source, target]
        **/
       Migrated: AugmentedEvent<ApiType, [Text, AccountId32]>;
-    };
-    leafProvider: {
     };
     liquidityProxy: {
       /**
@@ -587,11 +553,6 @@ declare module '@polkadot/api-base/types/events' {
        * [Caller Account, DEX Id, Input Asset Id, Output Asset Id, Input Amount, Output Amount, Fee Amount]
        **/
       Exchange: AugmentedEvent<ApiType, [AccountId32, u32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128, u128, u128, Vec<CommonPrimitivesLiquiditySourceId>]>;
-    };
-    migrationApp: {
-      Erc20Migrated: AugmentedEvent<ApiType, [U256, H160]>;
-      EthMigrated: AugmentedEvent<ApiType, [U256, H160]>;
-      SidechainMigrated: AugmentedEvent<ApiType, [U256, H160]>;
     };
     multicollateralBondingCurvePool: {
       /**
@@ -796,6 +757,10 @@ declare module '@polkadot/api-base/types/events' {
        * An account has unbonded this amount. \[stash, amount\]
        **/
       Unbonded: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      /**
+       * A validator has set their preferences.
+       **/
+      ValidatorPrefsSet: AugmentedEvent<ApiType, [AccountId32, PalletStakingValidatorPrefs]>;
       /**
        * An account has called `withdraw_unbonded` and removed unbonding chunks worth `Balance`
        * from the unlocking queue. \[stash, amount\]
@@ -1048,6 +1013,11 @@ declare module '@polkadot/api-base/types/events' {
        * The portion of fee is sent to the referrer. [Referral, Referrer, Amount]
        **/
       ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128]>;
+      /**
+       * New multiplier for weight to fee conversion is set
+       * (*1_000_000_000_000_000_000). [New value]
+       **/
+      WeightToFeeMultiplierUpdated: AugmentedEvent<ApiType, [u128]>;
     };
     xstPool: {
       /**
