@@ -1188,6 +1188,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnknownTokenAddress: AugmentedError<ApiType>;
       /**
+       * Bridge needs to have at least 3 peers for migration. Add new peer
+       **/
+      UnsafeMigration: AugmentedError<ApiType>;
+      /**
        * Unsupported asset id.
        **/
       UnsupportedAssetId: AugmentedError<ApiType>;
@@ -1400,6 +1404,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidFeeValue: AugmentedError<ApiType>;
       /**
+       * Liquidity source is already disabled
+       **/
+      LiquiditySourceAlreadyDisabled: AugmentedError<ApiType>;
+      /**
+       * Liquidity source is already enabled
+       **/
+      LiquiditySourceAlreadyEnabled: AugmentedError<ApiType>;
+      /**
        * Max fee exceeded
        **/
       MaxFeeExceeded: AugmentedError<ApiType>;
@@ -1407,6 +1419,14 @@ declare module '@polkadot/api-base/types/errors' {
        * Slippage either exceeds minimum tolerated output or maximum tolerated input.
        **/
       SlippageNotTolerated: AugmentedError<ApiType>;
+      /**
+       * Unable to disable liquidity source
+       **/
+      UnableToDisableLiquiditySource: AugmentedError<ApiType>;
+      /**
+       * Unable to enable liquidity source
+       **/
+      UnableToEnableLiquiditySource: AugmentedError<ApiType>;
       /**
        * Unable to swap indivisible assets
        **/

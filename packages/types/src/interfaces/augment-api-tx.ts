@@ -6,7 +6,7 @@ import type { Data } from '@polkadot/types';
 import type { Bytes, Compact, Option, Result, Text, U8aFixed, Vec, WrapperKeepOpaque, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonSwapAmount, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportScheduleMaybeHashed, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeHeader, SpSessionMembershipProof } from '@polkadot/types/lookup';
+import type { CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportScheduleMaybeHashed, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeHeader, SpSessionMembershipProof } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/submittable' {
   export interface AugmentedSubmittables<ApiType extends ApiTypes> {
@@ -1286,7 +1286,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `erc20_native_tokens` - migrated assets ids.
        * - `network_id` - bridge network identifier.
        **/
-      migrate: AugmentedSubmittable<(newContractAddress: H160 | string | Uint8Array, erc20NativeTokens: Vec<H160> | (H160 | string | Uint8Array)[], networkId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H160, Vec<H160>, u32]>;
+      migrate: AugmentedSubmittable<(newContractAddress: H160 | string | Uint8Array, erc20NativeTokens: Vec<H160> | (H160 | string | Uint8Array)[], networkId: u32 | AnyNumber | Uint8Array, newSignatureVersion: EthBridgeBridgeSignatureVersion | 'V1' | 'V2' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [H160, Vec<H160>, u32, EthBridgeBridgeSignatureVersion]>;
       /**
        * Prepare the given bridge for migration.
        * 
@@ -1304,7 +1304,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * network.
        * - `initial_peers` - a set of initial network peers.
        **/
-      registerBridge: AugmentedSubmittable<(bridgeContractAddress: H160 | string | Uint8Array, initialPeers: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [H160, Vec<AccountId32>]>;
+      registerBridge: AugmentedSubmittable<(bridgeContractAddress: H160 | string | Uint8Array, initialPeers: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[], signatureVersion: EthBridgeBridgeSignatureVersion | 'V1' | 'V2' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [H160, Vec<AccountId32>, EthBridgeBridgeSignatureVersion]>;
       /**
        * Register existing asset
        * 
@@ -1693,6 +1693,18 @@ declare module '@polkadot/api-base/types/submittable' {
       migrate: AugmentedSubmittable<(irohaAddress: Text | string, irohaPublicKey: Text | string, irohaSignature: Text | string) => SubmittableExtrinsic<ApiType>, [Text, Text, Text]>;
     };
     liquidityProxy: {
+      /**
+       * Disables XST or TBC liquidity source. The liquidity source becomes unavailable for swap.
+       * 
+       * - `liquidity_source`: the liquidity source to be disabled.
+       **/
+      disableLiquiditySource: AugmentedSubmittable<(liquiditySource: CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesLiquiditySourceType]>;
+      /**
+       * Enables XST or TBC liquidity source.
+       * 
+       * - `liquidity_source`: the liquidity source to be enabled.
+       **/
+      enableLiquiditySource: AugmentedSubmittable<(liquiditySource: CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesLiquiditySourceType]>;
       /**
        * Perform swap of tokens (input/output defined via SwapAmount direction).
        * 
