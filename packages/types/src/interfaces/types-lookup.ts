@@ -3,10 +3,10 @@
 
 declare module '@polkadot/types/lookup' {
   import type { Data } from '@polkadot/types';
-  import type { BTreeMap, Bytes, Compact, Enum, Null, Option, Result, Set, Struct, Text, U256, U8aFixed, Vec, bool, i128, i32, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+  import type { BTreeMap, Bytes, Compact, Enum, Null, Option, Result, Set, Struct, Text, U8aFixed, Vec, bool, i128, i32, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
   import type { ITuple } from '@polkadot/types-codec/types';
   import type { Vote } from '@polkadot/types/interfaces/elections';
-  import type { AccountId32, Call, H128, H160, H256, H512, PerU16, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
+  import type { AccountId32, Call, H160, H256, H512, PerU16, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
   import type { Event } from '@polkadot/types/interfaces/system';
 
   /** @name FrameSystemAccountInfo (3) */
@@ -1787,9 +1787,7 @@ declare module '@polkadot/types/lookup' {
     readonly asCouncil: PalletCollectiveRawOrigin;
     readonly isTechnicalCommittee: boolean;
     readonly asTechnicalCommittee: PalletCollectiveRawOrigin;
-    readonly isDispatch: boolean;
-    readonly asDispatch: DispatchRawOrigin;
-    readonly type: 'System' | 'Void' | 'Council' | 'TechnicalCommittee' | 'Dispatch';
+    readonly type: 'System' | 'Void' | 'Council' | 'TechnicalCommittee';
   }
 
   /** @name FrameSupportDispatchRawOrigin (209) */

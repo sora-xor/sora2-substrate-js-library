@@ -83,14 +83,6 @@ declare module '@polkadot/types/types/registry' {
     DemeterFarmingPlatformUserInfo: DemeterFarmingPlatformUserInfo;
     DexApiCall: DexApiCall;
     DexManagerError: DexManagerError;
-    DispatchEvent: DispatchEvent;
-    DispatchRawOrigin: DispatchRawOrigin;
-    Erc20AppCall: Erc20AppCall;
-    Erc20AppError: Erc20AppError;
-    Erc20AppEvent: Erc20AppEvent;
-    EthAppCall: EthAppCall;
-    EthAppError: EthAppError;
-    EthAppEvent: EthAppEvent;
     EthBridgeBridgeStatus: EthBridgeBridgeStatus;
     EthBridgeCall: EthBridgeCall;
     EthBridgeError: EthBridgeError;
@@ -181,13 +173,9 @@ declare module '@polkadot/types/types/registry' {
     IrohaMigrationError: IrohaMigrationError;
     IrohaMigrationEvent: IrohaMigrationEvent;
     IrohaMigrationPendingMultisigAccount: IrohaMigrationPendingMultisigAccount;
-    LeafProviderEvent: LeafProviderEvent;
     LiquidityProxyCall: LiquidityProxyCall;
     LiquidityProxyError: LiquidityProxyError;
     LiquidityProxyEvent: LiquidityProxyEvent;
-    MigrationAppCall: MigrationAppCall;
-    MigrationAppError: MigrationAppError;
-    MigrationAppEvent: MigrationAppEvent;
     MulticollateralBondingCurvePoolCall: MulticollateralBondingCurvePoolCall;
     MulticollateralBondingCurvePoolDistributionAccount: MulticollateralBondingCurvePoolDistributionAccount;
     MulticollateralBondingCurvePoolDistributionAccountData: MulticollateralBondingCurvePoolDistributionAccountData;

@@ -207,6 +207,7 @@ declare module '@polkadot/types/types/registry' {
     BridgedHeader: BridgedHeader;
     BridgeMessageId: BridgeMessageId;
     BridgeNetworkId: BridgeNetworkId;
+    BridgeSignatureVersion: BridgeSignatureVersion;
     BridgeStatus: BridgeStatus;
     BridgeTimepoint: BridgeTimepoint;
     BufferedSessionChange: BufferedSessionChange;

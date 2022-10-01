@@ -3,7 +3,7 @@
 
 import type { ApiTypes } from '@polkadot/api-base/types';
 import type { Data } from '@polkadot/types';
-import type { Bytes, Compact, Option, Result, Text, U256, U8aFixed, Vec, WrapperKeepOpaque, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { Bytes, Compact, Option, Result, Text, U8aFixed, Vec, WrapperKeepOpaque, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
 import type { BridgeTypesEthashproofDoubleNodeWithMerkleProof, BridgeTypesEthashproofMixNonce, BridgeTypesHeader, BridgeTypesMessage, BridgeTypesNetworkConfig, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonSwapAmount, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportScheduleMaybeHashed, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeHeader, SpRuntimeMultiSignature, SpRuntimeMultiSigner, SpSessionMembershipProof } from '@polkadot/types/lookup';
@@ -1762,12 +1762,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       swapTransfer: AugmentedSubmittable<(receiver: AccountId32 | string | Uint8Array, dexId: u32 | AnyNumber | Uint8Array, inputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, outputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, swapAmount: CommonSwapAmount | { WithDesiredInput: any } | { WithDesiredOutput: any } | string | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonSwapAmount, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode]>;
     };
-    migrationApp: {
-      migrateErc20: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, erc20Assets: Vec<ITuple<[CommonPrimitivesAssetId32, H160]>> | ([CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, H160 | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [U256, Vec<ITuple<[CommonPrimitivesAssetId32, H160]>>]>;
-      migrateEth: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256]>;
-      migrateSidechain: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, sidechainAssets: Vec<ITuple<[CommonPrimitivesAssetId32, H160]>> | ([CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, H160 | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [U256, Vec<ITuple<[CommonPrimitivesAssetId32, H160]>>]>;
-      registerNetwork: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, contract: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, H160]>;
-    };
     multicollateralBondingCurvePool: {
       /**
        * Enable exchange path on the pool for pair BaseAsset-CollateralAsset.
@@ -2854,7 +2848,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - Weight of derivative `call` execution + T::WeightInfo::dispatch_as().
        * # </weight>
        **/
-      dispatchAs: AugmentedSubmittable<(asOrigin: FramenodeRuntimeOriginCaller | { system: any } | { Void: any } | { Council: any } | { TechnicalCommittee: any } | { Dispatch: any } | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [FramenodeRuntimeOriginCaller, Call]>;
+      dispatchAs: AugmentedSubmittable<(asOrigin: FramenodeRuntimeOriginCaller | { system: any } | { Void: any } | { Council: any } | { TechnicalCommittee: any } | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [FramenodeRuntimeOriginCaller, Call]>;
       /**
        * Send a batch of dispatch calls.
        * Unlike `batch`, it allows errors and won't interrupt.

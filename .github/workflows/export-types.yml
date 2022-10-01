@@ -42,6 +42,7 @@ jobs:
             Nikita-Polyakov
             alexnatalia
             RustemYuzlibaev
+            Tieumsan
 
       - name: send message to telegram # if types changed
         if: ${{ env.types-diff > 0 }}

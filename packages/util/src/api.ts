@@ -1,5 +1,5 @@
 import { assert, isHex } from '@polkadot/util';
-import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
+import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, cryptoWaitReady } from '@polkadot/util-crypto';
 import keyring from '@polkadot/ui-keyring';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KeypairType } from '@polkadot/util-crypto/types';
@@ -141,14 +141,34 @@ export class Api extends BaseApi {
    * The first method you should run. Includes initialization process
    * @param withKeyringLoading `true` by default
    */
-  public initialize(withKeyringLoading = true): void {
+  public async initialize(withKeyringLoading = true): Promise<void> {
     const address = this.storage?.get('address');
     const password = this.storage?.get('password');
     const name = this.storage?.get('name');
     const source = this.storage?.get('source');
 
     if (withKeyringLoading) {
+      await cryptoWaitReady();
+
       keyring.loadAll({ type: KeyringType });
+
+      if (!address) {
+        return;
+      }
+
+      const defaultAddress = this.formatAddress(address, false);
+      const soraAddress = this.formatAddress(address);
+
+      this.storage?.set('address', soraAddress);
+
+      const pair = keyring.getPair(defaultAddress);
+      const account =
+        !source && password
+          ? keyring.addPair(pair, decrypt(password as string))
+          : keyring.addExternal(defaultAddress, name ? { name } : {});
+
+      this.setAccount(account);
+      this.initAccountStorage();
     }
 
     // [1.9.9]: Migration from 'isExternal' to 'source' in localstorage
@@ -157,23 +177,6 @@ export class Api extends BaseApi {
       this.logout();
       return;
     }
-
-    if (!address) {
-      return;
-    }
-
-    const defaultAddress = this.formatAddress(address, false);
-    const soraAddress = this.formatAddress(address);
-    this.storage?.set('address', soraAddress);
-    const pair = keyring.getPair(defaultAddress);
-
-    const account =
-      !source && password
-        ? keyring.addPair(pair, decrypt(password as string))
-        : keyring.addExternal(defaultAddress, name ? { name } : {});
-
-    this.setAccount(account);
-    this.initAccountStorage();
   }
 
   /**

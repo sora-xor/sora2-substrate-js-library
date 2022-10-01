@@ -43,11 +43,11 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidAssetSymbol: AugmentedError<ApiType>;
       /**
-       * Content source is not valid. It must be ascii only.
+       * Content source is not valid. It must be ascii only and `common::ASSET_CONTENT_SOURCE_MAX_LENGTH` characters long at max.
        **/
       InvalidContentSource: AugmentedError<ApiType>;
       /**
-       * Description is not valid. It must be 200 characters long at max.
+       * Description is not valid. It must be `common::ASSET_DESCRIPTION_MAX_LENGTH` characters long at max.
        **/
       InvalidDescription: AugmentedError<ApiType>;
       /**
@@ -918,44 +918,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnableToVote: AugmentedError<ApiType>;
     };
-    erc20App: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-    };
-    ethApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Destination account is not set.
-       **/
-      DestAccountIsNotSet: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-    };
     ethBridge: {
       /**
        * Account not found.
@@ -1578,32 +1540,6 @@ declare module '@polkadot/api-base/types/errors' {
        * No route exists in a given DEX for given parameters to carry out the swap
        **/
       UnavailableExchangePath: AugmentedError<ApiType>;
-    };
-    migrationApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-      /**
-       * Token already registered with another address.
-       **/
-      TokenRegisteredWithAnotherAddress: AugmentedError<ApiType>;
     };
     multicollateralBondingCurvePool: {
       /**
