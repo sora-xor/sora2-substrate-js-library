@@ -211,35 +211,31 @@ export class PoolXykModule {
   private async subscribeOnAccountLiquidity(liquidity: Partial<AccountLiquidity>): Promise<void> {
     if (this.subscriptions.has(serializeLPKey(liquidity))) return;
 
-    const poolAccount = poolAccountIdFromAssetPair(
-      this.root.api,
-      liquidity.firstAddress,
-      liquidity.secondAddress
-    ).toString();
+    const { firstAddress, secondAddress } = liquidity;
+    const poolAccount = poolAccountIdFromAssetPair(this.root.api, firstAddress, secondAddress).toString();
     const accountPoolBalanceObservable = this.root.apiRx.query.poolXYK.poolProviders(
       poolAccount,
       this.root.account.pair.address
     );
-    const poolReservesObservable = this.root.apiRx.query.poolXYK.reserves(
-      liquidity.firstAddress,
-      liquidity.secondAddress
-    );
+    const poolReservesObservable = this.root.apiRx.query.poolXYK.reserves(firstAddress, secondAddress);
 
     let subscription: Subscription;
     let isFirstTick = true;
+
+    const key = serializeLPKey(liquidity);
 
     await new Promise<void>((resolve) => {
       subscription = combineLatest([poolReservesObservable, accountPoolBalanceObservable]).subscribe(
         async ([reserves, balance]) => {
           const updatedLiquidity = await this.getAccountLiquidityItem(
             poolAccount,
-            liquidity.firstAddress,
-            liquidity.secondAddress,
+            firstAddress,
+            secondAddress,
             reserves,
             balance
           );
           // add or update liquidity only if subscription exists, or this is first subscription result
-          if (updatedLiquidity && (this.subscriptions.has(serializeLPKey(liquidity)) || isFirstTick)) {
+          if (updatedLiquidity && (this.subscriptions.has(key) || isFirstTick)) {
             this.addToLiquidityList(updatedLiquidity);
           } else {
             this.removeAccountLiquidity(liquidity); // Remove it from list if something was wrong
@@ -252,7 +248,7 @@ export class PoolXykModule {
       );
     });
 
-    this.subscriptions.set(serializeLPKey(liquidity), subscription);
+    this.subscriptions.set(key, subscription);
   }
 
   private arrangeAssetsForParams(
@@ -275,14 +271,7 @@ export class PoolXykModule {
 
     const getDexId = (base: string) => (base === XOR.address ? DexId.XOR : DexId.XSTUSD);
 
-    if (firstAsset.address === XSTUSD.address && secondAsset.address === XOR.address) {
-      // We've decided to convert XSTUSD-XOR to XOR-XSTUSD cuz two different pair will confuse users
-      DEXId = DexId.XOR;
-      baseAsset = secondAsset;
-      targetAsset = firstAsset;
-      baseAssetAmount = secondAmount;
-      targetAssetAmount = firstAmount;
-    } else if (isFirstAssetSuitable) {
+    if (isFirstAssetSuitable) {
       DEXId = getDexId(firstAsset.address);
       baseAsset = firstAsset;
       targetAsset = secondAsset;
@@ -369,7 +358,9 @@ export class PoolXykModule {
 
   private removeAccountLiquidity(liquidity: Partial<AccountLiquidity>): void {
     this.unsubscribeFromAccountLiquidity(liquidity);
-    this.accountLiquidity = this.accountLiquidity.filter((item) => item.secondAddress !== liquidity.secondAddress);
+    this.accountLiquidity = this.accountLiquidity.filter(({ firstAddress, secondAddress }) => {
+      return !(liquidity.firstAddress === firstAddress && liquidity.secondAddress === secondAddress);
+    });
   }
 
   public clearAccountLiquidity(): void {
@@ -385,11 +376,14 @@ export class PoolXykModule {
     assert(this.root.account, Messages.connectWallet);
 
     // liquidities to be subscribed
-    const includedLiquidityList = assetIdPairs.map((pair) => ({ firstAddress: pair[0], secondAddress: pair[1] }));
+    const includedLiquidityList = assetIdPairs.map(([first, second]) => ({
+      firstAddress: first,
+      secondAddress: second,
+    }));
     // liquidities to be unsubscribed and removed
     const excludedLiquidityList = this.accountLiquidity.reduce<AccountLiquidity[]>(
       (result, liquidity) =>
-        assetIdPairs.find((pair) => pair[0] === liquidity.firstAddress && pair[1] === liquidity.secondAddress)
+        assetIdPairs.find(([first, second]) => liquidity.firstAddress === first && liquidity.secondAddress === second)
           ? result
           : [...result, liquidity],
       []
@@ -416,21 +410,23 @@ export class PoolXykModule {
     assert(this.root.account, Messages.connectWallet);
 
     this.accountLiquidityLoaded = new Subject<void>();
+    const account = this.root.accountPair.address;
 
     return this.root.apiRx.query.poolXYK.accountPools
-      .entries(this.root.accountPair.address)
-      .subscribe(async (result) => {
+      .multi([
+        [account, XOR.address],
+        [account, XSTUSD.address],
+      ])
+      .subscribe(async ([xorBased, xstBased]) => {
         const assetIdPairs = [];
-
-        result.forEach((dex) => {
-          const baseAssetId = dex[0].args[1].code.toString();
-          const targetAssetIds = dex[1];
-          targetAssetIds.forEach((targetAssetId) => {
-            const pair = [baseAssetId, targetAssetId.code.toString()];
-            assetIdPairs.push(pair);
-          });
+        xorBased.forEach((targetAssetId) => {
+          const pair = [XOR.address, targetAssetId.code.toString()];
+          assetIdPairs.push(pair);
         });
-
+        xstBased.forEach((targetAssetId) => {
+          const pair = [XSTUSD.address, targetAssetId.code.toString()];
+          assetIdPairs.push(pair);
+        });
         await this.updateAccountLiquiditySubscriptions(assetIdPairs);
 
         this.accountLiquidityLoaded.complete();
