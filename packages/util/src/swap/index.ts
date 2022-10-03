@@ -475,25 +475,24 @@ export class SwapModule {
   ): Promise<SwapResult> {
     const assetA = await this.root.assets.getAssetInfo(assetAAddress);
     const assetB = await this.root.assets.getAssetInfo(assetBAddress);
+    const toCodecString = (value) => new FPNumber(value, (!isExchangeB ? assetB : assetA).decimals).toCodecString();
+
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
     const result = await this.root.api.rpc.liquidityProxy.quote(
       dexId,
       assetAAddress,
       assetBAddress,
-      new FPNumber(amount, (!isExchangeB ? assetA : assetB).decimals).toCodecString(),
+      toCodecString(amount),
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
       liquiditySources as any,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
     );
     const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
     return {
-      amount: new FPNumber(value.amount, (!isExchangeB ? assetB : assetA).decimals).toCodecString(),
+      amount: toCodecString(value.amount),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
-      amountWithoutImpact: new FPNumber(
-        value.amountWithoutImpact,
-        (!isExchangeB ? assetB : assetA).decimals
-      ).toCodecString(),
+      amountWithoutImpact: toCodecString(value.amountWithoutImpact),
     } as SwapResult;
   }
 
