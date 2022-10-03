@@ -16,7 +16,6 @@ import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
 import { KnownAssets, XOR, DAI, XSTUSD } from '../assets/consts';
-import { DexId } from '../poolXyk/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
@@ -360,7 +359,7 @@ export class SwapModule {
     }
     return {
       args: [
-        DexId.XOR, // TODO [XST]
+        this.root.defaultDEXId,
         assetA.address,
         assetB.address,
         params,
@@ -470,14 +469,13 @@ export class SwapModule {
     assetBAddress: string,
     amount: NumberLike,
     isExchangeB = false,
-    liquiditySource = LiquiditySourceTypes.Default,
-    dexId = DexId.XOR
+    liquiditySource = LiquiditySourceTypes.Default
   ): Promise<SwapResult> {
     const assetA = await this.root.assets.getAssetInfo(assetAAddress);
     const assetB = await this.root.assets.getAssetInfo(assetBAddress);
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
     const result = await this.root.api.rpc.liquidityProxy.quote(
-      dexId,
+      this.root.defaultDEXId,
       assetAAddress,
       assetBAddress,
       new FPNumber(amount, (!isExchangeB ? assetA : assetB).decimals).toCodecString(),
@@ -503,12 +501,16 @@ export class SwapModule {
    * Check swap operation using `liquidityProxy.isPathAvailable` rpc call
    * @param firstAssetAddress
    * @param secondAssetAddress
-   * @param dexId
    * @returns availability of swap operation
    */
-  public async checkSwap(firstAssetAddress: string, secondAssetAddress: string, dexId = DexId.XOR): Promise<boolean> {
-    return (await this.root.api.rpc.liquidityProxy.isPathAvailable(dexId, firstAssetAddress, secondAssetAddress))
-      .isTrue;
+  public async checkSwap(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
+    return (
+      await this.root.api.rpc.liquidityProxy.isPathAvailable(
+        this.root.defaultDEXId,
+        firstAssetAddress,
+        secondAssetAddress
+      )
+    ).isTrue;
   }
 
   /**
@@ -517,17 +519,15 @@ export class SwapModule {
    * Get liquidity sources for selected pair using `tradingPair.listEnabledSourcesForPair` rpc call
    * @param firstAssetAddress
    * @param secondAssetAddress
-   * @param dexId
    */
   public async getEnabledLiquiditySourcesForPair(
     firstAssetAddress: string,
-    secondAssetAddress: string,
-    dexId = DexId.XOR
+    secondAssetAddress: string
   ): Promise<Array<LiquiditySourceTypes>> {
     const baseAssetId = secondAssetAddress === XOR.address ? secondAssetAddress : firstAssetAddress;
     const targetAssetId = baseAssetId === secondAssetAddress ? firstAssetAddress : secondAssetAddress;
     const list = (
-      await this.root.api.rpc.tradingPair.listEnabledSourcesForPair(dexId, baseAssetId, targetAssetId)
+      await this.root.api.rpc.tradingPair.listEnabledSourcesForPair(this.root.defaultDEXId, baseAssetId, targetAssetId)
     ).toJSON();
 
     return list as Array<LiquiditySourceTypes>;
@@ -540,17 +540,15 @@ export class SwapModule {
    * @param firstAssetAddress
    * @param secondAssetAddress
    * @param liquiditySource
-   * @param dexId
    */
   public async checkLiquiditySourceIsEnabledForPair(
     firstAssetAddress: string,
     secondAssetAddress: string,
-    liquiditySource: LiquiditySourceTypes,
-    dexId = DexId.XOR
+    liquiditySource: LiquiditySourceTypes
   ): Promise<boolean> {
     const isEnabled = (
       await this.root.api.rpc.tradingPair.isSourceEnabledForPair(
-        dexId,
+        this.root.defaultDEXId,
         firstAssetAddress,
         secondAssetAddress,
         liquiditySource as any

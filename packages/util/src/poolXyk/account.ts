@@ -4,9 +4,6 @@ import type { ApiPromise } from '@polkadot/api';
 import { types } from '@sora-substrate/type-definitions';
 import type { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types';
 
-import { XOR } from '../assets/consts';
-import { DexId } from './consts';
-
 const predefinedAssets = types['PredefinedAssetId']['_enum'];
 
 function bytesToUint(bytes: Uint8Array): number {
@@ -42,8 +39,7 @@ export function poolTechAccountIdFromAssetPair(
     targetAssetId: techTargetAsset,
   });
   const techPurpose = api.createType('TechPurpose', { LiquidityKeeper: tradingPair });
-  const dexId = baseAssetId === XOR.address ? DexId.XOR : DexId.XSTUSD;
-  return api.createType('TechAccountId', { Pure: [dexId, techPurpose] });
+  return api.createType('TechAccountId', { Pure: [0, techPurpose] });
 }
 
 export function techAccountIdToAccountId(api: ApiPromise, techAccountId: TechAccountId): AccountId {

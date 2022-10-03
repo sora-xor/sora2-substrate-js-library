@@ -16,13 +16,6 @@ export interface AssetKind extends Enum {
 /** @name BridgeNetworkId */
 export interface BridgeNetworkId extends u32 {}
 
-/** @name BridgeSignatureVersion */
-export interface BridgeSignatureVersion extends Enum {
-  readonly isV1: boolean;
-  readonly isV2: boolean;
-  readonly type: 'V1' | 'V2';
-}
-
 /** @name BridgeStatus */
 export interface BridgeStatus extends Enum {
   readonly isInitialized: boolean;

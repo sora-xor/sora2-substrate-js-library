@@ -435,9 +435,6 @@ export default {
       _enum: ['V1', 'V2RemovePendingTransfers'],
     },
     EthAddress: 'H160',
-    BridgeSignatureVersion: {
-      _enum: ['V1', 'V2'],
-    },
   },
   typesAlias: {
     ethBridge: {

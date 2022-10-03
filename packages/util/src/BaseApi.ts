@@ -12,7 +12,6 @@ import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/typ
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { AccountStorage, Storage } from './storage';
-import { DexId } from './poolXyk/consts';
 import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
@@ -86,6 +85,7 @@ export class BaseApi {
   } as NetworkFeesObject;
 
   protected readonly prefix = 69;
+  public readonly defaultDEXId = 0;
 
   private _history: AccountHistory<HistoryItem> = {};
   private _historySyncTimestamp: number = 0;
@@ -533,12 +533,12 @@ export class BaseApi {
   private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic | null {
     switch (operation) {
       case Operation.AddLiquidity:
-        return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0');
+        return this.api.tx.poolXYK.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0');
       case Operation.CreatePair:
         return this.api.tx.utility.batchAll([
-          this.api.tx.tradingPair.register(DexId.XOR, '', ''),
-          this.api.tx.poolXYK.initializePool(DexId.XOR, '', ''),
-          this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0'),
+          this.api.tx.tradingPair.register(this.defaultDEXId, '', ''),
+          this.api.tx.poolXYK.initializePool(this.defaultDEXId, '', ''),
+          this.api.tx.poolXYK.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0'),
         ]);
       case Operation.EthBridgeIncoming:
         return this.api.tx.ethBridge.requestFromSidechain('', { Transaction: 'Transfer' }, 0);
@@ -547,10 +547,10 @@ export class BaseApi {
       case Operation.RegisterAsset:
         return this.api.tx.assets.register('', '', '0', false, false, null, null);
       case Operation.RemoveLiquidity:
-        return this.api.tx.poolXYK.withdrawLiquidity(DexId.XOR, '', '', '0', '0', '0');
+        return this.api.tx.poolXYK.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0');
       case Operation.Swap:
         return this.api.tx.liquidityProxy.swap(
-          DexId.XOR,
+          this.defaultDEXId,
           '',
           '',
           { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
@@ -560,7 +560,7 @@ export class BaseApi {
       case Operation.SwapAndSend:
         return this.api.tx.liquidityProxy.swapTransfer(
           '',
-          DexId.XOR,
+          this.defaultDEXId,
           '',
           '',
           { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
