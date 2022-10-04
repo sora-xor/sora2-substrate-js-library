@@ -80,7 +80,7 @@ export class SwapModule {
     const baseAsset = dexId === DexId.XOR ? XOR.address : XSTUSD.address;
 
     try {
-      if (isDirectExchange(inputAssetId, outputAssetId)) {
+      if (isDirectExchange(inputAssetId, outputAssetId, baseAsset)) {
         const nonBaseAsset = inputAssetId === baseAsset ? outputAssetId : inputAssetId;
         const path = this.getSources(nonBaseAsset, payload, enabledAssets);
 
