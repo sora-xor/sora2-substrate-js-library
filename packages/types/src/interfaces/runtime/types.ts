@@ -42,10 +42,10 @@ export interface AssetId32 extends U8aFixed {}
 export interface AssetIdOf extends AssetId {}
 
 /** @name AssetName */
-export interface AssetName extends Bytes {}
+export interface AssetName extends Text {}
 
 /** @name AssetSymbol */
-export interface AssetSymbol extends Bytes {}
+export interface AssetSymbol extends Text {}
 
 /** @name Balance */
 export interface Balance extends UInt {}
