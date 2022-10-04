@@ -17,18 +17,19 @@ const getMaxPositive = (value: FPNumber) => FPNumber.max(value, FPNumber.ZERO) a
 const isGreaterThanZero = (value: FPNumber) => FPNumber.isGreaterThan(value, FPNumber.ZERO);
 const isLessThanOrEqualToZero = (value: FPNumber) => FPNumber.isLessThanOrEqualTo(value, FPNumber.ZERO);
 const isAssetAddress = (a: string, b: string) => a === b;
-const isXorAsset = (asset: string) => isAssetAddress(asset, Consts.XOR);
+const isXorAsset = (asset: string, dexBaseAsset = Consts.XOR) => isAssetAddress(asset, dexBaseAsset);
 
 // returs reserves by order: inputAssetId, outputAssetId
 export const getXykReserves = (
   inputAsset: string,
   outputAsset: string,
-  payload: QuotePayload
+  payload: QuotePayload,
+  dexBaseAsset = Consts.XOR
 ): [FPNumber, FPNumber] => {
-  const isXorInput = isXorAsset(inputAsset);
-  const nonXor = isXorInput ? outputAsset : inputAsset;
-  const reserves = [...payload.reserves.xyk[nonXor]];
-  const [input, output] = isXorInput ? reserves : reserves.reverse();
+  const isBaseAssetInput = isAssetAddress(inputAsset, dexBaseAsset);
+  const nonBaseAsset = isBaseAssetInput ? outputAsset : inputAsset;
+  const reserves = [...payload.reserves.xyk[nonBaseAsset]];
+  const [input, output] = isBaseAssetInput ? reserves : reserves.reverse();
 
   return [toFp(input), toFp(output)];
 };
@@ -532,10 +533,10 @@ export const xstQuote = (
 // XYK quote
 
 /**
- * Input token is xor, user indicates desired input amount
- * @param x - xor reserve
+ * Input token is dex base asset (xor), user indicates desired input amount
+ * @param x - base asset reserve
  * @param y - other token reserve
- * @param xIn x_in - desired input amount (xor)
+ * @param xIn x_in - desired input amount (base asset)
  * @returns QuoteResult
  */
 const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
@@ -556,9 +557,9 @@ const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
 };
 
 /**
- * Output token is xor, user indicates desired input amount
+ * Output token is dex base asset, user indicates desired input amount
  * @param x - other token reserve
- * @param y - xor reserve
+ * @param y - base asset reserve
  * @param xIn - desired input amount (other token)
  * @returns QuoteResult
  */
@@ -580,8 +581,8 @@ const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
 };
 
 /**
- * Input token is xor, user indicates desired output amount
- * @param x - xor reserve
+ * Input token is dex base asset, user indicates desired output amount
+ * @param x - base asset reserve
  * @param y - other token reserve
  * @param yOut - desired output amount (other token)
  * @returns QuoteResult
@@ -610,10 +611,10 @@ const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
 };
 
 /**
- * Output token is xor, user indicates desired output amount
+ * Output token is dex base asset, user indicates desired output amount
  * @param x - other token reserve
- * @param y - xor reserve
- * @param yOut - desired output amount (xor)
+ * @param y - base asset reserve
+ * @param yOut - desired output amount (base asset)
  * @returns QuoteResult
  */
 const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
@@ -645,17 +646,17 @@ export const xykQuote = (
   outputReserves: FPNumber,
   amount: FPNumber,
   isDesiredInput: boolean,
-  isXorInput: boolean
+  isBaseAssetInput: boolean
 ): QuoteResult => {
   try {
     if (isDesiredInput) {
-      if (isXorInput) {
+      if (isBaseAssetInput) {
         return xykQuoteA(inputReserves, outputReserves, amount);
       } else {
         return xykQuoteB(inputReserves, outputReserves, amount);
       }
     } else {
-      if (isXorInput) {
+      if (isBaseAssetInput) {
         return xykQuoteC(inputReserves, outputReserves, amount);
       } else {
         return xykQuoteD(inputReserves, outputReserves, amount);
@@ -825,20 +826,23 @@ const smartSplit = (
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
-  payload: QuotePayload
+  payload: QuotePayload,
+  dexBaseAsset = Consts.XOR
 ): QuoteResult => {
   let bestOutcome: FPNumber = extremum(isDesiredInput);
   let bestFee: FPNumber = FPNumber.ZERO;
   let bestDistribution: Array<any> = [];
   let bestRewards: Array<LPRewardsInfo> = [];
 
-  const isXorInput = isXorAsset(inputAsset);
-  const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload);
-  const [xorReserve, otherReserve] = isXorInput ? [inputReserves, outputReserves] : [outputReserves, inputReserves];
+  const isBaseAssetInput = isAssetAddress(inputAsset, dexBaseAsset);
+  const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, dexBaseAsset);
+  const [baseReserve, otherReserve] = isBaseAssetInput
+    ? [inputReserves, outputReserves]
+    : [outputReserves, inputReserves];
 
-  const primaryAmount = isXorInput
-    ? primaryMarketAmountSellingXor(outputAsset, amount, isDesiredInput, xorReserve, otherReserve, payload)
-    : primaryMarketAmountBuyingXor(inputAsset, amount, isDesiredInput, xorReserve, otherReserve, payload);
+  const primaryAmount = isBaseAssetInput
+    ? primaryMarketAmountSellingXor(outputAsset, amount, isDesiredInput, baseReserve, otherReserve, payload)
+    : primaryMarketAmountBuyingXor(inputAsset, amount, isDesiredInput, baseReserve, otherReserve, payload);
 
   if (isGreaterThanZero(primaryAmount)) {
     const { result: outcomePrimary, market: primaryMarket } = quotePrimaryMarket(
@@ -855,7 +859,7 @@ const smartSplit = (
         outputReserves,
         amount.sub(primaryAmount),
         isDesiredInput,
-        isXorInput
+        isBaseAssetInput
       );
 
       bestOutcome = outcomePrimary.amount.add(outcomeSecondary.amount);
@@ -885,7 +889,7 @@ const smartSplit = (
   }
 
   // check xyk only result regardless of split, because it might be better
-  const outcomeSecondary = xykQuote(inputReserves, outputReserves, amount, isDesiredInput, isXorInput);
+  const outcomeSecondary = xykQuote(inputReserves, outputReserves, amount, isDesiredInput, isBaseAssetInput);
 
   if (isBetter(isDesiredInput, outcomeSecondary.amount, bestOutcome)) {
     bestOutcome = outcomeSecondary.amount;
@@ -924,9 +928,10 @@ const quoteSingle = (
   isDesiredInput: boolean,
   selectedSources: Array<LiquiditySourceTypes>,
   paths: QuotePaths,
-  payload: QuotePayload
+  payload: QuotePayload,
+  dexBaseAsset = Consts.XOR
 ): QuoteResult => {
-  const sources = listLiquiditySources(inputAsset, outputAsset, selectedSources, paths);
+  const sources = listLiquiditySources(inputAsset, outputAsset, selectedSources, paths, dexBaseAsset);
 
   if (!sources.length) {
     throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAsset}, ${outputAsset}]`);
@@ -935,9 +940,9 @@ const quoteSingle = (
   if (sources.length === 1) {
     switch (sources[0]) {
       case LiquiditySourceTypes.XYKPool: {
-        const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload);
-        const isXorInput = isXorAsset(inputAsset);
-        return xykQuote(inputReserves, outputReserves, amount, isDesiredInput, isXorInput);
+        const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, dexBaseAsset);
+        const isBaseAssetInput = isAssetAddress(inputAsset, dexBaseAsset);
+        return xykQuote(inputReserves, outputReserves, amount, isDesiredInput, isBaseAssetInput);
       }
       case LiquiditySourceTypes.MulticollateralBondingCurvePool: {
         return tbcQuote(inputAsset, outputAsset, amount, isDesiredInput, payload);
@@ -955,7 +960,7 @@ const quoteSingle = (
       (sources.includes(LiquiditySourceTypes.MulticollateralBondingCurvePool) ||
         sources.includes(LiquiditySourceTypes.XSTPool))
     ) {
-      return smartSplit(inputAsset, outputAsset, amount, isDesiredInput, payload);
+      return smartSplit(inputAsset, outputAsset, amount, isDesiredInput, payload, dexBaseAsset);
     } else {
       throw new Error('[liquidityProxy] Unsupported operation');
     }
@@ -965,12 +970,12 @@ const quoteSingle = (
 };
 
 // ROUTER
-export const isDirectExchange = (inputAssetId: string, outputAssetId: string): boolean => {
-  return [inputAssetId, outputAssetId].includes(Consts.XOR);
+export const isDirectExchange = (inputAssetId: string, outputAssetId: string, dexBaseAsset = Consts.XOR): boolean => {
+  return [inputAssetId, outputAssetId].includes(dexBaseAsset);
 };
 
-const getNotXor = (inputAsset: string, outputAsset: string): string => {
-  return isXorAsset(inputAsset) ? outputAsset : inputAsset;
+const getNotBaseAsset = (inputAsset: string, outputAsset: string, dexBaseAsset = Consts.XOR): string => {
+  return isAssetAddress(inputAsset, dexBaseAsset) ? outputAsset : inputAsset;
 };
 
 const getAssetPaths = (assetAddress: string, paths: QuotePaths): Array<LiquiditySourceTypes> => {
@@ -984,13 +989,14 @@ const listLiquiditySources = (
   inputAsset: string,
   outputAsset: string,
   selectedSources: Array<LiquiditySourceTypes>,
-  paths: QuotePaths
+  paths: QuotePaths,
+  dexBaseAsset = Consts.XOR
 ): Array<LiquiditySourceTypes> => {
   if (selectedSources.length) return selectedSources;
-  const notXorAssetAddress = getNotXor(inputAsset, outputAsset);
-  const assetPaths = getAssetPaths(notXorAssetAddress, paths);
+  const notBaseAsset = getNotBaseAsset(inputAsset, outputAsset, dexBaseAsset);
+  const assetPaths = getAssetPaths(notBaseAsset, paths);
 
-  const uniqueAddresses = new Set([...Consts.ASSETS_HAS_XYK_POOL, notXorAssetAddress]);
+  const uniqueAddresses = new Set([...Consts.ASSETS_HAS_XYK_POOL, notBaseAsset]);
   const shouldHaveXYK =
     uniqueAddresses.size === Consts.ASSETS_HAS_XYK_POOL.length && !assetPaths.includes(LiquiditySourceTypes.XYKPool);
   const sources = shouldHaveXYK ? [...assetPaths, LiquiditySourceTypes.XYKPool] : assetPaths;
@@ -1005,17 +1011,28 @@ export const quote = (
   isDesiredInput: boolean,
   selectedSources: Array<LiquiditySourceTypes>,
   paths: QuotePaths,
-  payload: QuotePayload
+  payload: QuotePayload,
+  dexBaseAsset = Consts.XOR
 ): SwapResult => {
   try {
-    if (isDirectExchange(inputAsset, outputAsset)) {
-      const result = quoteSingle(inputAsset, outputAsset, amount, isDesiredInput, selectedSources, paths, payload);
+    if (isDirectExchange(inputAsset, outputAsset, dexBaseAsset)) {
+      const result = quoteSingle(
+        inputAsset,
+        outputAsset,
+        amount,
+        isDesiredInput,
+        selectedSources,
+        paths,
+        payload,
+        dexBaseAsset
+      );
       const amountWithoutImpact = quoteWithoutImpactSingle(
         inputAsset,
         outputAsset,
         isDesiredInput,
         result.distribution,
-        payload
+        payload,
+        dexBaseAsset
       );
 
       return {
@@ -1026,23 +1043,34 @@ export const quote = (
       };
     } else {
       if (isDesiredInput) {
-        const firstQuote = quoteSingle(inputAsset, Consts.XOR, amount, isDesiredInput, selectedSources, paths, payload);
+        const firstQuote = quoteSingle(
+          inputAsset,
+          dexBaseAsset,
+          amount,
+          isDesiredInput,
+          selectedSources,
+          paths,
+          payload,
+          dexBaseAsset
+        );
         const secondQuote = quoteSingle(
-          Consts.XOR,
+          dexBaseAsset,
           outputAsset,
           firstQuote.amount,
           isDesiredInput,
           selectedSources,
           paths,
-          payload
+          payload,
+          dexBaseAsset
         );
 
         const firstQuoteWithoutImpact = quoteWithoutImpactSingle(
           inputAsset,
-          Consts.XOR,
+          dexBaseAsset,
           isDesiredInput,
           firstQuote.distribution,
-          payload
+          payload,
+          dexBaseAsset
         );
 
         const ratioToActual = safeDivide(firstQuoteWithoutImpact, firstQuote.amount);
@@ -1054,11 +1082,12 @@ export const quote = (
         }));
 
         const secondQuoteWithoutImpact = quoteWithoutImpactSingle(
-          Consts.XOR,
+          dexBaseAsset,
           outputAsset,
           isDesiredInput,
           secondQuoteDistribution,
-          payload
+          payload,
+          dexBaseAsset
         );
 
         return {
@@ -1069,30 +1098,33 @@ export const quote = (
         };
       } else {
         const secondQuote = quoteSingle(
-          Consts.XOR,
+          dexBaseAsset,
           outputAsset,
           amount,
           isDesiredInput,
           selectedSources,
           paths,
-          payload
+          payload,
+          dexBaseAsset
         );
         const firstQuote = quoteSingle(
           inputAsset,
-          Consts.XOR,
+          dexBaseAsset,
           secondQuote.amount,
           isDesiredInput,
           selectedSources,
           paths,
-          payload
+          payload,
+          dexBaseAsset
         );
 
         const secondQuoteWithoutImpact = quoteWithoutImpactSingle(
-          Consts.XOR,
+          dexBaseAsset,
           outputAsset,
           isDesiredInput,
           secondQuote.distribution,
-          payload
+          payload,
+          dexBaseAsset
         );
 
         const ratioToActual = safeDivide(secondQuoteWithoutImpact, secondQuote.amount);
@@ -1105,10 +1137,11 @@ export const quote = (
 
         const firstQuoteWithoutImpact = quoteWithoutImpactSingle(
           inputAsset,
-          Consts.XOR,
+          dexBaseAsset,
           isDesiredInput,
           firstQuoteDistribution,
-          payload
+          payload,
+          dexBaseAsset
         );
 
         return {
@@ -1137,11 +1170,11 @@ export const xykQuoteWithoutImpact = (
   outputReserves: FPNumber,
   amount: FPNumber,
   isDesiredInput: boolean,
-  isXorInput: boolean
+  isBaseAssetInput: boolean
 ): FPNumber => {
   try {
     if (isDesiredInput) {
-      if (isXorInput) {
+      if (isBaseAssetInput) {
         const amountWithoutFee = amount.mul(FPNumber.ONE.sub(Consts.XYK_FEE));
 
         return safeDivide(amountWithoutFee.mul(outputReserves), inputReserves);
@@ -1151,7 +1184,7 @@ export const xykQuoteWithoutImpact = (
         return amountWithFee.mul(FPNumber.ONE.sub(Consts.XYK_FEE));
       }
     } else {
-      if (isXorInput) {
+      if (isBaseAssetInput) {
         const amountWithoutFee = safeDivide(amount.mul(inputReserves), outputReserves);
 
         return safeDivide(amountWithoutFee, FPNumber.ONE.sub(Consts.XYK_FEE));
@@ -1245,19 +1278,20 @@ const quoteWithoutImpactSingle = (
   outputAsset: string,
   isDesiredInput: boolean,
   distribution: Array<Distribution>,
-  payload: QuotePayload
+  payload: QuotePayload,
+  dexBaseAsset = Consts.XOR
 ): FPNumber => {
   return distribution.reduce((result, item) => {
     const { market, amount } = item;
 
     if (market === LiquiditySourceTypes.XYKPool) {
-      const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload);
+      const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, dexBaseAsset);
       const value = xykQuoteWithoutImpact(
         inputReserves,
         outputReserves,
         amount,
         isDesiredInput,
-        isXorAsset(inputAsset)
+        isAssetAddress(inputAsset, dexBaseAsset)
       );
 
       return result.add(value);
