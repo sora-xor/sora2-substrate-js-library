@@ -18,8 +18,8 @@ export default {
       defaultProtocolFee: 'BasisPoints',
     },
     BalancePrecision: 'u8',
-    AssetSymbol: 'Vec<u8>',
-    AssetName: 'Vec<u8>',
+    AssetSymbol: 'Text',
+    AssetName: 'Text',
     AssetId32: '[u8; 32]',
     SwapWithDesiredInput: {
       desiredAmountIn: 'Balance',
