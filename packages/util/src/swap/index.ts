@@ -15,7 +15,7 @@ import type { CommonPrimitivesAssetId32, FixnumFixedPoint, PriceToolsPriceInfo }
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
-import { KnownAssets, XOR, DAI, XSTUSD } from '../assets/consts';
+import { KnownAssets, XOR, DAI, XSTUSD, VAL, PSWAP, ETH } from '../assets/consts';
 import { DexId } from '../poolXyk/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
@@ -236,6 +236,8 @@ export class SwapModule {
     const dai = DAI.address;
     const xstusd = XSTUSD.address;
     const dexBaseAsset = dexId === DexId.XOR ? xor : xstusd;
+    // TODO: pass tbc assets as argument
+    const TBC_ASSETS = [XOR.address, VAL.address, PSWAP.address, DAI.address, ETH.address];
 
     const toCodec = (o: Observable<any>) =>
       o.pipe(
@@ -277,10 +279,8 @@ export class SwapModule {
     const assetsWithXykReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== dexBaseAsset);
     // Assets that have TBC collateral reserves (not XOR)
     const assetsWithTbcReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== xor);
-    // Assets that have average price data (storage has prices only for KnownAssets)
-    const assetsWithPrices = [...assetsWithXykReserves, dexBaseAsset].filter((address) =>
-      KnownAssets.contains(address)
-    );
+    // Assets that have average price data (storage has prices only for TBC assets)
+    const assetsWithPrices = [...assetsWithXykReserves, dexBaseAsset].filter((address) => TBC_ASSETS.includes(address));
     // Assets for which we need to know the total supply
     const assetsWithIssuances = [xor, xstusd];
 
