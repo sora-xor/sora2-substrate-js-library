@@ -63,6 +63,7 @@ export class BaseApi {
   public NetworkFee = {
     [Operation.AddLiquidity]: '0',
     [Operation.CreatePair]: '0',
+    [Operation.EvmOutgoing]: '0',
     [Operation.EthBridgeIncoming]: '0',
     [Operation.EthBridgeOutgoing]: '0',
     [Operation.RegisterAsset]: '0',
@@ -475,6 +476,9 @@ export class BaseApi {
           ],
         ];
         break;
+      case Operation.EvmOutgoing:
+        extrinsic = this.api.tx.evmBridgeProxy.burn;
+        break;
       case Operation.EthBridgeOutgoing:
         extrinsic = this.api.tx.ethBridge.transferToSidechain;
         break;
@@ -540,6 +544,8 @@ export class BaseApi {
           this.api.tx.poolXYK.initializePool(this.defaultDEXId, '', ''),
           this.api.tx.poolXYK.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0'),
         ]);
+      case Operation.EvmOutgoing:
+        return this.api.tx.evmBridgeProxy.burn(0, '', '', 0);
       case Operation.EthBridgeIncoming:
         return this.api.tx.ethBridge.requestFromSidechain('', { Transaction: 'Transfer' }, 0);
       case Operation.EthBridgeOutgoing:
@@ -609,6 +615,7 @@ export class BaseApi {
     const operations = [
       Operation.AddLiquidity,
       Operation.CreatePair,
+      Operation.EvmOutgoing,
       Operation.EthBridgeIncoming,
       Operation.EthBridgeOutgoing,
       Operation.RegisterAsset,

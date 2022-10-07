@@ -112,13 +112,6 @@ export class EvmApi extends BaseApi {
     return assetsMap;
   }
 
-  /** TODO: Move it to BaseApi */
-  public async getNetworkFee(): Promise<CodecString> {
-    const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
-    const res = await this.api.tx.evmBridgeProxy.burn(0, '', '', 0).paymentInfo(mockAccountAddress);
-    return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
-  }
-
   public async burn(asset: Asset, recipient: string, amount: string | number, historyId?: string): Promise<void> {
     // asset should be checked as registered on bridge or not
     const fpAmount = new FPNumber(amount, asset.decimals);

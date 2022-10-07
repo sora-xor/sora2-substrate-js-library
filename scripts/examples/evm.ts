@@ -1,4 +1,4 @@
-import { api, FPNumber } from '@sora-substrate/util';
+import { api } from '@sora-substrate/util';
 import { XOR } from '@sora-substrate/util/assets/consts';
 import { EvmNetwork } from '@sora-substrate/util/evm/consts';
 
@@ -12,7 +12,6 @@ async function main(): Promise<void> {
     const ethAccountId = '0xF5615e51D00f0a3Dd50C302Ee85DDca627B9885a'; // Account with ETH on Mordor network
     console.log('SORA account ID', accountId);
     console.log('ETH account ID', ethAccountId);
-    console.log('Network fee', FPNumber.fromCodecValue(await api.evm.getNetworkFee()).toLocaleString());
 
     const hashes = await api.evm.getUserTxHashes(api.evm.externalNetwork);
     console.log(hashes);
