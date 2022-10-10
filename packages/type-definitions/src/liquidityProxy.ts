@@ -91,7 +91,6 @@ export default {
       amount: 'Balance',
       fee: 'Balance',
       rewards: 'Vec<LPRewardsInfo>',
-      amountWithoutImpact: 'Balance',
     },
     LPRewardsInfo: {
       amount: 'Balance',
