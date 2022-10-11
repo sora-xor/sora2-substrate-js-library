@@ -15,11 +15,11 @@ import type { CommonPrimitivesAssetId32, FixnumFixedPoint, PriceToolsPriceInfo }
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
-import { KnownAssets, XOR, DAI, XSTUSD, VAL, PSWAP, ETH } from '../assets/consts';
+import { XOR, DAI, XSTUSD, VAL, PSWAP, ETH } from '../assets/consts';
 import { DexId } from '../poolXyk/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import { api, Api } from '../api';
+import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 
 export class SwapModule {
@@ -221,7 +221,9 @@ export class SwapModule {
   }
 
   public async getDexes(): Promise<Array<{ dexId: number; baseAssetId: string }>> {
-    return (await this.root.api.query.dexManager.dexInfos.entries()).map(([key, codec]) => {
+    const data = await this.root.api.query.dexManager.dexInfos.entries();
+
+    return data.map(([key, codec]) => {
       const dexId = key.args[0].toNumber();
       const baseAssetId = codec.value.baseAssetId.code.toString();
 
