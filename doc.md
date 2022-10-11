@@ -51,19 +51,7 @@
 - [demeterFarmingPlatform](#demeterfarmingplatform-pallet)
 - [bagsList](#bagslist-pallet)
 - [electionProviderMultiPhase](#electionprovidermultiphase-pallet)
-- [mmr](#mmr-pallet)
 - [beefy](#beefy-pallet)
-- [mmrLeaf](#mmrleaf-pallet)
-- [ethereumLightClient](#ethereumlightclient-pallet)
-- [basicInboundChannel](#basicinboundchannel-pallet)
-- [basicOutboundChannel](#basicoutboundchannel-pallet)
-- [incentivizedInboundChannel](#incentivizedinboundchannel-pallet)
-- [incentivizedOutboundChannel](#incentivizedoutboundchannel-pallet)
-- [dispatch](#dispatch-pallet)
-- [leafProvider](#leafprovider-pallet)
-- [ethApp](#ethapp-pallet)
-- [erc20App](#erc20app-pallet)
-- [migrationApp](#migrationapp-pallet)
 - [utility](#utility-pallet)
 - [currencies](#currencies-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
@@ -71,13 +59,12 @@
 - [author](#author-pallet)
 - [chain](#chain-pallet)
 - [childstate](#childstate-pallet)
+- [mmr](#mmr-pallet)
 - [offchain](#offchain-pallet)
 - [payment](#payment-pallet)
 - [rpc](#rpc-pallet)
 - [state](#state-pallet)
 - [dexApi](#dexapi-pallet)
-- [basicChannel](#basicchannel-pallet)
-- [intentivizedChannel](#intentivizedchannel-pallet)
 
 ## Substrate pallet
 
@@ -1660,6 +1647,25 @@ returns: `u128`
 
 <hr>
 
+#### **api.query.xorFee.multiplier**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.xorFee.updateMultiplier**
+
+> Update the multiplier for weight -> fee conversion.
+
+arguments:
+
+- newMultiplier: `u128`
+<hr>
+
 ## BridgeMultisig pallet
 
 ### _State Queries_
@@ -2744,7 +2750,7 @@ arguments: -
 
 > (Re-)set the payment target for a controller.
 >
-> Effects will be felt at the beginning of the next era.
+> Effects will be felt instantly (as soon as this function is completed successfully).
 >
 > The dispatch origin for this call must be _Signed_ by the controller, not the stash.
 >
@@ -2772,7 +2778,7 @@ arguments:
 
 > (Re-)set the controller of a stash.
 >
-> Effects will be felt at the beginning of the next era.
+> Effects will be felt instantly (as soon as this function is completed successfully).
 >
 > The dispatch origin for this call must be _Signed_ by the stash, not the controller.
 >
@@ -3470,12 +3476,17 @@ arguments:
 
 #### **api.tx.grandpa.noteStalled**
 
-> Note that the current authority set of the GRANDPA finality gadget has
-> stalled. This will trigger a forced authority set change at the beginning
-> of the next session, to be enacted `delay` blocks after that. The delay
-> should be high enough to safely assume that the block signalling the
-> forced change will not be re-orged (e.g. 1000 blocks). The GRANDPA voters
-> will start the new authority set using the given finalized block as base.
+> Note that the current authority set of the GRANDPA finality gadget has stalled.
+>
+> This will trigger a forced authority set change at the beginning of the next session, to
+> be enacted `delay` blocks after that. The `delay` should be high enough to safely assume
+> that the block signalling the forced change will not be re-orged e.g. 1000 blocks.
+> The block production rate (which may be slowed down because of finality lagging) should
+> be taken into account when choosing the `delay`. The GRANDPA voters based on the new
+> authority will start voting on top of `best_finalized_block_number` for new finalized
+> blocks. `best_finalized_block_number` should be the highest of the latest finalized
+> block of all validators of the new authority set.
+>
 > Only callable by root.
 
 arguments:
@@ -3665,6 +3676,14 @@ arguments:
 - key: `(u32,CommonPrimitivesTradingPairAssetId32)`
 
 returns: `BTreeSet<CommonPrimitivesLiquiditySourceType>`
+
+<hr>
+
+#### **api.query.tradingPair.lockedLiquiditySources**
+
+arguments: -
+
+returns: `Vec<CommonPrimitivesLiquiditySourceType>`
 
 <hr>
 
@@ -4318,7 +4337,7 @@ returns: `u128`
 
 arguments:
 
-- key: `AccountId32`
+- key: `(AccountId32,CommonPrimitivesAssetId32)`
 
 returns: `BTreeSet<CommonPrimitivesAssetId32>`
 
@@ -5919,6 +5938,26 @@ returns: `Vec<H256>`
 
 <hr>
 
+#### **api.query.ethBridge.bridgeSignatureVersions**
+
+arguments:
+
+- key: `u32`
+
+returns: `EthBridgeBridgeSignatureVersion`
+
+<hr>
+
+#### **api.query.ethBridge.pendingBridgeSignatureVersions**
+
+arguments:
+
+- key: `u32`
+
+returns: `EthBridgeBridgeSignatureVersion`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.ethBridge.registerBridge**
@@ -5935,6 +5974,7 @@ arguments:
 
 - bridgeContractAddress: `H160`
 - initialPeers: `Vec<AccountId32>`
+- signatureVersion: `EthBridgeBridgeSignatureVersion`
 <hr>
 
 #### **api.tx.ethBridge.addAsset**
@@ -6100,6 +6140,7 @@ arguments:
 - newContractAddress: `H160`
 - erc20NativeTokens: `Vec<H160>`
 - networkId: `u32`
+- newSignatureVersion: `EthBridgeBridgeSignatureVersion`
 <hr>
 
 #### **api.tx.ethBridge.registerIncomingRequest**
@@ -8040,7 +8081,19 @@ returns: `AccountId32`
 
 <hr>
 
+#### **api.query.ceresLiquidityLocker.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `CeresLiquidityLockerStorageVersion`
+
+<hr>
+
 #### **api.query.ceresLiquidityLocker.lockerData**
+
+> Contains data about lockups for each account
 
 arguments:
 
@@ -8060,7 +8113,7 @@ arguments:
 
 - assetA: `CommonPrimitivesAssetId32`
 - assetB: `CommonPrimitivesAssetId32`
-- unlockingBlock: `u32`
+- unlockingTimestamp: `u64`
 - percentageOfPoolTokens: `u128`
 - option: `bool`
 <hr>
@@ -8108,6 +8161,16 @@ returns: `AccountId32`
 
 <hr>
 
+#### **api.query.ceresTokenLocker.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `CeresTokenLockerStorageVersion`
+
+<hr>
+
 #### **api.query.ceresTokenLocker.feeAmount**
 
 > Amount of CERES for locker fees option two
@@ -8137,7 +8200,7 @@ returns: `Vec<CeresTokenLockerTokenLockInfo>`
 arguments:
 
 - assetId: `CommonPrimitivesAssetId32`
-- unlockingBlock: `u32`
+- unlockingTimestamp: `u64`
 - numberOfTokens: `u128`
 <hr>
 
@@ -8148,7 +8211,7 @@ arguments:
 arguments:
 
 - assetId: `CommonPrimitivesAssetId32`
-- unlockingBlock: `u32`
+- unlockingTimestamp: `u64`
 - numberOfTokens: `u128`
 <hr>
 
@@ -8197,6 +8260,16 @@ returns: `CeresGovernancePlatformPollInfo`
 
 <hr>
 
+#### **api.query.ceresGovernancePlatform.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `CeresGovernancePlatformStorageVersion`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.ceresGovernancePlatform.vote**
@@ -8218,8 +8291,8 @@ arguments:
 
 - pollId: `Bytes`
 - numberOfOptions: `u32`
-- pollStartBlock: `u32`
-- pollEndBlock: `u32`
+- pollStartTimestamp: `u64`
+- pollEndTimestamp: `u64`
 <hr>
 
 #### **api.tx.ceresGovernancePlatform.withdraw**
@@ -8341,14 +8414,14 @@ arguments:
 - liquidityPercent: `u128`
 - listingPrice: `u128`
 - lockupDays: `u32`
-- startBlock: `u32`
-- endBlock: `u32`
+- startTimestamp: `u64`
+- endTimestamp: `u64`
 - teamVestingTotalTokens: `u128`
 - teamVestingFirstReleasePercent: `u128`
-- teamVestingPeriod: `u32`
+- teamVestingPeriod: `u64`
 - teamVestingPercent: `u128`
 - firstReleasePercent: `u128`
-- vestingPeriod: `u32`
+- vestingPeriod: `u64`
 - vestingPercent: `u128`
 <hr>
 
@@ -8723,8 +8796,10 @@ returns: `PalletBagsListListBag`
 >
 > Anyone can call this function about any potentially dislocated account.
 >
-> Will never return an error; if `dislocated` does not exist or doesn't need a rebag, then
-> it is a noop and fees are still collected from `origin`.
+> Will always update the stored score of `dislocated` to the correct score, based on
+> `ScoreProvider`.
+>
+> If `dislocated` does not exists, it returns an error.
 
 arguments:
 
@@ -8981,83 +9056,6 @@ arguments:
 - maybeMaxTargets: `Option<u32>`
 <hr>
 
-## Mmr pallet
-
-### _State Queries_
-
-#### **api.query.mmr.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.mmr.rootHash**
-
-> Latest MMR Root hash.
-
-arguments: -
-
-returns: `H256`
-
-<hr>
-
-#### **api.query.mmr.numberOfLeaves**
-
-> Current size of the MMR (number of leaves).
-
-arguments: -
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.mmr.nodes**
-
-> Hashes of the nodes in the MMR.
->
-> Note this collection only contains MMR peaks, the inner nodes (and leaves)
-> are pruned and only stored in the Offchain DB.
-
-arguments:
-
-- key: `u64`
-
-returns: `H256`
-
-<hr>
-
-### _Custom RPCs_
-
-#### **api.rpc.mmr.generateBatchProof**
-
-> Generate MMR proof for the given leaf indices.
-
-arguments:
-
-- leafIndices: `Vec<u64>`
-- at: `BlockHash`
-
-returns: `MmrLeafProof`
-
-<hr>
-
-#### **api.rpc.mmr.generateProof**
-
-> Generate MMR proof for given leaf index.
-
-arguments:
-
-- leafIndex: `u64`
-- at: `BlockHash`
-
-returns: `MmrLeafBatchProof`
-
-<hr>
-
 ## Beefy pallet
 
 ### _State Queries_
@@ -9122,691 +9120,6 @@ arguments: -
 
 returns: `H256`
 
-<hr>
-
-## MmrLeaf pallet
-
-### _State Queries_
-
-#### **api.query.mmrLeaf.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.mmrLeaf.beefyNextAuthorities**
-
-> Details of next BEEFY authority set.
->
-> This storage entry is used as cache for calls to `update_beefy_next_authority_set`.
-
-arguments: -
-
-returns: `BeefyPrimitivesMmrBeefyNextAuthoritySet`
-
-<hr>
-
-## EthereumLightClient pallet
-
-### _State Queries_
-
-#### **api.query.ethereumLightClient.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.ethereumLightClient.bestBlock**
-
-> Best known block.
-
-arguments:
-
-- key: `U256`
-
-returns: `(BridgeTypesHeaderHeaderId,U256)`
-
-<hr>
-
-#### **api.query.ethereumLightClient.blocksToPrune**
-
-> Range of blocks that we want to prune.
-
-arguments:
-
-- key: `U256`
-
-returns: `EthereumLightClientPruningRange`
-
-<hr>
-
-#### **api.query.ethereumLightClient.finalizedBlock**
-
-> Best finalized block.
-
-arguments:
-
-- key: `U256`
-
-returns: `BridgeTypesHeaderHeaderId`
-
-<hr>
-
-#### **api.query.ethereumLightClient.networkConfig**
-
-> Network config
-
-arguments:
-
-- key: `U256`
-
-returns: `BridgeTypesNetworkParamsNetworkConfig`
-
-<hr>
-
-#### **api.query.ethereumLightClient.headers**
-
-> Map of imported headers by hash.
-
-arguments:
-
-- key: `(U256,H256)`
-
-returns: `EthereumLightClientStoredHeader`
-
-<hr>
-
-#### **api.query.ethereumLightClient.headersByNumber**
-
-> Map of imported header hashes by number.
-
-arguments:
-
-- key: `(U256,u64)`
-
-returns: `Vec<H256>`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.ethereumLightClient.registerNetwork**
-
-arguments:
-
-- networkConfig: `BridgeTypesNetworkParamsNetworkConfig`
-- header: `BridgeTypesHeader`
-- initialDifficulty: `U256`
-<hr>
-
-#### **api.tx.ethereumLightClient.updateDifficultyConfig**
-
-arguments:
-
-- networkConfig: `BridgeTypesNetworkParamsNetworkConfig`
-<hr>
-
-#### **api.tx.ethereumLightClient.importHeader**
-
-> Import a single Ethereum PoW header.
->
-> Note that this extrinsic has a very high weight. The weight is affected by the
-> value of `DescendantsUntilFinalized`. Regenerate weights if it changes.
->
-> The largest contributors to the worst case weight, in decreasing order, are:
->
-> - Pruning: max 2 writes per pruned header + 2 writes to finalize pruning state.
->   Up to `HEADERS_TO_PRUNE_IN_SINGLE_IMPORT` can be pruned in one call.
-> - Ethash validation: this cost is pure CPU. EthashProver checks a merkle proof
->   for each DAG node selected in the "hashimoto"-loop.
-> - Iterating over ancestors: min `DescendantsUntilFinalized` reads to find the
->   newly finalized ancestor of a header.
-
-arguments:
-
-- networkId: `U256`
-- header: `BridgeTypesHeader`
-- proof: `Vec<BridgeTypesEthashproofDoubleNodeWithMerkleProof>`
-<hr>
-
-## BasicInboundChannel pallet
-
-### _State Queries_
-
-#### **api.query.basicInboundChannel.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.basicInboundChannel.channelNonces**
-
-arguments:
-
-- key: `U256`
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.basicInboundChannel.channelAddresses**
-
-arguments:
-
-- key: `U256`
-
-returns: `H160`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.basicInboundChannel.submit**
-
-arguments:
-
-- networkId: `U256`
-- message: `BridgeTypesMessage`
-<hr>
-
-#### **api.tx.basicInboundChannel.registerChannel**
-
-arguments:
-
-- networkId: `U256`
-- channel: `H160`
-<hr>
-
-## BasicOutboundChannel pallet
-
-### _State Queries_
-
-#### **api.query.basicOutboundChannel.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.basicOutboundChannel.interval**
-
-> Interval between commitments
-
-arguments: -
-
-returns: `u32`
-
-<hr>
-
-#### **api.query.basicOutboundChannel.messageQueue**
-
-> Messages waiting to be committed.
-
-arguments:
-
-- key: `U256`
-
-returns: `Vec<BasicChannelOutboundMessage>`
-
-<hr>
-
-#### **api.query.basicOutboundChannel.channelNonces**
-
-arguments:
-
-- key: `U256`
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.basicOutboundChannel.channelOperators**
-
-arguments:
-
-- key: `(U256,AccountId32)`
-
-returns: `bool`
-
-<hr>
-
-## IncentivizedInboundChannel pallet
-
-### _State Queries_
-
-#### **api.query.incentivizedInboundChannel.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.incentivizedInboundChannel.channelAddresses**
-
-> Source channel on the ethereum side
-
-arguments:
-
-- key: `U256`
-
-returns: `H160`
-
-<hr>
-
-#### **api.query.incentivizedInboundChannel.channelNonces**
-
-arguments:
-
-- key: `U256`
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.incentivizedInboundChannel.rewardFraction**
-
-arguments: -
-
-returns: `Perbill`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.incentivizedInboundChannel.submit**
-
-arguments:
-
-- networkId: `U256`
-- message: `BridgeTypesMessage`
-<hr>
-
-#### **api.tx.incentivizedInboundChannel.registerChannel**
-
-arguments:
-
-- networkId: `U256`
-- channel: `H160`
-<hr>
-
-#### **api.tx.incentivizedInboundChannel.setRewardFraction**
-
-arguments:
-
-- fraction: `Perbill`
-<hr>
-
-## IncentivizedOutboundChannel pallet
-
-### _State Queries_
-
-#### **api.query.incentivizedOutboundChannel.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.incentivizedOutboundChannel.interval**
-
-> Interval between committing messages.
-
-arguments: -
-
-returns: `u32`
-
-<hr>
-
-#### **api.query.incentivizedOutboundChannel.messageQueues**
-
-> Messages waiting to be committed.
-
-arguments:
-
-- key: `U256`
-
-returns: `Vec<IncentivizedChannelOutboundMessage>`
-
-<hr>
-
-#### **api.query.incentivizedOutboundChannel.channelNonces**
-
-arguments:
-
-- key: `U256`
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.incentivizedOutboundChannel.fee**
-
-arguments: -
-
-returns: `u128`
-
-<hr>
-
-## Dispatch pallet
-
-### _State Queries_
-
-#### **api.query.dispatch.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-## LeafProvider pallet
-
-### _State Queries_
-
-#### **api.query.leafProvider.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.leafProvider.latestDigest**
-
-> Latest digest
-
-arguments: -
-
-returns: `BridgeTypesAuxiliaryDigest`
-
-<hr>
-
-### _Custom RPCs_
-
-#### **api.rpc.leafProvider.latestDigest**
-
-> Get leaf provider logs.
-
-arguments:
-
-- at: `BlockHash`
-
-returns: `AuxiliaryDigest`
-
-<hr>
-
-## EthApp pallet
-
-### _State Queries_
-
-#### **api.query.ethApp.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.ethApp.addresses**
-
-arguments:
-
-- key: `U256`
-
-returns: `(H160,CommonPrimitivesAssetId32)`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.ethApp.burn**
-
-arguments:
-
-- networkId: `U256`
-- channelId: `BridgeTypesChannelId`
-- recipient: `H160`
-- amount: `u128`
-<hr>
-
-#### **api.tx.ethApp.mint**
-
-arguments:
-
-- sender: `H160`
-- recipient: `AccountId32`
-- amount: `U256`
-<hr>
-
-#### **api.tx.ethApp.registerNetwork**
-
-arguments:
-
-- networkId: `U256`
-- name: `Bytes`
-- symbol: `Bytes`
-- contract: `H160`
-<hr>
-
-#### **api.tx.ethApp.registerNetworkWithExistingAsset**
-
-arguments:
-
-- networkId: `U256`
-- assetId: `CommonPrimitivesAssetId32`
-- contract: `H160`
-<hr>
-
-## Erc20App pallet
-
-### _State Queries_
-
-#### **api.query.erc20App.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.erc20App.appAddresses**
-
-arguments:
-
-- key: `(U256,BridgeTypesAssetKind)`
-
-returns: `H160`
-
-<hr>
-
-#### **api.query.erc20App.assetKinds**
-
-arguments:
-
-- key: `(U256,CommonPrimitivesAssetId32)`
-
-returns: `BridgeTypesAssetKind`
-
-<hr>
-
-#### **api.query.erc20App.tokenAddresses**
-
-arguments:
-
-- key: `(U256,CommonPrimitivesAssetId32)`
-
-returns: `H160`
-
-<hr>
-
-#### **api.query.erc20App.assetsByAddresses**
-
-arguments:
-
-- key: `(U256,H160)`
-
-returns: `CommonPrimitivesAssetId32`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.erc20App.mint**
-
-arguments:
-
-- token: `H160`
-- sender: `H160`
-- recipient: `AccountId32`
-- amount: `U256`
-<hr>
-
-#### **api.tx.erc20App.registerAssetInternal**
-
-arguments:
-
-- assetId: `CommonPrimitivesAssetId32`
-- contract: `H160`
-<hr>
-
-#### **api.tx.erc20App.burn**
-
-arguments:
-
-- networkId: `U256`
-- channelId: `BridgeTypesChannelId`
-- assetId: `CommonPrimitivesAssetId32`
-- recipient: `H160`
-- amount: `u128`
-<hr>
-
-#### **api.tx.erc20App.registerErc20Asset**
-
-arguments:
-
-- networkId: `U256`
-- address: `H160`
-- symbol: `Bytes`
-- name: `Bytes`
-<hr>
-
-#### **api.tx.erc20App.registerExistingErc20Asset**
-
-arguments:
-
-- networkId: `U256`
-- address: `H160`
-- assetId: `CommonPrimitivesAssetId32`
-<hr>
-
-#### **api.tx.erc20App.registerNativeAsset**
-
-arguments:
-
-- networkId: `U256`
-- assetId: `CommonPrimitivesAssetId32`
-<hr>
-
-#### **api.tx.erc20App.registerNativeApp**
-
-arguments:
-
-- networkId: `U256`
-- contract: `H160`
-<hr>
-
-#### **api.tx.erc20App.registerErc20App**
-
-arguments:
-
-- networkId: `U256`
-- contract: `H160`
-<hr>
-
-## MigrationApp pallet
-
-### _State Queries_
-
-#### **api.query.migrationApp.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.migrationApp.addresses**
-
-arguments:
-
-- key: `U256`
-
-returns: `H160`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.migrationApp.migrateErc20**
-
-arguments:
-
-- networkId: `U256`
-- erc20Assets: `Vec<(CommonPrimitivesAssetId32,H160)>`
-<hr>
-
-#### **api.tx.migrationApp.migrateSidechain**
-
-arguments:
-
-- networkId: `U256`
-- sidechainAssets: `Vec<(CommonPrimitivesAssetId32,H160)>`
-<hr>
-
-#### **api.tx.migrationApp.migrateEth**
-
-arguments:
-
-- networkId: `U256`
-<hr>
-
-#### **api.tx.migrationApp.registerNetwork**
-
-arguments:
-
-- networkId: `U256`
-- contract: `H160`
 <hr>
 
 ## Utility pallet
@@ -10027,6 +9340,28 @@ arguments:
 - filterMode: `CommonPrimitivesFilterMode`
 <hr>
 
+#### **api.tx.liquidityProxy.enableLiquiditySource**
+
+> Enables XST or TBC liquidity source.
+>
+> - `liquidity_source`: the liquidity source to be enabled.
+
+arguments:
+
+- liquiditySource: `CommonPrimitivesLiquiditySourceType`
+<hr>
+
+#### **api.tx.liquidityProxy.disableLiquiditySource**
+
+> Disables XST or TBC liquidity source. The liquidity source becomes unavailable for swap.
+>
+> - `liquidity_source`: the liquidity source to be disabled.
+
+arguments:
+
+- liquiditySource: `CommonPrimitivesLiquiditySourceType`
+<hr>
+
 ### _Custom RPCs_
 
 #### **api.rpc.liquidityProxy.quote**
@@ -10104,6 +9439,13 @@ arguments:
 
 arguments: -
 
+<hr>
+
+#### **api.tx.faucet.updateLimit**
+
+arguments:
+
+- newLimit: `u128`
 <hr>
 
 ## Author pallet
@@ -10372,6 +9714,36 @@ arguments:
 - at: `Hash`
 
 returns: `Option<u64>`
+
+<hr>
+
+## Mmr pallet
+
+### _Custom RPCs_
+
+#### **api.rpc.mmr.generateBatchProof**
+
+> Generate MMR proof for the given leaf indices.
+
+arguments:
+
+- leafIndices: `Vec<u64>`
+- at: `BlockHash`
+
+returns: `MmrLeafProof`
+
+<hr>
+
+#### **api.rpc.mmr.generateProof**
+
+> Generate MMR proof for given leaf index.
+
+arguments:
+
+- leafIndex: `u64`
+- at: `BlockHash`
+
+returns: `MmrLeafBatchProof`
 
 <hr>
 
@@ -10713,38 +10085,6 @@ returns: `Option<SwapOutcomeInfo>`
 
 <hr>
 
-## BasicChannel pallet
-
-### _Custom RPCs_
-
-#### **api.rpc.basicChannel.commitment**
-
-> Get basic channel messages.
-
-arguments:
-
-- commitmentHash: `H256`
-
-returns: `Option<Vec<BasicChannelMessage>>`
-
-<hr>
-
-## IntentivizedChannel pallet
-
-### _Custom RPCs_
-
-#### **api.rpc.intentivizedChannel.commitment**
-
-> Get intentivized channel messages.
-
-arguments:
-
-- commitmentHash: `H256`
-
-returns: `Option<Vec<IntentivizedChannelMessage>>`
-
-<hr>
-
 # Types
 
 ### AccountInfo
@@ -10816,7 +10156,7 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 ### AssetName
 
 ```
-"Vec<u8>"
+"Text"
 ```
 
 ### AssetNameStr
@@ -10834,7 +10174,7 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 ### AssetSymbol
 
 ```
-"Vec<u8>"
+"Text"
 ```
 
 ### AssetSymbolStr
@@ -10902,6 +10242,17 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 "u32"
+```
+
+### BridgeSignatureVersion
+
+```
+{
+    _enum: [
+        "V1",
+        "V2"
+    ]
+}
 ```
 
 ### BridgeStatus
@@ -11414,8 +10765,7 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 {
     amount: "Balance",
     fee: "Balance",
-    rewards: "Vec<LPRewardsInfo>",
-    amountWithoutImpact: "Balance"
+    rewards: "Vec<LPRewardsInfo>"
 }
 ```
 
@@ -11890,7 +11240,8 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
         "PSWAP",
         "DAI",
         "ETH",
-        "XSTUSD"
+        "XSTUSD",
+        "XST"
     ]
 }
 ```
