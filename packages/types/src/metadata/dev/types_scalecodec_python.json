@@ -1,5 +1,5 @@
 {
-    "runtime_id": 37,
+    "runtime_id": 41,
     "versioning": [
         {
             "runtime_range": [
@@ -4140,6 +4140,55 @@
                             "ceresWithdrawn",
                             "bool"
                         ]
+                    ]
+                }
+            }
+        },
+        {
+            "runtime_range": [
+                41,
+                null
+            ],
+            "types": {
+                "AssetName": "Text",
+                "AssetSymbol": "Text",
+                "BridgeSignatureVersion": {
+                    "type": "enum",
+                    "value_list": [
+                        "V1",
+                        "V2"
+                    ]
+                },
+                "LPSwapOutcomeInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "fee",
+                            "Balance"
+                        ],
+                        [
+                            "rewards",
+                            "Vec<LPRewardsInfo>"
+                        ]
+                    ]
+                },
+                "PredefinedAssetId": {
+                    "type": "enum",
+                    "value_list": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST"
                     ]
                 }
             }
