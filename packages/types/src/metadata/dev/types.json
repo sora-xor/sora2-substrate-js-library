@@ -20,10 +20,10 @@
             "SidechainOwned"
         ]
     },
-    "AssetName": "Vec<u8>",
+    "AssetName": "Text",
     "AssetNameStr": "String",
     "AssetRecord": "Null",
-    "AssetSymbol": "Vec<u8>",
+    "AssetSymbol": "Text",
     "AssetSymbolStr": "String",
     "AuxiliaryDigest": {
         "logs": "Vec<AuxiliaryDigestItem>"
@@ -46,6 +46,12 @@
     },
     "BasisPoints": "u16",
     "BridgeNetworkId": "u32",
+    "BridgeSignatureVersion": {
+        "_enum": [
+            "V1",
+            "V2"
+        ]
+    },
     "BridgeStatus": {
         "_enum": [
             "Initialized",
@@ -308,8 +314,7 @@
     "LPSwapOutcomeInfo": {
         "amount": "Balance",
         "fee": "Balance",
-        "rewards": "Vec<LPRewardsInfo>",
-        "amountWithoutImpact": "Balance"
+        "rewards": "Vec<LPRewardsInfo>"
     },
     "LiquiditySourceIdOf": {
         "dexId": "DEXId",
@@ -574,7 +579,8 @@
             "PSWAP",
             "DAI",
             "ETH",
-            "XSTUSD"
+            "XSTUSD",
+            "XST"
         ]
     },
     "PriceInfo": {
