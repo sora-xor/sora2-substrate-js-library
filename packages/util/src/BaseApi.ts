@@ -9,8 +9,10 @@ import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types';
+import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { AccountStorage, Storage } from './storage';
+import { DexId } from './poolXyk/consts';
 import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
@@ -81,7 +83,6 @@ export class BaseApi {
   } as NetworkFeesObject;
 
   protected readonly prefix = 69;
-  public readonly defaultDEXId = 0;
 
   private _history: AccountHistory<HistoryItem> = {};
   private _historySyncTimestamp: number = 0;
@@ -124,9 +125,9 @@ export class BaseApi {
   }
 
   public logout(): void {
-    this.account = null;
-    this.accountStorage = null;
-    this.signer = null;
+    this.account = undefined;
+    this.accountStorage = undefined;
+    this.signer = undefined;
     this.history = {};
     if (this.storage) {
       this.storage.clear();
@@ -144,7 +145,8 @@ export class BaseApi {
   // methods for working with history
   public get history(): AccountHistory<HistoryItem> {
     if (this.accountStorage) {
-      this._history = (JSON.parse(this.accountStorage.get(this.historyNamespace)) as AccountHistory<HistoryItem>) || {};
+      const history = this.accountStorage.get(this.historyNamespace);
+      this._history = history ? (JSON.parse(history) as AccountHistory<HistoryItem>) : {};
     }
     return this._history;
   }
@@ -160,7 +162,8 @@ export class BaseApi {
 
   public get restored(): boolean {
     if (this.accountStorage) {
-      this._restored = JSON.parse(this.accountStorage.get('restored')) || false;
+      const restored = this.accountStorage.get('restored');
+      this._restored = restored ? JSON.parse(restored) : false;
     }
     return this._restored;
   }
@@ -172,7 +175,8 @@ export class BaseApi {
 
   public get historySyncTimestamp(): number {
     if (this.accountStorage) {
-      this._historySyncTimestamp = JSON.parse(this.accountStorage.get('historySyncTimestamp')) || 0;
+      const historySyncTimestamp = this.accountStorage.get('historySyncTimestamp');
+      this._historySyncTimestamp = historySyncTimestamp ? JSON.parse(historySyncTimestamp) : 0;
     }
     return this._historySyncTimestamp;
   }
@@ -217,7 +221,8 @@ export class BaseApi {
 
     if (needToUpdateAddressStorage) {
       addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress));
-      historyCopy = JSON.parse(addressStorage.get(this.historyNamespace)) || {};
+      const history = addressStorage.get(this.historyNamespace);
+      historyCopy = history ? JSON.parse(history) : {};
     } else {
       historyCopy = { ...this.history };
     }
@@ -339,7 +344,7 @@ export class BaseApi {
         result.events.forEach(({ event: { data, method, section } }: any) => {
           if (method === 'AssetRegistered' && section === 'assets') {
             const [assetId, _] = data;
-            history.assetAddress = assetId.toString();
+            history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
             this.saveHistory(history);
           }
 
@@ -365,8 +370,8 @@ export class BaseApi {
             const [error] = data;
             if (error.isModule) {
               const decoded = this.api.registry.findMetaError(error.asModule);
-              const { documentation } = decoded;
-              history.errorMessage = documentation.join(' ').trim();
+              const { docs } = decoded;
+              history.errorMessage = docs.join(' ').trim();
             } else {
               // Other, CannotLookup, BadOrigin, no extra info
               history.errorMessage = error.toString();
@@ -382,7 +387,7 @@ export class BaseApi {
       history.status = TransactionStatus.Error;
       history.endTime = Date.now();
       const errorParts = e.message.split(':');
-      const errorInfo = last(errorParts).trim();
+      const errorInfo = last(errorParts)?.trim();
       history.errorMessage = errorInfo;
       // at the moment the history has not yet been saved;
       // save history and then delete 'txId'
@@ -400,8 +405,8 @@ export class BaseApi {
    * @returns value * 10 ^ decimals
    */
   public async getNetworkFee(type: Operation, ...params: Array<any>): Promise<CodecString> {
-    let extrinsicParams = params;
-    let extrinsic = null;
+    let extrinsicParams: any = params;
+    let extrinsic: any = null;
     switch (type) {
       case Operation.Transfer:
         extrinsic = this.api.tx.assets.transfer;
@@ -410,18 +415,18 @@ export class BaseApi {
         extrinsic = this.api.tx.liquidityProxy.swap;
         break;
       case Operation.AddLiquidity:
-        extrinsic = this.api.tx.poolXyk.depositLiquidity;
+        extrinsic = this.api.tx.poolXYK.depositLiquidity;
         break;
       case Operation.RemoveLiquidity:
-        extrinsic = this.api.tx.poolXyk.withdrawLiquidity;
+        extrinsic = this.api.tx.poolXYK.withdrawLiquidity;
         break;
       case Operation.CreatePair:
         extrinsic = this.api.tx.utility.batchAll;
         extrinsicParams = [
           [
             (this.api.tx.tradingPair as any).register(...params[0].pairCreationArgs),
-            this.api.tx.poolXyk.initializePool(...params[0].pairCreationArgs),
-            this.api.tx.poolXyk.depositLiquidity(...params[0].addLiquidityArgs),
+            (this.api.tx.poolXYK as any).initializePool(...params[0].pairCreationArgs),
+            (this.api.tx.poolXYK as any).depositLiquidity(...params[0].addLiquidityArgs),
           ],
         ];
         break;
@@ -483,12 +488,12 @@ export class BaseApi {
   private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic | null {
     switch (operation) {
       case Operation.AddLiquidity:
-        return this.api.tx.poolXyk.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0');
+        return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0');
       case Operation.CreatePair:
         return this.api.tx.utility.batchAll([
-          this.api.tx.tradingPair.register(this.defaultDEXId, '', ''),
-          this.api.tx.poolXyk.initializePool(this.defaultDEXId, '', ''),
-          this.api.tx.poolXyk.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0'),
+          this.api.tx.tradingPair.register(DexId.XOR, '', ''),
+          this.api.tx.poolXYK.initializePool(DexId.XOR, '', ''),
+          this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0'),
         ]);
       case Operation.EthBridgeIncoming:
         return this.api.tx.ethBridge.requestFromSidechain('', { Transaction: 'Transfer' }, 0);
@@ -497,23 +502,23 @@ export class BaseApi {
       case Operation.RegisterAsset:
         return this.api.tx.assets.register('', '', '0', false, false, null, null);
       case Operation.RemoveLiquidity:
-        return this.api.tx.poolXyk.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0');
+        return this.api.tx.poolXYK.withdrawLiquidity(DexId.XOR, '', '', '0', '0', '0');
       case Operation.Swap:
         return this.api.tx.liquidityProxy.swap(
-          this.defaultDEXId,
+          DexId.XOR,
           '',
           '',
-          { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } },
+          { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
           [],
           'Disabled'
         );
       case Operation.SwapAndSend:
         return this.api.tx.liquidityProxy.swapTransfer(
           '',
-          this.defaultDEXId,
+          DexId.XOR,
           '',
           '',
-          { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } },
+          { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
           [],
           'Disabled'
         );

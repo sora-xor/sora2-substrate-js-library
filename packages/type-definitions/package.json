@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/type-definitions",
-  "version": "1.10.8",
+  "version": "1.10.10",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -8,6 +8,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@open-web3/orml-type-definitions": "^0.9.4-35"
+    "@open-web3/orml-type-definitions": "0.9.4-26"
   }
 }

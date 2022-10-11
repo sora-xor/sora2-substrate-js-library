@@ -1,20 +1,38 @@
 import { assert } from '@polkadot/util';
-import { Subject, combineLatest } from '@polkadot/x-rxjs';
+import { Subject, combineLatest } from 'rxjs';
 import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { Codec } from '@polkadot/types/types';
-import type { Subscription } from '@polkadot/x-rxjs';
+import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
+import type { u128 } from '@polkadot/types-codec';
+import type { Subscription } from 'rxjs';
 
 import { poolAccountIdFromAssetPair } from './account';
-import { XOR } from '../assets/consts';
+import { DexId } from './consts';
+import { XOR, XSTUSD } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 import type { AccountLiquidity } from './types';
 import type { Asset, AccountAsset } from '../assets/types';
 
+function serializeLPKey(liquidity: Partial<AccountLiquidity>): string {
+  if (!(liquidity.firstAddress && liquidity.secondAddress)) {
+    return '';
+  }
+  return `${liquidity.firstAddress},${liquidity.secondAddress}`;
+}
+
+function deserializeLPKey(key: string): Partial<AccountLiquidity> {
+  const [firstAddress, secondAddress] = key.split(',');
+  if (!(firstAddress && secondAddress)) {
+    return null;
+  }
+  return { firstAddress, secondAddress };
+}
+
 export class PoolXykModule {
   constructor(private readonly root: Api) {}
-
+  /** key = `baseAssetId,targetAssetId` */
   private subscriptions: Map<string, Subscription> = new Map();
   private subject = new Subject<void>();
   public updated = this.subject.asObservable();
@@ -49,7 +67,7 @@ export class PoolXykModule {
    * @param firstAssetAddress
    * @param secondAssetAddress
    */
-  public getInfo(firstAssetAddress: string, secondAssetAddress: string): Asset {
+  public getInfo(firstAssetAddress: string, secondAssetAddress: string): Asset | null {
     const poolTokenAccount = poolAccountIdFromAssetPair(
       this.root.api,
       firstAssetAddress,
@@ -67,10 +85,8 @@ export class PoolXykModule {
    * @param secondAssetAddress
    */
   public async check(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
-    const props = (
-      await this.root.api.query.poolXyk.properties(firstAssetAddress, secondAssetAddress)
-    ).toJSON() as Array<string>;
-    if (!props || !props.length) {
+    const props = await this.root.api.query.poolXYK.properties(firstAssetAddress, secondAssetAddress);
+    if (!props || !props.isSome) {
       return false;
     }
     return true;
@@ -90,7 +106,7 @@ export class PoolXykModule {
     firstAssetDecimals?: number,
     secondAssetDecimals?: number
   ): Promise<Array<CodecString>> {
-    const result = (await this.root.api.query.poolXyk.reserves(firstAssetAddress, secondAssetAddress)) as any; // Array<Balance>
+    const result = await this.root.api.query.poolXYK.reserves(firstAssetAddress, secondAssetAddress);
     if (!result || result.length !== 2) {
       return ['0', '0'];
     }
@@ -99,8 +115,24 @@ export class PoolXykModule {
     return [firstValue.toCodecString(), secondValue.toCodecString()];
   }
 
-  public async getAllReserves() {
-    // TODO: Add this method
+  public async getAllReserves(): Promise<Record<string, Array<CodecString>>> {
+    const toKey = (address: CommonPrimitivesAssetId32) => address.code.toString();
+    const toReserve = (value: u128) => new FPNumber(value).toCodecString();
+
+    const reserves = {} as Record<string, Array<CodecString>>;
+    const xorReserves = await this.root.api.query.poolXYK.reserves.entries(XOR.address);
+    const xstusdReserves = await this.root.api.query.poolXYK.reserves.entries(XSTUSD.address);
+
+    [...xorReserves, ...xstusdReserves].forEach((item) => {
+      // Decimals = 18 here
+      const [key1, key2] = item[0].args;
+      if (item[1]?.length == 2) {
+        const [value1, value2] = item[1];
+        reserves[toKey(key1) + toKey(key2)] = [toReserve(value1), toReserve(value2)];
+      }
+    });
+
+    return reserves;
   }
 
   /**
@@ -134,7 +166,7 @@ export class PoolXykModule {
       return ['0', '0'];
     }
     const pIn = FPNumber.fromCodecValue(amount);
-    const totalSupply = await this.root.api.query.poolXyk.totalIssuances(poolTokenAddress); // BalanceInfo
+    const totalSupply = await this.root.api.query.poolXYK.totalIssuances(poolTokenAddress);
     const pts = new FPNumber(totalSupply);
     const ptsFirstAsset = new FPNumber(totalSupply, firstAssetDecimals);
     const ptsSecondAsset = new FPNumber(totalSupply, secondAssetDecimals);
@@ -169,38 +201,41 @@ export class PoolXykModule {
       const inaccuracy = new FPNumber('0.000000000000001');
       return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()];
     }
-    const poolToken = this.getInfo(firstAsset.address, secondAsset.address);
-    const totalSupply = await this.root.api.query.poolXyk.totalIssuances(poolToken.address); // BalanceInfo
+    const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
+    const totalSupply = await this.root.api.query.poolXYK.totalIssuances(poolToken.address);
     const pts = new FPNumber(totalSupply, poolToken.decimals);
-    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b));
+    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b)) as FPNumber;
     return [result.toCodecString(), pts.toCodecString()];
   }
 
   private async subscribeOnAccountLiquidity(liquidity: Partial<AccountLiquidity>): Promise<void> {
-    if (this.subscriptions.has(liquidity.secondAddress)) return;
+    if (this.subscriptions.has(serializeLPKey(liquidity))) return;
 
-    const poolAccount = poolAccountIdFromAssetPair(this.root.api, XOR.address, liquidity.secondAddress).toString();
-    const accountPoolBalanceObservable = this.root.apiRx.query.poolXyk.poolProviders(
+    const { firstAddress, secondAddress } = liquidity;
+    const poolAccount = poolAccountIdFromAssetPair(this.root.api, firstAddress, secondAddress).toString();
+    const accountPoolBalanceObservable = this.root.apiRx.query.poolXYK.poolProviders(
       poolAccount,
       this.root.account.pair.address
     );
-    const poolReservesObservable = this.root.apiRx.query.poolXyk.reserves(XOR.address, liquidity.secondAddress);
+    const poolReservesObservable = this.root.apiRx.query.poolXYK.reserves(firstAddress, secondAddress);
 
     let subscription: Subscription;
     let isFirstTick = true;
+
+    const key = serializeLPKey(liquidity);
 
     await new Promise<void>((resolve) => {
       subscription = combineLatest([poolReservesObservable, accountPoolBalanceObservable]).subscribe(
         async ([reserves, balance]) => {
           const updatedLiquidity = await this.getAccountLiquidityItem(
             poolAccount,
-            XOR.address,
-            liquidity.secondAddress,
+            firstAddress,
+            secondAddress,
             reserves,
             balance
           );
           // add or update liquidity only if subscription exists, or this is first subscription result
-          if (updatedLiquidity && (this.subscriptions.has(liquidity.secondAddress) || isFirstTick)) {
+          if (updatedLiquidity && (this.subscriptions.has(key) || isFirstTick)) {
             this.addToLiquidityList(updatedLiquidity);
           } else {
             this.removeAccountLiquidity(liquidity); // Remove it from list if something was wrong
@@ -213,7 +248,44 @@ export class PoolXykModule {
       );
     });
 
-    this.subscriptions.set(liquidity.secondAddress, subscription);
+    this.subscriptions.set(key, subscription);
+  }
+
+  private arrangeAssetsForParams(
+    firstAsset: Asset | AccountAsset,
+    secondAsset: Asset | AccountAsset,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike
+  ): Array<any> {
+    const isXorOrXstusd = (address: string) => [XOR.address, XSTUSD.address].includes(address);
+    const isFirstAssetSuitable = isXorOrXstusd(firstAsset.address);
+    const isSecondAssetSuitable = isXorOrXstusd(secondAsset.address);
+
+    assert(isFirstAssetSuitable || isSecondAssetSuitable, Messages.xorOrXstIsRequired);
+
+    let baseAsset: Asset | AccountAsset,
+      targetAsset: Asset | AccountAsset,
+      baseAssetAmount: NumberLike,
+      targetAssetAmount: NumberLike,
+      DEXId: DexId;
+
+    const getDexId = (base: string) => (base === XOR.address ? DexId.XOR : DexId.XSTUSD);
+
+    if (isFirstAssetSuitable) {
+      DEXId = getDexId(firstAsset.address);
+      baseAsset = firstAsset;
+      targetAsset = secondAsset;
+      baseAssetAmount = firstAmount;
+      targetAssetAmount = secondAmount;
+    } else if (isSecondAssetSuitable) {
+      DEXId = getDexId(secondAsset.address);
+      baseAsset = secondAsset;
+      targetAsset = firstAsset;
+      baseAssetAmount = secondAmount;
+      targetAssetAmount = firstAmount;
+    }
+
+    return [baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId];
   }
 
   private async getAccountLiquidityItem(
@@ -255,7 +327,7 @@ export class PoolXykModule {
     const minted = FPNumber.max(
       fpBalanceA.mul(pts).div(FPNumber.fromCodecValue(reserveA, firstAsset.decimals)),
       fpBalanceB.mul(pts).div(FPNumber.fromCodecValue(reserveB, secondAsset.decimals))
-    );
+    ) as FPNumber;
     return {
       address: poolAccount,
       firstAddress,
@@ -272,19 +344,23 @@ export class PoolXykModule {
   }
 
   public unsubscribeFromAccountLiquidity(liquidity: Partial<AccountLiquidity>): void {
-    this.subscriptions.get(liquidity.secondAddress)?.unsubscribe();
-    this.subscriptions.delete(liquidity.secondAddress);
+    const key = serializeLPKey(liquidity);
+    this.subscriptions.get(key)?.unsubscribe();
+    this.subscriptions.delete(key);
   }
 
   public unsubscribeFromAllUpdates(): void {
-    for (const secondAddress of this.subscriptions.keys()) {
-      this.unsubscribeFromAccountLiquidity({ secondAddress });
+    for (const key of this.subscriptions.keys()) {
+      const liquidity = deserializeLPKey(key);
+      this.unsubscribeFromAccountLiquidity(liquidity);
     }
   }
 
   private removeAccountLiquidity(liquidity: Partial<AccountLiquidity>): void {
     this.unsubscribeFromAccountLiquidity(liquidity);
-    this.accountLiquidity = this.accountLiquidity.filter((item) => item.secondAddress !== liquidity.secondAddress);
+    this.accountLiquidity = this.accountLiquidity.filter(({ firstAddress, secondAddress }) => {
+      return !(liquidity.firstAddress === firstAddress && liquidity.secondAddress === secondAddress);
+    });
   }
 
   public clearAccountLiquidity(): void {
@@ -294,16 +370,22 @@ export class PoolXykModule {
 
   /**
    * Set subscriptions for balance updates of the account asset list
-   * @param targetAssetIds
+   * @param assetIdPairs
    */
-  private async updateAccountLiquiditySubscriptions(targetAssetIds: Array<string>): Promise<void> {
+  private async updateAccountLiquiditySubscriptions(assetIdPairs: Array<Array<string>>): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
 
     // liquidities to be subscribed
-    const includedLiquidityList = targetAssetIds.map((id) => ({ secondAddress: id }));
+    const includedLiquidityList = assetIdPairs.map(([first, second]) => ({
+      firstAddress: first,
+      secondAddress: second,
+    }));
     // liquidities to be unsubscribed and removed
     const excludedLiquidityList = this.accountLiquidity.reduce<AccountLiquidity[]>(
-      (result, liquidity) => (targetAssetIds.includes(liquidity.secondAddress) ? result : [...result, liquidity]),
+      (result, liquidity) =>
+        assetIdPairs.find(([first, second]) => liquidity.firstAddress === first && liquidity.secondAddress === second)
+          ? result
+          : [...result, liquidity],
       []
     );
 
@@ -328,13 +410,27 @@ export class PoolXykModule {
     assert(this.root.account, Messages.connectWallet);
 
     this.accountLiquidityLoaded = new Subject<void>();
+    const account = this.root.accountPair.address;
 
-    return this.root.apiRx.query.poolXyk.accountPools(this.root.accountPair.address).subscribe(async (result) => {
-      const targetIds = result.toJSON() as Array<string>;
-      await this.updateAccountLiquiditySubscriptions(targetIds);
+    return this.root.apiRx.query.poolXYK.accountPools
+      .multi([
+        [account, XOR.address],
+        [account, XSTUSD.address],
+      ])
+      .subscribe(async ([xorBased, xstBased]) => {
+        const assetIdPairs = [];
+        xorBased.forEach((targetAssetId) => {
+          const pair = [XOR.address, targetAssetId.code.toString()];
+          assetIdPairs.push(pair);
+        });
+        xstBased.forEach((targetAssetId) => {
+          const pair = [XSTUSD.address, targetAssetId.code.toString()];
+          assetIdPairs.push(pair);
+        });
+        await this.updateAccountLiquiditySubscriptions(assetIdPairs);
 
-      this.accountLiquidityLoaded.complete();
-    });
+        this.accountLiquidityLoaded.complete();
+      });
   }
 
   private async calcAddTxParams(
@@ -342,7 +438,8 @@ export class PoolXykModule {
     secondAsset: Asset | AccountAsset,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
-    slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
+    slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent,
+    DEXId = DexId.XOR
   ) {
     assert(this.root.account, Messages.connectWallet);
     const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals);
@@ -350,7 +447,7 @@ export class PoolXykModule {
     const slippage = new FPNumber(Number(slippageTolerance) / 100);
     return {
       args: [
-        this.root.defaultDEXId,
+        DEXId,
         firstAsset.address,
         secondAsset.address,
         firstAmountNum.toCodecString(),
@@ -376,21 +473,39 @@ export class PoolXykModule {
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ): Promise<void> {
-    const params = await this.calcAddTxParams(firstAsset, secondAsset, firstAmount, secondAmount, slippageTolerance);
+    const [baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId] = this.arrangeAssetsForParams(
+      firstAsset,
+      secondAsset,
+      firstAmount,
+      secondAmount
+    );
+
+    const params = await this.calcAddTxParams(
+      baseAsset,
+      targetAsset,
+      baseAssetAmount,
+      targetAssetAmount,
+      slippageTolerance,
+      DEXId
+    );
     if (!this.root.assets.getAsset(secondAsset.address)) {
       this.root.assets.addAccountAsset(secondAsset.address);
     }
-    await this.root.submitExtrinsic(this.root.api.tx.poolXyk.depositLiquidity(...params.args), this.root.account.pair, {
-      type: Operation.AddLiquidity,
-      symbol: firstAsset.symbol,
-      assetAddress: firstAsset.address,
-      symbol2: secondAsset.symbol,
-      asset2Address: secondAsset.address,
-      amount: `${firstAmount}`,
-      amount2: `${secondAmount}`,
-      decimals: firstAsset.decimals,
-      decimals2: secondAsset.decimals,
-    });
+    await this.root.submitExtrinsic(
+      (this.root.api.tx.poolXYK as any).depositLiquidity(...params.args),
+      this.root.account.pair,
+      {
+        type: Operation.AddLiquidity,
+        symbol: firstAsset.symbol,
+        assetAddress: firstAsset.address,
+        symbol2: secondAsset.symbol,
+        asset2Address: secondAsset.address,
+        amount: `${firstAmount}`,
+        amount2: `${secondAmount}`,
+        decimals: firstAsset.decimals,
+        decimals2: secondAsset.decimals,
+      }
+    );
   }
 
   private async calcCreateTxParams(
@@ -400,22 +515,26 @@ export class PoolXykModule {
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ) {
-    assert([firstAsset.address, secondAsset.address].includes(XOR.address), Messages.xorIsRequired);
-    const baseAsset = firstAsset.address === XOR.address ? firstAsset : secondAsset;
-    const targetAsset = firstAsset.address !== XOR.address ? firstAsset : secondAsset;
+    const [baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId] = this.arrangeAssetsForParams(
+      firstAsset,
+      secondAsset,
+      firstAmount,
+      secondAmount
+    );
+
     const exists = await this.check(baseAsset.address, targetAsset.address);
     assert(!exists, Messages.pairAlreadyCreated);
-    const baseAssetAmount = baseAsset.address === firstAsset.address ? firstAmount : secondAmount;
-    const targetAssetAmount = targetAsset.address === secondAsset.address ? secondAmount : firstAmount;
+
     const params = await this.calcAddTxParams(
       baseAsset,
       targetAsset,
       baseAssetAmount,
       targetAssetAmount,
-      slippageTolerance
+      slippageTolerance,
+      DEXId
     );
     return {
-      pairCreationArgs: [this.root.defaultDEXId, baseAsset.address, targetAsset.address],
+      pairCreationArgs: [DEXId, baseAsset.address, targetAsset.address],
       addLiquidityArgs: params.args,
       baseAssetAmount,
       targetAssetAmount,
@@ -443,21 +562,17 @@ export class PoolXykModule {
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ): Promise<void> {
     const params = await this.calcCreateTxParams(firstAsset, secondAsset, firstAmount, secondAmount, slippageTolerance);
-    const isPairAlreadyCreated = (
-      await (this.root.api.rpc as any).tradingPair.isPairEnabled(
-        this.root.defaultDEXId,
-        firstAsset.address,
-        secondAsset.address
-      )
-    ).isTrue as boolean;
-    const transactions = [];
+    const [dexId, baseAddress, targetAddress] = params.pairCreationArgs;
+    const isPairAlreadyCreated = (await this.root.api.rpc.tradingPair.isPairEnabled(dexId, baseAddress, targetAddress))
+      .isTrue as boolean;
+    const transactions: Array<any> = [];
     if (!isPairAlreadyCreated) {
       transactions.push((this.root.api.tx.tradingPair as any).register(...params.pairCreationArgs));
     }
     transactions.push(
       ...[
-        this.root.api.tx.poolXyk.initializePool(...params.pairCreationArgs),
-        this.root.api.tx.poolXyk.depositLiquidity(...params.addLiquidityArgs),
+        (this.root.api.tx.poolXYK as any).initializePool(...params.pairCreationArgs),
+        (this.root.api.tx.poolXYK as any).depositLiquidity(...params.addLiquidityArgs),
       ]
     );
     if (!this.root.assets.getAsset(secondAsset.address)) {
@@ -484,7 +599,7 @@ export class PoolXykModule {
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ) {
     assert(this.root.account, Messages.connectWallet);
-    const poolToken = this.getInfo(firstAsset.address, secondAsset.address);
+    const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
     const desired = new FPNumber(desiredMarker, poolToken.decimals);
     const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals);
     const reserveB = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals);
@@ -492,9 +607,11 @@ export class PoolXykModule {
     const desiredA = desired.mul(reserveA).div(pts);
     const desiredB = desired.mul(reserveB).div(pts);
     const slippage = new FPNumber(Number(slippageTolerance) / 100);
+    // The order of args is important
+    const dexId = firstAsset.address === XOR.address ? DexId.XOR : DexId.XSTUSD;
     return {
       args: [
-        this.root.defaultDEXId,
+        dexId,
         firstAsset.address,
         secondAsset.address,
         desired.toCodecString(),
@@ -536,7 +653,7 @@ export class PoolXykModule {
       slippageTolerance
     );
     await this.root.submitExtrinsic(
-      this.root.api.tx.poolXyk.withdrawLiquidity(...params.args),
+      (this.root.api.tx.poolXYK as any).withdrawLiquidity(...params.args),
       this.root.account.pair,
       {
         type: Operation.RemoveLiquidity,

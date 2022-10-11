@@ -1,8 +1,8 @@
 import { assert } from '@polkadot/util';
-import { map } from '@polkadot/x-rxjs/operators';
-import { combineLatest } from '@polkadot/x-rxjs';
+import { map, combineLatest } from 'rxjs';
 import { FPNumber, CodecString } from '@sora-substrate/math';
 import type { Observable, Codec } from '@polkadot/types/types';
+import type { FixnumFixedPoint } from '@polkadot/types/lookup';
 
 import { RewardingEvents, CrowdloanRewardsCollection } from './consts';
 import { XOR, VAL, PSWAP, XSTUSD } from '../assets/consts';
@@ -87,9 +87,9 @@ export class RewardsModule {
    * @returns rewards array with not zero amount
    */
   public async checkForExternalAccount(externalAddress: string): Promise<Array<RewardInfo>> {
-    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await (
-      this.root.api.rpc as any
-    ).rewards.claimables(externalAddress);
+    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await this.root.api.rpc.rewards.claimables(
+      externalAddress
+    );
 
     const rewards = [
       this.prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount),
@@ -109,7 +109,7 @@ export class RewardsModule {
 
     return this.root.apiRx.query.pswapDistribution
       .shareholderAccounts(this.root.account.pair.address)
-      .pipe(map((balance) => this.prepareRewardInfo(RewardingEvents.LiquidityProvision, balance)));
+      .pipe(map((balance) => this.prepareRewardInfo(RewardingEvents.LiquidityProvision, balance.inner)));
   }
 
   public getVestedRewardsSubscription(): Observable<RewardsInfo> {
@@ -117,12 +117,11 @@ export class RewardsModule {
 
     return this.root.apiRx.query.vestedRewards
       .rewards(this.root.account.pair.address)
-      .pipe(map((data) => this.prepareVestedRewardsInfo(data.limit, data.total_available, data.rewards)));
+      .pipe(map((data) => this.prepareVestedRewardsInfo(data.limit, data.totalAvailable, data.rewards)));
   }
 
   /**
    * Get observable last block number, when the user claimed a reward for asset
-   * @param accountAddress account address
    * @param assetAddress asset address
    */
   public getCrowdloanClaimHistoryObservable(assetAddress: string): Observable<number> {
@@ -135,17 +134,17 @@ export class RewardsModule {
 
   /**
    * Get observable rewards map vested for crowdloan
-   * @param accountAddress account address
    */
   public getCrowdloanRewardsVestedObservable(): Observable<{ [key: string]: FPNumber }> {
     assert(this.root.account, Messages.connectWallet);
+    const toString = (num: FixnumFixedPoint) => num.inner.toString();
 
     return this.root.apiRx.query.vestedRewards.crowdloanRewards(this.root.account.pair.address).pipe(
       map((data) => ({
-        [XOR.address]: new FPNumber(data.xor_reward, XOR.decimals),
-        [VAL.address]: new FPNumber(data.val_reward, VAL.decimals),
-        [PSWAP.address]: new FPNumber(data.pswap_reward, PSWAP.decimals),
-        [XSTUSD.address]: new FPNumber(data.xstusd_reward, XSTUSD.decimals),
+        [XOR.address]: new FPNumber(toString(data.xorReward), XOR.decimals),
+        [VAL.address]: new FPNumber(toString(data.valReward), VAL.decimals),
+        [PSWAP.address]: new FPNumber(toString(data.pswapReward), PSWAP.decimals),
+        [XSTUSD.address]: new FPNumber(toString(data.xstusdReward), XSTUSD.decimals),
       }))
     );
   }
@@ -156,10 +155,10 @@ export class RewardsModule {
   public async getCrowdloanRewardsSubscription(): Promise<Observable<RewardInfo[]>> {
     assert(this.root.account, Messages.connectWallet);
 
-    const consts = await (this.root.api.rpc as any).vestedRewards.crowdloanLease();
-    const blocksPerDay = Number(consts.blocks_per_day);
-    const totalDays = Number(consts.total_days);
-    const startBlock = Number(consts.start_block);
+    const consts = await this.root.api.rpc.vestedRewards.crowdloanLease();
+    const blocksPerDay = Number(consts.blocksPerDay);
+    const totalDays = Number(consts.totalDays);
+    const startBlock = Number(consts.startBlock);
     const endBlock = startBlock + totalDays * blocksPerDay;
 
     const currentBlockObservable = this.root.system.getBlockNumberObservable();

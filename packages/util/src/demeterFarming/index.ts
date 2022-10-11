@@ -1,5 +1,4 @@
-import { map } from '@polkadot/x-rxjs/operators';
-import { combineLatest } from '@polkadot/x-rxjs';
+import { map, combineLatest } from 'rxjs';
 import { assert } from '@polkadot/util';
 import type { Observable } from '@polkadot/types/types';
 import type { NumberLike } from '@sora-substrate/math';
@@ -29,14 +28,14 @@ export class DemeterFarmingModule {
         return poolDataVec.map((poolData) => ({
           poolAsset,
           rewardAsset,
-          multiplier: Number(poolData.multiplier),
-          isCore: poolData.is_core.isTrue,
-          isFarm: poolData.is_farm.isTrue,
-          isRemoved: poolData.is_removed.isTrue,
-          depositFee: new FPNumber(poolData.deposit_fee).toNumber(),
-          totalTokensInPool: new FPNumber(poolData.total_tokens_in_pool),
+          multiplier: poolData.multiplier.toNumber(),
+          isCore: poolData.isCore.isTrue,
+          isFarm: poolData.isFarm.isTrue,
+          isRemoved: poolData.isRemoved.isTrue,
+          depositFee: poolData.depositFee.toNumber(),
+          totalTokensInPool: new FPNumber(poolData.totalTokensInPool),
           rewards: new FPNumber(poolData.rewards),
-          rewardsToBeDistributed: new FPNumber(poolData.rewards_to_be_distributed),
+          rewardsToBeDistributed: new FPNumber(poolData.rewardsToBeDistributed),
         }));
       })
     );
@@ -47,14 +46,14 @@ export class DemeterFarmingModule {
    * @returns Observable list of pools
    */
   public async getPoolsObservable(): Promise<Observable<DemeterPool[]>> {
-    const storageKeys = await this.root.api.query.demeterFarmingPlatform.pools.keys();
+    const storageKeys = await this.root.api.query.demeterFarmingPlatform.pools.keys(undefined); // TODO: [META-14]
 
     const keys = storageKeys.map((item) => {
       const [poolAssetId, rewardAssetId] = item.args;
 
       return {
-        poolAsset: poolAssetId.toString(),
-        rewardAsset: rewardAssetId.toString(),
+        poolAsset: poolAssetId.code.toString(),
+        rewardAsset: rewardAssetId.code.toString(),
       };
     });
 
@@ -77,12 +76,12 @@ export class DemeterFarmingModule {
 
         return {
           assetId,
-          tokenPerBlock: new FPNumber(data.token_per_block),
-          farmsTotalMultiplier: Number(data.farms_total_multiplier),
-          stakingTotalMultiplier: Number(data.staking_total_multiplier),
-          farmsAllocation: new FPNumber(data.farms_allocation),
-          stakingAllocation: new FPNumber(data.staking_allocation),
-          teamAllocation: new FPNumber(data.team_allocation),
+          tokenPerBlock: new FPNumber(data.tokenPerBlock),
+          farmsTotalMultiplier: Number(data.farmsTotalMultiplier),
+          stakingTotalMultiplier: Number(data.stakingTotalMultiplier),
+          farmsAllocation: new FPNumber(data.farmsAllocation),
+          stakingAllocation: new FPNumber(data.stakingAllocation),
+          teamAllocation: new FPNumber(data.teamAllocation),
         };
       })
     );
@@ -95,7 +94,7 @@ export class DemeterFarmingModule {
   public async getTokenInfosObservable(): Promise<Observable<DemeterRewardToken[]>> {
     const storageKeys = await this.root.api.query.demeterFarmingPlatform.tokenInfos.keys();
 
-    const keys = storageKeys.map((item) => item.args[0].toString());
+    const keys = storageKeys.map((item) => item.args[0].code.toString());
 
     const observables = keys.map((assetId) => this.getTokenInfoObservable(assetId));
 
@@ -112,10 +111,10 @@ export class DemeterFarmingModule {
     return this.root.apiRx.query.demeterFarmingPlatform.userInfos(this.root.account.pair.address).pipe(
       map((userInfoVec) => {
         return userInfoVec.map((data) => ({
-          isFarm: data.is_farm.isTrue,
-          poolAsset: data.pool_asset.toString(),
-          pooledTokens: new FPNumber(data.pooled_tokens),
-          rewardAsset: data.reward_asset.toString(),
+          isFarm: data.isFarm.isTrue,
+          poolAsset: data.poolAsset.code.toString(),
+          pooledTokens: new FPNumber(data.pooledTokens),
+          rewardAsset: data.rewardAsset.code.toString(),
           rewards: new FPNumber(data.rewards),
         }));
       })

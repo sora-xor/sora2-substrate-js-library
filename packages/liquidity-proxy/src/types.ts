@@ -9,7 +9,7 @@ export interface SwapResult {
   amount: CodecString;
   fee: CodecString;
   rewards: Array<LPRewardsInfo>;
-  amountWithoutImpact: CodecString;
+  amountWithoutImpact?: CodecString;
 }
 
 export type QuotePaths = {

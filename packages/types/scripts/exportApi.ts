@@ -1,8 +1,18 @@
+import fs from 'fs';
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
+import { unwrapStorageType } from '@polkadot/types';
 import { options } from '@sora-substrate/api';
-import fs from 'fs';
 import { localTypes } from '@sora-substrate/type-definitions';
+import type { ILookup } from '@polkadot/types-create/types';
+import type { SiLookupTypeId } from '@polkadot/types/interfaces';
+
+import { SORA_ENV } from './consts';
+
+const META_STR = 'meta';
+const KEY_STR = 'key';
+const KEY1_STR = 'key1';
+const KEY2_STR = 'key2';
 
 enum CallType {
   StateQuery = 'query',
@@ -12,33 +22,19 @@ enum CallType {
 }
 
 class CallDoc {
-  callType: CallType;
-  section: string;
-  method: string;
-  documentation: Array<string>;
-  args: Array<[string, string]>;
-  ret?: string;
-
   constructor(
-    callType: CallType,
-    section: string,
-    method: string,
-    documentation: Array<string>,
-    args: Array<[string, string]>,
-    ret?: string
-  ) {
-    this.callType = callType;
-    this.section = section;
-    this.method = method;
-    this.documentation = documentation;
-    this.args = args;
-    this.ret = ret;
-  }
+    public callType: CallType,
+    public section: string,
+    public method: string,
+    public docs: Array<string>,
+    public args: Array<[string, string]>,
+    public ret?: string
+  ) {}
 
   makeMd() {
     const header = makeHeader(4, `**${this.makeApiCall(this.callType)}**`);
-    const documentation = this.documentation.map((a) => '\n>' + a).join('');
-    return `${header}\n${documentation}${this.makeArgsMd()}${this.makeReturnMd()}\n<hr>`;
+    const docs = this.docs.map((a) => '\n>' + a).join('');
+    return `${header}\n${docs}${this.makeArgsMd()}${this.makeReturnMd()}\n<hr>`;
   }
 
   makeArgsMd() {
@@ -62,32 +58,37 @@ class CallDoc {
   }
 }
 
+function getSiName(lookup: ILookup, type: SiLookupTypeId): string {
+  const typeDef = lookup.getTypeDef(type);
+  return typeDef.lookupName || typeDef.type;
+}
+
 function extractQueries(api: ApiPromise): Array<CallDoc> {
   let data = api.query;
   let queries: Array<CallDoc> = Array();
 
   for (const section in data) {
     for (const method in data[section]) {
-      const documentation: Array<string> = data[section][method]['meta'].documentation.map((a) => a.toString());
-      const type = data[section][method]['meta'].type;
-      let args = [];
-      let ret = '';
-      if (type.isPlain) {
-        ret = type.asPlain.toString();
-      } else if (type.isMap) {
-        let actualType = type.asMap;
-        args.push(['key', actualType['key'].toString()]);
-        ret = actualType['value'].toString();
+      const docs: Array<string> = data[section][method][META_STR].docs.map((a) => a.toString());
+      const type = data[section][method][META_STR].type;
+      const lookup = type.registry.lookup;
+      let args: Array<any> = [];
+      if (type.isMap) {
+        const formattedActualTypeKey = getSiName(lookup, type.asMap[KEY_STR].toJSON());
+        args.push([KEY_STR, formattedActualTypeKey]);
       } else if (type.isDoubleMap) {
-        let actualType = type.asDoubleMap;
-        args.push(['key1', actualType['key1'].toString()]);
-        args.push(['key2', actualType['key2'].toString()]);
-        ret = actualType['value'].toString();
-      } else {
+        const actualType = type.asDoubleMap;
+        const formattedActualTypeKey1 = getSiName(lookup, actualType[KEY1_STR].toJSON());
+        const formattedActualTypeKey2 = getSiName(lookup, actualType[KEY2_STR].toJSON());
+        args.push([KEY1_STR, formattedActualTypeKey1]);
+        args.push([KEY2_STR, formattedActualTypeKey2]);
+      } else if (!type.isPlain) {
         console.log(`Encountered unsupported storage item: ${section}.${method}`);
       }
 
-      let doc = new CallDoc(CallType.StateQuery, section, method, documentation, args, ret);
+      const ret = unwrapStorageType(type.registry, type);
+
+      let doc = new CallDoc(CallType.StateQuery, section, method, docs, args, ret);
       queries.push(doc);
     }
   }
@@ -101,12 +102,12 @@ function extractTxns(api: ApiPromise): Array<CallDoc> {
 
   for (const section in data) {
     for (const method in data[section]) {
-      const documentation: Array<string> = data[section][method]['meta'].documentation.map((a) => a.toString());
-      const args: Array<[string, string]> = data[section][method]['meta'].args.map((a) => [
+      const docs: Array<string> = data[section][method][META_STR].docs.map((a) => a.toString());
+      const args: Array<[string, string]> = data[section][method][META_STR].args.map((a) => [
         a.name.toString(),
         a.type.toString(),
       ]);
-      let doc = new CallDoc(CallType.Extrinsic, section, method, documentation, args, null);
+      let doc = new CallDoc(CallType.Extrinsic, section, method, docs, args, undefined);
       txns.push(doc);
     }
   }
@@ -120,10 +121,10 @@ function extractRpcs(api: ApiPromise): Array<CallDoc> {
 
   for (const section in data) {
     for (const method in data[section]) {
-      const documentation: Array<string> = [data[section][method]['meta'].description];
-      const args = data[section][method]['meta'].params.map((a) => [a.name.toString(), a.type.toString()]);
-      const type = data[section][method]['meta'].type;
-      let doc = new CallDoc(CallType.Rpc, section, method, documentation, args, type);
+      const docs: Array<string> = [data[section][method][META_STR].description];
+      const args = data[section][method][META_STR].params.map((a) => [a.name.toString(), a.type.toString()]);
+      const type = data[section][method][META_STR].type;
+      let doc = new CallDoc(CallType.Rpc, section, method, docs, args, type);
       queries.push(doc);
     }
   }
@@ -144,16 +145,17 @@ function makeSectionTitle(section: string) {
 }
 
 function makeCallTypeTitle(callType: string) {
+  const headerNum = 3;
   if (callType == 'query') {
-    return makeHeader(3, '*State Queries*');
+    return makeHeader(headerNum, '*State Queries*');
   } else if (callType == 'tx') {
-    return makeHeader(3, '*Extrinsics*');
+    return makeHeader(headerNum, '*Extrinsics*');
   } else if (callType == 'rpc') {
-    return makeHeader(3, '*Custom RPCs*');
+    return makeHeader(headerNum, '*Custom RPCs*');
   } else if (callType == 'const') {
-    return makeHeader(3, '*Constants*');
+    return makeHeader(headerNum, '*Constants*');
   } else {
-    return makeHeader(3, '<unknown call type>');
+    return makeHeader(headerNum, '<unknown call type>');
   }
 }
 
@@ -171,7 +173,7 @@ function capitalizeFirstLetter(string) {
 }
 
 async function main(): Promise<void> {
-  const provider = new WsProvider('wss://mof3.sora.org/');
+  const provider = new WsProvider(SORA_ENV.dev);
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
 

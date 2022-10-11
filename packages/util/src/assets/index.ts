@@ -1,32 +1,38 @@
 import { assert } from '@polkadot/util';
-import { map } from '@polkadot/x-rxjs/operators';
-import { combineLatest } from '@polkadot/x-rxjs';
-import { Subject } from '@polkadot/x-rxjs';
+import { Subscription, Subject, combineLatest, map } from 'rxjs';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
+import type { BalanceInfo } from '@sora-substrate/types';
 import type { ApiPromise } from '@polkadot/api';
-import type { Codec, Observable } from '@polkadot/types/types';
-import type { AccountData } from '@polkadot/types/interfaces/balances';
-import type { OrmlAccountData } from '@open-web3/orml-types/interfaces/tokens';
-import type { Subscription } from '@polkadot/x-rxjs';
+import type { Observable } from '@polkadot/types/types';
+import type { OrmlTokensAccountData, PalletBalancesAccountData } from '@polkadot/types/lookup';
+import type { Option, u128 } from '@polkadot/types-codec';
 
 import { KnownAssets, NativeAssets, XOR } from './consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import type { AccountAsset, AccountBalance, Asset, Blacklist, Whitelist, WhitelistArrayItem } from './types';
+import type {
+  AccountAsset,
+  AccountBalance,
+  Asset,
+  Blacklist,
+  Whitelist,
+  WhitelistArrayItem,
+  WhitelistIdsBySymbol,
+} from './types';
 import type { Api } from '../api';
 
 function formatBalance(
-  data: AccountData | OrmlAccountData,
+  data: PalletBalancesAccountData | OrmlTokensAccountData,
   assetDecimals?: number,
-  bondedData?: Codec
+  bondedData?: Option<u128>
 ): AccountBalance {
   const free = new FPNumber(data.free || 0, assetDecimals);
   const reserved = new FPNumber(data.reserved || 0, assetDecimals);
-  const miscFrozen = new FPNumber((data as AccountData).miscFrozen || 0, assetDecimals);
-  const feeFrozen = new FPNumber((data as AccountData).feeFrozen || 0, assetDecimals);
-  const frozen = new FPNumber((data as OrmlAccountData).frozen || 0, assetDecimals);
-  const locked = FPNumber.max(miscFrozen, feeFrozen);
+  const miscFrozen = new FPNumber((data as PalletBalancesAccountData).miscFrozen || 0, assetDecimals);
+  const feeFrozen = new FPNumber((data as PalletBalancesAccountData).feeFrozen || 0, assetDecimals);
+  const frozen = new FPNumber((data as OrmlTokensAccountData).frozen || 0, assetDecimals);
+  const locked = FPNumber.max(miscFrozen, feeFrozen) as FPNumber;
   // bondedData can be NaN, it can be checked by isEmpty===true
   const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
   const freeAndReserved = free.add(reserved);
@@ -42,7 +48,7 @@ function formatBalance(
 
 async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
   const [symbol, name, decimals, _, content, description] = (
-    await api.query.assets.assetInfos(address)
+    await api.query.assets.assetInfos({ code: address })
   ).toHuman() as any;
   return { address, symbol, name, decimals: +decimals, content, description } as Asset;
 }
@@ -72,8 +78,12 @@ function isRegisteredAsset(asset: any, whitelist: Whitelist): boolean {
 /**
  * Used *ONLY* for faucet
  */
-export async function getBalance(api: ApiPromise, accountAddress: string, assetAddress: string): Promise<Codec> {
-  return await (api.rpc as any).assets.usableBalance(accountAddress, assetAddress); // BalanceInfo
+export async function getBalance(
+  api: ApiPromise,
+  accountAddress: string,
+  assetAddress: string
+): Promise<Option<BalanceInfo>> {
+  return await api.rpc.assets.usableBalance(accountAddress, assetAddress);
 }
 
 export function isNativeAsset(asset: any): boolean {
@@ -91,7 +101,7 @@ export function getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist): A
 
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
   const allAssets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
-    const [address] = key.toHuman() as any;
+    const address = key.args[0].code.toString();
     const [symbol, name, decimals, _, content, description] = codec.toHuman() as any;
     return { address, symbol, name, decimals: +decimals, content, description };
   }) as Array<Asset>;
@@ -130,12 +140,8 @@ export class AssetsModule {
    */
   getWhitelist(whitelist: Array<WhitelistArrayItem>): Whitelist {
     return whitelist.reduce<Whitelist>((acc, asset) => {
-      acc[asset.address] = {
-        name: asset.name,
-        symbol: asset.symbol,
-        decimals: asset.decimals,
-        icon: asset.icon,
-      };
+      const { address, name, symbol, decimals, icon } = asset;
+      acc[address] = { name, symbol, decimals, icon };
       return acc;
     }, {});
   }
@@ -154,8 +160,9 @@ export class AssetsModule {
    * @param whitelist Whitelist array
    */
   getWhitelistIdsBySymbol(whitelist: Array<WhitelistArrayItem>) {
-    return whitelist.reduce<any>((acc, asset) => {
-      acc[asset.symbol.toUpperCase()] = asset.address;
+    return whitelist.reduce<WhitelistIdsBySymbol>((acc, asset) => {
+      const { address, symbol } = asset;
+      acc[symbol.toUpperCase()] = address;
       return acc;
     }, {});
   }
@@ -165,15 +172,16 @@ export class AssetsModule {
    * @param asset Asset object
    * @param whitelistIdsBySymbol whitelist object by symbol as keys
    */
-  isBlacklist(asset: Partial<Asset>, whitelistIdsBySymbol: any): boolean {
-    if (!asset.address || !asset.symbol) {
+  isBlacklist(asset: Partial<Asset>, whitelistIdsBySymbol: WhitelistIdsBySymbol): boolean {
+    const { address, symbol } = asset;
+    if (!address || !symbol) {
       return false;
     }
-    const address = whitelistIdsBySymbol[asset.symbol];
-    if (!address) {
+    const foundAddress = whitelistIdsBySymbol[symbol];
+    if (!foundAddress) {
       return false;
     }
-    return address !== asset.address;
+    return foundAddress !== address;
   }
 
   /**
@@ -291,7 +299,8 @@ export class AssetsModule {
 
   public getAssetBalanceObservable(asset: AccountAsset): Observable<AccountBalance> {
     const accountAddress = this.root.account.pair.address;
-    if (asset.address === XOR.address) {
+    const assetAddress = asset.address;
+    if (assetAddress === XOR.address) {
       const accountInfo = this.root.apiRx.query.system.account(accountAddress);
       const bondedBalance = this.root.apiRx.query.referrals.referrerBalances(accountAddress);
 
@@ -300,7 +309,7 @@ export class AssetsModule {
       );
     }
     return this.root.apiRx.query.tokens
-      .accounts(accountAddress, asset.address)
+      .accounts(accountAddress, assetAddress)
       .pipe(map((accountData) => formatBalance(accountData, asset.decimals)));
   }
 
@@ -374,8 +383,8 @@ export class AssetsModule {
 
   public get accountAssetsAddresses(): Array<string> {
     if (this.root.accountStorage) {
-      this._accountAssetsAddresses =
-        (JSON.parse(this.root.accountStorage.get('assetsAddresses')) as Array<string>) || [];
+      const addresses = this.root.accountStorage.get('assetsAddresses');
+      this._accountAssetsAddresses = addresses ? (JSON.parse(addresses) as Array<string>) : [];
     }
     return this._accountAssetsAddresses;
   }
@@ -422,7 +431,7 @@ export class AssetsModule {
     }
   ) {
     assert(this.root.account, Messages.connectWallet);
-    const supply = nonDivisible ? new FPNumber(totalSupply, 0) : new FPNumber(totalSupply);
+    const supply = new FPNumber(totalSupply, nonDivisible ? 0 : FPNumber.DEFAULT_PRECISION);
     return {
       args: [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description],
     };

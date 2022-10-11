@@ -2,10 +2,10 @@ export default {
   rpc: {},
   types: {
     LockInfo: {
-      pool_tokens: 'Balance',
-      unlocking_timestamp: 'Moment',
-      asset_a: 'AssetId',
-      asset_b: 'AssetId',
+      poolTokens: 'Balance',
+      unlockingTimestamp: 'Moment',
+      assetA: 'AssetId',
+      assetB: 'AssetId',
     },
   },
 };

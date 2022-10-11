@@ -136,9 +136,11 @@ describe('FPNumber', () => {
   ])(
     '[toString from Codec object] instance of "%s" with precision "%s" should display "%s"',
     (value, precision, result) => {
-      const codec = connection.api.createType('Balance', value);
-      const instance = new FPNumber(codec, precision);
-      expect(instance.toString()).toBe(result);
+      const codec = connection?.api?.createType('Balance', value);
+      if (codec) {
+        const instance = new FPNumber(codec, precision);
+        expect(instance.toString()).toBe(result);
+      }
     }
   );
 
@@ -285,7 +287,8 @@ describe('FPNumber', () => {
   ])('[max] max (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
-    expect(FPNumber.max(instance1, instance2).toString()).toBe(result);
+    const max = FPNumber.max(instance1, instance2) as FPNumber;
+    expect(max.toString()).toBe(result);
   });
 
   it.each([
@@ -308,7 +311,8 @@ describe('FPNumber', () => {
   ])('[min] min (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
-    expect(FPNumber.min(instance1, instance2).toString()).toBe(result);
+    const min = FPNumber.min(instance1, instance2) as FPNumber;
+    expect(min.toString()).toBe(result);
   });
 
   it.each([

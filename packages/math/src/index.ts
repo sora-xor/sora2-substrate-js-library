@@ -76,7 +76,7 @@ export class FPNumber {
    * Return the **max** value, `null` if an array is empty
    * @param {...FPNumber} numbers
    */
-  public static max(...numbers: Array<FPNumber>): FPNumber {
+  public static max(...numbers: Array<FPNumber>): FPNumber | null {
     if (!numbers || !numbers.length) {
       return null;
     }
@@ -89,7 +89,7 @@ export class FPNumber {
    * Return the **min** value, `null` if an array is empty
    * @param {...FPNumber} numbers
    */
-  public static min(...numbers: Array<FPNumber>): FPNumber {
+  public static min(...numbers: Array<FPNumber>): FPNumber | null {
     if (!numbers || !numbers.length) {
       return null;
     }
@@ -256,14 +256,14 @@ export class FPNumber {
   public format(dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format): string {
     const value = this.value.div(10 ** this.precision);
     if (value.isZero()) {
-      return value.toFormat(format);
+      return format ? value.toFormat(format) : value.toFormat();
     }
     let formatted = value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
     if (formatted.isZero()) {
       // First significant character
       formatted = new BigNumber(value.toFormat().replace(/(0\.0*[1-9])([0-9]*)/, '$1'));
     }
-    return formatted.toFormat(format);
+    return format ? formatted.toFormat(format) : formatted.toFormat();
   }
 
   public toLocaleString(): string {

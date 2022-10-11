@@ -10,7 +10,7 @@ async function main(): Promise<void> {
   await api.isReady;
 
   let baseAsset = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000000');
-  let properties = await api.query.poolXyk.properties.entries(baseAsset);
+  let properties = await api.query.poolXYK.properties.entries(baseAsset as unknown as string);
   for (let entry in properties) {
     const targetAsset = api.createType('AssetId', properties[entry][0].slice(-32)).toString();
     const actualAccount = properties[entry][1].toJSON()[0].toString();

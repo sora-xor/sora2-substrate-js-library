@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import { Keyring } from '@polkadot/api';
-import { strictEqual, ok } from 'assert';
+import { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 async function demo(): Promise<void> {
   console.log('INITIALIZING API');
@@ -17,9 +17,9 @@ async function demo(): Promise<void> {
   const keyring = new Keyring({ type: 'sr25519' });
   // NOTE: replace to use specific keys
   const root = keyring.addFromUri('//Alice', { name: 'Root' });
-  const user_a = keyring.addFromUri('//Bob', { name: 'UserA' });
+  // const userA = keyring.addFromUri('//Bob', { name: 'UserA' });
   // not a secret, specifically generated mnemonic for this demo
-  const user_b = keyring.addFromMnemonic(
+  const userB = keyring.addFromMnemonic(
     'shield shed shallow chase peace blade erosion poem health foil federal cushion',
     { name: 'UserB' }
   );
@@ -27,10 +27,18 @@ async function demo(): Promise<void> {
   console.log(root.address.toString());
 
   // Creating types is not necessary, they will be automatically created if string is passed directly into function.
-  const XORAssetId = api.createType('AssetId', '0x0200000000000000000000000000000000000000000000000000000000000000');
-  const USDAssetId = api.createType('AssetId', '0x0200030000000000000000000000000000000000000000000000000000000000');
-  const VALAssetId = api.createType('AssetId', '0x0200040000000000000000000000000000000000000000000000000000000000');
-  const PSWAPAssetId = api.createType('AssetId', '0x0200050000000000000000000000000000000000000000000000000000000000');
+  const XORAssetId = api.createType(
+    'AssetId',
+    '0x0200000000000000000000000000000000000000000000000000000000000000'
+  ) as unknown as CommonPrimitivesAssetId32;
+  const VALAssetId = api.createType(
+    'AssetId',
+    '0x0200040000000000000000000000000000000000000000000000000000000000'
+  ) as unknown as CommonPrimitivesAssetId32;
+  const PSWAPAssetId = api.createType(
+    'AssetId',
+    '0x0200050000000000000000000000000000000000000000000000000000000000'
+  ) as unknown as CommonPrimitivesAssetId32;
   const DAIAssetId = api.createType('AssetId', '0x0200060000000000000000000000000000000000000000000000000000000000');
 
   // register pair
@@ -39,7 +47,7 @@ async function demo(): Promise<void> {
   // initialize pool
   await submitExtrinsic(
     api,
-    api.tx.poolXyk.initializePool(0, XORAssetId, PSWAPAssetId),
+    api.tx.poolXYK.initializePool(0, XORAssetId, PSWAPAssetId),
     root,
     'Initialize Pool for Pair XOR-DOT'
   );
@@ -47,13 +55,13 @@ async function demo(): Promise<void> {
   // mint xor and dot for account
   await submitExtrinsic(
     api,
-    api.tx.assets.mint(XORAssetId, user_b.address, '105000000000000000000000000000000000'),
+    api.tx.assets.mint(XORAssetId, userB.address, '105000000000000000000000000000000000'),
     root,
     'Mint XOR for User B'
   );
   await submitExtrinsic(
     api,
-    api.tx.assets.mint(PSWAPAssetId, user_b.address, '144000000000000000000000000000000000'),
+    api.tx.assets.mint(PSWAPAssetId, userB.address, '144000000000000000000000000000000000'),
     root,
     'Mint DOT for User B'
   );
@@ -61,7 +69,7 @@ async function demo(): Promise<void> {
   // add liquidity
   await submitExtrinsic(
     api,
-    api.tx.poolXyk.depositLiquidity(
+    api.tx.poolXYK.depositLiquidity(
       0,
       XORAssetId,
       PSWAPAssetId,
@@ -70,14 +78,14 @@ async function demo(): Promise<void> {
       '0',
       '0'
     ),
-    user_b,
+    userB,
     'Add liquidity from User B'
   );
 
   // check balances
-  let balanceX = await (api.rpc as any).assets.freeBalance(user_b.address, XORAssetId);
+  let balanceX = await (api.rpc as any).assets.freeBalance(userB.address, XORAssetId);
   console.log('User B XOR FREE: ', balanceX.unwrap().balance.toString());
-  let balanceD = await (api.rpc as any).assets.freeBalance(user_b.address, PSWAPAssetId);
+  let balanceD = await (api.rpc as any).assets.freeBalance(userB.address, PSWAPAssetId);
   console.log('User B DOT FREE: ', balanceD.unwrap().balance.toString());
 
   let claimables = await (api.rpc as any).rewards.claimables('21Bc9f4a3d9Dc86f142F802668dB7D908cF0A636').toString();
@@ -90,7 +98,7 @@ async function demo(): Promise<void> {
   console.log(`listEnabledSourcesForPath ${XORAssetId} -> ${VALAssetId}`, listEnabledSourcesForPath);
 
   // get the price via liquidity proxy
-  let quoted_result = await (api.rpc as any).liquidityProxy.quote(
+  let quotedResult = await (api.rpc as any).liquidityProxy.quote(
     0,
     DAIAssetId,
     XORAssetId,
@@ -99,9 +107,9 @@ async function demo(): Promise<void> {
     [],
     'Disabled'
   );
-  console.log('Quoted exchange DOT: ', quoted_result.unwrap().amount.toString());
-  console.log('Quoted exchange FEE: ', quoted_result.unwrap().fee.toString());
-  console.log('Quoted exchange rewards: ', quoted_result.unwrap().rewards.toJSON());
+  console.log('Quoted exchange DOT: ', quotedResult.unwrap().amount.toString());
+  console.log('Quoted exchange FEE: ', quotedResult.unwrap().fee.toString());
+  console.log('Quoted exchange rewards: ', quotedResult.unwrap().rewards.toJSON());
 
   // perform swap via liquidity proxy
   await submitExtrinsic(
@@ -114,12 +122,12 @@ async function demo(): Promise<void> {
       [],
       'Disabled'
     ),
-    user_b,
+    userB,
     'User B swaps'
   );
 
   // check user_b balance
-  let balance2 = await (api.rpc as any).assets.freeBalance(user_b.address, PSWAPAssetId);
+  let balance2 = await (api.rpc as any).assets.freeBalance(userB.address, PSWAPAssetId);
   console.log('User B DOT FREE: ', balance2.unwrap().balance.toString());
 }
 
@@ -139,8 +147,8 @@ async function inner_submitExtrinsic(api: ApiPromise, extrinsic: any, signer: an
           const [error] = data;
           if (error.isModule) {
             const decoded = api.registry.findMetaError(error.asModule);
-            const { documentation, name, section } = decoded;
-            console.log(`${section}.${name}: ${documentation.join(' ')}`);
+            const { docs, name, section } = decoded;
+            console.log(`${section}.${name}: ${docs.join(' ')}`);
           } else {
             // Other, CannotLookup, BadOrigin, no extra info
             console.log(error.toString());

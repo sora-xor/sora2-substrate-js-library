@@ -15,6 +15,8 @@ export type Whitelist = {
   [key: string]: WhitelistItem;
 };
 
+export type WhitelistIdsBySymbol = { [key: string]: string };
+
 export type Blacklist = Array<string>;
 
 /**
@@ -37,7 +39,7 @@ export interface AccountBalance {
   bonded: CodecString;
 }
 
-interface AssetBase {
+export interface Asset {
   address: string;
   symbol: string;
   name: string;
@@ -46,10 +48,6 @@ interface AssetBase {
   description?: string;
 }
 
-export interface Asset extends AssetBase {
-  totalSupply?: string;
-}
-
-export interface AccountAsset extends AssetBase {
+export interface AccountAsset extends Asset {
   balance: AccountBalance;
 }

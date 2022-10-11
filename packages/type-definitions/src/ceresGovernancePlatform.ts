@@ -1,15 +1,15 @@
 export default {
-    rpc: {},
-    types: {
-        VotingInfo: {
-            voting_option: 'u32',
-            number_of_votes: 'Balance',
-            ceres_withdrawn: 'bool',
-        },
-        PollInfo: {
-            number_of_options: 'u32',
-            poll_start_timestamp: 'Moment',
-            poll_end_timestamp: 'Moment',
-        },
+  rpc: {},
+  types: {
+    VotingInfo: {
+      votingOption: 'u32',
+      numberOfVotes: 'Balance',
+      ceresWithdrawn: 'bool',
     },
+    PollInfo: {
+      numberOfOptions: 'u32',
+      pollStartTimestamp: 'Moment',
+      pollEndTimestamp: 'Moment',
+    },
+  },
 };

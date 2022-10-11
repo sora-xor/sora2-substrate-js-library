@@ -1,3 +1,4 @@
+import { assert } from '@polkadot/util';
 import keyring from '@polkadot/ui-keyring';
 import { NumberLike, FPNumber } from '@sora-substrate/math';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
@@ -5,6 +6,7 @@ import type { CreateResult } from '@polkadot/ui-keyring/types';
 import { BaseApi, Operation, KeyringType } from './BaseApi';
 import { getBalance } from './assets';
 import { KnownAssets } from './assets/consts';
+import { Messages } from './logger';
 
 /**
  * Contains all necessary data and functions for the faucet
@@ -44,6 +46,7 @@ export class FaucetApi extends BaseApi {
   }
 
   public async send(assetAddress: string, accountAddress: string, amount: NumberLike): Promise<void> {
+    assert(!!this.faucetSigner, Messages.connectWallet);
     const asset = KnownAssets.get(assetAddress);
     // For now it will be signed transaction with the fake account
     await this.submitExtrinsic(
