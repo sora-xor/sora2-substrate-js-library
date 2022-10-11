@@ -2,7 +2,8 @@ import { FPNumber } from '@sora-substrate/math';
 
 import type { AccountBalance, Asset } from './types';
 
-export const MaxTotalSupply = '170141183460469231731.687303715884105727';
+export const MaxRustNumber = '170141183460469231731.687303715884105727';
+export const MaxTotalSupply = '100000000000000000000'; // It's better to round it for UX
 
 export enum KnownSymbols {
   XOR = 'XOR',
@@ -11,6 +12,7 @@ export enum KnownSymbols {
   DAI = 'DAI',
   ETH = 'ETH',
   XSTUSD = 'XSTUSD',
+  XST = 'XST',
 }
 
 const ZERO_STR = '0';
@@ -59,28 +61,30 @@ export const NativeAssets = new ArrayLike<Asset>([
     symbol: KnownSymbols.XOR,
     name: 'SORA',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: '700000',
   },
   {
     address: '0x0200040000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.VAL,
     name: 'SORA Validator Token',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: '100000000',
   },
   {
     address: '0x0200050000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.PSWAP,
     name: 'Polkaswap',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: '10000000000',
   },
   {
     address: '0x0200080000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XSTUSD,
     name: 'SORA Synthetic USD',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: MaxTotalSupply,
+  },
+  {
+    address: '0x0200090000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.XST,
+    name: 'SORA Synthetics',
+    decimals: FPNumber.DEFAULT_PRECISION,
   },
 ]);
 
@@ -91,14 +95,12 @@ export const KnownAssets = new ArrayLike<Asset>([
     symbol: KnownSymbols.DAI,
     name: 'Dai Stablecoin',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: MaxTotalSupply,
   },
   {
     address: '0x0200070000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.ETH,
     name: 'Ether',
     decimals: FPNumber.DEFAULT_PRECISION,
-    totalSupply: MaxTotalSupply,
   },
 ]);
 

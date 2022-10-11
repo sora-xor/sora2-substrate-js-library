@@ -563,7 +563,6 @@ export class SwapModule {
       amount: toCodecString(value.amount),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
-      amountWithoutImpact: toCodecString(value.amountWithoutImpact),
     } as SwapResult;
   }
 
