@@ -19,7 +19,7 @@ import { KnownAssets, XOR, DAI, XSTUSD, VAL, PSWAP, ETH } from '../assets/consts
 import { DexId } from '../poolXyk/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import type { Api } from '../api';
+import { api, Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 
 export class SwapModule {
@@ -220,6 +220,32 @@ export class SwapModule {
     );
   }
 
+  public async getDexes(): Promise<Array<{ dexId: number; baseAssetId: string }>> {
+    return (await this.root.api.query.dexManager.dexInfos.entries()).map(([key, codec]) => {
+      const dexId = key.args[0].toNumber();
+      const baseAssetId = codec.value.baseAssetId.code.toString();
+
+      return { dexId, baseAssetId };
+    });
+  }
+
+  public subscribeOnAllDexesReserves(
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    selectedLiquiditySource = LiquiditySourceTypes.Default
+  ): Observable<Array<{ dexId: DexId; payload: QuotePayload }>> {
+    const observableDexesReserves = [DexId.XOR, DexId.XSTUSD].map((dexId) => {
+      return this.subscribeOnReserves(firstAssetAddress, secondAssetAddress, selectedLiquiditySource, dexId).pipe(
+        map((payload) => ({
+          dexId,
+          payload,
+        }))
+      );
+    });
+
+    return combineLatest(observableDexesReserves);
+  }
+
   /**
    * Subscribe on Swapped tokens reserves
    * @param firstAssetAddress Asset A address
@@ -262,9 +288,10 @@ export class SwapModule {
       return toAveragePrice(this.root.apiRx.query.priceTools.priceInfos(assetAddress));
     };
 
-    // is TBC or XST sources used
-    const isSourceUsed = (source: LiquiditySourceTypes): boolean =>
-      selectedLiquiditySource === source || selectedLiquiditySource === LiquiditySourceTypes.Default;
+    // is TBC or XST sources used (only for XOR Dex)
+    const isPrimaryMarketSourceUsed = (source: LiquiditySourceTypes): boolean =>
+      dexId === DexId.XOR &&
+      (selectedLiquiditySource === source || selectedLiquiditySource === LiquiditySourceTypes.Default);
 
     const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key: string]: T } =>
       values.reduce(
@@ -284,8 +311,8 @@ export class SwapModule {
     // Assets for which we need to know the total supply
     const assetsWithIssuances = [xor, xstusd];
 
-    const tbcUsed = isSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
-    const xstUsed = isSourceUsed(LiquiditySourceTypes.XSTPool);
+    const tbcUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
+    const xstUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.XSTPool);
 
     const xykReserves = assetsWithXykReserves.map((address) =>
       toCodec(this.root.apiRx.query.poolXYK.reserves(dexBaseAsset, address))
