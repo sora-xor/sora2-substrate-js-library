@@ -494,7 +494,7 @@ export default {
    * Lookup66: common::primitives::PredefinedAssetId
    **/
   CommonPrimitivesPredefinedAssetId: {
-    _enum: ['XOR', 'DOT', 'KSM', 'USDT', 'VAL', 'PSWAP', 'DAI', 'ETH', 'XSTUSD']
+    _enum: ['XOR', 'DOT', 'KSM', 'USDT', 'VAL', 'PSWAP', 'DAI', 'ETH', 'XSTUSD', 'XST']
   },
   /**
    * Lookup68: trading_pair::pallet::Event<T>
