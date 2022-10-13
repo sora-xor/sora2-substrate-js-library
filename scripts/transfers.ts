@@ -73,7 +73,7 @@ ______________________________________________________________\n`
   // Open connection & import account
   const usedEndpoint = endpoint.trim() || ENDPOINT;
   await connection.open(usedEndpoint);
-  api.initialize();
+  await api.initialize();
   console.log('Connected to:', usedEndpoint);
   // Get mnemonic seed
   const mnemonicSeed = await question(

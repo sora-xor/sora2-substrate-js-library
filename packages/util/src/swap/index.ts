@@ -15,11 +15,11 @@ import type { CommonPrimitivesAssetId32, FixnumFixedPoint, PriceToolsPriceInfo }
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
-import { KnownAssets, XOR, DAI, XSTUSD, VAL, PSWAP, ETH } from '../assets/consts';
-import { DexId } from '../poolXyk/consts';
+import { XOR, DAI, XSTUSD, VAL, PSWAP, ETH } from '../assets/consts';
+import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import type { Api } from '../api';
+import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 
 export class SwapModule {
@@ -77,11 +77,11 @@ export class SwapModule {
       return { paths, liquiditySources };
     }
 
-    const baseAsset = dexId === DexId.XOR ? XOR.address : XSTUSD.address;
+    const baseAssetId = this.root.dex.getBaseAssetId(dexId);
 
     try {
-      if (isDirectExchange(inputAssetId, outputAssetId, baseAsset)) {
-        const nonBaseAsset = inputAssetId === baseAsset ? outputAssetId : inputAssetId;
+      if (isDirectExchange(inputAssetId, outputAssetId, baseAssetId)) {
+        const nonBaseAsset = inputAssetId === baseAssetId ? outputAssetId : inputAssetId;
         const path = this.getSources(nonBaseAsset, payload, enabledAssets);
 
         paths[nonBaseAsset] = path;
@@ -188,7 +188,7 @@ export class SwapModule {
   ): SwapResult {
     const valueDecimals = !isExchangeB ? inputAsset.decimals : outputAsset.decimals;
     const amount = FPNumber.fromCodecValue(new FPNumber(value, valueDecimals).toCodecString());
-    const dexBaseAsset = dexId === DexId.XOR ? XOR.address : XSTUSD.address;
+    const baseAssetId = this.root.dex.getBaseAssetId(dexId);
 
     return quote(
       inputAsset.address,
@@ -198,7 +198,7 @@ export class SwapModule {
       selectedSources,
       paths,
       payload,
-      dexBaseAsset
+      baseAssetId
     );
   }
 
@@ -220,6 +220,23 @@ export class SwapModule {
     );
   }
 
+  public subscribeOnAllDexesReserves(
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    selectedLiquiditySource = LiquiditySourceTypes.Default
+  ): Observable<Array<{ dexId: number; payload: QuotePayload }>> {
+    const observableDexesReserves = this.root.dex.dexList.map(({ dexId }) => {
+      return this.subscribeOnReserves(firstAssetAddress, secondAssetAddress, selectedLiquiditySource, dexId).pipe(
+        map((payload) => ({
+          dexId,
+          payload,
+        }))
+      );
+    });
+
+    return combineLatest(observableDexesReserves);
+  }
+
   /**
    * Subscribe on Swapped tokens reserves
    * @param firstAssetAddress Asset A address
@@ -235,7 +252,8 @@ export class SwapModule {
     const xor = XOR.address;
     const dai = DAI.address;
     const xstusd = XSTUSD.address;
-    const dexBaseAsset = dexId === DexId.XOR ? xor : xstusd;
+    const baseAssetId = this.root.dex.getBaseAssetId(dexId);
+
     // TODO: pass tbc assets as argument
     const TBC_ASSETS = [XOR.address, VAL.address, PSWAP.address, DAI.address, ETH.address];
 
@@ -262,9 +280,10 @@ export class SwapModule {
       return toAveragePrice(this.root.apiRx.query.priceTools.priceInfos(assetAddress));
     };
 
-    // is TBC or XST sources used
-    const isSourceUsed = (source: LiquiditySourceTypes): boolean =>
-      selectedLiquiditySource === source || selectedLiquiditySource === LiquiditySourceTypes.Default;
+    // is TBC or XST sources used (only for XOR Dex)
+    const isPrimaryMarketSourceUsed = (source: LiquiditySourceTypes): boolean =>
+      dexId === DexId.XOR &&
+      (selectedLiquiditySource === source || selectedLiquiditySource === LiquiditySourceTypes.Default);
 
     const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key: string]: T } =>
       values.reduce(
@@ -276,19 +295,19 @@ export class SwapModule {
       );
 
     // Assets that have XYK reserves (dex base asset - asset)
-    const assetsWithXykReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== dexBaseAsset);
+    const assetsWithXykReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== baseAssetId);
     // Assets that have TBC collateral reserves (not XOR)
     const assetsWithTbcReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== xor);
     // Assets that have average price data (storage has prices only for TBC assets)
-    const assetsWithPrices = [...assetsWithXykReserves, dexBaseAsset].filter((address) => TBC_ASSETS.includes(address));
+    const assetsWithPrices = [...assetsWithXykReserves, baseAssetId].filter((address) => TBC_ASSETS.includes(address));
     // Assets for which we need to know the total supply
     const assetsWithIssuances = [xor, xstusd];
 
-    const tbcUsed = isSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
-    const xstUsed = isSourceUsed(LiquiditySourceTypes.XSTPool);
+    const tbcUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
+    const xstUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.XSTPool);
 
     const xykReserves = assetsWithXykReserves.map((address) =>
-      toCodec(this.root.apiRx.query.poolXYK.reserves(dexBaseAsset, address))
+      toCodec(this.root.apiRx.query.poolXYK.reserves(baseAssetId, address))
     );
 
     // fill array if TBC source available

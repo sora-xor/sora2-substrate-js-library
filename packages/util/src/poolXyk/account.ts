@@ -2,10 +2,8 @@ import { xxhashAsU8a } from '@polkadot/util-crypto/xxhash';
 import type { ApiPromise } from '@polkadot/api';
 
 import { types } from '@sora-substrate/type-definitions';
+import type { Api } from '../api';
 import type { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types';
-
-import { XOR } from '../assets/consts';
-import { DexId } from './consts';
 
 const predefinedAssets = types['PredefinedAssetId']['_enum'];
 
@@ -31,19 +29,19 @@ export function assetIdToTechAssetId(api: ApiPromise, assetId: AssetId | string)
 }
 
 export function poolTechAccountIdFromAssetPair(
-  api: ApiPromise,
+  api: Api,
   baseAssetId: AssetId | string,
   targetAssetId: AssetId | string
 ): TechAccountId {
-  const techBaseAsset = assetIdToTechAssetId(api, baseAssetId);
-  const techTargetAsset = assetIdToTechAssetId(api, targetAssetId);
-  const tradingPair = api.createType('TechTradingPair', {
+  const techBaseAsset = assetIdToTechAssetId(api.api, baseAssetId);
+  const techTargetAsset = assetIdToTechAssetId(api.api, targetAssetId);
+  const tradingPair = api.api.createType('TechTradingPair', {
     baseAssetId: techBaseAsset,
     targetAssetId: techTargetAsset,
   });
-  const techPurpose = api.createType('TechPurpose', { LiquidityKeeper: tradingPair });
-  const dexId = baseAssetId === XOR.address ? DexId.XOR : DexId.XSTUSD;
-  return api.createType('TechAccountId', { Pure: [dexId, techPurpose] });
+  const techPurpose = api.api.createType('TechPurpose', { LiquidityKeeper: tradingPair });
+  const dexId = api.dex.getDexId(baseAssetId.toString());
+  return api.api.createType('TechAccountId', { Pure: [dexId, techPurpose] });
 }
 
 export function techAccountIdToAccountId(api: ApiPromise, techAccountId: TechAccountId): AccountId {
@@ -55,9 +53,9 @@ export function techAccountIdToAccountId(api: ApiPromise, techAccountId: TechAcc
 }
 
 export function poolAccountIdFromAssetPair(
-  api: ApiPromise,
+  api: Api,
   baseAssetId: AssetId | string,
   targetAssetId: AssetId | string
 ): AccountId {
-  return techAccountIdToAccountId(api, poolTechAccountIdFromAssetPair(api, baseAssetId, targetAssetId));
+  return techAccountIdToAccountId(api.api, poolTechAccountIdFromAssetPair(api, baseAssetId, targetAssetId));
 }

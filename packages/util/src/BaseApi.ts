@@ -12,7 +12,7 @@ import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/typ
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { AccountStorage, Storage } from './storage';
-import { DexId } from './poolXyk/consts';
+import { DexId } from './dex/consts';
 import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';

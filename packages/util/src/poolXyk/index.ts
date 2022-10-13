@@ -7,7 +7,7 @@ import type { u128 } from '@polkadot/types-codec';
 import type { Subscription } from 'rxjs';
 
 import { poolAccountIdFromAssetPair } from './account';
-import { DexId } from './consts';
+import { DexId } from '../dex/consts';
 import { XOR, XSTUSD } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
@@ -68,11 +68,7 @@ export class PoolXykModule {
    * @param secondAssetAddress
    */
   public getInfo(firstAssetAddress: string, secondAssetAddress: string): Asset | null {
-    const poolTokenAccount = poolAccountIdFromAssetPair(
-      this.root.api,
-      firstAssetAddress,
-      secondAssetAddress
-    ).toString();
+    const poolTokenAccount = poolAccountIdFromAssetPair(this.root, firstAssetAddress, secondAssetAddress).toString();
     if (!poolTokenAccount) {
       return null;
     }
@@ -212,7 +208,7 @@ export class PoolXykModule {
     if (this.subscriptions.has(serializeLPKey(liquidity))) return;
 
     const { firstAddress, secondAddress } = liquidity;
-    const poolAccount = poolAccountIdFromAssetPair(this.root.api, firstAddress, secondAddress).toString();
+    const poolAccount = poolAccountIdFromAssetPair(this.root, firstAddress, secondAddress).toString();
     const accountPoolBalanceObservable = this.root.apiRx.query.poolXYK.poolProviders(
       poolAccount,
       this.root.account.pair.address
@@ -257,9 +253,9 @@ export class PoolXykModule {
     firstAmount: NumberLike,
     secondAmount: NumberLike
   ): Array<any> {
-    const isXorOrXstusd = (address: string) => [XOR.address, XSTUSD.address].includes(address);
-    const isFirstAssetSuitable = isXorOrXstusd(firstAsset.address);
-    const isSecondAssetSuitable = isXorOrXstusd(secondAsset.address);
+    const isBaseAssetId = (address: string) => this.root.dex.baseAssetsIds.includes(address);
+    const isFirstAssetSuitable = isBaseAssetId(firstAsset.address);
+    const isSecondAssetSuitable = isBaseAssetId(secondAsset.address);
 
     assert(isFirstAssetSuitable || isSecondAssetSuitable, Messages.xorOrXstIsRequired);
 
@@ -267,18 +263,16 @@ export class PoolXykModule {
       targetAsset: Asset | AccountAsset,
       baseAssetAmount: NumberLike,
       targetAssetAmount: NumberLike,
-      DEXId: DexId;
-
-    const getDexId = (base: string) => (base === XOR.address ? DexId.XOR : DexId.XSTUSD);
+      DEXId: number;
 
     if (isFirstAssetSuitable) {
-      DEXId = getDexId(firstAsset.address);
+      DEXId = this.root.dex.getDexId(firstAsset.address);
       baseAsset = firstAsset;
       targetAsset = secondAsset;
       baseAssetAmount = firstAmount;
       targetAssetAmount = secondAmount;
     } else if (isSecondAssetSuitable) {
-      DEXId = getDexId(secondAsset.address);
+      DEXId = this.root.dex.getDexId(secondAsset.address);
       baseAsset = secondAsset;
       targetAsset = firstAsset;
       baseAssetAmount = secondAmount;
@@ -607,8 +601,8 @@ export class PoolXykModule {
     const desiredA = desired.mul(reserveA).div(pts);
     const desiredB = desired.mul(reserveB).div(pts);
     const slippage = new FPNumber(Number(slippageTolerance) / 100);
+    const dexId = this.root.dex.getDexId(firstAsset.address);
     // The order of args is important
-    const dexId = firstAsset.address === XOR.address ? DexId.XOR : DexId.XSTUSD;
     return {
       args: [
         dexId,
