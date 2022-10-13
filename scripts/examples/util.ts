@@ -1,4 +1,5 @@
 import { api, connection } from '@sora-substrate/util';
+import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 // import { mnemonicGenerate } from '@polkadot/util-crypto'; TODO: use it within the faucet
 
 export async function delay(ms = 40000): Promise<void> {
@@ -6,7 +7,7 @@ export async function delay(ms = 40000): Promise<void> {
 }
 
 async function connectAndImportAccount(): Promise<void> {
-  await connection.open('wss://ws.framenode-1.s1.dev.sora2.soramitsu.co.jp');
+  await connection.open(SORA_ENV.dev);
   await api.initialize();
   // salon muscle select culture inform pen typical object fox fruit culture civil
   api.importAccount('street firm worth record skin taste legend lobster magnet stove drive side', 'name', 'pass');
