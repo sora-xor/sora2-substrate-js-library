@@ -19,6 +19,7 @@ import { AssetsModule } from './assets';
 import { MstTransfersModule } from './mstTransfers';
 import { SystemModule } from './system';
 import { DemeterFarmingModule } from './demeterFarming';
+import { DexModule } from './dex';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
@@ -43,6 +44,7 @@ export class Api extends BaseApi {
   public readonly mstTransfers: MstTransfersModule = new MstTransfersModule(this);
   public readonly system: SystemModule = new SystemModule(this);
   public readonly demeterFarming: DemeterFarmingModule = new DemeterFarmingModule(this);
+  public readonly dex: DexModule = new DexModule(this);
 
   public initAccountStorage() {
     super.initAccountStorage();
@@ -160,6 +162,9 @@ export class Api extends BaseApi {
       this.setAccount(account);
       this.initAccountStorage();
     }
+
+    // Update available dex list
+    await this.dex.updateList();
 
     // [1.9.9]: Migration from 'isExternal' to 'source' in localstorage
     if (Boolean(this.storage?.get('isExternal'))) {
