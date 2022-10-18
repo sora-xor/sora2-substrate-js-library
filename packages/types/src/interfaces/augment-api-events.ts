@@ -487,6 +487,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       IncomingRequestFinalized: AugmentedEvent<ApiType, [H256]>;
       /**
+       * The request registration has been failed. [Request Hash, Error]
+       **/
+      RegisterRequestFailed: AugmentedEvent<ApiType, [H256, SpRuntimeDispatchError]>;
+      /**
        * The request was aborted and cancelled. [Request Hash]
        **/
       RequestAborted: AugmentedEvent<ApiType, [H256]>;
@@ -1000,6 +1004,13 @@ declare module '@polkadot/api-base/types/events' {
        * Trading pair has been redistered on a DEX. [DEX Id, Trading Pair]
        **/
       TradingPairStored: AugmentedEvent<ApiType, [u32, CommonPrimitivesTradingPairAssetId32]>;
+    };
+    transactionPayment: {
+      /**
+       * A transaction fee `actual_fee`, of which `tip` was added to the minimum inclusion fee,
+       * has been paid by `who`.
+       **/
+      TransactionFeePaid: AugmentedEvent<ApiType, [who: AccountId32, actualFee: u128, tip: u128], { who: AccountId32, actualFee: u128, tip: u128 }>;
     };
     utility: {
       /**

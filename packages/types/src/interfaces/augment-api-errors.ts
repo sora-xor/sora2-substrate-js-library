@@ -776,6 +776,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       VotesExist: AugmentedError<ApiType>;
       /**
+       * Voting period too low
+       **/
+      VotingPeriodLow: AugmentedError<ApiType>;
+      /**
        * Invalid upper bound.
        **/
       WrongUpperBound: AugmentedError<ApiType>;
@@ -898,13 +902,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoVotes: AugmentedError<ApiType>;
       /**
-       * Cannot report self.
-       **/
-      ReportSelf: AugmentedError<ApiType>;
-      /**
        * Runner cannot re-submit candidacy.
        **/
       RunnerUpSubmit: AugmentedError<ApiType>;
+      /**
+       * Too many candidates have been created.
+       **/
+      TooManyCandidates: AugmentedError<ApiType>;
       /**
        * Cannot vote more than candidates.
        **/
@@ -929,6 +933,10 @@ declare module '@polkadot/api-base/types/errors' {
       NotEnoughFunds: AugmentedError<ApiType>;
       TokenAlreadyRegistered: AugmentedError<ApiType>;
       TokenIsNotRegistered: AugmentedError<ApiType>;
+      /**
+       * Amount must be > 0
+       **/
+      WrongAmount: AugmentedError<ApiType>;
     };
     ethApp: {
       /**
@@ -955,6 +963,10 @@ declare module '@polkadot/api-base/types/errors' {
        * The submitted payload could not be decoded.
        **/
       InvalidPayload: AugmentedError<ApiType>;
+      /**
+       * Amount must be > 0
+       **/
+      WrongAmount: AugmentedError<ApiType>;
     };
     ethBridge: {
       /**
