@@ -144,23 +144,21 @@ export class Api extends BaseApi {
 
       keyring.loadAll({ type: KeyringType });
 
-      if (!address) {
-        return;
+      if (address) {
+        const defaultAddress = this.formatAddress(address, false);
+        const soraAddress = this.formatAddress(address);
+
+        this.storage?.set('address', soraAddress);
+
+        const pair = keyring.getPair(defaultAddress);
+        const account =
+          !source && password
+            ? keyring.addPair(pair, decrypt(password as string))
+            : keyring.addExternal(defaultAddress, name ? { name } : {});
+
+        this.setAccount(account);
+        this.initAccountStorage();
       }
-
-      const defaultAddress = this.formatAddress(address, false);
-      const soraAddress = this.formatAddress(address);
-
-      this.storage?.set('address', soraAddress);
-
-      const pair = keyring.getPair(defaultAddress);
-      const account =
-        !source && password
-          ? keyring.addPair(pair, decrypt(password as string))
-          : keyring.addExternal(defaultAddress, name ? { name } : {});
-
-      this.setAccount(account);
-      this.initAccountStorage();
     }
 
     // Update available dex list
