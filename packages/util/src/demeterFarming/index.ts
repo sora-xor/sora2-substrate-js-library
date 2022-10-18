@@ -32,7 +32,7 @@ export class DemeterFarmingModule {
           isCore: poolData.isCore.isTrue,
           isFarm: poolData.isFarm.isTrue,
           isRemoved: poolData.isRemoved.isTrue,
-          depositFee: poolData.depositFee.toNumber(),
+          depositFee: new FPNumber(poolData.depositFee).toNumber(),
           totalTokensInPool: new FPNumber(poolData.totalTokensInPool),
           rewards: new FPNumber(poolData.rewards),
           rewardsToBeDistributed: new FPNumber(poolData.rewardsToBeDistributed),
@@ -46,7 +46,8 @@ export class DemeterFarmingModule {
    * @returns Observable list of pools
    */
   public async getPoolsObservable(): Promise<Observable<DemeterPool[]>> {
-    const storageKeys = await this.root.api.query.demeterFarmingPlatform.pools.keys(undefined); // TODO: [META-14]
+    // TODO: type issue
+    const storageKeys = await (this.root.api.query.demeterFarmingPlatform.pools as any).keys();
 
     const keys = storageKeys.map((item) => {
       const [poolAssetId, rewardAssetId] = item.args;
@@ -61,7 +62,7 @@ export class DemeterFarmingModule {
       this.getPoolsByAssetsObservable(poolAsset, rewardAsset)
     );
 
-    return combineLatest(observables).pipe(map((data) => data.flat()));
+    return combineLatest(observables).pipe(map((data: Array<any>) => data.flat()));
   }
 
   /**
