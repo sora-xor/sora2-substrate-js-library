@@ -46,8 +46,9 @@ export class DemeterFarmingModule {
    * @returns Observable list of pools
    */
   public async getPoolsObservable(): Promise<Observable<DemeterPool[]>> {
-    // TODO: type issue
-    const storageKeys = await (this.root.api.query.demeterFarmingPlatform.pools as any).keys();
+    // TODO: resolve double map keys type issue
+    // @ts-ignore
+    const storageKeys = await this.root.api.query.demeterFarmingPlatform.pools.keys();
 
     const keys = storageKeys.map((item) => {
       const [poolAssetId, rewardAssetId] = item.args;
