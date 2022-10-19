@@ -63,7 +63,7 @@ export class DemeterFarmingModule {
       this.getPoolsByAssetsObservable(poolAsset, rewardAsset)
     );
 
-    return combineLatest(observables).pipe(map((data: Array<any>) => data.flat()));
+    return combineLatest(observables).pipe(map((data) => data.flat()));
   }
 
   /**
