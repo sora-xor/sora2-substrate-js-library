@@ -32,7 +32,7 @@ export class DemeterFarmingModule {
           isCore: poolData.isCore.isTrue,
           isFarm: poolData.isFarm.isTrue,
           isRemoved: poolData.isRemoved.isTrue,
-          depositFee: poolData.depositFee.toNumber(),
+          depositFee: new FPNumber(poolData.depositFee).toNumber(),
           totalTokensInPool: new FPNumber(poolData.totalTokensInPool),
           rewards: new FPNumber(poolData.rewards),
           rewardsToBeDistributed: new FPNumber(poolData.rewardsToBeDistributed),
@@ -46,7 +46,9 @@ export class DemeterFarmingModule {
    * @returns Observable list of pools
    */
   public async getPoolsObservable(): Promise<Observable<DemeterPool[]>> {
-    const storageKeys = await this.root.api.query.demeterFarmingPlatform.pools.keys(undefined); // TODO: [META-14]
+    // TODO: resolve double map keys type issue
+    // @ts-ignore
+    const storageKeys = await this.root.api.query.demeterFarmingPlatform.pools.keys();
 
     const keys = storageKeys.map((item) => {
       const [poolAssetId, rewardAssetId] = item.args;
