@@ -2342,6 +2342,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       RewardsSupplyShortage: AugmentedError<ApiType>;
       /**
+       * Unable to get base asset price in XOR. XOR-base asset pair should exist on Polkaswap DEX.
+       **/
+      UnableToGetBaseAssetPrice: AugmentedError<ApiType>;
+      /**
        * Attempt to claim rewards of type, which is not handled.
        **/
       UnhandledRewardType: AugmentedError<ApiType>;
