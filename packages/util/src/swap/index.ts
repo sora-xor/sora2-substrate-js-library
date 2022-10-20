@@ -1,6 +1,6 @@
 import intersection from 'lodash/fp/intersection';
 import { assert } from '@polkadot/util';
-import { combineLatest, of, map } from 'rxjs';
+import { combineLatest, of, map, distinctUntilChanged } from 'rxjs';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
 import { isDirectExchange, quote, LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
 import type {
@@ -206,7 +206,11 @@ export class SwapModule {
    * Get primary markets enabled assets observable
    */
   public subscribeOnPrimaryMarketsEnabledAssets(): Observable<PrimaryMarketsEnabledAssets> {
-    const toJSON = (o: Observable<BTreeSet<CommonPrimitivesAssetId32>>) => o.pipe(map((data) => data.toJSON()));
+    const toJSON = (o: Observable<BTreeSet<CommonPrimitivesAssetId32>>) =>
+      o.pipe(
+        distinctUntilChanged(),
+        map((data) => data.toJSON())
+      );
     const assetId32ToString = (o: any) => o.map((item) => item.code);
 
     const tbc = toJSON(this.root.apiRx.query.multicollateralBondingCurvePool.enabledTargets());
@@ -259,15 +263,23 @@ export class SwapModule {
 
     const toCodec = (o: Observable<any>) =>
       o.pipe(
+        distinctUntilChanged(),
         map((codec) => {
           return Array.isArray(codec) ? codec.map((item) => item.toString()) : codec.toString();
         })
       );
 
-    const fromFixnumToCodec = (o: Observable<FixnumFixedPoint>) => o.pipe(map((codec) => codec.inner.toString()));
+    const fromFixnumToCodec = (o: Observable<FixnumFixedPoint>) =>
+      o.pipe(
+        distinctUntilChanged(),
+        map((codec) => codec.inner.toString())
+      );
 
     const toAveragePrice = (o: Observable<Option<PriceToolsPriceInfo>>) =>
-      o.pipe(map((codec) => codec.value.averagePrice.toString()));
+      o.pipe(
+        map((codec) => codec.value.averagePrice.toString()),
+        distinctUntilChanged<string>()
+      );
 
     const getAssetAveragePrice = (assetAddress: string): Observable<string> => {
       if (assetAddress === dai || assetAddress === xstusd) {
