@@ -342,6 +342,12 @@ export class BaseApi {
         history.endTime = Date.now();
         this.saveHistory(history);
         result.events.forEach(({ event: { data, method, section } }: any) => {
+          if (method === 'FeeWithdrawn' && section === 'xorFee') {
+            const [_, soraNetworkFee] = data;
+            history.soraNetworkFee = soraNetworkFee.toString();
+            this.saveHistory(history);
+          }
+
           if (method === 'AssetRegistered' && section === 'assets') {
             const [assetId, _] = data;
             history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
