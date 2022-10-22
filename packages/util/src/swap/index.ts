@@ -224,13 +224,28 @@ export class SwapModule {
     );
   }
 
+  /**
+   * Get observable reserves throught all dexes for swapped tokens
+   * @param firstAssetAddress Asset A address
+   * @param secondAssetAddress Asset B address
+   * @param enabledAssets Available tbc & syntetics assets
+   * @param selectedLiquiditySource Selected liquidity source
+   * @returns Observable reserves for all dexes
+   */
   public subscribeOnAllDexesReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
+    enabledAssets: PrimaryMarketsEnabledAssets,
     selectedLiquiditySource = LiquiditySourceTypes.Default
   ): Observable<Array<{ dexId: number; payload: QuotePayload }>> {
     const observableDexesReserves = this.root.dex.dexList.map(({ dexId }) => {
-      return this.subscribeOnReserves(firstAssetAddress, secondAssetAddress, selectedLiquiditySource, dexId).pipe(
+      return this.subscribeOnReserves(
+        firstAssetAddress,
+        secondAssetAddress,
+        enabledAssets,
+        selectedLiquiditySource,
+        dexId
+      ).pipe(
         map((payload) => ({
           dexId,
           payload,
@@ -242,14 +257,17 @@ export class SwapModule {
   }
 
   /**
-   * Subscribe on Swapped tokens reserves
+   * Get observable reserves for swapped tokens
    * @param firstAssetAddress Asset A address
    * @param secondAssetAddress Asset B address
+   * @param enabledAssets Available tbc & syntetics assets
    * @param selectedLiquiditySource Selected liquidity source
+   * @param dexId Selected dex id for swap
    */
   public subscribeOnReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
+    enabledAssets: PrimaryMarketsEnabledAssets,
     selectedLiquiditySource = LiquiditySourceTypes.Default,
     dexId = DexId.XOR
   ): Observable<QuotePayload> {
@@ -257,9 +275,7 @@ export class SwapModule {
     const dai = DAI.address;
     const xstusd = XSTUSD.address;
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
-
-    // TODO: pass tbc assets as argument
-    const TBC_ASSETS = [XOR.address, VAL.address, PSWAP.address, DAI.address, ETH.address];
+    const tbcAssets = enabledAssets?.tbc ?? [];
 
     const toCodec = (o: Observable<any>) =>
       o.pipe(
@@ -311,7 +327,7 @@ export class SwapModule {
     // Assets that have TBC collateral reserves (not XOR)
     const assetsWithTbcReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== xor);
     // Assets that have average price data (storage has prices only for TBC assets)
-    const assetsWithPrices = [...assetsWithXykReserves, baseAssetId].filter((address) => TBC_ASSETS.includes(address));
+    const assetsWithPrices = [...assetsWithXykReserves, baseAssetId].filter((address) => tbcAssets.includes(address));
     // Assets for which we need to know the total supply
     const assetsWithIssuances = [xor, xstusd];
 
