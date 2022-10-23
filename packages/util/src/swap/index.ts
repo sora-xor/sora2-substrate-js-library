@@ -322,17 +322,19 @@ export class SwapModule {
         {}
       );
 
-    // Assets that have XYK reserves (dex base asset - asset)
-    const assetsWithXykReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== baseAssetId);
-    // Assets that have TBC collateral reserves (not XOR)
-    const assetsWithTbcReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== xor);
-    // Assets that have average price data (storage has prices only for TBC assets)
-    const assetsWithPrices = [...assetsWithXykReserves, baseAssetId].filter((address) => tbcAssets.includes(address));
-    // Assets for which we need to know the total supply
-    const assetsWithIssuances = [xor, xstusd];
-
     const tbcUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
     const xstUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.XSTPool);
+
+    // Assets that have XYK reserves (with baseAssetId)
+    const assetsWithXykReserves = [firstAssetAddress, secondAssetAddress].filter((address) => address !== baseAssetId);
+    // Assets that have TBC collateral reserves (not XOR)
+    const assetsWithTbcReserves = [firstAssetAddress, secondAssetAddress].filter((address) =>
+      tbcAssets.includes(address)
+    );
+    // Assets that have average price data (storage has prices only for collateral TBC assets & XOR)
+    const assetsWithAveragePrices = [...assetsWithTbcReserves, xor];
+    // Assets for which we need to know the total supply
+    const assetsWithIssuances = [xor, xstusd];
 
     const xykReserves = assetsWithXykReserves.map((address) =>
       toCodec(this.root.apiRx.query.poolXYK.reserves(baseAssetId, address))
@@ -346,7 +348,8 @@ export class SwapModule {
       : [];
 
     // fill array if TBC or XST source available
-    const assetsPrices = tbcUsed || xstUsed ? assetsWithPrices.map((address) => getAssetAveragePrice(address)) : [];
+    const assetsPrices =
+      tbcUsed || xstUsed ? assetsWithAveragePrices.map((address) => getAssetAveragePrice(address)) : [];
 
     // if TBC source available
     const assetsIssuances = tbcUsed
@@ -382,7 +385,7 @@ export class SwapModule {
             xyk: combineValuesWithKeys(xyk, assetsWithXykReserves),
             tbc: combineValuesWithKeys(tbc, assetsWithTbcReserves),
           },
-          prices: combineValuesWithKeys(prices, assetsWithPrices),
+          prices: combineValuesWithKeys(prices, assetsWithAveragePrices),
           issuances: combineValuesWithKeys(issuances, assetsWithIssuances),
           consts: {
             tbc: {
