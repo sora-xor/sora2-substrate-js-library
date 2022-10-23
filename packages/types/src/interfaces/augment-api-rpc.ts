@@ -429,6 +429,12 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        **/
       getRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId?: BridgeNetworkId | AnyNumber | Uint8Array, redirectFinishedLoadRequests?: bool | boolean | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[OffchainRequest, RequestStatus]>>, DispatchError>>>;
     };
+    farming: {
+      /**
+       * Get list of double rewarding assets
+       **/
+      rewardDoublingAssets: AugmentedRpc<() => Observable<Vec<AssetId>>>;
+    };
     grandpa: {
       /**
        * Prove finality for the given block number, returning the Justification for the last block in the set.
