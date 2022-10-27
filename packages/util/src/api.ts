@@ -212,30 +212,6 @@ export class Api extends BaseApi {
   }
 
   /**
-   * Import wallet operation
-   * It returns account creation result
-   * @param suri Seed of the wallet
-   * @param name Name of the wallet account
-   * @param password Password which will be set for the wallet
-   */
-  public async createAccount(suri: string, name: string, password: string): Promise<CreateResult> {
-    const account = keyring.addUri(suri, password, { name }, this.type);
-
-    this.setAccount(account);
-
-    if (this.storage) {
-      this.storage.set('name', name);
-      this.storage.set('password', encrypt(password));
-      const soraAddress = this.formatAddress(account.pair.address);
-      this.storage.set('address', soraAddress);
-    }
-
-    this.initAccountStorage();
-
-    return account;
-  }
-
-  /**
    * Get all imported accounts.
    * It returns list of imported accounts
    * added via api.importAccount()
