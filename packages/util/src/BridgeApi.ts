@@ -236,20 +236,24 @@ export class BridgeApi extends BaseApi {
     }
     return data.asOk
       .reduce<Array<RegisteredAsset>>((arr, [_, soraAsset, externalAsset]) => {
+        const soraAssetId = soraAsset[0].toString();
+        const asset = assets.find((a) => a.address === soraAssetId) as Asset; // cannot be undefined
+        let externalAddress = '';
+        let externalDecimals = 0;
         if (externalAsset.isSome) {
-          const soraAssetId = soraAsset[0].toString();
-          const asset = assets.find((a) => a.address === soraAssetId) as Asset; // cannot be undefined
           const [externalAssetId, externalAssetDecimals] = externalAsset.unwrap();
-          const item = {
-            address: soraAssetId,
-            externalAddress: externalAssetId.toString(),
-            decimals: asset.decimals,
-            symbol: asset.symbol,
-            name: asset.name,
-            externalDecimals: externalAssetDecimals.toNumber(),
-          } as RegisteredAsset;
-          arr.push(item);
+          externalAddress = externalAssetId.toString();
+          externalDecimals = externalAssetDecimals.toNumber();
         }
+        const item = {
+          address: soraAssetId,
+          externalAddress,
+          decimals: asset.decimals,
+          symbol: asset.symbol,
+          name: asset.name,
+          externalDecimals,
+        } as RegisteredAsset;
+        arr.push(item);
         return arr;
       }, [])
       .sort((a: RegisteredAsset, b: RegisteredAsset) => {
