@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/math",
-  "version": "1.10.23",
+  "version": "1.10.24",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
