@@ -376,8 +376,8 @@ export class BaseApi {
             const [error] = data;
             if (error.isModule) {
               const decoded = this.api.registry.findMetaError(error.asModule);
-              const { docs } = decoded;
-              history.errorMessage = docs.join(' ').trim();
+              const { docs, section, name } = decoded;
+              history.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
             } else {
               // Other, CannotLookup, BadOrigin, no extra info
               history.errorMessage = error.toString();
@@ -392,7 +392,7 @@ export class BaseApi {
       history.id = this.encrypt(`${history.startTime}`);
       history.status = TransactionStatus.Error;
       history.endTime = Date.now();
-      const errorParts = e.message.split(':');
+      const errorParts = e?.message?.split(':');
       const errorInfo = last(errorParts)?.trim();
       history.errorMessage = errorInfo;
       // at the moment the history has not yet been saved;
