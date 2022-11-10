@@ -12,6 +12,14 @@ export class DexModule {
 
   public dexList: DexInfo[] = [];
 
+  get publicDexes(): DexInfo[] {
+    return this.dexList.filter((dex) => !!dex.isPublic);
+  }
+
+  get poolBaseAssetsIds(): string[] {
+    return this.publicDexes.map((item) => item.baseAssetId);
+  }
+
   get baseAssetsIds(): string[] {
     return this.dexList.map((item) => item.baseAssetId);
   }
@@ -22,16 +30,17 @@ export class DexModule {
     this.dexList = data.map(([key, codec]) => {
       const dexId = key.args[0].toNumber();
       const baseAssetId = codec.value.baseAssetId.code.toString();
+      const isPublic = codec.value.isPublic.isTrue;
 
-      return { dexId, baseAssetId };
+      return { dexId, baseAssetId, isPublic };
     });
   }
 
   public getDexId(baseAssetId: string): number {
-    return this.dexList.find((item) => item.baseAssetId === baseAssetId)?.dexId ?? DexModule.defaultDexId;
+    return this.dexList.find((dex) => dex.baseAssetId === baseAssetId)?.dexId ?? DexModule.defaultDexId;
   }
 
   public getBaseAssetId(dexId: number): string {
-    return this.dexList.find((item) => item.dexId === dexId)?.baseAssetId ?? DexModule.defaultBaseAssetId;
+    return this.dexList.find((dex) => dex.dexId === dexId)?.baseAssetId ?? DexModule.defaultBaseAssetId;
   }
 }
