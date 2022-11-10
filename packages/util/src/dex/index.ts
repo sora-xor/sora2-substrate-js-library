@@ -10,10 +10,14 @@ export class DexModule {
   public static defaultDexId = DexId.XOR;
   public static defaultBaseAssetId = XOR.address;
 
-  private _dexes: DexInfo[] = [];
+  public dexList: DexInfo[] = [];
 
-  public get dexList(): DexInfo[] {
-    return this._dexes.filter((dex) => !!dex.isPublic);
+  get publicDexes(): DexInfo[] {
+    return this.dexList.filter((dex) => !!dex.isPublic);
+  }
+
+  get poolBaseAssetsIds(): string[] {
+    return this.publicDexes.map((item) => item.baseAssetId);
   }
 
   get baseAssetsIds(): string[] {
@@ -23,7 +27,7 @@ export class DexModule {
   public async updateList(): Promise<void> {
     const data = await this.root.api.query.dexManager.dexInfos.entries();
 
-    this._dexes = data.map(([key, codec]) => {
+    this.dexList = data.map(([key, codec]) => {
       const dexId = key.args[0].toNumber();
       const baseAssetId = codec.value.baseAssetId.code.toString();
       const isPublic = codec.value.isPublic.isTrue;
