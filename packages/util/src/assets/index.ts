@@ -314,6 +314,39 @@ export class AssetsModule {
   }
 
   /**
+   * Get total XOR balance including staking
+   * and liquidity poolings
+   *
+   */
+  public getTotalXorBalanceObservable(): Observable<FPNumber> {
+    return combineLatest([
+      this.getAssetBalanceObservable({ address: XOR.address, decimals: XOR.decimals } as AccountAsset),
+      this.root.demeterFarming.getAccountPoolsObservable(),
+      this.root.poolXyk.updated,
+    ]).pipe(
+      map(([xorAssetBalance, demeterFarmingPools]) => {
+        // wallet xor balance (including frozen)
+        const xorBalanceTotal = FPNumber.fromCodecValue(xorAssetBalance.total);
+
+        // staked xor
+        const xorStaked = demeterFarmingPools
+          .filter((pool) => pool.isFarm === false && pool.poolAsset === XOR.address)
+          .map((pool) => pool.pooledTokens);
+        const xorStakedTotal = xorStaked.reduce((prev, curr) => prev.add(curr), FPNumber.ZERO);
+
+        // pooled xor
+        const xorPooled = this.root.poolXyk.accountLiquidity
+          .filter((pool) => pool.firstAddress === XOR.address || pool.secondAddress === XOR.address)
+          .map((pool) => (pool.firstAddress === XOR.address ? pool.firstBalance : pool.secondBalance))
+          .map((pooledXor) => FPNumber.fromCodecValue(pooledXor));
+        const xorPooledTotal = xorPooled.reduce((prev, curr) => prev.add(curr), FPNumber.ZERO);
+
+        return xorBalanceTotal.add(xorStakedTotal).add(xorPooledTotal);
+      })
+    );
+  }
+
+  /**
    * Sync account assets with account assets address list
    * During update process, assets should be removed according to 'excludedAddresses'
    * and exists in accounts assets list according to 'currentAddresses'
