@@ -516,6 +516,8 @@ export class PoolXykModule {
       secondAmount
     );
 
+    const baseAssetAllowed = this.root.dex.poolBaseAssetsIds.includes(baseAsset.address);
+    assert(baseAssetAllowed, Messages.pairBaseAssetNotAllowed);
     const exists = await this.check(baseAsset.address, targetAsset.address);
     assert(!exists, Messages.pairAlreadyCreated);
 
