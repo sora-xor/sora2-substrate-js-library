@@ -319,10 +319,8 @@ export class AssetsModule {
    *
    */
   public getTotalXorBalanceObservable(): Observable<FPNumber> {
-    const xorAsset = this.getAsset(XOR.address);
-
     return combineLatest([
-      this.getAssetBalanceObservable(xorAsset),
+      this.getAssetBalanceObservable({ address: XOR.address, decimals: XOR.decimals } as AccountAsset),
       this.root.demeterFarming.getAccountPoolsObservable(),
       this.root.poolXyk.updated,
     ]).pipe(
