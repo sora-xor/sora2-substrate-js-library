@@ -6,7 +6,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, BTreeSet, Bytes, Null, Option, Text, U256, U8aFixed, Vec, WrapperKeepOpaque, WrapperOpaque, bool, u128, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { AssetsAssetRecord, BeefyPrimitivesCryptoPublic, BeefyPrimitivesMmrBeefyAuthoritySet, BridgeChannelOutboundMessage, BridgeTypesAssetKind, BridgeTypesAuxiliaryDigest, BridgeTypesHeaderHeaderId, BridgeTypesNetworkConfig, CeresGovernancePlatformPollInfo, CeresGovernancePlatformStorageVersion, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresLiquidityLockerStorageVersion, CeresStakingStakingInfo, CeresTokenLockerStorageVersion, CeresTokenLockerTokenLockInfo, CommonPrimitivesAssetId32, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, EthereumLightClientPruningRange, EthereumLightClientStoredHeader, EvmBridgeProxyBridgeRequest, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportWeightsPerDispatchClassU64, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, IrohaMigrationPendingMultisigAccount, MulticollateralBondingCurvePoolDistributionAccounts, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletAuthorshipUncleEntryItem, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReleases, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyPreimageStatus, PalletDemocracyReferendumInfo, PalletDemocracyReleases, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletSchedulerScheduledV3, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingReleases, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsPriceInfo, RewardsRewardInfo, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanReward, VestedRewardsMarketMakerInfo, VestedRewardsRewardInfo } from '@polkadot/types/lookup';
+import type { AssetsAssetRecord, BeefyPrimitivesCryptoPublic, BeefyPrimitivesMmrBeefyAuthoritySet, BridgeChannelOutboundMessage, BridgeCommonBeefyTypesValidatorSet, BridgeTypesAssetKind, BridgeTypesAuxiliaryDigest, BridgeTypesHeaderHeaderId, BridgeTypesNetworkConfig, CeresGovernancePlatformPollInfo, CeresGovernancePlatformStorageVersion, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresLiquidityLockerStorageVersion, CeresStakingStakingInfo, CeresTokenLockerStorageVersion, CeresTokenLockerTokenLockInfo, CommonPrimitivesAssetId32, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, EthereumLightClientPruningRange, EthereumLightClientStoredHeader, EvmBridgeProxyBridgeRequest, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportWeightsPerDispatchClassU64, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, IrohaMigrationPendingMultisigAccount, MulticollateralBondingCurvePoolDistributionAccounts, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletAuthorshipUncleEntryItem, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReleases, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyPreimageStatus, PalletDemocracyReferendumInfo, PalletDemocracyReleases, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletSchedulerScheduledV3, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingReleases, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsPriceInfo, RewardsRewardInfo, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanReward, VestedRewardsMarketMakerInfo, VestedRewardsRewardInfo } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 declare module '@polkadot/api-base/types/storage' {
@@ -217,12 +217,28 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       validatorSetId: AugmentedQuery<ApiType, () => Observable<u64>, []>;
     };
+    beefyLightClient: {
+      currentValidatorSet: AugmentedQuery<ApiType, () => Observable<BridgeCommonBeefyTypesValidatorSet>, []>;
+      latestBeefyBlock: AugmentedQuery<ApiType, () => Observable<u32>, []>;
+      latestMMRRootIndex: AugmentedQuery<ApiType, () => Observable<u32>, []>;
+      latestMMRRoots: AugmentedQuery<ApiType, (arg: u128 | AnyNumber | Uint8Array) => Observable<U8aFixed>, [u128]>;
+      latestRandomSeed: AugmentedQuery<ApiType, () => Observable<U8aFixed>, []>;
+      nextValidatorSet: AugmentedQuery<ApiType, () => Observable<BridgeCommonBeefyTypesValidatorSet>, []>;
+      numOfValidators: AugmentedQuery<ApiType, () => Observable<u128>, []>;
+      validatorRegistryId: AugmentedQuery<ApiType, () => Observable<u64>, []>;
+      validatorRegistryRoot: AugmentedQuery<ApiType, () => Observable<U8aFixed>, []>;
+    };
     bridgeInboundChannel: {
       /**
-       * Source channel on the ethereum side
+       * Source channel (OutboundChannel contract) on the ethereum side
        **/
       channelAddresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<H160>>, [U256]>;
       channelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
+      /**
+       * InboundChannel contract address on the ethereum side
+       **/
+      inboundChannelAddresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<H160>>, [U256]>;
+      inboundChannelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
       rewardFraction: AugmentedQuery<ApiType, () => Observable<Perbill>, []>;
     };
     bridgeMultisig: {
@@ -704,7 +720,7 @@ declare module '@polkadot/api-base/types/storage' {
     };
     evmBridgeProxy: {
       senders: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<Option<AccountId32>>, [U256, H256]>;
-      transactions: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array, arg3: H256 | string | Uint8Array) => Observable<Option<EvmBridgeProxyBridgeRequest>>, [U256, AccountId32, H256]>;
+      transactions: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: ITuple<[U256, H256]> | [U256 | AnyNumber | Uint8Array, H256 | string | Uint8Array]) => Observable<Option<EvmBridgeProxyBridgeRequest>>, [AccountId32, ITuple<[U256, H256]>]>;
     };
     farming: {
       /**
@@ -1366,12 +1382,6 @@ declare module '@polkadot/api-base/types/storage' {
        * and slash value of the era.
        **/
       validatorSlashInEra: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<ITuple<[Perbill, u128]>>>, [u32, AccountId32]>;
-    };
-    sudo: {
-      /**
-       * The `AccountId` of the sudo key.
-       **/
-      key: AugmentedQuery<ApiType, () => Observable<Option<AccountId32>>, []>;
     };
     system: {
       /**

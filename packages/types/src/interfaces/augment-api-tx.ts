@@ -6,7 +6,7 @@ import type { Data } from '@polkadot/types';
 import type { Bytes, Compact, Option, Result, Text, U256, U8aFixed, Vec, WrapperKeepOpaque, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesEthashproofDoubleNodeWithMerkleProof, BridgeTypesEthashproofMixNonce, BridgeTypesHeader, BridgeTypesMessage, BridgeTypesNetworkConfig, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonSwapAmount, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportScheduleMaybeHashed, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeHeader, SpRuntimeMultiSignature, SpRuntimeMultiSigner, SpSessionMembershipProof } from '@polkadot/types/lookup';
+import type { BridgeCommonBeefyTypesBeefyMMRLeaf, BridgeCommonBeefyTypesCommitment, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedMMRProof, BridgeTypesEthashproofDoubleNodeWithMerkleProof, BridgeTypesEthashproofMixNonce, BridgeTypesHeader, BridgeTypesMessage, BridgeTypesNetworkConfig, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonSwapAmount, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportScheduleMaybeHashed, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeHeader, SpRuntimeMultiSignature, SpRuntimeMultiSigner, SpSessionMembershipProof } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/submittable' {
   export interface AugmentedSubmittables<ApiType extends ApiTypes> {
@@ -200,8 +200,12 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       transferKeepAlive: AugmentedSubmittable<(dest: AccountId32 | string | Uint8Array, value: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Compact<u128>]>;
     };
+    beefyLightClient: {
+      submitSignatureCommitment: AugmentedSubmittable<(commitment: BridgeCommonBeefyTypesCommitment | { payloadPrefix?: any; payload?: any; payloadSuffix?: any; blockNumber?: any; validatorSetId?: any } | string | Uint8Array, validatorProof: BridgeCommonBeefyTypesValidatorProof | { validatorClaimsBitfield?: any; signatures?: any; positions?: any; publicKeys?: any; publicKeyMerkleProofs?: any } | string | Uint8Array, latestMmrLeaf: BridgeCommonBeefyTypesBeefyMMRLeaf | { version?: any; parentNumber?: any; nextAuthoritySetId?: any; nextAuthoritySetLen?: any; parentHash?: any; nextAuthoritySetRoot?: any; randomSeed?: any; digestHash?: any } | string | Uint8Array, proof: BridgeCommonSimplifiedMMRProof | { merkleProofItems?: any; merkleProofOrderBitField?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeCommonBeefyTypesCommitment, BridgeCommonBeefyTypesValidatorProof, BridgeCommonBeefyTypesBeefyMMRLeaf, BridgeCommonSimplifiedMMRProof]>;
+    };
     bridgeInboundChannel: {
-      registerChannel: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, channel: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, H160]>;
+      messageDispatched: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, message: BridgeTypesMessage | { data?: any; proof?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, BridgeTypesMessage]>;
+      registerChannel: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, inboundChannel: H160 | string | Uint8Array, outboundChannel: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, H160, H160]>;
       setRewardFraction: AugmentedSubmittable<(fraction: Perbill | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Perbill]>;
       submit: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, message: BridgeTypesMessage | { data?: any; proof?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, BridgeTypesMessage]>;
     };
@@ -1409,21 +1413,6 @@ declare module '@polkadot/api-base/types/submittable' {
     evmBridgeProxy: {
       burn: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: H160 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, CommonPrimitivesAssetId32, H160, u128]>;
     };
-    faucet: {
-      resetRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Transfers the specified amount of asset to the specified account.
-       * The supported assets are: XOR, VAL, PSWAP.
-       * 
-       * # Errors
-       * 
-       * AssetNotSupported is returned if `asset_id` is something the function doesn't support.
-       * AmountAboveLimit is returned if `target` has already received their daily limit of `asset_id`.
-       * NotEnoughReserves is returned if `amount` is greater than the reserves
-       **/
-      transfer: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, target: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, AccountId32, u128]>;
-      updateLimit: AugmentedSubmittable<(newLimit: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
-    };
     grandpa: {
       /**
        * Note that the current authority set of the GRANDPA finality gadget has stalled.
@@ -2437,61 +2426,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       withdrawUnbonded: AugmentedSubmittable<(numSlashingSpans: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-    };
-    sudo: {
-      /**
-       * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
-       * key.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB change.
-       * # </weight>
-       **/
-      setKey: AugmentedSubmittable<(updated: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudo: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call]>;
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Signed` origin from
-       * a given account.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudoAs: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Call]>;
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       * This function does not check the weight of the call, and instead allows the
-       * Sudo user to specify the weight of the call.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - The weight of this call is defined by the caller.
-       * # </weight>
-       **/
-      sudoUncheckedWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, u64]>;
     };
     system: {
       /**

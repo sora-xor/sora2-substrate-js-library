@@ -85,6 +85,11 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Withdraw: AugmentedEvent<ApiType, [who: AccountId32, amount: u128], { who: AccountId32, amount: u128 }>;
     };
+    beefyLightClient: {
+      NewMMRRoot: AugmentedEvent<ApiType, [U8aFixed, u64]>;
+      ValidatorRegistryUpdated: AugmentedEvent<ApiType, [U8aFixed, u128, u64]>;
+      VerificationSuccessful: AugmentedEvent<ApiType, [AccountId32, u32]>;
+    };
     bridgeInboundChannel: {
     };
     bridgeMultisig: {
@@ -457,11 +462,11 @@ declare module '@polkadot/api-base/types/events' {
     };
     erc20App: {
       /**
-       * [network_id, asset_id, sender, recepient, amount]
+       * [network_id, asset_id, sender, recipient, amount]
        **/
       Burned: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, AccountId32, H160, u128]>;
       /**
-       * [network_id, asset_id, sender, recepient, amount]
+       * [network_id, asset_id, sender, recipient, amount]
        **/
       Minted: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, H160, AccountId32, u128]>;
     };
@@ -508,10 +513,6 @@ declare module '@polkadot/api-base/types/events' {
     };
     evmBridgeProxy: {
       RequestStatusUpdate: AugmentedEvent<ApiType, [H256, BridgeTypesMessageStatus]>;
-    };
-    faucet: {
-      LimitUpdated: AugmentedEvent<ApiType, [u128]>;
-      Transferred: AugmentedEvent<ApiType, [AccountId32, u128]>;
     };
     grandpa: {
       /**
@@ -816,20 +817,6 @@ declare module '@polkadot/api-base/types/events' {
        * from the unlocking queue. \[stash, amount\]
        **/
       Withdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
-    };
-    sudo: {
-      /**
-       * The \[sudoer\] just switched identity; the old key is supplied if one existed.
-       **/
-      KeyChanged: AugmentedEvent<ApiType, [oldSudoer: Option<AccountId32>], { oldSudoer: Option<AccountId32> }>;
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      Sudid: AugmentedEvent<ApiType, [sudoResult: Result<Null, SpRuntimeDispatchError>], { sudoResult: Result<Null, SpRuntimeDispatchError> }>;
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      SudoAsDone: AugmentedEvent<ApiType, [sudoResult: Result<Null, SpRuntimeDispatchError>], { sudoResult: Result<Null, SpRuntimeDispatchError> }>;
     };
     system: {
       /**

@@ -143,6 +143,20 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       VestingBalance: AugmentedError<ApiType>;
     };
+    beefyLightClient: {
+      CannotSwitchOldValidatorSet: AugmentedError<ApiType>;
+      InvalidMMRProof: AugmentedError<ApiType>;
+      InvalidNumberOfPositions: AugmentedError<ApiType>;
+      InvalidNumberOfPublicKeys: AugmentedError<ApiType>;
+      InvalidNumberOfSignatures: AugmentedError<ApiType>;
+      InvalidSignature: AugmentedError<ApiType>;
+      InvalidValidatorSetId: AugmentedError<ApiType>;
+      NotEnoughValidatorSignatures: AugmentedError<ApiType>;
+      PayloadBlocknumberTooNew: AugmentedError<ApiType>;
+      PayloadBlocknumberTooOld: AugmentedError<ApiType>;
+      ValidatorNotOnceInbitfield: AugmentedError<ApiType>;
+      ValidatorSetIncorrectPosition: AugmentedError<ApiType>;
+    };
     bridgeInboundChannel: {
       /**
        * Call encoding failed.
@@ -156,6 +170,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Message has an invalid envelope.
        **/
       InvalidEnvelope: AugmentedError<ApiType>;
+      /**
+       * Malformed MessageDispatched event
+       **/
+      InvalidMessageDispatchedEvent: AugmentedError<ApiType>;
       /**
        * Message came from an invalid network.
        **/
@@ -1385,20 +1403,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       IncRefError: AugmentedError<ApiType>;
     };
-    faucet: {
-      /**
-       * Amount is above limit.
-       **/
-      AmountAboveLimit: AugmentedError<ApiType>;
-      /**
-       * Asset is not supported.
-       **/
-      AssetNotSupported: AugmentedError<ApiType>;
-      /**
-       * Not enough reserves.
-       **/
-      NotEnoughReserves: AugmentedError<ApiType>;
-    };
     grandpa: {
       /**
        * Attempt to signal GRANDPA change with one already pending.
@@ -2240,12 +2244,6 @@ declare module '@polkadot/api-base/types/errors' {
        * settings to keep things safe for the runtime.
        **/
       TooManyValidators: AugmentedError<ApiType>;
-    };
-    sudo: {
-      /**
-       * Sender must be the Sudo account
-       **/
-      RequireSudo: AugmentedError<ApiType>;
     };
     system: {
       /**
