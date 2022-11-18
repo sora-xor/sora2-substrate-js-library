@@ -3549,6 +3549,7 @@ export default {
    **/
   CommonPrimitivesDexInfo: {
     baseAssetId: 'CommonPrimitivesAssetId32',
+    syntheticBaseAssetId: 'CommonPrimitivesAssetId32',
     isPublic: 'bool'
   },
   /**
