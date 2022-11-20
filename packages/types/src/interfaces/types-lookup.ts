@@ -3851,6 +3851,7 @@ declare module '@polkadot/types/lookup' {
   /** @name CommonPrimitivesDexInfo (515) */
   export interface CommonPrimitivesDexInfo extends Struct {
     readonly baseAssetId: CommonPrimitivesAssetId32;
+    readonly syntheticBaseAssetId: CommonPrimitivesAssetId32;
     readonly isPublic: bool;
   }
 
