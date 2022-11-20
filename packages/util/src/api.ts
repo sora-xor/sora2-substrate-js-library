@@ -133,9 +133,8 @@ export class Api extends BaseApi {
    * The first method you should run. Includes initialization process
    * @param withKeyringLoading `true` by default
    */
-  public async initialize(withKeyringLoading = true): Promise<void> {
+  public async initialize(withKeyringLoading = true, isDesktop = false): Promise<void> {
     const address = this.storage?.get('address');
-    const password = this.storage?.get('password');
     const name = this.storage?.get('name');
     const source = this.storage?.get('source');
 
@@ -152,8 +151,8 @@ export class Api extends BaseApi {
 
         const pair = keyring.getPair(defaultAddress);
         const account =
-          !source && password
-            ? keyring.addPair(pair, decrypt(password as string))
+          !source && isDesktop
+            ? { pair, json: keyring.saveAccount(pair) }
             : keyring.addExternal(defaultAddress, name ? { name } : {});
 
         this.setAccount(account);
@@ -218,14 +217,13 @@ export class Api extends BaseApi {
    * @param name Name of the wallet account
    * @param password Password which will be set for the wallet
    */
-  public async createAccount(suri: string, name: string, password: string): Promise<CreateResult> {
+  public createAccount(suri: string, name: string, password: string): CreateResult {
     const account = keyring.addUri(suri, password, { name }, this.type);
 
     this.setAccount(account);
 
     if (this.storage) {
       this.storage.set('name', name);
-      this.storage.set('password', encrypt(password));
       const soraAddress = this.formatAddress(account.pair.address);
       this.storage.set('address', soraAddress);
     }
