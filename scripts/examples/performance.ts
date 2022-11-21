@@ -24,7 +24,7 @@ async function main(): Promise<void> {
     const mnemonic = mnemonics[index];
     console.log(`Case #${num}, Seed: ${mnemonic}`);
     const api = new Api();
-    api.initialize(withKeyringLoading); // cuz keyring was loaded via the faucet instance
+    api.initialize(withKeyringLoading);
     api.importAccount(mnemonic, `Account ${num}`, TEST_PASS);
     await faucet.send(XOR.address, api.account.pair.address, 10 + index);
     apiInstances.push(api);
