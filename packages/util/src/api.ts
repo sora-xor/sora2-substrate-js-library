@@ -133,7 +133,7 @@ export class Api extends BaseApi {
    * The first method you should run. Includes initialization process
    * @param withKeyringLoading `true` by default
    */
-  public async initialize({ withKeyringLoading = true, isDesktop = false } = {}): Promise<void> {
+  public async initialize(withKeyringLoading = true, isDesktop = false): Promise<void> {
     const address = this.storage?.get('address');
     const name = this.storage?.get('name');
     const source = this.storage?.get('source');

@@ -20,10 +20,11 @@ async function main(): Promise<void> {
   // Initiate api instances for each generated account & mint tokens via faucet
   for (let index = 0; index < mnemonics.length; index++) {
     const num = index + 1;
+    const withKeyringLoading = false; // cuz keyring was loaded via the faucet instance
     const mnemonic = mnemonics[index];
     console.log(`Case #${num}, Seed: ${mnemonic}`);
     const api = new Api();
-    api.initialize({ withKeyringLoading: false }); // cuz keyring was loaded via the faucet instance
+    api.initialize(withKeyringLoading); // cuz keyring was loaded via the faucet instance
     api.importAccount(mnemonic, `Account ${num}`, TEST_PASS);
     await faucet.send(XOR.address, api.account.pair.address, 10 + index);
     apiInstances.push(api);
