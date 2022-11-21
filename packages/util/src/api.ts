@@ -149,10 +149,9 @@ export class Api extends BaseApi {
 
         this.storage?.set('address', soraAddress);
 
-        const pair = keyring.getPair(defaultAddress);
         const account =
           !source && isDesktop
-            ? { pair, json: keyring.saveAccount(pair) }
+            ? { pair: keyring.getPair(defaultAddress), json: null }
             : keyring.addExternal(defaultAddress, name ? { name } : {});
 
         this.setAccount(account);
