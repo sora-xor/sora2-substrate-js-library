@@ -133,7 +133,7 @@ export class Api extends BaseApi {
    * The first method you should run. Includes initialization process
    * @param withKeyringLoading `true` by default
    */
-  public async initialize(withKeyringLoading = true, isDesktop = false): Promise<void> {
+  public async initialize({ withKeyringLoading = true, isDesktop = false } = {}): Promise<void> {
     const address = this.storage?.get('address');
     const name = this.storage?.get('name');
     const source = this.storage?.get('source');
@@ -149,10 +149,9 @@ export class Api extends BaseApi {
 
         this.storage?.set('address', soraAddress);
 
-        const pair = keyring.getPair(defaultAddress);
         const account =
           !source && isDesktop
-            ? { pair, json: keyring.saveAccount(pair) }
+            ? { pair: keyring.getPair(defaultAddress), json: null }
             : keyring.addExternal(defaultAddress, name ? { name } : {});
 
         this.setAccount(account);
