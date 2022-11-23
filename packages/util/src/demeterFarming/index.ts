@@ -45,10 +45,12 @@ export class DemeterFarmingModule {
    * Get a list of all pools for farming and staking
    * @returns Observable list of pools
    */
-  public async getPoolsObservable(): Promise<Observable<DemeterPool[]>> {
+  public async getPoolsObservable(): Promise<Observable<DemeterPool[]> | null> {
     // TODO: resolve double map keys type issue
     // @ts-ignore
     const storageKeys = await this.root.api.query.demeterFarmingPlatform.pools.keys();
+
+    if (!storageKeys.length) return null;
 
     const keys = storageKeys.map((item) => {
       const [poolAssetId, rewardAssetId] = item.args;
@@ -93,8 +95,10 @@ export class DemeterFarmingModule {
    * Get a list of all reward tokens
    * @returns Observable list of token infos
    */
-  public async getTokenInfosObservable(): Promise<Observable<DemeterRewardToken[]>> {
+  public async getTokenInfosObservable(): Promise<Observable<DemeterRewardToken[]> | null> {
     const storageKeys = await this.root.api.query.demeterFarmingPlatform.tokenInfos.keys();
+
+    if (!storageKeys.length) return null;
 
     const keys = storageKeys.map((item) => item.args[0].code.toString());
 
