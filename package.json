@@ -1,4 +1,5 @@
 {
+  "name": "root",
   "author": "Stefan Popov <popov@soramitsu.co.jp>",
   "bugs": "https://github.com/sora-xor/sora2-substrate-js-library/issues",
   "engines": {
