@@ -33,7 +33,7 @@ export class RewardsModule {
     });
   }
 
-  private prepareRewardInfo(type: RewardingEvents, amount: Codec | CodecString | number): RewardInfo {
+  private prepareRewardInfo(type: RewardingEvents, amount: Codec | number | string | FPNumber): RewardInfo {
     const asset =
       {
         [RewardingEvents.XorErc20]: VAL,
@@ -41,11 +41,11 @@ export class RewardsModule {
         [RewardingEvents.CrowdloanXOR]: XOR,
         [RewardingEvents.CrowdloanXSTUSD]: XSTUSD,
       }[type] ?? PSWAP;
-
+    const fpAmount = amount instanceof FPNumber ? amount : new FPNumber(amount, asset.decimals);
     const rewardInfo = {
       type,
       asset,
-      amount: new FPNumber(amount, asset.decimals).toCodecString(),
+      amount: fpAmount.toCodecString(),
     } as RewardInfo;
 
     return rewardInfo;
@@ -107,9 +107,12 @@ export class RewardsModule {
   public getLiquidityProvisionRewardsSubscription(): Observable<RewardInfo> {
     assert(this.root.account, Messages.connectWallet);
 
-    return this.root.apiRx.query.pswapDistribution
-      .shareholderAccounts(this.root.account.pair.address)
-      .pipe(map((balance) => this.prepareRewardInfo(RewardingEvents.LiquidityProvision, balance.inner)));
+    return this.root.apiRx.query.pswapDistribution.shareholderAccounts(this.root.account.pair.address).pipe(
+      map((balance) =>
+        /* FixnumFixedPoint.inner: CodecString */
+        this.prepareRewardInfo(RewardingEvents.LiquidityProvision, FPNumber.fromCodecValue(balance.inner.toString()))
+      )
+    );
   }
 
   public getVestedRewardsSubscription(): Observable<RewardsInfo> {
@@ -137,14 +140,15 @@ export class RewardsModule {
    */
   public getCrowdloanRewardsVestedObservable(): Observable<{ [key: string]: FPNumber }> {
     assert(this.root.account, Messages.connectWallet);
-    const toString = (num: FixnumFixedPoint) => num.inner.toString();
+    // FixnumFixedPoint.inner: CodecString
+    const toFP = (num: FixnumFixedPoint, decimals: number) => FPNumber.fromCodecValue(num.inner.toString(), decimals);
 
     return this.root.apiRx.query.vestedRewards.crowdloanRewards(this.root.account.pair.address).pipe(
       map((data) => ({
-        [XOR.address]: new FPNumber(toString(data.xorReward), XOR.decimals),
-        [VAL.address]: new FPNumber(toString(data.valReward), VAL.decimals),
-        [PSWAP.address]: new FPNumber(toString(data.pswapReward), PSWAP.decimals),
-        [XSTUSD.address]: new FPNumber(toString(data.xstusdReward), XSTUSD.decimals),
+        [XOR.address]: toFP(data.xorReward, XOR.decimals),
+        [VAL.address]: toFP(data.valReward, VAL.decimals),
+        [PSWAP.address]: toFP(data.pswapReward, PSWAP.decimals),
+        [XSTUSD.address]: toFP(data.xstusdReward, XSTUSD.decimals),
       }))
     );
   }
