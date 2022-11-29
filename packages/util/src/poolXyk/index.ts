@@ -365,6 +365,7 @@ export class PoolXykModule {
       balance,
       name,
       poolShare: minted.div(pts).mul(FPNumber.HUNDRED).format() || '0',
+      totalSupply,
     } as AccountLiquidity;
   }
 
