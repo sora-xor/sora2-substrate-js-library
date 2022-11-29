@@ -9,7 +9,6 @@ import type { Subscription } from 'rxjs';
 
 import { poolAccountIdFromAssetPair } from './account';
 import { DexId } from '../dex/consts';
-import { XOR, XSTUSD } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
@@ -148,10 +147,12 @@ export class PoolXykModule {
     const toKey = (address: CommonPrimitivesAssetId32) => address.code.toString();
 
     const reserves = {} as Record<string, Array<CodecString>>;
-    const xorReserves = await this.root.api.query.poolXYK.reserves.entries(XOR.address);
-    const xstusdReserves = await this.root.api.query.poolXYK.reserves.entries(XSTUSD.address);
+    const baseAssetIds = this.root.dex.baseAssetsIds;
+    const allReserves = (
+      await Promise.all(baseAssetIds.map((baseAssetId) => this.root.api.query.poolXYK.reserves.entries(baseAssetId)))
+    ).flat(1);
 
-    [...xorReserves, ...xstusdReserves].forEach((item) => {
+    allReserves.forEach((item) => {
       // Decimals = 18 here
       const [key1, key2] = item[0].args;
       if (item[1]?.length == 2) {
@@ -436,27 +437,27 @@ export class PoolXykModule {
     assert(this.root.account, Messages.connectWallet);
 
     this.accountLiquidityLoaded = new Subject<void>();
+
     const account = this.root.accountPair.address;
+    const baseAssetIds = this.root.dex.baseAssetsIds;
+    const multiEntries = baseAssetIds.map((baseAssetId) => [account, baseAssetId]);
 
-    return this.root.apiRx.query.poolXYK.accountPools
-      .multi([
-        [account, XOR.address],
-        [account, XSTUSD.address],
-      ])
-      .subscribe(async ([xorBased, xstBased]) => {
-        const assetIdPairs = [];
-        xorBased.forEach((targetAssetId) => {
-          const pair = [XOR.address, targetAssetId.code.toString()];
+    return this.root.apiRx.query.poolXYK.accountPools.multi(multiEntries).subscribe(async (lists) => {
+      const assetIdPairs = [];
+
+      lists.forEach((list, index) => {
+        const baseAssetId = baseAssetIds[index];
+
+        list.forEach((targetAssetId) => {
+          const pair = [baseAssetId, targetAssetId.code.toString()];
           assetIdPairs.push(pair);
         });
-        xstBased.forEach((targetAssetId) => {
-          const pair = [XSTUSD.address, targetAssetId.code.toString()];
-          assetIdPairs.push(pair);
-        });
-        await this.updateAccountLiquiditySubscriptions(assetIdPairs);
-
-        this.accountLiquidityLoaded.complete();
       });
+
+      await this.updateAccountLiquiditySubscriptions(assetIdPairs);
+
+      this.accountLiquidityLoaded.complete();
+    });
   }
 
   private async calcAddTxParams(

@@ -30,9 +30,10 @@ export class DexModule {
     this.dexList = data.map(([key, codec]) => {
       const dexId = key.args[0].toNumber();
       const baseAssetId = codec.value.baseAssetId.code.toString();
+      const syntheticBaseAssetId = codec.value.syntheticBaseAssetId.code.toString();
       const isPublic = codec.value.isPublic.isTrue;
 
-      return { dexId, baseAssetId, isPublic };
+      return { dexId, baseAssetId, syntheticBaseAssetId, isPublic };
     });
   }
 
