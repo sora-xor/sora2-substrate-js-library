@@ -1,7 +1,8 @@
 import { assert } from '@polkadot/util';
-import { Subject, combineLatest } from 'rxjs';
+import { Subject, combineLatest, map } from 'rxjs';
 import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
-import type { Codec } from '@polkadot/types/types';
+import type { Codec, Observable } from '@polkadot/types/types';
+import type { ITuple } from '@polkadot/types-codec/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 import type { u128 } from '@polkadot/types-codec';
 import type { Subscription } from 'rxjs';
@@ -28,6 +29,17 @@ function deserializeLPKey(key: string): Partial<AccountLiquidity> {
     return null;
   }
   return { firstAddress, secondAddress };
+}
+
+function toReserve(value: u128): CodecString {
+  return new FPNumber(value).toCodecString();
+}
+
+function parseReserves(reserves: ITuple<[u128, u128]>): [CodecString, CodecString] {
+  if (!reserves || reserves.length !== 2) {
+    return ['0', '0'];
+  }
+  return [toReserve(reserves[0]), toReserve(reserves[1])];
 }
 
 export class PoolXykModule {
@@ -89,31 +101,51 @@ export class PoolXykModule {
   }
 
   /**
+   * Get pool properties observable
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   */
+  public getPoolPropertiesObservable(
+    firstAssetAddress: string,
+    secondAssetAddress: string
+  ): Observable<string[] | null> {
+    return this.root.apiRx.query.poolXYK.properties(firstAssetAddress, secondAssetAddress).pipe(
+      map((result) => {
+        if (!result || !result.isSome) return null;
+
+        return result.value.map((accountId) => accountId.toString());
+      })
+    );
+  }
+
+  /**
+   * Get pool reserves observable
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   */
+  public getReservesObservable(
+    firstAssetAddress: string,
+    secondAssetAddress: string
+  ): Observable<[CodecString, CodecString]> {
+    return this.root.apiRx.query.poolXYK
+      .reserves(firstAssetAddress, secondAssetAddress)
+      .pipe(map((reserves) => parseReserves(reserves)));
+  }
+
+  /**
    * Get liquidity reserves.
    * If the output will be `['0', '0']` then the client is the first liquidity provider
    * @param firstAssetAddress
    * @param secondAssetAddress
-   * @param firstAssetDecimals
-   * @param secondAssetDecimals
    */
-  public async getReserves(
-    firstAssetAddress: string,
-    secondAssetAddress: string,
-    firstAssetDecimals?: number,
-    secondAssetDecimals?: number
-  ): Promise<Array<CodecString>> {
-    const result = await this.root.api.query.poolXYK.reserves(firstAssetAddress, secondAssetAddress);
-    if (!result || result.length !== 2) {
-      return ['0', '0'];
-    }
-    const firstValue = new FPNumber(result[0], firstAssetDecimals);
-    const secondValue = new FPNumber(result[1], secondAssetDecimals);
-    return [firstValue.toCodecString(), secondValue.toCodecString()];
+  public async getReserves(firstAssetAddress: string, secondAssetAddress: string): Promise<Array<CodecString>> {
+    const reserves = await this.root.api.query.poolXYK.reserves(firstAssetAddress, secondAssetAddress);
+
+    return parseReserves(reserves);
   }
 
   public async getAllReserves(): Promise<Record<string, Array<CodecString>>> {
     const toKey = (address: CommonPrimitivesAssetId32) => address.code.toString();
-    const toReserve = (value: u128) => new FPNumber(value).toCodecString();
 
     const reserves = {} as Record<string, Array<CodecString>>;
     const xorReserves = await this.root.api.query.poolXYK.reserves.entries(XOR.address);
@@ -213,7 +245,7 @@ export class PoolXykModule {
       poolAccount,
       this.root.account.pair.address
     );
-    const poolReservesObservable = this.root.apiRx.query.poolXYK.reserves(firstAddress, secondAddress);
+    const poolReservesObservable = this.getReservesObservable(firstAddress, secondAddress);
 
     let subscription: Subscription;
     let isFirstTick = true;
@@ -286,10 +318,10 @@ export class PoolXykModule {
     poolAccount: string,
     firstAddress: string,
     secondAddress: string,
-    reserves: Codec,
+    reserves: [CodecString, CodecString],
     balanceCodec: Codec
   ): Promise<AccountLiquidity | null> {
-    if (!reserves || !(reserves[0] || reserves[1]) || !balanceCodec) return null;
+    if (!balanceCodec) return null;
 
     const { decimals, symbol, name } = this.getInfoByPoolAccount(poolAccount);
     const balanceFPNumber = new FPNumber(balanceCodec, decimals);
@@ -303,8 +335,7 @@ export class PoolXykModule {
     }
     const firstAsset = await this.root.assets.getAssetInfo(firstAddress);
     const secondAsset = await this.root.assets.getAssetInfo(secondAddress);
-    const reserveA = new FPNumber(reserves[0]).toCodecString();
-    const reserveB = new FPNumber(reserves[1]).toCodecString();
+    const [reserveA, reserveB] = reserves;
     const [balanceA, balanceB, totalSupply] = await this.estimateTokensRetrieved(
       firstAddress,
       secondAddress,
