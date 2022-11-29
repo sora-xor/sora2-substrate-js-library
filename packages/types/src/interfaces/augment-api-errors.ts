@@ -143,6 +143,17 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       VestingBalance: AugmentedError<ApiType>;
     };
+    band: {
+      /**
+       * `symbols` and `rates` provided to `relay` (or `force_relay`) extrinsic have different
+       * lengths.
+       **/
+      DivergedLengthsOfSymbolsAndRates: AugmentedError<ApiType>;
+      /**
+       * An untrusted account tried to relay data.
+       **/
+      NotATrustedRelayer: AugmentedError<ApiType>;
+    };
     bridgeMultisig: {
       /**
        * Call is already approved by this signatory.
