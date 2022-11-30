@@ -2080,6 +2080,12 @@ declare module '@polkadot/types/lookup' {
       readonly to: AccountId32;
       readonly amount: u128;
     } & Struct;
+    readonly isForceMint: boolean;
+    readonly asForceMint: {
+      readonly assetId: CommonPrimitivesAssetId32;
+      readonly to: AccountId32;
+      readonly amount: u128;
+    } & Struct;
     readonly isBurn: boolean;
     readonly asBurn: {
       readonly assetId: CommonPrimitivesAssetId32;
@@ -2089,7 +2095,7 @@ declare module '@polkadot/types/lookup' {
     readonly asSetNonMintable: {
       readonly assetId: CommonPrimitivesAssetId32;
     } & Struct;
-    readonly type: 'Register' | 'Transfer' | 'Mint' | 'Burn' | 'SetNonMintable';
+    readonly type: 'Register' | 'Transfer' | 'Mint' | 'ForceMint' | 'Burn' | 'SetNonMintable';
   }
 
   /** @name MulticollateralBondingCurvePoolCall (243) */
@@ -3883,7 +3889,8 @@ declare module '@polkadot/types/lookup' {
     readonly isInvalidContentSource: boolean;
     readonly isInvalidDescription: boolean;
     readonly isDeadAsset: boolean;
-    readonly type: 'AssetIdAlreadyExists' | 'AssetIdNotExists' | 'InsufficientBalance' | 'InvalidAssetSymbol' | 'InvalidAssetName' | 'InvalidPrecision' | 'AssetSupplyIsNotMintable' | 'InvalidAssetOwner' | 'IncRefError' | 'InvalidContentSource' | 'InvalidDescription' | 'DeadAsset';
+    readonly isOverflow: boolean;
+    readonly type: 'AssetIdAlreadyExists' | 'AssetIdNotExists' | 'InsufficientBalance' | 'InvalidAssetSymbol' | 'InvalidAssetName' | 'InvalidPrecision' | 'AssetSupplyIsNotMintable' | 'InvalidAssetOwner' | 'IncRefError' | 'InvalidContentSource' | 'InvalidDescription' | 'DeadAsset' | 'Overflow';
   }
 
   /** @name CommonPrimitivesDexInfo (519) */

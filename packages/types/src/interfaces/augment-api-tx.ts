@@ -21,6 +21,20 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       burn: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128]>;
       /**
+       * Performs an unchecked Asset mint, can only be done
+       * by root account.
+       * 
+       * Should be used as extrinsic call only.
+       * `Currencies::updated_balance()` should be deprecated. Using `force_mint` allows us to
+       * perform extra actions for minting, such as buy-back, extra-minting and etc.
+       * 
+       * - `origin`: caller Account, which issues Asset minting,
+       * - `asset_id`: Id of minted Asset,
+       * - `to`: Id of Account, to which Asset amount is minted,
+       * - `amount`: minted Asset amount.
+       **/
+      forceMint: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, to: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, AccountId32, u128]>;
+      /**
        * Performs a checked Asset mint, can only be done
        * by corresponding asset owner account.
        * 
