@@ -18,6 +18,7 @@ const isGreaterThanZero = (value: FPNumber) => FPNumber.isGreaterThan(value, FPN
 const isLessThanOrEqualToZero = (value: FPNumber) => FPNumber.isLessThanOrEqualTo(value, FPNumber.ZERO);
 const isAssetAddress = (a: string, b: string) => a === b;
 const isXorAsset = (asset: string, dexBaseAsset = Consts.XOR) => isAssetAddress(asset, dexBaseAsset);
+const ZeroString = '0';
 
 // returs reserves by order: inputAssetId, outputAssetId
 export const getXykReserves = (
@@ -1153,13 +1154,11 @@ export const quote = (
       }
     }
   } catch (error) {
-    console.info(error);
-
     return {
-      amount: FPNumber.ZERO.toCodecString(),
-      fee: FPNumber.ZERO.toCodecString(),
+      amount: ZeroString,
+      fee: ZeroString,
       rewards: [],
-      amountWithoutImpact: FPNumber.ZERO.toCodecString(),
+      amountWithoutImpact: ZeroString,
     };
   }
 };

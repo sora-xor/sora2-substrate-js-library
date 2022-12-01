@@ -22,7 +22,16 @@ import type {
 } from './types';
 import type { Api } from '../api';
 
-function formatBalance(
+/**
+ * **For the external collaboration**
+ *
+ * Useful method for balance formatting
+ *
+ * @param data Account Data for ORML tokens or for PalletBalances
+ * @param assetDecimals Asset decimals, 18 is used by default
+ * @param bondedData Required only for XOR tokens in SORA network
+ */
+export function formatBalance(
   data: PalletBalancesAccountData | OrmlTokensAccountData,
   assetDecimals?: number,
   bondedData?: Option<u128>
@@ -53,11 +62,23 @@ async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
   return { address, symbol, name, decimals: +decimals, content, description } as Asset;
 }
 
-async function getAssetBalance(
+/**
+ * **For the external collaboration**
+ *
+ * Returns Asset Balance.
+ *
+ * If Asset ID == XOR, referrals.referrerBalances will be included as bonded
+ *
+ * @param api Polkadot based API object
+ * @param accountAddress Account ID
+ * @param assetAddress Asset ID
+ * @param assetDecimals Asset decimals, 18 is used by default
+ */
+export async function getAssetBalance(
   api: ApiPromise,
   accountAddress: string,
   assetAddress: string,
-  assetDecimals: number
+  assetDecimals = 18
 ): Promise<AccountBalance> {
   if (assetAddress === XOR.address) {
     const accountInfo = await api.query.system.account(accountAddress);
