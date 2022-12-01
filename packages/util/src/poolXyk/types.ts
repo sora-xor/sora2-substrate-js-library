@@ -12,4 +12,5 @@ export interface AccountLiquidity {
   firstBalance: CodecString; // value * 10 ^ decimals
   secondBalance: CodecString; // value * 10 ^ decimals
   poolShare: string; // Formatted value
+  totalSupply: CodecString;
 }
