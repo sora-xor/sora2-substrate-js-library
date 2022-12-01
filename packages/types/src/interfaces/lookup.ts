@@ -1958,6 +1958,11 @@ export default {
         to: 'AccountId32',
         amount: 'u128',
       },
+      force_mint: {
+        assetId: 'CommonPrimitivesAssetId32',
+        to: 'AccountId32',
+        amount: 'u128',
+      },
       burn: {
         assetId: 'CommonPrimitivesAssetId32',
         amount: 'u128',
@@ -3577,7 +3582,7 @@ export default {
    * Lookup518: assets::pallet::Error<T>
    **/
   AssetsError: {
-    _enum: ['AssetIdAlreadyExists', 'AssetIdNotExists', 'InsufficientBalance', 'InvalidAssetSymbol', 'InvalidAssetName', 'InvalidPrecision', 'AssetSupplyIsNotMintable', 'InvalidAssetOwner', 'IncRefError', 'InvalidContentSource', 'InvalidDescription', 'DeadAsset']
+    _enum: ['AssetIdAlreadyExists', 'AssetIdNotExists', 'InsufficientBalance', 'InvalidAssetSymbol', 'InvalidAssetName', 'InvalidPrecision', 'AssetSupplyIsNotMintable', 'InvalidAssetOwner', 'IncRefError', 'InvalidContentSource', 'InvalidDescription', 'DeadAsset', 'Overflow']
   },
   /**
    * Lookup519: common::primitives::DEXInfo<common::primitives::AssetId32<common::primitives::PredefinedAssetId>>

@@ -54,6 +54,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Precision value is not valid, it should represent a number of decimal places for number, max is 30.
        **/
       InvalidPrecision: AugmentedError<ApiType>;
+      /**
+       * Computation overflow.
+       **/
+      Overflow: AugmentedError<ApiType>;
     };
     authorship: {
       /**
