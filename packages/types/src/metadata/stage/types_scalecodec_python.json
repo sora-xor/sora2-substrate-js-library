@@ -1,5 +1,5 @@
 {
-    "runtime_id": 38,
+    "runtime_id": 42,
     "versioning": [
         {
             "runtime_range": [
@@ -2937,6 +2937,1539 @@
                         [
                             "asset_id",
                             "AssetId"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "runtime_range": [
+                42,
+                null
+            ],
+            "types": {
+                "AssetInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "assetId",
+                            "AssetId"
+                        ],
+                        [
+                            "symbol",
+                            "AssetSymbolStr"
+                        ],
+                        [
+                            "name",
+                            "AssetNameStr"
+                        ],
+                        [
+                            "precision",
+                            "u8"
+                        ],
+                        [
+                            "isMintable",
+                            "bool"
+                        ]
+                    ]
+                },
+                "AssetName": "Text",
+                "AssetSymbol": "Text",
+                "AuxiliaryDigest": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "logs",
+                            "Vec<AuxiliaryDigestItem>"
+                        ]
+                    ]
+                },
+                "AuxiliaryDigestItem": {
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "Commitment",
+                            "(EthNetworkId, ChannelId, H256)"
+                        ]
+                    ]
+                },
+                "BasicChannelMessage": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "networkId",
+                            "EthNetworkId"
+                        ],
+                        [
+                            "target",
+                            "H160"
+                        ],
+                        [
+                            "nonce",
+                            "u64"
+                        ],
+                        [
+                            "payload",
+                            "Vec<u8>"
+                        ]
+                    ]
+                },
+                "BridgeSignatureVersion": {
+                    "type": "enum",
+                    "value_list": [
+                        "V1",
+                        "V2"
+                    ]
+                },
+                "ChannelId": {
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "Basic",
+                            null
+                        ],
+                        [
+                            "Incentivized",
+                            null
+                        ]
+                    ]
+                },
+                "ContributionInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "fundsContributed",
+                            "Balance"
+                        ],
+                        [
+                            "tokensBought",
+                            "Balance"
+                        ],
+                        [
+                            "tokensClaimed",
+                            "Balance"
+                        ],
+                        [
+                            "claimingFinished",
+                            "bool"
+                        ],
+                        [
+                            "numberOfClaims",
+                            "u32"
+                        ]
+                    ]
+                },
+                "ContributorsVesting": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "firstReleasePercent",
+                            "Balance"
+                        ],
+                        [
+                            "vestingPeriod",
+                            "Moment"
+                        ],
+                        [
+                            "vestingPercent",
+                            "Balance"
+                        ]
+                    ]
+                },
+                "CrowdloanLease": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "startBlock",
+                            "String"
+                        ],
+                        [
+                            "totalDays",
+                            "String"
+                        ],
+                        [
+                            "blocksPerDay",
+                            "String"
+                        ]
+                    ]
+                },
+                "CrowdloanReward": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "id",
+                            "Vec<u8>"
+                        ],
+                        [
+                            "address",
+                            "Vec<u8>"
+                        ],
+                        [
+                            "contribution",
+                            "Fixed"
+                        ],
+                        [
+                            "xorReward",
+                            "Fixed"
+                        ],
+                        [
+                            "valReward",
+                            "Fixed"
+                        ],
+                        [
+                            "pswapReward",
+                            "Fixed"
+                        ],
+                        [
+                            "xstusdReward",
+                            "Fixed"
+                        ],
+                        [
+                            "percent",
+                            "Fixed"
+                        ]
+                    ]
+                },
+                "DEXInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "baseAssetId",
+                            "AssetId"
+                        ],
+                        [
+                            "defaultFee",
+                            "BasisPoints"
+                        ],
+                        [
+                            "defaultProtocolFee",
+                            "BasisPoints"
+                        ]
+                    ]
+                },
+                "DispatchErrorWithPostInfoTPostDispatchInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "postInfo",
+                            "PostDispatchInfo"
+                        ],
+                        [
+                            "error",
+                            "DispatchError"
+                        ]
+                    ]
+                },
+                "EthNetworkId": "U256",
+                "EthPeersSync": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "isBridgeReady",
+                            "bool"
+                        ],
+                        [
+                            "isXorReady",
+                            "bool"
+                        ],
+                        [
+                            "isValReady",
+                            "bool"
+                        ]
+                    ]
+                },
+                "ILOInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "iloOrganizer",
+                            "AccountId"
+                        ],
+                        [
+                            "tokensForIlo",
+                            "Balance"
+                        ],
+                        [
+                            "tokensForLiquidity",
+                            "Balance"
+                        ],
+                        [
+                            "iloPrice",
+                            "Balance"
+                        ],
+                        [
+                            "softCap",
+                            "Balance"
+                        ],
+                        [
+                            "hardCap",
+                            "Balance"
+                        ],
+                        [
+                            "minContribution",
+                            "Balance"
+                        ],
+                        [
+                            "maxContribution",
+                            "Balance"
+                        ],
+                        [
+                            "refundType",
+                            "bool"
+                        ],
+                        [
+                            "liquidityPercent",
+                            "Balance"
+                        ],
+                        [
+                            "listingPrice",
+                            "Balance"
+                        ],
+                        [
+                            "lockupDays",
+                            "u32"
+                        ],
+                        [
+                            "startTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "endTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "contributorsVesting",
+                            "ContributorsVesting"
+                        ],
+                        [
+                            "teamVesting",
+                            "TeamVesting"
+                        ],
+                        [
+                            "soldTokens",
+                            "Balance"
+                        ],
+                        [
+                            "fundsRaised",
+                            "Balance"
+                        ],
+                        [
+                            "succeeded",
+                            "bool"
+                        ],
+                        [
+                            "failed",
+                            "bool"
+                        ],
+                        [
+                            "lpTokens",
+                            "Balance"
+                        ],
+                        [
+                            "claimedLpTokens",
+                            "bool"
+                        ],
+                        [
+                            "finishTimestamp",
+                            "Moment"
+                        ]
+                    ]
+                },
+                "IncomingAddToken": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "tokenAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "assetId",
+                            "AssetId"
+                        ],
+                        [
+                            "precision",
+                            "BalancePrecision"
+                        ],
+                        [
+                            "symbol",
+                            "AssetSymbol"
+                        ],
+                        [
+                            "name",
+                            "AssetName"
+                        ],
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "atHeight",
+                            "u64"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "IncomingCancelOutgoingRequest": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "outgoingRequest",
+                            "OutgoingRequest"
+                        ],
+                        [
+                            "outgoingRequestHash",
+                            "H256"
+                        ],
+                        [
+                            "initialRequestHash",
+                            "H256"
+                        ],
+                        [
+                            "txInput",
+                            "Vec<u8>"
+                        ],
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "atHeight",
+                            "u64"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "IncomingChangePeers": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "peerAccountId",
+                            "AccountId"
+                        ],
+                        [
+                            "peerAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "added",
+                            "bool"
+                        ],
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "atHeight",
+                            "u64"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "IncomingChangePeersCompat": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "peerAccountId",
+                            "AccountId"
+                        ],
+                        [
+                            "peerAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "added",
+                            "bool"
+                        ],
+                        [
+                            "contract",
+                            "ChangePeersContract"
+                        ],
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "atHeight",
+                            "u64"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "IncomingMarkAsDoneRequest": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "outgoingRequestHash",
+                            "H256"
+                        ],
+                        [
+                            "initialRequestHash",
+                            "H256"
+                        ],
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "atHeight",
+                            "u64"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "IncomingMigrate": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "newContractAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "atHeight",
+                            "u64"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "IncomingPrepareForMigration": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "atHeight",
+                            "u64"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "IncomingTransfer": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "from",
+                            "EthAddress"
+                        ],
+                        [
+                            "to",
+                            "AccountId"
+                        ],
+                        [
+                            "assetId",
+                            "AssetId"
+                        ],
+                        [
+                            "assetKind",
+                            "AssetKind"
+                        ],
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "atHeight",
+                            "u64"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "IntentivizedChannelMessage": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "networkId",
+                            "EthNetworkId"
+                        ],
+                        [
+                            "target",
+                            "H160"
+                        ],
+                        [
+                            "nonce",
+                            "u64"
+                        ],
+                        [
+                            "fee",
+                            "U256"
+                        ],
+                        [
+                            "payload",
+                            "Vec<u8>"
+                        ]
+                    ]
+                },
+                "LPSwapOutcomeInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "fee",
+                            "Balance"
+                        ],
+                        [
+                            "rewards",
+                            "Vec<LPRewardsInfo>"
+                        ]
+                    ]
+                },
+                "LiquiditySourceIdOf": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "dexId",
+                            "DEXId"
+                        ],
+                        [
+                            "liquiditySourceIndex",
+                            "LiquiditySourceType"
+                        ]
+                    ]
+                },
+                "LoadIncomingMetaRequest": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "hash",
+                            "H256"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "kind",
+                            "IncomingMetaRequestKind"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "LoadIncomingTransactionRequest": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "hash",
+                            "H256"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ],
+                        [
+                            "kind",
+                            "IncomingTransactionRequestKind"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ]
+                    ]
+                },
+                "LockInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "poolTokens",
+                            "Balance"
+                        ],
+                        [
+                            "unlockingTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "assetA",
+                            "AssetId"
+                        ],
+                        [
+                            "assetB",
+                            "AssetId"
+                        ]
+                    ]
+                },
+                "OutgoingAddAsset": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "assetId",
+                            "AssetId"
+                        ],
+                        [
+                            "supply",
+                            "Balance"
+                        ],
+                        [
+                            "nonce",
+                            "Index"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ]
+                    ]
+                },
+                "OutgoingAddAssetEncoded": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "name",
+                            "String"
+                        ],
+                        [
+                            "symbol",
+                            "String"
+                        ],
+                        [
+                            "decimal",
+                            "u8"
+                        ],
+                        [
+                            "supply",
+                            "U256"
+                        ],
+                        [
+                            "sidechainAssetId",
+                            "FixedBytes"
+                        ],
+                        [
+                            "hash",
+                            "H256"
+                        ],
+                        [
+                            "networkId",
+                            "H256"
+                        ],
+                        [
+                            "raw",
+                            "Vec<u8>"
+                        ]
+                    ]
+                },
+                "OutgoingAddPeer": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "peerAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "peerAccountId",
+                            "AccountId"
+                        ],
+                        [
+                            "nonce",
+                            "Index"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ]
+                    ]
+                },
+                "OutgoingAddPeerCompat": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "peerAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "peerAccountId",
+                            "AccountId"
+                        ],
+                        [
+                            "nonce",
+                            "Index"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ]
+                    ]
+                },
+                "OutgoingAddPeerEncoded": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "peerAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "networkId",
+                            "H256"
+                        ],
+                        [
+                            "raw",
+                            "Vec<u8>"
+                        ]
+                    ]
+                },
+                "OutgoingAddToken": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "tokenAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "ticker",
+                            "String"
+                        ],
+                        [
+                            "name",
+                            "String"
+                        ],
+                        [
+                            "decimals",
+                            "u8"
+                        ],
+                        [
+                            "nonce",
+                            "Index"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ]
+                    ]
+                },
+                "OutgoingAddTokenEncoded": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "tokenAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "ticker",
+                            "String"
+                        ],
+                        [
+                            "name",
+                            "String"
+                        ],
+                        [
+                            "decimals",
+                            "u8"
+                        ],
+                        [
+                            "hash",
+                            "H256"
+                        ],
+                        [
+                            "networkId",
+                            "H256"
+                        ],
+                        [
+                            "raw",
+                            "Vec<u8>"
+                        ]
+                    ]
+                },
+                "OutgoingMigrate": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "newContractAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "erc20NativeTokens",
+                            "Vec<EthAddress>"
+                        ],
+                        [
+                            "nonce",
+                            "Index"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ]
+                    ]
+                },
+                "OutgoingMigrateEncoded": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "thisContractAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "newContractAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "erc20NativeTokens",
+                            "Vec<EthAddress>"
+                        ],
+                        [
+                            "networkId",
+                            "H256"
+                        ],
+                        [
+                            "raw",
+                            "Vec<u8>"
+                        ]
+                    ]
+                },
+                "OutgoingPrepareForMigration": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "nonce",
+                            "Index"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ]
+                    ]
+                },
+                "OutgoingPrepareForMigrationEncoded": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "thisContractAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "networkId",
+                            "H256"
+                        ],
+                        [
+                            "raw",
+                            "Vec<u8>"
+                        ]
+                    ]
+                },
+                "OutgoingRemovePeer": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "peerAccountId",
+                            "AccountId"
+                        ],
+                        [
+                            "peerAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "nonce",
+                            "Index"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ]
+                    ]
+                },
+                "OutgoingRemovePeerCompat": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "author",
+                            "AccountId"
+                        ],
+                        [
+                            "peerAccountId",
+                            "AccountId"
+                        ],
+                        [
+                            "peerAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "nonce",
+                            "Index"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ]
+                    ]
+                },
+                "OutgoingRemovePeerEncoded": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "peerAddress",
+                            "EthAddress"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "networkId",
+                            "H256"
+                        ],
+                        [
+                            "raw",
+                            "Vec<u8>"
+                        ]
+                    ]
+                },
+                "OutgoingTransfer": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "from",
+                            "AccountId"
+                        ],
+                        [
+                            "to",
+                            "EthAddress"
+                        ],
+                        [
+                            "assetId",
+                            "AssetId"
+                        ],
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "nonce",
+                            "Index"
+                        ],
+                        [
+                            "networkId",
+                            "BridgeNetworkId"
+                        ],
+                        [
+                            "timepoint",
+                            "BridgeTimepoint"
+                        ]
+                    ]
+                },
+                "OutgoingTransferEncoded": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "currencyId",
+                            "CurrencyIdEncoded"
+                        ],
+                        [
+                            "amount",
+                            "U256"
+                        ],
+                        [
+                            "to",
+                            "EthAddress"
+                        ],
+                        [
+                            "from",
+                            "EthAddress"
+                        ],
+                        [
+                            "txHash",
+                            "H256"
+                        ],
+                        [
+                            "networkId",
+                            "H256"
+                        ],
+                        [
+                            "raw",
+                            "Vec<u8>"
+                        ]
+                    ]
+                },
+                "PendingMultisigAccount": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "approvingAccounts",
+                            "Vec<AccountId>"
+                        ],
+                        [
+                            "migrateAt",
+                            "Option<BlockNumber>"
+                        ]
+                    ]
+                },
+                "PollInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "numberOfOptions",
+                            "u32"
+                        ],
+                        [
+                            "pollStartTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "pollEndTimestamp",
+                            "Moment"
+                        ]
+                    ]
+                },
+                "PoolData": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "multiplier",
+                            "u32"
+                        ],
+                        [
+                            "depositFee",
+                            "Balance"
+                        ],
+                        [
+                            "isCore",
+                            "bool"
+                        ],
+                        [
+                            "isFarm",
+                            "bool"
+                        ],
+                        [
+                            "totalTokensInPool",
+                            "Balance"
+                        ],
+                        [
+                            "rewards",
+                            "Balance"
+                        ],
+                        [
+                            "rewardsToBeDistributed",
+                            "Balance"
+                        ],
+                        [
+                            "isRemoved",
+                            "bool"
+                        ]
+                    ]
+                },
+                "PostDispatchInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "actualWeight",
+                            "Option<Weight>"
+                        ],
+                        [
+                            "paysFee",
+                            "Pays"
+                        ]
+                    ]
+                },
+                "PredefinedAssetId": {
+                    "type": "enum",
+                    "value_list": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST"
+                    ]
+                },
+                "PriceInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "priceFailures",
+                            "u32"
+                        ],
+                        [
+                            "spotPrices",
+                            "Vec<Balance>"
+                        ],
+                        [
+                            "averagePrice",
+                            "Balance"
+                        ],
+                        [
+                            "needsUpdate",
+                            "bool"
+                        ],
+                        [
+                            "lastSpotPrice",
+                            "Balance"
+                        ]
+                    ]
+                },
+                "QuoteWithDesiredInput": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "desiredAmountIn",
+                            "Balance"
+                        ]
+                    ]
+                },
+                "QuoteWithDesiredOutput": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "desiredAmountOut",
+                            "Balance"
+                        ]
+                    ]
+                },
+                "RewardInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "limit",
+                            "Balance"
+                        ],
+                        [
+                            "totalAvailable",
+                            "Balance"
+                        ],
+                        [
+                            "rewards",
+                            "BTreeMap<RewardReason, Balance>"
+                        ]
+                    ]
+                },
+                "SwapWithDesiredInput": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "desiredAmountIn",
+                            "Balance"
+                        ],
+                        [
+                            "minAmountOut",
+                            "Balance"
+                        ]
+                    ]
+                },
+                "SwapWithDesiredOutput": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "desiredAmountOut",
+                            "Balance"
+                        ],
+                        [
+                            "maxAmountIn",
+                            "Balance"
+                        ]
+                    ]
+                },
+                "TeamVesting": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "teamVestingTotalTokens",
+                            "Balance"
+                        ],
+                        [
+                            "teamVestingFirstReleasePercent",
+                            "Balance"
+                        ],
+                        [
+                            "teamVestingPeriod",
+                            "Moment"
+                        ],
+                        [
+                            "teamVestingPercent",
+                            "Balance"
+                        ]
+                    ]
+                },
+                "TechTradingPair": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "baseAssetId",
+                            "TechAssetId"
+                        ],
+                        [
+                            "targetAssetId",
+                            "TechAssetId"
+                        ]
+                    ]
+                },
+                "TokenInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "farmsTotalMultiplier",
+                            "u32"
+                        ],
+                        [
+                            "stakingTotalMultiplier",
+                            "u32"
+                        ],
+                        [
+                            "tokenPerBlock",
+                            "Balance"
+                        ],
+                        [
+                            "farmsAllocation",
+                            "Balance"
+                        ],
+                        [
+                            "stakingAllocation",
+                            "Balance"
+                        ],
+                        [
+                            "teamAllocation",
+                            "Balance"
+                        ],
+                        [
+                            "teamAccount",
+                            "AccountId"
+                        ]
+                    ]
+                },
+                "TokenLockInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "tokens",
+                            "Balance"
+                        ],
+                        [
+                            "unlockingTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "assetId",
+                            "AssetId"
+                        ]
+                    ]
+                },
+                "TradingPair": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "baseAssetId",
+                            "AssetId"
+                        ],
+                        [
+                            "targetAssetId",
+                            "AssetId"
+                        ]
+                    ]
+                },
+                "UserInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "poolAsset",
+                            "AssetId"
+                        ],
+                        [
+                            "rewardAsset",
+                            "AssetId"
+                        ],
+                        [
+                            "isFarm",
+                            "bool"
+                        ],
+                        [
+                            "pooledTokens",
+                            "Balance"
+                        ],
+                        [
+                            "rewards",
+                            "Balance"
+                        ]
+                    ]
+                },
+                "VotingInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "votingOption",
+                            "u32"
+                        ],
+                        [
+                            "numberOfVotes",
+                            "Balance"
+                        ],
+                        [
+                            "ceresWithdrawn",
+                            "bool"
                         ]
                     ]
                 }
