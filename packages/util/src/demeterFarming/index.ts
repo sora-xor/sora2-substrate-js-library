@@ -26,6 +26,7 @@ export class DemeterFarmingModule {
     return this.root.apiRx.query.demeterFarmingPlatform.pools(poolAsset, rewardAsset).pipe(
       map((poolDataVec) => {
         return poolDataVec.map((poolData) => ({
+          baseAsset: poolData.baseAsset.code.toString(),
           poolAsset,
           rewardAsset,
           multiplier: poolData.multiplier.toNumber(),
@@ -118,6 +119,7 @@ export class DemeterFarmingModule {
       map((userInfoVec) => {
         return userInfoVec.map((data) => ({
           isFarm: data.isFarm.isTrue,
+          baseAsset: data.baseAsset.code.toString(),
           poolAsset: data.poolAsset.code.toString(),
           pooledTokens: new FPNumber(data.pooledTokens),
           rewardAsset: data.rewardAsset.code.toString(),
@@ -129,14 +131,16 @@ export class DemeterFarmingModule {
 
   /**
    * Deposit LP tokens for farming pool
+   * @param amount amount of LP tokens to be provided for farming
    * @param poolAsset address of pool asset (paired with XOR)
    * @param rewardAsset address of reward asset
-   * @param amount amount of LP tokens to be provided for farming
+   * @param baseAsset address of base asset (XOR, XSTUSD)
    */
   public async depositLiquidity(
+    amount: NumberLike,
     poolAsset: Asset | AccountAsset,
     rewardAsset: Asset | AccountAsset,
-    amount: NumberLike
+    baseAsset: Asset | AccountAsset = XOR
   ): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
 
@@ -144,12 +148,18 @@ export class DemeterFarmingModule {
     const value = new FPNumber(amount).toCodecString();
 
     await this.root.submitExtrinsic(
-      this.root.api.tx.demeterFarmingPlatform.deposit(poolAsset.address, rewardAsset.address, isFarm, value),
+      this.root.api.tx.demeterFarmingPlatform.deposit(
+        baseAsset.address,
+        poolAsset.address,
+        rewardAsset.address,
+        isFarm,
+        value
+      ),
       this.root.account.pair,
       {
         type: Operation.DemeterFarmingDepositLiquidity,
-        symbol: XOR.symbol,
-        assetAddress: XOR.address,
+        symbol: baseAsset.symbol,
+        assetAddress: baseAsset.address,
         symbol2: poolAsset.symbol,
         asset2Address: poolAsset.address,
         amount: `${amount}`,
@@ -159,14 +169,16 @@ export class DemeterFarmingModule {
 
   /**
    * Withdraw LP tokens from farming pool
+   * @param amount amount of LP tokens to be withdrawed from farming
    * @param poolAsset address of pool asset (paired with XOR)
    * @param rewardAsset address of reward asset
-   * @param amount amount of LP tokens to be withdrawed from farming
+   * @param baseAsset address of base asset (XOR, XSTUSD)
    */
   public async withdrawLiquidity(
+    amount: NumberLike,
     poolAsset: Asset | AccountAsset,
     rewardAsset: Asset | AccountAsset,
-    amount: NumberLike
+    baseAsset: Asset | AccountAsset = XOR
   ): Promise<void> {
     assert(this.root.account, Messages.connectWallet);
 
@@ -174,12 +186,18 @@ export class DemeterFarmingModule {
     const value = new FPNumber(amount).toCodecString();
 
     await this.root.submitExtrinsic(
-      this.root.api.tx.demeterFarmingPlatform.withdraw(poolAsset.address, rewardAsset.address, value, isFarm),
+      this.root.api.tx.demeterFarmingPlatform.withdraw(
+        baseAsset.address,
+        poolAsset.address,
+        rewardAsset.address,
+        value,
+        isFarm
+      ),
       this.root.account.pair,
       {
         type: Operation.DemeterFarmingWithdrawLiquidity,
-        symbol: XOR.symbol,
-        assetAddress: XOR.address,
+        symbol: baseAsset.symbol,
+        assetAddress: baseAsset.address,
         symbol2: poolAsset.symbol,
         asset2Address: poolAsset.address,
         amount: `${amount}`,
@@ -204,7 +222,7 @@ export class DemeterFarmingModule {
     const value = new FPNumber(amount, asset.decimals).toCodecString();
 
     await this.root.submitExtrinsic(
-      this.root.api.tx.demeterFarmingPlatform.deposit(asset.address, rewardAsset.address, isFarm, value),
+      this.root.api.tx.demeterFarmingPlatform.deposit(XOR.address, asset.address, rewardAsset.address, isFarm, value),
       this.root.account.pair,
       {
         type: Operation.DemeterFarmingStakeToken,
@@ -232,7 +250,7 @@ export class DemeterFarmingModule {
     const value = new FPNumber(amount, asset.decimals).toCodecString();
 
     await this.root.submitExtrinsic(
-      this.root.api.tx.demeterFarmingPlatform.withdraw(asset.address, rewardAsset.address, value, isFarm),
+      this.root.api.tx.demeterFarmingPlatform.withdraw(XOR.address, asset.address, rewardAsset.address, value, isFarm),
       this.root.account.pair,
       {
         type: Operation.DemeterFarmingUnstakeToken,
@@ -245,21 +263,23 @@ export class DemeterFarmingModule {
 
   /**
    * Get rewards from farming or staking pool
+   * @param isFarm flag indicated is getting rewards from farming or staking pool
    * @param asset asset (staking) or pool asset (farming) address
    * @param rewardAsset reward asset address
-   * @param isFarm flag indicated is getting rewards from farming or staking pool
+   * @param baseAsset address of base asset (XOR, XSTUSD) for farming pool (XOR by default for stake)
    * @param amount amount (for history only)
    */
   public async getRewards(
+    isFarm: boolean,
     asset: Asset | AccountAsset,
     rewardAsset: Asset | AccountAsset,
-    isFarm: boolean,
+    baseAsset: Asset | AccountAsset = XOR,
     amount?: NumberLike
   ) {
     assert(this.root.account, Messages.connectWallet);
 
     await this.root.submitExtrinsic(
-      this.root.api.tx.demeterFarmingPlatform.getRewards(asset.address, rewardAsset.address, isFarm),
+      this.root.api.tx.demeterFarmingPlatform.getRewards(baseAsset.address, asset.address, rewardAsset.address, isFarm),
       this.root.account.pair,
       {
         type: Operation.DemeterFarmingGetRewards,

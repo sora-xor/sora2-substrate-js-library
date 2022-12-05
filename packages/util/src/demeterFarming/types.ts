@@ -1,6 +1,7 @@
 import type { FPNumber } from '@sora-substrate/math';
 
 export type DemeterPool = {
+  baseAsset: string;
   poolAsset: string;
   rewardAsset: string;
   multiplier: number;
@@ -15,6 +16,7 @@ export type DemeterPool = {
 
 export type DemeterAccountPool = {
   isFarm: boolean;
+  baseAsset: string;
   poolAsset: string;
   pooledTokens: FPNumber;
   rewardAsset: string;
