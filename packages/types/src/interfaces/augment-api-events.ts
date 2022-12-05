@@ -85,20 +85,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Withdraw: AugmentedEvent<ApiType, [who: AccountId32, amount: u128], { who: AccountId32, amount: u128 }>;
     };
-    band: {
-      /**
-       * Added new trusted relayer accounts. [relayers]
-       **/
-      RelayersAdded: AugmentedEvent<ApiType, [Vec<AccountId32>]>;
-      /**
-       * Relayer accounts were removed from trusted list. [relayers]
-       **/
-      RelayersRemoved: AugmentedEvent<ApiType, [Vec<AccountId32>]>;
-      /**
-       * New symbol rates were successfully relayed. [symbols]
-       **/
-      SymbolsRelayed: AugmentedEvent<ApiType, [Vec<Text>]>;
-    };
     bridgeMultisig: {
       /**
        * A new multisig created. [multisig]
@@ -253,33 +239,33 @@ declare module '@polkadot/api-base/types/events' {
     };
     demeterFarmingPlatform: {
       /**
-       * Deposited [who, pool_asset, reward_asset, is_farm, amount]
+       * Deposited [who, base_asset, pool_asset, reward_asset, is_farm, amount]
        **/
-      Deposited: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
+      Deposited: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
       /**
-       * DepositFeeChanged [who, pool_asset, reward_asset, is_farm, amount]
+       * DepositFeeChanged [who, base_asset, pool_asset, reward_asset, is_farm, amount]
        **/
-      DepositFeeChanged: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
+      DepositFeeChanged: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
       /**
-       * Info changed [who, pool_asset, reward_asset, is_farm, amount]
+       * Info changed [who, base_asset, pool_asset, reward_asset, is_farm, amount]
        **/
-      InfoChanged: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
+      InfoChanged: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
       /**
-       * Multiplier Changed [who, pool_asset, reward_asset, is_farm, amount]
+       * Multiplier Changed [who, base_asset, pool_asset, reward_asset, is_farm, amount]
        **/
-      MultiplierChanged: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u32]>;
+      MultiplierChanged: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u32]>;
       /**
-       * Pool added [who, pool_asset, reward_asset, is_farm]
+       * Pool added [who, base_asset, pool_asset, reward_asset, is_farm]
        **/
-      PoolAdded: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
+      PoolAdded: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
       /**
-       * Pool removed [who, pool_asset, reward_asset, is_farm]
+       * Pool removed [who, base_asset, pool_asset, reward_asset, is_farm]
        **/
-      PoolRemoved: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
+      PoolRemoved: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
       /**
-       * Reward Withdrawn [who, amount, pool_asset, reward_asset, is_farm]
+       * Reward Withdrawn [who, amount, base_asset, pool_asset, reward_asset, is_farm]
        **/
-      RewardWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
+      RewardWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
       /**
        * Token info changed [who, what]
        **/
@@ -289,13 +275,13 @@ declare module '@polkadot/api-base/types/events' {
        **/
       TokenRegistered: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
       /**
-       * Total tokens changed [who, pool_asset, reward_asset, is_farm, amount]
+       * Total tokens changed [who, base_asset, pool_asset, reward_asset, is_farm, amount]
        **/
-      TotalTokensChanged: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
+      TotalTokensChanged: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
       /**
-       * Withdrawn [who, amount, pool_asset, reward_asset, is_farm]
+       * Withdrawn [who, amount, base_asset, pool_asset, reward_asset, is_farm]
        **/
-      Withdrawn: AugmentedEvent<ApiType, [AccountId32, u128, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
+      Withdrawn: AugmentedEvent<ApiType, [AccountId32, u128, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
     };
     democracy: {
       /**
