@@ -547,15 +547,15 @@ export class BaseApi {
       case Operation.ReferralSetInvitedUser:
         return this.api.tx.referrals.setReferrer('');
       case Operation.DemeterFarmingDepositLiquidity:
-        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, true, 0);
+        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, XOR.address, true, 0);
       case Operation.DemeterFarmingWithdrawLiquidity:
-        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, 0, true);
+        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, XOR.address, 0, true);
       case Operation.DemeterFarmingStakeToken:
-        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, false, 0);
+        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, XOR.address, false, 0);
       case Operation.DemeterFarmingUnstakeToken:
-        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, 0, false);
+        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, XOR.address, 0, false);
       case Operation.DemeterFarmingGetRewards:
-        return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, true);
+        return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, XOR.address, true);
       default:
         return null;
     }
