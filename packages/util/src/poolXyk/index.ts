@@ -208,7 +208,7 @@ export class PoolXykModule {
     amount: CodecString,
     firstTotal: CodecString,
     secondTotal: CodecString,
-    totalSupply?: CodecString,
+    totalSupply: CodecString,
     firstAssetDecimals?: number,
     secondAssetDecimals?: number
   ): Array<CodecString> {
@@ -237,6 +237,7 @@ export class PoolXykModule {
    * @param secondAmount Second asset amount
    * @param firstTotal getReserves()[0]
    * @param secondTotal getReserves()[1]
+   * @param totalSupply Pool total issuance
    */
   public estimatePoolTokensMinted(
     firstAsset: Asset,
