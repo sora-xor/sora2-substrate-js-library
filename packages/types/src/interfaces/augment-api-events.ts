@@ -85,6 +85,20 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Withdraw: AugmentedEvent<ApiType, [who: AccountId32, amount: u128], { who: AccountId32, amount: u128 }>;
     };
+    band: {
+      /**
+       * Added new trusted relayer accounts. [relayers]
+       **/
+      RelayersAdded: AugmentedEvent<ApiType, [Vec<AccountId32>]>;
+      /**
+       * Relayer accounts were removed from trusted list. [relayers]
+       **/
+      RelayersRemoved: AugmentedEvent<ApiType, [Vec<AccountId32>]>;
+      /**
+       * New symbol rates were successfully relayed. [symbols]
+       **/
+      SymbolsRelayed: AugmentedEvent<ApiType, [Vec<Text>]>;
+    };
     bridgeMultisig: {
       /**
        * A new multisig created. [multisig]
