@@ -16,7 +16,7 @@ export class Consts {
 
   /** XYK, TBC, XST fees the same */
   static readonly XYK_FEE = new FPNumber(0.003);
-  static readonly XST_FEE = Consts.XYK_FEE;
+  static readonly XST_FEE = new FPNumber(0.00666);
   static readonly TBC_FEE = Consts.XYK_FEE;
   /** Max `Rust` number value */
   static readonly MAX = new FPNumber('170141183460469231731.687303715884105727');
