@@ -110,3 +110,4 @@ export const PSWAP = NativeAssets.get(KnownSymbols.PSWAP);
 export const XSTUSD = NativeAssets.get(KnownSymbols.XSTUSD);
 export const DAI = KnownAssets.get(KnownSymbols.DAI);
 export const ETH = KnownAssets.get(KnownSymbols.ETH);
+export const XST = KnownAssets.get(KnownSymbols.XST);
