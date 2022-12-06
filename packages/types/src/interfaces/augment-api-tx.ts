@@ -21,6 +21,20 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       burn: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128]>;
       /**
+       * Performs an unchecked Asset mint, can only be done
+       * by root account.
+       * 
+       * Should be used as extrinsic call only.
+       * `Currencies::updated_balance()` should be deprecated. Using `force_mint` allows us to
+       * perform extra actions for minting, such as buy-back, extra-minting and etc.
+       * 
+       * - `origin`: caller Account, which issues Asset minting,
+       * - `asset_id`: Id of minted Asset,
+       * - `to`: Id of Account, to which Asset amount is minted,
+       * - `amount`: minted Asset amount.
+       **/
+      forceMint: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, to: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, AccountId32, u128]>;
+      /**
        * Performs a checked Asset mint, can only be done
        * by corresponding asset owner account.
        * 
@@ -199,6 +213,51 @@ declare module '@polkadot/api-base/types/submittable' {
        * [`transfer`]: struct.Pallet.html#method.transfer
        **/
       transferKeepAlive: AugmentedSubmittable<(dest: AccountId32 | string | Uint8Array, value: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Compact<u128>]>;
+    };
+    band: {
+      /**
+       * Add `account_ids` to the list of trusted relayers.
+       * 
+       * - `origin`: the sudo account on whose behalf the transaction is being executed,
+       * - `account_ids`: list of new trusted relayers to add.
+       **/
+      addRelayers: AugmentedSubmittable<(accountIds: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>]>;
+      /**
+       * Similar to [`relay()`] but without the resolve time guard.
+       * 
+       * Should be used in emergency situations i.e. then previous value was
+       * relayed by a faulty/malicious actor.
+       * 
+       * - `origin`: the relayer account on whose behalf the transaction is being executed,
+       * - `symbols`: symbols which rates are provided,
+       * - `rates`: rates of symbols in the same order as `symbols`,
+       * - `resolve_time`: symbols which rates are provided,
+       * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
+       **/
+      forceRelay: AugmentedSubmittable<(symbols: Vec<Text> | (Text | string)[], rates: Vec<u64> | (u64 | AnyNumber | Uint8Array)[], resolveTime: u64 | AnyNumber | Uint8Array, requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<Text>, Vec<u64>, u64, u64]>;
+      /**
+       * Relay a list of symbols and their associated rates along with the resolve time and request id on `BandChain`.
+       * 
+       * Checks if:
+       * - The caller is a relayer;
+       * - The `resolve_time` for a particular symbol is not lower than previous saved value, ignores this rate if so;
+       * 
+       * - `origin`: the relayer account on whose behalf the transaction is being executed,
+       * - `symbols`: symbols which rates are provided,
+       * - `rates`: rates of symbols in the same order as `symbols`,
+       * - `resolve_time`: symbols which rates are provided,
+       * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
+       **/
+      relay: AugmentedSubmittable<(symbols: Vec<Text> | (Text | string)[], rates: Vec<u64> | (u64 | AnyNumber | Uint8Array)[], resolveTime: u64 | AnyNumber | Uint8Array, requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<Text>, Vec<u64>, u64, u64]>;
+      /**
+       * Remove `account_ids` from the list of trusted relayers.
+       * 
+       * Ignores if some account is not presented in the list.
+       * 
+       * - `origin`: the sudo account on whose behalf the transaction is being executed,
+       * - `account_ids`: list of relayers to remove.
+       **/
+      removeRelayers: AugmentedSubmittable<(accountIds: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>]>;
     };
     bridgeMultisig: {
       /**

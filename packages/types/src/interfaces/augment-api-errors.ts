@@ -54,6 +54,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Precision value is not valid, it should represent a number of decimal places for number, max is 30.
        **/
       InvalidPrecision: AugmentedError<ApiType>;
+      /**
+       * Computation overflow.
+       **/
+      Overflow: AugmentedError<ApiType>;
     };
     authorship: {
       /**
@@ -142,6 +146,17 @@ declare module '@polkadot/api-base/types/errors' {
        * Vesting balance too high to send value
        **/
       VestingBalance: AugmentedError<ApiType>;
+    };
+    band: {
+      /**
+       * `symbols` and `rates` provided to `relay` (or `force_relay`) extrinsic have different
+       * lengths.
+       **/
+      DivergedLengthsOfSymbolsAndRates: AugmentedError<ApiType>;
+      /**
+       * An untrusted account tried to relay data.
+       **/
+      NotATrustedRelayer: AugmentedError<ApiType>;
     };
     bridgeMultisig: {
       /**
