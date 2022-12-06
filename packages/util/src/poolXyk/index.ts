@@ -208,7 +208,7 @@ export class PoolXykModule {
     amount: CodecString,
     firstTotal: CodecString,
     secondTotal: CodecString,
-    totalSupply?: CodecString,
+    totalSupply: CodecString,
     firstAssetDecimals?: number,
     secondAssetDecimals?: number
   ): Array<CodecString> {
@@ -222,8 +222,8 @@ export class PoolXykModule {
     }
     const pIn = FPNumber.fromCodecValue(amount);
     const pts = FPNumber.fromCodecValue(totalSupply);
-    const ptsFirstAsset = new FPNumber(totalSupply, firstAssetDecimals);
-    const ptsSecondAsset = new FPNumber(totalSupply, secondAssetDecimals);
+    const ptsFirstAsset = FPNumber.fromCodecValue(totalSupply, firstAssetDecimals);
+    const ptsSecondAsset = FPNumber.fromCodecValue(totalSupply, secondAssetDecimals);
     const aOut = pIn.mul(a).div(ptsFirstAsset);
     const bOut = pIn.mul(b).div(ptsSecondAsset);
     return [aOut.toCodecString(), bOut.toCodecString(), pts.toCodecString()];
@@ -237,15 +237,17 @@ export class PoolXykModule {
    * @param secondAmount Second asset amount
    * @param firstTotal getReserves()[0]
    * @param secondTotal getReserves()[1]
+   * @param totalSupply Pool total issuance
    */
-  public async estimatePoolTokensMinted(
+  public estimatePoolTokensMinted(
     firstAsset: Asset,
     secondAsset: Asset,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     firstTotal: CodecString,
-    secondTotal: CodecString
-  ): Promise<Array<CodecString>> {
+    secondTotal: CodecString,
+    totalSupply: CodecString
+  ): Array<CodecString> {
     const decimals = Math.max(firstAsset.decimals, secondAsset.decimals);
     const aIn = new FPNumber(firstAmount, decimals);
     const bIn = new FPNumber(secondAmount, decimals);
@@ -256,8 +258,7 @@ export class PoolXykModule {
       return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()];
     }
     const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
-    const totalSupply = await this.root.api.query.poolXYK.totalIssuances(poolToken.address);
-    const pts = new FPNumber(totalSupply, poolToken.decimals);
+    const pts = FPNumber.fromCodecValue(totalSupply, poolToken.decimals);
     const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b)) as FPNumber;
     return [result.toCodecString(), pts.toCodecString()];
   }
@@ -353,7 +354,6 @@ export class PoolXykModule {
     if (!(balance && Number(balance) && totalSupply)) return null;
 
     const { decimals, symbol, name } = this.getInfoByPoolAccount(poolAccount);
-    const fpBalance = new FPNumber(balance, decimals);
     const firstAsset = await this.root.assets.getAssetInfo(firstAddress);
     const secondAsset = await this.root.assets.getAssetInfo(secondAddress);
     const [reserveA, reserveB] = reserves;
@@ -368,6 +368,7 @@ export class PoolXykModule {
       secondAsset.decimals
     );
 
+    const fpBalance = FPNumber.fromCodecValue(balance, decimals);
     const pts = FPNumber.fromCodecValue(totalSupply, decimals);
     const poolShare = fpBalance.div(pts).mul(FPNumber.HUNDRED).format() || '0';
 
