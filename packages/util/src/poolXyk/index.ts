@@ -370,7 +370,7 @@ export class PoolXykModule {
 
     const fpBalance = FPNumber.fromCodecValue(balance, decimals);
     const pts = FPNumber.fromCodecValue(totalSupply, decimals);
-    const poolShare = fpBalance.div(pts).mul(FPNumber.HUNDRED).format() || '0';
+    const poolShare = fpBalance.div(pts).mul(FPNumber.HUNDRED).toString() || '0';
 
     return {
       address: poolAccount,
@@ -384,6 +384,8 @@ export class PoolXykModule {
       balance,
       name,
       poolShare,
+      reserveA,
+      reserveB,
       totalSupply,
     } as AccountLiquidity;
   }
