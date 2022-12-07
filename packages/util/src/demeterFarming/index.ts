@@ -222,7 +222,7 @@ export class DemeterFarmingModule {
     const value = new FPNumber(amount, asset.decimals).toCodecString();
 
     await this.root.submitExtrinsic(
-      this.root.api.tx.demeterFarmingPlatform.deposit(XOR.address, asset.address, rewardAsset.address, isFarm, value),
+      this.root.api.tx.demeterFarmingPlatform.deposit(asset.address, asset.address, rewardAsset.address, isFarm, value),
       this.root.account.pair,
       {
         type: Operation.DemeterFarmingStakeToken,
@@ -250,7 +250,13 @@ export class DemeterFarmingModule {
     const value = new FPNumber(amount, asset.decimals).toCodecString();
 
     await this.root.submitExtrinsic(
-      this.root.api.tx.demeterFarmingPlatform.withdraw(XOR.address, asset.address, rewardAsset.address, value, isFarm),
+      this.root.api.tx.demeterFarmingPlatform.withdraw(
+        asset.address,
+        asset.address,
+        rewardAsset.address,
+        value,
+        isFarm
+      ),
       this.root.account.pair,
       {
         type: Operation.DemeterFarmingUnstakeToken,
@@ -266,7 +272,7 @@ export class DemeterFarmingModule {
    * @param isFarm flag indicated is getting rewards from farming or staking pool
    * @param asset asset (staking) or pool asset (farming) address
    * @param rewardAsset reward asset address
-   * @param baseAsset address of base asset (XOR, XSTUSD) for farming pool (XOR by default for stake)
+   * @param baseAsset address of base asset (XOR, XSTUSD) for farming pool or staking token
    * @param amount amount (for history only)
    */
   public async getRewards(
@@ -277,9 +283,11 @@ export class DemeterFarmingModule {
     amount?: NumberLike
   ) {
     assert(this.root.account, Messages.connectWallet);
+    // for staking base asset should be equal to staking asset
+    const baseAssetAddress = isFarm ? baseAsset.address : asset.address;
 
     await this.root.submitExtrinsic(
-      this.root.api.tx.demeterFarmingPlatform.getRewards(baseAsset.address, asset.address, rewardAsset.address, isFarm),
+      this.root.api.tx.demeterFarmingPlatform.getRewards(baseAssetAddress, asset.address, rewardAsset.address, isFarm),
       this.root.account.pair,
       {
         type: Operation.DemeterFarmingGetRewards,
