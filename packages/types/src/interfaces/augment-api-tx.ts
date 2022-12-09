@@ -218,6 +218,10 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Add `account_ids` to the list of trusted relayers.
        * 
+       * Ignores repeated accounts in `account_ids`.
+       * If one of account is already a trusted relayer an [`Error::AlreadyATrustedRelayer`] will
+       * be returned.
+       * 
        * - `origin`: the sudo account on whose behalf the transaction is being executed,
        * - `account_ids`: list of new trusted relayers to add.
        **/
@@ -229,12 +233,11 @@ declare module '@polkadot/api-base/types/submittable' {
        * relayed by a faulty/malicious actor.
        * 
        * - `origin`: the relayer account on whose behalf the transaction is being executed,
-       * - `symbols`: symbols which rates are provided,
-       * - `rates`: rates of symbols in the same order as `symbols`,
+       * - `rates`: symbols with rates in USD,
        * - `resolve_time`: symbols which rates are provided,
        * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
        **/
-      forceRelay: AugmentedSubmittable<(symbols: Vec<Text> | (Text | string)[], rates: Vec<u64> | (u64 | AnyNumber | Uint8Array)[], resolveTime: u64 | AnyNumber | Uint8Array, requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<Text>, Vec<u64>, u64, u64]>;
+      forceRelay: AugmentedSubmittable<(rates: Vec<ITuple<[Text, u64]>> | ([Text | string, u64 | AnyNumber | Uint8Array])[], resolveTime: u64 | AnyNumber | Uint8Array, requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[Text, u64]>>, u64, u64]>;
       /**
        * Relay a list of symbols and their associated rates along with the resolve time and request id on `BandChain`.
        * 
@@ -242,17 +245,20 @@ declare module '@polkadot/api-base/types/submittable' {
        * - The caller is a relayer;
        * - The `resolve_time` for a particular symbol is not lower than previous saved value, ignores this rate if so;
        * 
+       * If `rates` contains duplicated symbols, then the last rate will be stored.
+       * 
        * - `origin`: the relayer account on whose behalf the transaction is being executed,
-       * - `symbols`: symbols which rates are provided,
-       * - `rates`: rates of symbols in the same order as `symbols`,
+       * - `rates`: symbols with rates in USD,
        * - `resolve_time`: symbols which rates are provided,
        * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
        **/
-      relay: AugmentedSubmittable<(symbols: Vec<Text> | (Text | string)[], rates: Vec<u64> | (u64 | AnyNumber | Uint8Array)[], resolveTime: u64 | AnyNumber | Uint8Array, requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<Text>, Vec<u64>, u64, u64]>;
+      relay: AugmentedSubmittable<(rates: Vec<ITuple<[Text, u64]>> | ([Text | string, u64 | AnyNumber | Uint8Array])[], resolveTime: u64 | AnyNumber | Uint8Array, requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[Text, u64]>>, u64, u64]>;
       /**
        * Remove `account_ids` from the list of trusted relayers.
        * 
-       * Ignores if some account is not presented in the list.
+       * Ignores repeated accounts in `account_ids`.
+       * If one of account is not a trusted relayer an [`Error::AlreadyATrustedRelayer`] will
+       * be returned.
        * 
        * - `origin`: the sudo account on whose behalf the transaction is being executed,
        * - `account_ids`: list of relayers to remove.

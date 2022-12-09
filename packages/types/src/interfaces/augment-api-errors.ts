@@ -149,14 +149,17 @@ declare module '@polkadot/api-base/types/errors' {
     };
     band: {
       /**
-       * `symbols` and `rates` provided to `relay` (or `force_relay`) extrinsic have different
-       * lengths.
+       * A request to add an account, which is already a trusted relayer, was supplied.
        **/
-      DivergedLengthsOfSymbolsAndRates: AugmentedError<ApiType>;
+      AlreadyATrustedRelayer: AugmentedError<ApiType>;
+      /**
+       * A request to remove an account, which is not a trusted relayer, was supplied.
+       **/
+      NoSuchRelayer: AugmentedError<ApiType>;
       /**
        * An untrusted account tried to relay data.
        **/
-      NotATrustedRelayer: AugmentedError<ApiType>;
+      UnauthorizedRelayer: AugmentedError<ApiType>;
     };
     bridgeMultisig: {
       /**
