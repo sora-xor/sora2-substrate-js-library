@@ -1,4 +1,4 @@
-export class Storage {
+export class Storage<T = string> {
   protected namespace: string;
 
   constructor(namespace = 'sora') {
@@ -9,15 +9,15 @@ export class Storage {
     return Object.entries(localStorage).filter(([key]) => key.startsWith(this.namespace));
   }
 
-  public get(key: string): string {
+  public get(key: T): string {
     return localStorage.getItem(`${this.namespace}.${key}`) ?? '';
   }
 
-  public set(key: string, value: any): void {
+  public set(key: T, value: any): void {
     localStorage.setItem(`${this.namespace}.${key}`, value);
   }
 
-  public remove(key: string): void {
+  public remove(key: T): void {
     localStorage.removeItem(`${this.namespace}.${key}`);
   }
 
@@ -26,7 +26,7 @@ export class Storage {
   }
 }
 
-export class AccountStorage extends Storage {
+export class AccountStorage<T = string> extends Storage<T> {
   constructor(identity: string) {
     if (!identity) {
       throw new Error('AccountStorage: identity is required');
