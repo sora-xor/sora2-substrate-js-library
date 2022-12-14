@@ -13,8 +13,8 @@ import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 import type { DemeterPool, DemeterRewardToken, DemeterAccountPool } from './types';
 
-export class DemeterFarmingModule {
-  constructor(private readonly root: Api) {}
+export class DemeterFarmingModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   /**
    * Get a list of pools for farming & staking, by provided pool & reward asset adresses
@@ -136,18 +136,18 @@ export class DemeterFarmingModule {
    * @param rewardAsset address of reward asset
    * @param baseAsset address of base asset (XOR, XSTUSD)
    */
-  public async depositLiquidity(
+  public depositLiquidity(
     amount: NumberLike,
     poolAsset: Asset | AccountAsset,
     rewardAsset: Asset | AccountAsset,
     baseAsset: Asset | AccountAsset = XOR
-  ): Promise<void> {
+  ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
 
     const isFarm = true;
     const value = new FPNumber(amount).toCodecString();
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.demeterFarmingPlatform.deposit(
         baseAsset.address,
         poolAsset.address,
@@ -174,18 +174,18 @@ export class DemeterFarmingModule {
    * @param rewardAsset address of reward asset
    * @param baseAsset address of base asset (XOR, XSTUSD)
    */
-  public async withdrawLiquidity(
+  public withdrawLiquidity(
     amount: NumberLike,
     poolAsset: Asset | AccountAsset,
     rewardAsset: Asset | AccountAsset,
     baseAsset: Asset | AccountAsset = XOR
-  ): Promise<void> {
+  ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
 
     const isFarm = true;
     const value = new FPNumber(amount).toCodecString();
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.demeterFarmingPlatform.withdraw(
         baseAsset.address,
         poolAsset.address,
@@ -211,17 +211,13 @@ export class DemeterFarmingModule {
    * @param rewardAsset address of reward asset
    * @param amount amount of tokens to be staked
    */
-  public async stake(
-    asset: Asset | AccountAsset,
-    rewardAsset: Asset | AccountAsset,
-    amount: NumberLike
-  ): Promise<void> {
+  public stake(asset: Asset | AccountAsset, rewardAsset: Asset | AccountAsset, amount: NumberLike): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
 
     const isFarm = false;
     const value = new FPNumber(amount, asset.decimals).toCodecString();
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.demeterFarmingPlatform.deposit(asset.address, asset.address, rewardAsset.address, isFarm, value),
       this.root.account.pair,
       {
@@ -239,17 +235,13 @@ export class DemeterFarmingModule {
    * @param rewardAsset address of reward asset
    * @param amount amount of tokens to be unstaked
    */
-  public async unstake(
-    asset: Asset | AccountAsset,
-    rewardAsset: Asset | AccountAsset,
-    amount: NumberLike
-  ): Promise<void> {
+  public unstake(asset: Asset | AccountAsset, rewardAsset: Asset | AccountAsset, amount: NumberLike): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
 
     const isFarm = false;
     const value = new FPNumber(amount, asset.decimals).toCodecString();
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.demeterFarmingPlatform.withdraw(
         asset.address,
         asset.address,
@@ -275,18 +267,18 @@ export class DemeterFarmingModule {
    * @param baseAsset address of base asset (XOR, XSTUSD) for farming pool or staking token
    * @param amount amount (for history only)
    */
-  public async getRewards(
+  public getRewards(
     isFarm: boolean,
     asset: Asset | AccountAsset,
     rewardAsset: Asset | AccountAsset,
     baseAsset: Asset | AccountAsset = XOR,
     amount?: NumberLike
-  ) {
+  ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     // for staking base asset should be equal to staking asset
     const baseAssetAddress = isFarm ? baseAsset.address : asset.address;
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.demeterFarmingPlatform.getRewards(baseAssetAddress, asset.address, rewardAsset.address, isFarm),
       this.root.account.pair,
       {

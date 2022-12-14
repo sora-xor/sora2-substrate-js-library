@@ -1,13 +1,14 @@
 import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
+import { Observable } from 'rxjs';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
-import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
+import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
@@ -40,6 +41,19 @@ export type NetworkFeesObject = {
 
 export type HistoryItem = History | BridgeHistory | RewardClaimHistory;
 
+export type FnResult = void | Observable<ExtrinsicEvent>;
+
+export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & BridgeHistory & RewardClaimHistory];
+
+interface ISubmitExtrinsic<T> {
+  submitExtrinsic(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    signer: KeyringPair,
+    historyData?: HistoryItem,
+    unsigned?: boolean
+  ): Promise<T>;
+}
+
 export type AccountHistory<T> = {
   [key: string]: T;
 };
@@ -52,7 +66,7 @@ const isLiquidityPoolOperation = (operation: Operation) =>
 
 export const KeyringType = 'sr25519';
 
-export class BaseApi {
+export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   /**
    * Network fee values which can be used right after `calcStaticNetworkFees` method.
    *
@@ -88,10 +102,14 @@ export class BaseApi {
   private _historySyncTimestamp: number = 0;
   private _restored: boolean = false;
 
+  /** TBD */
+  protected isDesktop = false;
   protected signer?: Signer;
   public storage?: Storage; // common data storage
   public accountStorage?: AccountStorage; // account data storage
   public account: CreateResult;
+  /** If `true` you might subscribe on extrinsic statuses */
+  public shouldObservableBeUsed = false;
 
   constructor(public readonly historyNamespace = 'history') {}
 
@@ -302,8 +320,8 @@ export class BaseApi {
     };
   }
 
-  public async submitExtrinsic(
-    extrinsic: SubmittableExtrinsic,
+  private async submitExtrinsicPromise(
+    extrinsic: SubmittableExtrinsic<'promise'>,
     signer: KeyringPair,
     historyData?: HistoryItem,
     unsigned = false
@@ -330,47 +348,27 @@ export class BaseApi {
 
     const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn);
     const unsub = await extrinsicFn((result: ISubmittableResult) => {
-      if (isBridgeOperation(history.type)) {
-        history.signed = true;
-      }
       history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
-      this.saveHistory(history);
       if (result.status.isInBlock) {
         history.blockId = result.status.asInBlock.toString();
-        this.saveHistory(history);
       } else if (result.status.isFinalized) {
         history.endTime = Date.now();
-        this.saveHistory(history);
         result.events.forEach(({ event: { data, method, section } }: any) => {
           if (method === 'FeeWithdrawn' && section === 'xorFee') {
             const [_, soraNetworkFee] = data;
             history.soraNetworkFee = soraNetworkFee.toString();
-            this.saveHistory(history);
-          }
-
-          if (method === 'AssetRegistered' && section === 'assets') {
+          } else if (method === 'AssetRegistered' && section === 'assets') {
             const [assetId, _] = data;
             history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
-            this.saveHistory(history);
-          }
-
-          if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
+          } else if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
             const [assetId, from, to, amount] = data;
-
             const address = assetId.toString();
             const amountFormatted = new FPNumber(amount).toString();
             const amountKey = XOR.address === address ? 'amount' : 'amount2';
-
             history[amountKey] = amountFormatted;
-            this.saveHistory(history);
-          }
-
-          if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
+          } else if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
             history.hash = first(data.toJSON());
-            this.saveHistory(history);
-          }
-
-          if (section === 'system' && method === 'ExtrinsicFailed') {
+          } else if (section === 'system' && method === 'ExtrinsicFailed') {
             history.status = TransactionStatus.Error;
             history.endTime = Date.now();
             const [error] = data;
@@ -382,11 +380,11 @@ export class BaseApi {
               // Other, CannotLookup, BadOrigin, no extra info
               history.errorMessage = error.toString();
             }
-            this.saveHistory(history);
           }
         });
         unsub();
       }
+      this.saveHistory(history);
     }).catch((e: Error) => {
       // override history 'id' to 'startTime', because we will delete history 'txId' below
       history.id = this.encrypt(`${history.startTime}`);
@@ -402,6 +400,116 @@ export class BaseApi {
       });
       throw new Error(errorInfo);
     });
+  }
+
+  private async submitExtrinsicObservable(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    signer: KeyringPair,
+    historyData?: HistoryItem,
+    unsigned = false
+  ): Promise<Observable<ExtrinsicEvent>> {
+    const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
+    const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
+    if (isNotFaucetOperation && signer) {
+      history.from = this.address;
+    }
+
+    const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
+    const { account, options } = this.getAccountWithOptions();
+    // TODO: Add ERA only for SWAP
+    // Check how to add ONLY as immortal era
+    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
+
+    history.txId = signedTx.hash.toString();
+
+    // History id value will be equal to transaction hash
+    if (!history.id) {
+      history.startTime = Date.now();
+      history.id = history.txId;
+    }
+
+    const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn);
+    return new Observable<ExtrinsicEvent>((subscriber) => {
+      (async () => {
+        // anonymous IIFE to avoid async nature into observer
+        const unsub = await extrinsicFn((result: ISubmittableResult) => {
+          history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
+          if (result.status.isInBlock) {
+            history.blockId = result.status.asInBlock.toString();
+            subscriber.next(['inblock', history]);
+          } else if (result.status.isFinalized) {
+            history.endTime = Date.now();
+            result.events.forEach(({ event: { data, method, section } }: any) => {
+              if (method === 'FeeWithdrawn' && section === 'xorFee') {
+                const [_, soraNetworkFee] = data;
+                history.soraNetworkFee = soraNetworkFee.toString();
+              } else if (method === 'AssetRegistered' && section === 'assets') {
+                const [assetId, _] = data;
+                history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+              } else if (
+                method === 'Transferred' &&
+                section === 'currencies' &&
+                isLiquidityPoolOperation(history.type)
+              ) {
+                const [assetId, from, to, amount] = data;
+                const address = assetId.toString();
+                const amountFormatted = new FPNumber(amount).toString();
+                const amountKey = XOR.address === address ? 'amount' : 'amount2';
+                history[amountKey] = amountFormatted;
+              } else if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
+                history.hash = first(data.toJSON());
+              } else if (section === 'system' && method === 'ExtrinsicFailed') {
+                history.status = TransactionStatus.Error;
+                history.endTime = Date.now();
+                const [error] = data;
+                if (error.isModule) {
+                  const decoded = this.api.registry.findMetaError(error.asModule);
+                  const { docs, section, name } = decoded;
+                  history.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
+                } else {
+                  // Other, CannotLookup, BadOrigin, no extra info
+                  history.errorMessage = error.toString();
+                }
+              }
+            });
+            const state = history.status === TransactionStatus.Error ? 'error' : 'finalized';
+            subscriber.next([state, history]);
+            subscriber.complete();
+            unsub();
+          }
+          this.saveHistory(history);
+        }).catch((e: Error) => {
+          // override history 'id' to 'startTime', because we will delete history 'txId' below
+          history.id = this.encrypt(`${history.startTime}`);
+          history.status = TransactionStatus.Error;
+          history.endTime = Date.now();
+          const errorParts = e?.message?.split(':');
+          const errorInfo = last(errorParts)?.trim();
+          history.errorMessage = errorInfo;
+          // at the moment the history has not yet been saved;
+          // save history and then delete 'txId'
+          this.saveHistory(history, {
+            wasNotGenerated: true,
+          });
+          subscriber.next(['error', history]);
+          subscriber.complete();
+          throw new Error(errorInfo);
+        });
+      })();
+    });
+  }
+
+  public async submitExtrinsic(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    signer: KeyringPair,
+    historyData?: HistoryItem,
+    unsigned = false
+  ): Promise<T> {
+    if (this.shouldObservableBeUsed) {
+      return this.submitExtrinsicObservable(extrinsic, signer, historyData, unsigned) as Promise<T>;
+    } else {
+      return this.submitExtrinsicPromise(extrinsic, signer, historyData, unsigned) as Promise<T>;
+    }
   }
 
   /**
@@ -480,7 +588,8 @@ export class BaseApi {
         throw new Error('Unknown function');
     }
     const { account, options } = this.getAccountWithOptions();
-    const tx = type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic);
+    const tx =
+      type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic<'promise'>);
     const res = await tx.paymentInfo(account, options);
     return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
   }
@@ -491,7 +600,7 @@ export class BaseApi {
    * Actually, network fee value doesn't depend on extrinsic params, so, we can use empty/default values
    * @param operation
    */
-  private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic | null {
+  private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic<'promise'> | null {
     switch (operation) {
       case Operation.AddLiquidity:
         return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0');

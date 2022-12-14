@@ -12,8 +12,8 @@ import type { Api } from '../api';
 import type { AccountMarketMakerInfo, RewardInfo, RewardsInfo } from './types';
 import type { Asset } from '../assets/types';
 
-export class RewardsModule {
-  constructor(private readonly root: Api) {}
+export class RewardsModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   private isClaimableReward(reward: RewardInfo): boolean {
     const fpAmount = FPNumber.fromCodecValue(reward.amount, reward.asset.decimals);
@@ -201,7 +201,7 @@ export class RewardsModule {
    * @param rewards claiming rewards
    * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
    */
-  private calcTxParams(rewards: Array<RewardInfo | RewardsInfo>, signature = ''): any {
+  private calcTxParams(rewards: Array<RewardInfo | RewardsInfo>, signature = '') {
     const transactions = [];
 
     // liquidity provision
@@ -294,15 +294,15 @@ export class RewardsModule {
    * Claim rewards
    * @param signature message signed in external wallet (if want to claim external rewards)
    */
-  public async claim(
+  public claim(
     rewards: Array<RewardInfo | RewardsInfo>,
     signature?: string,
     fee?: CodecString,
     externalAddress?: string
-  ): Promise<void> {
+  ): Promise<T> {
     const { extrinsic, args } = this.calcTxParams(rewards, signature);
 
-    await this.root.submitExtrinsic(extrinsic(...args), this.root.account.pair, {
+    return this.root.submitExtrinsic(extrinsic(...args), this.root.account.pair, {
       type: Operation.ClaimRewards,
       externalAddress,
       soraNetworkFee: fee,

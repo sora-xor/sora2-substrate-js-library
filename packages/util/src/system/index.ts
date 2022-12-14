@@ -9,8 +9,8 @@ import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
 
 import type { Api } from '../api';
 
-export class SystemModule {
-  constructor(private readonly root: Api) {}
+export class SystemModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   private subject = new Subject<Vec<EventRecord>>();
   public updated = this.subject.asObservable();

@@ -8,8 +8,8 @@ import { XOR } from '../assets/consts';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 
-export class ReferralSystemModule {
-  constructor(private readonly root: Api) {}
+export class ReferralSystemModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   /**
    * Returns the referrer of the invited user by Id
@@ -77,9 +77,9 @@ export class ReferralSystemModule {
    * This balance can be used by referrals to pay the fee
    * @param amount balance to reserve
    */
-  public async reserveXor(amount: NumberLike): Promise<void> {
+  public reserveXor(amount: NumberLike): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.referrals.reserve(new FPNumber(amount, XOR.decimals).toCodecString()),
       this.root.account.pair,
       { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralReserveXor }
@@ -90,9 +90,9 @@ export class ReferralSystemModule {
    * Unreserve XOR balance
    * @param amount balance to unreserve
    */
-  public async unreserveXor(amount: NumberLike): Promise<void> {
+  public unreserveXor(amount: NumberLike): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.referrals.unreserve(new FPNumber(amount, XOR.decimals).toCodecString()),
       this.root.account.pair,
       { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralUnreserveXor }
@@ -106,7 +106,7 @@ export class ReferralSystemModule {
    * bonded balance for this call, then this method will fail.
    * @param referrerId address of referrer account
    */
-  public async setInvitedUser(referrerId: string): Promise<void> {
+  public async setInvitedUser(referrerId: string): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     // Check the ability for paying fee
     const bondedData = await this.root.api.query.referrals.referrerBalances(referrerId);
@@ -115,7 +115,7 @@ export class ReferralSystemModule {
     assert(FPNumber.gte(bonded, requiredFeeValue), Messages.inabilityOfReferrerToPayFee);
 
     const formattedToAddress = referrerId.slice(0, 2) === 'cn' ? referrerId : this.root.formatAddress(referrerId);
-    await this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referrerId), this.root.account.pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referrerId), this.root.account.pair, {
       to: formattedToAddress,
       type: Operation.ReferralSetInvitedUser,
     });

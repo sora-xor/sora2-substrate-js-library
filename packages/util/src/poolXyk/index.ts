@@ -1,7 +1,7 @@
 import { assert } from '@polkadot/util';
 import { Subject, combineLatest, map } from 'rxjs';
 import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
-import type { Codec, Observable } from '@polkadot/types/types';
+import type { Observable } from '@polkadot/types/types';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 import type { u128 } from '@polkadot/types-codec';
@@ -41,8 +41,8 @@ function parseReserves(reserves: ITuple<[u128, u128]>): [CodecString, CodecStrin
   return [toReserve(reserves[0]), toReserve(reserves[1])];
 }
 
-export class PoolXykModule {
-  constructor(private readonly root: Api) {}
+export class PoolXykModule<T> {
+  constructor(private readonly root: Api<T>) {}
   /** key = `baseAssetId,targetAssetId` */
   private subscriptions: Map<string, Subscription> = new Map();
   private subject = new Subject<void>();
@@ -480,7 +480,7 @@ export class PoolXykModule {
     });
   }
 
-  private async calcAddTxParams(
+  private calcAddTxParams(
     firstAsset: Asset | AccountAsset,
     secondAsset: Asset | AccountAsset,
     firstAmount: NumberLike,
@@ -513,13 +513,13 @@ export class PoolXykModule {
    * @param secondAmount // TODO: add a case when 'B' should be calculated automatically
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
-  public async add(
+  public add(
     firstAsset: Asset | AccountAsset,
     secondAsset: Asset | AccountAsset,
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
-  ): Promise<void> {
+  ): Promise<T> {
     const [baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId] = this.arrangeAssetsForParams(
       firstAsset,
       secondAsset,
@@ -527,7 +527,7 @@ export class PoolXykModule {
       secondAmount
     );
 
-    const params = await this.calcAddTxParams(
+    const params = this.calcAddTxParams(
       baseAsset,
       targetAsset,
       baseAssetAmount,
@@ -538,7 +538,7 @@ export class PoolXykModule {
     if (!this.root.assets.getAsset(secondAsset.address)) {
       this.root.assets.addAccountAsset(secondAsset.address);
     }
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       (this.root.api.tx.poolXYK as any).depositLiquidity(...params.args),
       this.root.account.pair,
       {
@@ -574,7 +574,7 @@ export class PoolXykModule {
     const exists = await this.check(baseAsset.address, targetAsset.address);
     assert(!exists, Messages.pairAlreadyCreated);
 
-    const params = await this.calcAddTxParams(
+    const params = this.calcAddTxParams(
       baseAsset,
       targetAsset,
       baseAssetAmount,
@@ -609,7 +609,7 @@ export class PoolXykModule {
     firstAmount: NumberLike,
     secondAmount: NumberLike,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
-  ): Promise<void> {
+  ): Promise<T> {
     const params = await this.calcCreateTxParams(firstAsset, secondAsset, firstAmount, secondAmount, slippageTolerance);
     const [dexId, baseAddress, targetAddress] = params.pairCreationArgs;
     const isPairAlreadyCreated = (await this.root.api.rpc.tradingPair.isPairEnabled(dexId, baseAddress, targetAddress))
@@ -627,7 +627,7 @@ export class PoolXykModule {
     if (!this.root.assets.getAsset(secondAsset.address)) {
       this.root.assets.addAccountAsset(secondAsset.address);
     }
-    await this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
       type: Operation.CreatePair,
       symbol: firstAsset.symbol,
       assetAddress: firstAsset.address,
@@ -638,7 +638,7 @@ export class PoolXykModule {
     });
   }
 
-  private async calcRemoveTxParams(
+  private calcRemoveTxParams(
     firstAsset: Asset | AccountAsset,
     secondAsset: Asset | AccountAsset,
     desiredMarker: string,
@@ -683,7 +683,7 @@ export class PoolXykModule {
    * @param totalSupply Total supply coefficient, estimateTokensRetrieved()[2]
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
-  public async remove(
+  public remove(
     firstAsset: Asset | AccountAsset,
     secondAsset: Asset | AccountAsset,
     desiredMarker: string,
@@ -691,8 +691,8 @@ export class PoolXykModule {
     secondTotal: CodecString,
     totalSupply: CodecString,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
-  ): Promise<void> {
-    const params = await this.calcRemoveTxParams(
+  ): Promise<T> {
+    const params = this.calcRemoveTxParams(
       firstAsset,
       secondAsset,
       desiredMarker,
@@ -701,7 +701,7 @@ export class PoolXykModule {
       totalSupply,
       slippageTolerance
     );
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       (this.root.api.tx.poolXYK as any).withdrawLiquidity(...params.args),
       this.root.account.pair,
       {

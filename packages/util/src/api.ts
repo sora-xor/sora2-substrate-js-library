@@ -28,23 +28,23 @@ import type { HistoryItem } from './BaseApi';
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
  */
-export class Api extends BaseApi {
+export class Api<T = void> extends BaseApi<T> {
   private readonly type: KeypairType = KeyringType;
   public readonly defaultSlippageTolerancePercent = 0.5;
   public readonly seedLength = 12;
 
-  public readonly bridge: BridgeApi = new BridgeApi();
+  public readonly bridge = new BridgeApi<T>();
 
-  public readonly swap: SwapModule = new SwapModule(this);
-  public readonly rewards: RewardsModule = new RewardsModule(this);
-  public readonly poolXyk: PoolXykModule = new PoolXykModule(this);
-  public readonly referralSystem: ReferralSystemModule = new ReferralSystemModule(this);
-  public readonly assets: AssetsModule = new AssetsModule(this);
+  public readonly swap = new SwapModule<T>(this);
+  public readonly rewards = new RewardsModule<T>(this);
+  public readonly poolXyk = new PoolXykModule<T>(this);
+  public readonly referralSystem = new ReferralSystemModule<T>(this);
+  public readonly assets = new AssetsModule<T>(this);
   /** This module is used for internal needs */
-  public readonly mstTransfers: MstTransfersModule = new MstTransfersModule(this);
-  public readonly system: SystemModule = new SystemModule(this);
-  public readonly demeterFarming: DemeterFarmingModule = new DemeterFarmingModule(this);
-  public readonly dex: DexModule = new DexModule(this);
+  public readonly mstTransfers = new MstTransfersModule<T>(this);
+  public readonly system = new SystemModule<T>(this);
+  public readonly demeterFarming = new DemeterFarmingModule<T>(this);
+  public readonly dex = new DexModule<T>(this);
 
   public initAccountStorage() {
     super.initAccountStorage();
@@ -134,6 +134,7 @@ export class Api extends BaseApi {
    * @param withKeyringLoading `true` by default
    */
   public async initialize(withKeyringLoading = true, isDesktop = false): Promise<void> {
+    this.isDesktop = isDesktop;
     const address = this.storage?.get('address');
     const name = this.storage?.get('name');
     const source = this.storage?.get('source');
@@ -353,11 +354,11 @@ export class Api extends BaseApi {
    * @param toAddress Account address
    * @param amount Amount value
    */
-  public async transfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<void> {
+  public transfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<T> {
     assert(this.account, Messages.connectWallet);
     const assetAddress = asset.address;
     const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.formatAddress(toAddress);
-    await this.submitExtrinsic(
+    return this.submitExtrinsic(
       this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.account.pair,
       { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }

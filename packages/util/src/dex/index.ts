@@ -4,8 +4,8 @@ import { XOR, XST } from '../assets/consts';
 import type { Api } from '../api';
 import type { DexInfo } from './types';
 
-export class DexModule {
-  constructor(private readonly root: Api) {}
+export class DexModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   public static defaultDexId = DexId.XOR;
   public static defaultBaseAssetId = XOR.address;
