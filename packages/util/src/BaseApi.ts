@@ -100,9 +100,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
   private _history: AccountHistory<HistoryItem> = {};
   private _historySyncTimestamp: number = 0;
-  private _restored: boolean = false;
 
-  /** TBD */
+  /**
+   * Will **account pair** be locked after TX signing.
+   *
+   * In this case you need to unlock in **manually** before each extrinsic
+   */
   protected isDesktop = false;
   protected signer?: Signer;
   public storage?: Storage; // common data storage
@@ -176,19 +179,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
   public get historyList(): Array<HistoryItem> {
     return Object.values(this.history);
-  }
-
-  public get restored(): boolean {
-    if (this.accountStorage) {
-      const restored = this.accountStorage.get('restored');
-      this._restored = restored ? JSON.parse(restored) : false;
-    }
-    return this._restored;
-  }
-
-  public set restored(value: boolean) {
-    this.accountStorage?.set('restored', JSON.stringify(value));
-    this._restored = value;
   }
 
   public get historySyncTimestamp(): number {
@@ -336,6 +326,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     const { account, options } = this.getAccountWithOptions();
     // Signing the transaction
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
+    if (this.isDesktop) {
+      this.lockPair();
+    }
 
     history.txId = signedTx.hash.toString();
 
