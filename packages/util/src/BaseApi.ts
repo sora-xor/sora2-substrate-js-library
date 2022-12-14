@@ -1,7 +1,7 @@
 import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
-import { Observable } from 'rxjs';
+import { Observable, Subscriber } from 'rxjs';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
@@ -320,12 +320,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     };
   }
 
-  private async submitExtrinsicPromise(
+  public async submitExtrinsic(
     extrinsic: SubmittableExtrinsic<'promise'>,
     signer: KeyringPair,
     historyData?: HistoryItem,
     unsigned = false
-  ): Promise<void> {
+  ): Promise<T> {
     const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
     if (isNotFaucetOperation && signer) {
@@ -334,8 +334,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
     const { account, options } = this.getAccountWithOptions();
-    // TODO: Add ERA only for SWAP
-    // Check how to add ONLY as immortal era
+    // Signing the transaction
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
 
     history.txId = signedTx.hash.toString();
@@ -346,97 +345,13 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       history.id = history.txId;
     }
 
-    const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn);
-    const unsub = await extrinsicFn((result: ISubmittableResult) => {
-      history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
-      if (result.status.isInBlock) {
-        history.blockId = result.status.asInBlock.toString();
-      } else if (result.status.isFinalized) {
-        history.endTime = Date.now();
-        result.events.forEach(({ event: { data, method, section } }: any) => {
-          if (method === 'FeeWithdrawn' && section === 'xorFee') {
-            const [_, soraNetworkFee] = data;
-            history.soraNetworkFee = soraNetworkFee.toString();
-          } else if (method === 'AssetRegistered' && section === 'assets') {
-            const [assetId, _] = data;
-            history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
-          } else if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
-            const [assetId, from, to, amount] = data;
-            const address = assetId.toString();
-            const amountFormatted = new FPNumber(amount).toString();
-            const amountKey = XOR.address === address ? 'amount' : 'amount2';
-            history[amountKey] = amountFormatted;
-          } else if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
-            history.hash = first(data.toJSON());
-          } else if (section === 'system' && method === 'ExtrinsicFailed') {
-            history.status = TransactionStatus.Error;
-            history.endTime = Date.now();
-            const [error] = data;
-            if (error.isModule) {
-              const decoded = this.api.registry.findMetaError(error.asModule);
-              const { docs, section, name } = decoded;
-              history.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
-            } else {
-              // Other, CannotLookup, BadOrigin, no extra info
-              history.errorMessage = error.toString();
-            }
-          }
-        });
-        unsub();
-      }
-      this.saveHistory(history);
-    }).catch((e: Error) => {
-      // override history 'id' to 'startTime', because we will delete history 'txId' below
-      history.id = this.encrypt(`${history.startTime}`);
-      history.status = TransactionStatus.Error;
-      history.endTime = Date.now();
-      const errorParts = e?.message?.split(':');
-      const errorInfo = last(errorParts)?.trim();
-      history.errorMessage = errorInfo;
-      // at the moment the history has not yet been saved;
-      // save history and then delete 'txId'
-      this.saveHistory(history, {
-        wasNotGenerated: true,
-      });
-      throw new Error(errorInfo);
-    });
-  }
-
-  private async submitExtrinsicObservable(
-    extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
-    historyData?: HistoryItem,
-    unsigned = false
-  ): Promise<Observable<ExtrinsicEvent>> {
-    const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
-    const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
-    if (isNotFaucetOperation && signer) {
-      history.from = this.address;
-    }
-
-    const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
-    const { account, options } = this.getAccountWithOptions();
-    // TODO: Add ERA only for SWAP
-    // Check how to add ONLY as immortal era
-    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
-
-    history.txId = signedTx.hash.toString();
-
-    // History id value will be equal to transaction hash
-    if (!history.id) {
-      history.startTime = Date.now();
-      history.id = history.txId;
-    }
-
-    const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn);
-    return new Observable<ExtrinsicEvent>((subscriber) => {
-      (async () => {
-        // anonymous IIFE to avoid async nature into observer
-        const unsub = await extrinsicFn((result: ISubmittableResult) => {
+    const extrinsicFn = async (subscriber?: Subscriber<ExtrinsicEvent>) => {
+      const unsub = await extrinsic
+        .send((result: ISubmittableResult) => {
           history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
           if (result.status.isInBlock) {
             history.blockId = result.status.asInBlock.toString();
-            subscriber.next(['inblock', history]);
+            subscriber?.next(['inblock', history]);
           } else if (result.status.isFinalized) {
             history.endTime = Date.now();
             result.events.forEach(({ event: { data, method, section } }: any) => {
@@ -473,12 +388,13 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
               }
             });
             const state = history.status === TransactionStatus.Error ? 'error' : 'finalized';
-            subscriber.next([state, history]);
-            subscriber.complete();
+            subscriber?.next([state, history]);
+            subscriber?.complete();
             unsub();
           }
-          this.saveHistory(history);
-        }).catch((e: Error) => {
+          this.saveHistory(history); // Save history during each status update
+        })
+        .catch((e: Error) => {
           // override history 'id' to 'startTime', because we will delete history 'txId' below
           history.id = this.encrypt(`${history.startTime}`);
           history.status = TransactionStatus.Error;
@@ -491,25 +407,17 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           this.saveHistory(history, {
             wasNotGenerated: true,
           });
-          subscriber.next(['error', history]);
-          subscriber.complete();
+          subscriber?.next(['error', history]);
+          subscriber?.complete();
           throw new Error(errorInfo);
         });
-      })();
-    });
-  }
-
-  public async submitExtrinsic(
-    extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
-    historyData?: HistoryItem,
-    unsigned = false
-  ): Promise<T> {
+    };
     if (this.shouldObservableBeUsed) {
-      return this.submitExtrinsicObservable(extrinsic, signer, historyData, unsigned) as Promise<T>;
-    } else {
-      return this.submitExtrinsicPromise(extrinsic, signer, historyData, unsigned) as Promise<T>;
+      return new Observable<ExtrinsicEvent>((subscriber) => {
+        extrinsicFn(subscriber);
+      }) as T; // T is `Observable<ExtrinsicEvent>` here
     }
+    return extrinsicFn() as Promise<T>; // T is `void` here
   }
 
   /**
