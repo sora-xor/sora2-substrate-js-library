@@ -99,12 +99,12 @@ function isRegisteredAsset(asset: any, whitelist: Whitelist): boolean {
 /**
  * Used *ONLY* for faucet
  */
-export async function getBalance(
+export function getBalance(
   api: ApiPromise,
   accountAddress: string,
   assetAddress: string
 ): Promise<Option<BalanceInfo>> {
-  return await api.rpc.assets.usableBalance(accountAddress, assetAddress);
+  return api.rpc.assets.usableBalance(accountAddress, assetAddress);
 }
 
 export function isNativeAsset(asset: any): boolean {

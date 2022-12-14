@@ -286,7 +286,7 @@ export class RewardsModule<T> {
       case this.root.api.tx.rewards.claim:
         return this.root.NetworkFee[Operation.ClaimExternalRewards];
       default:
-        return await this.root.getNetworkFee(Operation.ClaimRewards, params);
+        return this.root.getNetworkFee(Operation.ClaimRewards, params);
     }
   }
 
