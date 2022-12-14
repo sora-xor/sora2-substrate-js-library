@@ -415,9 +415,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     if (this.shouldObservableBeUsed) {
       return new Observable<ExtrinsicEvent>((subscriber) => {
         extrinsicFn(subscriber);
-      }) as T; // T is `Observable<ExtrinsicEvent>` here
+      }) as unknown as T; // T is `Observable<ExtrinsicEvent>` here
     }
-    return extrinsicFn() as Promise<T>; // T is `void` here
+    return extrinsicFn() as unknown as Promise<T>; // T is `void` here
   }
 
   /**
