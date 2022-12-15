@@ -10,9 +10,9 @@
   "dependencies": {
     "@open-web3/api-mobx": "0.9.4-26",
     "@open-web3/orml-types": "0.9.4-26",
-    "@polkadot/api": "8.9.1",
-    "@polkadot/typegen": "8.9.1",
-    "@polkadot/types": "8.9.1",
+    "@polkadot/api": "9.6.2",
+    "@polkadot/typegen": "9.6.2",
+    "@polkadot/types": "9.6.2",
     "@sora-substrate/type-definitions": "1.12.2"
   },
   "devDependencies": {

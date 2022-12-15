@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@open-web3/orml-api-derive": "0.9.4-26",
-    "@polkadot/api": "8.9.1",
+    "@polkadot/api": "9.6.2",
     "@sora-substrate/types": "1.12.2"
   },
   "devDependencies": {
