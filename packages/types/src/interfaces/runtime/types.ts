@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { GenericAccountId, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericEthereumAccountId, GenericLookupSource, GenericMultiAddress, StorageKey } from '@polkadot/types';
+import type { GenericAccountId32, GenericAccountId33, GenericAccountIndex, GenericBlock, GenericCall, GenericConsensusEngineId, GenericEthereumAccountId, GenericLookupSource, GenericMultiAddress, StorageKey } from '@polkadot/types';
 import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, Int, Null, Option, Result, Struct, Text, U8aFixed, UInt, Vec, bool, i128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
@@ -15,7 +15,10 @@ export interface AccountId extends AccountId32 {}
 export interface AccountId20 extends GenericEthereumAccountId {}
 
 /** @name AccountId32 */
-export interface AccountId32 extends GenericAccountId {}
+export interface AccountId32 extends GenericAccountId32 {}
+
+/** @name AccountId33 */
+export interface AccountId33 extends GenericAccountId33 {}
 
 /** @name AccountIdOf */
 export interface AccountIdOf extends AccountId {}
@@ -189,10 +192,6 @@ export interface DispatchErrorWithPostInfoTPostDispatchInfo extends Struct {
 export interface DispatchResultWithPostInfo extends Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo> {
   readonly isErr: boolean;
   readonly asErr: DispatchErrorWithPostInfoTPostDispatchInfo;
-  /** @deprecated Use isErr */
-  readonly isError: boolean;
-  /** @deprecated Use asErr */
-  readonly asError: DispatchErrorWithPostInfoTPostDispatchInfo;
   readonly isOk: boolean;
   readonly asOk: PostDispatchInfo;
 }
@@ -570,11 +569,23 @@ export interface SignedBlockWithJustifications extends Struct {
 /** @name Slot */
 export interface Slot extends u64 {}
 
+/** @name SlotDuration */
+export interface SlotDuration extends u64 {}
+
 /** @name SmoothPriceState */
 export interface SmoothPriceState extends Null {}
 
 /** @name StorageData */
 export interface StorageData extends Bytes {}
+
+/** @name StorageInfo */
+export interface StorageInfo extends Struct {
+  readonly palletName: Bytes;
+  readonly storage_name: Bytes;
+  readonly prefix: Bytes;
+  readonly maxValues: Option<u32>;
+  readonly maxSize: Option<u32>;
+}
 
 /** @name StorageProof */
 export interface StorageProof extends Struct {
@@ -687,6 +698,9 @@ export interface TransactionInfo extends Struct {
   readonly blockChunks: u32;
 }
 
+/** @name TransactionLongevity */
+export interface TransactionLongevity extends u64 {}
+
 /** @name TransactionPriority */
 export interface TransactionPriority extends u64 {}
 
@@ -695,6 +709,9 @@ export interface TransactionStorageProof extends Struct {
   readonly chunk: Bytes;
   readonly proof: Vec<Bytes>;
 }
+
+/** @name TransactionTag */
+export interface TransactionTag extends Bytes {}
 
 /** @name U32F32 */
 export interface U32F32 extends UInt {}
@@ -709,9 +726,18 @@ export interface ValidatorId extends AccountId {}
 export interface ValidatorIdOf extends ValidatorId {}
 
 /** @name Weight */
-export interface Weight extends u64 {}
+export interface Weight extends WeightV1 {}
 
 /** @name WeightMultiplier */
 export interface WeightMultiplier extends Fixed64 {}
+
+/** @name WeightV1 */
+export interface WeightV1 extends u64 {}
+
+/** @name WeightV2 */
+export interface WeightV2 extends Struct {
+  readonly refTime: Compact<u64>;
+  readonly proofSize: Compact<u64>;
+}
 
 export type PHANTOM_RUNTIME = 'runtime';
