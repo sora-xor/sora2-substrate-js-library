@@ -1062,7 +1062,11 @@ declare module '@polkadot/types/lookup' {
     readonly asPoolInitialized: ITuple<[u32, CommonPrimitivesAssetId32]>;
     readonly isReferenceAssetChanged: boolean;
     readonly asReferenceAssetChanged: CommonPrimitivesAssetId32;
-    readonly type: 'PoolInitialized' | 'ReferenceAssetChanged';
+    readonly isSyntheticAssetEnabled: boolean;
+    readonly asSyntheticAssetEnabled: CommonPrimitivesAssetId32;
+    readonly isSyntheticBaseAssetFloorPriceChanged: boolean;
+    readonly asSyntheticBaseAssetFloorPriceChanged: u128;
+    readonly type: 'PoolInitialized' | 'ReferenceAssetChanged' | 'SyntheticAssetEnabled' | 'SyntheticBaseAssetFloorPriceChanged';
   }
 
   /** @name PriceToolsEvent (110) */
@@ -3087,7 +3091,11 @@ declare module '@polkadot/types/lookup' {
     readonly asEnableSyntheticAsset: {
       readonly syntheticAsset: CommonPrimitivesAssetId32;
     } & Struct;
-    readonly type: 'InitializePool' | 'SetReferenceAsset' | 'EnableSyntheticAsset';
+    readonly isSetSyntheticBaseAssetFloorPrice: boolean;
+    readonly asSetSyntheticBaseAssetFloorPrice: {
+      readonly floorPrice: u128;
+    } & Struct;
+    readonly type: 'InitializePool' | 'SetReferenceAsset' | 'EnableSyntheticAsset' | 'SetSyntheticBaseAssetFloorPrice';
   }
 
   /** @name CeresStakingCall (342) */

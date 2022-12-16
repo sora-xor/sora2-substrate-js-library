@@ -1496,6 +1496,10 @@ declare module '@polkadot/api-base/types/storage' {
        * Asset that is used to compare collateral assets by value, e.g., DAI.
        **/
       referenceAssetId: AugmentedQuery<ApiType, () => Observable<CommonPrimitivesAssetId32>, []>;
+      /**
+       * Floor price for the synthetic base asset.
+       **/
+      syntheticBaseAssetFloorPrice: AugmentedQuery<ApiType, () => Observable<u128>, []>;
     };
   } // AugmentedQueries
 } // declare module
