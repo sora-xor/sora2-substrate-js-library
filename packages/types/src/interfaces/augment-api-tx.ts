@@ -2936,6 +2936,13 @@ declare module '@polkadot/api-base/types/submittable' {
        * Change reference asset which is used to determine collateral assets value. Intended to be e.g., stablecoin DAI.
        **/
       setReferenceAsset: AugmentedSubmittable<(referenceAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      /**
+       * Set floor price for the synthetic base asset
+       * 
+       * - `origin`: root account
+       * - `floor_price`: floor price for the synthetic base asset
+       **/
+      setSyntheticBaseAssetFloorPrice: AugmentedSubmittable<(floorPrice: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
     };
   } // AugmentedSubmittables
 } // declare module

@@ -1056,6 +1056,14 @@ declare module '@polkadot/api-base/types/events' {
        * Reference Asset has been changed for pool. [New Reference Asset Id]
        **/
       ReferenceAssetChanged: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      /**
+       * Synthetic asset was enabled. [Synthetic Asset Id]
+       **/
+      SyntheticAssetEnabled: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      /**
+       * Floor price of the synthetic base asset has been changed. [New Floor Price]
+       **/
+      SyntheticBaseAssetFloorPriceChanged: AugmentedEvent<ApiType, [u128]>;
     };
   } // AugmentedEvents
 } // declare module
