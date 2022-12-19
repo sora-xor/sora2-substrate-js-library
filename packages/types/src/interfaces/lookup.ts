@@ -947,7 +947,9 @@ export default {
   XstEvent: {
     _enum: {
       PoolInitialized: '(u32,CommonPrimitivesAssetId32)',
-      ReferenceAssetChanged: 'CommonPrimitivesAssetId32'
+      ReferenceAssetChanged: 'CommonPrimitivesAssetId32',
+      SyntheticAssetEnabled: 'CommonPrimitivesAssetId32',
+      SyntheticBaseAssetFloorPriceChanged: 'u128'
     }
   },
   /**
@@ -2898,7 +2900,10 @@ export default {
         referenceAssetId: 'CommonPrimitivesAssetId32',
       },
       enable_synthetic_asset: {
-        syntheticAsset: 'CommonPrimitivesAssetId32'
+        syntheticAsset: 'CommonPrimitivesAssetId32',
+      },
+      set_synthetic_base_asset_floor_price: {
+        floorPrice: 'u128'
       }
     }
   },
