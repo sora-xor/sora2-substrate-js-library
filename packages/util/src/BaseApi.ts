@@ -355,14 +355,15 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 const [assetId, _] = data;
                 history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
               } else if (
-                method === 'Transferred' &&
-                section === 'currencies' &&
+                method === 'Transfer' &&
+                ['balances', 'tokens'].includes(section) &&
                 isLiquidityPoolOperation(history.type)
               ) {
-                const [assetId, from, to, amount] = data;
-                const address = assetId.toString();
+                // balances.Transfer hasn't assetId field
+                const [amount, to, from, assetId] = data.slice().reverse();
                 const amountFormatted = new FPNumber(amount).toString();
-                const amountKey = XOR.address === address ? 'amount' : 'amount2';
+                // events for 1st token and 2nd token are ordered in extrinsic
+                const amountKey = !history.amount ? 'amount' : 'amount2';
                 history[amountKey] = amountFormatted;
               } else if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
                 history.hash = first(data.toJSON());
