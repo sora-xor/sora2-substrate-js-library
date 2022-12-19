@@ -28,8 +28,8 @@ export function assetIdToTechAssetId(api: ApiPromise, assetId: AssetId | string)
   return api.createType('TechAssetId', { Escaped: assetId });
 }
 
-export function poolTechAccountIdFromAssetPair(
-  api: Api,
+export function poolTechAccountIdFromAssetPair<T = void>(
+  api: Api<T>,
   baseAssetId: AssetId | string,
   targetAssetId: AssetId | string
 ): TechAccountId {
@@ -52,8 +52,8 @@ export function techAccountIdToAccountId(api: ApiPromise, techAccountId: TechAcc
   return api.createType('AccountId', u8a);
 }
 
-export function poolAccountIdFromAssetPair(
-  api: Api,
+export function poolAccountIdFromAssetPair<T = void>(
+  api: Api<T>,
   baseAssetId: AssetId | string,
   targetAssetId: AssetId | string
 ): AccountId {

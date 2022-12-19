@@ -99,12 +99,12 @@ function isRegisteredAsset(asset: any, whitelist: Whitelist): boolean {
 /**
  * Used *ONLY* for faucet
  */
-export async function getBalance(
+export function getBalance(
   api: ApiPromise,
   accountAddress: string,
   assetAddress: string
 ): Promise<Option<BalanceInfo>> {
-  return await api.rpc.assets.usableBalance(accountAddress, assetAddress);
+  return api.rpc.assets.usableBalance(accountAddress, assetAddress);
 }
 
 export function isNativeAsset(asset: any): boolean {
@@ -152,8 +152,8 @@ export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklis
       });
 }
 
-export class AssetsModule {
-  constructor(private readonly root: Api) {}
+export class AssetsModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   /**
    * Get whitelist assets object
@@ -473,7 +473,7 @@ export class AssetsModule {
     return withPoolTokens ? assets : assets.filter((asset) => asset.symbol !== PoolTokens.XYKPOOL);
   }
 
-  private async calcRegisterAssetParams(
+  private calcRegisterAssetParams(
     symbol: string,
     name: string,
     totalSupply: NumberLike,
@@ -500,7 +500,7 @@ export class AssetsModule {
    * @param nonDivisible `false` by default
    * @param nft Nft params object which contains content & description
    */
-  public async register(
+  public register(
     symbol: string,
     name: string,
     totalSupply: NumberLike,
@@ -510,11 +510,15 @@ export class AssetsModule {
       content: null,
       description: null,
     }
-  ): Promise<void> {
-    const params = await this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nonDivisible, nft);
-    await this.root.submitExtrinsic((this.root.api.tx.assets.register as any)(...params.args), this.root.account.pair, {
-      symbol,
-      type: Operation.RegisterAsset,
-    });
+  ): Promise<T> {
+    const params = this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nonDivisible, nft);
+    return this.root.submitExtrinsic(
+      (this.root.api.tx.assets.register as any)(...params.args),
+      this.root.account.pair,
+      {
+        symbol,
+        type: Operation.RegisterAsset,
+      }
+    );
   }
 }

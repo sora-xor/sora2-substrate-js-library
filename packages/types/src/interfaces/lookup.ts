@@ -1890,8 +1890,8 @@ export default {
    * Lookup228: sp_core::offchain::OpaqueNetworkState
    **/
   SpCoreOffchainOpaqueNetworkState: {
-    peerId: 'Bytes',
-    externalAddresses: 'Vec<Bytes>'
+    peerId: 'OpaquePeerId',
+    externalAddresses: 'Vec<OpaqueMultiaddr>'
   },
   /**
    * Lookup232: pallet_im_online::sr25519::app_sr25519::Signature

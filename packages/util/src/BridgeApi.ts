@@ -135,7 +135,7 @@ export interface BridgeApprovedRequest {
  * 5. Run function from ethereum smart contract and wait for success
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
-export class BridgeApi extends BaseApi {
+export class BridgeApi<T> extends BaseApi<T> {
   private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
 
   constructor() {
@@ -179,19 +179,14 @@ export class BridgeApi extends BaseApi {
    * @param amount
    * @param historyId not required
    */
-  public async transferToEth(
-    asset: RegisteredAsset,
-    to: string,
-    amount: string | number,
-    historyId?: string
-  ): Promise<void> {
+  public transferToEth(asset: RegisteredAsset, to: string, amount: string | number, historyId?: string): Promise<T> {
     assert(this.account, Messages.connectWallet);
     // Trim useless decimals
     const balance = new FPNumber(new FPNumber(amount, +asset.externalDecimals).toString(), asset.decimals);
 
     const historyItem = this.getHistory(historyId);
 
-    await this.submitExtrinsic(
+    return this.submitExtrinsic(
       this.api.tx.ethBridge.transferToSidechain(asset.address, to, balance.toCodecString(), this.externalNetwork),
       this.account.pair,
       historyItem || {
@@ -204,15 +199,16 @@ export class BridgeApi extends BaseApi {
   }
 
   /**
+   * **NOT USED** cuz we do not need to execute it manually
    * Request from Ethereum
    * @param hash Eth hash of transaction
    * @param type Type of operation, "Transfer" is set by default
    */
-  public async requestFromEth(hash: string, type: RequestType = RequestType.Transfer): Promise<void> {
+  public requestFromEth(hash: string, type: RequestType = RequestType.Transfer): Promise<T> {
     assert(this.account, Messages.connectWallet);
     const historyItem = this.historyList.find((item: BridgeHistory) => item.hash === hash);
     const kind = { [IncomingRequestKind.Transaction]: type };
-    await this.submitExtrinsic(
+    return this.submitExtrinsic(
       this.api.tx.ethBridge.requestFromSidechain(hash, kind, this.externalNetwork),
       this.account.pair,
       historyItem ?? {

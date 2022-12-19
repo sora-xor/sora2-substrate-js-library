@@ -15,15 +15,15 @@ import type { CommonPrimitivesAssetId32, FixnumFixedPoint, PriceToolsPriceInfo }
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
-import { XOR, DAI, XSTUSD, VAL, PSWAP, ETH } from '../assets/consts';
+import { XOR, DAI, XSTUSD } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 
-export class SwapModule {
-  constructor(private readonly root: Api) {}
+export class SwapModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   /**
    * Get available list of sources for the selected asset
@@ -452,7 +452,7 @@ export class SwapModule {
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param dexId dex id to detect base asset (XOR or XSTUSD)
    */
-  public async execute(
+  public execute(
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -461,7 +461,7 @@ export class SwapModule {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default,
     dexId = DexId.XOR
-  ): Promise<void> {
+  ): Promise<T> {
     const params = this.calcTxParams(
       assetA,
       assetB,
@@ -475,7 +475,7 @@ export class SwapModule {
     if (!this.root.assets.getAsset(assetB.address)) {
       this.root.assets.addAccountAsset(assetB.address);
     }
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       (this.root.api.tx.liquidityProxy as any).swap(...params.args),
       this.root.account.pair,
       {
@@ -502,7 +502,7 @@ export class SwapModule {
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param dexId dex id to detect base asset (XOR or XSTUSD)
    */
-  public async executeSwapAndSend(
+  public executeSwapAndSend(
     receiver: string,
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
@@ -512,7 +512,7 @@ export class SwapModule {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default,
     dexId = DexId.XOR
-  ): Promise<void> {
+  ): Promise<T> {
     const params = this.calcTxParams(
       assetA,
       assetB,
@@ -529,7 +529,7 @@ export class SwapModule {
 
     const formattedToAddress = receiver.slice(0, 2) === 'cn' ? receiver : this.root.formatAddress(receiver);
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       (this.root.api.tx.liquidityProxy as any).swapTransfer(receiver, ...params.args),
       this.root.account.pair,
       {

@@ -9,8 +9,8 @@ import type { Api } from '../api';
 /**
  * This module is used for internal needs
  */
-export class MstTransfersModule {
-  constructor(private readonly root: Api) {}
+export class MstTransfersModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   /**
    * Returns batch tx
@@ -52,16 +52,16 @@ export class MstTransfersModule {
    * Get network fee for Transfer All MST Tx
    * @param extrinsic `api.prepareTransferAllAsMstExtrinsic` result
    */
-  public async getNetworkFee(extrinsic: SubmittableExtrinsic): Promise<CodecString> {
-    return await this.root.getNetworkFee(Operation.TransferAll, extrinsic);
+  public getNetworkFee(extrinsic: SubmittableExtrinsic): Promise<CodecString> {
+    return this.root.getNetworkFee(Operation.TransferAll, extrinsic);
   }
 
   /**
    * Transfer all data from array as MST
    * @param extrinsic `api.prepareTransferAllAsMstExtrinsic` result
    */
-  public async submit(extrinsic: SubmittableExtrinsic): Promise<void> {
-    await this.root.submitExtrinsic(extrinsic, this.root.account.pair, {
+  public submit(extrinsic: SubmittableExtrinsic): Promise<T> {
+    return this.root.submitExtrinsic(extrinsic, this.root.account.pair, {
       type: Operation.TransferAll,
     });
   }
