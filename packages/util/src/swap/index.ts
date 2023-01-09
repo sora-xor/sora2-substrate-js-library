@@ -2,7 +2,7 @@ import intersection from 'lodash/fp/intersection';
 import { assert } from '@polkadot/util';
 import { combineLatest, of, map, distinctUntilChanged } from 'rxjs';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
-import { isDirectExchange, quote, LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
+import { isDirectExchange, quote, LiquiditySourceTypes, PriceVariant } from '@sora-substrate/liquidity-proxy';
 import type {
   PathsAndPairLiquiditySources,
   PrimaryMarketsEnabledAssets,
@@ -11,7 +11,11 @@ import type {
   SwapResult,
 } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
-import type { CommonPrimitivesAssetId32, FixnumFixedPoint, PriceToolsPriceInfo } from '@polkadot/types/lookup';
+import type {
+  CommonPrimitivesAssetId32,
+  FixnumFixedPoint,
+  PriceToolsAggregatedPriceInfo,
+} from '@polkadot/types/lookup';
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
@@ -291,15 +295,19 @@ export class SwapModule<T> {
         map((codec) => codec.inner.toString())
       );
 
-    const toAveragePrice = (o: Observable<Option<PriceToolsPriceInfo>>) =>
+    const toAveragePrice = (o: Observable<Option<PriceToolsAggregatedPriceInfo>>) =>
       o.pipe(
-        map((codec) => codec.value.averagePrice.toString()),
-        distinctUntilChanged<string>()
+        map((codec) => ({
+          [PriceVariant.Buy]: codec.value.buy.averagePrice.toString(),
+          [PriceVariant.Sell]: codec.value.sell.averagePrice.toString(),
+        })),
+        distinctUntilChanged()
       );
 
-    const getAssetAveragePrice = (assetAddress: string): Observable<string> => {
+    const getAssetAveragePrice = (assetAddress: string): Observable<{ buy: string; sell: string }> => {
       if (assetAddress === dai || assetAddress === xstusd) {
-        return of(FPNumber.ONE.toCodecString());
+        const one = FPNumber.ONE.toCodecString();
+        return of({ [PriceVariant.Buy]: one, [PriceVariant.Sell]: one });
       }
       if (assetAddress === xor) {
         return toAveragePrice(this.root.apiRx.query.priceTools.priceInfos(dai));
@@ -372,7 +380,10 @@ export class SwapModule<T> {
         let position = assetsIssuances.length;
 
         const issuances: Array<string> = data.slice(0, position);
-        const prices: Array<string> = data.slice(position, (position += assetsPrices.length));
+        const prices: Array<{ buy: CodecString; sell: CodecString }> = data.slice(
+          position,
+          (position += assetsPrices.length)
+        );
         const tbc: Array<string> = data.slice(position, (position += tbcReserves.length));
         const xyk: Array<[string, string]> = data.slice(position, (position += xykReserves.length));
         const [initialPrice, priceChangeStep, sellPriceCoefficient] = data.slice(

@@ -1,5 +1,5 @@
 import type { FPNumber, CodecString } from '@sora-substrate/math';
-import type { LiquiditySourceTypes, RewardReason } from './consts';
+import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
 
 export type PrimaryMarketsEnabledAssets = {
   [key: string]: Array<string>;
@@ -26,7 +26,10 @@ export type QuotePayload = {
     };
   };
   prices: {
-    [key: string]: CodecString;
+    [key: string]: {
+      [PriceVariant.Buy]: CodecString;
+      [PriceVariant.Sell]: CodecString;
+    };
   };
   issuances: {
     [key: string]: CodecString;

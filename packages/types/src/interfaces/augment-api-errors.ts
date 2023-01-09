@@ -163,6 +163,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoSuchRelayer: AugmentedError<ApiType>;
       /**
+       * Relayed rate is too big to be stored in the pallet.
+       **/
+      RateConversionOverflow: AugmentedError<ApiType>;
+      /**
        * An untrusted account tried to relay data.
        **/
       UnauthorizedRelayer: AugmentedError<ApiType>;

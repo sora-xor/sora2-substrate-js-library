@@ -3947,7 +3947,14 @@ export default {
     _enum: ['PriceCalculationFailed', 'FailedToCalculatePriceWithoutImpact', 'CannotExchangeWithSelf', 'PoolAlreadyInitializedForPair', 'PoolNotInitialized', 'SlippageLimitExceeded', 'UnsupportedCollateralAssetId', 'FeeCalculationFailed', 'CantExchange', 'IncRefError']
   },
   /**
-   * Lookup613: price_tools::PriceInfo
+   * Lookup613: price_tools::AggregatedPriceInfo
+   **/
+  PriceToolsAggregatedPriceInfo: {
+    buy: 'PriceToolsPriceInfo',
+    sell: 'PriceToolsPriceInfo'
+  },
+  /**
+   * Lookup614: price_tools::PriceInfo
    **/
   PriceToolsPriceInfo: {
     priceFailures: 'u32',
@@ -3957,32 +3964,32 @@ export default {
     lastSpotPrice: 'u128'
   },
   /**
-   * Lookup614: price_tools::pallet::Error<T>
+   * Lookup615: price_tools::pallet::Error<T>
    **/
   PriceToolsError: {
     _enum: ['AveragePriceCalculationFailed', 'UpdateAverageWithSpotPriceFailed', 'InsufficientSpotPriceData', 'UnsupportedQuotePath', 'FailedToQuoteAveragePrice', 'AssetAlreadyRegistered', 'CantDuplicateLastPrice']
   },
   /**
-   * Lookup615: ceres_staking::StakingInfo
+   * Lookup616: ceres_staking::StakingInfo
    **/
   CeresStakingStakingInfo: {
     deposited: 'u128',
     rewards: 'u128'
   },
   /**
-   * Lookup616: ceres_staking::pallet::Error<T>
+   * Lookup617: ceres_staking::pallet::Error<T>
    **/
   CeresStakingError: {
     _enum: ['StakingPoolIsFull', 'Unauthorized']
   },
   /**
-   * Lookup617: ceres_liquidity_locker::StorageVersion
+   * Lookup618: ceres_liquidity_locker::StorageVersion
    **/
   CeresLiquidityLockerStorageVersion: {
     _enum: ['V1', 'V2']
   },
   /**
-   * Lookup619: ceres_liquidity_locker::LockInfo<Balance, Moment, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
+   * Lookup620: ceres_liquidity_locker::LockInfo<Balance, Moment, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
    **/
   CeresLiquidityLockerLockInfo: {
     poolTokens: 'u128',
@@ -3991,19 +3998,19 @@ export default {
     assetB: 'CommonPrimitivesAssetId32'
   },
   /**
-   * Lookup620: ceres_liquidity_locker::pallet::Error<T>
+   * Lookup621: ceres_liquidity_locker::pallet::Error<T>
    **/
   CeresLiquidityLockerError: {
     _enum: ['PoolDoesNotExist', 'InsufficientLiquidityToLock', 'InvalidPercentage', 'Unauthorized', 'InvalidUnlockingTimestamp']
   },
   /**
-   * Lookup621: ceres_token_locker::StorageVersion
+   * Lookup622: ceres_token_locker::StorageVersion
    **/
   CeresTokenLockerStorageVersion: {
     _enum: ['V1', 'V2']
   },
   /**
-   * Lookup623: ceres_token_locker::TokenLockInfo<Balance, Moment, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
+   * Lookup624: ceres_token_locker::TokenLockInfo<Balance, Moment, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
    **/
   CeresTokenLockerTokenLockInfo: {
     tokens: 'u128',
@@ -4011,13 +4018,13 @@ export default {
     assetId: 'CommonPrimitivesAssetId32'
   },
   /**
-   * Lookup624: ceres_token_locker::pallet::Error<T>
+   * Lookup625: ceres_token_locker::pallet::Error<T>
    **/
   CeresTokenLockerError: {
     _enum: ['InvalidNumberOfTokens', 'Unauthorized', 'InvalidUnlockingTimestamp', 'NotEnoughFunds', 'NotUnlockedYet', 'LockInfoDoesNotExist']
   },
   /**
-   * Lookup626: ceres_governance_platform::VotingInfo
+   * Lookup627: ceres_governance_platform::VotingInfo
    **/
   CeresGovernancePlatformVotingInfo: {
     votingOption: 'u32',
@@ -4025,7 +4032,7 @@ export default {
     ceresWithdrawn: 'bool'
   },
   /**
-   * Lookup627: ceres_governance_platform::PollInfo<Moment>
+   * Lookup628: ceres_governance_platform::PollInfo<Moment>
    **/
   CeresGovernancePlatformPollInfo: {
     numberOfOptions: 'u32',
@@ -4033,19 +4040,19 @@ export default {
     pollEndTimestamp: 'u64'
   },
   /**
-   * Lookup628: ceres_governance_platform::StorageVersion
+   * Lookup629: ceres_governance_platform::StorageVersion
    **/
   CeresGovernancePlatformStorageVersion: {
     _enum: ['V1', 'V2']
   },
   /**
-   * Lookup629: ceres_governance_platform::pallet::Error<T>
+   * Lookup630: ceres_governance_platform::pallet::Error<T>
    **/
   CeresGovernancePlatformError: {
     _enum: ['InvalidVotes', 'PollIsFinished', 'PollIsNotStarted', 'NotEnoughFunds', 'InvalidNumberOfOption', 'VoteDenied', 'InvalidStartTimestamp', 'InvalidEndTimestamp', 'PollIsNotFinished', 'InvalidNumberOfVotes', 'FundsAlreadyWithdrawn', 'PollIdAlreadyExists']
   },
   /**
-   * Lookup630: ceres_launchpad::ILOInfo<Balance, sp_core::crypto::AccountId32, Moment>
+   * Lookup631: ceres_launchpad::ILOInfo<Balance, sp_core::crypto::AccountId32, Moment>
    **/
   CeresLaunchpadIloInfo: {
     iloOrganizer: 'AccountId32',
@@ -4073,7 +4080,7 @@ export default {
     finishTimestamp: 'u64'
   },
   /**
-   * Lookup631: ceres_launchpad::ContributorsVesting<Balance, Moment>
+   * Lookup632: ceres_launchpad::ContributorsVesting<Balance, Moment>
    **/
   CeresLaunchpadContributorsVesting: {
     firstReleasePercent: 'u128',
@@ -4081,7 +4088,7 @@ export default {
     vestingPercent: 'u128'
   },
   /**
-   * Lookup632: ceres_launchpad::TeamVesting<Balance, Moment>
+   * Lookup633: ceres_launchpad::TeamVesting<Balance, Moment>
    **/
   CeresLaunchpadTeamVesting: {
     teamVestingTotalTokens: 'u128',
@@ -4090,7 +4097,7 @@ export default {
     teamVestingPercent: 'u128'
   },
   /**
-   * Lookup634: ceres_launchpad::ContributionInfo<Balance>
+   * Lookup635: ceres_launchpad::ContributionInfo<Balance>
    **/
   CeresLaunchpadContributionInfo: {
     fundsContributed: 'u128',
@@ -4100,13 +4107,13 @@ export default {
     numberOfClaims: 'u32'
   },
   /**
-   * Lookup635: ceres_launchpad::pallet::Error<T>
+   * Lookup636: ceres_launchpad::pallet::Error<T>
    **/
   CeresLaunchpadError: {
     _enum: ['ILOAlreadyExists', 'ParameterCantBeZero', 'InvalidSoftCap', 'InvalidMinimumContribution', 'InvalidMaximumContribution', 'InvalidLiquidityPercent', 'InvalidLockupDays', 'InvalidStartTimestamp', 'InvalidEndTimestamp', 'InvalidPrice', 'InvalidNumberOfTokensForLiquidity', 'InvalidNumberOfTokensForILO', 'InvalidFirstReleasePercent', 'InvalidVestingPercent', 'InvalidVestingPeriod', 'NotEnoughCeres', 'NotEnoughTokens', 'ILONotStarted', 'ILOIsFinished', 'CantContributeInILO', 'HardCapIsHit', 'NotEnoughTokensToBuy', 'ContributionIsLowerThenMin', 'ContributionIsBiggerThenMax', 'NotEnoughFunds', 'ILODoesNotExist', 'ILOIsNotFinished', 'PoolDoesNotExist', 'Unauthorized', 'CantClaimLPTokens', 'FundsAlreadyClaimed', 'NothingToClaim', 'ILOIsFailed', 'ILOIsSucceeded', 'CantCreateILOForListedToken', 'AccountIsNotWhitelisted', 'InvalidTeamFirstReleasePercent', 'InvalidTeamVestingPercent', 'InvalidTeamVestingPeriod', 'NotEnoughTeamTokensToLock']
   },
   /**
-   * Lookup636: demeter_farming_platform::TokenInfo<sp_core::crypto::AccountId32>
+   * Lookup637: demeter_farming_platform::TokenInfo<sp_core::crypto::AccountId32>
    **/
   DemeterFarmingPlatformTokenInfo: {
     farmsTotalMultiplier: 'u32',
@@ -4118,7 +4125,7 @@ export default {
     teamAccount: 'AccountId32'
   },
   /**
-   * Lookup638: demeter_farming_platform::UserInfo<common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
+   * Lookup639: demeter_farming_platform::UserInfo<common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
    **/
   DemeterFarmingPlatformUserInfo: {
     baseAsset: 'CommonPrimitivesAssetId32',
@@ -4129,7 +4136,7 @@ export default {
     rewards: 'u128'
   },
   /**
-   * Lookup640: demeter_farming_platform::PoolData<common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
+   * Lookup641: demeter_farming_platform::PoolData<common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
    **/
   DemeterFarmingPlatformPoolData: {
     multiplier: 'u32',
@@ -4143,19 +4150,19 @@ export default {
     baseAsset: 'CommonPrimitivesAssetId32'
   },
   /**
-   * Lookup641: demeter_farming_platform::StorageVersion
+   * Lookup642: demeter_farming_platform::StorageVersion
    **/
   DemeterFarmingPlatformStorageVersion: {
     _enum: ['V1', 'V2']
   },
   /**
-   * Lookup642: demeter_farming_platform::pallet::Error<T>
+   * Lookup643: demeter_farming_platform::pallet::Error<T>
    **/
   DemeterFarmingPlatformError: {
     _enum: ['TokenAlreadyRegistered', 'TokenPerBlockCantBeZero', 'InvalidAllocationParameters', 'InvalidMultiplier', 'InvalidDepositFee', 'RewardTokenIsNotRegistered', 'PoolAlreadyExists', 'InsufficientFunds', 'ZeroRewards', 'PoolDoesNotExist', 'InsufficientLPTokens', 'PoolDoesNotHaveRewards', 'Unauthorized']
   },
   /**
-   * Lookup643: pallet_bags_list::list::Node<T, I>
+   * Lookup644: pallet_bags_list::list::Node<T, I>
    **/
   PalletBagsListListNode: {
     id: 'AccountId32',
@@ -4165,14 +4172,14 @@ export default {
     score: 'u64'
   },
   /**
-   * Lookup644: pallet_bags_list::list::Bag<T, I>
+   * Lookup645: pallet_bags_list::list::Bag<T, I>
    **/
   PalletBagsListListBag: {
     head: 'Option<AccountId32>',
     tail: 'Option<AccountId32>'
   },
   /**
-   * Lookup646: pallet_bags_list::pallet::Error<T, I>
+   * Lookup647: pallet_bags_list::pallet::Error<T, I>
    **/
   PalletBagsListError: {
     _enum: {
@@ -4180,13 +4187,13 @@ export default {
     }
   },
   /**
-   * Lookup647: pallet_bags_list::list::ListError
+   * Lookup648: pallet_bags_list::list::ListError
    **/
   PalletBagsListListListError: {
     _enum: ['Duplicate', 'NotHeavier', 'NotInSameBag', 'NodeNotFound']
   },
   /**
-   * Lookup648: pallet_election_provider_multi_phase::Phase<Bn>
+   * Lookup649: pallet_election_provider_multi_phase::Phase<Bn>
    **/
   PalletElectionProviderMultiPhasePhase: {
     _enum: {
@@ -4197,7 +4204,7 @@ export default {
     }
   },
   /**
-   * Lookup650: pallet_election_provider_multi_phase::ReadySolution<sp_core::crypto::AccountId32>
+   * Lookup651: pallet_election_provider_multi_phase::ReadySolution<sp_core::crypto::AccountId32>
    **/
   PalletElectionProviderMultiPhaseReadySolution: {
     supports: 'Vec<(AccountId32,SpNposElectionsSupport)>',
@@ -4205,14 +4212,14 @@ export default {
     compute: 'PalletElectionProviderMultiPhaseElectionCompute'
   },
   /**
-   * Lookup651: pallet_election_provider_multi_phase::RoundSnapshot<T>
+   * Lookup652: pallet_election_provider_multi_phase::RoundSnapshot<T>
    **/
   PalletElectionProviderMultiPhaseRoundSnapshot: {
     voters: 'Vec<(AccountId32,u64,Vec<AccountId32>)>',
     targets: 'Vec<AccountId32>'
   },
   /**
-   * Lookup658: pallet_election_provider_multi_phase::signed::SignedSubmission<sp_core::crypto::AccountId32, Balance, framenode_runtime::NposCompactSolution24>
+   * Lookup659: pallet_election_provider_multi_phase::signed::SignedSubmission<sp_core::crypto::AccountId32, Balance, framenode_runtime::NposCompactSolution24>
    **/
   PalletElectionProviderMultiPhaseSignedSignedSubmission: {
     who: 'AccountId32',
@@ -4221,33 +4228,33 @@ export default {
     callFee: 'u128'
   },
   /**
-   * Lookup659: pallet_election_provider_multi_phase::pallet::Error<T>
+   * Lookup660: pallet_election_provider_multi_phase::pallet::Error<T>
    **/
   PalletElectionProviderMultiPhaseError: {
     _enum: ['PreDispatchEarlySubmission', 'PreDispatchWrongWinnerCount', 'PreDispatchWeakSubmission', 'SignedQueueFull', 'SignedCannotPayDeposit', 'SignedInvalidWitness', 'SignedTooMuchWeight', 'OcwCallWrongEra', 'MissingSnapshotMetadata', 'InvalidSubmissionIndex', 'CallNotAllowed', 'FallbackFailed']
   },
   /**
-   * Lookup661: band::Rate
+   * Lookup662: band::Rate
    **/
   BandRate: {
-    value: 'u64',
+    value: 'u128',
     lastUpdated: 'u64',
     requestId: 'u64'
   },
   /**
-   * Lookup662: band::pallet::Error<T, I>
+   * Lookup663: band::pallet::Error<T, I>
    **/
   BandError: {
-    _enum: ['UnauthorizedRelayer', 'AlreadyATrustedRelayer', 'NoSuchRelayer']
+    _enum: ['UnauthorizedRelayer', 'AlreadyATrustedRelayer', 'NoSuchRelayer', 'RateConversionOverflow']
   },
   /**
-   * Lookup663: faucet::pallet::Error<T>
+   * Lookup664: faucet::pallet::Error<T>
    **/
   FaucetError: {
     _enum: ['AssetNotSupported', 'AmountAboveLimit', 'NotEnoughReserves']
   },
   /**
-   * Lookup667: sp_runtime::MultiSignature
+   * Lookup668: sp_runtime::MultiSignature
    **/
   SpRuntimeMultiSignature: {
     _enum: {
@@ -4257,39 +4264,39 @@ export default {
     }
   },
   /**
-   * Lookup668: sp_core::ecdsa::Signature
+   * Lookup669: sp_core::ecdsa::Signature
    **/
   SpCoreEcdsaSignature: '[u8;65]',
   /**
-   * Lookup671: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
+   * Lookup672: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
    **/
   FrameSystemExtensionsCheckSpecVersion: 'Null',
   /**
-   * Lookup672: frame_system::extensions::check_tx_version::CheckTxVersion<T>
+   * Lookup673: frame_system::extensions::check_tx_version::CheckTxVersion<T>
    **/
   FrameSystemExtensionsCheckTxVersion: 'Null',
   /**
-   * Lookup673: frame_system::extensions::check_genesis::CheckGenesis<T>
+   * Lookup674: frame_system::extensions::check_genesis::CheckGenesis<T>
    **/
   FrameSystemExtensionsCheckGenesis: 'Null',
   /**
-   * Lookup676: frame_system::extensions::check_nonce::CheckNonce<T>
+   * Lookup677: frame_system::extensions::check_nonce::CheckNonce<T>
    **/
   FrameSystemExtensionsCheckNonce: 'Compact<u32>',
   /**
-   * Lookup677: frame_system::extensions::check_weight::CheckWeight<T>
+   * Lookup678: frame_system::extensions::check_weight::CheckWeight<T>
    **/
   FrameSystemExtensionsCheckWeight: 'Null',
   /**
-   * Lookup678: framenode_runtime::extensions::ChargeTransactionPayment<T>
+   * Lookup679: framenode_runtime::extensions::ChargeTransactionPayment<T>
    **/
   FramenodeRuntimeExtensionsChargeTransactionPayment: 'PalletTransactionPaymentChargeTransactionPayment',
   /**
-   * Lookup679: pallet_transaction_payment::ChargeTransactionPayment<T>
+   * Lookup680: pallet_transaction_payment::ChargeTransactionPayment<T>
    **/
   PalletTransactionPaymentChargeTransactionPayment: 'Compact<u128>',
   /**
-   * Lookup680: framenode_runtime::Runtime
+   * Lookup681: framenode_runtime::Runtime
    **/
   FramenodeRuntimeRuntime: 'Null'
 };

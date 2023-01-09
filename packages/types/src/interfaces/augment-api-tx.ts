@@ -241,7 +241,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * relayed by a faulty/malicious actor.
        * 
        * - `origin`: the relayer account on whose behalf the transaction is being executed,
-       * - `rates`: symbols with rates in USD,
+       * - `rates`: symbols with rates in USD represented as fixed point with precision = 9,
        * - `resolve_time`: symbols which rates are provided,
        * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
        **/
@@ -256,7 +256,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * If `rates` contains duplicated symbols, then the last rate will be stored.
        * 
        * - `origin`: the relayer account on whose behalf the transaction is being executed,
-       * - `rates`: symbols with rates in USD,
+       * - `rates`: symbols with rates in USD represented as fixed point with precision = 9,
        * - `resolve_time`: symbols which rates are provided,
        * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
        **/

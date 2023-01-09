@@ -13,6 +13,8 @@ export class Consts {
   static readonly ETH = '0x0200070000000000000000000000000000000000000000000000000000000000';
   /** XST-USD token */
   static readonly XSTUSD = '0x0200080000000000000000000000000000000000000000000000000000000000';
+  /** XST-USD token */
+  static readonly XST = '0x0200090000000000000000000000000000000000000000000000000000000000';
 
   /** XYK, TBC, XST fees the same */
   static readonly XYK_FEE = new FPNumber(0.003);
@@ -27,7 +29,7 @@ export class Consts {
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
 
   static readonly ASSETS_HAS_XYK_POOL = [Consts.PSWAP, Consts.VAL, Consts.DAI, Consts.ETH];
-  static readonly XOR_MIN_PRICE = new FPNumber(3);
+  static readonly XST_MIN_PRICE = new FPNumber(3);
 }
 
 export enum LiquiditySourceTypes {
@@ -40,4 +42,9 @@ export enum LiquiditySourceTypes {
 export enum RewardReason {
   Unspecified = 'Unspecified',
   BuyOnBondingCurve = 'BuyOnBondingCurve',
+}
+
+export enum PriceVariant {
+  Buy = 'buy',
+  Sell = 'sell',
 }

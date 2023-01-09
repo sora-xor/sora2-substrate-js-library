@@ -1,5 +1,5 @@
 import { FPNumber, CodecString } from '@sora-substrate/math';
-import { LiquiditySourceTypes, RewardReason, Consts } from './consts';
+import { LiquiditySourceTypes, RewardReason, Consts, PriceVariant } from './consts';
 
 import type {
   QuotePayload,
@@ -66,12 +66,12 @@ const safeQuoteResult = (amount: FPNumber, market: LiquiditySourceTypes): QuoteR
  *
  * Example use: understand actual value of two tokens in terms of USD.
  */
-const tbcReferencePrice = (assetAddress: string, payload: QuotePayload): FPNumber => {
+const tbcReferencePrice = (assetAddress: string, payload: QuotePayload, priceVariant: PriceVariant): FPNumber => {
   if (isAssetAddress(assetAddress, Consts.DAI)) {
     return FPNumber.ONE;
   } else {
-    const xorPrice = FPNumber.fromCodecValue(payload.prices[Consts.XOR]);
-    const assetPrice = FPNumber.fromCodecValue(payload.prices[assetAddress]);
+    const xorPrice = FPNumber.fromCodecValue(payload.prices[Consts.XOR][priceVariant]);
+    const assetPrice = FPNumber.fromCodecValue(payload.prices[assetAddress][priceVariant]);
 
     return safeDivide(xorPrice, assetPrice);
   }
@@ -89,7 +89,7 @@ const tbcReferencePrice = (assetAddress: string, payload: QuotePayload): FPNumbe
 const tbcBuyFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
   const xstusdIssuance = FPNumber.fromCodecValue(payload.issuances[Consts.XSTUSD]);
   const xorIssuance = FPNumber.fromCodecValue(payload.issuances[Consts.XOR]);
-  const xorPrice = FPNumber.fromCodecValue(payload.prices[Consts.XOR]);
+  const xorPrice = FPNumber.fromCodecValue(payload.prices[Consts.XOR][PriceVariant.Buy]);
   const xstXorLiability = safeDivide(xstusdIssuance, xorPrice);
   const initialPrice = FPNumber.fromCodecValue(payload.consts.tbc.initialPrice);
   const priceChangeStep = FPNumber.fromCodecValue(payload.consts.tbc.priceChangeStep);
@@ -129,9 +129,13 @@ const idealReservesReferencePrice = (delta: FPNumber, payload: QuotePayload): FP
  * Calculate USD price for single collateral asset that is stored in reserves account. In other words, find out how much
  * reserves worth, considering only one asset type.
  */
-const actualReservesReferencePrice = (collateralAsset: string, payload: QuotePayload): FPNumber => {
+const actualReservesReferencePrice = (
+  collateralAsset: string,
+  payload: QuotePayload,
+  priceVariant: PriceVariant
+): FPNumber => {
   const reserve = FPNumber.fromCodecValue(payload.reserves.tbc[collateralAsset]);
-  const price = tbcReferencePrice(collateralAsset, payload);
+  const price = tbcReferencePrice(collateralAsset, payload, priceVariant);
 
   return reserve.mul(price);
 };
@@ -169,7 +173,7 @@ const mapCollateralizedFractionToPenalty = (fraction: FPNumber): FPNumber => {
  */
 const sellPenalty = (collateralAsset: string, payload: QuotePayload): FPNumber => {
   const idealReservesPrice = idealReservesReferencePrice(FPNumber.ZERO, payload);
-  const collateralReservesPrice = actualReservesReferencePrice(collateralAsset, payload);
+  const collateralReservesPrice = actualReservesReferencePrice(collateralAsset, payload, PriceVariant.Buy);
 
   if (collateralReservesPrice.isZero()) {
     throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAsset}`);
@@ -203,7 +207,7 @@ const tbcSellPrice = (
 ): FPNumber => {
   const collateralSupply = FPNumber.fromCodecValue(payload.reserves.tbc[collateralAsset]);
   const xorPrice = tbcSellFunction(FPNumber.ZERO, payload);
-  const collateralPrice = tbcReferencePrice(collateralAsset, payload);
+  const collateralPrice = tbcReferencePrice(collateralAsset, payload, PriceVariant.Buy);
   const xorSupply = safeDivide(collateralSupply.mul(collateralPrice), xorPrice);
 
   if (isDesiredInput) {
@@ -277,7 +281,7 @@ const tbcBuyPrice = (
   payload: QuotePayload
 ): FPNumber => {
   const currentState = tbcBuyFunction(FPNumber.ZERO, payload);
-  const collateralPrice = tbcReferencePrice(collateralAsset, payload);
+  const collateralPrice = tbcReferencePrice(collateralAsset, payload, PriceVariant.Sell);
   const priceChangeStep = FPNumber.fromCodecValue(payload.consts.tbc.priceChangeStep);
 
   if (isDesiredInput) {
@@ -396,14 +400,14 @@ export const tbcQuote = (
 };
 
 // XST quote
-const xstReferencePrice = (assetAddress: string, payload: QuotePayload): FPNumber => {
+const xstReferencePrice = (assetAddress: string, payload: QuotePayload, priceVariant: PriceVariant): FPNumber => {
   if ([Consts.DAI, Consts.XSTUSD].includes(assetAddress)) {
     return FPNumber.ONE;
   } else {
-    const avgPrice = FPNumber.fromCodecValue(payload.prices[assetAddress]);
+    const avgPrice = FPNumber.fromCodecValue(payload.prices[assetAddress][priceVariant]);
 
     if (isXorAsset(assetAddress)) {
-      return FPNumber.max(avgPrice, Consts.XOR_MIN_PRICE) as FPNumber;
+      return FPNumber.max(avgPrice, Consts.XST_MIN_PRICE) as FPNumber;
     }
 
     return avgPrice;
@@ -411,21 +415,21 @@ const xstReferencePrice = (assetAddress: string, payload: QuotePayload): FPNumbe
 };
 
 const xstBuyPriceNoVolume = (syntheticAsset: string, payload: QuotePayload): FPNumber => {
-  const xorPrice = xstReferencePrice(Consts.XOR, payload);
-  const syntheticPrice = xstReferencePrice(syntheticAsset, payload);
+  const xorPrice = xstReferencePrice(Consts.XST, payload, PriceVariant.Buy);
+  const syntheticPrice = xstReferencePrice(syntheticAsset, payload, PriceVariant.Sell);
 
   return safeDivide(xorPrice, syntheticPrice);
 };
 
 const xstSellPriceNoVolume = (syntheticAsset: string, payload: QuotePayload): FPNumber => {
-  const xorPrice = xstReferencePrice(Consts.XOR, payload);
-  const syntheticPrice = xstReferencePrice(syntheticAsset, payload);
+  const xorPrice = xstReferencePrice(Consts.XST, payload, PriceVariant.Sell);
+  const syntheticPrice = xstReferencePrice(syntheticAsset, payload, PriceVariant.Buy);
 
   return safeDivide(xorPrice, syntheticPrice);
 };
 
 const xstBuyPrice = (amount: FPNumber, isDesiredInput: boolean, payload: QuotePayload): FPNumber => {
-  const xorPrice = xstReferencePrice(Consts.XOR, payload);
+  const xorPrice = xstReferencePrice(Consts.XOR, payload, PriceVariant.Buy);
 
   if (isDesiredInput) {
     return safeDivide(amount, xorPrice);
@@ -435,7 +439,7 @@ const xstBuyPrice = (amount: FPNumber, isDesiredInput: boolean, payload: QuotePa
 };
 
 const xstSellPrice = (amount: FPNumber, isDesiredInput: boolean, payload: QuotePayload): FPNumber => {
-  const xorPrice = xstReferencePrice(Consts.XOR, payload);
+  const xorPrice = xstReferencePrice(Consts.XOR, payload, PriceVariant.Sell);
 
   if (isDesiredInput) {
     return amount.mul(xorPrice);
@@ -1200,14 +1204,14 @@ export const xykQuoteWithoutImpact = (
 
 const tbcBuyPriceNoVolume = (collateralAsset: string, payload: QuotePayload): FPNumber => {
   const xorPrice = tbcBuyFunction(FPNumber.ZERO, payload);
-  const collateralPrice = tbcReferencePrice(collateralAsset, payload);
+  const collateralPrice = tbcReferencePrice(collateralAsset, payload, PriceVariant.Sell);
 
   return safeDivide(xorPrice, collateralPrice);
 };
 
 const tbcSellPriceNoVolume = (collateralAsset: string, payload: QuotePayload): FPNumber => {
   const xorPrice = tbcSellFunction(FPNumber.ZERO, payload);
-  const collateralPrice = tbcReferencePrice(collateralAsset, payload);
+  const collateralPrice = tbcReferencePrice(collateralAsset, payload, PriceVariant.Buy);
 
   return safeDivide(xorPrice, collateralPrice);
 };
@@ -1342,7 +1346,7 @@ const checkRewards = (collateralAsset: string, xorAmount: FPNumber, payload: Quo
   const idealBefore = idealReservesReferencePrice(FPNumber.ZERO, payload);
   const idealAfter = idealReservesReferencePrice(xorAmount, payload);
 
-  const actualBefore = actualReservesReferencePrice(collateralAsset, payload);
+  const actualBefore = actualReservesReferencePrice(collateralAsset, payload, PriceVariant.Sell);
   const unfundedLiabilities = idealBefore.sub(actualBefore);
 
   const a = safeDivide(unfundedLiabilities, idealBefore);
