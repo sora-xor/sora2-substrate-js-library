@@ -48,6 +48,12 @@ export type Distribution = {
   amount: FPNumber;
 };
 
+export interface LPRewardsInfo {
+  amount: CodecString;
+  currency: string;
+  reason: RewardReason;
+}
+
 export type QuoteResult = {
   amount: FPNumber;
   fee: FPNumber;
@@ -64,9 +70,3 @@ export type PathsAndPairLiquiditySources = {
   paths: QuotePaths;
   liquiditySources: Array<LiquiditySourceTypes>;
 };
-
-export interface LPRewardsInfo {
-  amount: CodecString;
-  currency: string;
-  reason: RewardReason;
-}
