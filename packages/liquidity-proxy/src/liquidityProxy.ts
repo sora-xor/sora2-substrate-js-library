@@ -406,7 +406,7 @@ const xstReferencePrice = (assetAddress: string, payload: QuotePayload, priceVar
   } else {
     const avgPrice = FPNumber.fromCodecValue(payload.prices[assetAddress][priceVariant]);
 
-    if (assetAddress === Consts.XST) {
+    if (isAssetAddress(assetAddress, Consts.XST)) {
       const floorPrice = FPNumber.fromCodecValue(payload.consts.xst.floorPrice);
 
       return FPNumber.max(avgPrice, floorPrice) as FPNumber;
@@ -417,36 +417,44 @@ const xstReferencePrice = (assetAddress: string, payload: QuotePayload, priceVar
 };
 
 const xstBuyPriceNoVolume = (syntheticAsset: string, payload: QuotePayload): FPNumber => {
-  const xorPrice = xstReferencePrice(Consts.XST, payload, PriceVariant.Buy);
-  const syntheticPrice = xstReferencePrice(syntheticAsset, payload, PriceVariant.Sell);
+  const basePriceWrtRef = xstReferencePrice(Consts.XST, payload, PriceVariant.Buy);
+  const syntheticPricePerReferenceUnit = xstReferencePrice(syntheticAsset, payload, PriceVariant.Sell);
 
-  return safeDivide(xorPrice, syntheticPrice);
+  return safeDivide(basePriceWrtRef, syntheticPricePerReferenceUnit);
 };
 
 const xstSellPriceNoVolume = (syntheticAsset: string, payload: QuotePayload): FPNumber => {
-  const xorPrice = xstReferencePrice(Consts.XST, payload, PriceVariant.Sell);
-  const syntheticPrice = xstReferencePrice(syntheticAsset, payload, PriceVariant.Buy);
+  const basePriceWrtRef = xstReferencePrice(Consts.XST, payload, PriceVariant.Sell);
+  const syntheticPricePerReferenceUnit = xstReferencePrice(syntheticAsset, payload, PriceVariant.Buy);
 
-  return safeDivide(xorPrice, syntheticPrice);
+  return safeDivide(basePriceWrtRef, syntheticPricePerReferenceUnit);
 };
 
+/**
+ * Buys the main asset (e.g., XST).
+ * Calculates and returns the current buy price, assuming that input is the synthetic asset and output is the main asset.
+ */
 const xstBuyPrice = (amount: FPNumber, isDesiredInput: boolean, payload: QuotePayload): FPNumber => {
-  const xorPrice = xstReferencePrice(Consts.XOR, payload, PriceVariant.Buy);
+  const mainAssetPricePerReferenceUnit = xstReferencePrice(Consts.XST, payload, PriceVariant.Buy);
 
   if (isDesiredInput) {
-    return safeDivide(amount, xorPrice);
+    // Input target amount of XST(USD) to get some XST
+    return safeDivide(amount, mainAssetPricePerReferenceUnit);
   } else {
-    return amount.mul(xorPrice);
+    // Input some XST(USD) to get a target amount of XST
+    return amount.mul(mainAssetPricePerReferenceUnit);
   }
 };
 
 const xstSellPrice = (amount: FPNumber, isDesiredInput: boolean, payload: QuotePayload): FPNumber => {
-  const xorPrice = xstReferencePrice(Consts.XOR, payload, PriceVariant.Sell);
+  const mainAssetPricePerReferenceUnit = xstReferencePrice(Consts.XST, payload, PriceVariant.Sell);
 
   if (isDesiredInput) {
-    return amount.mul(xorPrice);
+    // Sell desired amount of XST for some XST(USD)
+    return amount.mul(mainAssetPricePerReferenceUnit);
   } else {
-    return safeDivide(amount, xorPrice);
+    // Sell some amount of XST for desired amount of XST(USD)
+    return safeDivide(amount, mainAssetPricePerReferenceUnit);
   }
 };
 
@@ -527,7 +535,7 @@ export const xstQuote = (
   payload: QuotePayload
 ): QuoteResult => {
   try {
-    if (isXorAsset(inputAsset)) {
+    if (isAssetAddress(inputAsset, Consts.XST)) {
       return xstSellPriceWithFee(amount, isDesiredInput, payload);
     } else {
       return xstBuyPriceWithFee(amount, isDesiredInput, payload);
