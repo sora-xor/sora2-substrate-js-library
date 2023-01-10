@@ -343,7 +343,6 @@ export class AssetsModule<T> {
     return combineLatest([
       this.getAssetBalanceObservable({ address: XOR.address, decimals: XOR.decimals } as AccountAsset),
       this.root.demeterFarming.getAccountPoolsObservable(),
-      this.root.poolXyk.updated,
     ]).pipe(
       map(([xorAssetBalance, demeterFarmingPools]) => {
         // wallet xor balance (including frozen)
