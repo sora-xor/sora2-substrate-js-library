@@ -969,19 +969,19 @@ const quoteSingle = (
         throw new Error(`[liquidityProxy] Unexpected liquidity source: ${sources[0]}`);
       }
     }
-  } else if (sources.length === 2) {
+  }
+
+  if (sources.length === 2) {
     if (
       sources.includes(LiquiditySourceTypes.XYKPool) &&
       (sources.includes(LiquiditySourceTypes.MulticollateralBondingCurvePool) ||
         sources.includes(LiquiditySourceTypes.XSTPool))
     ) {
       return smartSplit(inputAsset, outputAsset, amount, isDesiredInput, payload, dexBaseAsset);
-    } else {
-      throw new Error('[liquidityProxy] Unsupported operation');
     }
-  } else {
-    throw new Error('[liquidityProxy] Unsupported operation');
   }
+
+  throw new Error('[liquidityProxy] Unsupported operation');
 };
 
 // ROUTER

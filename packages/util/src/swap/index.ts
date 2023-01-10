@@ -77,13 +77,9 @@ export class SwapModule<T> {
     const paths: QuotePaths = {};
     const liquiditySources: Array<LiquiditySourceTypes> = [];
 
-    if (!(inputAssetId && outputAssetId)) {
-      return { paths, liquiditySources };
-    }
+    if (inputAssetId && outputAssetId) {
+      const baseAssetId = this.root.dex.getBaseAssetId(dexId);
 
-    const baseAssetId = this.root.dex.getBaseAssetId(dexId);
-
-    try {
       if (isDirectExchange(inputAssetId, outputAssetId, baseAssetId)) {
         const nonBaseAsset = inputAssetId === baseAssetId ? outputAssetId : inputAssetId;
         const path = this.getSources(nonBaseAsset, payload, enabledAssets);
@@ -100,11 +96,9 @@ export class SwapModule<T> {
         paths[outputAssetId] = outputPaths;
         liquiditySources.push(...intersection(inputPaths, outputPaths));
       }
-      return { paths, liquiditySources };
-    } catch (error) {
-      console.error(error);
-      return { paths: {}, liquiditySources: [] };
     }
+
+    return { paths, liquiditySources };
   }
 
   /**
