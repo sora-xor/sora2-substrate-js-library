@@ -40,6 +40,9 @@ export type QuotePayload = {
       priceChangeStep: CodecString;
       sellPriceCoefficient: CodecString;
     };
+    xst: {
+      floorPrice: CodecString;
+    };
   };
 };
 

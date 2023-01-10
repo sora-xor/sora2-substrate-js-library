@@ -375,7 +375,16 @@ export class SwapModule<T> {
         ]
       : [];
 
-    return combineLatest([...assetsIssuances, ...assetsPrices, ...tbcReserves, ...xykReserves, ...tbcConsts]).pipe(
+    const xstConsts = xstUsed ? [toCodec(this.root.apiRx.query.xstPool.syntheticBaseAssetFloorPrice())] : [];
+
+    return combineLatest([
+      ...assetsIssuances,
+      ...assetsPrices,
+      ...tbcReserves,
+      ...xykReserves,
+      ...tbcConsts,
+      ...xstConsts,
+    ]).pipe(
       map((data) => {
         let position = assetsIssuances.length;
 
@@ -390,6 +399,7 @@ export class SwapModule<T> {
           position,
           (position += tbcConsts.length)
         );
+        const [floorPrice] = data.slice(position, (position += xstConsts.length));
 
         const payload: QuotePayload = {
           reserves: {
@@ -403,6 +413,9 @@ export class SwapModule<T> {
               initialPrice,
               priceChangeStep,
               sellPriceCoefficient,
+            },
+            xst: {
+              floorPrice,
             },
           },
         };
