@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { Bytes, Compact, Option, Result, Text, U8aFixed, Vec, WrapperKeepOpaque, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportScheduleMaybeHashed, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeHeader, SpSessionMembershipProof } from '@polkadot/types/lookup';
+import type { CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportScheduleMaybeHashed, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, LiquidityProxyBatchReceiverInfo, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeHeader, SpSessionMembershipProof } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -241,7 +241,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * relayed by a faulty/malicious actor.
        * 
        * - `origin`: the relayer account on whose behalf the transaction is being executed,
-       * - `rates`: symbols with rates in USD,
+       * - `rates`: symbols with rates in USD represented as fixed point with precision = 9,
        * - `resolve_time`: symbols which rates are provided,
        * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
        **/
@@ -256,7 +256,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * If `rates` contains duplicated symbols, then the last rate will be stored.
        * 
        * - `origin`: the relayer account on whose behalf the transaction is being executed,
-       * - `rates`: symbols with rates in USD,
+       * - `rates`: symbols with rates in USD represented as fixed point with precision = 9,
        * - `resolve_time`: symbols which rates are provided,
        * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
        **/
@@ -1803,6 +1803,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
        **/
       swapTransfer: AugmentedSubmittable<(receiver: AccountId32 | string | Uint8Array, dexId: u32 | AnyNumber | Uint8Array, inputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, outputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, swapAmount: CommonSwapAmount | { WithDesiredInput: any } | { WithDesiredOutput: any } | string | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonSwapAmount, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode]>;
+      swapTransferBatch: AugmentedSubmittable<(receivers: Vec<LiquidityProxyBatchReceiverInfo> | (LiquidityProxyBatchReceiverInfo | { accountId?: any; targetAmount?: any } | string | Uint8Array)[], dexId: u32 | AnyNumber | Uint8Array, inputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, outputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, maxInputAmount: u128 | AnyNumber | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<LiquidityProxyBatchReceiverInfo>, u32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode]>;
     };
     multicollateralBondingCurvePool: {
       /**
