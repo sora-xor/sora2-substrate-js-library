@@ -1,10 +1,9 @@
 import { connection, FPNumber } from '@sora-substrate/util';
-
-const TEST_ENDPOINT = 'wss://ws.stage.sora2.soramitsu.co.jp';
+import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 describe('FPNumber', () => {
   beforeAll(async (done) => {
-    await connection.open(TEST_ENDPOINT);
+    await connection.open(SORA_ENV.stage);
     done();
   });
 
