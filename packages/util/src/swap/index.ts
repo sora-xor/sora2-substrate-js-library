@@ -290,8 +290,8 @@ export class SwapModule<T> {
         distinctUntilChanged(),
         map((codec) => codec.inner.toString())
       );
-
-    const toAveragePrice = (o: Observable<Option<PriceToolsPriceInfo>>) =>
+    // TODO: fix swap
+    const toAveragePrice = (o: Observable<Option<PriceToolsPriceInfo> | any>) =>
       o.pipe(
         map((codec) => codec.value.averagePrice.toString()),
         distinctUntilChanged<string>()
