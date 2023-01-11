@@ -318,7 +318,7 @@ export class AssetsModule<T> {
     return this.accountAssets.find((asset) => asset.address === address) ?? null;
   }
 
-  public getAssetBalanceObservable(asset: AccountAsset): Observable<AccountBalance> {
+  public getAssetBalanceObservable(asset: AccountAsset | Asset): Observable<AccountBalance> {
     const accountAddress = this.root.account.pair.address;
     const assetAddress = asset.address;
     if (assetAddress === XOR.address) {
@@ -341,14 +341,14 @@ export class AssetsModule<T> {
    */
   public getTotalXorBalanceObservable(): Observable<FPNumber> {
     return combineLatest([
-      this.getAssetBalanceObservable({ address: XOR.address, decimals: XOR.decimals } as AccountAsset),
+      this.getAssetBalanceObservable(XOR),
       this.root.demeterFarming.getAccountPoolsObservable(),
     ]).pipe(
       map(([xorAssetBalance, demeterFarmingPools]) => {
-        // wallet xor balance (including frozen)
+        // wallet xor balance (including frozen & bonded)
         const xorBalanceTotal = FPNumber.fromCodecValue(xorAssetBalance.total);
 
-        // staked xor
+        // staked xor in demeter farming platform
         const xorStaked = demeterFarmingPools
           .filter((pool) => pool.isFarm === false && pool.poolAsset === XOR.address)
           .map((pool) => pool.pooledTokens);
