@@ -1,5 +1,5 @@
 import { FPNumber, CodecString } from '@sora-substrate/math';
-import { LiquiditySourceTypes, RewardReason, Consts, PriceVariant } from './consts';
+import { LiquiditySourceTypes, RewardReason, Consts, PriceVariant, AssetType } from './consts';
 
 import type {
   QuotePayload,
@@ -985,6 +985,76 @@ const quoteSingle = (
 };
 
 // ROUTER
+const determine = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
+  syntheticAssets: string[],
+  assetId: string
+): AssetType => {
+  if (assetId === baseAssetId) {
+    return AssetType.Base;
+  } else if (assetId == syntheticBaseAssetId) {
+    return AssetType.SyntheticBase;
+  } else if (syntheticAssets.includes(assetId)) {
+    return AssetType.Synthetic;
+  } else {
+    return AssetType.Basic;
+  }
+};
+
+const newTrivial = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
+  syntheticAssets: string[],
+  inputAssetId: string,
+  outputAssetId: string
+) => {
+  const iType = determine(baseAssetId, syntheticBaseAssetId, syntheticAssets, inputAssetId);
+  const oType = determine(baseAssetId, syntheticBaseAssetId, syntheticAssets, outputAssetId);
+
+  if (
+    (iType === AssetType.Base && oType === AssetType.Basic) ||
+    (iType === AssetType.Basic && oType === AssetType.Base) ||
+    (iType === AssetType.Base && oType === AssetType.SyntheticBase) ||
+    (iType === AssetType.SyntheticBase && oType === AssetType.Base) ||
+    (iType === AssetType.SyntheticBase && oType === AssetType.Synthetic) ||
+    (iType === AssetType.Synthetic && oType === AssetType.SyntheticBase)
+  ) {
+    return [[inputAssetId, outputAssetId]];
+  } else if (
+    (iType === AssetType.Basic && oType === AssetType.Basic) ||
+    (iType === AssetType.SyntheticBase && oType === AssetType.Basic) ||
+    (iType === AssetType.Basic && oType === AssetType.SyntheticBase)
+  ) {
+    return [[inputAssetId, baseAssetId, outputAssetId]];
+  } else if (iType === AssetType.Synthetic && oType === AssetType.Synthetic) {
+    return [
+      [inputAssetId, syntheticBaseAssetId, outputAssetId],
+      [inputAssetId, baseAssetId, outputAssetId],
+    ];
+  } else if (
+    (iType === AssetType.Base && oType === AssetType.Synthetic) ||
+    (iType === AssetType.Synthetic && oType === AssetType.Base)
+  ) {
+    return [
+      [inputAssetId, outputAssetId],
+      [inputAssetId, syntheticBaseAssetId, outputAssetId],
+    ];
+  } else if (iType === AssetType.Basic && oType === AssetType.Synthetic) {
+    return [
+      [inputAssetId, baseAssetId, syntheticBaseAssetId, outputAssetId],
+      [inputAssetId, baseAssetId, outputAssetId],
+    ];
+  } else if (iType === AssetType.Synthetic && oType === AssetType.Basic) {
+    return [
+      [inputAssetId, syntheticBaseAssetId, baseAssetId, outputAssetId],
+      [inputAssetId, baseAssetId, outputAssetId],
+    ];
+  }
+
+  return [];
+};
+
 export const isDirectExchange = (inputAssetId: string, outputAssetId: string, dexBaseAsset = Consts.XOR): boolean => {
   return [inputAssetId, outputAssetId].includes(dexBaseAsset);
 };
@@ -1027,7 +1097,8 @@ export const quote = (
   selectedSources: Array<LiquiditySourceTypes>,
   paths: QuotePaths,
   payload: QuotePayload,
-  dexBaseAsset = Consts.XOR
+  dexBaseAsset = Consts.XOR,
+  dexSyntheticBaseAsset = Consts.XST
 ): SwapResult => {
   try {
     if (isDirectExchange(inputAsset, outputAsset, dexBaseAsset)) {
@@ -1295,31 +1366,25 @@ const quoteWithoutImpactSingle = (
   dexBaseAsset = Consts.XOR
 ): FPNumber => {
   return distribution.reduce((result, item) => {
+    let value = FPNumber.ZERO;
     const { market, amount } = item;
 
     if (market === LiquiditySourceTypes.XYKPool) {
       const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, dexBaseAsset);
-      const value = xykQuoteWithoutImpact(
+      value = xykQuoteWithoutImpact(
         inputReserves,
         outputReserves,
         amount,
         isDesiredInput,
         isAssetAddress(inputAsset, dexBaseAsset)
       );
-
-      return result.add(value);
-    }
-    if (market === LiquiditySourceTypes.MulticollateralBondingCurvePool) {
-      const value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload);
-
-      return result.add(value);
-    }
-    if (market === LiquiditySourceTypes.XSTPool) {
-      const value = xstQuoteWithoutImpact(inputAsset, amount, isDesiredInput, payload);
-      return result.add(value);
+    } else if (market === LiquiditySourceTypes.MulticollateralBondingCurvePool) {
+      value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload);
+    } else if (market === LiquiditySourceTypes.XSTPool) {
+      value = xstQuoteWithoutImpact(inputAsset, amount, isDesiredInput, payload);
     }
 
-    return result;
+    return result.add(value);
   }, FPNumber.ZERO);
 };
 

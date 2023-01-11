@@ -47,3 +47,10 @@ export enum PriceVariant {
   Buy = 'buy',
   Sell = 'sell',
 }
+
+export enum AssetType {
+  Base = 'Base',
+  SyntheticBase = 'SyntheticBase',
+  Basic = 'Basic',
+  Synthetic = 'Synthetic',
+}
