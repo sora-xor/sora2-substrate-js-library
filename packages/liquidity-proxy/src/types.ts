@@ -6,10 +6,10 @@ export type PrimaryMarketsEnabledAssets = {
 };
 
 export interface SwapResult {
-  amount: FPNumber;
-  fee: FPNumber;
+  amount: CodecString;
+  fee: CodecString;
   rewards: Array<LPRewardsInfo>;
-  amountWithoutImpact?: FPNumber;
+  amountWithoutImpact?: CodecString;
   path: string[];
 }
 

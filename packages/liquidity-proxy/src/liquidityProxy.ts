@@ -1233,7 +1233,13 @@ export const quote = (
     }
   }
 
-  return bestQuote;
+  return {
+    amount: bestQuote.amount.toCodecString(),
+    amountWithoutImpact: bestQuote.amountWithoutImpact.toCodecString(),
+    fee: bestQuote.fee.toCodecString(),
+    rewards: bestQuote.rewards,
+    path: bestQuote.path,
+  };
 };
 
 // PRICE IMPACT
