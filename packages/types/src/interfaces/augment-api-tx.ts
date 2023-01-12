@@ -2916,10 +2916,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * Claim all available PSWAP rewards by account signing this transaction.
        **/
       claimRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Allow/disallow a market making pair.
-       **/
-      setAssetPair: AugmentedSubmittable<(fromAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, toAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, marketMakingRewardsAllowed: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
     };
     xorFee: {
       /**

@@ -309,18 +309,4 @@ export class RewardsModule<T> {
       rewards,
     });
   }
-
-  /**
-   * Subscribe on account market maker info
-   */
-  public subscribeOnAccountMarketMakerInfo(): Observable<AccountMarketMakerInfo> {
-    assert(this.root.account, Messages.connectWallet);
-
-    return this.root.apiRx.query.vestedRewards.marketMakersRegistry(this.root.account.pair.address).pipe(
-      map((data) => ({
-        count: +data.count,
-        volume: new FPNumber(data.volume).toCodecString(),
-      }))
-    );
-  }
 }
