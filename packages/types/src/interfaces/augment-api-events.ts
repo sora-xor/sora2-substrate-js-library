@@ -1016,17 +1016,9 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ActualDoesntMatchAvailable: AugmentedEvent<ApiType, [CommonPrimitivesRewardReason]>;
       /**
-       * Account was chosen as eligible for market maker rewards, however calculated reward turned into 0. [account]
-       **/
-      AddingZeroMarketMakerReward: AugmentedEvent<ApiType, [AccountId32]>;
-      /**
        * Saving reward for account has failed in a distribution series. [account]
        **/
       FailedToSaveCalculatedReward: AugmentedEvent<ApiType, [AccountId32]>;
-      /**
-       * Couldn't find any account with enough transactions to count market maker rewards.
-       **/
-      NoEligibleMarketMakers: AugmentedEvent<ApiType, []>;
       /**
        * Rewards vested, limits were raised. [vested amount]
        **/

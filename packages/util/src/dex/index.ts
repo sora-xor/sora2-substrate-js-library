@@ -9,6 +9,7 @@ export class DexModule<T> {
 
   public static defaultDexId = DexId.XOR;
   public static defaultBaseAssetId = XOR.address;
+  public static defaultSyntheticAssetId = XST.address;
 
   public dexList: DexInfo[] = [];
 
@@ -30,7 +31,8 @@ export class DexModule<T> {
     this.dexList = data.map(([key, codec]) => {
       const dexId = key.args[0].toNumber();
       const baseAssetId = codec.value.baseAssetId.code.toString();
-      const syntheticBaseAssetId = codec.value.syntheticBaseAssetId?.code.toString() ?? XST.address;
+      const syntheticBaseAssetId =
+        codec.value.syntheticBaseAssetId?.code.toString() ?? DexModule.defaultSyntheticAssetId;
       const isPublic = codec.value.isPublic.isTrue;
 
       return { dexId, baseAssetId, syntheticBaseAssetId, isPublic };
@@ -43,5 +45,9 @@ export class DexModule<T> {
 
   public getBaseAssetId(dexId: number): string {
     return this.dexList.find((dex) => dex.dexId === dexId)?.baseAssetId ?? DexModule.defaultBaseAssetId;
+  }
+
+  public getSyntheticBaseAssetId(dexId: number): string {
+    return this.dexList.find((dex) => dex.dexId === dexId)?.syntheticBaseAssetId ?? DexModule.defaultSyntheticAssetId;
   }
 }

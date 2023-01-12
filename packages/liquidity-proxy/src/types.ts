@@ -1,5 +1,5 @@
 import type { FPNumber, CodecString } from '@sora-substrate/math';
-import type { LiquiditySourceTypes, RewardReason } from './consts';
+import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
 
 export type PrimaryMarketsEnabledAssets = {
   [key: string]: Array<string>;
@@ -10,6 +10,7 @@ export interface SwapResult {
   fee: CodecString;
   rewards: Array<LPRewardsInfo>;
   amountWithoutImpact?: CodecString;
+  path: string[];
 }
 
 export type QuotePaths = {
@@ -17,6 +18,7 @@ export type QuotePaths = {
 };
 
 export type QuotePayload = {
+  exchangePaths: string[][];
   reserves: {
     xyk: {
       [key: string]: [CodecString, CodecString];
@@ -26,7 +28,10 @@ export type QuotePayload = {
     };
   };
   prices: {
-    [key: string]: CodecString;
+    [key: string]: {
+      [PriceVariant.Buy]: CodecString;
+      [PriceVariant.Sell]: CodecString;
+    };
   };
   issuances: {
     [key: string]: CodecString;
@@ -37,6 +42,9 @@ export type QuotePayload = {
       priceChangeStep: CodecString;
       sellPriceCoefficient: CodecString;
     };
+    xst: {
+      floorPrice: CodecString;
+    };
   };
 };
 
@@ -44,6 +52,12 @@ export type Distribution = {
   market: LiquiditySourceTypes;
   amount: FPNumber;
 };
+
+export interface LPRewardsInfo {
+  amount: CodecString;
+  currency: string;
+  reason: RewardReason;
+}
 
 export type QuoteResult = {
   amount: FPNumber;
@@ -61,9 +75,3 @@ export type PathsAndPairLiquiditySources = {
   paths: QuotePaths;
   liquiditySources: Array<LiquiditySourceTypes>;
 };
-
-export interface LPRewardsInfo {
-  amount: CodecString;
-  currency: string;
-  reason: RewardReason;
-}

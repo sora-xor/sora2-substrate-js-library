@@ -2345,14 +2345,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       IncRefError: AugmentedError<ApiType>;
       /**
-       * The market making pair already allowed.
-       **/
-      MarketMakingPairAlreadyAllowed: AugmentedError<ApiType>;
-      /**
-       * The market making pair is disallowed.
-       **/
-      MarketMakingPairAlreadyDisallowed: AugmentedError<ApiType>;
-      /**
        * There are no rewards for the asset ID.
        **/
       NoRewardsForAsset: AugmentedError<ApiType>;
