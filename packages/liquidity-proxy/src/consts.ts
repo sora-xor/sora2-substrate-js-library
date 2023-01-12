@@ -27,8 +27,6 @@ export class Consts {
   static readonly incentivizedCurrenciesNum = new FPNumber(2);
   /** 2.5 billion pswap reserved for tbc rewards */
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
-
-  static readonly ASSETS_HAS_XYK_POOL = [Consts.PSWAP, Consts.VAL, Consts.DAI, Consts.ETH];
 }
 
 export enum LiquiditySourceTypes {

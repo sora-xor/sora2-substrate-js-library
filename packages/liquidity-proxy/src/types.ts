@@ -6,10 +6,11 @@ export type PrimaryMarketsEnabledAssets = {
 };
 
 export interface SwapResult {
-  amount: CodecString;
-  fee: CodecString;
+  amount: FPNumber;
+  fee: FPNumber;
   rewards: Array<LPRewardsInfo>;
-  amountWithoutImpact?: CodecString;
+  amountWithoutImpact?: FPNumber;
+  path: string[];
 }
 
 export type QuotePaths = {
@@ -17,6 +18,7 @@ export type QuotePaths = {
 };
 
 export type QuotePayload = {
+  exchangePaths: string[][];
   reserves: {
     xyk: {
       [key: string]: [CodecString, CodecString];

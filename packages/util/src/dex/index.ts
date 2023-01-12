@@ -47,7 +47,7 @@ export class DexModule<T> {
     return this.dexList.find((dex) => dex.dexId === dexId)?.baseAssetId ?? DexModule.defaultBaseAssetId;
   }
 
-  public getSyntheticAssetId(dexId: number): string {
+  public getSyntheticBaseAssetId(dexId: number): string {
     return this.dexList.find((dex) => dex.dexId === dexId)?.syntheticBaseAssetId ?? DexModule.defaultSyntheticAssetId;
   }
 }
