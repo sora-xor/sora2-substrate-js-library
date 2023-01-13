@@ -9,7 +9,7 @@ import { XOR, VAL, PSWAP, XSTUSD } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
-import type { AccountMarketMakerInfo, RewardInfo, RewardsInfo } from './types';
+import type { RewardInfo, RewardsInfo } from './types';
 import type { Asset } from '../assets/types';
 
 export class RewardsModule<T> {
