@@ -81,6 +81,7 @@ export const newTrivial = (
       // F.E: XST-XSTUSD; XSTUSD-XST;
       [inputAssetId, outputAssetId],
       // F.E: XST-XOR-XSTUSD; XSTUSD-XOR-XST;
+      // [TODO]: uncomment, if backend add support to this exchange path
       // [inputAssetId, baseAssetId, outputAssetId],
     ];
   } else if (

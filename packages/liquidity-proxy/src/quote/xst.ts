@@ -11,6 +11,11 @@ const xstReferencePrice = (assetAddress: string, payload: QuotePayload, priceVar
   } else {
     const avgPrice = FPNumber.fromCodecValue(payload.prices[assetAddress][priceVariant]);
 
+    // [TODO]: remove, if backend will be able to make exchange without XST priceTools average price
+    if (avgPrice.isZero()) {
+      throw new Error('[liquidityProxy] Insufficient spot price data, average price is zero');
+    }
+
     if (isAssetAddress(assetAddress, Consts.XST)) {
       const floorPrice = FPNumber.fromCodecValue(payload.consts.xst.floorPrice);
 
