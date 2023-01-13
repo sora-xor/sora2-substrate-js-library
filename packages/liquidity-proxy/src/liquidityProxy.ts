@@ -166,11 +166,17 @@ const getAssetLiquiditySources = (
 const listLiquiditySources = (
   inputAssetId: string,
   outputAssetId: string,
-  paths: QuotePaths
+  paths: QuotePaths,
+  baseAssetId: string
 ): Array<LiquiditySourceTypes> => {
   const getSource = (asset: string) => paths[asset] ?? [];
-
-  return intersection(getSource(inputAssetId), getSource(outputAssetId));
+  const commonSources = intersection(getSource(inputAssetId), getSource(outputAssetId));
+  const directSources = commonSources.filter((source) => {
+    return (
+      source === LiquiditySourceTypes.XSTPool || [inputAssetId, outputAssetId].includes(baseAssetId) // TBC, XYK uses baseAsset
+    );
+  });
+  return directSources;
 };
 
 /**
