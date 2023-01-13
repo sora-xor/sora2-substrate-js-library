@@ -3,7 +3,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { LiquiditySourceTypes, Consts, PriceVariant, RewardReason } from '../consts';
 import { safeDivide, isXorAsset, getMaxPositive, isAssetAddress, safeQuoteResult } from '../utils';
 
-import type { QuotePayload, QuoteResult } from '../types';
+import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
 
 /**
  * This function is used to determine particular asset price in terms of a reference asset, which is set for
