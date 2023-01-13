@@ -162,6 +162,7 @@ const getAssetLiquiditySources = (
  * @param inputAssetId input asset id
  * @param outputAssetId output asset id
  * @param paths liquidity sources for assets
+ * @param baseAssetId Dex base asset id
  */
 const listLiquiditySources = (
   inputAssetId: string,
@@ -460,7 +461,9 @@ const quoteSingle = (
   payload: QuotePayload,
   baseAssetId = Consts.XOR
 ): QuoteResult => {
-  const sources = selectedSources.length ? selectedSources : listLiquiditySources(inputAsset, outputAsset, paths);
+  const sources = selectedSources.length
+    ? selectedSources
+    : listLiquiditySources(inputAsset, outputAsset, paths, baseAssetId);
 
   if (!sources.length) {
     throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAsset}, ${outputAsset}]`);
