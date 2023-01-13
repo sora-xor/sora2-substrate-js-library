@@ -21,8 +21,3 @@ export interface RewardClaimHistory extends History {
   externalAddress?: string;
   rewards?: Array<RewardInfo | RewardsInfo>;
 }
-
-export interface AccountMarketMakerInfo {
-  count: number;
-  volume: CodecString;
-}
