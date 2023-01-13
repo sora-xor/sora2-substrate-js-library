@@ -162,15 +162,22 @@ const getAssetLiquiditySources = (
  * @param inputAssetId input asset id
  * @param outputAssetId output asset id
  * @param paths liquidity sources for assets
+ * @param baseAssetId Dex base asset id
  */
 const listLiquiditySources = (
   inputAssetId: string,
   outputAssetId: string,
-  paths: QuotePaths
+  paths: QuotePaths,
+  baseAssetId: string
 ): Array<LiquiditySourceTypes> => {
   const getSource = (asset: string) => paths[asset] ?? [];
-
-  return intersection(getSource(inputAssetId), getSource(outputAssetId));
+  const commonSources = intersection(getSource(inputAssetId), getSource(outputAssetId));
+  const directSources = commonSources.filter((source) => {
+    return (
+      source === LiquiditySourceTypes.XSTPool || [inputAssetId, outputAssetId].includes(baseAssetId) // TBC, XYK uses baseAsset
+    );
+  });
+  return directSources;
 };
 
 /**
@@ -454,7 +461,9 @@ const quoteSingle = (
   payload: QuotePayload,
   baseAssetId = Consts.XOR
 ): QuoteResult => {
-  const sources = selectedSources.length ? selectedSources : listLiquiditySources(inputAsset, outputAsset, paths);
+  const sources = selectedSources.length
+    ? selectedSources
+    : listLiquiditySources(inputAsset, outputAsset, paths, baseAssetId);
 
   if (!sources.length) {
     throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAsset}, ${outputAsset}]`);

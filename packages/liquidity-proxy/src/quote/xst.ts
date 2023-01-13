@@ -9,20 +9,17 @@ const xstReferencePrice = (assetAddress: string, payload: QuotePayload, priceVar
   if ([Consts.DAI, Consts.XSTUSD].includes(assetAddress)) {
     return FPNumber.ONE;
   } else {
-    const avgPrice = FPNumber.fromCodecValue(payload.prices[assetAddress][priceVariant]);
-
-    // [TODO]: remove, if backend will be able to make exchange without XST priceTools average price
-    if (avgPrice.isZero()) {
-      throw new Error('[liquidityProxy] Insufficient spot price data, average price is zero');
-    }
+    const xorPrice = FPNumber.fromCodecValue(payload.prices[Consts.XOR][priceVariant]);
+    const assetPrice = FPNumber.fromCodecValue(payload.prices[assetAddress][priceVariant]);
+    const referencePrice = safeDivide(xorPrice, assetPrice);
 
     if (isAssetAddress(assetAddress, Consts.XST)) {
       const floorPrice = FPNumber.fromCodecValue(payload.consts.xst.floorPrice);
 
-      return FPNumber.max(avgPrice, floorPrice) as FPNumber;
+      return FPNumber.max(referencePrice, floorPrice) as FPNumber;
     }
 
-    return avgPrice;
+    return referencePrice;
   }
 };
 
