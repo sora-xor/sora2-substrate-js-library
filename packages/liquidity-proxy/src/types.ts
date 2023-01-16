@@ -5,12 +5,28 @@ export type PrimaryMarketsEnabledAssets = {
   [key: string]: Array<string>;
 };
 
+export interface LPRewardsInfo {
+  amount: CodecString;
+  currency: string;
+  reason: RewardReason;
+}
+
+export type Distribution = {
+  market: LiquiditySourceTypes;
+  input: string;
+  output: string;
+  income: FPNumber;
+  outcome: FPNumber;
+  fee: FPNumber;
+};
+
 export interface SwapResult {
   amount: CodecString;
   fee: CodecString;
   rewards: Array<LPRewardsInfo>;
   amountWithoutImpact?: CodecString;
-  path: string[];
+  path?: string[];
+  distribution?: Distribution[][];
 }
 
 export type QuotePaths = {
@@ -47,17 +63,6 @@ export type QuotePayload = {
     };
   };
 };
-
-export type Distribution = {
-  market: LiquiditySourceTypes;
-  amount: FPNumber;
-};
-
-export interface LPRewardsInfo {
-  amount: CodecString;
-  currency: string;
-  reason: RewardReason;
-}
 
 export type QuoteResult = {
   amount: FPNumber;

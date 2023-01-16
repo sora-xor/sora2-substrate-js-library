@@ -318,23 +318,32 @@ const tbcSellPriceWithFee = (
       rewards: [],
       distribution: [
         {
+          input: Consts.XOR,
+          output: collateralAsset,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
-          amount,
+          income: amount,
+          outcome: outputAmount,
+          fee: feeAmount,
         },
       ],
     };
   } else {
     const inputAmount = tbcSellPrice(collateralAsset, amount, isDesiredInput, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(newFee));
+    const fee = inputAmountWithFee.sub(inputAmount);
 
     return {
       amount: inputAmountWithFee,
-      fee: inputAmountWithFee.sub(inputAmount),
+      fee,
       rewards: [],
       distribution: [
         {
+          input: Consts.XOR,
+          output: collateralAsset,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
-          amount,
+          income: inputAmountWithFee,
+          outcome: amount,
+          fee,
         },
       ],
     };
@@ -359,24 +368,33 @@ const tbcBuyPriceWithFee = (
       rewards,
       distribution: [
         {
+          input: collateralAsset,
+          output: Consts.XOR,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
-          amount,
+          income: amount,
+          outcome: output,
+          fee: feeAmount,
         },
       ],
     };
   } else {
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(Consts.TBC_FEE));
     const inputAmount = tbcBuyPrice(collateralAsset, amountWithFee, isDesiredInput, payload);
+    const fee = amountWithFee.sub(amount);
     const rewards = checkRewards(collateralAsset, amount, payload);
 
     return {
       amount: inputAmount,
-      fee: amountWithFee.sub(amount),
+      fee,
       rewards,
       distribution: [
         {
+          input: collateralAsset,
+          output: Consts.XOR,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
-          amount,
+          income: inputAmount,
+          outcome: amount,
+          fee,
         },
       ],
     };
@@ -455,6 +473,6 @@ export const tbcQuote = (
       return tbcBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload);
     }
   } catch (error) {
-    return safeQuoteResult(amount, LiquiditySourceTypes.MulticollateralBondingCurvePool);
+    return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.MulticollateralBondingCurvePool);
   }
 };
