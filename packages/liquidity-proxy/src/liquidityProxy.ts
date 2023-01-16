@@ -81,8 +81,7 @@ export const newTrivial = (
       // F.E: XST-XSTUSD; XSTUSD-XST;
       [inputAssetId, outputAssetId],
       // F.E: XST-XOR-XSTUSD; XSTUSD-XOR-XST;
-      // [TODO]: uncomment, if backend add support to this exchange path
-      // [inputAssetId, baseAssetId, outputAssetId],
+      [inputAssetId, baseAssetId, outputAssetId],
     ];
   } else if (
     matchType(iType, oType)(AssetType.Basic, AssetType.Basic) ||
@@ -361,7 +360,7 @@ const smartSplit = (
 ): QuoteResult => {
   let bestOutcome: FPNumber = extremum(isDesiredInput);
   let bestFee: FPNumber = FPNumber.ZERO;
-  let bestDistribution: Array<any> = [];
+  let bestDistribution: Array<Distribution> = [];
   let bestRewards: Array<LPRewardsInfo> = [];
 
   const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
