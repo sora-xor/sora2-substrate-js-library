@@ -152,13 +152,15 @@ const xykQuoteD = (input: string, output: string, x: FPNumber, y: FPNumber, yOut
 export const xykQuote = (
   inputAsset: string,
   outputAsset: string,
-  inputReserves: FPNumber,
-  outputReserves: FPNumber,
   amount: FPNumber,
   isDesiredInput: boolean,
-  isBaseAssetInput: boolean
+  payload: QuotePayload,
+  baseAssetId: string
 ): QuoteResult => {
   try {
+    const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+    const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
+
     if (isDesiredInput) {
       if (isBaseAssetInput) {
         return xykQuoteA(inputAsset, outputAsset, inputReserves, outputReserves, amount);
@@ -178,13 +180,17 @@ export const xykQuote = (
 };
 
 export const xykQuoteWithoutImpact = (
-  inputReserves: FPNumber,
-  outputReserves: FPNumber,
+  inputAsset: string,
+  outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
-  isBaseAssetInput: boolean
+  payload: QuotePayload,
+  baseAssetId: string
 ): FPNumber => {
   try {
+    const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+    const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
+
     if (isDesiredInput) {
       if (isBaseAssetInput) {
         const amountWithoutFee = amount.mul(FPNumber.ONE.sub(Consts.XYK_FEE));

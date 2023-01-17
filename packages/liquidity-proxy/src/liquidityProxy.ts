@@ -384,13 +384,7 @@ const smartSplit = (
 
     if (FPNumber.isLessThan(primaryAmount, amount)) {
       const incomeSecondary = amount.sub(primaryAmount);
-      const outcomeSecondary = xykQuote(
-        inputReserves,
-        outputReserves,
-        incomeSecondary,
-        isDesiredInput,
-        isBaseAssetInput
-      );
+      const outcomeSecondary = xykQuote(inputAsset, outputAsset, incomeSecondary, isDesiredInput, payload, baseAssetId);
 
       bestOutcome = outcomePrimary.amount.add(outcomeSecondary.amount);
       bestFee = outcomePrimary.fee.add(outcomeSecondary.fee);
@@ -431,7 +425,15 @@ const smartSplit = (
   }
 
   // check xyk only result regardless of split, because it might be better
-  const outcomeSecondary = xykQuote(inputReserves, outputReserves, amount, isDesiredInput, isBaseAssetInput);
+  const outcomeSecondary = xykQuote(
+    inputAsset,
+    outputAsset,
+    inputReserves,
+    outputReserves,
+    amount,
+    isDesiredInput,
+    isBaseAssetInput
+  );
 
   if (isBetter(isDesiredInput, outcomeSecondary.amount, bestOutcome)) {
     bestOutcome = outcomeSecondary.amount;
@@ -488,17 +490,7 @@ const quoteSingle = (
   if (sources.length === 1) {
     switch (sources[0]) {
       case LiquiditySourceTypes.XYKPool: {
-        const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
-        const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
-        return xykQuote(
-          inputAsset,
-          outputAsset,
-          inputReserves,
-          outputReserves,
-          amount,
-          isDesiredInput,
-          isBaseAssetInput
-        );
+        return xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId);
       }
       case LiquiditySourceTypes.MulticollateralBondingCurvePool: {
         return tbcQuote(inputAsset, outputAsset, amount, isDesiredInput, payload);
@@ -665,14 +657,7 @@ const quoteWithoutImpactSingle = (
     const { market, amount } = item;
 
     if (market === LiquiditySourceTypes.XYKPool) {
-      const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
-      value = xykQuoteWithoutImpact(
-        inputReserves,
-        outputReserves,
-        amount,
-        isDesiredInput,
-        isAssetAddress(inputAsset, baseAssetId)
-      );
+      value = xykQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId);
     } else if (market === LiquiditySourceTypes.MulticollateralBondingCurvePool) {
       value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload);
     } else if (market === LiquiditySourceTypes.XSTPool) {

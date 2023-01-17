@@ -12,9 +12,9 @@ export interface LPRewardsInfo {
 }
 
 export type Distribution = {
-  market: LiquiditySourceTypes;
   input: string;
   output: string;
+  market: LiquiditySourceTypes;
   income: FPNumber;
   outcome: FPNumber;
   fee: FPNumber;
