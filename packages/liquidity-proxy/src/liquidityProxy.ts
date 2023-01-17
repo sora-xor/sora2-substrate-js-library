@@ -425,15 +425,7 @@ const smartSplit = (
   }
 
   // check xyk only result regardless of split, because it might be better
-  const outcomeSecondary = xykQuote(
-    inputAsset,
-    outputAsset,
-    inputReserves,
-    outputReserves,
-    amount,
-    isDesiredInput,
-    isBaseAssetInput
-  );
+  const outcomeSecondary = xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId);
 
   if (isBetter(isDesiredInput, outcomeSecondary.amount, bestOutcome)) {
     bestOutcome = outcomeSecondary.amount;
@@ -652,9 +644,8 @@ const quoteWithoutImpactSingle = (
   payload: QuotePayload,
   baseAssetId = Consts.XOR
 ): FPNumber => {
-  return distribution.reduce((result, item) => {
+  return distribution.reduce((result, { market, amount }) => {
     let value = FPNumber.ZERO;
-    const { market, amount } = item;
 
     if (market === LiquiditySourceTypes.XYKPool) {
       value = xykQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId);
