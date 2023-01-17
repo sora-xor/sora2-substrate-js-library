@@ -9,6 +9,7 @@ import './assets/types';
 import './demeterFarming/types';
 import './dex/consts';
 import './dex/types';
+import './ceresLiquidityLocker/types';
 
 export * from './api';
 export * from './BaseApi';

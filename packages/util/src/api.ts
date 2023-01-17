@@ -20,6 +20,7 @@ import { MstTransfersModule } from './mstTransfers';
 import { SystemModule } from './system';
 import { DemeterFarmingModule } from './demeterFarming';
 import { DexModule } from './dex';
+import { CeresLiquidityLockerModule } from './ceresLiquidityLocker';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
@@ -45,6 +46,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly system = new SystemModule<T>(this);
   public readonly demeterFarming = new DemeterFarmingModule<T>(this);
   public readonly dex = new DexModule<T>(this);
+  public readonly ceresLiquidityLocker = new CeresLiquidityLockerModule<T>(this);
 
   public initAccountStorage() {
     super.initAccountStorage();
