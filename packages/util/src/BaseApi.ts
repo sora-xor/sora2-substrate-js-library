@@ -94,6 +94,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.DemeterFarmingStakeToken]: '0',
     [Operation.DemeterFarmingUnstakeToken]: '0',
     [Operation.DemeterFarmingGetRewards]: '0',
+    [Operation.CeresLiquidityLockerLockLiquidity]: '0',
   } as NetworkFeesObject;
 
   protected readonly prefix = 69;
@@ -486,6 +487,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       case Operation.DemeterFarmingGetRewards:
         extrinsic = this.api.tx.demeterFarmingPlatform.getRewards;
         break;
+      case Operation.CeresLiquidityLockerLockLiquidity:
+        extrinsic = this.api.tx.ceresLiquidityLocker.lockLiquidity;
+        break;
       default:
         throw new Error('Unknown function');
     }
@@ -567,6 +571,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, XOR.address, 0, false);
       case Operation.DemeterFarmingGetRewards:
         return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, XOR.address, true);
+      case Operation.CeresLiquidityLockerLockLiquidity:
+        return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
       default:
         return null;
     }
@@ -600,6 +606,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.DemeterFarmingStakeToken,
       Operation.DemeterFarmingUnstakeToken,
       Operation.DemeterFarmingGetRewards,
+      Operation.CeresLiquidityLockerLockLiquidity,
     ];
     // We don't need to know real account address for checking network fees
     const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
@@ -700,6 +707,8 @@ export enum Operation {
   DemeterFarmingStakeToken = 'DemeterFarmingStakeToken',
   DemeterFarmingUnstakeToken = 'DemeterFarmingUnstakeToken',
   DemeterFarmingGetRewards = 'DemeterFarmingGetRewards',
+  /** Ceres Liquidity Locker  */
+  CeresLiquidityLockerLockLiquidity = 'CeresLiquidityLockerLockLiquidity',
 }
 
 export interface History {
