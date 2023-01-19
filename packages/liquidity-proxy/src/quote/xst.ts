@@ -2,24 +2,26 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, PriceVariant } from '../consts';
 import { safeDivide, isAssetAddress, safeQuoteResult } from '../utils';
+import { getAveragePrice } from './price';
 
 import type { QuotePayload, QuoteResult } from '../types';
 
 const xstReferencePrice = (assetAddress: string, payload: QuotePayload, priceVariant: PriceVariant): FPNumber => {
-  if ([Consts.DAI, Consts.XSTUSD].includes(assetAddress)) {
+  // [TODO] pass reference asset
+  const referenceAssetId = Consts.DAI;
+  // XSTUSD is a special case because it is equal to the reference asset, DAI
+  if ([referenceAssetId, Consts.XSTUSD].includes(assetAddress)) {
     return FPNumber.ONE;
   } else {
-    const xorPrice = FPNumber.fromCodecValue(payload.prices[Consts.XOR][priceVariant]);
-    const assetPrice = FPNumber.fromCodecValue(payload.prices[assetAddress][priceVariant]);
-    const referencePrice = safeDivide(xorPrice, assetPrice);
+    const averagePrice = getAveragePrice(assetAddress, referenceAssetId, priceVariant, payload);
 
-    if (isAssetAddress(assetAddress, Consts.XST)) {
+    if (isAssetAddress(assetAddress, Consts.XST) && isAssetAddress(referenceAssetId, Consts.DAI)) {
       const floorPrice = FPNumber.fromCodecValue(payload.consts.xst.floorPrice);
 
-      return FPNumber.max(referencePrice, floorPrice) as FPNumber;
+      return FPNumber.max(averagePrice, floorPrice) as FPNumber;
     }
 
-    return referencePrice;
+    return averagePrice;
   }
 };
 

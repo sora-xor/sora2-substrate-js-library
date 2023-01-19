@@ -499,8 +499,8 @@ const quoteSingle = (
   if (sources.length === 2) {
     if (
       sources.includes(LiquiditySourceTypes.XYKPool) &&
-      (sources.includes(LiquiditySourceTypes.MulticollateralBondingCurvePool) ||
-        sources.includes(LiquiditySourceTypes.XSTPool))
+      // We can't use XST as primary market for smart split, because it use XST asset as base
+      sources.includes(LiquiditySourceTypes.MulticollateralBondingCurvePool)
     ) {
       return smartSplit(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId);
     }

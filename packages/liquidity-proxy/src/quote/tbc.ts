@@ -2,6 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, PriceVariant, RewardReason } from '../consts';
 import { safeDivide, isXorAsset, getMaxPositive, isAssetAddress, safeQuoteResult } from '../utils';
+import { getAveragePrice } from './price';
 
 import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
 
@@ -13,13 +14,13 @@ import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
  * Example use: understand actual value of two tokens in terms of USD.
  */
 const tbcReferencePrice = (assetAddress: string, payload: QuotePayload, priceVariant: PriceVariant): FPNumber => {
-  if (isAssetAddress(assetAddress, Consts.DAI)) {
+  // [TODO] pass reference asset
+  const referenceAssetId = Consts.DAI;
+
+  if (isAssetAddress(assetAddress, referenceAssetId)) {
     return FPNumber.ONE;
   } else {
-    const xorPrice = FPNumber.fromCodecValue(payload.prices[Consts.XOR][priceVariant]);
-    const assetPrice = FPNumber.fromCodecValue(payload.prices[assetAddress][priceVariant]);
-
-    return safeDivide(xorPrice, assetPrice);
+    return getAveragePrice(assetAddress, referenceAssetId, priceVariant, payload);
   }
 };
 
