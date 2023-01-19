@@ -14,8 +14,7 @@ import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
  * Example use: understand actual value of two tokens in terms of USD.
  */
 const tbcReferencePrice = (assetAddress: string, payload: QuotePayload, priceVariant: PriceVariant): FPNumber => {
-  // [TODO] pass reference asset
-  const referenceAssetId = Consts.DAI;
+  const referenceAssetId = payload.consts.tbc.referenceAsset;
 
   if (isAssetAddress(assetAddress, referenceAssetId)) {
     return FPNumber.ONE;

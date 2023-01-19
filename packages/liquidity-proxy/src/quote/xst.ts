@@ -7,8 +7,7 @@ import { getAveragePrice } from './price';
 import type { QuotePayload, QuoteResult } from '../types';
 
 const xstReferencePrice = (assetAddress: string, payload: QuotePayload, priceVariant: PriceVariant): FPNumber => {
-  // [TODO] pass reference asset
-  const referenceAssetId = Consts.DAI;
+  const referenceAssetId = payload.consts.xst.referenceAsset;
   // XSTUSD is a special case because it is equal to the reference asset, DAI
   if ([referenceAssetId, Consts.XSTUSD].includes(assetAddress)) {
     return FPNumber.ONE;

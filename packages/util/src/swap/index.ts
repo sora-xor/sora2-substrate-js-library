@@ -26,6 +26,12 @@ import type { AccountAsset, Asset } from '../assets/types';
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
 
+const toAssetId = (o: Observable<CommonPrimitivesAssetId32>): Observable<string> =>
+  o.pipe(
+    map((asset) => asset.code.toString()),
+    distinctUntilChanged(comparator)
+  );
+
 const toAssetIds = (o: Observable<BTreeSet<CommonPrimitivesAssetId32>>): Observable<string[]> =>
   o.pipe(
     map((data) => [...data.values()].map((asset) => asset.code.toString())),
@@ -297,10 +303,16 @@ export class SwapModule<T> {
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.initialPrice()),
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.priceChangeStep()),
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.sellPriceCoefficient()),
+          toAssetId(this.root.apiRx.query.multicollateralBondingCurvePool.referenceAssetId()),
         ]
       : [];
 
-    const xstConsts = xstUsed ? [toCodec(this.root.apiRx.query.xstPool.syntheticBaseAssetFloorPrice())] : [];
+    const xstConsts = xstUsed
+      ? [
+          toCodec(this.root.apiRx.query.xstPool.syntheticBaseAssetFloorPrice()),
+          toAssetId(this.root.apiRx.query.xstPool.referenceAssetId()),
+        ]
+      : [];
 
     return combineLatest([
       ...assetsIssuances,
@@ -320,11 +332,11 @@ export class SwapModule<T> {
         );
         const tbc: Array<string> = data.slice(position, (position += tbcReserves.length));
         const xyk: Array<[string, string]> = data.slice(position, (position += xykReserves.length));
-        const [initialPrice, priceChangeStep, sellPriceCoefficient] = data.slice(
+        const [initialPrice, priceChangeStep, sellPriceCoefficient, tbcReferenceAsset] = data.slice(
           position,
           (position += tbcConsts.length)
         );
-        const [floorPrice] = data.slice(position, (position += xstConsts.length));
+        const [floorPrice, xstReferenceAsset] = data.slice(position, (position += xstConsts.length));
 
         const payload: QuotePayload = {
           exchangePaths,
@@ -339,9 +351,11 @@ export class SwapModule<T> {
               initialPrice,
               priceChangeStep,
               sellPriceCoefficient,
+              referenceAsset: tbcReferenceAsset,
             },
             xst: {
               floorPrice,
+              referenceAsset: xstReferenceAsset,
             },
           },
         };
