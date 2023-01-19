@@ -1584,6 +1584,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongTimepoint: AugmentedError<ApiType>;
     };
+    oracleProxy: {
+      OracleAlreadyDisabled: AugmentedError<ApiType>;
+      OracleAlreadyEnabled: AugmentedError<ApiType>;
+    };
     permissions: {
       /**
        * The account either doesn't have the permission.
