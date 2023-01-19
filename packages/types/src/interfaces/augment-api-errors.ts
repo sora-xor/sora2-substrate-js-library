@@ -60,10 +60,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Precision value is not valid, it should represent a number of decimal places for number, max is 30.
        **/
       InvalidPrecision: AugmentedError<ApiType>;
-      /**
-       * Computation overflow.
-       **/
-      Overflow: AugmentedError<ApiType>;
     };
     authorship: {
       /**
@@ -152,20 +148,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Vesting balance too high to send value
        **/
       VestingBalance: AugmentedError<ApiType>;
-    };
-    band: {
-      /**
-       * A request to add an account, which is already a trusted relayer, was supplied.
-       **/
-      AlreadyATrustedRelayer: AugmentedError<ApiType>;
-      /**
-       * A request to remove an account, which is not a trusted relayer, was supplied.
-       **/
-      NoSuchRelayer: AugmentedError<ApiType>;
-      /**
-       * An untrusted account tried to relay data.
-       **/
-      UnauthorizedRelayer: AugmentedError<ApiType>;
     };
     bridgeMultisig: {
       /**
@@ -1238,20 +1220,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       IncRefError: AugmentedError<ApiType>;
     };
-    faucet: {
-      /**
-       * Amount is above limit.
-       **/
-      AmountAboveLimit: AugmentedError<ApiType>;
-      /**
-       * Asset is not supported.
-       **/
-      AssetNotSupported: AugmentedError<ApiType>;
-      /**
-       * Not enough reserves.
-       **/
-      NotEnoughReserves: AugmentedError<ApiType>;
-    };
     grandpa: {
       /**
        * Attempt to signal GRANDPA change with one already pending.
@@ -2083,12 +2051,6 @@ declare module '@polkadot/api-base/types/errors' {
        * settings to keep things safe for the runtime.
        **/
       TooManyValidators: AugmentedError<ApiType>;
-    };
-    sudo: {
-      /**
-       * Sender must be the Sudo account
-       **/
-      RequireSudo: AugmentedError<ApiType>;
     };
     system: {
       /**

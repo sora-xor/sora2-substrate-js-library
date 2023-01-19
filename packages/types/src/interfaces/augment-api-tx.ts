@@ -29,20 +29,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       burn: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128]>;
       /**
-       * Performs an unchecked Asset mint, can only be done
-       * by root account.
-       * 
-       * Should be used as extrinsic call only.
-       * `Currencies::updated_balance()` should be deprecated. Using `force_mint` allows us to
-       * perform extra actions for minting, such as buy-back, extra-minting and etc.
-       * 
-       * - `origin`: caller Account, which issues Asset minting,
-       * - `asset_id`: Id of minted Asset,
-       * - `to`: Id of Account, to which Asset amount is minted,
-       * - `amount`: minted Asset amount.
-       **/
-      forceMint: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, to: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, AccountId32, u128]>;
-      /**
        * Performs a checked Asset mint, can only be done
        * by corresponding asset owner account.
        * 
@@ -221,57 +207,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * [`transfer`]: struct.Pallet.html#method.transfer
        **/
       transferKeepAlive: AugmentedSubmittable<(dest: AccountId32 | string | Uint8Array, value: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Compact<u128>]>;
-    };
-    band: {
-      /**
-       * Add `account_ids` to the list of trusted relayers.
-       * 
-       * Ignores repeated accounts in `account_ids`.
-       * If one of account is already a trusted relayer an [`Error::AlreadyATrustedRelayer`] will
-       * be returned.
-       * 
-       * - `origin`: the sudo account on whose behalf the transaction is being executed,
-       * - `account_ids`: list of new trusted relayers to add.
-       **/
-      addRelayers: AugmentedSubmittable<(accountIds: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>]>;
-      /**
-       * Similar to [`relay()`] but without the resolve time guard.
-       * 
-       * Should be used in emergency situations i.e. then previous value was
-       * relayed by a faulty/malicious actor.
-       * 
-       * - `origin`: the relayer account on whose behalf the transaction is being executed,
-       * - `rates`: symbols with rates in USD,
-       * - `resolve_time`: symbols which rates are provided,
-       * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
-       **/
-      forceRelay: AugmentedSubmittable<(rates: Vec<ITuple<[Text, u64]>> | ([Text | string, u64 | AnyNumber | Uint8Array])[], resolveTime: u64 | AnyNumber | Uint8Array, requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[Text, u64]>>, u64, u64]>;
-      /**
-       * Relay a list of symbols and their associated rates along with the resolve time and request id on `BandChain`.
-       * 
-       * Checks if:
-       * - The caller is a relayer;
-       * - The `resolve_time` for a particular symbol is not lower than previous saved value, ignores this rate if so;
-       * 
-       * If `rates` contains duplicated symbols, then the last rate will be stored.
-       * 
-       * - `origin`: the relayer account on whose behalf the transaction is being executed,
-       * - `rates`: symbols with rates in USD,
-       * - `resolve_time`: symbols which rates are provided,
-       * - `request_id`: id of the request sent to the *BandChain* to retrieve this data.
-       **/
-      relay: AugmentedSubmittable<(rates: Vec<ITuple<[Text, u64]>> | ([Text | string, u64 | AnyNumber | Uint8Array])[], resolveTime: u64 | AnyNumber | Uint8Array, requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[Text, u64]>>, u64, u64]>;
-      /**
-       * Remove `account_ids` from the list of trusted relayers.
-       * 
-       * Ignores repeated accounts in `account_ids`.
-       * If one of account is not a trusted relayer an [`Error::AlreadyATrustedRelayer`] will
-       * be returned.
-       * 
-       * - `origin`: the sudo account on whose behalf the transaction is being executed,
-       * - `account_ids`: list of relayers to remove.
-       **/
-      removeRelayers: AugmentedSubmittable<(accountIds: Vec<AccountId32> | (AccountId32 | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<AccountId32>]>;
     };
     bridgeMultisig: {
       /**
@@ -1434,21 +1369,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       transferToSidechain: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, to: H160 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array, networkId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, H160, u128, u32]>;
     };
-    faucet: {
-      resetRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Transfers the specified amount of asset to the specified account.
-       * The supported assets are: XOR, VAL, PSWAP.
-       * 
-       * # Errors
-       * 
-       * AssetNotSupported is returned if `asset_id` is something the function doesn't support.
-       * AmountAboveLimit is returned if `target` has already received their daily limit of `asset_id`.
-       * NotEnoughReserves is returned if `amount` is greater than the reserves
-       **/
-      transfer: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, target: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, AccountId32, u128]>;
-      updateLimit: AugmentedSubmittable<(newLimit: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
-    };
     grandpa: {
       /**
        * Note that the current authority set of the GRANDPA finality gadget has stalled.
@@ -2469,61 +2389,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       withdrawUnbonded: AugmentedSubmittable<(numSlashingSpans: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
     };
-    sudo: {
-      /**
-       * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
-       * key.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB change.
-       * # </weight>
-       **/
-      setKey: AugmentedSubmittable<(updated: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudo: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call]>;
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Signed` origin from
-       * a given account.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudoAs: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Call]>;
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       * This function does not check the weight of the call, and instead allows the
-       * Sudo user to specify the weight of the call.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - The weight of this call is defined by the caller.
-       * # </weight>
-       **/
-      sudoUncheckedWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, u64]>;
-    };
     system: {
       /**
        * A dispatch that will fill the block weight up to the given ratio.
@@ -2936,13 +2801,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * Change reference asset which is used to determine collateral assets value. Intended to be e.g., stablecoin DAI.
        **/
       setReferenceAsset: AugmentedSubmittable<(referenceAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
-      /**
-       * Set floor price for the synthetic base asset
-       * 
-       * - `origin`: root account
-       * - `floor_price`: floor price for the synthetic base asset
-       **/
-      setSyntheticBaseAssetFloorPrice: AugmentedSubmittable<(floorPrice: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
     };
   } // AugmentedSubmittables
 } // declare module

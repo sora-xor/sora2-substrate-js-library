@@ -23,7 +23,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "yarn build:interfaces:dev && polkadot-dev-build-ts",
+    "build": "yarn build:interfaces:prod && polkadot-dev-build-ts",
     "build:interfaces:dev": "yarn generate:defs:dev && yarn generate:meta:dev",
     "build:interfaces:test": "yarn generate:defs:test && yarn generate:meta:test",
     "build:interfaces:stage": "yarn generate:defs:stage && yarn generate:meta:stage",

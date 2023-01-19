@@ -91,20 +91,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Withdraw: AugmentedEvent<ApiType, [who: AccountId32, amount: u128], { who: AccountId32, amount: u128 }>;
     };
-    band: {
-      /**
-       * Added new trusted relayer accounts. [relayers]
-       **/
-      RelayersAdded: AugmentedEvent<ApiType, [Vec<AccountId32>]>;
-      /**
-       * Relayer accounts were removed from trusted list. [relayers]
-       **/
-      RelayersRemoved: AugmentedEvent<ApiType, [Vec<AccountId32>]>;
-      /**
-       * New symbol rates were successfully relayed. [symbols]
-       **/
-      SymbolsRelayed: AugmentedEvent<ApiType, [Vec<Text>]>;
-    };
     bridgeMultisig: {
       /**
        * A new multisig created. [multisig]
@@ -486,10 +472,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       RequestRegistered: AugmentedEvent<ApiType, [H256]>;
     };
-    faucet: {
-      LimitUpdated: AugmentedEvent<ApiType, [u128]>;
-      Transferred: AugmentedEvent<ApiType, [AccountId32, u128]>;
-    };
     grandpa: {
       /**
        * New authority set has been applied.
@@ -795,20 +777,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Withdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
     };
-    sudo: {
-      /**
-       * The \[sudoer\] just switched identity; the old key is supplied if one existed.
-       **/
-      KeyChanged: AugmentedEvent<ApiType, [oldSudoer: Option<AccountId32>], { oldSudoer: Option<AccountId32> }>;
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      Sudid: AugmentedEvent<ApiType, [sudoResult: Result<Null, SpRuntimeDispatchError>], { sudoResult: Result<Null, SpRuntimeDispatchError> }>;
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      SudoAsDone: AugmentedEvent<ApiType, [sudoResult: Result<Null, SpRuntimeDispatchError>], { sudoResult: Result<Null, SpRuntimeDispatchError> }>;
-    };
     system: {
       /**
        * `:code` was updated.
@@ -1056,14 +1024,6 @@ declare module '@polkadot/api-base/types/events' {
        * Reference Asset has been changed for pool. [New Reference Asset Id]
        **/
       ReferenceAssetChanged: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
-      /**
-       * Synthetic asset was enabled. [Synthetic Asset Id]
-       **/
-      SyntheticAssetEnabled: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
-      /**
-       * Floor price of the synthetic base asset has been changed. [New Floor Price]
-       **/
-      SyntheticBaseAssetFloorPriceChanged: AugmentedEvent<ApiType, [u128]>;
     };
   } // AugmentedEvents
 } // declare module
