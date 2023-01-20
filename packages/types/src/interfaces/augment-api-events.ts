@@ -676,9 +676,9 @@ declare module '@polkadot/api-base/types/events' {
       FeesExchanged: AugmentedEvent<ApiType, [u32, AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32, u128]>;
       /**
        * Problem occurred that resulted in fees exchange not done.
-       * [DEX Id, Fees Account Id, Fees Asset Id, Available Fees Amount, Incentive Asset Id]
+       * [DEX Id, Fees Account Id, Fees Asset Id, Available Fees Amount, Incentive Asset Id, Exchange error]
        **/
-      FeesExchangeFailed: AugmentedEvent<ApiType, [u32, AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32]>;
+      FeesExchangeFailed: AugmentedEvent<ApiType, [u32, AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32, SpRuntimeDispatchError]>;
       /**
        * Incentives successfully sent out to shareholders.
        * [DEX Id, Fees Account Id, Incentive Asset Id, Incentive Total Distributed Amount, Number of shareholders]

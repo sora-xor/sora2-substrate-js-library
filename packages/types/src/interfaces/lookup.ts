@@ -788,7 +788,7 @@ export default {
   PswapDistributionEvent: {
     _enum: {
       FeesExchanged: '(u32,AccountId32,CommonPrimitivesAssetId32,u128,CommonPrimitivesAssetId32,u128)',
-      FeesExchangeFailed: '(u32,AccountId32,CommonPrimitivesAssetId32,u128,CommonPrimitivesAssetId32)',
+      FeesExchangeFailed: '(u32,AccountId32,CommonPrimitivesAssetId32,u128,CommonPrimitivesAssetId32,SpRuntimeDispatchError)',
       IncentiveDistributed: '(u32,AccountId32,CommonPrimitivesAssetId32,u128,u128)',
       IncentiveDistributionFailed: '(u32,AccountId32)',
       BurnRateChanged: 'FixnumFixedPoint',
