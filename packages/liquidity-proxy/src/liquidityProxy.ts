@@ -389,38 +389,12 @@ const smartSplit = (
       bestOutcome = outcomePrimary.amount.add(outcomeSecondary.amount);
       bestFee = outcomePrimary.fee.add(outcomeSecondary.fee);
       bestRewards = [...outcomePrimary.rewards, ...outcomeSecondary.rewards];
-      bestDistribution = [
-        {
-          input: inputAsset,
-          output: outputAsset,
-          market: LiquiditySourceTypes.XYKPool,
-          income: incomeSecondary,
-          outcome: outcomeSecondary.amount,
-          fee: outcomeSecondary.fee,
-        },
-        {
-          input: inputAsset,
-          output: outputAsset,
-          market: primaryMarket,
-          income: primaryAmount,
-          outcome: outcomePrimary.amount,
-          fee: outcomePrimary.fee,
-        },
-      ];
+      bestDistribution = [...outcomeSecondary.distribution, ...outcomePrimary.distribution];
     } else {
       bestOutcome = outcomePrimary.amount;
       bestFee = outcomePrimary.fee;
       bestRewards = outcomePrimary.rewards;
-      bestDistribution = [
-        {
-          input: inputAsset,
-          output: outputAsset,
-          market: primaryMarket,
-          income: amount,
-          outcome: outcomePrimary.amount,
-          fee: outcomePrimary.fee,
-        },
-      ];
+      bestDistribution = outcomePrimary.distribution;
     }
   }
 
@@ -431,16 +405,7 @@ const smartSplit = (
     bestOutcome = outcomeSecondary.amount;
     bestFee = outcomeSecondary.fee;
     bestRewards = outcomeSecondary.rewards;
-    bestDistribution = [
-      {
-        input: inputAsset,
-        output: outputAsset,
-        market: LiquiditySourceTypes.XYKPool,
-        income: amount,
-        outcome: outcomeSecondary.amount,
-        fee: outcomeSecondary.fee,
-      },
-    ];
+    bestDistribution = outcomeSecondary.distribution;
   }
 
   if (FPNumber.isEqualTo(bestOutcome, Consts.MAX)) {
