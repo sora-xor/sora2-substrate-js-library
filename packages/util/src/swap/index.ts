@@ -62,14 +62,6 @@ const toAveragePrice = (o: Observable<Option<PriceToolsAggregatedPriceInfo>>) =>
   );
 
 const getAssetAveragePrice = <T>(root: Api<T>, assetAddress: string): Observable<{ buy: string; sell: string }> => {
-  if (assetAddress === DAI.address || assetAddress === XSTUSD.address) {
-    const one = FPNumber.ONE.toCodecString();
-    return of({ [PriceVariant.Buy]: one, [PriceVariant.Sell]: one });
-  }
-  if (assetAddress === XOR.address) {
-    return toAveragePrice(root.apiRx.query.priceTools.priceInfos(DAI.address));
-  }
-
   return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
 };
 
@@ -243,6 +235,7 @@ export class SwapModule<T> {
   ): Observable<QuotePayload> {
     const xor = XOR.address;
     const xstusd = XSTUSD.address;
+    const dai = DAI.address;
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
     const tbcAssets = enabledAssets?.tbc ?? [];
@@ -270,8 +263,8 @@ export class SwapModule<T> {
     const assetsWithXykReserves = assetsInPaths.filter((address) => address !== baseAssetId);
     // Assets that have TBC collateral reserves (not XOR)
     const assetsWithTbcReserves = assetsInPaths.filter((address) => tbcAssets.includes(address));
-    // Assets that have average price data (storage has prices only for collateral TBC assets & XOR)
-    const assetsWithAveragePrices = [...assetsWithTbcReserves, xor];
+    // Assets that have average price data (storage has prices only for collateral TBC assets), DAI required
+    const assetsWithAveragePrices = [...new Set([...assetsWithTbcReserves, dai])];
     // Assets for which we need to know the total supply
     const assetsWithIssuances = [xor, xstusd];
 
