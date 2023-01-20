@@ -878,7 +878,7 @@ declare module '@polkadot/types/lookup' {
     readonly isFeesExchanged: boolean;
     readonly asFeesExchanged: ITuple<[u32, AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32, u128]>;
     readonly isFeesExchangeFailed: boolean;
-    readonly asFeesExchangeFailed: ITuple<[u32, AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32]>;
+    readonly asFeesExchangeFailed: ITuple<[u32, AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32, SpRuntimeDispatchError]>;
     readonly isIncentiveDistributed: boolean;
     readonly asIncentiveDistributed: ITuple<[u32, AccountId32, CommonPrimitivesAssetId32, u128, u128]>;
     readonly isIncentiveDistributionFailed: boolean;
