@@ -27,18 +27,23 @@ export const getXykReserves = (
  * @param xIn x_in - desired input amount (base asset)
  * @returns QuoteResult
  */
-const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
+const xykQuoteA = (input: string, output: string, x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   const x1 = xIn.mul(FPNumber.ONE.sub(Consts.XYK_FEE));
   const yOut = safeDivide(x1.mul(y), x.add(x1));
+  const fee = xIn.mul(Consts.XYK_FEE);
 
   return {
     amount: yOut,
-    fee: xIn.mul(Consts.XYK_FEE),
+    fee,
     rewards: [],
     distribution: [
       {
+        input,
+        output,
         market: LiquiditySourceTypes.XYKPool,
-        amount: xIn,
+        income: xIn,
+        outcome: yOut,
+        fee,
       },
     ],
   };
@@ -51,18 +56,23 @@ const xykQuoteA = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
  * @param xIn - desired input amount (other token)
  * @returns QuoteResult
  */
-const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
+const xykQuoteB = (input: string, output: string, x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
   const y1 = safeDivide(xIn.mul(y), x.add(xIn));
   const yOut = y1.mul(FPNumber.ONE.sub(Consts.XYK_FEE));
+  const fee = y1.sub(yOut);
 
   return {
     amount: yOut,
-    fee: y1.sub(yOut),
+    fee,
     rewards: [],
     distribution: [
       {
+        input,
+        output,
         market: LiquiditySourceTypes.XYKPool,
-        amount: xIn,
+        income: xIn,
+        outcome: yOut,
+        fee,
       },
     ],
   };
@@ -75,7 +85,7 @@ const xykQuoteB = (x: FPNumber, y: FPNumber, xIn: FPNumber): QuoteResult => {
  * @param yOut - desired output amount (other token)
  * @returns QuoteResult
  */
-const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
+const xykQuoteC = (input: string, output: string, x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
     throw new Error(
       `[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `
@@ -84,15 +94,20 @@ const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
 
   const x1 = safeDivide(x.mul(yOut), y.sub(yOut));
   const xIn = safeDivide(x1, FPNumber.ONE.sub(Consts.XYK_FEE));
+  const fee = xIn.sub(x1);
 
   return {
     amount: xIn,
-    fee: xIn.sub(x1),
+    fee,
     rewards: [],
     distribution: [
       {
+        input,
+        output,
         market: LiquiditySourceTypes.XYKPool,
-        amount: yOut,
+        income: xIn,
+        outcome: yOut,
+        fee,
       },
     ],
   };
@@ -105,7 +120,7 @@ const xykQuoteC = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
  * @param yOut - desired output amount (base asset)
  * @returns QuoteResult
  */
-const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
+const xykQuoteD = (input: string, output: string, x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   const y1 = safeDivide(yOut, FPNumber.ONE.sub(Consts.XYK_FEE));
 
   if (FPNumber.isGreaterThanOrEqualTo(y1, y)) {
@@ -115,54 +130,67 @@ const xykQuoteD = (x: FPNumber, y: FPNumber, yOut: FPNumber): QuoteResult => {
   }
 
   const xIn = safeDivide(x.mul(y1), y.sub(y1));
+  const fee = y1.sub(yOut);
 
   return {
     amount: xIn,
-    fee: y1.sub(yOut),
+    fee,
     rewards: [],
     distribution: [
       {
+        input,
+        output,
         market: LiquiditySourceTypes.XYKPool,
-        amount: yOut,
+        income: xIn,
+        outcome: yOut,
+        fee,
       },
     ],
   };
 };
 
 export const xykQuote = (
-  inputReserves: FPNumber,
-  outputReserves: FPNumber,
+  inputAsset: string,
+  outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
-  isBaseAssetInput: boolean
+  payload: QuotePayload,
+  baseAssetId: string
 ): QuoteResult => {
   try {
+    const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+    const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
+
     if (isDesiredInput) {
       if (isBaseAssetInput) {
-        return xykQuoteA(inputReserves, outputReserves, amount);
+        return xykQuoteA(inputAsset, outputAsset, inputReserves, outputReserves, amount);
       } else {
-        return xykQuoteB(inputReserves, outputReserves, amount);
+        return xykQuoteB(inputAsset, outputAsset, inputReserves, outputReserves, amount);
       }
     } else {
       if (isBaseAssetInput) {
-        return xykQuoteC(inputReserves, outputReserves, amount);
+        return xykQuoteC(inputAsset, outputAsset, inputReserves, outputReserves, amount);
       } else {
-        return xykQuoteD(inputReserves, outputReserves, amount);
+        return xykQuoteD(inputAsset, outputAsset, inputReserves, outputReserves, amount);
       }
     }
   } catch (error) {
-    return safeQuoteResult(amount, LiquiditySourceTypes.XYKPool);
+    return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XYKPool);
   }
 };
 
 export const xykQuoteWithoutImpact = (
-  inputReserves: FPNumber,
-  outputReserves: FPNumber,
+  inputAsset: string,
+  outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
-  isBaseAssetInput: boolean
+  payload: QuotePayload,
+  baseAssetId: string
 ): FPNumber => {
   try {
+    const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+    const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
+
     if (isDesiredInput) {
       if (isBaseAssetInput) {
         const amountWithoutFee = amount.mul(FPNumber.ONE.sub(Consts.XYK_FEE));

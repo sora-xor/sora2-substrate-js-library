@@ -40,15 +40,24 @@ export const safeDivide = (value: FPNumber, divider: FPNumber): FPNumber => {
     return value.div(divider);
   }
 };
-export const safeQuoteResult = (amount: FPNumber, market: LiquiditySourceTypes): QuoteResult => {
+export const safeQuoteResult = (
+  inputAsset: string,
+  outputAsset: string,
+  amount: FPNumber,
+  market: LiquiditySourceTypes
+): QuoteResult => {
   return {
     amount: FPNumber.ZERO,
     fee: FPNumber.ZERO,
     rewards: [],
     distribution: [
       {
+        input: inputAsset,
+        output: outputAsset,
         market,
-        amount,
+        income: amount,
+        outcome: FPNumber.ZERO,
+        fee: FPNumber.ZERO,
       },
     ],
   };

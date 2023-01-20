@@ -2,24 +2,25 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, PriceVariant } from '../consts';
 import { safeDivide, isAssetAddress, safeQuoteResult } from '../utils';
+import { getAveragePrice } from './price';
 
 import type { QuotePayload, QuoteResult } from '../types';
 
 const xstReferencePrice = (assetAddress: string, payload: QuotePayload, priceVariant: PriceVariant): FPNumber => {
-  if ([Consts.DAI, Consts.XSTUSD].includes(assetAddress)) {
+  const referenceAssetId = payload.consts.xst.referenceAsset;
+  // XSTUSD is a special case because it is equal to the reference asset, DAI
+  if ([referenceAssetId, Consts.XSTUSD].includes(assetAddress)) {
     return FPNumber.ONE;
   } else {
-    const xorPrice = FPNumber.fromCodecValue(payload.prices[Consts.XOR][priceVariant]);
-    const assetPrice = FPNumber.fromCodecValue(payload.prices[assetAddress][priceVariant]);
-    const referencePrice = safeDivide(xorPrice, assetPrice);
+    const averagePrice = getAveragePrice(assetAddress, referenceAssetId, priceVariant, payload);
 
-    if (isAssetAddress(assetAddress, Consts.XST)) {
+    if (isAssetAddress(assetAddress, Consts.XST) && isAssetAddress(referenceAssetId, Consts.DAI)) {
       const floorPrice = FPNumber.fromCodecValue(payload.consts.xst.floorPrice);
 
-      return FPNumber.max(referencePrice, floorPrice) as FPNumber;
+      return FPNumber.max(averagePrice, floorPrice) as FPNumber;
     }
 
-    return referencePrice;
+    return averagePrice;
   }
 };
 
@@ -51,7 +52,12 @@ const xstSellPrice = (amount: FPNumber, isDesiredInput: boolean, payload: QuoteP
   }
 };
 
-const xstBuyPriceWithFee = (amount: FPNumber, isDesiredInput: boolean, payload: QuotePayload): QuoteResult => {
+const xstBuyPriceWithFee = (
+  syntheticAsset: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload
+): QuoteResult => {
   if (isDesiredInput) {
     const outputAmount = xstBuyPrice(amount, isDesiredInput, payload);
     const feeAmount = Consts.XST_FEE.mul(outputAmount);
@@ -63,58 +69,81 @@ const xstBuyPriceWithFee = (amount: FPNumber, isDesiredInput: boolean, payload: 
       rewards: [],
       distribution: [
         {
+          input: syntheticAsset,
+          output: Consts.XST,
           market: LiquiditySourceTypes.XSTPool,
-          amount,
+          income: amount,
+          outcome: output,
+          fee: feeAmount,
         },
       ],
     };
   } else {
     const fpFee = FPNumber.ONE.sub(Consts.XST_FEE);
     const amountWithFee = safeDivide(amount, fpFee);
+    const fee = amountWithFee.sub(amount);
     const input = xstBuyPrice(amountWithFee, isDesiredInput, payload);
 
     return {
       amount: input,
-      fee: amountWithFee.sub(amount),
+      fee,
       rewards: [],
       distribution: [
         {
+          input: syntheticAsset,
+          output: Consts.XST,
           market: LiquiditySourceTypes.XSTPool,
-          amount,
+          income: input,
+          outcome: amount,
+          fee,
         },
       ],
     };
   }
 };
 
-const xstSellPriceWithFee = (amount: FPNumber, isDesiredInput: boolean, payload: QuotePayload): QuoteResult => {
+const xstSellPriceWithFee = (
+  syntheticAsset: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload
+): QuoteResult => {
   if (isDesiredInput) {
-    const feeAmount = amount.mul(Consts.XST_FEE);
-    const output = xstSellPrice(amount.sub(feeAmount), isDesiredInput, payload);
+    const fee = amount.mul(Consts.XST_FEE);
+    const output = xstSellPrice(amount.sub(fee), isDesiredInput, payload);
 
     return {
       amount: output,
-      fee: feeAmount,
+      fee,
       rewards: [],
       distribution: [
         {
+          input: Consts.XST,
+          output: syntheticAsset,
           market: LiquiditySourceTypes.XSTPool,
-          amount,
+          income: amount,
+          outcome: output,
+          fee,
         },
       ],
     };
   } else {
     const inputAmount = xstSellPrice(amount, isDesiredInput, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(Consts.XST_FEE));
+    const fee = inputAmountWithFee.sub(inputAmount);
 
     return {
       amount: inputAmountWithFee,
-      fee: inputAmountWithFee.sub(inputAmount),
+      fee,
       rewards: [],
       distribution: [
         {
+          input: Consts.XST,
+          output: syntheticAsset,
           market: LiquiditySourceTypes.XSTPool,
-          amount,
+          income: inputAmountWithFee,
+          outcome: amount,
+          fee,
         },
       ],
     };
@@ -137,13 +166,14 @@ export const xstSellPriceNoVolume = (syntheticAsset: string, payload: QuotePaylo
 
 export const xstQuoteWithoutImpact = (
   inputAsset: string,
+  outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload
 ): FPNumber => {
   try {
     // no impact already
-    const quoteResult = xstQuote(inputAsset, amount, isDesiredInput, payload);
+    const quoteResult = xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload);
 
     return quoteResult.amount;
   } catch (error) {
@@ -153,17 +183,18 @@ export const xstQuoteWithoutImpact = (
 
 export const xstQuote = (
   inputAsset: string,
+  outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload
 ): QuoteResult => {
   try {
     if (isAssetAddress(inputAsset, Consts.XST)) {
-      return xstSellPriceWithFee(amount, isDesiredInput, payload);
+      return xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload);
     } else {
-      return xstBuyPriceWithFee(amount, isDesiredInput, payload);
+      return xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload);
     }
   } catch (error) {
-    return safeQuoteResult(amount, LiquiditySourceTypes.XSTPool);
+    return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XSTPool);
   }
 };
