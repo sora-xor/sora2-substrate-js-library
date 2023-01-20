@@ -73,11 +73,6 @@ export type QuoteResult = {
   rewards: Array<LPRewardsInfo>;
 };
 
-export type QuotePrimaryMarketResult = {
-  market: LiquiditySourceTypes;
-  result: QuoteResult;
-};
-
 export type PathsAndPairLiquiditySources = {
   paths: QuotePaths;
   liquiditySources: Array<LiquiditySourceTypes>;
