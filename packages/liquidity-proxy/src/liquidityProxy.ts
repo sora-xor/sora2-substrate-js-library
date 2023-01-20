@@ -17,7 +17,6 @@ import {
 import type {
   QuotePayload,
   QuoteResult,
-  QuotePrimaryMarketResult,
   QuotePaths,
   Distribution,
   SwapResult,
@@ -219,17 +218,11 @@ const quotePrimaryMarket = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload
-): QuotePrimaryMarketResult => {
+): QuoteResult => {
   if ([inputAssetAddress, outputAssetAddress].includes(Consts.XSTUSD)) {
-    return {
-      result: xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload),
-      market: LiquiditySourceTypes.XSTPool,
-    };
+    return xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload);
   } else {
-    return {
-      result: tbcQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload),
-      market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
-    };
+    return tbcQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload);
   }
 };
 
@@ -374,13 +367,7 @@ const smartSplit = (
     : primaryMarketAmountBuyingBaseAsset(inputAsset, amount, isDesiredInput, baseReserve, otherReserve, payload);
 
   if (isGreaterThanZero(primaryAmount)) {
-    const { result: outcomePrimary, market: primaryMarket } = quotePrimaryMarket(
-      inputAsset,
-      outputAsset,
-      primaryAmount,
-      isDesiredInput,
-      payload
-    );
+    const outcomePrimary = quotePrimaryMarket(inputAsset, outputAsset, primaryAmount, isDesiredInput, payload);
 
     if (FPNumber.isLessThan(primaryAmount, amount)) {
       const incomeSecondary = amount.sub(primaryAmount);
