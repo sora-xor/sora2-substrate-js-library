@@ -81,8 +81,7 @@ export const newTrivial = (
       // F.E: XST-XSTUSD; XSTUSD-XST;
       [inputAssetId, outputAssetId],
       // F.E: XST-XOR-XSTUSD; XSTUSD-XOR-XST;
-      // [TODO]: https://github.com/soramitsu/sora2-substrate/pull/862
-      // [inputAssetId, baseAssetId, outputAssetId],
+      [inputAssetId, baseAssetId, outputAssetId],
     ];
   } else if (
     matchType(iType, oType)(AssetType.Basic, AssetType.Basic) ||
