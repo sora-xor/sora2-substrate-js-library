@@ -165,7 +165,7 @@ const checkRewards = (collateralAsset: string, xorAmount: FPNumber, payload: Quo
 const tbcBuyFunction = (delta: FPNumber, payload: QuotePayload): FPNumber => {
   const xstusdIssuance = FPNumber.fromCodecValue(payload.issuances[Consts.XSTUSD]);
   const xorIssuance = FPNumber.fromCodecValue(payload.issuances[Consts.XOR]);
-  const xorPrice = FPNumber.fromCodecValue(payload.prices[Consts.XOR][PriceVariant.Buy]);
+  const xorPrice = tbcReferencePrice(Consts.XOR, payload, PriceVariant.Buy);
   const xstXorLiability = safeDivide(xstusdIssuance, xorPrice);
   const initialPrice = FPNumber.fromCodecValue(payload.consts.tbc.initialPrice);
   const priceChangeStep = FPNumber.fromCodecValue(payload.consts.tbc.priceChangeStep);
