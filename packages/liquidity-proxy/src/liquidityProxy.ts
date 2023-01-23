@@ -148,7 +148,7 @@ const getAssetLiquiditySources = (
   };
 
   return Object.entries(rules).reduce((acc: LiquiditySourceTypes[], [source, rule]) => {
-    if (rule()) {
+    if (!enabledAssets.lockedSources.includes(source as LiquiditySourceTypes) && rule()) {
       acc.push(source as LiquiditySourceTypes);
     }
     return acc;
