@@ -175,14 +175,14 @@ export class SwapModule<T> {
    * Get primary markets enabled assets observable
    */
   public subscribeOnPrimaryMarketsEnabledAssets(): Observable<PrimaryMarketsEnabledAssets> {
-    const tbc = toAssetIds(this.root.apiRx.query.multicollateralBondingCurvePool.enabledTargets());
-    const xst = toAssetIds(this.root.apiRx.query.xstPool.enabledSynthetics());
+    const tbcAssets = toAssetIds(this.root.apiRx.query.multicollateralBondingCurvePool.enabledTargets());
+    const xstAssets = toAssetIds(this.root.apiRx.query.xstPool.enabledSynthetics());
+    const lockedLiquiditySources = this.root.apiRx.query.tradingPair
+      .lockedLiquiditySources()
+      .pipe(map((sources) => sources.map((source) => source.toString() as LiquiditySourceTypes)));
 
-    return combineLatest([tbc, xst]).pipe(
-      map((data) => ({
-        tbc: data[0],
-        xst: data[1],
-      }))
+    return combineLatest([tbcAssets, xstAssets, lockedLiquiditySources]).pipe(
+      map(([tbc, xst, lockedSources]) => ({ tbc, xst, lockedSources }))
     );
   }
 
@@ -240,6 +240,7 @@ export class SwapModule<T> {
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
     const tbcAssets = enabledAssets?.tbc ?? [];
     const xstAssets = enabledAssets?.xst ?? [];
+    const lockedSources = enabledAssets?.lockedSources ?? [];
 
     // is TBC or XST sources used (only for XOR Dex)
     const isPrimaryMarketSourceUsed = (source: LiquiditySourceTypes): boolean =>
@@ -351,6 +352,7 @@ export class SwapModule<T> {
               referenceAsset: xstReferenceAsset,
             },
           },
+          lockedSources,
         };
 
         return payload;

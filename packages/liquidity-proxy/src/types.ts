@@ -3,6 +3,7 @@ import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts'
 
 export type PrimaryMarketsEnabledAssets = {
   [key: string]: Array<string>;
+  lockedSources: Array<LiquiditySourceTypes>;
 };
 
 export interface LPRewardsInfo {
@@ -64,6 +65,7 @@ export type QuotePayload = {
       referenceAsset: string;
     };
   };
+  lockedSources: Array<LiquiditySourceTypes>;
 };
 
 export type QuoteResult = {

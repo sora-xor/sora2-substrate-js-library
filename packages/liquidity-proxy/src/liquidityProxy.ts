@@ -423,9 +423,10 @@ const quoteSingle = (
   payload: QuotePayload,
   baseAssetId = Consts.XOR
 ): QuoteResult => {
-  const sources = selectedSources.length
+  const allSources = selectedSources.length
     ? selectedSources
     : listLiquiditySources(inputAsset, outputAsset, paths, baseAssetId);
+  const sources = allSources.filter((source) => !payload.lockedSources.includes(source));
 
   if (!sources.length) {
     throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAsset}, ${outputAsset}]`);
