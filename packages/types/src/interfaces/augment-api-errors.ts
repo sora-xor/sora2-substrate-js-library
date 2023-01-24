@@ -313,6 +313,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AccountIsNotWhitelisted: AugmentedError<ApiType>;
       /**
+       * Asset in which funds are being raised is not supported
+       **/
+      BaseAssetNotSupported: AugmentedError<ApiType>;
+      /**
        * Can't claim LP tokens
        **/
       CantClaimLPTokens: AugmentedError<ApiType>;
@@ -373,6 +377,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidEndTimestamp: AugmentedError<ApiType>;
       /**
+       * Invalid fee percent on raised funds
+       **/
+      InvalidFeePercent: AugmentedError<ApiType>;
+      /**
        * First release percent can't be zero
        **/
       InvalidFirstReleasePercent: AugmentedError<ApiType>;
@@ -389,7 +397,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidMaximumContribution: AugmentedError<ApiType>;
       /**
-       * Minimum contribution must be equal or greater than 0.01 XOR
+       * Minimum contribution must be equal or greater than 0.01 base asset tokens
        **/
       InvalidMinimumContribution: AugmentedError<ApiType>;
       /**
@@ -1287,6 +1295,68 @@ declare module '@polkadot/api-base/types/errors' {
        * Cannot signal forced change so soon after last.
        **/
       TooSoon: AugmentedError<ApiType>;
+    };
+    hermesGovernancePlatform: {
+      /**
+       * AlreadyVoted,
+       **/
+      AlreadyVoted: AugmentedError<ApiType>;
+      /**
+       * Funds Already Withdrawn
+       **/
+      FundsAlreadyWithdrawn: AugmentedError<ApiType>;
+      /**
+       * Invalid End Timestamp,
+       **/
+      InvalidEndTimestamp: AugmentedError<ApiType>;
+      /**
+       * Invalid Maximum Duration Of Poll
+       **/
+      InvalidMaximumDurationOfPoll: AugmentedError<ApiType>;
+      /**
+       * Invalid Minimum Duration Of Poll
+       **/
+      InvalidMinimumDurationOfPoll: AugmentedError<ApiType>;
+      /**
+       * Invalid Start Timestamp
+       **/
+      InvalidStartTimestamp: AugmentedError<ApiType>;
+      /**
+       * Not Enough Hermes For Creating Poll
+       **/
+      NotEnoughHermesForCreatingPoll: AugmentedError<ApiType>;
+      /**
+       * Not Enough Hermes For Voting
+       **/
+      NotEnoughHermesForVoting: AugmentedError<ApiType>;
+      /**
+       * NotVoted
+       **/
+      NotVoted: AugmentedError<ApiType>;
+      /**
+       * Poll Does Not Exist,
+       **/
+      PollDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Poll Is Finished
+       **/
+      PollIsFinished: AugmentedError<ApiType>;
+      /**
+       * Poll Is Not Finished
+       **/
+      PollIsNotFinished: AugmentedError<ApiType>;
+      /**
+       * Poll Is Not Started
+       **/
+      PollIsNotStarted: AugmentedError<ApiType>;
+      /**
+       * Unauthorized
+       **/
+      Unauthorized: AugmentedError<ApiType>;
+      /**
+       * You Are Not Creator
+       **/
+      YouAreNotCreator: AugmentedError<ApiType>;
     };
     identity: {
       /**

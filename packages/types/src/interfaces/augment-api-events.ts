@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H256 } from '@polkadot/types/interfaces/runtime';
-import type { CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportScheduleLookupError, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingValidatorPrefs, SpFinalityGrandpaAppPublic, SpRuntimeDispatchError } from '@polkadot/types/lookup';
+import type { CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportScheduleLookupError, FrameSupportTokensMiscBalanceStatus, FrameSupportWeightsDispatchInfo, HermesGovernancePlatformVotingOption, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingValidatorPrefs, SpFinalityGrandpaAppPublic, SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -503,6 +503,32 @@ declare module '@polkadot/api-base/types/events' {
        * Current authority set has been resumed.
        **/
       Resumed: AugmentedEvent<ApiType, []>;
+    };
+    hermesGovernancePlatform: {
+      /**
+       * Create poll [who, title, start_timestamp, end_timestamp]
+       **/
+      Created: AugmentedEvent<ApiType, [AccountId32, Text, u64, u64]>;
+      /**
+       * Creator Funds Withdrawn [who, balance]
+       **/
+      CreatorFundsWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      /**
+       * Change minimum Hermes for creating poll [balance]
+       **/
+      MinimumHermesForCreatingPollChanged: AugmentedEvent<ApiType, [u128]>;
+      /**
+       * Change minimum Hermes for voting [balance]
+       **/
+      MinimumHermesForVotingChanged: AugmentedEvent<ApiType, [u128]>;
+      /**
+       * Voting [who, poll, option]
+       **/
+      Voted: AugmentedEvent<ApiType, [AccountId32, H256, HermesGovernancePlatformVotingOption]>;
+      /**
+       * Voter Funds Withdrawn [who, balance]
+       **/
+      VoterFundsWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
     };
     identity: {
       /**
