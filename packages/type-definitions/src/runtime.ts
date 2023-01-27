@@ -150,6 +150,7 @@ export default {
         'ETH',
         'XSTUSD',
         'XST',
+        'TBCD',
       ],
     },
     RewardInfo: {

@@ -26,6 +26,7 @@
 - [assets](#assets-pallet)
 - [dexManager](#dexmanager-pallet)
 - [multicollateralBondingCurvePool](#multicollateralbondingcurvepool-pallet)
+- [technical](#technical-pallet)
 - [poolXYK](#poolxyk-pallet)
 - [council](#council-pallet)
 - [technicalCommittee](#technicalcommittee-pallet)
@@ -51,6 +52,9 @@
 - [demeterFarmingPlatform](#demeterfarmingplatform-pallet)
 - [bagsList](#bagslist-pallet)
 - [electionProviderMultiPhase](#electionprovidermultiphase-pallet)
+- [band](#band-pallet)
+- [oracleProxy](#oracleproxy-pallet)
+- [hermesGovernancePlatform](#hermesgovernanceplatform-pallet)
 - [beefy](#beefy-pallet)
 - [utility](#utility-pallet)
 - [currencies](#currencies-pallet)
@@ -3870,6 +3874,27 @@ arguments:
 - amount: `u128`
 <hr>
 
+#### **api.tx.assets.forceMint**
+
+> Performs an unchecked Asset mint, can only be done
+> by root account.
+>
+> Should be used as extrinsic call only.
+> `Currencies::updated_balance()` should be deprecated. Using `force_mint` allows us to
+> perform extra actions for minting, such as buy-back, extra-minting and etc.
+>
+> - `origin`: caller Account, which issues Asset minting,
+> - `asset_id`: Id of minted Asset,
+> - `to`: Id of Account, to which Asset amount is minted,
+> - `amount`: minted Asset amount.
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- to: `AccountId32`
+- amount: `u128`
+<hr>
+
 #### **api.tx.assets.burn**
 
 > Performs a checked Asset burn, can only be done
@@ -4121,7 +4146,7 @@ returns: `FixnumFixedPoint`
 
 #### **api.query.multicollateralBondingCurvePool.baseFee**
 
-> Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
+> Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%
 
 arguments: -
 
@@ -4131,7 +4156,7 @@ returns: `FixnumFixedPoint`
 
 #### **api.query.multicollateralBondingCurvePool.distributionAccountsEntry**
 
-> Accounts that receive 20% buy/sell margin according predefined proportions.
+> Accounts that receive 20% buy/sell margin according to predefined proportions
 
 arguments: -
 
@@ -4141,7 +4166,7 @@ returns: `MulticollateralBondingCurvePoolDistributionAccounts`
 
 #### **api.query.multicollateralBondingCurvePool.enabledTargets**
 
-> Collateral Assets allowed to be sold on bonding curve.
+> Collateral Assets allowed to be sold by the token bonding curve
 
 arguments: -
 
@@ -4151,7 +4176,7 @@ returns: `BTreeSet<CommonPrimitivesAssetId32>`
 
 #### **api.query.multicollateralBondingCurvePool.referenceAssetId**
 
-> Asset that is used to compare collateral assets by value, e.g., DAI.
+> Asset that is used to compare collateral assets by value, e.g., DAI
 
 arguments: -
 
@@ -4173,7 +4198,7 @@ returns: `(u128,u128)`
 
 #### **api.query.multicollateralBondingCurvePool.totalRewards**
 
-> Total amount of PSWAP owned by accounts.
+> Total amount of PSWAP owned by accounts
 
 arguments: -
 
@@ -4183,7 +4208,7 @@ returns: `u128`
 
 #### **api.query.multicollateralBondingCurvePool.incentivisedCurrenciesNum**
 
-> Number of reserve currencies selling which user will get rewards, namely all registered collaterals except PSWAP and VAL.
+> Number of reserve currencies selling which user will get rewards, namely all registered collaterals except PSWAP and VAL
 
 arguments: -
 
@@ -4193,7 +4218,7 @@ returns: `u32`
 
 #### **api.query.multicollateralBondingCurvePool.incentivesAccountId**
 
-> Account which stores actual PSWAP intended for rewards.
+> Account which stores actual PSWAP intended for rewards
 
 arguments: -
 
@@ -4216,7 +4241,7 @@ returns: `FixnumFixedPoint`
 #### **api.query.multicollateralBondingCurvePool.initialPswapRewardsSupply**
 
 > Amount of PSWAP initially stored in account dedicated for TBC rewards. Actual account balance will deplete over time,
-> however this constant is not modified.
+> however this constant is not modified
 
 arguments: -
 
@@ -4284,6 +4309,32 @@ arguments:
 
 - priceChangeRate: `u128`
 - priceChangeStep: `u128`
+<hr>
+
+## Technical pallet
+
+### _State Queries_
+
+#### **api.query.technical.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.technical.techAccounts**
+
+> Registered technical account identifiers. Map from repr `AccountId` into pure `TechAccountId`.
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `CommonPrimitivesTechAccountId`
+
 <hr>
 
 ## PoolXYK pallet
@@ -7255,30 +7306,6 @@ returns: `u128`
 
 <hr>
 
-#### **api.query.vestedRewards.marketMakersRegistry**
-
-> Registry of market makers with large transaction volumes (>1 XOR per transaction).
-
-arguments:
-
-- key: `AccountId32`
-
-returns: `VestedRewardsMarketMakerInfo`
-
-<hr>
-
-#### **api.query.vestedRewards.marketMakingPairs**
-
-> Market making pairs storage.
-
-arguments:
-
-- key: `(CommonPrimitivesAssetId32,CommonPrimitivesAssetId32)`
-
-returns: `Null`
-
-<hr>
-
 #### **api.query.vestedRewards.crowdloanRewards**
 
 > Crowdloan vested rewards storage.
@@ -7319,17 +7346,6 @@ arguments: -
 arguments:
 
 - assetId: `CommonPrimitivesAssetId32`
-<hr>
-
-#### **api.tx.vestedRewards.setAssetPair**
-
-> Allow/disallow a market making pair.
-
-arguments:
-
-- fromAssetId: `CommonPrimitivesAssetId32`
-- toAssetId: `CommonPrimitivesAssetId32`
-- marketMakingRewardsAllowed: `bool`
 <hr>
 
 ### _Custom RPCs_
@@ -7834,6 +7850,18 @@ returns: `Vec<FarmingPoolFarmer>`
 
 <hr>
 
+### _Custom RPCs_
+
+#### **api.rpc.farming.rewardDoublingAssets**
+
+> Get list of double rewarding assets
+
+arguments: -
+
+returns: `Vec<AssetId>`
+
+<hr>
+
 ## XstPool pallet
 
 ### _State Queries_
@@ -7900,6 +7928,16 @@ returns: `u128`
 
 <hr>
 
+#### **api.query.xstPool.syntheticBaseAssetFloorPrice**
+
+> Floor price for the synthetic base asset.
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.xstPool.initializePool**
@@ -7927,6 +7965,18 @@ arguments:
 - syntheticAsset: `CommonPrimitivesAssetId32`
 <hr>
 
+#### **api.tx.xstPool.setSyntheticBaseAssetFloorPrice**
+
+> Set floor price for the synthetic base asset
+>
+> - `origin`: root account
+> - `floor_price`: floor price for the synthetic base asset
+
+arguments:
+
+- floorPrice: `u128`
+<hr>
+
 ## PriceTools pallet
 
 ### _State Queries_
@@ -7947,7 +7997,7 @@ arguments:
 
 - key: `CommonPrimitivesAssetId32`
 
-returns: `PriceToolsPriceInfo`
+returns: `PriceToolsAggregatedPriceInfo`
 
 <hr>
 
@@ -8348,6 +8398,16 @@ returns: `u128`
 
 <hr>
 
+#### **api.query.ceresLaunchpad.feePercentOnRaisedFunds**
+
+> Fee percent on raised funds in successful ILO
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
 #### **api.query.ceresLaunchpad.authorityAccount**
 
 > Account which has permissions for changing CERES burn amount fee
@@ -8402,6 +8462,7 @@ returns: `Vec<AccountId32>`
 
 arguments:
 
+- baseAsset: `CommonPrimitivesAssetId32`
 - assetId: `CommonPrimitivesAssetId32`
 - tokensForIlo: `u128`
 - tokensForLiquidity: `u128`
@@ -8469,6 +8530,15 @@ arguments:
 arguments:
 
 - assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.ceresLaunchpad.changeFeePercentForRaisedFunds**
+
+> Change fee percent on raised funds in successful ILO
+
+arguments:
+
+- feePercent: `u128`
 <hr>
 
 #### **api.tx.ceresLaunchpad.changeCeresBurnFee**
@@ -8577,6 +8647,16 @@ returns: `Vec<DemeterFarmingPlatformPoolData>`
 
 <hr>
 
+#### **api.query.demeterFarmingPlatform.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `DemeterFarmingPlatformStorageVersion`
+
+<hr>
+
 #### **api.query.demeterFarmingPlatform.authorityAccount**
 
 arguments: -
@@ -8617,6 +8697,7 @@ arguments:
 
 arguments:
 
+- baseAsset: `CommonPrimitivesAssetId32`
 - poolAsset: `CommonPrimitivesAssetId32`
 - rewardAsset: `CommonPrimitivesAssetId32`
 - isFarm: `bool`
@@ -8631,6 +8712,7 @@ arguments:
 
 arguments:
 
+- baseAsset: `CommonPrimitivesAssetId32`
 - poolAsset: `CommonPrimitivesAssetId32`
 - rewardAsset: `CommonPrimitivesAssetId32`
 - isFarm: `bool`
@@ -8643,6 +8725,7 @@ arguments:
 
 arguments:
 
+- baseAsset: `CommonPrimitivesAssetId32`
 - poolAsset: `CommonPrimitivesAssetId32`
 - rewardAsset: `CommonPrimitivesAssetId32`
 - isFarm: `bool`
@@ -8654,6 +8737,7 @@ arguments:
 
 arguments:
 
+- baseAsset: `CommonPrimitivesAssetId32`
 - poolAsset: `CommonPrimitivesAssetId32`
 - rewardAsset: `CommonPrimitivesAssetId32`
 - pooledTokens: `u128`
@@ -8666,6 +8750,7 @@ arguments:
 
 arguments:
 
+- baseAsset: `CommonPrimitivesAssetId32`
 - poolAsset: `CommonPrimitivesAssetId32`
 - rewardAsset: `CommonPrimitivesAssetId32`
 - isFarm: `bool`
@@ -8677,6 +8762,7 @@ arguments:
 
 arguments:
 
+- baseAsset: `CommonPrimitivesAssetId32`
 - poolAsset: `CommonPrimitivesAssetId32`
 - rewardAsset: `CommonPrimitivesAssetId32`
 - isFarm: `bool`
@@ -8689,6 +8775,7 @@ arguments:
 
 arguments:
 
+- baseAsset: `CommonPrimitivesAssetId32`
 - poolAsset: `CommonPrimitivesAssetId32`
 - rewardAsset: `CommonPrimitivesAssetId32`
 - isFarm: `bool`
@@ -8702,6 +8789,7 @@ arguments:
 arguments:
 
 - changedUser: `AccountId32`
+- baseAsset: `CommonPrimitivesAssetId32`
 - poolAsset: `CommonPrimitivesAssetId32`
 - rewardAsset: `CommonPrimitivesAssetId32`
 - isFarm: `bool`
@@ -8714,6 +8802,7 @@ arguments:
 
 arguments:
 
+- baseAsset: `CommonPrimitivesAssetId32`
 - poolAsset: `CommonPrimitivesAssetId32`
 - rewardAsset: `CommonPrimitivesAssetId32`
 - isFarm: `bool`
@@ -9056,6 +9145,298 @@ arguments:
 - maybeMaxTargets: `Option<u32>`
 <hr>
 
+## Band pallet
+
+### _State Queries_
+
+#### **api.query.band.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.band.trustedRelayers**
+
+arguments: -
+
+returns: `BTreeSet<AccountId32>`
+
+<hr>
+
+#### **api.query.band.symbolRates**
+
+arguments:
+
+- key: `Bytes`
+
+returns: `Option<BandBandRate>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.band.relay**
+
+> Relay a list of symbols and their associated rates along with the resolve time and request id on `BandChain`.
+>
+> Checks if:
+>
+> - The caller is a relayer;
+> - The `resolve_time` for a particular symbol is not lower than previous saved value, ignores this rate if so;
+>
+> If `rates` contains duplicated symbols, then the last rate will be stored.
+>
+> - `origin`: the relayer account on whose behalf the transaction is being executed,
+> - `rates`: symbols with rates in USD represented as fixed point with precision = 9,
+> - `resolve_time`: symbols which rates are provided,
+> - `request_id`: id of the request sent to the _BandChain_ to retrieve this data.
+
+arguments:
+
+- rates: `Vec<(Bytes,u64)>`
+- resolveTime: `u64`
+- requestId: `u64`
+<hr>
+
+#### **api.tx.band.forceRelay**
+
+> Similar to [`relay()`] but without the resolve time guard.
+>
+> Should be used in emergency situations i.e. then previous value was
+> relayed by a faulty/malicious actor.
+>
+> - `origin`: the relayer account on whose behalf the transaction is being executed,
+> - `rates`: symbols with rates in USD represented as fixed point with precision = 9,
+> - `resolve_time`: symbols which rates are provided,
+> - `request_id`: id of the request sent to the _BandChain_ to retrieve this data.
+
+arguments:
+
+- rates: `Vec<(Bytes,u64)>`
+- resolveTime: `u64`
+- requestId: `u64`
+<hr>
+
+#### **api.tx.band.addRelayers**
+
+> Add `account_ids` to the list of trusted relayers.
+>
+> Ignores repeated accounts in `account_ids`.
+> If one of account is already a trusted relayer an [`Error::AlreadyATrustedRelayer`] will
+> be returned.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `account_ids`: list of new trusted relayers to add.
+
+arguments:
+
+- accountIds: `Vec<AccountId32>`
+<hr>
+
+#### **api.tx.band.removeRelayers**
+
+> Remove `account_ids` from the list of trusted relayers.
+>
+> Ignores repeated accounts in `account_ids`.
+> If one of account is not a trusted relayer an [`Error::AlreadyATrustedRelayer`] will
+> be returned.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `account_ids`: list of relayers to remove.
+
+arguments:
+
+- accountIds: `Vec<AccountId32>`
+<hr>
+
+## OracleProxy pallet
+
+### _State Queries_
+
+#### **api.query.oracleProxy.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.oracleProxy.enabledOracles**
+
+arguments: -
+
+returns: `BTreeSet<CommonPrimitivesOracle>`
+
+<hr>
+
+#### **api.query.oracleProxy.symbolProviders**
+
+arguments:
+
+- key: `Bytes`
+
+returns: `CommonPrimitivesOracle`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.oracleProxy.enableOracle**
+
+> Enables a specified oracle
+>
+> Checks if the caller is root
+>
+> - `origin`: the sudo account
+> - `oracle`: oracle variant which should be enabled
+
+arguments:
+
+- oracle: `CommonPrimitivesOracle`
+<hr>
+
+#### **api.tx.oracleProxy.disableOracle**
+
+> Disables a specified oracle
+>
+> Checks if the caller is root
+>
+> - `origin`: the sudo account
+> - `oracle`: oracle variant which should be disabled
+
+arguments:
+
+- oracle: `CommonPrimitivesOracle`
+<hr>
+
+## HermesGovernancePlatform pallet
+
+### _State Queries_
+
+#### **api.query.hermesGovernancePlatform.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.hermesVotings**
+
+> A vote of a particular user for a particular poll
+
+arguments:
+
+- key: `(H256,AccountId32)`
+
+returns: `HermesGovernancePlatformHermesVotingInfo`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.hermesPollData**
+
+arguments:
+
+- key: `H256`
+
+returns: `HermesGovernancePlatformHermesPollInfo`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.minimumHermesVotingAmount**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.minimumHermesAmountForCreatingPoll**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.authorityAccount**
+
+> Account which has permissions for changing Hermes minimum amount for voting and creating a poll
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.hermesGovernancePlatform.vote**
+
+> Vote for some option
+
+arguments:
+
+- pollId: `H256`
+- votingOption: `HermesGovernancePlatformVotingOption`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.createPoll**
+
+> Create poll
+
+arguments:
+
+- pollStartTimestamp: `u64`
+- pollEndTimestamp: `u64`
+- title: `Text`
+- description: `Text`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.withdrawFundsVoter**
+
+> Withdraw funds voter
+
+arguments:
+
+- pollId: `H256`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.withdrawFundsCreator**
+
+> Withdraw funds creator
+
+arguments:
+
+- pollId: `H256`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.changeMinHermesForVoting**
+
+> Change minimum Hermes for voting
+
+arguments:
+
+- hermesAmount: `u128`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.changeMinHermesForCreatingPoll**
+
+> Change minimum Hermes for creating a poll
+
+arguments:
+
+- hermesAmount: `u128`
+<hr>
+
 ## Beefy pallet
 
 ### _State Queries_
@@ -9102,16 +9483,6 @@ returns: `Vec<BeefyPrimitivesCryptoPublic>`
 
 ### _Custom RPCs_
 
-#### **api.rpc.beefy.subscribeJustifications**
-
-> Returns the block most recently finalized by BEEFY, alongside side its justification.
-
-arguments: -
-
-returns: `BeefySignedCommitment`
-
-<hr>
-
 #### **api.rpc.beefy.getFinalizedHead**
 
 > Returns hash of the latest BEEFY finalized block as seen by this client.
@@ -9119,6 +9490,16 @@ returns: `BeefySignedCommitment`
 arguments: -
 
 returns: `H256`
+
+<hr>
+
+#### **api.rpc.beefy.subscribeJustifications**
+
+> Returns the block most recently finalized by BEEFY, alongside side its justification.
+
+arguments: -
+
+returns: `BeefySignedCommitment`
 
 <hr>
 
@@ -9340,6 +9721,19 @@ arguments:
 - filterMode: `CommonPrimitivesFilterMode`
 <hr>
 
+#### **api.tx.liquidityProxy.swapTransferBatch**
+
+arguments:
+
+- receivers: `Vec<LiquidityProxyBatchReceiverInfo>`
+- dexId: `u32`
+- inputAssetId: `CommonPrimitivesAssetId32`
+- outputAssetId: `CommonPrimitivesAssetId32`
+- maxInputAmount: `u128`
+- selectedSourceTypes: `Vec<CommonPrimitivesLiquiditySourceType>`
+- filterMode: `CommonPrimitivesFilterMode`
+<hr>
+
 #### **api.tx.liquidityProxy.enableLiquiditySource**
 
 > Enables XST or TBC liquidity source.
@@ -9477,18 +9871,6 @@ returns: `bool`
 
 <hr>
 
-#### **api.rpc.author.removeExtrinsic**
-
-> Remove given extrinsic from the pool and temporarily ban it to prevent reimporting
-
-arguments:
-
-- bytesOrHash: `Vec<ExtrinsicOrHash>`
-
-returns: `Vec<Hash>`
-
-<hr>
-
 #### **api.rpc.author.insertKey**
 
 > Insert a key into the keystore.
@@ -9498,16 +9880,6 @@ arguments:
 - keyType: `Text`
 - suri: `Text`
 - publicKey: `Bytes`
-
-returns: `Bytes`
-
-<hr>
-
-#### **api.rpc.author.rotateKeys**
-
-> Generate new session keys and returns the corresponding public keys
-
-arguments: -
 
 returns: `Bytes`
 
@@ -9523,15 +9895,25 @@ returns: `Vec<Extrinsic>`
 
 <hr>
 
-#### **api.rpc.author.submitExtrinsic**
+#### **api.rpc.author.removeExtrinsic**
 
-> Submit a fully formatted extrinsic for block inclusion
+> Remove given extrinsic from the pool and temporarily ban it to prevent reimporting
 
 arguments:
 
-- extrinsic: `Extrinsic`
+- bytesOrHash: `Vec<ExtrinsicOrHash>`
 
-returns: `Hash`
+returns: `Vec<Hash>`
+
+<hr>
+
+#### **api.rpc.author.rotateKeys**
+
+> Generate new session keys and returns the corresponding public keys
+
+arguments: -
+
+returns: `Bytes`
 
 <hr>
 
@@ -9547,21 +9929,21 @@ returns: `ExtrinsicStatus`
 
 <hr>
 
-## Chain pallet
+#### **api.rpc.author.submitExtrinsic**
 
-### _Custom RPCs_
-
-#### **api.rpc.chain.getHeader**
-
-> Retrieves the header for a specific block
+> Submit a fully formatted extrinsic for block inclusion
 
 arguments:
 
-- hash: `BlockHash`
+- extrinsic: `Extrinsic`
 
-returns: `Header`
+returns: `Hash`
 
 <hr>
+
+## Chain pallet
+
+### _Custom RPCs_
 
 #### **api.rpc.chain.getBlock**
 
@@ -9597,9 +9979,21 @@ returns: `BlockHash`
 
 <hr>
 
-#### **api.rpc.chain.subscribeNewHeads**
+#### **api.rpc.chain.getHeader**
 
-> Retrieves the best header via subscription
+> Retrieves the header for a specific block
+
+arguments:
+
+- hash: `BlockHash`
+
+returns: `Header`
+
+<hr>
+
+#### **api.rpc.chain.subscribeAllHeads**
+
+> Retrieves the newest header via subscription
 
 arguments: -
 
@@ -9617,9 +10011,9 @@ returns: `Header`
 
 <hr>
 
-#### **api.rpc.chain.subscribeAllHeads**
+#### **api.rpc.chain.subscribeNewHeads**
 
-> Retrieves the newest header via subscription
+> Retrieves the best header via subscription
 
 arguments: -
 
@@ -9751,6 +10145,19 @@ returns: `MmrLeafBatchProof`
 
 ### _Custom RPCs_
 
+#### **api.rpc.offchain.localStorageGet**
+
+> Get offchain local storage under given key and prefix
+
+arguments:
+
+- kind: `StorageKind`
+- key: `Bytes`
+
+returns: `Option<Bytes>`
+
+<hr>
+
 #### **api.rpc.offchain.localStorageSet**
 
 > Set offchain local storage under given key and prefix
@@ -9765,35 +10172,9 @@ returns: `Null`
 
 <hr>
 
-#### **api.rpc.offchain.localStorageGet**
-
-> Get offchain local storage under given key and prefix
-
-arguments:
-
-- kind: `StorageKind`
-- key: `Bytes`
-
-returns: `Option<Bytes>`
-
-<hr>
-
 ## Payment pallet
 
 ### _Custom RPCs_
-
-#### **api.rpc.payment.queryInfo**
-
-> Retrieves the fee information for an encoded extrinsic
-
-arguments:
-
-- extrinsic: `Bytes`
-- at: `BlockHash`
-
-returns: `RuntimeDispatchInfo`
-
-<hr>
 
 #### **api.rpc.payment.queryFeeDetails**
 
@@ -9805,6 +10186,19 @@ arguments:
 - at: `BlockHash`
 
 returns: `FeeDetails`
+
+<hr>
+
+#### **api.rpc.payment.queryInfo**
+
+> Retrieves the fee information for an encoded extrinsic
+
+arguments:
+
+- extrinsic: `Bytes`
+- at: `BlockHash`
+
+returns: `RuntimeDispatchInfo`
 
 <hr>
 
@@ -9840,6 +10234,20 @@ returns: `Bytes`
 
 <hr>
 
+#### **api.rpc.state.getChildReadProof**
+
+> Returns proof of storage for child key entries at a specific block state.
+
+arguments:
+
+- childStorageKey: `PrefixedStorageKey`
+- keys: `Vec<StorageKey>`
+- at: `BlockHash`
+
+returns: `ReadProof`
+
+<hr>
+
 #### **api.rpc.state.getKeys**
 
 > Retrieves the keys with a certain prefix
@@ -9850,6 +10258,33 @@ arguments:
 - at: `BlockHash`
 
 returns: `Vec<StorageKey>`
+
+<hr>
+
+#### **api.rpc.state.getKeysPaged**
+
+> Returns the keys with prefix with pagination support.
+
+arguments:
+
+- key: `StorageKey`
+- count: `u32`
+- startKey: `StorageKey`
+- at: `BlockHash`
+
+returns: `Vec<StorageKey>`
+
+<hr>
+
+#### **api.rpc.state.getMetadata**
+
+> Returns the runtime metadata
+
+arguments:
+
+- at: `BlockHash`
+
+returns: `Metadata`
 
 <hr>
 
@@ -9866,18 +10301,28 @@ returns: `Vec<KeyValue>`
 
 <hr>
 
-#### **api.rpc.state.getKeysPaged**
+#### **api.rpc.state.getReadProof**
 
-> Returns the keys with prefix with pagination support.
+> Returns proof of storage entries at a specific block state
 
 arguments:
 
-- key: `StorageKey`
-- count: `u32`
-- startKey: `StorageKey`
+- keys: `Vec<StorageKey>`
 - at: `BlockHash`
 
-returns: `Vec<StorageKey>`
+returns: `ReadProof`
+
+<hr>
+
+#### **api.rpc.state.getRuntimeVersion**
+
+> Get the runtime version
+
+arguments:
+
+- at: `BlockHash`
+
+returns: `RuntimeVersion`
 
 <hr>
 
@@ -9920,30 +10365,6 @@ returns: `u64`
 
 <hr>
 
-#### **api.rpc.state.getMetadata**
-
-> Returns the runtime metadata
-
-arguments:
-
-- at: `BlockHash`
-
-returns: `Metadata`
-
-<hr>
-
-#### **api.rpc.state.getRuntimeVersion**
-
-> Get the runtime version
-
-arguments:
-
-- at: `BlockHash`
-
-returns: `RuntimeVersion`
-
-<hr>
-
 #### **api.rpc.state.queryStorage**
 
 > Query historical storage entries (by key) starting from a start block
@@ -9968,33 +10389,6 @@ arguments:
 - at: `BlockHash`
 
 returns: `Vec<StorageChangeSet>`
-
-<hr>
-
-#### **api.rpc.state.getChildReadProof**
-
-> Returns proof of storage for child key entries at a specific block state.
-
-arguments:
-
-- childStorageKey: `PrefixedStorageKey`
-- keys: `Vec<StorageKey>`
-- at: `BlockHash`
-
-returns: `ReadProof`
-
-<hr>
-
-#### **api.rpc.state.getReadProof**
-
-> Returns proof of storage entries at a specific block state
-
-arguments:
-
-- keys: `Vec<StorageKey>`
-- at: `BlockHash`
-
-returns: `ReadProof`
 
 <hr>
 
@@ -11241,7 +11635,8 @@ returns: `Option<SwapOutcomeInfo>`
         "DAI",
         "ETH",
         "XSTUSD",
-        "XST"
+        "XST",
+        "TBCD"
     ]
 }
 ```

@@ -57,6 +57,7 @@ export type QuotePayload = {
     tbc: {
       initialPrice: CodecString;
       priceChangeStep: CodecString;
+      priceChangeRate: CodecString;
       sellPriceCoefficient: CodecString;
       referenceAsset: string;
     };

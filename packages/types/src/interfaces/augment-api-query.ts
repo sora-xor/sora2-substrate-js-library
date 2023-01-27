@@ -793,7 +793,7 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       assetsWithOptionalRewardMultiplier: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<FixnumFixedPoint>>, [CommonPrimitivesAssetId32]>;
       /**
-       * Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
+       * Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%
        **/
       baseFee: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
@@ -801,20 +801,20 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       collateralReserves: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<u128>, [CommonPrimitivesAssetId32]>;
       /**
-       * Accounts that receive 20% buy/sell margin according predefined proportions.
+       * Accounts that receive 20% buy/sell margin according to predefined proportions
        **/
       distributionAccountsEntry: AugmentedQuery<ApiType, () => Observable<MulticollateralBondingCurvePoolDistributionAccounts>, []>;
       /**
-       * Collateral Assets allowed to be sold on bonding curve.
+       * Collateral Assets allowed to be sold by the token bonding curve
        **/
       enabledTargets: AugmentedQuery<ApiType, () => Observable<BTreeSet<CommonPrimitivesAssetId32>>, []>;
       freeReservesAccountId: AugmentedQuery<ApiType, () => Observable<Option<AccountId32>>, []>;
       /**
-       * Account which stores actual PSWAP intended for rewards.
+       * Account which stores actual PSWAP intended for rewards
        **/
       incentivesAccountId: AugmentedQuery<ApiType, () => Observable<Option<AccountId32>>, []>;
       /**
-       * Number of reserve currencies selling which user will get rewards, namely all registered collaterals except PSWAP and VAL.
+       * Number of reserve currencies selling which user will get rewards, namely all registered collaterals except PSWAP and VAL
        **/
       incentivisedCurrenciesNum: AugmentedQuery<ApiType, () => Observable<u32>, []>;
       /**
@@ -823,7 +823,7 @@ declare module '@polkadot/api-base/types/storage' {
       initialPrice: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
        * Amount of PSWAP initially stored in account dedicated for TBC rewards. Actual account balance will deplete over time,
-       * however this constant is not modified.
+       * however this constant is not modified
        **/
       initialPswapRewardsSupply: AugmentedQuery<ApiType, () => Observable<u128>, []>;
       pendingFreeReserves: AugmentedQuery<ApiType, () => Observable<Vec<ITuple<[CommonPrimitivesAssetId32, u128]>>>, []>;
@@ -833,7 +833,7 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       priceChangeStep: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
-       * Asset that is used to compare collateral assets by value, e.g., DAI.
+       * Asset that is used to compare collateral assets by value, e.g., DAI
        **/
       referenceAssetId: AugmentedQuery<ApiType, () => Observable<CommonPrimitivesAssetId32>, []>;
       /**
@@ -849,7 +849,7 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       sellPriceCoefficient: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
-       * Total amount of PSWAP owned by accounts.
+       * Total amount of PSWAP owned by accounts
        **/
       totalRewards: AugmentedQuery<ApiType, () => Observable<u128>, []>;
     };
