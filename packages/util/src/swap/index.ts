@@ -267,7 +267,7 @@ export class SwapModule<T> {
     // Assets that have average price data (storage has prices only for collateral TBC assets), DAI required
     const assetsWithAveragePrices = [...new Set([...assetsWithTbcReserves, dai])];
     // Assets for which we need to know the total supply
-    const assetsWithIssuances = [xor, xstusd];
+    const assetsWithIssuances = [xor];
 
     const xykReserves = assetsWithXykReserves.map((address) =>
       toCodec(this.root.apiRx.query.poolXYK.reserves(baseAssetId, address))
@@ -285,17 +285,13 @@ export class SwapModule<T> {
       tbcUsed || xstUsed ? assetsWithAveragePrices.map((address) => getAssetAveragePrice(this.root, address)) : [];
 
     // if TBC source available
-    const assetsIssuances = tbcUsed
-      ? [
-          toCodec(this.root.apiRx.query.balances.totalIssuance()),
-          toCodec(this.root.apiRx.query.tokens.totalIssuance(xstusd)),
-        ]
-      : [];
+    const assetsIssuances = tbcUsed ? [toCodec(this.root.apiRx.query.balances.totalIssuance())] : [];
 
     const tbcConsts = tbcUsed
       ? [
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.initialPrice()),
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.priceChangeStep()),
+          fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.priceChangeRate()),
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.sellPriceCoefficient()),
           toAssetId(this.root.apiRx.query.multicollateralBondingCurvePool.referenceAssetId()),
         ]
@@ -326,7 +322,7 @@ export class SwapModule<T> {
         );
         const tbc: Array<string> = data.slice(position, (position += tbcReserves.length));
         const xyk: Array<[string, string]> = data.slice(position, (position += xykReserves.length));
-        const [initialPrice, priceChangeStep, sellPriceCoefficient, tbcReferenceAsset] = data.slice(
+        const [initialPrice, priceChangeStep, priceChangeRate, sellPriceCoefficient, tbcReferenceAsset] = data.slice(
           position,
           (position += tbcConsts.length)
         );
@@ -344,6 +340,7 @@ export class SwapModule<T> {
             tbc: {
               initialPrice,
               priceChangeStep,
+              priceChangeRate,
               sellPriceCoefficient,
               referenceAsset: tbcReferenceAsset,
             },

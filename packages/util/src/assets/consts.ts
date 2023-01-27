@@ -13,6 +13,7 @@ export enum KnownSymbols {
   ETH = 'ETH',
   XSTUSD = 'XSTUSD',
   XST = 'XST',
+  TBCD = 'TBCD',
 }
 
 const ZERO_STR = '0';
@@ -86,6 +87,12 @@ export const NativeAssets = new ArrayLike<Asset>([
     name: 'SORA Synthetics',
     decimals: FPNumber.DEFAULT_PRECISION,
   },
+  {
+    address: '0x02000a0000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.TBCD,
+    name: 'SORA Token Bonding Curve Dollar',
+    decimals: FPNumber.DEFAULT_PRECISION,
+  },
 ]);
 
 export const KnownAssets = new ArrayLike<Asset>([
@@ -111,3 +118,4 @@ export const XSTUSD = NativeAssets.get(KnownSymbols.XSTUSD);
 export const DAI = KnownAssets.get(KnownSymbols.DAI);
 export const ETH = KnownAssets.get(KnownSymbols.ETH);
 export const XST = KnownAssets.get(KnownSymbols.XST);
+export const TBCD = KnownAssets.get(KnownSymbols.TBCD);
