@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { Bytes, Compact, Option, Result, Text, U8aFixed, Vec, WrapperKeepOpaque, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportScheduleMaybeHashed, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, LiquidityProxyBatchReceiverInfo, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeHeader, SpSessionMembershipProof } from '@polkadot/types/lookup';
+import type { CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportScheduleMaybeHashed, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, HermesGovernancePlatformVotingOption, LiquidityProxyBatchReceiverInfo, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeHeader, SpSessionMembershipProof } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -494,6 +494,10 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       changeCeresContributionFee: AugmentedSubmittable<(ceresFee: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
+       * Change fee percent on raised funds in successful ILO
+       **/
+      changeFeePercentForRaisedFunds: AugmentedSubmittable<(feePercent: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      /**
        * Claim tokens
        **/
       claim: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
@@ -512,7 +516,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Create ILO
        **/
-      createIlo: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, tokensForIlo: u128 | AnyNumber | Uint8Array, tokensForLiquidity: u128 | AnyNumber | Uint8Array, iloPrice: u128 | AnyNumber | Uint8Array, softCap: u128 | AnyNumber | Uint8Array, hardCap: u128 | AnyNumber | Uint8Array, minContribution: u128 | AnyNumber | Uint8Array, maxContribution: u128 | AnyNumber | Uint8Array, refundType: bool | boolean | Uint8Array, liquidityPercent: u128 | AnyNumber | Uint8Array, listingPrice: u128 | AnyNumber | Uint8Array, lockupDays: u32 | AnyNumber | Uint8Array, startTimestamp: u64 | AnyNumber | Uint8Array, endTimestamp: u64 | AnyNumber | Uint8Array, teamVestingTotalTokens: u128 | AnyNumber | Uint8Array, teamVestingFirstReleasePercent: u128 | AnyNumber | Uint8Array, teamVestingPeriod: u64 | AnyNumber | Uint8Array, teamVestingPercent: u128 | AnyNumber | Uint8Array, firstReleasePercent: u128 | AnyNumber | Uint8Array, vestingPeriod: u64 | AnyNumber | Uint8Array, vestingPercent: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128, bool, u128, u128, u32, u64, u64, u128, u128, u64, u128, u128, u64, u128]>;
+      createIlo: AugmentedSubmittable<(baseAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, tokensForIlo: u128 | AnyNumber | Uint8Array, tokensForLiquidity: u128 | AnyNumber | Uint8Array, iloPrice: u128 | AnyNumber | Uint8Array, softCap: u128 | AnyNumber | Uint8Array, hardCap: u128 | AnyNumber | Uint8Array, minContribution: u128 | AnyNumber | Uint8Array, maxContribution: u128 | AnyNumber | Uint8Array, refundType: bool | boolean | Uint8Array, liquidityPercent: u128 | AnyNumber | Uint8Array, listingPrice: u128 | AnyNumber | Uint8Array, lockupDays: u32 | AnyNumber | Uint8Array, startTimestamp: u64 | AnyNumber | Uint8Array, endTimestamp: u64 | AnyNumber | Uint8Array, teamVestingTotalTokens: u128 | AnyNumber | Uint8Array, teamVestingFirstReleasePercent: u128 | AnyNumber | Uint8Array, teamVestingPeriod: u64 | AnyNumber | Uint8Array, teamVestingPercent: u128 | AnyNumber | Uint8Array, firstReleasePercent: u128 | AnyNumber | Uint8Array, vestingPeriod: u64 | AnyNumber | Uint8Array, vestingPercent: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128, bool, u128, u128, u32, u64, u64, u128, u128, u64, u128, u128, u64, u128]>;
       /**
        * Emergency withdraw
        **/
@@ -1484,6 +1488,32 @@ declare module '@polkadot/api-base/types/submittable' {
        * reporter.
        **/
       reportEquivocationUnsigned: AugmentedSubmittable<(equivocationProof: SpFinalityGrandpaEquivocationProof | { setId?: any; equivocation?: any } | string | Uint8Array, keyOwnerProof: SpSessionMembershipProof | { session?: any; trieNodes?: any; validatorCount?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [SpFinalityGrandpaEquivocationProof, SpSessionMembershipProof]>;
+    };
+    hermesGovernancePlatform: {
+      /**
+       * Change minimum Hermes for creating a poll
+       **/
+      changeMinHermesForCreatingPoll: AugmentedSubmittable<(hermesAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      /**
+       * Change minimum Hermes for voting
+       **/
+      changeMinHermesForVoting: AugmentedSubmittable<(hermesAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      /**
+       * Create poll
+       **/
+      createPoll: AugmentedSubmittable<(pollStartTimestamp: u64 | AnyNumber | Uint8Array, pollEndTimestamp: u64 | AnyNumber | Uint8Array, title: Text | string, description: Text | string) => SubmittableExtrinsic<ApiType>, [u64, u64, Text, Text]>;
+      /**
+       * Vote for some option
+       **/
+      vote: AugmentedSubmittable<(pollId: H256 | string | Uint8Array, votingOption: HermesGovernancePlatformVotingOption | 'Yes' | 'No' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, HermesGovernancePlatformVotingOption]>;
+      /**
+       * Withdraw funds creator
+       **/
+      withdrawFundsCreator: AugmentedSubmittable<(pollId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
+      /**
+       * Withdraw funds voter
+       **/
+      withdrawFundsVoter: AugmentedSubmittable<(pollId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
     identity: {
       /**
