@@ -4171,6 +4171,30 @@
                     ]
                 }
             }
+        },
+        {
+            "runtime_range": [
+                44,
+                null
+            ],
+            "types": {
+                "PredefinedAssetId": {
+                    "type": "enum",
+                    "value_list": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST",
+                        "TBCD"
+                    ]
+                }
+            }
         }
     ]
 }
