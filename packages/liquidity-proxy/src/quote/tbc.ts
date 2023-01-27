@@ -424,17 +424,17 @@ const tbcBuyPriceWithFee = (
 };
 
 export const tbcBuyPriceNoVolume = (collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const xorPrice = tbcBuyFunction(collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
-  const collateralPrice = tbcReferencePrice(collateralAsset, PriceVariant.Sell, payload);
+  const basePriceWrtRef = tbcBuyFunction(collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAsset, PriceVariant.Sell, payload);
 
-  return safeDivide(xorPrice, collateralPrice);
+  return safeDivide(basePriceWrtRef, collateralPricePerReferenceUnit);
 };
 
 export const tbcSellPriceNoVolume = (collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const xorPrice = tbcSellFunction(collateralAsset, FPNumber.ZERO, payload);
-  const collateralPrice = tbcReferencePrice(collateralAsset, PriceVariant.Buy, payload);
+  const basePriceWrtRef = tbcSellFunction(collateralAsset, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAsset, PriceVariant.Buy, payload);
 
-  return safeDivide(xorPrice, collateralPrice);
+  return safeDivide(basePriceWrtRef, collateralPricePerReferenceUnit);
 };
 
 export const tbcQuoteWithoutImpact = (
