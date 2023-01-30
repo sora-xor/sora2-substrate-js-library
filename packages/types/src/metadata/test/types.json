@@ -580,7 +580,8 @@
             "DAI",
             "ETH",
             "XSTUSD",
-            "XST"
+            "XST",
+            "TBCD"
         ]
     },
     "PriceInfo": {
