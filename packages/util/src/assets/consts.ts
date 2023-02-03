@@ -90,7 +90,7 @@ export const NativeAssets = new ArrayLike<Asset>([
   {
     address: '0x02000a0000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.TBCD,
-    name: 'SORA Token Bonding Curve Dollar',
+    name: 'SORA TBC Dollar',
     decimals: FPNumber.DEFAULT_PRECISION,
   },
 ]);

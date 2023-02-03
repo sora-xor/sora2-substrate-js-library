@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/types",
-  "version": "1.14.4",
+  "version": "1.14.5",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -13,7 +13,7 @@
     "@polkadot/api": "9.6.2",
     "@polkadot/typegen": "9.6.2",
     "@polkadot/types": "9.6.2",
-    "@sora-substrate/type-definitions": "1.14.4"
+    "@sora-substrate/type-definitions": "1.14.5"
   },
   "devDependencies": {
     "@babel/runtime": "^7.10.2",
