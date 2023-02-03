@@ -18,6 +18,7 @@ import type {
   QuotePayload,
   QuoteResult,
   QuotePaths,
+  QuoteIntermediate,
   Distribution,
   SwapResult,
   LPRewardsInfo,
@@ -40,7 +41,7 @@ const determine = (
 ): AssetType => {
   if (assetId === baseAssetId) {
     return AssetType.Base;
-  } else if (assetId == syntheticBaseAssetId) {
+  } else if (assetId === syntheticBaseAssetId) {
     return AssetType.SyntheticBase;
   } else if (syntheticAssets.includes(assetId)) {
     return AssetType.Synthetic;
@@ -368,8 +369,8 @@ const smartSplit = (
 
   if (isGreaterThanZero(primaryAmount)) {
     const outcomePrimary = quotePrimaryMarket(inputAsset, outputAsset, primaryAmount, isDesiredInput, payload);
-
-    if (FPNumber.isLessThan(primaryAmount, amount)) {
+    // check that outcomePrimary is not zero
+    if (FPNumber.isLessThan(primaryAmount, amount) && !outcomePrimary.amount.isZero()) {
       const incomeSecondary = amount.sub(primaryAmount);
       const outcomeSecondary = xykQuote(inputAsset, outputAsset, incomeSecondary, isDesiredInput, payload, baseAssetId);
 
@@ -470,7 +471,7 @@ export const quote = (
   payload: QuotePayload,
   baseAssetId = Consts.XOR
 ): SwapResult => {
-  let bestQuote = {
+  let bestQuote: QuoteIntermediate = {
     amount: FPNumber.ZERO,
     amountWithoutImpact: FPNumber.ZERO,
     fee: FPNumber.ZERO,
@@ -483,7 +484,7 @@ export const quote = (
     const directedPath = isDesiredInput ? exchangePath : exchangePath.slice().reverse();
 
     try {
-      const result = directedPath.reduce(
+      const result = directedPath.reduce<QuoteIntermediate>(
         (buffer, currentAsset) => {
           if (buffer.amount.isZero()) {
             throw new Error('[liquidityProxy]: zero amount received while processing exchange path');

@@ -21,6 +21,15 @@ export type Distribution = {
   fee: FPNumber;
 };
 
+export type QuoteIntermediate = {
+  amount: FPNumber;
+  amountWithoutImpact: FPNumber;
+  fee: FPNumber;
+  rewards: LPRewardsInfo[];
+  path: string[];
+  distribution: Distribution[][];
+};
+
 export interface SwapResult {
   amount: CodecString;
   fee: CodecString;
