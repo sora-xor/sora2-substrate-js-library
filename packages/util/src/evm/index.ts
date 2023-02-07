@@ -2,7 +2,7 @@ import { map } from 'rxjs';
 import { assert } from '@polkadot/util';
 import { FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
-import type { EvmBridgeProxyBridgeRequest } from '@polkadot/types/lookup';
+// import type { EvmBridgeProxyBridgeRequest } from '@polkadot/types/lookup';
 import type { Option } from '@polkadot/types-codec';
 
 import { BaseApi, isEvmOperation, Operation } from '../BaseApi';
@@ -10,6 +10,8 @@ import { Asset } from '../assets/types';
 import { Messages } from '../logger';
 import { EvmDirection, EvmNetworkId, EvmTxStatus } from './consts';
 import type { EvmAsset, EvmNetwork, EvmHistory, EvmTransaction } from './types';
+// TODO: remove
+type EvmBridgeProxyBridgeRequest = any;
 
 function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): EvmTransaction | null {
   if (!data.isSome) {
@@ -97,7 +99,7 @@ export class EvmApi extends BaseApi {
     // TODO: NetworkId will be fixed on backend. We should update type and remove this line below
     const networkId = this.externalNetwork.toString(16);
 
-    const result = await this.api.rpc.evmBridgeProxy.listAppsWithSupportedAssets(networkId);
+    const result = await (this.api.rpc.evmBridgeProxy as any).listAppsWithSupportedAssets(networkId);
 
     result.forEach((app) => {
       app.supportedAssets.forEach((assetId) => {
