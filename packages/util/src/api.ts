@@ -8,7 +8,7 @@ import type { KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
-import { BaseApi, Operation, KeyringType, isBridgeOperation } from './BaseApi';
+import { BaseApi, Operation, KeyringType } from './BaseApi';
 import { Messages } from './logger';
 import { BridgeApi } from './BridgeApi';
 import { SwapModule } from './swap';
@@ -51,42 +51,9 @@ export class Api<T = void> extends BaseApi<T> {
   public initAccountStorage() {
     super.initAccountStorage();
     this.bridge.initAccountStorage();
-
-    // since 1.7.15 history should be saved as object
-    if (this.accountStorage) {
-      const oldHistory = this.history;
-
-      if (Array.isArray(oldHistory)) {
-        this.runHistoryListToObjectMigration(oldHistory);
-        this.historySyncTimestamp = 0;
-        this.accountStorage.remove('historySyncOperations');
-      }
-    }
   }
 
   // # History methods
-  /**
-   * Save history items in storage as object
-   * @param list array of history items
-   */
-  private runHistoryListToObjectMigration(list: Array<HistoryItem>) {
-    const history = {};
-    const bridgeHistory = {};
-
-    for (const item of list) {
-      if (!item.id) continue;
-      if (isBridgeOperation(item.type)) {
-        bridgeHistory[item.id] = item;
-      } else {
-        // 'txId' has higher priority
-        history[item.txId || item.id] = item;
-      }
-    }
-
-    this.history = history;
-    this.bridge.history = bridgeHistory;
-  }
-
   /**
    * Remove all history
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
@@ -164,13 +131,6 @@ export class Api<T = void> extends BaseApi<T> {
 
     // Update available dex list
     await this.dex.updateList();
-
-    // [1.9.9]: Migration from 'isExternal' to 'source' in localstorage
-    if (Boolean(this.storage?.get('isExternal'))) {
-      this.storage?.remove('isExternal');
-      this.logout();
-      return;
-    }
   }
 
   /**
@@ -203,9 +163,10 @@ export class Api<T = void> extends BaseApi<T> {
     this.setAccount(account);
 
     if (this.storage) {
+      const soraAddress = this.formatAddress(account.pair.address);
+
       this.storage.set('name', name);
       this.storage.set('password', encrypt(password));
-      const soraAddress = this.formatAddress(account.pair.address);
       this.storage.set('address', soraAddress);
     }
 
@@ -225,8 +186,9 @@ export class Api<T = void> extends BaseApi<T> {
     this.setAccount(account);
 
     if (this.storage) {
-      this.storage.set('name', name);
       const soraAddress = this.formatAddress(account.pair.address);
+
+      this.storage.set('name', name);
       this.storage.set('address', soraAddress);
     }
 
@@ -340,6 +302,7 @@ export class Api<T = void> extends BaseApi<T> {
 
     if (this.storage) {
       const soraAddress = this.formatAddress(account.pair.address);
+
       this.storage.set('name', name);
       this.storage.set('address', soraAddress);
       this.storage.set('source', source);

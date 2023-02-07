@@ -61,6 +61,9 @@ export type AccountHistory<T> = {
 export const isBridgeOperation = (operation: Operation) =>
   [Operation.EthBridgeIncoming, Operation.EthBridgeOutgoing].includes(operation);
 
+export const isEvmOperation = (operation: Operation) =>
+  [Operation.EvmIncoming, Operation.EvmOutgoing].includes(operation);
+
 const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
 
@@ -100,7 +103,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   protected readonly prefix = 69;
 
   private _history: AccountHistory<HistoryItem> = {};
-  private _historySyncTimestamp: number = 0;
 
   /**
    * Will **account pair** be locked after TX signing.
@@ -180,19 +182,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
   public get historyList(): Array<HistoryItem> {
     return Object.values(this.history);
-  }
-
-  public get historySyncTimestamp(): number {
-    if (this.accountStorage) {
-      const historySyncTimestamp = this.accountStorage.get('historySyncTimestamp');
-      this._historySyncTimestamp = historySyncTimestamp ? JSON.parse(historySyncTimestamp) : 0;
-    }
-    return this._historySyncTimestamp;
-  }
-
-  public set historySyncTimestamp(value: number) {
-    this.accountStorage?.set('historySyncTimestamp', JSON.stringify(value));
-    this._historySyncTimestamp = value;
   }
 
   public getHistory(id: string): HistoryItem | null {
@@ -366,7 +355,10 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 // events for 1st token and 2nd token are ordered in extrinsic
                 const amountKey = !history.amount ? 'amount' : 'amount2';
                 history[amountKey] = amountFormatted;
-              } else if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
+              } else if (
+                (method === 'RequestRegistered' && isBridgeOperation(history.type)) ||
+                (method === 'RequestStatusUpdate' && isEvmOperation(history.type))
+              ) {
                 history.hash = first(data.toJSON());
               } else if (section === 'system' && method === 'ExtrinsicFailed') {
                 history.status = TransactionStatus.Error;
@@ -686,6 +678,8 @@ export enum Operation {
   RegisterAsset = 'RegisterAsset',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
+  EvmOutgoing = 'EvmOutgoing',
+  EvmIncoming = 'EvmIncoming',
   ClaimRewards = 'ClaimRewards',
   /** it's used for calc network fee */
   ClaimVestedRewards = 'ClaimVestedRewards',
