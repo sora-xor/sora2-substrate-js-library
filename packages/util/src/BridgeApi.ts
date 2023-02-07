@@ -199,26 +199,6 @@ export class BridgeApi<T> extends BaseApi<T> {
   }
 
   /**
-   * **NOT USED** cuz we do not need to execute it manually
-   * Request from Ethereum
-   * @param hash Eth hash of transaction
-   * @param type Type of operation, "Transfer" is set by default
-   */
-  public requestFromEth(hash: string, type: RequestType = RequestType.Transfer): Promise<T> {
-    assert(this.account, Messages.connectWallet);
-    const historyItem = this.historyList.find((item: BridgeHistory) => item.hash === hash);
-    const kind = { [IncomingRequestKind.Transaction]: type };
-    return this.submitExtrinsic(
-      this.api.tx.ethBridge.requestFromSidechain(hash, kind, this.externalNetwork),
-      this.account.pair,
-      historyItem ?? {
-        type: Operation.EthBridgeIncoming,
-        hash,
-      }
-    );
-  }
-
-  /**
    * Get registered assets for bridge
    * @returns Array with all registered assets
    */
@@ -312,28 +292,6 @@ export class BridgeApi<T> extends BaseApi<T> {
     return formattedItem;
   }
 
-  /**
-   * Get request. This method is just for UI (history of transaction)
-   * @param hash Bridge hash
-   * @returns History of request
-   */
-  public async getRequest(hash: string): Promise<BridgeRequest> {
-    const data = await this.api.rpc.ethBridge.getRequests([hash], this.externalNetwork, true);
-    assertRequest(data, 'api.bridge.getRequest');
-    return first(data.asOk.map(([request, status]) => this.formatRequest(request, status)));
-  }
-
-  /**
-   * Get requests. This method is just for UI (history collection)
-   * @param hashes Array with bridge hashes
-   * @returns Array with history of requests
-   */
-  public async getRequests(hashes: Array<string>): Promise<Array<BridgeRequest>> {
-    const data = await this.api.rpc.ethBridge.getRequests(hashes, this.externalNetwork, true);
-    assertRequest(data, 'api.bridge.getRequests');
-    return data.asOk.map(([request, status]) => this.formatRequest(request, status));
-  }
-
   private formatApprovedRequest(request: OutgoingRequestEncoded, proofs: Vec<SignatureParams>): BridgeApprovedRequest {
     const formattedItem = {} as BridgeApprovedRequest;
     const transferRequest = request.asTransfer;
@@ -368,30 +326,6 @@ export class BridgeApi<T> extends BaseApi<T> {
     const data = await this.api.rpc.ethBridge.getApprovedRequests([hash], this.externalNetwork);
     assertRequest(data, 'api.bridge.getApprovedRequest');
     return first(data.asOk.map(([request, proofs]) => this.formatApprovedRequest(request, proofs)));
-  }
-
-  /**
-   * Get approved requests
-   * @param hashes Array with account hashes for bridge
-   * @returns Array with approved requests with proofs
-   */
-  public async getApprovedRequests(hashes: Array<string>): Promise<Array<BridgeApprovedRequest>> {
-    const data = await this.api.rpc.ethBridge.getApprovedRequests(hashes, this.externalNetwork);
-    assertRequest(data, 'api.bridge.getApprovedRequests');
-    return data.asOk.map(([request, proofs]) => this.formatApprovedRequest(request, proofs));
-  }
-
-  /**
-   * Get account requests
-   * @returns Array with hashes
-   */
-  public async getAccountRequests(status = BridgeTxStatus.Ready): Promise<Array<string>> {
-    assert(this.account, Messages.connectWallet);
-    const data = await this.api.rpc.ethBridge.getAccountRequests(this.account.pair.address, status);
-    assertRequest(data, 'api.bridge.getAccountRequests');
-    return data.asOk
-      .filter(([networkId, _]) => networkId.toNumber() === this.externalNetwork)
-      .map(([_, hash]) => hash.toString()) as Array<string>;
   }
 
   /**
