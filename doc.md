@@ -7348,6 +7348,13 @@ arguments:
 - assetId: `CommonPrimitivesAssetId32`
 <hr>
 
+#### **api.tx.vestedRewards.updateRewards**
+
+arguments:
+
+- rewards: `BTreeMap<AccountId32,BTreeMap<CommonPrimitivesRewardReason,u128>>`
+<hr>
+
 ### _Custom RPCs_
 
 #### **api.rpc.vestedRewards.crowdloanClaimable**
@@ -10914,6 +10921,30 @@ returns: `Option<SwapOutcomeInfo>`
 "Vec<u8>"
 ```
 
+### HermesPollInfo
+
+```
+{
+    creator: "AccountId",
+    hermesLocked: "Balance",
+    pollStartTimestamp: "Moment",
+    pollEndTimestamp: "Moment",
+    title: "String",
+    description: "String",
+    creatorHermesWithdrawn: "bool"
+}
+```
+
+### HermesVotingInfo
+
+```
+{
+    votingOption: "VotingOption",
+    numberOfHermes: "Balance",
+    hermesWithdrawn: "bool"
+}
+```
+
 ### HolderId
 
 ```
@@ -10946,7 +10977,8 @@ returns: `Option<SwapOutcomeInfo>`
     failed: "bool",
     lpTokens: "Balance",
     claimedLpTokens: "bool",
-    finishTimestamp: "Moment"
+    finishTimestamp: "Moment",
+    baseAsset: "AssetId"
 }
 ```
 
@@ -11598,7 +11630,8 @@ returns: `Option<SwapOutcomeInfo>`
     totalTokensInPool: "Balance",
     rewards: "Balance",
     rewardsToBeDistributed: "Balance",
-    isRemoved: "bool"
+    isRemoved: "bool",
+    baseAsset: "AssetId"
 }
 ```
 
@@ -11957,7 +11990,8 @@ returns: `Option<SwapOutcomeInfo>`
     rewardAsset: "AssetId",
     isFarm: "bool",
     pooledTokens: "Balance",
-    rewards: "Balance"
+    rewards: "Balance",
+    baseAsset: "AssetId"
 }
 ```
 
@@ -11974,5 +12008,16 @@ returns: `Option<SwapOutcomeInfo>`
     votingOption: "u32",
     numberOfVotes: "Balance",
     ceresWithdrawn: "bool"
+}
+```
+
+### VotingOption
+
+```
+{
+    _enum: [
+        "Yes",
+        "No"
+    ]
 }
 ```
