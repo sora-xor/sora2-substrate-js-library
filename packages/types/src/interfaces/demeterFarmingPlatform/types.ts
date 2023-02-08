@@ -14,6 +14,7 @@ export interface PoolData extends Struct {
   readonly rewards: Balance;
   readonly rewardsToBeDistributed: Balance;
   readonly isRemoved: bool;
+  readonly baseAsset: AssetId;
 }
 
 /** @name TokenInfo */
@@ -34,6 +35,7 @@ export interface UserInfo extends Struct {
   readonly isFarm: bool;
   readonly pooledTokens: Balance;
   readonly rewards: Balance;
+  readonly baseAsset: AssetId;
 }
 
 export type PHANTOM_DEMETERFARMINGPLATFORM = 'demeterFarmingPlatform';

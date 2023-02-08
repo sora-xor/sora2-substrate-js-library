@@ -39,7 +39,8 @@ class Connection {
 
     const providerAutoConnectMs = once ? 0 : autoConnectMs;
     const provider = new WsProvider(endpoint, providerAutoConnectMs);
-    const api = new ApiPromise(options({ provider }));
+    // TODO: set it to disable all logs: noInitWarn
+    const api = new ApiPromise(options({ provider /* , noInitWarn: true */ }));
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady';
 
     // because this.endpoint can be overwritten by the next run call, which is faster

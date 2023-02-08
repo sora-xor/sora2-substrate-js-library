@@ -20,3 +20,4 @@ export { default as vestedRewards } from './vestedRewards/definitions';
 export { default as leafProvider } from './leafProvider/definitions';
 export { default as basicChannel } from './basicChannel/definitions';
 export { default as intentivizedChannel } from './intentivizedChannel/definitions';
+export { default as hermesGovernancePlatform } from './hermesGovernancePlatform/definitions';

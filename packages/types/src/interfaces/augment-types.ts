@@ -76,6 +76,7 @@ import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenL
 import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interfaces/demeterFarmingPlatform';
 import type { AssetKind, BridgeNetworkId, BridgeSignatureVersion, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
+import type { HermesPollInfo, HermesVotingInfo, VotingOption } from '@sora-substrate/types/interfaces/hermesGovernancePlatform';
 import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
 import type { AuxiliaryDigest, AuxiliaryDigestItem, ChannelId, EthNetworkId } from '@sora-substrate/types/interfaces/leafProvider';
@@ -585,6 +586,8 @@ declare module '@polkadot/types/types/registry' {
     Health: Health;
     Heartbeat: Heartbeat;
     HeartbeatTo244: HeartbeatTo244;
+    HermesPollInfo: HermesPollInfo;
+    HermesVotingInfo: HermesVotingInfo;
     HolderId: HolderId;
     HostConfiguration: HostConfiguration;
     HostFnWeights: HostFnWeights;
@@ -1289,6 +1292,7 @@ declare module '@polkadot/types/types/registry' {
     VotingDirect: VotingDirect;
     VotingDirectVote: VotingDirectVote;
     VotingInfo: VotingInfo;
+    VotingOption: VotingOption;
     VouchingStatus: VouchingStatus;
     VrfData: VrfData;
     VrfOutput: VrfOutput;
