@@ -10,6 +10,7 @@ export default {
       rewards: 'Balance',
       rewardsToBeDistributed: 'Balance',
       isRemoved: 'bool',
+      baseAsset: 'AssetId',
     },
     TokenInfo: {
       farmsTotalMultiplier: 'u32',
@@ -26,6 +27,7 @@ export default {
       isFarm: 'bool',
       pooledTokens: 'Balance',
       rewards: 'Balance',
+      baseAsset: 'AssetId',
     },
   },
 };

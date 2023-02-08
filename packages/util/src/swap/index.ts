@@ -515,7 +515,7 @@ export class SwapModule<T> {
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param liquiditySource Selected liquidity source
    */
-  public async getResultFromBackned(
+  public async getResultFromBackend(
     assetAAddress: string,
     assetBAddress: string,
     amount: NumberLike,

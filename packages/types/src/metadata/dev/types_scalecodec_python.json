@@ -4214,6 +4214,234 @@
                         "XST",
                         "TBCD"
                     ]
+                },
+                "HermesPollInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "creator",
+                            "AccountId"
+                        ],
+                        [
+                            "hermesLocked",
+                            "Balance"
+                        ],
+                        [
+                            "pollStartTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "pollEndTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "title",
+                            "String"
+                        ],
+                        [
+                            "description",
+                            "String"
+                        ],
+                        [
+                            "creatorHermesWithdrawn",
+                            "bool"
+                        ]
+                    ]
+                },
+                "HermesVotingInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "votingOption",
+                            "VotingOption"
+                        ],
+                        [
+                            "numberOfHermes",
+                            "Balance"
+                        ],
+                        [
+                            "hermesWithdrawn",
+                            "bool"
+                        ]
+                    ]
+                },
+                "ILOInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "iloOrganizer",
+                            "AccountId"
+                        ],
+                        [
+                            "tokensForIlo",
+                            "Balance"
+                        ],
+                        [
+                            "tokensForLiquidity",
+                            "Balance"
+                        ],
+                        [
+                            "iloPrice",
+                            "Balance"
+                        ],
+                        [
+                            "softCap",
+                            "Balance"
+                        ],
+                        [
+                            "hardCap",
+                            "Balance"
+                        ],
+                        [
+                            "minContribution",
+                            "Balance"
+                        ],
+                        [
+                            "maxContribution",
+                            "Balance"
+                        ],
+                        [
+                            "refundType",
+                            "bool"
+                        ],
+                        [
+                            "liquidityPercent",
+                            "Balance"
+                        ],
+                        [
+                            "listingPrice",
+                            "Balance"
+                        ],
+                        [
+                            "lockupDays",
+                            "u32"
+                        ],
+                        [
+                            "startTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "endTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "contributorsVesting",
+                            "ContributorsVesting"
+                        ],
+                        [
+                            "teamVesting",
+                            "TeamVesting"
+                        ],
+                        [
+                            "soldTokens",
+                            "Balance"
+                        ],
+                        [
+                            "fundsRaised",
+                            "Balance"
+                        ],
+                        [
+                            "succeeded",
+                            "bool"
+                        ],
+                        [
+                            "failed",
+                            "bool"
+                        ],
+                        [
+                            "lpTokens",
+                            "Balance"
+                        ],
+                        [
+                            "claimedLpTokens",
+                            "bool"
+                        ],
+                        [
+                            "finishTimestamp",
+                            "Moment"
+                        ],
+                        [
+                            "baseAsset",
+                            "AssetId"
+                        ]
+                    ]
+                },
+                "PoolData": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "multiplier",
+                            "u32"
+                        ],
+                        [
+                            "depositFee",
+                            "Balance"
+                        ],
+                        [
+                            "isCore",
+                            "bool"
+                        ],
+                        [
+                            "isFarm",
+                            "bool"
+                        ],
+                        [
+                            "totalTokensInPool",
+                            "Balance"
+                        ],
+                        [
+                            "rewards",
+                            "Balance"
+                        ],
+                        [
+                            "rewardsToBeDistributed",
+                            "Balance"
+                        ],
+                        [
+                            "isRemoved",
+                            "bool"
+                        ],
+                        [
+                            "baseAsset",
+                            "AssetId"
+                        ]
+                    ]
+                },
+                "UserInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "poolAsset",
+                            "AssetId"
+                        ],
+                        [
+                            "rewardAsset",
+                            "AssetId"
+                        ],
+                        [
+                            "isFarm",
+                            "bool"
+                        ],
+                        [
+                            "pooledTokens",
+                            "Balance"
+                        ],
+                        [
+                            "rewards",
+                            "Balance"
+                        ],
+                        [
+                            "baseAsset",
+                            "AssetId"
+                        ]
+                    ]
+                },
+                "VotingOption": {
+                    "type": "enum",
+                    "value_list": [
+                        "Yes",
+                        "No"
+                    ]
                 }
             }
         }

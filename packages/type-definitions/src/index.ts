@@ -19,6 +19,7 @@ import ceresTokenLocker from './ceresTokenLocker';
 import ceresGovernancePlatform from './ceresGovernancePlatform';
 import ceresLaunchpad from './ceresLaunchpad';
 import demeterFarmingPlatform from './demeterFarmingPlatform';
+import hermesGovernancePlatform from './hermesGovernancePlatform';
 import vestedRewards from './vestedRewards';
 import leafProvider from './leafProvider';
 import basicChannel from './basicChannel';
@@ -38,6 +39,7 @@ const soraDefs = {
   dexManager,
   ethBridge,
   farming,
+  hermesGovernancePlatform,
   irohaMigration,
   liquidityProxy,
   pswapDistribution,

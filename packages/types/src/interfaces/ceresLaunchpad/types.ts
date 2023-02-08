@@ -2,7 +2,7 @@
 /* eslint-disable */
 
 import type { Struct, bool, u32 } from '@polkadot/types-codec';
-import type { AccountId, Balance, Moment } from '@sora-substrate/types/interfaces/runtime';
+import type { AccountId, AssetId, Balance, Moment } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name ContributionInfo */
 export interface ContributionInfo extends Struct {
@@ -45,6 +45,7 @@ export interface ILOInfo extends Struct {
   readonly lpTokens: Balance;
   readonly claimedLpTokens: bool;
   readonly finishTimestamp: Moment;
+  readonly baseAsset: AssetId;
 }
 
 /** @name TeamVesting */

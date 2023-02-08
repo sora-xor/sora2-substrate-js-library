@@ -43,6 +43,7 @@ export default {
       lpTokens: 'Balance',
       claimedLpTokens: 'bool',
       finishTimestamp: 'Moment',
+      baseAsset: 'AssetId',
     },
   },
 };
