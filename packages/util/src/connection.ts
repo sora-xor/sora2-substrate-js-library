@@ -3,6 +3,7 @@ import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import type { ProviderInterfaceEmitted, ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
+import type { ApiInterfaceEvents } from '@polkadot/api/types';
 
 import { Messages } from './logger';
 
@@ -11,6 +12,8 @@ export interface ConnectionRunOptions {
   timeout?: number;
   autoConnectMs?: number;
   eventListeners?: Array<[ProviderInterfaceEmitted, ProviderInterfaceEmitCb]>;
+  /** Just for External clients for now */
+  apiEventListeners?: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]>;
 }
 
 class Connection {
@@ -32,7 +35,13 @@ class Connection {
 
   private async run(endpoint: string, runOptions?: ConnectionRunOptions): Promise<void> {
     let connectionTimeout: any;
-    const { once = false, timeout = 0, eventListeners = [], autoConnectMs = 5000 } = runOptions || {};
+    const {
+      once = false,
+      timeout = 0,
+      autoConnectMs = 5000,
+      eventListeners = [],
+      apiEventListeners = [],
+    } = runOptions || {};
 
     const prevEndpoint = this.endpoint;
     this.endpoint = endpoint;
@@ -58,6 +67,9 @@ class Connection {
     if (timeout) connectionRequests.push(runConnectionTimeout());
 
     try {
+      if (apiEventListeners.length > 0) {
+        apiEventListeners.map(([eventName, callback]) => api.on(eventName, callback));
+      }
       // we should manually call connect fn without autoConnectMs
       if (!providerAutoConnectMs) {
         api.connect();
