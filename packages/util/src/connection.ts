@@ -70,20 +70,19 @@ class Connection {
       if (apiEventListeners.length > 0) {
         apiEventListeners.map(([eventName, callback]) => api.on(eventName, callback));
       }
+      this.api = api;
       // we should manually call connect fn without autoConnectMs
       if (!providerAutoConnectMs) {
-        api.connect();
+        this.api.connect();
       }
 
       await Promise.race(connectionRequests);
 
       // check race condition case: another call of 'run' was faster
       if (!connectionEndpointIsStable()) {
-        api.disconnect();
+        this.api.disconnect();
         return;
       }
-
-      this.api = api;
 
       // add new event handlers
       if (eventListeners.length > 0) {
@@ -93,6 +92,7 @@ class Connection {
       provider.disconnect();
       if (connectionEndpointIsStable()) {
         this.endpoint = prevEndpoint;
+        this.api = null;
       }
       throw error;
     } finally {
