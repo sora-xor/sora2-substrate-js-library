@@ -288,7 +288,7 @@ export class Api<T = void> extends BaseApi<T> {
    * @param name
    * @param source
    */
-  public importByPolkadotJs(address: string, name: string, source: string): void {
+  public importByPolkadotJs(address: string, name?: string, source?: string): void {
     let account;
 
     if (!source) {
@@ -303,9 +303,10 @@ export class Api<T = void> extends BaseApi<T> {
     if (this.storage) {
       const soraAddress = this.formatAddress(account.pair.address);
 
-      this.storage.set('name', name);
       this.storage.set('address', soraAddress);
-      this.storage.set('source', source);
+      // Optional params are just for External clients for now
+      name && this.storage.set('name', name);
+      source && this.storage.set('source', source);
     }
 
     this.initAccountStorage();
