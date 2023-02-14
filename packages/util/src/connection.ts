@@ -13,7 +13,6 @@ export interface ConnectionRunOptions {
   once?: boolean;
   timeout?: number;
   autoConnectMs?: number;
-  providerTimeout?: number; // second between disconnect and "disconnect" event emitting
   eventListeners?: ConnectionEventListener[];
 }
 
@@ -64,46 +63,32 @@ class Connection {
   }
 
   private async run(endpoint: string, runOptions?: ConnectionRunOptions): Promise<void> {
-    const {
-      once = false,
-      timeout = 0,
-      autoConnectMs = 5000,
-      providerTimeout = 0,
-      eventListeners = [],
-    } = runOptions || {};
+    const { once = false, timeout = 0, autoConnectMs = 5000, eventListeners = [] } = runOptions || {};
 
     const providerAutoConnectMs = once ? 0 : autoConnectMs;
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady';
 
-    const provider = new WsProvider(endpoint, providerAutoConnectMs, undefined, providerTimeout);
-    const api = new ApiPromise(options({ provider, noInitWarn: true }));
+    const provider = new WsProvider(endpoint, providerAutoConnectMs);
 
-    const connectionRequests: Array<Promise<any>> = [api[apiConnectionPromise]];
+    this.api = new ApiPromise(options({ provider, noInitWarn: true }));
+    this.endpoint = endpoint;
+    this.eventListeners = eventListeners;
+
+    const connectionRequests: Array<Promise<any>> = [this.api[apiConnectionPromise]];
 
     if (timeout) connectionRequests.push(createConnectionTimeout(timeout));
 
     try {
-      addEventListeners(api, eventListeners);
+      addEventListeners(this.api, this.eventListeners);
 
       // we should manually call connect fn without autoConnectMs
       if (!providerAutoConnectMs) {
-        api.connect();
+        this.api.connect();
       }
 
       await Promise.race(connectionRequests);
-
-      // check race condition case: another call of 'run' was faster
-      if (this.opened) {
-        console.warn(`[Connection]: Close previous connection ${this.endpoint}, before estabilishing new one`);
-        console.warn(`[Connection]: Connection interrupted: ${endpoint}`);
-        disconnectApi(api, eventListeners);
-      } else {
-        this.api = api;
-        this.endpoint = endpoint;
-        this.eventListeners = eventListeners;
-      }
     } catch (error) {
-      disconnectApi(api, eventListeners);
+      this.stop();
       throw error;
     }
   }
