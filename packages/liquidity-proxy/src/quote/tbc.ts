@@ -283,17 +283,21 @@ We have a quadratic equation:
 
 buy_function(x) = price_change_coefficient * x + initial_price
 
-Assume `M` = 1 / price_change_coefficient = 1 / 1337
+Assume `P` = price_change_coefficient = 1337
 
 M * AD² + 2 * AB * AD - 2 * S = 0
 equation with two solutions, taking only positive one:
-AD = (√((AB * 2 / M)² + 8 * S / M) - 2 * AB / M) / 2
+AD = (√((AB * 2 / M)² + 8 * S / M) - 2 * AB / M) / 2 (old formula)
+AD = √(P * (AB² * P + 2 * S)) - AB * P (new formula)
 
 or
-
+(old)
 xor_supply_delta = (√((buy_function(xor_total_supply) * 2 / price_change_coeff)²
-                   + 8 * buy_price_usd / price_change_coeff) - 2 * buy_function(xor_total_supply)
-                   / price_change_coeff) / 2
+  + 8 * buy_price_usd / price_change_coeff) - 2 * buy_function(xor_total_supply)
+ / price_change_coeff) / 2
+(new)
+xor_supply_delta = √price_change_coefficient * √(buy_function(xor_total_supply)² * price_change_coefficient + 2 * buy_price_usd)
+  - buy_function(xor_total_supply) * price_change_coefficient
  */
 const tbcBuyPrice = (
   collateralAsset: string,
@@ -306,18 +310,29 @@ const tbcBuyPrice = (
   const priceChangeCoeff = priceChangeStep.mul(priceChangeRate);
 
   const currentState = tbcBuyFunction(collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
-  const collateralPrice = tbcReferencePrice(collateralAsset, PriceVariant.Buy, payload);
+  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAsset, PriceVariant.Buy, payload);
 
   if (isDesiredInput) {
-    const collateralReferenceIn = collateralPrice.mul(amount);
-    const underPow = currentState.mul(priceChangeCoeff).mul(new FPNumber(2));
-    const underSqrt = underPow.mul(underPow).add(new FPNumber(8).mul(priceChangeCoeff).mul(collateralReferenceIn));
-    const xorOut = safeDivide(underSqrt.sqrt(), new FPNumber(2)).sub(priceChangeCoeff.mul(currentState));
-    return getMaxPositive(xorOut);
+    const collateralReferenceIn = collateralPricePerReferenceUnit.mul(amount);
+
+    let mainOut: FPNumber;
+
+    if (collateralAsset === Consts.TBCD) {
+      mainOut = safeDivide(collateralReferenceIn, currentState);
+    } else {
+      const sqrt = currentState
+        .mul(currentState)
+        .mul(priceChangeCoeff)
+        .add(new FPNumber(2).mul(collateralReferenceIn))
+        .mul(priceChangeCoeff)
+        .sqrt();
+      mainOut = sqrt.sub(currentState.mul(priceChangeCoeff));
+    }
+    return getMaxPositive(mainOut);
   } else {
     const newState = tbcBuyFunction(collateralAsset, PriceVariant.Buy, amount, payload);
     const collateralReferenceIn = safeDivide(currentState.add(newState).mul(amount), new FPNumber(2));
-    const collateralQuantity = safeDivide(collateralReferenceIn, collateralPrice);
+    const collateralQuantity = safeDivide(collateralReferenceIn, collateralPricePerReferenceUnit);
     return getMaxPositive(collateralQuantity);
   }
 };
