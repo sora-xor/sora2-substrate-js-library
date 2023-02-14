@@ -50,7 +50,7 @@ class Connection {
   public endpoint = '';
   public loading = false;
 
-  public eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
+  private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
 
   private async withLoading(func: Function): Promise<any> {
     this.loading = true;
@@ -94,6 +94,8 @@ class Connection {
 
       // check race condition case: another call of 'run' was faster
       if (this.opened) {
+        console.warn(`[Connection]: Close previous connection ${this.endpoint}, before estabilishing new one`);
+        console.warn(`[Connection]: Connection interrupted: ${endpoint}`);
         disconnectApi(api, eventListeners);
       } else {
         this.api = api;
