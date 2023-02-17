@@ -2,23 +2,13 @@
     "DEFAULT_NETWORKS": [
         {
             "chain": "SORA",
-            "name": "framenode-1.s1.stg1",
-            "address": "wss://ws.framenode-1.s1.stg1.sora2.soramitsu.co.jp"
+            "name": "framenode-7.s4.stg1",
+            "address": "wss://ws.framenode-7.s4.stg1.sora2.soramitsu.co.jp"
         },
         {
             "chain": "SORA",
-            "name": "framenode-2.s1.stg1",
-            "address": "wss://ws.framenode-2.s1.stg1.sora2.soramitsu.co.jp"
-        },
-        {
-            "chain": "SORA",
-            "name": "framenode-3.s2.stg1",
-            "address": "wss://ws.framenode-3.s2.stg1.sora2.soramitsu.co.jp"
-        },
-        {
-            "chain": "SORA",
-            "name": "framenode-4.s2.stg1",
-            "address": "wss://ws.framenode-4.s2.stg1.sora2.soramitsu.co.jp"
+            "name": "framenode-8.s5.stg1",
+            "address": "wss://ws.framenode-8.s5.stg1.sora2.soramitsu.co.jp"
         }
     ]
 }
