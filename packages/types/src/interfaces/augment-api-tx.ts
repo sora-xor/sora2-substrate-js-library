@@ -77,6 +77,16 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `amount`: transferred Asset amount.
        **/
       transfer: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, to: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, AccountId32, u128]>;
+      /**
+       * Add or remove abs(`by_amount`) from the balance of `who` under
+       * `currency_id`. If positive `by_amount`, do add, else do remove.
+       * 
+       * Basically a wrapper of `MultiCurrencyExtended::update_balance`
+       * for testing purposes.
+       * 
+       * TODO: move into tests extrinsic collection pallet
+       **/
+      updateBalance: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array, currencyId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: i128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, CommonPrimitivesAssetId32, i128]>;
     };
     authorship: {
       /**
@@ -136,91 +146,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * If `dislocated` does not exists, it returns an error.
        **/
       rebag: AugmentedSubmittable<(dislocated: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-    };
-    balances: {
-      /**
-       * Exactly as `transfer`, except the origin must be root and the source account may be
-       * specified.
-       * # <weight>
-       * - Same as transfer, but additional read and write because the source account is not
-       * assumed to be in the overlay.
-       * # </weight>
-       **/
-      forceTransfer: AugmentedSubmittable<(source: AccountId32 | string | Uint8Array, dest: AccountId32 | string | Uint8Array, value: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Compact<u128>]>;
-      /**
-       * Unreserve some balance from a user by force.
-       * 
-       * Can only be called by ROOT.
-       **/
-      forceUnreserve: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u128]>;
-      /**
-       * Set the balances of a given account.
-       * 
-       * This will alter `FreeBalance` and `ReservedBalance` in storage. it will
-       * also alter the total issuance of the system (`TotalIssuance`) appropriately.
-       * If the new free or reserved balance is below the existential deposit,
-       * it will reset the account nonce (`frame_system::AccountNonce`).
-       * 
-       * The dispatch origin for this call is `root`.
-       **/
-      setBalance: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array, newFree: Compact<u128> | AnyNumber | Uint8Array, newReserved: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Compact<u128>, Compact<u128>]>;
-      /**
-       * Transfer some liquid free balance to another account.
-       * 
-       * `transfer` will set the `FreeBalance` of the sender and receiver.
-       * If the sender's account is below the existential deposit as a result
-       * of the transfer, the account will be reaped.
-       * 
-       * The dispatch origin for this call must be `Signed` by the transactor.
-       * 
-       * # <weight>
-       * - Dependent on arguments but not critical, given proper implementations for input config
-       * types. See related functions below.
-       * - It contains a limited number of reads and writes internally and no complex
-       * computation.
-       * 
-       * Related functions:
-       * 
-       * - `ensure_can_withdraw` is always called internally but has a bounded complexity.
-       * - Transferring balances to accounts that did not exist before will cause
-       * `T::OnNewAccount::on_new_account` to be called.
-       * - Removing enough funds from an account will trigger `T::DustRemoval::on_unbalanced`.
-       * - `transfer_keep_alive` works the same way as `transfer`, but has an additional check
-       * that the transfer will not kill the origin account.
-       * ---------------------------------
-       * - Origin account is already in memory, so no DB operations for them.
-       * # </weight>
-       **/
-      transfer: AugmentedSubmittable<(dest: AccountId32 | string | Uint8Array, value: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Compact<u128>]>;
-      /**
-       * Transfer the entire transferable balance from the caller account.
-       * 
-       * NOTE: This function only attempts to transfer _transferable_ balances. This means that
-       * any locked, reserved, or existential deposits (when `keep_alive` is `true`), will not be
-       * transferred by this function. To ensure that this function results in a killed account,
-       * you might need to prepare the account by removing any reference counters, storage
-       * deposits, etc...
-       * 
-       * The dispatch origin of this call must be Signed.
-       * 
-       * - `dest`: The recipient of the transfer.
-       * - `keep_alive`: A boolean to determine if the `transfer_all` operation should send all
-       * of the funds the account has, causing the sender account to be killed (false), or
-       * transfer everything except at least the existential deposit, which will guarantee to
-       * keep the sender account alive (true). # <weight>
-       * - O(1). Just like transfer, but reading the user's transferable balance first.
-       * #</weight>
-       **/
-      transferAll: AugmentedSubmittable<(dest: AccountId32 | string | Uint8Array, keepAlive: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, bool]>;
-      /**
-       * Same as the [`transfer`] call, but with a check that the transfer will not kill the
-       * origin account.
-       * 
-       * 99% of the time you want [`transfer`] instead.
-       * 
-       * [`transfer`]: struct.Pallet.html#method.transfer
-       **/
-      transferKeepAlive: AugmentedSubmittable<(dest: AccountId32 | string | Uint8Array, value: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Compact<u128>]>;
     };
     band: {
       /**
@@ -716,28 +641,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       vote: AugmentedSubmittable<(proposal: H256 | string | Uint8Array, index: Compact<u32> | AnyNumber | Uint8Array, approve: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, Compact<u32>, bool]>;
-    };
-    currencies: {
-      /**
-       * Transfer some balance to another account under `currency_id`.
-       * 
-       * The dispatch origin for this call must be `Signed` by the
-       * transactor.
-       **/
-      transfer: AugmentedSubmittable<(dest: AccountId32 | string | Uint8Array, currencyId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, CommonPrimitivesAssetId32, Compact<u128>]>;
-      /**
-       * Transfer some native currency to another account.
-       * 
-       * The dispatch origin for this call must be `Signed` by the
-       * transactor.
-       **/
-      transferNativeCurrency: AugmentedSubmittable<(dest: AccountId32 | string | Uint8Array, amount: Compact<u128> | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Compact<u128>]>;
-      /**
-       * update amount of account `who` under `currency_id`.
-       * 
-       * The dispatch origin of this call must be _Root_.
-       **/
-      updateBalance: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array, currencyId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: i128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, CommonPrimitivesAssetId32, i128]>;
     };
     demeterFarmingPlatform: {
       /**
@@ -1833,7 +1736,19 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
        **/
       swapTransfer: AugmentedSubmittable<(receiver: AccountId32 | string | Uint8Array, dexId: u32 | AnyNumber | Uint8Array, inputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, outputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, swapAmount: CommonSwapAmount | { WithDesiredInput: any } | { WithDesiredOutput: any } | string | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonSwapAmount, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode]>;
-      swapTransferBatch: AugmentedSubmittable<(receivers: Vec<LiquidityProxyBatchReceiverInfo> | (LiquidityProxyBatchReceiverInfo | { accountId?: any; targetAmount?: any } | string | Uint8Array)[], dexId: u32 | AnyNumber | Uint8Array, inputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, outputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, maxInputAmount: u128 | AnyNumber | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<LiquidityProxyBatchReceiverInfo>, u32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode]>;
+      /**
+       * Dispatches multiple swap & transfer operations. `receivers` holds info about desired out amount and
+       * its associated account per asset id
+       * 
+       * - `origin`: the account on whose behalf the transaction is being executed,
+       * - `receivers`: the ordered map, which maps the asset id being bought to the vector of batch receivers
+       * - `dex_id`: DEX ID for which liquidity sources aggregation is being done,
+       * - `input_asset_id`: ID of the asset being sold,
+       * - `max_input_amount`: the maximum amount to be sold in input_asset_id,
+       * - `selected_source_types`: list of selected LiquiditySource types, selection effect is determined by filter_mode,
+       * - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
+       **/
+      swapTransferBatch: AugmentedSubmittable<(receivers: Vec<ITuple<[CommonPrimitivesAssetId32, Vec<LiquidityProxyBatchReceiverInfo>]>> | ([CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, Vec<LiquidityProxyBatchReceiverInfo> | (LiquidityProxyBatchReceiverInfo | { accountId?: any; targetAmount?: any } | string | Uint8Array)[]])[], dexId: u32 | AnyNumber | Uint8Array, inputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, maxInputAmount: u128 | AnyNumber | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[CommonPrimitivesAssetId32, Vec<LiquidityProxyBatchReceiverInfo>]>>, u32, CommonPrimitivesAssetId32, u128, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode]>;
     };
     multicollateralBondingCurvePool: {
       /**
