@@ -16,18 +16,11 @@ export interface ConnectionRunOptions {
   eventListeners?: ConnectionEventListener[];
 }
 
-const addEventListeners = (api: ApiPromise, eventListeners: ConnectionEventListener[]): void => {
-  eventListeners.forEach(([eventName, eventHandler]) => api.on(eventName, eventHandler));
-};
-
-const removeEventListeners = (api: ApiPromise, eventListeners: ConnectionEventListener[]): void => {
-  eventListeners.forEach(([eventName, eventHandler]) => api.off(eventName, eventHandler));
-};
-
 const disconnectApi = async (api: ApiPromise, eventListeners: ConnectionEventListener[]): Promise<void> => {
   if (!api) return;
 
-  removeEventListeners(api, eventListeners);
+  eventListeners.forEach(([eventName, eventHandler]) => api.off(eventName, eventHandler));
+
   // close the connection manually
   if (api.isConnected) {
     try {
@@ -65,21 +58,22 @@ class Connection {
   private async run(endpoint: string, runOptions?: ConnectionRunOptions): Promise<void> {
     const { once = false, timeout = 0, autoConnectMs = 5000, eventListeners = [] } = runOptions || {};
 
-    const providerAutoConnectMs = once ? 0 : autoConnectMs;
+    const providerAutoConnectMs = once ? false : autoConnectMs;
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady';
 
     const provider = new WsProvider(endpoint, providerAutoConnectMs);
 
     this.api = new ApiPromise(options({ provider, noInitWarn: true }));
     this.endpoint = endpoint;
-    this.eventListeners = eventListeners;
 
     const connectionRequests: Array<Promise<any>> = [this.api[apiConnectionPromise]];
 
     if (timeout) connectionRequests.push(createConnectionTimeout(timeout));
 
     try {
-      addEventListeners(this.api, this.eventListeners);
+      eventListeners.forEach(([eventName, eventHandler]) => {
+        this.addEventListener(eventName, eventHandler);
+      });
 
       // we should manually call connect fn without autoConnectMs
       if (!providerAutoConnectMs) {
@@ -98,6 +92,11 @@ class Connection {
     this.api = null;
     this.endpoint = '';
     this.eventListeners = [];
+  }
+
+  public addEventListener(eventName: ApiInterfaceEvents, eventHandler: ProviderInterfaceEmitCb) {
+    this.api.on(eventName, eventHandler);
+    this.eventListeners.push([eventName, eventHandler]);
   }
 
   public get opened(): boolean {
