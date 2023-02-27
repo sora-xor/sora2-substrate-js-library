@@ -4,7 +4,7 @@ import keyring from '@polkadot/ui-keyring';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
-import type { KeyringPair$Json } from '@polkadot/keyring/types';
+import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
@@ -104,6 +104,7 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public async initialize(withKeyringLoading = true, isDesktop = false): Promise<void> {
     this.isDesktop = isDesktop;
+
     const address = this.storage?.get('address');
     const name = this.storage?.get('name');
     const source = this.storage?.get('source');
@@ -115,17 +116,8 @@ export class Api<T = void> extends BaseApi<T> {
 
       if (address) {
         const defaultAddress = this.formatAddress(address, false);
-        const soraAddress = this.formatAddress(address);
 
-        this.storage?.set('address', soraAddress);
-
-        const account =
-          !source && isDesktop
-            ? { pair: keyring.getPair(defaultAddress), json: null }
-            : keyring.addExternal(defaultAddress, name ? { name } : {});
-
-        this.setAccount(account);
-        this.initAccountStorage();
+        this.importByPolkadotJs(defaultAddress, name, source, !isDesktop);
       }
     }
 
@@ -146,9 +138,38 @@ export class Api<T = void> extends BaseApi<T> {
       assert(mnemonicValidate(phrase), 'There is no valid mnemonic seed');
     }
     return {
-      address: keyring.createFromUri(suri, {}, this.type).address,
+      address: this.createAccountPair(suri).address,
       suri,
     };
+  }
+
+  private updateAccountData(account: CreateResult, name?: string, source?: string): void {
+    this.setAccount(account);
+
+    if (this.storage) {
+      const soraAddress = this.formatAddress(account.pair.address);
+
+      this.storage.set('address', soraAddress);
+      // Optional params are just for External clients for now
+      name && this.storage.set('name', name);
+      source && this.storage.set('source', source);
+    }
+
+    this.initAccountStorage();
+  }
+
+  /**
+   * Import account by PolkadotJs extension
+   * @param address
+   * @param name
+   * @param source
+   */
+  public importByPolkadotJs(address: string, name?: string, source?: string, external = true): void {
+    const account = external
+      ? keyring.addExternal(address, { name: name || '' })
+      : { pair: keyring.getPair(address), json: null };
+
+    this.updateAccountData(account, name, source);
   }
 
   /**
@@ -160,41 +181,7 @@ export class Api<T = void> extends BaseApi<T> {
   public importAccount(suri: string, name: string, password: string): void {
     const account = keyring.addUri(suri, password, { name }, this.type);
 
-    this.setAccount(account);
-
-    if (this.storage) {
-      const soraAddress = this.formatAddress(account.pair.address);
-
-      this.storage.set('name', name);
-      this.storage.set('password', encrypt(password));
-      this.storage.set('address', soraAddress);
-    }
-
-    this.initAccountStorage();
-  }
-
-  /**
-   * Import wallet operation
-   * It returns account creation result
-   * @param suri Seed of the wallet
-   * @param name Name of the wallet account
-   * @param password Password which will be set for the wallet
-   */
-  public createAccount(suri: string, name: string, password: string): CreateResult {
-    const account = keyring.addUri(suri, password, { name }, this.type);
-
-    this.setAccount(account);
-
-    if (this.storage) {
-      const soraAddress = this.formatAddress(account.pair.address);
-
-      this.storage.set('name', name);
-      this.storage.set('address', soraAddress);
-    }
-
-    this.initAccountStorage();
-
-    return account;
+    this.updateAccountData(account, name);
   }
 
   /**
@@ -243,18 +230,24 @@ export class Api<T = void> extends BaseApi<T> {
   }
 
   /**
+   * Creates an account pair
+   * @param suri Seed of the wallet
+   * @param name Name of the wallet account
+   */
+  public createAccountPair(suri: string, name?: string): KeyringPair {
+    return keyring.createFromUri(suri, name ? { name } : {}, this.type);
+  }
+
+  /**
    * Restore from JSON object.
+   * Adds it to keyring storage
    * It generates an error if JSON or/and password are not valid
    * @param json
    * @param password
    */
   public restoreFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
-    try {
-      const pair = keyring.restoreAccount(json, password);
-      return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
-    } catch (error) {
-      throw new Error((error as Error).message);
-    }
+    const pair = keyring.restoreAccount(json, password);
+    return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
   }
 
   /**
@@ -262,12 +255,8 @@ export class Api<T = void> extends BaseApi<T> {
    * @param password
    * @param encrypted If `true` then it will be decrypted. `false` by default
    */
-  public exportAccount(password: string, encrypted = false): string {
-    let pass = password;
-    if (encrypted) {
-      pass = decrypt(password);
-    }
-    const pair = this.accountPair;
+  public exportAccount(pair: KeyringPair, password: string, encrypted = false): string {
+    const pass = encrypted ? decrypt(password) : password;
     return JSON.stringify(keyring.backupAccount(pair, pass));
   }
 
@@ -277,39 +266,9 @@ export class Api<T = void> extends BaseApi<T> {
   public createSeed(): { address: string; seed: string } {
     const seed = mnemonicGenerate(this.seedLength);
     return {
-      address: keyring.createFromUri(seed, {}, this.type).address,
+      address: this.createAccountPair(seed).address,
       seed,
     };
-  }
-
-  /**
-   * Import account by PolkadotJs extension
-   * @param address
-   * @param name
-   * @param source
-   */
-  public importByPolkadotJs(address: string, name?: string, source?: string): void {
-    let account;
-
-    if (!source) {
-      const pair = keyring.getPair(address);
-      account = { pair };
-    } else {
-      account = keyring.addExternal(address, { name: name || '' });
-    }
-
-    this.setAccount(account);
-
-    if (this.storage) {
-      const soraAddress = this.formatAddress(account.pair.address);
-
-      this.storage.set('address', soraAddress);
-      // Optional params are just for External clients for now
-      name && this.storage.set('name', name);
-      source && this.storage.set('source', source);
-    }
-
-    this.initAccountStorage();
   }
 
   // # API methods
