@@ -104,12 +104,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
   private _history: AccountHistory<HistoryItem> = {};
 
-  /**
-   * Will **account pair** be locked after TX signing.
-   *
-   * In this case you need to unlock in **manually** before each extrinsic
-   */
-  protected isDesktop = false;
   protected signer?: Signer;
   public storage?: Storage; // common data storage
   public accountStorage?: AccountStorage; // account data storage
@@ -316,7 +310,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     const { account, options } = this.getAccountWithOptions();
     // Signing the transaction
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
-    if (this.isDesktop) {
+
+    // accounts from extensions should have isExternal meta, because were added as keyring.addExternal()
+    if (!this.account.pair.meta?.isExternal) {
       this.lockPair();
     }
 

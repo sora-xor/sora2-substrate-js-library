@@ -102,12 +102,11 @@ export class Api<T = void> extends BaseApi<T> {
    * The first method you should run. Includes initialization process
    * @param withKeyringLoading `true` by default
    */
-  public async initialize(withKeyringLoading = true, isDesktop = false): Promise<void> {
-    this.isDesktop = isDesktop;
-
+  public async initialize(withKeyringLoading = true): Promise<void> {
     const address = this.storage?.get('address');
     const name = this.storage?.get('name');
     const source = this.storage?.get('source');
+    const isExternal = Boolean(this.storage?.get('isExternal'));
 
     if (withKeyringLoading) {
       await cryptoWaitReady();
@@ -117,7 +116,7 @@ export class Api<T = void> extends BaseApi<T> {
       if (address) {
         const defaultAddress = this.formatAddress(address, false);
 
-        this.importByPolkadotJs(defaultAddress, name, source, !isDesktop);
+        this.importByPolkadotJs(defaultAddress, name, source, isExternal);
       }
     }
 
@@ -143,7 +142,7 @@ export class Api<T = void> extends BaseApi<T> {
     };
   }
 
-  private updateAccountData(account: CreateResult, name?: string, source?: string): void {
+  private updateAccountData(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
     this.setAccount(account);
 
     if (this.storage) {
@@ -153,6 +152,7 @@ export class Api<T = void> extends BaseApi<T> {
       // Optional params are just for External clients for now
       name && this.storage.set('name', name);
       source && this.storage.set('source', source);
+      isExternal && this.storage.set('isExternal', isExternal);
     }
 
     this.initAccountStorage();
@@ -160,16 +160,16 @@ export class Api<T = void> extends BaseApi<T> {
 
   /**
    * Import account by PolkadotJs extension
-   * @param address
-   * @param name
-   * @param source
+   * @param address account address
+   * @param name account name
+   * @param source wallet identity
+   * @param isExternal is account from extension or not
    */
-  public importByPolkadotJs(address: string, name?: string, source?: string, external = true): void {
-    const account = external
-      ? keyring.addExternal(address, { name: name || '' })
-      : { pair: keyring.getPair(address), json: null };
+  public importByPolkadotJs(address: string, name?: string, source?: string, isExternal?: boolean): void {
+    const meta = { name: name || '' };
+    const account = isExternal ? keyring.addExternal(address, meta) : { pair: keyring.getPair(address), json: null };
 
-    this.updateAccountData(account, name, source);
+    this.updateAccountData(account, name, source, isExternal);
   }
 
   /**
@@ -235,7 +235,9 @@ export class Api<T = void> extends BaseApi<T> {
    * @param name Name of the wallet account
    */
   public createAccountPair(suri: string, name?: string): KeyringPair {
-    return keyring.createFromUri(suri, name ? { name } : {}, this.type);
+    const meta = { name: name || '' };
+
+    return keyring.createFromUri(suri, meta, this.type);
   }
 
   /**
