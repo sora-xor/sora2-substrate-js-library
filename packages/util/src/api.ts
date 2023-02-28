@@ -186,6 +186,17 @@ export class Api<T = void> extends BaseApi<T> {
   }
 
   /**
+   * Import wallet operation
+   * @param suri Seed of the wallet
+   * @param name Name of the wallet account
+   * @param password Password which will be set for the wallet
+   */
+  public importAccount(suri: string, name: string, password: string): void {
+    const account = this.addAccount(suri, name, password);
+    this.updateAccountData(account, name);
+  }
+
+  /**
    * Get all imported accounts.
    * It returns list of imported accounts
    * added via api.importAccount()
