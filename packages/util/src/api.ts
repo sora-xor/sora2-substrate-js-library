@@ -103,10 +103,12 @@ export class Api<T = void> extends BaseApi<T> {
    * @param withKeyringLoading `true` by default
    */
   public async initialize(withKeyringLoading = true): Promise<void> {
+    const isExternalFlag = this.storage?.get('isExternal');
+
     const address = this.storage?.get('address');
     const name = this.storage?.get('name');
     const source = this.storage?.get('source');
-    const isExternal = Boolean(this.storage?.get('isExternal'));
+    const isExternal = isExternalFlag ? JSON.parse(isExternalFlag) : null;
 
     if (withKeyringLoading) {
       await cryptoWaitReady();
@@ -115,8 +117,9 @@ export class Api<T = void> extends BaseApi<T> {
 
       if (address) {
         const defaultAddress = this.formatAddress(address, false);
+        const isExternalAccount = isExternal || (isExternal === null && !!source);
 
-        this.importByPolkadotJs(defaultAddress, name, source, isExternal);
+        this.loginAccount(defaultAddress, name, source, isExternalAccount);
       }
     }
 
@@ -152,20 +155,20 @@ export class Api<T = void> extends BaseApi<T> {
       // Optional params are just for External clients for now
       name && this.storage.set('name', name);
       source && this.storage.set('source', source);
-      isExternal && this.storage.set('isExternal', isExternal);
+      typeof isExternal === 'boolean' && this.storage.set('isExternal', isExternal);
     }
 
     this.initAccountStorage();
   }
 
   /**
-   * Import account by PolkadotJs extension
+   * Login to account
    * @param address account address
    * @param name account name
    * @param source wallet identity
    * @param isExternal is account from extension or not
    */
-  public importByPolkadotJs(address: string, name?: string, source?: string, isExternal?: boolean): void {
+  public loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): void {
     const meta = { name: name || '' };
     const account = isExternal ? keyring.addExternal(address, meta) : { pair: keyring.getPair(address), json: null };
 
@@ -173,15 +176,13 @@ export class Api<T = void> extends BaseApi<T> {
   }
 
   /**
-   * Import wallet operation
+   * Add internal wallet
    * @param suri Seed of the wallet
    * @param name Name of the wallet account
    * @param password Password which will be set for the wallet
    */
-  public importAccount(suri: string, name: string, password: string): void {
-    const account = keyring.addUri(suri, password, { name }, this.type);
-
-    this.updateAccountData(account, name);
+  public addAccount(suri: string, name: string, password: string): CreateResult {
+    return keyring.addUri(suri, password, { name }, this.type);
   }
 
   /**
@@ -200,7 +201,7 @@ export class Api<T = void> extends BaseApi<T> {
    * @param oldPassword
    * @param newPassword
    */
-  public changePassword(oldPassword: string, newPassword: string): void {
+  public changeAccountPassword(oldPassword: string, newPassword: string): void {
     const pair = this.accountPair;
     try {
       if (!pair.isLocked) {
@@ -221,7 +222,7 @@ export class Api<T = void> extends BaseApi<T> {
    * TODO: check it, polkadot-js extension doesn't change account name
    * @param name New name
    */
-  public changeName(name: string): void {
+  public changeAccountName(name: string): void {
     const pair = this.accountPair;
     keyring.saveAccountMeta(pair, { ...pair.meta, name });
     if (this.storage) {
@@ -247,7 +248,7 @@ export class Api<T = void> extends BaseApi<T> {
    * @param json
    * @param password
    */
-  public restoreFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
+  public restoreAccountFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
     const pair = keyring.restoreAccount(json, password);
     return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
   }
@@ -297,8 +298,8 @@ export class Api<T = void> extends BaseApi<T> {
   /**
    * Remove all wallet data
    */
-  public logout(onDesktop = false): void {
-    if (!onDesktop && this.account) {
+  public logout(forgetAccount = true): void {
+    if (this.account && forgetAccount) {
       const address = this.account.pair.address;
       keyring.forgetAccount(address);
       keyring.forgetAddress(address);

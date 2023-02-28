@@ -312,7 +312,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
 
     // accounts from extensions should have isExternal meta, because were added as keyring.addExternal()
-    if (!this.account.pair.meta?.isExternal) {
+    if (!this.accountPair?.meta?.isExternal) {
       this.lockPair();
     }
 
