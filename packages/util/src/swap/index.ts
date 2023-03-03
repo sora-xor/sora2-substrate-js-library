@@ -160,6 +160,7 @@ export class SwapModule<T> {
     value: string,
     isExchangeB: boolean,
     selectedSources: Array<LiquiditySourceTypes>,
+    enabledAssets: PrimaryMarketsEnabledAssets,
     paths: QuotePaths,
     payload: QuotePayload,
     dexId = DexId.XOR
@@ -168,7 +169,17 @@ export class SwapModule<T> {
     const amount = FPNumber.fromCodecValue(new FPNumber(value, valueDecimals).toCodecString());
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
 
-    return quote(amount, !isExchangeB, selectedSources, paths, payload, baseAssetId);
+    return quote(
+      inputAsset.address,
+      outputAsset.address,
+      amount,
+      !isExchangeB,
+      selectedSources,
+      enabledAssets,
+      paths,
+      payload,
+      baseAssetId
+    );
   }
 
   /**
@@ -234,7 +245,6 @@ export class SwapModule<T> {
     dexId = DexId.XOR
   ): Observable<QuotePayload> {
     const xor = XOR.address;
-    const xstusd = XSTUSD.address;
     const dai = DAI.address;
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
@@ -329,7 +339,6 @@ export class SwapModule<T> {
         const [floorPrice, xstReferenceAsset] = data.slice(position, (position += xstConsts.length));
 
         const payload: QuotePayload = {
-          exchangePaths,
           reserves: {
             xyk: combineValuesWithKeys(xyk, assetsWithXykReserves),
             tbc: combineValuesWithKeys(tbc, assetsWithTbcReserves),
