@@ -22,6 +22,7 @@ export interface LPSwapOutcomeInfo extends Struct {
   readonly amount: Balance;
   readonly fee: Balance;
   readonly rewards: Vec<LPRewardsInfo>;
+  readonly route: Vec<AssetId>;
 }
 
 export type PHANTOM_LIQUIDITYPROXY = 'liquidityProxy';

@@ -180,13 +180,17 @@ const listLiquiditySources = (
 };
 
 /**
- * Get available liquidity sources for the tokens & exchange pair
+ * Get available liquidity sources for the tokens & exchange pair\
+ * @param inputAssetId Input asset address
+ * @param outputAssetId Output asset address
  * @param payload Quote payload
  * @param enabledAssets List of enabled assets
  * @param baseAssetId Dex base asset id
  * @param syntheticBaseAssetId Dex synthetic base asset id
  */
 export const getPathsAndPairLiquiditySources = (
+  inputAssetId: string,
+  outputAssetId: string,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
   baseAssetId: string,
@@ -195,7 +199,9 @@ export const getPathsAndPairLiquiditySources = (
   const assetPaths: QuotePaths = {};
   let liquiditySources: Array<LiquiditySourceTypes> = [];
 
-  for (const exchangePath of payload.exchangePaths) {
+  const exchangePaths = newTrivial(baseAssetId, syntheticBaseAssetId, enabledAssets.xst, inputAssetId, outputAssetId);
+
+  for (const exchangePath of exchangePaths) {
     let exchangePathSources: Array<LiquiditySourceTypes> = [];
 
     exchangePath.forEach((asset, index) => {
@@ -464,23 +470,35 @@ const quoteSingle = (
 };
 
 export const quote = (
+  firstAssetAddress: string,
+  secondAssetAddress: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   selectedSources: Array<LiquiditySourceTypes>,
+  enabledAssets: PrimaryMarketsEnabledAssets,
   paths: QuotePaths,
   payload: QuotePayload,
-  baseAssetId = Consts.XOR
+  baseAssetId = Consts.XOR,
+  syntheticBaseAssetId = Consts.XST
 ): SwapResult => {
   let bestQuote: QuoteIntermediate = {
     amount: FPNumber.ZERO,
     amountWithoutImpact: FPNumber.ZERO,
     fee: FPNumber.ZERO,
     rewards: [],
-    path: [],
+    route: [],
     distribution: [],
   };
 
-  const results = payload.exchangePaths.map((exchangePath) => {
+  const exchangePaths = newTrivial(
+    baseAssetId,
+    syntheticBaseAssetId,
+    enabledAssets.xst,
+    firstAssetAddress,
+    secondAssetAddress
+  );
+
+  const results = exchangePaths.map((exchangePath) => {
     const directedPath = isDesiredInput ? exchangePath : exchangePath.slice().reverse();
 
     try {
@@ -490,10 +508,10 @@ export const quote = (
             throw new Error('[liquidityProxy]: zero amount received while processing exchange path');
           }
 
-          const { path } = buffer;
+          const { route } = buffer;
 
-          if (path.length) {
-            const prevAsset = path[path.length - 1];
+          if (route.length) {
+            const prevAsset = route[route.length - 1];
             const [assetA, assetB] = isDesiredInput ? [prevAsset, currentAsset] : [currentAsset, prevAsset];
 
             const result = quoteSingle(
@@ -539,7 +557,7 @@ export const quote = (
             }
           }
 
-          buffer.path.push(currentAsset);
+          buffer.route.push(currentAsset);
 
           return buffer;
         },
@@ -548,7 +566,7 @@ export const quote = (
           amountWithoutImpact: FPNumber.ZERO,
           fee: FPNumber.ZERO,
           rewards: [],
-          path: [],
+          route: [],
           distribution: [],
         }
       );
@@ -585,7 +603,7 @@ export const quote = (
     amountWithoutImpact: bestQuote.amountWithoutImpact.toCodecString(),
     fee: bestQuote.fee.toCodecString(),
     rewards: bestQuote.rewards,
-    path: bestQuote.path,
+    route: bestQuote.route,
     distribution: bestQuote.distribution,
   };
 };
