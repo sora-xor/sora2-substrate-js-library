@@ -329,7 +329,8 @@
     "LPSwapOutcomeInfo": {
         "amount": "Balance",
         "fee": "Balance",
-        "rewards": "Vec<LPRewardsInfo>"
+        "rewards": "Vec<LPRewardsInfo>",
+        "route": "Vec<AssetId>"
     },
     "LiquiditySourceIdOf": {
         "dexId": "DEXId",

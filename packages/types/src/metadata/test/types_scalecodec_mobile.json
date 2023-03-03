@@ -4694,6 +4694,27 @@
                         "Yes",
                         "No"
                     ]
+                },
+                "LPSwapOutcomeInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "fee",
+                            "Balance"
+                        ],
+                        [
+                            "rewards",
+                            "Vec<LPRewardsInfo>"
+                        ],
+                        [
+                            "route",
+                            "Vec<AssetId>"
+                        ]
+                    ]
                 }
             }
         }
