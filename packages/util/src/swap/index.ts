@@ -534,7 +534,7 @@ export class SwapModule<T> {
    * Run swap transfers batch operation
    * @param receivers the ordered map, which maps the asset id and dexId being bought to the vector of batch receivers
    * @param inputAsset asset being sold
-   * @param maxInputAmount Amount A value
+   * @param maxInputAmount max amount being sold
    */
   public executeSwapTransferBatch(
     receivers: Array<SwapTransferBatchData>,
