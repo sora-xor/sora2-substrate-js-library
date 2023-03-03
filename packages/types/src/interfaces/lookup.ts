@@ -2037,8 +2037,7 @@ export default {
         filterMode: 'CommonPrimitivesFilterMode',
       },
       swap_transfer_batch: {
-        receivers: 'Vec<(CommonPrimitivesAssetId32,Vec<LiquidityProxyBatchReceiverInfo>)>',
-        dexId: 'u32',
+        swapBatches: 'Vec<LiquidityProxySwapBatchInfo>',
         inputAssetId: 'CommonPrimitivesAssetId32',
         maxInputAmount: 'u128',
         selectedSourceTypes: 'Vec<CommonPrimitivesLiquiditySourceType>',
@@ -2074,7 +2073,15 @@ export default {
     _enum: ['Disabled', 'ForbidSelected', 'AllowSelected']
   },
   /**
-   * Lookup256: liquidity_proxy::BatchReceiverInfo<T>
+   * Lookup254: liquidity_proxy::SwapBatchInfo<common::primitives::AssetId32<common::primitives::PredefinedAssetId>, DEXId, sp_core::crypto::AccountId32>
+   **/
+  LiquidityProxySwapBatchInfo: {
+    outcomeAssetId: 'CommonPrimitivesAssetId32',
+    dexId: 'u32',
+    receivers: 'Vec<LiquidityProxyBatchReceiverInfo>'
+  },
+  /**
+   * Lookup256: liquidity_proxy::BatchReceiverInfo<sp_core::crypto::AccountId32>
    **/
   LiquidityProxyBatchReceiverInfo: {
     accountId: 'AccountId32',

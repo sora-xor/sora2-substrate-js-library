@@ -2174,8 +2174,7 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isSwapTransferBatch: boolean;
     readonly asSwapTransferBatch: {
-      readonly receivers: Vec<ITuple<[CommonPrimitivesAssetId32, Vec<LiquidityProxyBatchReceiverInfo>]>>;
-      readonly dexId: u32;
+      readonly swapBatches: Vec<LiquidityProxySwapBatchInfo>;
       readonly inputAssetId: CommonPrimitivesAssetId32;
       readonly maxInputAmount: u128;
       readonly selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType>;
@@ -2213,6 +2212,13 @@ declare module '@polkadot/types/lookup' {
     readonly isForbidSelected: boolean;
     readonly isAllowSelected: boolean;
     readonly type: 'Disabled' | 'ForbidSelected' | 'AllowSelected';
+  }
+
+  /** @name LiquidityProxySwapBatchInfo (254) */
+  interface LiquidityProxySwapBatchInfo extends Struct {
+    readonly outcomeAssetId: CommonPrimitivesAssetId32;
+    readonly dexId: u32;
+    readonly receivers: Vec<LiquidityProxyBatchReceiverInfo>;
   }
 
   /** @name LiquidityProxyBatchReceiverInfo (256) */
