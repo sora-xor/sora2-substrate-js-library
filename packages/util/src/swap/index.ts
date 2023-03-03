@@ -23,6 +23,7 @@ import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
+import type { SwapTransferBatchData, SwapTransferBatchReceiver } from './types';
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
 
@@ -498,6 +499,53 @@ export class SwapModule<T> {
         liquiditySource,
         to: formattedToAddress,
         type: Operation.SwapAndSend,
+      }
+    );
+  }
+
+  private calcTxParamsSwapTransferBatch(
+    asset: Asset | AccountAsset,
+    maxAmount: NumberLike,
+    liquiditySource = LiquiditySourceTypes.Default
+  ) {
+    assert(this.root.account, Messages.connectWallet);
+    const amount = FPNumber.fromCodecValue(maxAmount, asset.decimals).toCodecString();
+    const liquiditySources = liquiditySource ? [liquiditySource] : [];
+    return {
+      args: [
+        asset.address,
+        amount,
+        liquiditySources,
+        liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected',
+      ],
+    };
+  }
+
+  /**
+   * Run swap & send batch operation
+   * @param receivers the ordered map, which maps the asset id and dexId being bought to the vector of batch receivers
+   * @param inputAsset asset being sold
+   * @param maxInputAmount Amount A value
+   * @param amountB Amount B value
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
+   */
+  public executeSwapTransferBatch(
+    receivers: Array<SwapTransferBatchData>,
+    inputAsset: Asset | AccountAsset,
+    maxInputAmount: NumberLike,
+    liquiditySource = LiquiditySourceTypes.Default
+  ): Promise<T> {
+    const params = this.calcTxParamsSwapTransferBatch(inputAsset, maxInputAmount, liquiditySource);
+
+    return this.root.submitExtrinsic(
+      (this.root.api.tx.liquidityProxy as any).swapTransferBatch(receivers, ...params.args),
+      this.root.account.pair,
+      {
+        symbol: inputAsset.symbol,
+        assetAddress: inputAsset.address,
+        to: this.root.account.pair.address,
+        type: Operation.SwapTransferBatch,
       }
     );
   }

@@ -84,6 +84,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.RemoveLiquidity]: '0',
     [Operation.Swap]: '0',
     [Operation.SwapAndSend]: '0',
+    [Operation.SwapTransferBatch]: '0',
     [Operation.Transfer]: '0',
     [Operation.ClaimVestedRewards]: '0',
     [Operation.ClaimCrowdloanRewards]: '0',
@@ -459,6 +460,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       case Operation.SwapAndSend:
         extrinsic = this.api.tx.liquidityProxy.swapTransfer;
         break;
+      case Operation.SwapTransferBatch:
+        extrinsic = this.api.tx.liquidityProxy.swapTransferBatch;
+        break;
       case Operation.ReferralReserveXor:
         extrinsic = this.api.tx.referrals.reserve;
         break;
@@ -535,6 +539,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           [],
           'Disabled'
         );
+      case Operation.SwapTransferBatch:
+        return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled');
       case Operation.Transfer:
         return this.api.tx.assets.transfer('', '', '0');
       case Operation.ClaimVestedRewards:
@@ -585,6 +591,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.RemoveLiquidity,
       Operation.Swap,
       Operation.SwapAndSend,
+      Operation.SwapTransferBatch,
       Operation.Transfer,
       Operation.ClaimVestedRewards,
       Operation.ClaimCrowdloanRewards,
@@ -692,6 +699,7 @@ export enum Operation {
   /** it's used for internal needs as the MST batch with transfers  */
   TransferAll = 'TransferAll',
   SwapAndSend = 'SwapAndSend',
+  SwapTransferBatch = 'SwapTransferBatch',
   ReferralReserveXor = 'ReferralReserveXor',
   ReferralUnreserveXor = 'ReferralUnreserveXor',
   ReferralSetInvitedUser = 'ReferralSetInvitedUser',
