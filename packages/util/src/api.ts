@@ -176,20 +176,41 @@ export class Api<T = void> extends BaseApi<T> {
   }
 
   /**
-   * Add internal wallet
-   * @param suri Seed of the wallet
-   * @param name Name of the wallet account
-   * @param password Password which will be set for the wallet
+   * Import account using credentials
+   * @param suri Seed of the account
+   * @param name Name of the account
+   * @param password Password which will be set for the account
    */
   public addAccount(suri: string, name: string, password: string): CreateResult {
     return keyring.addUri(suri, password, { name }, this.type);
   }
 
   /**
-   * Import wallet operation
-   * @param suri Seed of the wallet
-   * @param name Name of the wallet account
-   * @param password Password which will be set for the wallet
+   * Create an account pair
+   * It could be added to account list using addAccountPair method
+   * @param suri Seed of the account
+   * @param name Name of the account
+   */
+  public createAccountPair(suri: string, name?: string): KeyringPair {
+    const meta = { name: name || '' };
+
+    return keyring.createFromUri(suri, meta, this.type);
+  }
+
+  /**
+   * Import account using account pair
+   * @param pair account pair to add
+   * @param password account password
+   */
+  public addAccountPair(pair: KeyringPair, password: string): void {
+    keyring.addPair(pair, password);
+  }
+
+  /**
+   * Import account & login
+   * @param suri Seed of the account
+   * @param name Name of the account
+   * @param password Password which will be set for the account
    */
   public importAccount(suri: string, name: string, password: string): void {
     const account = this.addAccount(suri, name, password);
@@ -239,17 +260,6 @@ export class Api<T = void> extends BaseApi<T> {
     if (this.storage) {
       this.storage.set('name', name);
     }
-  }
-
-  /**
-   * Creates an account pair
-   * @param suri Seed of the wallet
-   * @param name Name of the wallet account
-   */
-  public createAccountPair(suri: string, name?: string): KeyringPair {
-    const meta = { name: name || '' };
-
-    return keyring.createFromUri(suri, meta, this.type);
   }
 
   /**
