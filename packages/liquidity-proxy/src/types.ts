@@ -23,19 +23,19 @@ export type Distribution = {
 
 export type QuoteIntermediate = {
   amount: FPNumber;
-  amountWithoutImpact: FPNumber;
   fee: FPNumber;
   rewards: LPRewardsInfo[];
-  path: string[];
+  route: string[];
+  amountWithoutImpact: FPNumber;
   distribution: Distribution[][];
 };
 
 export interface SwapResult {
   amount: CodecString;
   fee: CodecString;
-  rewards: Array<LPRewardsInfo>;
+  rewards: LPRewardsInfo[];
+  route?: string[];
   amountWithoutImpact?: CodecString;
-  path?: string[];
   distribution?: Distribution[][];
 }
 
@@ -44,7 +44,6 @@ export type QuotePaths = {
 };
 
 export type QuotePayload = {
-  exchangePaths: string[][];
   reserves: {
     xyk: {
       [key: string]: [CodecString, CodecString];

@@ -4423,6 +4423,35 @@
                     ]
                 }
             }
+        },
+        {
+            "runtime_range": [
+                47,
+                null
+            ],
+            "types": {
+                "LPSwapOutcomeInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "fee",
+                            "Balance"
+                        ],
+                        [
+                            "rewards",
+                            "Vec<LPRewardsInfo>"
+                        ],
+                        [
+                            "route",
+                            "Vec<AssetId>"
+                        ]
+                    ]
+                }
+            }
         }
     ]
 }

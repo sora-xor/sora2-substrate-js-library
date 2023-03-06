@@ -91,6 +91,7 @@ export default {
       amount: 'Balance',
       fee: 'Balance',
       rewards: 'Vec<LPRewardsInfo>',
+      route: 'Vec<AssetId>',
     },
     LPRewardsInfo: {
       amount: 'Balance',
