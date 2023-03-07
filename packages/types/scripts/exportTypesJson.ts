@@ -137,6 +137,7 @@ function convertTypesSubsquid(inputContent: object) {
   types['types'] = buildTop(inputContent);
   types['types']['String'] = 'Vec<u8>';
   types['types']['Text'] = 'Vec<u8>';
+  types['typesAlias'] = { bridgeMultisig: { Timepoint: 'BridgeTimepoint' } };
   return types;
 }
 
