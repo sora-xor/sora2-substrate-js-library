@@ -106,7 +106,11 @@ export class Api<T = void> extends BaseApi<T> {
 
     await cryptoWaitReady();
 
-    keyring.loadAll({ type: this.type });
+    try {
+      keyring.loadAll({ type: this.type });
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   /**
@@ -189,6 +193,7 @@ export class Api<T = void> extends BaseApi<T> {
         const accounts = await this.getAccounts();
 
         if (!accounts.find((acc) => acc.address === address)) {
+          // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
           await this.initKeyring();
         }
 
