@@ -1,6 +1,6 @@
 import { assert, isHex } from '@polkadot/util';
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, cryptoWaitReady } from '@polkadot/util-crypto';
-import keyring from '@polkadot/ui-keyring';
+import { Keyring } from '@polkadot/ui-keyring';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
@@ -26,11 +26,14 @@ import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
 import type { HistoryItem } from './BaseApi';
 
+let keyring!: Keyring;
+
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
  */
 export class Api<T = void> extends BaseApi<T> {
   private readonly type: KeypairType = KeyringType;
+
   public readonly defaultSlippageTolerancePercent = 0.5;
   public readonly seedLength = 12;
 
@@ -98,6 +101,14 @@ export class Api<T = void> extends BaseApi<T> {
     this.bridge.setAccount(account);
   }
 
+  private async initKeyring(): Promise<void> {
+    keyring = new Keyring();
+
+    await cryptoWaitReady();
+
+    keyring.loadAll({ type: this.type });
+  }
+
   /**
    * The first method you should run. Includes initialization process
    * @param withKeyringLoading `true` by default
@@ -111,9 +122,7 @@ export class Api<T = void> extends BaseApi<T> {
     const isExternal = isExternalFlag ? JSON.parse(isExternalFlag) : null;
 
     if (withKeyringLoading) {
-      await cryptoWaitReady();
-
-      keyring.loadAll({ type: KeyringType });
+      await this.initKeyring();
 
       if (address) {
         const defaultAddress = this.formatAddress(address, false);
@@ -168,11 +177,32 @@ export class Api<T = void> extends BaseApi<T> {
    * @param source wallet identity
    * @param isExternal is account from extension or not
    */
-  public loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): void {
-    const meta = { name: name || '' };
-    const account = isExternal ? keyring.addExternal(address, meta) : { pair: keyring.getPair(address), json: null };
+  public async loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): Promise<void> {
+    try {
+      const meta = { name: name || '' };
 
-    this.updateAccountData(account, name, source, isExternal);
+      let account!: CreateResult;
+
+      if (isExternal) {
+        account = keyring.addExternal(address, meta);
+      } else {
+        const accounts = await this.getAccounts();
+
+        if (!accounts.find((acc) => acc.address === address)) {
+          await this.initKeyring();
+        }
+
+        account = {
+          pair: keyring.getPair(address),
+          json: null,
+        };
+      }
+
+      this.updateAccountData(account, name, source, isExternal);
+    } catch (error) {
+      console.error(error);
+      this.logout();
+    }
   }
 
   /**
