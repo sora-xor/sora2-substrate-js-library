@@ -499,10 +499,8 @@ export const quote = (
   );
 
   const results = exchangePaths.map((exchangePath) => {
-    const directedPath = isDesiredInput ? exchangePath : exchangePath.slice().reverse();
-
     try {
-      const result = directedPath.reduce<QuoteIntermediate>(
+      const result = exchangePath.reduce<QuoteIntermediate>(
         (buffer, currentAsset) => {
           if (buffer.amount.isZero()) {
             throw new Error('[liquidityProxy]: zero amount received while processing exchange path');
