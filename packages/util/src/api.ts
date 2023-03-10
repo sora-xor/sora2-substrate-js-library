@@ -4,7 +4,7 @@ import { Keyring } from '@polkadot/ui-keyring';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
-import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
+import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
@@ -101,15 +101,19 @@ export class Api<T = void> extends BaseApi<T> {
     this.bridge.setAccount(account);
   }
 
-  private async initKeyring(): Promise<void> {
+  private async initKeyring(silent = false): Promise<void> {
     keyring = new Keyring();
 
     await cryptoWaitReady();
 
     try {
+      // Restore accounts from keyring storage (localStorage)
       keyring.loadAll({ type: this.type });
     } catch (error) {
-      console.error(error);
+      // Dont throw "Unable to initialise options more than once" error in silent mode
+      if (!silent) {
+        throw error;
+      }
     }
   }
 
@@ -194,7 +198,7 @@ export class Api<T = void> extends BaseApi<T> {
 
         if (!accounts.find((acc) => acc.address === address)) {
           // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
-          await this.initKeyring();
+          await this.initKeyring(true);
         }
 
         account = {
@@ -307,6 +311,10 @@ export class Api<T = void> extends BaseApi<T> {
   public restoreAccountFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
     const pair = keyring.restoreAccount(json, password);
     return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
+  }
+
+  public createPairFromJson(json: KeyringPair$Json, meta: KeyringPair$Meta): KeyringPair {
+    return keyring.createFromJson(json, meta);
   }
 
   /**
