@@ -22,7 +22,6 @@ function sortObjectByKey(value) {
 export async function generateTypesJson(env: string) {
   console.log('NOTE: Make sure `yarn build` was run with latest types');
   let sortedTypes = sortObjectByKey(localTypes);
-  const data = stringify(sortedTypes);
   const provider = new WsProvider(SORA_ENV[env]);
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
@@ -46,7 +45,8 @@ export async function generateTypesJson(env: string) {
   } else {
     typesScalecodec_python = stringify(convertTypes(sortedTypes, 1, {}));
   }
-  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types.json`, data);
+  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types.json`, stringify(sortedTypes));
+  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_subsquid.json`, stringify(convertTypesSubsquid(sortedTypes)));
   fs.writeFileSync(
     `packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`,
     typesScalecodec_mobile
@@ -130,6 +130,15 @@ function convertTypes(inputContent: object, specVersion: number, currentTypes: o
     }
     return currentTypes;
   }
+}
+
+function convertTypesSubsquid(inputContent: object) {
+  const types = {};
+  types['types'] = buildTop(inputContent);
+  types['types']['String'] = 'Vec<u8>';
+  types['types']['Text'] = 'Vec<u8>';
+  types['typesAlias'] = { bridgeMultisig: { Timepoint: 'BridgeTimepoint' } };
+  return types;
 }
 
 function buildTop(inputContent: object) {
