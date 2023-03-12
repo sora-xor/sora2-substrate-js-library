@@ -499,8 +499,11 @@ export const quote = (
   );
 
   const results = exchangePaths.map((exchangePath) => {
+    // if isDesiredInput = false, we compute the swaps from output asset to input asset
+    const directedPath = isDesiredInput ? exchangePath : exchangePath.slice().reverse();
+
     try {
-      const result = exchangePath.reduce<QuoteIntermediate>(
+      const result = directedPath.reduce<QuoteIntermediate>(
         (buffer, currentAsset) => {
           if (buffer.amount.isZero()) {
             throw new Error('[liquidityProxy]: zero amount received while processing exchange path');
@@ -571,12 +574,14 @@ export const quote = (
 
       return {
         ...result,
-        path: exchangePath,
+        // return real exchange route
+        route: exchangePath,
       };
     } catch (error) {
       return {
         ...bestQuote,
-        path: exchangePath,
+        // return real exchange route
+        route: exchangePath,
       };
     }
   });
