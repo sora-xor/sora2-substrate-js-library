@@ -13,7 +13,11 @@
     "@polkadot/api": "9.6.2",
     "@polkadot/typegen": "9.6.2",
     "@polkadot/types": "9.6.2",
+<<<<<<< HEAD
     "@sora-substrate/type-definitions": "1.15.5-beta.2"
+=======
+    "@sora-substrate/type-definitions": "1.15.7"
+>>>>>>> origin/master
   },
   "devDependencies": {
     "@babel/runtime": "^7.10.2",

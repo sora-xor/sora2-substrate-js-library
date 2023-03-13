@@ -499,6 +499,7 @@ export const quote = (
   );
 
   const results = exchangePaths.map((exchangePath) => {
+    // if isDesiredInput = false, we compute the swaps from output asset to input asset
     const directedPath = isDesiredInput ? exchangePath : exchangePath.slice().reverse();
 
     try {
@@ -573,12 +574,14 @@ export const quote = (
 
       return {
         ...result,
-        path: exchangePath,
+        // return real exchange route
+        route: exchangePath,
       };
     } catch (error) {
       return {
         ...bestQuote,
-        path: exchangePath,
+        // return real exchange route
+        route: exchangePath,
       };
     }
   });
