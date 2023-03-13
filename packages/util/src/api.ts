@@ -360,15 +360,21 @@ export class Api<T = void> extends BaseApi<T> {
   // # Logout & reset methods
 
   /**
+   * Forget account from keyring
+   * @param address account address to forget
+   */
+  public forgetAccount(address = this.address): void {
+    if (address) {
+      const defaultAddress = this.formatAddress(address, false);
+      keyring.forgetAccount(defaultAddress);
+      keyring.forgetAddress(defaultAddress);
+    }
+  }
+
+  /**
    * Remove all wallet data
    */
-  public logout(forgetAccount = true): void {
-    if (this.account && forgetAccount) {
-      const address = this.account.pair.address;
-      keyring.forgetAccount(address);
-      keyring.forgetAddress(address);
-    }
-
+  public logout(): void {
     this.assets.clearAccountAssets();
     this.poolXyk.clearAccountLiquidity();
 
