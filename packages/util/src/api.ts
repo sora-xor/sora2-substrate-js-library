@@ -313,10 +313,6 @@ export class Api<T = void> extends BaseApi<T> {
     return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
   }
 
-  public createPairFromJson(json: KeyringPair$Json, meta: KeyringPair$Meta): KeyringPair {
-    return keyring.createFromJson(json, meta);
-  }
-
   /**
    * Export a JSON with the account data
    * @param password
