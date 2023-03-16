@@ -1489,6 +1489,7 @@ declare module '@polkadot/api-base/types/errors' {
        * Failure while calculating price ignoring non-linearity of liquidity source.
        **/
       FailedToCalculatePriceWithoutImpact: AugmentedError<ApiType>;
+      FailedToTransferAdarCommission: AugmentedError<ApiType>;
       /**
        * Selected filtering request is not allowed.
        **/
