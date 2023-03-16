@@ -189,11 +189,29 @@ export const xstQuote = (
   payload: QuotePayload
 ): QuoteResult => {
   try {
-    if (isAssetAddress(inputAsset, Consts.XST)) {
-      return xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload);
-    } else {
-      return xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload);
-    }
+    const {
+      amount: resultAmount,
+      fee: feeAmount,
+      rewards,
+      distribution,
+    } = isAssetAddress(inputAsset, Consts.XST)
+      ? xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload)
+      : xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload);
+    // `fee_amount` is always computed to be in `main_asset_id`, which is
+    // `SyntheticBaseAssetId` (e.g. XST), but `SwapOutcome` assumes XOR
+    // (`BaseAssetId`), so we convert.
+    const outputToBase = getAveragePrice(
+      Consts.XST,
+      Consts.XOR,
+      // Since `Buy` is more expensive, it seems logical to
+      // show this amount in order to not accidentally lie
+      // about the price.
+      PriceVariant.Buy,
+      payload
+    );
+    const fee = feeAmount.mul(outputToBase);
+
+    return { amount: resultAmount, fee, rewards, distribution };
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XSTPool);
   }
