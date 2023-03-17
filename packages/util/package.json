@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/util",
-  "version": "1.15.10",
+  "version": "1.16.0-beta.0",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -9,10 +9,10 @@
   },
   "dependencies": {
     "@polkadot/ui-keyring": "2.9.14",
-    "@sora-substrate/api": "1.15.10",
-    "@sora-substrate/liquidity-proxy": "1.15.10",
-    "@sora-substrate/math": "1.15.10",
-    "@sora-substrate/types": "1.15.10",
+    "@sora-substrate/api": "1.16.0-beta.0",
+    "@sora-substrate/liquidity-proxy": "1.16.0-beta.0",
+    "@sora-substrate/math": "1.16.0-beta.0",
+    "@sora-substrate/types": "1.16.0-beta.0",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "crypto-js": "^4.0.0",

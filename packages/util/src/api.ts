@@ -202,7 +202,7 @@ export class Api<T = void> extends BaseApi<T> {
         }
 
         account = {
-          pair: keyring.getPair(address),
+          pair: this.getAccountPair(address),
           json: null,
         };
       }
@@ -225,6 +225,15 @@ export class Api<T = void> extends BaseApi<T> {
   }
 
   /**
+   * Create account pair from json
+   * @param json account json
+   * @param meta account meta
+   */
+  public createAccountPairFromJson(json: KeyringPair$Json, meta?: KeyringPair$Meta): KeyringPair {
+    return keyring.createFromJson(json, meta);
+  }
+
+  /**
    * Create an account pair
    * It could be added to account list using addAccountPair method
    * @param suri Seed of the account
@@ -234,6 +243,16 @@ export class Api<T = void> extends BaseApi<T> {
     const meta = { name: name || '' };
 
     return keyring.createFromUri(suri, meta, this.type);
+  }
+
+  /**
+   * Get already imported account pair by address
+   * @param address account address
+   */
+  public getAccountPair(address: string): KeyringPair {
+    const defaultAddress = this.formatAddress(address);
+
+    return keyring.getPair(defaultAddress);
   }
 
   /**
@@ -291,12 +310,15 @@ export class Api<T = void> extends BaseApi<T> {
   /**
    * Change the account name
    * TODO: check it, polkadot-js extension doesn't change account name
+   * @param address account address
    * @param name New name
    */
-  public changeAccountName(name: string): void {
-    const pair = this.accountPair;
+  public changeAccountName(address: string, name: string): void {
+    const pair = this.getAccountPair(address);
+
     keyring.saveAccountMeta(pair, { ...pair.meta, name });
-    if (this.storage) {
+
+    if (this.storage && this.accountPair && pair.address === this.accountPair.address) {
       this.storage.set('name', name);
     }
   }
@@ -320,6 +342,7 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public exportAccount(pair: KeyringPair, password: string, encrypted = false): string {
     const pass = encrypted ? decrypt(password) : password;
+
     return JSON.stringify(keyring.backupAccount(pair, pass));
   }
 
