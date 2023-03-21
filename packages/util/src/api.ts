@@ -250,7 +250,7 @@ export class Api<T = void> extends BaseApi<T> {
    * @param address account address
    */
   public getAccountPair(address: string): KeyringPair {
-    const defaultAddress = this.formatAddress(address);
+    const defaultAddress = this.formatAddress(address, false);
 
     return keyring.getPair(defaultAddress);
   }
