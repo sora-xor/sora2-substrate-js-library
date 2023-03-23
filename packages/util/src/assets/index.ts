@@ -1,6 +1,7 @@
 import { assert } from '@polkadot/util';
 import { Subscription, Subject, combineLatest, map } from 'rxjs';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
+import type { CodecString } from '@sora-substrate/math';
 import type { BalanceInfo } from '@sora-substrate/types';
 import type { ApiPromise } from '@polkadot/api';
 import type { Observable } from '@polkadot/types/types';
@@ -538,5 +539,96 @@ export class AssetsModule<T> {
         type: Operation.RegisterAsset,
       }
     );
+  }
+
+  /**
+   * Transfer amount from account
+   * @param asset Asset object
+   * @param toAddress Account address
+   * @param amount Amount value
+   */
+  public transfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const assetAddress = asset.address;
+    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.root.formatAddress(toAddress);
+    return this.root.submitExtrinsic(
+      this.root.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
+      this.root.account.pair,
+      { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
+    );
+  }
+
+  private divideAssetsInternal(
+    firstAsset: Asset | AccountAsset,
+    secondAsset: Asset | AccountAsset,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    reversed: boolean
+  ): string {
+    const decimals = Math.max(firstAsset.decimals, secondAsset.decimals);
+    const one = new FPNumber(1, decimals);
+    const firstAmountNum = new FPNumber(firstAmount, decimals);
+    const secondAmountNum = new FPNumber(secondAmount, decimals);
+    const result = !reversed
+      ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
+      : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one);
+    return result.format();
+  }
+
+  /**
+   * Divide the first asset by the second
+   * @param firstAsset
+   * @param secondAsset
+   * @param firstAmount
+   * @param secondAmount
+   * @param reversed If `true`: the second by the first (`false` by default)
+   * @returns Formatted string
+   */
+  public divideAssets(
+    firstAsset: Asset | AccountAsset,
+    secondAsset: Asset | AccountAsset,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    reversed = false
+  ): string {
+    return this.divideAssetsInternal(firstAsset, secondAsset, firstAmount, secondAmount, reversed);
+  }
+
+  /**
+   * Divide the first asset by the second
+   * @param firstAssetAddress
+   * @param secondAssetAddress
+   * @param firstAmount
+   * @param secondAmount
+   * @param reversed If `true`: the second by the first (`false` by default)
+   * @returns Promise with formatted string
+   */
+  public async divideAssetsByAssetIds(
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    firstAmount: NumberLike,
+    secondAmount: NumberLike,
+    reversed = false
+  ): Promise<string> {
+    const firstAsset = await this.getAssetInfo(firstAssetAddress);
+    const secondAsset = await this.getAssetInfo(secondAssetAddress);
+    return this.divideAssetsInternal(firstAsset, secondAsset, firstAmount, secondAmount, reversed);
+  }
+
+  public hasEnoughXor(asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
+    const xorDecimals = XOR.decimals;
+    const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals);
+    if (asset.address === XOR.address) {
+      const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals);
+      const fpAmount = new FPNumber(amount, xorDecimals);
+      return FPNumber.lte(fpFee, fpBalance.sub(fpAmount));
+    }
+    // Here we should be sure that xor value of account was tracked & updated
+    const xorAccountAsset = this.getAsset(XOR.address);
+    if (!xorAccountAsset) {
+      return false;
+    }
+    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance.transferable, xorDecimals);
+    return FPNumber.lte(fpFee, xorBalance);
   }
 }

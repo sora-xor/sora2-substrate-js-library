@@ -4,6 +4,7 @@ import omit from 'lodash/fp/omit';
 import { Observable, Subscriber } from 'rxjs';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { CodecString, FPNumber } from '@sora-substrate/math';
+import { connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
@@ -16,14 +17,82 @@ import { AccountStorage, Storage } from './storage';
 import { DexId } from './dex/consts';
 import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
-import { connection } from './connection';
+
 import type { BridgeHistory } from './BridgeApi';
 import type { RewardClaimHistory } from './rewards/types';
 
-type AccountWithOptions = {
-  account: AddressOrPair;
-  options: Partial<SignerOptions>;
-};
+export enum TransactionStatus {
+  Ready = 'ready',
+  Broadcast = 'broadcast',
+  InBlock = 'inblock',
+  Finalized = 'finalized',
+  Error = 'error',
+  Usurped = 'usurped', // When TX is outdated
+  Invalid = 'invalid', // When something happened before sending to network
+}
+
+export enum Operation {
+  Swap = 'Swap',
+  Transfer = 'Transfer',
+  AddLiquidity = 'AddLiquidity',
+  RemoveLiquidity = 'RemoveLiquidity',
+  CreatePair = 'CreatePair',
+  Faucet = 'Faucet',
+  RegisterAsset = 'RegisterAsset',
+  EthBridgeOutgoing = 'EthBridgeOutgoing',
+  EthBridgeIncoming = 'EthBridgeIncoming',
+  EvmOutgoing = 'EvmOutgoing',
+  EvmIncoming = 'EvmIncoming',
+  ClaimRewards = 'ClaimRewards',
+  /** it's used for calc network fee */
+  ClaimVestedRewards = 'ClaimVestedRewards',
+  /** it's used for calc network fee */
+  ClaimCrowdloanRewards = 'ClaimCrowdloanRewards',
+  /** it's used for calc network fee */
+  ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards',
+  /** it's used for calc network fee */
+  ClaimExternalRewards = 'ClaimExternalRewards',
+  /** it's used for internal needs as the MST batch with transfers  */
+  TransferAll = 'TransferAll',
+  SwapAndSend = 'SwapAndSend',
+  ReferralReserveXor = 'ReferralReserveXor',
+  ReferralUnreserveXor = 'ReferralUnreserveXor',
+  ReferralSetInvitedUser = 'ReferralSetInvitedUser',
+  /** Demeter Farming Platform  */
+  DemeterFarmingDepositLiquidity = 'DemeterFarmingDepositLiquidity',
+  DemeterFarmingWithdrawLiquidity = 'DemeterFarmingWithdrawLiquidity',
+  DemeterFarmingStakeToken = 'DemeterFarmingStakeToken',
+  DemeterFarmingUnstakeToken = 'DemeterFarmingUnstakeToken',
+  DemeterFarmingGetRewards = 'DemeterFarmingGetRewards',
+  /** Ceres Liquidity Locker  */
+  CeresLiquidityLockerLockLiquidity = 'CeresLiquidityLockerLockLiquidity',
+}
+
+export interface History {
+  txId?: string;
+  type: Operation;
+  amount?: string;
+  symbol?: string;
+  assetAddress?: string;
+  id?: string;
+  blockId?: string;
+  blockHeight?: string;
+  to?: string;
+  amount2?: string;
+  symbol2?: string;
+  asset2Address?: string;
+  decimals?: number;
+  decimals2?: number;
+  startTime?: number;
+  endTime?: number;
+  from?: string;
+  status?: string;
+  errorMessage?: ErrorMessageFields | string;
+  liquiditySource?: string;
+  liquidityProviderFee?: CodecString;
+  soraNetworkFee?: CodecString;
+  payload?: any; // can be used to integrate with third-party services
+}
 
 export type SaveHistoryOptions = {
   wasNotGenerated?: boolean;
@@ -45,15 +114,6 @@ export type FnResult = void | Observable<ExtrinsicEvent>;
 
 export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & BridgeHistory & RewardClaimHistory];
 
-interface ISubmitExtrinsic<T> {
-  submitExtrinsic(
-    extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
-    historyData?: HistoryItem,
-    unsigned?: boolean
-  ): Promise<T>;
-}
-
 export type AccountHistory<T> = {
   [key: string]: T;
 };
@@ -68,6 +128,20 @@ const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
 
 export const KeyringType = 'sr25519';
+
+type AccountWithOptions = {
+  account: AddressOrPair;
+  options: Partial<SignerOptions>;
+};
+
+interface ISubmitExtrinsic<T> {
+  submitExtrinsic(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    signer: KeyringPair,
+    historyData?: HistoryItem,
+    unsigned?: boolean
+  ): Promise<T>;
+}
 
 export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   /**
@@ -650,77 +724,4 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   public encrypt(value: string): string {
     return encrypt(value);
   }
-}
-
-export enum TransactionStatus {
-  Ready = 'ready',
-  Broadcast = 'broadcast',
-  InBlock = 'inblock',
-  Finalized = 'finalized',
-  Error = 'error',
-  Usurped = 'usurped', // When TX is outdated
-  Invalid = 'invalid', // When something happened before sending to network
-}
-
-export enum Operation {
-  Swap = 'Swap',
-  Transfer = 'Transfer',
-  AddLiquidity = 'AddLiquidity',
-  RemoveLiquidity = 'RemoveLiquidity',
-  CreatePair = 'CreatePair',
-  Faucet = 'Faucet',
-  RegisterAsset = 'RegisterAsset',
-  EthBridgeOutgoing = 'EthBridgeOutgoing',
-  EthBridgeIncoming = 'EthBridgeIncoming',
-  EvmOutgoing = 'EvmOutgoing',
-  EvmIncoming = 'EvmIncoming',
-  ClaimRewards = 'ClaimRewards',
-  /** it's used for calc network fee */
-  ClaimVestedRewards = 'ClaimVestedRewards',
-  /** it's used for calc network fee */
-  ClaimCrowdloanRewards = 'ClaimCrowdloanRewards',
-  /** it's used for calc network fee */
-  ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards',
-  /** it's used for calc network fee */
-  ClaimExternalRewards = 'ClaimExternalRewards',
-  /** it's used for internal needs as the MST batch with transfers  */
-  TransferAll = 'TransferAll',
-  SwapAndSend = 'SwapAndSend',
-  ReferralReserveXor = 'ReferralReserveXor',
-  ReferralUnreserveXor = 'ReferralUnreserveXor',
-  ReferralSetInvitedUser = 'ReferralSetInvitedUser',
-  /** Demeter Farming Platform  */
-  DemeterFarmingDepositLiquidity = 'DemeterFarmingDepositLiquidity',
-  DemeterFarmingWithdrawLiquidity = 'DemeterFarmingWithdrawLiquidity',
-  DemeterFarmingStakeToken = 'DemeterFarmingStakeToken',
-  DemeterFarmingUnstakeToken = 'DemeterFarmingUnstakeToken',
-  DemeterFarmingGetRewards = 'DemeterFarmingGetRewards',
-  /** Ceres Liquidity Locker  */
-  CeresLiquidityLockerLockLiquidity = 'CeresLiquidityLockerLockLiquidity',
-}
-
-export interface History {
-  txId?: string;
-  type: Operation;
-  amount?: string;
-  symbol?: string;
-  assetAddress?: string;
-  id?: string;
-  blockId?: string;
-  blockHeight?: string;
-  to?: string;
-  amount2?: string;
-  symbol2?: string;
-  asset2Address?: string;
-  decimals?: number;
-  decimals2?: number;
-  startTime?: number;
-  endTime?: number;
-  from?: string;
-  status?: string;
-  errorMessage?: ErrorMessageFields | string;
-  liquiditySource?: string;
-  liquidityProviderFee?: CodecString;
-  soraNetworkFee?: CodecString;
-  payload?: any; // can be used to integrate with third-party services
 }

@@ -1,15 +1,13 @@
 import { assert, isHex } from '@polkadot/util';
 import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, cryptoWaitReady } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/ui-keyring';
-import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
-import { BaseApi, Operation, KeyringType } from './BaseApi';
-import { Messages } from './logger';
+import { BaseApi, KeyringType } from './BaseApi';
 import { BridgeApi } from './BridgeApi';
 import { SwapModule } from './swap';
 import { RewardsModule } from './rewards';
@@ -21,9 +19,7 @@ import { SystemModule } from './system';
 import { DemeterFarmingModule } from './demeterFarming';
 import { DexModule } from './dex';
 import { CeresLiquidityLockerModule } from './ceresLiquidityLocker';
-import { XOR } from './assets/consts';
 import type { Storage } from './storage';
-import type { AccountAsset, Asset } from './assets/types';
 import type { HistoryItem } from './BaseApi';
 
 let keyring!: Keyring;
@@ -357,25 +353,6 @@ export class Api<T = void> extends BaseApi<T> {
     };
   }
 
-  // # API methods
-
-  /**
-   * Transfer amount from account
-   * @param asset Asset object
-   * @param toAddress Account address
-   * @param amount Amount value
-   */
-  public transfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<T> {
-    assert(this.account, Messages.connectWallet);
-    const assetAddress = asset.address;
-    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.formatAddress(toAddress);
-    return this.submitExtrinsic(
-      this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
-      this.account.pair,
-      { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
-    );
-  }
-
   // # Logout & reset methods
 
   /**
@@ -399,81 +376,6 @@ export class Api<T = void> extends BaseApi<T> {
 
     super.logout();
     this.bridge.logout();
-  }
-
-  // # Formatter methods
-  public hasEnoughXor(asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
-    const xorDecimals = XOR.decimals;
-    const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals);
-    if (asset.address === XOR.address) {
-      const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals);
-      const fpAmount = new FPNumber(amount, xorDecimals);
-      return FPNumber.lte(fpFee, fpBalance.sub(fpAmount));
-    }
-    // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.assets.getAsset(XOR.address);
-    if (!xorAccountAsset) {
-      return false;
-    }
-    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance.transferable, xorDecimals);
-    return FPNumber.lte(fpFee, xorBalance);
-  }
-
-  private divideAssetsInternal(
-    firstAsset: Asset | AccountAsset,
-    secondAsset: Asset | AccountAsset,
-    firstAmount: NumberLike,
-    secondAmount: NumberLike,
-    reversed: boolean
-  ): string {
-    const decimals = Math.max(firstAsset.decimals, secondAsset.decimals);
-    const one = new FPNumber(1, decimals);
-    const firstAmountNum = new FPNumber(firstAmount, decimals);
-    const secondAmountNum = new FPNumber(secondAmount, decimals);
-    const result = !reversed
-      ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
-      : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one);
-    return result.format();
-  }
-
-  /**
-   * Divide the first asset by the second
-   * @param firstAsset
-   * @param secondAsset
-   * @param firstAmount
-   * @param secondAmount
-   * @param reversed If `true`: the second by the first (`false` by default)
-   * @returns Formatted string
-   */
-  public divideAssets(
-    firstAsset: Asset | AccountAsset,
-    secondAsset: Asset | AccountAsset,
-    firstAmount: NumberLike,
-    secondAmount: NumberLike,
-    reversed = false
-  ): string {
-    return this.divideAssetsInternal(firstAsset, secondAsset, firstAmount, secondAmount, reversed);
-  }
-
-  /**
-   * Divide the first asset by the second
-   * @param firstAssetAddress
-   * @param secondAssetAddress
-   * @param firstAmount
-   * @param secondAmount
-   * @param reversed If `true`: the second by the first (`false` by default)
-   * @returns Promise with formatted string
-   */
-  public async divideAssetsByAssetIds(
-    firstAssetAddress: string,
-    secondAssetAddress: string,
-    firstAmount: NumberLike,
-    secondAmount: NumberLike,
-    reversed = false
-  ): Promise<string> {
-    const firstAsset = await this.assets.getAssetInfo(firstAssetAddress);
-    const secondAsset = await this.assets.getAssetInfo(secondAssetAddress);
-    return this.divideAssetsInternal(firstAsset, secondAsset, firstAmount, secondAmount, reversed);
   }
 }
 

@@ -10,6 +10,7 @@
   "dependencies": {
     "@polkadot/ui-keyring": "2.9.14",
     "@sora-substrate/api": "1.15.12",
+    "@sora-substrate/connection": "1.15.12",
     "@sora-substrate/liquidity-proxy": "1.15.12",
     "@sora-substrate/math": "1.15.12",
     "@sora-substrate/types": "1.15.12",
