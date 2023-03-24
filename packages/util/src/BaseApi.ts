@@ -10,7 +10,6 @@ import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
-import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { AccountStorage, Storage } from './storage';
@@ -129,19 +128,17 @@ const isLiquidityPoolOperation = (operation: Operation) =>
 
 export const KeyringType = 'sr25519';
 
-type AccountWithOptions = {
-  account: AddressOrPair;
-  options: Partial<SignerOptions>;
-};
-
 interface ISubmitExtrinsic<T> {
   submitExtrinsic(
     extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
+    accountPair: KeyringPair,
     historyData?: HistoryItem,
     unsigned?: boolean
   ): Promise<T>;
 }
+
+// We don't need to know real account address for checking network fees
+const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
 
 export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   /**
@@ -178,7 +175,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
   private _history: AccountHistory<HistoryItem> = {};
 
-  protected signer?: Signer;
   public storage?: Storage; // common data storage
   public accountStorage?: AccountStorage; // account data storage
   public account: CreateResult;
@@ -219,7 +215,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   public logout(): void {
     this.account = undefined;
     this.accountStorage = undefined;
-    this.signer = undefined;
     this.history = {};
     if (this.storage) {
       this.storage.clear();
@@ -350,7 +345,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
    */
   public setSigner(signer: Signer): void {
     this.api.setSigner(signer);
-    this.signer = signer;
   }
 
   /**
@@ -361,32 +355,28 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     this.storage = storage;
   }
 
-  private getAccountWithOptions(): AccountWithOptions {
-    return {
-      account: this.accountPair.isLocked ? this.accountPair.address : this.accountPair,
-      options: { signer: this.signer },
-    };
-  }
-
   public async submitExtrinsic(
     extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
+    accountPair: KeyringPair,
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
-    const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
-    if (isNotFaucetOperation && signer) {
-      history.from = this.address;
-    }
-
-    const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
-    const { account, options } = this.getAccountWithOptions();
+    const nonce = await this.api.rpc.system.accountNextIndex(accountPair.address);
+    const account = accountPair.isLocked ? accountPair.address : accountPair;
     // Signing the transaction
-    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
+    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { nonce });
 
     // we should lock pair, if it's not locked
-    this.lockPair();
+    if (!accountPair.isLocked) {
+      accountPair.lock();
+    }
+
+    const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
+    const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
+
+    if (isNotFaucetOperation && accountPair) {
+      history.from = this.formatAddress(accountPair.address);
+    }
 
     history.txId = signedTx.hash.toString();
 
@@ -467,6 +457,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           throw new Error(errorInfo);
         });
     };
+
     if (this.shouldObservableBeUsed) {
       return new Observable<ExtrinsicEvent>((subscriber) => {
         extrinsicFn(subscriber);
@@ -553,10 +544,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       default:
         throw new Error('Unknown function');
     }
-    const { account, options } = this.getAccountWithOptions();
     const tx =
       type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic<'promise'>);
-    const res = await tx.paymentInfo(account, options);
+    const res = await tx.paymentInfo(mockAccountAddress);
     return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
   }
 
@@ -668,15 +658,17 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.DemeterFarmingGetRewards,
       Operation.CeresLiquidityLockerLockLiquidity,
     ];
-    // We don't need to know real account address for checking network fees
-    const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
-    for (const operation of operations) {
-      const extrinsic = this.getEmptyExtrinsic(operation);
-      if (extrinsic) {
-        const res = await extrinsic.paymentInfo(mockAccountAddress);
-        this.NetworkFee[operation] = new FPNumber(res.partialFee, XOR.decimals).toCodecString();
-      }
-    }
+
+    await Promise.all(
+      operations.map(async (operation) => {
+        const extrinsic = this.getEmptyExtrinsic(operation);
+
+        if (extrinsic) {
+          const res = await extrinsic.paymentInfo(mockAccountAddress);
+          this.NetworkFee[operation] = new FPNumber(res.partialFee, XOR.decimals).toCodecString();
+        }
+      })
+    );
   }
 
   /**

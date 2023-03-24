@@ -121,4 +121,6 @@ class Connection {
 /**
  * Base connection object which should be used for any api
  */
-export const connection = new Connection();
+const connection = new Connection();
+
+export { Connection, connection };
