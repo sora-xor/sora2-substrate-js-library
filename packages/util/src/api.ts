@@ -118,18 +118,17 @@ export class Api<T = void> extends BaseApi<T> {
    * @param withKeyringLoading `true` by default
    */
   public async initialize(withKeyringLoading = true): Promise<void> {
-    const isExternalFlag = this.storage?.get('isExternal');
-
-    const address = this.storage?.get('address');
-    const name = this.storage?.get('name');
-    const source = this.storage?.get('source');
-    const isExternal = isExternalFlag ? JSON.parse(isExternalFlag) : null;
-
     if (withKeyringLoading) {
       await this.initKeyring();
 
+      const address = this.storage?.get('address');
+
       if (address) {
         const defaultAddress = this.formatAddress(address, false);
+        const name = this.storage?.get('name');
+        const source = this.storage?.get('source');
+        const isExternalFlag = this.storage?.get('isExternal');
+        const isExternal = isExternalFlag ? JSON.parse(isExternalFlag) : null;
         const isExternalAccount = isExternal || (isExternal === null && !!source);
 
         this.loginAccount(defaultAddress, name, source, isExternalAccount);

@@ -355,21 +355,26 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     this.storage = storage;
   }
 
-  public async submitExtrinsic(
-    extrinsic: SubmittableExtrinsic<'promise'>,
-    accountPair: KeyringPair,
-    historyData?: HistoryItem,
-    unsigned = false
-  ): Promise<T> {
+  public async signExtrinsic(extrinsic: SubmittableExtrinsic<'promise'>, accountPair: KeyringPair) {
     const nonce = await this.api.rpc.system.accountNextIndex(accountPair.address);
+    // Account pair or address
     const account = accountPair.isLocked ? accountPair.address : accountPair;
     // Signing the transaction
-    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { nonce });
-
+    const signedTx = await extrinsic.signAsync(account, { nonce });
     // we should lock pair, if it's not locked
     if (!accountPair.isLocked) {
       accountPair.lock();
     }
+
+    return signedTx;
+  }
+
+  public async submitExtrinsic(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    accountPair?: KeyringPair,
+    historyData?: HistoryItem
+  ): Promise<T> {
+    const signedTx = accountPair ? await this.signExtrinsic(extrinsic, accountPair) : extrinsic;
 
     const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
@@ -387,7 +392,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     }
 
     const extrinsicFn = async (subscriber?: Subscriber<ExtrinsicEvent>) => {
-      const unsub = await extrinsic
+      const unsub = await signedTx
         .send((result: ISubmittableResult) => {
           history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
           if (result.status.isInBlock) {
@@ -458,12 +463,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         });
     };
 
-    if (this.shouldObservableBeUsed) {
-      return new Observable<ExtrinsicEvent>((subscriber) => {
-        extrinsicFn(subscriber);
-      }) as unknown as T; // T is `Observable<ExtrinsicEvent>` here
-    }
-    return extrinsicFn() as unknown as Promise<T>; // T is `void` here
+    // if (this.shouldObservableBeUsed) {
+    return new Observable<ExtrinsicEvent>((subscriber) => {
+      extrinsicFn(subscriber);
+    }) as unknown as T; // T is `Observable<ExtrinsicEvent>` here
+    // }
+    // return extrinsicFn() as unknown as Promise<T>; // T is `void` here
   }
 
   /**
