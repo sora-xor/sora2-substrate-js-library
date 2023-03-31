@@ -1,21 +1,17 @@
 import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
-import omit from 'lodash/fp/omit';
 import { Observable, Subscriber } from 'rxjs';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { CodecString, FPNumber } from '@sora-substrate/math';
-import { connection } from '@sora-substrate/connection';
+import { Connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
-import type { CreateResult } from '@polkadot/ui-keyring/types';
-import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
+import type { KeyringPair } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
-import { AccountStorage, Storage } from './storage';
 import { DexId } from './dex/consts';
 import { XOR } from './assets/consts';
-import { encrypt, toHmacSHA256 } from './crypto';
+import { Formatters } from './formatters';
 
 import type { BridgeHistory } from './BridgeApi';
 import type { RewardClaimHistory } from './rewards/types';
@@ -93,11 +89,6 @@ export interface History {
   payload?: any; // can be used to integrate with third-party services
 }
 
-export type SaveHistoryOptions = {
-  wasNotGenerated?: boolean;
-  toCurrentAccount?: boolean;
-};
-
 export type ErrorMessageFields = {
   section: string;
   name: string;
@@ -113,10 +104,6 @@ export type FnResult = void | Observable<ExtrinsicEvent>;
 
 export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & BridgeHistory & RewardClaimHistory];
 
-export type AccountHistory<T> = {
-  [key: string]: T;
-};
-
 export const isBridgeOperation = (operation: Operation) =>
   [Operation.EthBridgeIncoming, Operation.EthBridgeOutgoing].includes(operation);
 
@@ -125,8 +112,6 @@ export const isEvmOperation = (operation: Operation) =>
 
 const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
-
-export const KeyringType = 'sr25519';
 
 interface ISubmitExtrinsic<T> {
   submitExtrinsic(
@@ -171,172 +156,17 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.CeresLiquidityLockerLockLiquidity]: '0',
   } as NetworkFeesObject;
 
-  protected readonly prefix = 69;
-
-  private _history: AccountHistory<HistoryItem> = {};
-
-  public storage?: Storage; // common data storage
-  public accountStorage?: AccountStorage; // account data storage
-  public account: CreateResult;
   /** If `true` you might subscribe on extrinsic statuses */
   public shouldObservableBeUsed = false;
 
-  constructor(public readonly historyNamespace = 'history') {}
+  constructor(public readonly connection: Connection) {}
 
   public get api(): ApiPromise {
-    return connection.api;
+    return this.connection.api;
   }
 
   public get apiRx(): ApiRx {
-    return connection.api.rx as ApiRx;
-  }
-
-  public get accountPair(): KeyringPair {
-    if (!this.account) {
-      return null;
-    }
-    return this.account.pair;
-  }
-
-  public get address(): string {
-    if (!this.account) {
-      return '';
-    }
-    return this.formatAddress(this.account.pair.address);
-  }
-
-  public get accountJson(): KeyringPair$Json {
-    if (!this.account) {
-      return null;
-    }
-    return this.account.json;
-  }
-
-  public logout(): void {
-    this.account = undefined;
-    this.accountStorage = undefined;
-    this.history = {};
-    if (this.storage) {
-      this.storage.clear();
-    }
-  }
-
-  public initAccountStorage() {
-    if (!this.account?.pair?.address) return;
-    // TODO: dependency injection ?
-    if (this.storage) {
-      this.accountStorage = new AccountStorage(toHmacSHA256(this.account.pair.address));
-    }
-  }
-
-  // methods for working with history
-  public get history(): AccountHistory<HistoryItem> {
-    if (this.accountStorage) {
-      const history = this.accountStorage.get(this.historyNamespace);
-      this._history = history ? (JSON.parse(history) as AccountHistory<HistoryItem>) : {};
-    }
-    return this._history;
-  }
-
-  public set history(value: AccountHistory<HistoryItem>) {
-    this.accountStorage?.set(this.historyNamespace, JSON.stringify(value));
-    this._history = { ...value };
-  }
-
-  public get historyList(): Array<HistoryItem> {
-    return Object.values(this.history);
-  }
-
-  public getHistory(id: string): HistoryItem | null {
-    return this.history[id] ?? null;
-  }
-
-  public getFilteredHistory(filterFn: (item: HistoryItem) => boolean): AccountHistory<HistoryItem> {
-    const currentHistory = this.history;
-    const filtered: AccountHistory<HistoryItem> = {};
-
-    for (const id in currentHistory) {
-      const item = currentHistory[id];
-      if (filterFn(item)) {
-        filtered[id] = item;
-      }
-    }
-
-    return filtered;
-  }
-
-  public saveHistory(historyItem: HistoryItem, options?: SaveHistoryOptions): void {
-    if (!historyItem || !historyItem.id) return;
-
-    let historyCopy: AccountHistory<HistoryItem>;
-    let addressStorage: Storage;
-
-    const hasAccessToStorage = !!this.storage;
-    const historyItemHasSigner = !!historyItem.from;
-    const historyItemFromAddress = historyItemHasSigner ? this.formatAddress(historyItem.from, false) : '';
-    const needToUpdateAddressStorage =
-      !options?.toCurrentAccount &&
-      historyItemFromAddress &&
-      historyItemFromAddress !== this.address &&
-      hasAccessToStorage;
-
-    if (needToUpdateAddressStorage) {
-      addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress));
-      const history = addressStorage.get(this.historyNamespace);
-      historyCopy = history ? JSON.parse(history) : {};
-    } else {
-      historyCopy = { ...this.history };
-    }
-
-    const item = { ...(historyCopy[historyItem.id] || {}), ...historyItem };
-
-    if (options?.wasNotGenerated) {
-      // Tx was failed on the static validation and wasn't generated in the network
-      delete item.txId;
-    }
-
-    historyCopy[historyItem.id] = item;
-
-    if (needToUpdateAddressStorage && addressStorage) {
-      addressStorage.set(this.historyNamespace, JSON.stringify(historyCopy));
-    } else {
-      this.history = historyCopy;
-    }
-  }
-
-  public removeHistory(...ids: Array<string>): void {
-    if (!ids.length) return;
-
-    this.history = omit(ids, this.history);
-  }
-
-  public clearHistory(): void {
-    this.history = {};
-  }
-
-  /**
-   * Set account data
-   * @param account
-   */
-  public setAccount(account: CreateResult): void {
-    this.account = account;
-  }
-
-  /**
-   * Unlock pair to sign tx
-   * @param password
-   */
-  public unlockPair(password: string): void {
-    this.account.pair.unlock(password);
-  }
-
-  /**
-   * Lock pair
-   */
-  public lockPair(): void {
-    if (!this.account.pair?.isLocked) {
-      this.account.pair.lock();
-    }
+    return this.connection.api.rx as ApiRx;
   }
 
   /**
@@ -345,14 +175,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
    */
   public setSigner(signer: Signer): void {
     this.api.setSigner(signer);
-  }
-
-  /**
-   * Set storage if it should be used as data storage
-   * @param storage
-   */
-  public setStorage(storage: Storage): void {
-    this.storage = storage;
   }
 
   public async signExtrinsic(extrinsic: SubmittableExtrinsic<'promise'>, accountPair: KeyringPair) {
@@ -380,7 +202,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
 
     if (isNotFaucetOperation && accountPair) {
-      history.from = this.formatAddress(accountPair.address);
+      history.from = Formatters.formatAddress(accountPair.address);
     }
 
     history.txId = signedTx.hash.toString();
@@ -442,21 +264,15 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             subscriber?.complete();
             unsub();
           }
-          this.saveHistory(history); // Save history during each status update
         })
         .catch((e: Error) => {
           // override history 'id' to 'startTime', because we will delete history 'txId' below
-          history.id = this.encrypt(`${history.startTime}`);
+          history.id = Formatters.encrypt(`${history.startTime}`);
           history.status = TransactionStatus.Error;
           history.endTime = Date.now();
           const errorParts = e?.message?.split(':');
           const errorInfo = last(errorParts)?.trim();
           history.errorMessage = errorInfo;
-          // at the moment the history has not yet been saved;
-          // save history and then delete 'txId'
-          this.saveHistory(history, {
-            wasNotGenerated: true,
-          });
           subscriber?.next(['error', history]);
           subscriber?.complete();
           throw new Error(errorInfo);
@@ -674,51 +490,5 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         }
       })
     );
-  }
-
-  /**
-   * Format address
-   * @param withSoraPrefix `true` by default
-   */
-  public formatAddress(address: string, withSoraPrefix = true): string {
-    const publicKey = decodeAddress(address, false);
-
-    if (withSoraPrefix) {
-      return encodeAddress(publicKey, this.prefix);
-    }
-    return encodeAddress(publicKey);
-  }
-
-  /**
-   * Validate address
-   * @param address
-   */
-  public validateAddress(address: string): boolean {
-    try {
-      decodeAddress(address, false);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Get public key as hex string by account address
-   * @param address
-   * @returns
-   */
-  public getPublicKeyByAddress(address: string): string {
-    const publicKey = decodeAddress(address, false);
-
-    return Buffer.from(publicKey).toString('hex');
-  }
-
-  /**
-   * Generate unique string from value
-   * @param value
-   * @returns
-   */
-  public encrypt(value: string): string {
-    return encrypt(value);
   }
 }
