@@ -1,4 +1,3 @@
-import { assert } from '@polkadot/util';
 import { combineLatest, of, map, distinctUntilChanged } from 'rxjs';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
 import { quote, LiquiditySourceTypes, PriceVariant, newTrivial } from '@sora-substrate/liquidity-proxy';
@@ -17,11 +16,13 @@ import type {
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
-import { XOR, DAI, XSTUSD } from '../assets/consts';
+import { XOR, DAI } from '../assets/consts';
 import { DexId } from '../dex/consts';
-import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { Api } from '../api';
+import { Formatters } from '../formatters';
+
+import type { ApiExtrinsicPayload } from '../BaseApi';
 import type { AccountAsset, Asset } from '../assets/types';
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
@@ -376,7 +377,6 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     dexId = DexId.XOR
   ) {
-    assert(this.root.account, Messages.connectWallet);
     const desiredDecimals = (!isExchangeB ? assetA : assetB).decimals;
     const resultDecimals = (!isExchangeB ? assetB : assetA).decimals;
     const desiredCodecString = new FPNumber(!isExchangeB ? amountA : amountB, desiredDecimals).toCodecString();
@@ -417,7 +417,7 @@ export class SwapModule<T> {
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param dexId dex id to detect base asset (XOR or XSTUSD)
    */
-  public execute(
+  public prepareSwap(
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -426,7 +426,7 @@ export class SwapModule<T> {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default,
     dexId = DexId.XOR
-  ): Promise<T> {
+  ): ApiExtrinsicPayload {
     const params = this.calcTxParams(
       assetA,
       assetB,
@@ -437,23 +437,39 @@ export class SwapModule<T> {
       liquiditySource,
       dexId
     );
-    if (!this.root.assets.getAsset(assetB.address)) {
-      this.root.assets.addAccountAsset(assetB.address);
-    }
-    return this.root.submitExtrinsic(
-      (this.root.api.tx.liquidityProxy as any).swap(...params.args),
-      this.root.account.pair,
-      {
-        symbol: assetA.symbol,
-        assetAddress: assetA.address,
-        amount: `${amountA}`,
-        symbol2: assetB.symbol,
-        asset2Address: assetB.address,
-        amount2: `${amountB}`,
-        liquiditySource,
-        type: Operation.Swap,
-      }
-    );
+
+    const extrinsic = (this.root.api.tx.liquidityProxy as any).swap(...params.args);
+
+    const history = {
+      symbol: assetA.symbol,
+      assetAddress: assetA.address,
+      amount: `${amountA}`,
+      symbol2: assetB.symbol,
+      asset2Address: assetB.address,
+      amount2: `${amountB}`,
+      liquiditySource,
+      type: Operation.Swap,
+    };
+
+    return { extrinsic, history };
+    // [TODO] side effect
+    // if (!this.root.assets.getAsset(assetB.address)) {
+    //   this.root.assets.addAccountAsset(assetB.address);
+    // }
+    // return this.root.submitExtrinsic(
+    //   (this.root.api.tx.liquidityProxy as any).swap(...params.args),
+    //   this.root.account.pair,
+    //   {
+    //     symbol: assetA.symbol,
+    //     assetAddress: assetA.address,
+    //     amount: `${amountA}`,
+    //     symbol2: assetB.symbol,
+    //     asset2Address: assetB.address,
+    //     amount2: `${amountB}`,
+    //     liquiditySource,
+    //     type: Operation.Swap,
+    //   }
+    // );
   }
 
   /**
@@ -467,7 +483,7 @@ export class SwapModule<T> {
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param dexId dex id to detect base asset (XOR or XSTUSD)
    */
-  public executeSwapAndSend(
+  public prepareSwapAndSend(
     receiver: string,
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
@@ -477,7 +493,7 @@ export class SwapModule<T> {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default,
     dexId = DexId.XOR
-  ): Promise<T> {
+  ): ApiExtrinsicPayload {
     const params = this.calcTxParams(
       assetA,
       assetB,
@@ -488,27 +504,46 @@ export class SwapModule<T> {
       liquiditySource,
       dexId
     );
-    if (!this.root.assets.getAsset(assetB.address)) {
-      this.root.assets.addAccountAsset(assetB.address);
-    }
 
-    const formattedToAddress = receiver.slice(0, 2) === 'cn' ? receiver : this.root.formatAddress(receiver);
+    const extrinsic = (this.root.api.tx.liquidityProxy as any).swapTransfer(receiver, ...params.args);
 
-    return this.root.submitExtrinsic(
-      (this.root.api.tx.liquidityProxy as any).swapTransfer(receiver, ...params.args),
-      this.root.account.pair,
-      {
-        symbol: assetA.symbol,
-        assetAddress: assetA.address,
-        amount: `${amountA}`,
-        symbol2: assetB.symbol,
-        asset2Address: assetB.address,
-        amount2: `${amountB}`,
-        liquiditySource,
-        to: formattedToAddress,
-        type: Operation.SwapAndSend,
-      }
-    );
+    const to = receiver.slice(0, 2) === 'cn' ? receiver : Formatters.formatAddress(receiver);
+    const history = {
+      symbol: assetA.symbol,
+      assetAddress: assetA.address,
+      amount: `${amountA}`,
+      symbol2: assetB.symbol,
+      asset2Address: assetB.address,
+      amount2: `${amountB}`,
+      liquiditySource,
+      to,
+      type: Operation.SwapAndSend,
+    };
+
+    return { extrinsic, history };
+
+    // [TODO] side effect
+    // if (!this.root.assets.getAsset(assetB.address)) {
+    //   this.root.assets.addAccountAsset(assetB.address);
+    // }
+
+    // const formattedToAddress = receiver.slice(0, 2) === 'cn' ? receiver : this.root.formatAddress(receiver);
+
+    // return this.root.submitExtrinsic(
+    //   (this.root.api.tx.liquidityProxy as any).swapTransfer(receiver, ...params.args),
+    //   this.root.account.pair,
+    //   {
+    //     symbol: assetA.symbol,
+    //     assetAddress: assetA.address,
+    //     amount: `${amountA}`,
+    //     symbol2: assetB.symbol,
+    //     asset2Address: assetB.address,
+    //     amount2: `${amountB}`,
+    //     liquiditySource,
+    //     to: formattedToAddress,
+    //     type: Operation.SwapAndSend,
+    //   }
+    // );
   }
 
   /**

@@ -1,7 +1,6 @@
 import { assert } from '@polkadot/util';
-import { Subscription, Subject, combineLatest, map } from 'rxjs';
+import { combineLatest, map } from 'rxjs';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
-import type { CodecString } from '@sora-substrate/math';
 import type { BalanceInfo } from '@sora-substrate/types';
 import type { ApiPromise } from '@polkadot/api';
 import type { Observable } from '@polkadot/types/types';
@@ -10,8 +9,8 @@ import type { Option, u128 } from '@polkadot/types-codec';
 
 import { KnownAssets, NativeAssets, XOR } from './consts';
 import { PoolTokens } from '../poolXyk/consts';
-import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
+import { Formatters } from '../formatters';
 import type {
   AccountAsset,
   AccountBalance,
@@ -61,33 +60,6 @@ async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
     await api.query.assets.assetInfos({ code: address })
   ).toHuman() as any;
   return { address, symbol, name, decimals: +decimals, content, description } as Asset;
-}
-
-/**
- * **For the external collaboration**
- *
- * Returns Asset Balance.
- *
- * If Asset ID == XOR, referrals.referrerBalances will be included as bonded
- *
- * @param api Polkadot based API object
- * @param accountAddress Account ID
- * @param assetAddress Asset ID
- * @param assetDecimals Asset decimals, 18 is used by default
- */
-export async function getAssetBalance(
-  api: ApiPromise,
-  accountAddress: string,
-  assetAddress: string,
-  assetDecimals = 18
-): Promise<AccountBalance> {
-  if (assetAddress === XOR.address) {
-    const accountInfo = await api.query.system.account(accountAddress);
-    const bondedBalance = await api.query.referrals.referrerBalances(accountAddress);
-    return formatBalance(accountInfo.data, assetDecimals, bondedBalance);
-  }
-  const accountData = await api.query.tokens.accounts(accountAddress, assetAddress);
-  return formatBalance(accountData, assetDecimals);
 }
 
 function isRegisteredAsset(asset: any, whitelist: Whitelist): boolean {
@@ -237,99 +209,31 @@ export class AssetsModule<T> {
     return blacklist.includes(asset.address);
   }
 
-  // Default assets addresses of account - list of NativeAssets addresses
-  public accountDefaultAssetsAddresses: Array<string> = NativeAssets.map((asset) => asset.address);
-
-  private _accountAssetsAddresses: Array<string> = [];
-  private balanceSubscriptions: Map<string, Subscription> = new Map();
-  private balanceSubject = new Subject<void>();
-  public balanceUpdated = this.balanceSubject.asObservable();
-  public accountAssets: Array<AccountAsset> = [];
-
-  // # Account assets methods
-
-  private subscribeToAssetBalance(asset: AccountAsset): void {
-    const subscription = this.getAssetBalanceObservable(asset).subscribe((accountBalance: AccountBalance) => {
-      asset.balance = accountBalance;
-      this.balanceSubject.next();
-    });
-    this.balanceSubscriptions.set(asset.address, subscription);
-  }
-
-  private unsubscribeFromAssetBalance(address: string): void {
-    this.balanceSubscriptions.get(address)?.unsubscribe();
-    this.balanceSubscriptions.delete(address);
-  }
-
-  private async addToAccountAssetsList(address: string): Promise<void> {
-    // Check asset in account assets list
-    const accountAsset = this.getAsset(address);
-    // If asset is not added to account assets
-    if (!accountAsset) {
-      // Get asset data and balance info
-      const asset = await this.getAccountAsset(address);
-      // During async execution of the method above, asset may have already been added
-      // Check again, that asset is not in account assets list
-      if (!this.getAsset(address)) {
-        this.accountAssets.push(asset);
-        this.subscribeToAssetBalance(asset);
-      }
-    } else {
-      // Move asset to the end of list, keep balance subscription
-      this.removeFromAccountAssets(address);
-      this.accountAssets.push(accountAsset);
+  /**
+   * **For the external collaboration**
+   *
+   * Returns Asset Balance.
+   *
+   * If Asset ID == XOR, referrals.referrerBalances will be included as bonded
+   *
+   * @param api Polkadot based API object
+   * @param accountAddress Account ID
+   * @param assetAddress Asset ID
+   * @param assetDecimals Asset decimals, 18 is used by default
+   */
+  async getAssetBalance(accountAddress: string, assetAddress: string, assetDecimals = 18): Promise<AccountBalance> {
+    if (assetAddress === XOR.address) {
+      const accountInfo = await this.root.api.query.system.account(accountAddress);
+      const bondedBalance = await this.root.api.query.referrals.referrerBalances(accountAddress);
+      return formatBalance(accountInfo.data, assetDecimals, bondedBalance);
     }
+    const accountData = await this.root.api.query.tokens.accounts(accountAddress, assetAddress);
+    return formatBalance(accountData, assetDecimals);
   }
 
-  private removeFromAccountAssets(address: string): void {
-    this.accountAssets = this.accountAssets.filter((item) => item.address !== address);
-  }
-
-  private removeFromAccountAssetsList(address: string): void {
-    this.unsubscribeFromAssetBalance(address);
-    this.removeFromAccountAssets(address);
-    this.balanceSubject.next();
-  }
-
-  /**
-   * Add account asset & create balance subscription
-   * @param address asset address
-   */
-  public async addAccountAsset(address: string): Promise<void> {
-    this.addToAccountAssetsAddressesList(address);
-    await this.addToAccountAssetsList(address);
-  }
-
-  /**
-   * Remove account asset & it's balance subscription
-   * @param address asset address
-   */
-  public removeAccountAsset(address: string): void {
-    this.removeFromAccountAssetsAddressesList(address);
-    this.removeFromAccountAssetsList(address);
-  }
-
-  /**
-   * Clear account assets & their balance subscriptions
-   */
-  public clearAccountAssets() {
-    for (const address of this.balanceSubscriptions.keys()) {
-      this.unsubscribeFromAssetBalance(address);
-    }
-    this.accountAssets = [];
-  }
-
-  /**
-   * Find account asset in account assets list
-   * @param address asset address
-   */
-  public getAsset(address: string): AccountAsset | null {
-    return this.accountAssets.find((asset) => asset.address === address) ?? null;
-  }
-
-  public getAssetBalanceObservable(asset: AccountAsset | Asset): Observable<AccountBalance> {
-    const accountAddress = this.root.account.pair.address;
+  public getAssetBalanceObservable(asset: AccountAsset | Asset, accountAddress: string): Observable<AccountBalance> {
     const assetAddress = asset.address;
+
     if (assetAddress === XOR.address) {
       const accountInfo = this.root.apiRx.query.system.account(accountAddress);
       const bondedBalance = this.root.apiRx.query.referrals.referrerBalances(accountAddress);
@@ -338,6 +242,7 @@ export class AssetsModule<T> {
         map((result) => formatBalance(result[0].data, asset.decimals, result[1]))
       );
     }
+
     return this.root.apiRx.query.tokens
       .accounts(accountAddress, assetAddress)
       .pipe(map((accountData) => formatBalance(accountData, asset.decimals)));
@@ -348,9 +253,9 @@ export class AssetsModule<T> {
    * and liquidity poolings
    *
    */
-  public getTotalXorBalanceObservable(): Observable<FPNumber> {
+  public getTotalXorBalanceObservable(accountAddress: string): Observable<FPNumber> {
     return combineLatest([
-      this.getAssetBalanceObservable(XOR),
+      this.getAssetBalanceObservable(XOR, accountAddress),
       this.root.demeterFarming.getAccountPoolsObservable(),
     ]).pipe(
       map(([xorAssetBalance, demeterFarmingPools]) => {
@@ -376,97 +281,19 @@ export class AssetsModule<T> {
   }
 
   /**
-   * Sync account assets with account assets address list
-   * During update process, assets should be removed according to 'excludedAddresses'
-   * and exists in accounts assets list according to 'currentAddresses'
-   */
-  public async updateAccountAssets(): Promise<void> {
-    assert(this.root.account, Messages.connectWallet);
-
-    if (!this.accountAssetsAddresses.length) {
-      this.accountAssetsAddresses = this.accountDefaultAssetsAddresses;
-    }
-
-    const currentAddresses = this.accountAssetsAddresses;
-    const excludedAddresses = this.accountAssets.reduce<string[]>(
-      (result, { address }) => (currentAddresses.includes(address) ? result : [...result, address]),
-      []
-    );
-
-    for (const assetAddress of excludedAddresses) {
-      this.removeFromAccountAssetsList(assetAddress);
-    }
-
-    for (const assetAddress of currentAddresses) {
-      await this.addToAccountAssetsList(assetAddress);
-    }
-  }
-
-  /**
    * Get asset information
    * @param address asset address
    */
   public async getAssetInfo(address: string): Promise<Asset> {
     const knownAsset = KnownAssets.get(address);
+
     if (knownAsset) {
       return knownAsset;
     }
-    const existingAsset =
-      this.getAsset(address) || this.root.poolXyk.accountLiquidity.find((asset) => asset.address === address);
-    if (existingAsset) {
-      return {
-        address: existingAsset.address,
-        decimals: existingAsset.decimals,
-        symbol: existingAsset.symbol,
-        name: existingAsset.name,
-        content: (existingAsset as AccountAsset).content, // will be undefined,
-        description: (existingAsset as AccountAsset).description, // if there are no such props
-      } as Asset;
-    }
+
+    // [TODO]: memo
+
     return await getAssetInfo(this.root.api, address);
-  }
-
-  /**
-   * Get account asset information.
-   * You can just check balance of any asset
-   * @param address asset address
-   */
-  public async getAccountAsset(address: string): Promise<AccountAsset> {
-    assert(this.root.account, Messages.connectWallet);
-    const { decimals, symbol, name, content, description } = await this.getAssetInfo(address);
-    const asset = { address, decimals, symbol, name, content, description } as AccountAsset;
-    const result = await getAssetBalance(this.root.api, this.root.account.pair.address, address, decimals);
-    asset.balance = result;
-
-    return asset;
-  }
-
-  // # Account assets addresses
-
-  public get accountAssetsAddresses(): Array<string> {
-    if (this.root.accountStorage) {
-      const addresses = this.root.accountStorage.get('assetsAddresses');
-      this._accountAssetsAddresses = addresses ? (JSON.parse(addresses) as Array<string>) : [];
-    }
-    return this._accountAssetsAddresses;
-  }
-
-  public set accountAssetsAddresses(assetsAddresses: Array<string>) {
-    this.root.accountStorage?.set('assetsAddresses', JSON.stringify(assetsAddresses));
-    this._accountAssetsAddresses = [...assetsAddresses];
-  }
-
-  private addToAccountAssetsAddressesList(assetAddress: string): void {
-    const assetsAddressesCopy = [...this.accountAssetsAddresses];
-    const index = assetsAddressesCopy.findIndex((address) => address === assetAddress);
-
-    ~index ? (assetsAddressesCopy[index] = assetAddress) : assetsAddressesCopy.push(assetAddress);
-
-    this.accountAssetsAddresses = assetsAddressesCopy;
-  }
-
-  private removeFromAccountAssetsAddressesList(address: string): void {
-    this.accountAssetsAddresses = this.accountAssetsAddresses.filter((item) => item !== address);
   }
 
   /**
@@ -503,7 +330,6 @@ export class AssetsModule<T> {
       description: null,
     }
   ) {
-    assert(this.root.account, Messages.connectWallet);
     const supply = new FPNumber(totalSupply, nonDivisible ? 0 : FPNumber.DEFAULT_PRECISION);
     return {
       args: [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description],
@@ -531,14 +357,13 @@ export class AssetsModule<T> {
     }
   ): Promise<T> {
     const params = this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nonDivisible, nft);
-    return this.root.submitExtrinsic(
-      (this.root.api.tx.assets.register as any)(...params.args),
-      this.root.account.pair,
-      {
-        symbol,
-        type: Operation.RegisterAsset,
-      }
-    );
+    const extrinsic = (this.root.api.tx.assets.register as any)(...params.args);
+    const history = {
+      symbol,
+      type: Operation.RegisterAsset,
+    };
+
+    return this.root.submitExtrinsic(extrinsic, this.root.account.pair, history);
   }
 
   /**
@@ -548,14 +373,22 @@ export class AssetsModule<T> {
    * @param amount Amount value
    */
   public transfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<T> {
-    assert(this.root.account, Messages.connectWallet);
     const assetAddress = asset.address;
-    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.root.formatAddress(toAddress);
-    return this.root.submitExtrinsic(
-      this.root.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
-      this.root.account.pair,
-      { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
+    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : Formatters.formatAddress(toAddress);
+    const extrinsic = this.root.api.tx.assets.transfer(
+      assetAddress,
+      toAddress,
+      new FPNumber(amount, asset.decimals).toCodecString()
     );
+    const history = {
+      symbol: asset.symbol,
+      to: formattedToAddress,
+      amount: `${amount}`,
+      assetAddress,
+      type: Operation.Transfer,
+    };
+
+    return this.root.submitExtrinsic(extrinsic, this.root.account.pair, history);
   }
 
   private divideAssetsInternal(
@@ -613,22 +446,5 @@ export class AssetsModule<T> {
     const firstAsset = await this.getAssetInfo(firstAssetAddress);
     const secondAsset = await this.getAssetInfo(secondAssetAddress);
     return this.divideAssetsInternal(firstAsset, secondAsset, firstAmount, secondAmount, reversed);
-  }
-
-  public hasEnoughXor(asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
-    const xorDecimals = XOR.decimals;
-    const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals);
-    if (asset.address === XOR.address) {
-      const fpBalance = FPNumber.fromCodecValue(asset.balance.transferable, xorDecimals);
-      const fpAmount = new FPNumber(amount, xorDecimals);
-      return FPNumber.lte(fpFee, fpBalance.sub(fpAmount));
-    }
-    // Here we should be sure that xor value of account was tracked & updated
-    const xorAccountAsset = this.getAsset(XOR.address);
-    if (!xorAccountAsset) {
-      return false;
-    }
-    const xorBalance = FPNumber.fromCodecValue(xorAccountAsset.balance.transferable, xorDecimals);
-    return FPNumber.lte(fpFee, xorBalance);
   }
 }

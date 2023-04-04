@@ -13,6 +13,18 @@ import { DexId } from './dex/consts';
 import { XOR } from './assets/consts';
 import { Formatters } from './formatters';
 
+import { BridgeApi } from './BridgeApi';
+import { SwapModule } from './swap';
+import { RewardsModule } from './rewards';
+import { PoolXykModule } from './poolXyk';
+import { ReferralSystemModule } from './referralSystem';
+import { AssetsModule } from './assets';
+import { MstTransfersModule } from './mstTransfers';
+import { SystemModule } from './system';
+import { DemeterFarmingModule } from './demeterFarming';
+import { DexModule } from './dex';
+import { CeresLiquidityLockerModule } from './ceresLiquidityLocker';
+
 import type { BridgeHistory } from './BridgeApi';
 import type { RewardClaimHistory } from './rewards/types';
 
@@ -104,6 +116,11 @@ export type FnResult = void | Observable<ExtrinsicEvent>;
 
 export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & BridgeHistory & RewardClaimHistory];
 
+export type ApiExtrinsicPayload = {
+  extrinsic: SubmittableExtrinsic<'promise'>;
+  history: HistoryItem;
+};
+
 export const isBridgeOperation = (operation: Operation) =>
   [Operation.EthBridgeIncoming, Operation.EthBridgeOutgoing].includes(operation);
 
@@ -159,6 +176,23 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   /** If `true` you might subscribe on extrinsic statuses */
   public shouldObservableBeUsed = false;
 
+  public readonly defaultSlippageTolerancePercent = 0.5; // related to swap & pools
+
+  public readonly bridge = new BridgeApi<T>();
+  public readonly rewards = new RewardsModule<T>(this);
+  public readonly poolXyk = new PoolXykModule<T>(this);
+  public readonly referralSystem = new ReferralSystemModule<T>(this);
+  public readonly assets = new AssetsModule<T>(this);
+  /** This module is used for internal needs */
+  public readonly mstTransfers = new MstTransfersModule<T>(this);
+  public readonly demeterFarming = new DemeterFarmingModule<T>(this);
+  public readonly dex = new DexModule<T>(this);
+  public readonly ceresLiquidityLocker = new CeresLiquidityLockerModule<T>(this);
+
+  // ready for transfer to base api
+  public readonly swap = new SwapModule<T>(this);
+  public readonly system = new SystemModule<T>(this);
+
   constructor(public readonly connection: Connection) {}
 
   public get api(): ApiPromise {
@@ -167,6 +201,14 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
   public get apiRx(): ApiRx {
     return this.connection.api.rx as ApiRx;
+  }
+
+  /**
+   * The first method you should run. Includes initialization process
+   */
+  public async initialize(): Promise<void> {
+    // Update available dex list
+    await this.dex.updateList();
   }
 
   /**

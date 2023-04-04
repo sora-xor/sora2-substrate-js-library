@@ -1,20 +1,32 @@
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 
-import { AccountHistoryFactory } from './accountHistory';
-import { formatAddress } from './formatters';
+import { AccountHistory } from './accountHistory';
+import { AccountAssets } from './account/modules/assets';
+import { Formatters } from './formatters';
 
-import type { AccountHistory } from './accountHistory';
 import type { Storage } from './storage';
+import type { BaseApi } from './BaseApi';
 
 /**
  * The purpose of this class is to store account data and create an instance of the account's transaction history.
  */
 class Account {
-  protected account!: CreateResult;
-  protected historyFactory = new AccountHistoryFactory();
+  protected storage?: typeof Storage;
+  protected root?: BaseApi;
 
+  protected account!: CreateResult;
+  protected assets!: AccountAssets;
+
+  public accountStorage?: Storage;
   public history!: AccountHistory;
+
+  constructor(root?: BaseApi, storage?: typeof Storage) {
+    this.root = root;
+    this.storage = storage;
+
+    this.assets = new AccountAssets(this, root);
+  }
 
   public get pair(): KeyringPair {
     if (!this.account) {
@@ -34,7 +46,7 @@ class Account {
     if (!this.pair) {
       return '';
     }
-    return formatAddress(this.pair.address);
+    return Formatters.formatAddress(this.pair.address);
   }
 
   /**
@@ -60,11 +72,23 @@ class Account {
    */
   public setAccount(data: CreateResult): void {
     this.account = data;
+    this.initAccountStorage();
+    this.initHistory();
   }
 
   public resetAccount(): void {
     this.account = undefined;
+    this.accountStorage = undefined;
     this.history = undefined;
+    this.assets.clearAccountAssets();
+  }
+
+  public initAccountStorage() {
+    if (!(this.pair && this.storage)) return;
+
+    const id = Formatters.toHmacSHA256(this.pair.address);
+    const namespace = `account:${id}`;
+    this.accountStorage = new this.storage(namespace);
   }
 
   /**
@@ -73,7 +97,7 @@ class Account {
   public initHistory(storageKey = 'history'): void {
     if (!this.pair) return;
 
-    this.history = this.historyFactory.create(this.pair.address, storageKey);
+    this.history = new AccountHistory(this.accountStorage, storageKey);
   }
 
   /**
@@ -81,7 +105,7 @@ class Account {
    * @param storage
    */
   public injectStorage(storage: typeof Storage): void {
-    this.historyFactory.injectStorage(storage);
+    this.storage = storage;
   }
 }
 
