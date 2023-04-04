@@ -19,6 +19,14 @@ function sortObjectByKey(value) {
     }, {});
 }
 
+const snakeToCamel = str =>
+str.toLowerCase().replace(/([-_][a-z])/g, group =>
+  group
+    .toUpperCase()
+    .replace('-', '')
+    .replace('_', '')
+)
+
 export async function generateTypesJson(env: string) {
   console.log('NOTE: Make sure `yarn build` was run with latest types');
   let sortedTypes = sortObjectByKey(localTypes);
@@ -133,57 +141,70 @@ function convertTypes(inputContent: object, specVersion: number, currentTypes: o
 }
 
 function convertTypesSubsquid(inputContent: any, sortedTypes: any) {
-  console.log(inputContent)
-  const types = { versions: [] }
-  types['types'] = sortedTypes
-  types['types']['String'] = 'Vec<u8>'
-  types['types']['Text'] = 'Vec<u8>'
-  inputContent.versioning.forEach((ver, i) => {
-    const newVer = {}
-    newVer['minmax'] = [ver['runtime_range'][0], inputContent.versioning[i+1]?.['runtime_range'][0] - 1]
-    const newTypes = {}
-    for (let [key, value] of Object.entries(ver['types'])) {
-      let newValue = {}
-      const snakeToCamel = str =>
-        str.toLowerCase().replace(/([-_][a-z])/g, group =>
-          group
-            .toUpperCase()
-            .replace('-', '')
-            .replace('_', '')
-        )
-      if (value['type'] === 'struct') {
-        value['type_mapping'].forEach(m => {
-          newValue[snakeToCamel(m[0])] = m[1]
+  const convertedTypes = { versions: [] }
+
+  convertedTypes['types'] = sortedTypes
+  convertedTypes['types']['String'] = 'Vec<u8>'
+  convertedTypes['types']['Text'] = 'Vec<u8>'
+
+  inputContent.versioning.forEach((version, i: number) => {
+    const convertedVersion = {}
+    const convertedVersionTypes = {}
+
+    const minSpecVersion = version['runtime_range'][0]
+    const maxSpecVersion = inputContent.versioning[i + 1]?.['runtime_range'][0] - 1
+    convertedVersion['minmax'] = [minSpecVersion, maxSpecVersion]
+
+    for (let [key, type] of Object.entries(version['types'])) {
+      let convertedType = {}
+
+      if (type['type'] === 'struct') {
+        type['type_mapping'].forEach(item => {
+          const key = snakeToCamel(item[0])
+          const value = item[1]
+          convertedType[key] = value
         })
-      } else if (value['type_mapping']) {
-        newValue['_' + value['type']] = {}
-        value['type_mapping'].forEach(m => {
-          newValue['_' + value['type']][m[0]] = m[1]
+
+      } else if (type['type_mapping']) {
+        const prefix = '_' + type['type']
+        convertedType[prefix] = {}
+        
+        type['type_mapping'].forEach(item => {
+          const key = item[0]
+          const value = item[1]
+          convertedType[prefix][key] = value
         })
-      } else if (value['value_list']) {
-        newValue['_' + value['type']] = []
-        value['value_list'].forEach(m => {
-          newValue['_' + value['type']].push(m)
+
+      } else if (type['value_list']) {
+        const prefix = '_' + type['type']
+        convertedType[prefix] = []
+
+        type['value_list'].forEach(item => {
+          convertedType[prefix].push(item)
         })
+
       } else {
-        newValue = value
+        convertedType = type
       }
-      newTypes[key] = newValue
-      if (newValue === 'AccountIdAddress') {
-        newTypes[key] = 'AccountId'
+
+      convertedVersionTypes[key] = convertedType
+
+      if (convertedType === 'AccountIdAddress') {
+        convertedVersionTypes[key] = 'AccountId'
       }
     }
-    newVer['types'] = newTypes
-    types.versions.push(newVer)
+
+    convertedVersion['types'] = convertedVersionTypes
+    convertedTypes.versions.push(convertedVersion)
   })
 
-  types['typesAlias'] = {
+  convertedTypes['typesAlias'] = {
     bridgeMultisig: {
       Timepoint: 'BridgeTimepoint'
     }
   }
 
-  return types;
+  return convertedTypes;
 }
 
 function buildTop(inputContent: object) {
