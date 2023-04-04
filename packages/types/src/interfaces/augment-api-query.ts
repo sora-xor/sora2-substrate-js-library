@@ -930,13 +930,13 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       burnUpdateInfo: AugmentedQuery<ApiType, () => Observable<ITuple<[FixnumFixedPoint, FixnumFixedPoint]>>, []>;
       /**
+       * Fraction of PSWAP that could be buy backed to XST
+       **/
+      buyBackXSTFraction: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
+      /**
        * Sum of all shares of incentive token owners.
        **/
       claimableShares: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
-      /**
-       * Fraction of PSWAP that could be reminted for parliament.
-       **/
-      parliamentPswapFraction: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
        * Information about owned portion of stored incentive tokens. Shareholder -> Owned Fraction
        **/
