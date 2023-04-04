@@ -27,33 +27,33 @@ export async function generateTypesJson(env: string) {
   await api.isReady;
   const specVersion = api.consts.system.version.specVersion;
   await api.disconnect();
-  let typesScalecodec_mobile: string | NodeJS.ArrayBufferView;
+  let typesScalecodec_mobile: object;
   if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`)) {
     const currentTypes = JSON.parse(
       fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`, 'utf-8')
     );
-    typesScalecodec_mobile = stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes));
+    typesScalecodec_mobile = convertTypes(sortedTypes, specVersion.toNumber(), currentTypes);
   } else {
-    typesScalecodec_mobile = stringify(convertTypes(sortedTypes, 1, {}));
+    typesScalecodec_mobile = convertTypes(sortedTypes, 1, {});
   }
-  let typesScalecodec_python: string | NodeJS.ArrayBufferView;
+  let typesScalecodec_python: object;
   if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`)) {
     const currentTypes = JSON.parse(
       fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`, 'utf-8')
     );
-    typesScalecodec_python = stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes));
+    typesScalecodec_python = convertTypes(sortedTypes, specVersion.toNumber(), currentTypes);
   } else {
-    typesScalecodec_python = stringify(convertTypes(sortedTypes, 1, {}));
+    typesScalecodec_python = convertTypes(sortedTypes, 1, {});
   }
   fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types.json`, stringify(sortedTypes));
-  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_subsquid.json`, stringify(convertTypesSubsquid(sortedTypes)));
+  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_subsquid.json`, stringify(convertTypesSubsquid(typesScalecodec_python, sortedTypes)));
   fs.writeFileSync(
     `packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`,
-    typesScalecodec_mobile
+    stringify(typesScalecodec_mobile)
   );
   fs.writeFileSync(
     `packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`,
-    typesScalecodec_python
+    stringify(typesScalecodec_python)
   );
 }
 
@@ -132,11 +132,57 @@ function convertTypes(inputContent: object, specVersion: number, currentTypes: o
   }
 }
 
-function convertTypesSubsquid(inputContent: object) {
-  const types = {};
-  types['types'] = buildTop(inputContent);
-  types['types']['String'] = 'Vec<u8>';
-  types['types']['Text'] = 'Vec<u8>';
+function convertTypesSubsquid(inputContent: any, sortedTypes: any) {
+  console.log(inputContent)
+  const types = { versions: [] }
+  types['types'] = sortedTypes
+  types['types']['String'] = 'Vec<u8>'
+  types['types']['Text'] = 'Vec<u8>'
+  inputContent.versioning.forEach((ver, i) => {
+    const newVer = {}
+    newVer['minmax'] = [ver['runtime_range'][0], inputContent.versioning[i+1]?.['runtime_range'][0] - 1]
+    const newTypes = {}
+    for (let [key, value] of Object.entries(ver['types'])) {
+      let newValue = {}
+      const snakeToCamel = str =>
+        str.toLowerCase().replace(/([-_][a-z])/g, group =>
+          group
+            .toUpperCase()
+            .replace('-', '')
+            .replace('_', '')
+        )
+      if (value['type'] === 'struct') {
+        value['type_mapping'].forEach(m => {
+          newValue[snakeToCamel(m[0])] = m[1]
+        })
+      } else if (value['type_mapping']) {
+        newValue['_' + value['type']] = {}
+        value['type_mapping'].forEach(m => {
+          newValue['_' + value['type']][m[0]] = m[1]
+        })
+      } else if (value['value_list']) {
+        newValue['_' + value['type']] = []
+        value['value_list'].forEach(m => {
+          newValue['_' + value['type']].push(m)
+        })
+      } else {
+        newValue = value
+      }
+      newTypes[key] = newValue
+      if (newValue === 'AccountIdAddress') {
+        newTypes[key] = 'AccountId'
+      }
+    }
+    newVer['types'] = newTypes
+    types.versions.push(newVer)
+  })
+
+  types['typesAlias'] = {
+    bridgeMultisig: {
+      Timepoint: 'BridgeTimepoint'
+    }
+  }
+
   return types;
 }
 

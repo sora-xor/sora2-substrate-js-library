@@ -1501,6 +1501,7 @@ declare module '@polkadot/api-base/types/errors' {
        * Fee value outside of the basis points range [0..10000]
        **/
       InvalidFeeValue: AugmentedError<ApiType>;
+      InvalidReceiversInfo: AugmentedError<ApiType>;
       /**
        * Liquidity source is already disabled
        **/
