@@ -2,12 +2,12 @@ import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 
 import { AccountHistory } from './accountHistory';
-import { AccountAssets } from './account/modules/assets';
-import { AccountPools } from './account/modules/pools';
-import { Formatters } from './formatters';
+import { AccountAssets } from './modules/assets';
+import { AccountPools } from './modules/pools';
+import { Formatters } from '../formatters';
 
-import type { Storage } from './storage';
-import type { BaseApi } from './BaseApi';
+import type { Storage } from '../storage';
+import type { BaseApi } from '../BaseApi';
 
 /**
  * The purpose of this class is to store account data and create an instance of the account's transaction history.

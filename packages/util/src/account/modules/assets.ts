@@ -5,7 +5,7 @@ import type { CodecString } from '@sora-substrate/math';
 import { NativeAssets, XOR } from '../../assets/consts';
 
 import type { BaseApi } from '../../BaseApi';
-import type { Account } from '../../account';
+import type { Account } from '../account';
 import type { AccountAsset, AccountBalance } from '../../assets/types';
 
 class AccountAssets {

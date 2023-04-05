@@ -5,7 +5,7 @@ import { serializeLPKey, deserializeLPKey } from '../../poolXyk';
 import { poolAccountIdFromAssetPair } from '../../poolXyk/account';
 
 import type { BaseApi } from '../../BaseApi';
-import type { Account } from '../../account';
+import type { Account } from '../account';
 
 import type { AccountLiquidity } from '../../poolXyk/types';
 

@@ -5,7 +5,7 @@ import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 
-import { Account } from './account';
+import { Account } from './account/account';
 import { Formatters } from './formatters';
 
 import type { Storage } from './storage';
@@ -135,11 +135,6 @@ class AccountManager {
    */
   public logout(): void {
     this.account.resetAccount();
-    // this.assets.clearAccountAssets();
-    // this.poolXyk.clearAccountLiquidity();
-
-    // super.logout();
-    // this.bridge.logout();
   }
 
   // Working with Keyring

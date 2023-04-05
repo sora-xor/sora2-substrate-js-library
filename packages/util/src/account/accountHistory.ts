@@ -1,9 +1,7 @@
 import omit from 'lodash/fp/omit';
 
-import { Formatters } from './formatters';
-
-import type { Storage } from './storage';
-import type { HistoryItem } from './BaseApi';
+import type { Storage } from '../storage';
+import type { HistoryItem } from '../BaseApi';
 
 export type AccountHistoryCollection<T> = {
   [key: string]: T;
@@ -91,24 +89,4 @@ class AccountHistory {
   }
 }
 
-class AccountHistoryFactory {
-  private storage!: typeof Storage;
-
-  injectStorage(storage: typeof Storage): void {
-    this.storage = storage;
-  }
-
-  create(accountAddress: string, key = 'history'): AccountHistory {
-    if (this.storage) {
-      const id = Formatters.toHmacSHA256(accountAddress);
-      const namespace = `account:${id}`;
-      const accountStorage = new this.storage(namespace);
-
-      return new AccountHistory(accountStorage, key);
-    }
-
-    return new AccountHistory();
-  }
-}
-
-export { AccountHistory, AccountHistoryFactory };
+export { AccountHistory };
