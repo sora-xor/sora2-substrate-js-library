@@ -12,17 +12,17 @@ import type { BaseApi } from '../BaseApi';
 /**
  * The purpose of this class is to store account data and create an instance of the account's transaction history.
  */
-class Account {
+class Account<T> {
   protected storage?: typeof Storage;
-  protected root?: BaseApi;
+  protected root?: BaseApi<T>;
   protected account!: CreateResult;
 
   public accountStorage?: Storage;
-  public assets!: AccountAssets;
-  public pools!: AccountPools;
+  public assets!: AccountAssets<T>;
+  public pools!: AccountPools<T>;
   public history!: AccountHistory;
 
-  constructor(root?: BaseApi, storage?: typeof Storage) {
+  constructor(root?: BaseApi<T>, storage?: typeof Storage) {
     this.root = root;
     this.storage = storage;
 
@@ -101,14 +101,6 @@ class Account {
     if (!this.pair) return;
 
     this.history = new AccountHistory(this.accountStorage, storageKey);
-  }
-
-  /**
-   * Inject Storage class as dependency
-   * @param storage
-   */
-  public injectStorage(storage: typeof Storage): void {
-    this.storage = storage;
   }
 }
 

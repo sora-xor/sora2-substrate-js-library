@@ -5,30 +5,15 @@ import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 
-import { Account } from './account/account';
 import { Formatters } from './formatters';
-
-import type { Storage } from './storage';
 
 export const KeyringType = 'sr25519';
 
 class AccountManager {
   public readonly seedLength = 12;
-  public readonly account = new Account();
+  public readonly type: KeypairType = KeyringType;
 
-  private readonly type: KeypairType = KeyringType;
-  private storage?: Storage;
-
-  /**
-   * Inject Storage class as dependency
-   * @param storage
-   */
-  public injectStorage(storage: typeof Storage): void {
-    this.storage = new storage();
-    this.account.injectStorage(storage);
-  }
-
-  private async initKeyring(silent = false): Promise<void> {
+  public async initialize(silent = false): Promise<void> {
     await cryptoWaitReady();
 
     try {
@@ -39,26 +24,6 @@ class AccountManager {
       if (!silent) {
         throw error;
       }
-    }
-  }
-
-  /**
-   * The first method you should run. Includes initialization process
-   */
-  public async initialize(): Promise<void> {
-    await this.initKeyring();
-
-    const address = this.storage?.get('address');
-
-    if (address) {
-      const defaultAddress = Formatters.formatAddress(address, false);
-      const name = this.storage?.get('name');
-      const source = this.storage?.get('source');
-      const isExternalFlag = this.storage?.get('isExternal');
-      const isExternal = isExternalFlag ? JSON.parse(isExternalFlag) : null;
-      const isExternalAccount = isExternal || (isExternal === null && !!source);
-
-      this.loginAccount(defaultAddress, name, source, isExternalAccount);
     }
   }
 
@@ -80,63 +45,6 @@ class AccountManager {
     };
   }
 
-  /**
-   * Login to account
-   * @param address account address
-   * @param name account name
-   * @param source wallet identity
-   * @param isExternal is account from extension or not
-   */
-  public async loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): Promise<void> {
-    try {
-      const meta = { name: name || '' };
-
-      let account!: CreateResult;
-
-      if (isExternal) {
-        account = keyring.addExternal(address, meta);
-      } else {
-        const accounts = await this.getAccounts();
-
-        if (!accounts.find((acc) => acc.address === address)) {
-          // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
-          await this.initKeyring(true);
-        }
-
-        account = {
-          pair: this.getAccountPair(address),
-          json: null,
-        };
-      }
-
-      this.updateAccountData(account, name, source, isExternal);
-    } catch (error) {
-      console.error(error);
-      this.logout();
-    }
-  }
-
-  private updateAccountData(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
-    this.account.setAccount(account);
-
-    if (this.storage) {
-      const soraAddress = Formatters.formatAddress(account.pair.address);
-
-      this.storage.set('address', soraAddress);
-      // Optional params are just for External clients for now
-      name && this.storage.set('name', name);
-      source && this.storage.set('source', source);
-      typeof isExternal === 'boolean' && this.storage.set('isExternal', isExternal);
-    }
-  }
-
-  /**
-   * Remove all wallet data
-   */
-  public logout(): void {
-    this.account.resetAccount();
-  }
-
   // Working with Keyring
 
   /**
@@ -147,6 +55,10 @@ class AccountManager {
    */
   public addAccount(suri: string, name: string, password: string): CreateResult {
     return keyring.addUri(suri, password, { name }, this.type);
+  }
+
+  public addExternal(address: string, meta: KeyringPair$Meta): CreateResult {
+    return keyring.addExternal(address, meta);
   }
 
   /**
@@ -190,14 +102,13 @@ class AccountManager {
   }
 
   /**
-   * Import account & login
+   * Import account
    * @param suri Seed of the account
    * @param name Name of the account
    * @param password Password which will be set for the account
    */
-  public importAccount(suri: string, name: string, password: string): void {
-    const account = this.addAccount(suri, name, password);
-    this.updateAccountData(account, name);
+  public importAccount(suri: string, name: string, password: string): CreateResult {
+    return this.addAccount(suri, name, password);
   }
 
   /**
@@ -248,7 +159,7 @@ class AccountManager {
    * Forget account from keyring
    * @param address account address to forget
    */
-  public forgetAccount(address = this.account.address): void {
+  public forgetAccount(address?: string): void {
     if (address) {
       const defaultAddress = Formatters.formatAddress(address, false);
       keyring.forgetAccount(defaultAddress);
@@ -288,9 +199,9 @@ class AccountManager {
 
     keyring.saveAccountMeta(pair, { ...pair.meta, name });
 
-    if (this.storage && this.account.pair && pair.address === this.account.pair.address) {
-      this.storage.set('name', name);
-    }
+    // if (this.storage && this.account.pair && pair.address === this.account.pair.address) {
+    //   this.storage.set('name', name);
+    // }
   }
 }
 

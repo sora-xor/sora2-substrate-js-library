@@ -8,11 +8,11 @@ import type { BaseApi } from '../../BaseApi';
 import type { Account } from '../account';
 import type { AccountAsset, AccountBalance } from '../../assets/types';
 
-class AccountAssets {
-  protected readonly account!: Account;
-  protected readonly root!: BaseApi;
+class AccountAssets<T> {
+  protected readonly account!: Account<T>;
+  protected readonly root!: BaseApi<T>;
 
-  constructor(account: Account, root: BaseApi) {
+  constructor(account: Account<T>, root: BaseApi<T>) {
     this.account = account;
     this.root = root;
   }

@@ -135,12 +135,10 @@ export interface BridgeApprovedRequest {
  * 5. Run function from ethereum smart contract and wait for success
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
-export class BridgeApi<T> extends BaseApi<T> {
+export class BridgeApi<T> {
   private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
 
-  constructor() {
-    super('bridgeHistory');
-  }
+  constructor(private readonly root: BaseApi<T>) {}
 
   public get externalNetwork(): BridgeNetworks {
     return this._externalNetwork;

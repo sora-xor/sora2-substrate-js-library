@@ -9,11 +9,11 @@ import type { Account } from '../account';
 
 import type { AccountLiquidity } from '../../poolXyk/types';
 
-class AccountPools {
-  protected readonly account!: Account;
-  protected readonly root!: BaseApi;
+class AccountPools<T> {
+  protected readonly account!: Account<T>;
+  protected readonly root!: BaseApi<T>;
 
-  constructor(account: Account, root: BaseApi) {
+  constructor(account: Account<T>, root: BaseApi<T>) {
     this.account = account;
     this.root = root;
   }
