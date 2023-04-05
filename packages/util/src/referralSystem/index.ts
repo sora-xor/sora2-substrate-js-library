@@ -6,10 +6,11 @@ import type { Observable } from '@polkadot/types/types';
 import { Messages } from '../logger';
 import { XOR } from '../assets/consts';
 import { Operation } from '../BaseApi';
-import type { Api } from '../api';
+
+import type { BaseApi } from '../BaseApi';
 
 export class ReferralSystemModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   /**
    * Returns the referrer of the invited user by Id

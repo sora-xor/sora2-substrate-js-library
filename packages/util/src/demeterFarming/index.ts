@@ -9,12 +9,12 @@ import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { XOR } from '../assets/consts';
 
-import type { Api } from '../api';
+import type { BaseApi } from '../BaseApi';
 import type { AccountAsset, Asset } from '../assets/types';
 import type { DemeterPool, DemeterRewardToken, DemeterAccountPool } from './types';
 
 export class DemeterFarmingModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   /**
    * Get a list of pools for farming & staking, by provided pool & reward asset adresses

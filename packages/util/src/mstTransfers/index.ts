@@ -4,13 +4,14 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import type { Api } from '../api';
+
+import type { BaseApi } from '../BaseApi';
 
 /**
  * This module is used for internal needs
  */
 export class MstTransfersModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   /**
    * Returns batch tx

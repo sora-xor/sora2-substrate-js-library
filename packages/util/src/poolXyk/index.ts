@@ -10,7 +10,7 @@ import { poolAccountIdFromAssetPair } from './account';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import type { Api } from '../api';
+import type { BaseApi } from '../BaseApi';
 import type { AccountLiquidity } from './types';
 import type { Asset, AccountAsset } from '../assets/types';
 
@@ -41,7 +41,7 @@ function parseReserves(reserves: ITuple<[u128, u128]>): [CodecString, CodecStrin
 }
 
 export class PoolXykModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   /**
    * Get liquidity

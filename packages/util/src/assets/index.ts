@@ -21,8 +21,7 @@ import type {
   WhitelistIdsBySymbol,
 } from './types';
 
-import type { Api } from '../api';
-import type { ApiExtrinsicPayload } from '../BaseApi';
+import type { BaseApi, ApiExtrinsicPayload } from '../BaseApi';
 
 /**
  * **For the external collaboration**
@@ -136,7 +135,7 @@ export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklis
 }
 
 export class AssetsModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   /**
    * Get whitelist assets object
@@ -218,7 +217,6 @@ export class AssetsModule<T> {
    *
    * If Asset ID == XOR, referrals.referrerBalances will be included as bonded
    *
-   * @param api Polkadot based API object
    * @param accountAddress Account ID
    * @param assetAddress Asset ID
    * @param assetDecimals Asset decimals, 18 is used by default
@@ -258,7 +256,7 @@ export class AssetsModule<T> {
   public getTotalXorBalanceObservable(accountAddress: string): Observable<FPNumber> {
     return combineLatest([
       this.getAssetBalanceObservable(XOR, accountAddress),
-      this.root.demeterFarming.getAccountPoolsObservable(),
+      this.root.demeterFarming.getAccountPoolsObservable(accountAddress),
     ]).pipe(
       map(([xorAssetBalance, demeterFarmingPools]) => {
         // wallet xor balance (including frozen & bonded)

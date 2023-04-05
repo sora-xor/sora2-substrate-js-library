@@ -2,7 +2,7 @@ import { xxhashAsU8a } from '@polkadot/util-crypto/xxhash';
 import type { ApiPromise } from '@polkadot/api';
 
 import { types } from '@sora-substrate/type-definitions';
-import type { Api } from '../api';
+import type { BaseApi } from '../BaseApi';
 import type { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types';
 
 const predefinedAssets = types['PredefinedAssetId']['_enum'];
@@ -29,7 +29,7 @@ export function assetIdToTechAssetId(api: ApiPromise, assetId: AssetId | string)
 }
 
 export function poolTechAccountIdFromAssetPair<T = void>(
-  api: Api<T>,
+  api: BaseApi<T>,
   baseAssetId: AssetId | string,
   targetAssetId: AssetId | string
 ): TechAccountId {

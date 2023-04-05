@@ -19,10 +19,9 @@ import { Consts as SwapConsts } from './consts';
 import { XOR, DAI } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import { Operation } from '../BaseApi';
-import { Api } from '../api';
 import { Formatters } from '../formatters';
 
-import type { ApiExtrinsicPayload } from '../BaseApi';
+import type { BaseApi, ApiExtrinsicPayload } from '../BaseApi';
 import type { AccountAsset, Asset } from '../assets/types';
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
@@ -62,7 +61,7 @@ const toAveragePrice = (o: Observable<Option<PriceToolsAggregatedPriceInfo>>) =>
     distinctUntilChanged(comparator)
   );
 
-const getAssetAveragePrice = <T>(root: Api<T>, assetAddress: string): Observable<{ buy: string; sell: string }> => {
+const getAssetAveragePrice = <T>(root: BaseApi<T>, assetAddress: string): Observable<{ buy: string; sell: string }> => {
   return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
 };
 
@@ -76,7 +75,7 @@ const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key
   );
 
 export class SwapModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   private prepareSourcesForSwapParams(liquiditySource: LiquiditySourceTypes): Array<LiquiditySourceTypes> {
     return liquiditySource ? [liquiditySource] : [];

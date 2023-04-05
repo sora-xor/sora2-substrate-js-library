@@ -7,10 +7,10 @@ import type { u32, Vec } from '@polkadot/types-codec';
 import type { AnyTuple } from '@polkadot/types-codec/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
 
-import type { Api } from '../api';
+import type { BaseApi } from '../BaseApi';
 
 export class SystemModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   private subject = new Subject<Vec<EventRecord>>();
   public updated = this.subject.asObservable();

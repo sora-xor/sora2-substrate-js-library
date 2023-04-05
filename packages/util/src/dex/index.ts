@@ -1,11 +1,11 @@
 import { DexId } from './consts';
 import { XOR, XST } from '../assets/consts';
 
-import type { Api } from '../api';
+import type { BaseApi } from '../BaseApi';
 import type { DexInfo } from './types';
 
 export class DexModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   public static defaultDexId = DexId.XOR;
   public static defaultBaseAssetId = XOR.address;

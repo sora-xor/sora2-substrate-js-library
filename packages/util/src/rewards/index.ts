@@ -1,4 +1,3 @@
-import { assert } from '@polkadot/util';
 import { map, combineLatest } from 'rxjs';
 import { FPNumber, CodecString } from '@sora-substrate/math';
 import type { Observable, Codec } from '@polkadot/types/types';
@@ -6,14 +5,14 @@ import type { FixnumFixedPoint } from '@polkadot/types/lookup';
 
 import { RewardingEvents, CrowdloanRewardsCollection } from './consts';
 import { XOR, VAL, PSWAP, XSTUSD } from '../assets/consts';
-import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import type { Api } from '../api';
+
+import type { BaseApi } from '../BaseApi';
 import type { RewardInfo, RewardsInfo } from './types';
 import type { Asset } from '../assets/types';
 
 export class RewardsModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   private isClaimableReward(reward: RewardInfo): boolean {
     const fpAmount = FPNumber.fromCodecValue(reward.amount, reward.asset.decimals);

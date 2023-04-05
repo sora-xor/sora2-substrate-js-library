@@ -6,12 +6,12 @@ import type { Observable } from '@polkadot/types/types';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 
-import type { Api } from '../api';
+import type { BaseApi } from '../BaseApi';
 import type { AccountAsset, Asset } from '../assets/types';
 import type { AccountLockedPool } from './types';
 
 export class CeresLiquidityLockerModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  constructor(private readonly root: BaseApi<T>) {}
 
   /**
    * Get list of account locked pools
