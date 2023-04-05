@@ -40,7 +40,7 @@ class AccountManager {
       assert(mnemonicValidate(phrase), 'There is no valid mnemonic seed');
     }
     return {
-      address: this.createAccountPair(suri).address,
+      address: this.createFromUri(suri).address,
       suri,
     };
   }
@@ -53,7 +53,7 @@ class AccountManager {
    * @param name Name of the account
    * @param password Password which will be set for the account
    */
-  public addAccount(suri: string, name: string, password: string): CreateResult {
+  public addUri(suri: string, name: string, password: string): CreateResult {
     return keyring.addUri(suri, password, { name }, this.type);
   }
 
@@ -66,7 +66,7 @@ class AccountManager {
    * @param json account json
    * @param meta account meta
    */
-  public createAccountPairFromJson(json: KeyringPair$Json, meta?: KeyringPair$Meta): KeyringPair {
+  public createFromJson(json: KeyringPair$Json, meta?: KeyringPair$Meta): KeyringPair {
     return keyring.createFromJson(json, meta);
   }
 
@@ -76,7 +76,7 @@ class AccountManager {
    * @param suri Seed of the account
    * @param name Name of the account
    */
-  public createAccountPair(suri: string, name?: string): KeyringPair {
+  public createFromUri(suri: string, name?: string): KeyringPair {
     const meta = { name: name || '' };
 
     return keyring.createFromUri(suri, meta, this.type);
@@ -87,7 +87,7 @@ class AccountManager {
    * @param pair account pair to add
    * @param password account password
    */
-  public addAccountPair(pair: KeyringPair, password: string): void {
+  public addPair(pair: KeyringPair, password: string): void {
     keyring.addPair(pair, password);
   }
 
@@ -95,7 +95,7 @@ class AccountManager {
    * Get already imported account pair by address
    * @param address account address
    */
-  public getAccountPair(address: string): KeyringPair {
+  public getPair(address: string): KeyringPair {
     const defaultAddress = Formatters.formatAddress(address, false);
 
     return keyring.getPair(defaultAddress);
@@ -107,7 +107,7 @@ class AccountManager {
    * @param name Name of the account
    * @param password Password which will be set for the account
    */
-  public importAccount(suri: string, name: string, password: string): CreateResult {
+  public addAccount(suri: string, name: string, password: string): CreateResult {
     return this.addAccount(suri, name, password);
   }
 
@@ -128,7 +128,7 @@ class AccountManager {
    * @param json
    * @param password
    */
-  public restoreAccountFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
+  public restoreAccount(json: KeyringPair$Json, password: string): { address: string; name: string } {
     const pair = keyring.restoreAccount(json, password);
     return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
   }
@@ -150,7 +150,7 @@ class AccountManager {
   public createSeed(): { address: string; seed: string } {
     const seed = mnemonicGenerate(this.seedLength);
     return {
-      address: this.createAccountPair(seed).address,
+      address: this.createFromUri(seed).address,
       seed,
     };
   }
@@ -174,7 +174,7 @@ class AccountManager {
    * @param newPassword
    */
   public changeAccountPassword(address: string, oldPassword: string, newPassword: string): void {
-    const pair = this.getAccountPair(address);
+    const pair = this.getPair(address);
 
     try {
       if (!pair.isLocked) {
@@ -195,7 +195,7 @@ class AccountManager {
    * @param name New name
    */
   public changeAccountName(address: string, name: string): void {
-    const pair = this.getAccountPair(address);
+    const pair = this.getPair(address);
 
     keyring.saveAccountMeta(pair, { ...pair.meta, name });
 
