@@ -20,7 +20,9 @@ import type {
   WhitelistArrayItem,
   WhitelistIdsBySymbol,
 } from './types';
+
 import type { Api } from '../api';
+import type { ApiExtrinsicPayload } from '../BaseApi';
 
 /**
  * **For the external collaboration**
@@ -355,15 +357,17 @@ export class AssetsModule<T> {
       content: null,
       description: null,
     }
-  ): Promise<T> {
+  ): ApiExtrinsicPayload {
     const params = this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nonDivisible, nft);
+
     const extrinsic = (this.root.api.tx.assets.register as any)(...params.args);
     const history = {
       symbol,
       type: Operation.RegisterAsset,
     };
 
-    return this.root.submitExtrinsic(extrinsic, this.root.account.pair, history);
+    return { extrinsic, history };
+    // return this.root.submitExtrinsic(extrinsic, this.root.account.pair, history);
   }
 
   /**
@@ -372,9 +376,10 @@ export class AssetsModule<T> {
    * @param toAddress Account address
    * @param amount Amount value
    */
-  public transfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<T> {
+  public transfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): ApiExtrinsicPayload {
     const assetAddress = asset.address;
     const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : Formatters.formatAddress(toAddress);
+
     const extrinsic = this.root.api.tx.assets.transfer(
       assetAddress,
       toAddress,
@@ -388,7 +393,9 @@ export class AssetsModule<T> {
       type: Operation.Transfer,
     };
 
-    return this.root.submitExtrinsic(extrinsic, this.root.account.pair, history);
+    return { extrinsic, history };
+
+    // return this.root.submitExtrinsic(extrinsic, this.root.account.pair, history);
   }
 
   private divideAssetsInternal(

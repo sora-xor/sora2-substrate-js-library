@@ -1,11 +1,10 @@
 import { assert } from '@polkadot/util';
-import { Subject, combineLatest, map } from 'rxjs';
+import { map } from 'rxjs';
 import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 import type { u128 } from '@polkadot/types-codec';
-import type { Subscription } from 'rxjs';
 
 import { poolAccountIdFromAssetPair } from './account';
 import { DexId } from '../dex/consts';
@@ -15,14 +14,14 @@ import type { Api } from '../api';
 import type { AccountLiquidity } from './types';
 import type { Asset, AccountAsset } from '../assets/types';
 
-function serializeLPKey(liquidity: Partial<AccountLiquidity>): string {
+export function serializeLPKey(liquidity: Partial<AccountLiquidity>): string {
   if (!(liquidity.firstAddress && liquidity.secondAddress)) {
     return '';
   }
   return `${liquidity.firstAddress},${liquidity.secondAddress}`;
 }
 
-function deserializeLPKey(key: string): Partial<AccountLiquidity> {
+export function deserializeLPKey(key: string): Partial<AccountLiquidity> {
   const [firstAddress, secondAddress] = key.split(',');
   if (!(firstAddress && secondAddress)) {
     return null;
@@ -43,21 +42,6 @@ function parseReserves(reserves: ITuple<[u128, u128]>): [CodecString, CodecStrin
 
 export class PoolXykModule<T> {
   constructor(private readonly root: Api<T>) {}
-  /** key = `baseAssetId,targetAssetId` */
-  private subscriptions: Map<string, Subscription> = new Map();
-  private subject = new Subject<void>();
-  public updated = this.subject.asObservable();
-  public accountLiquidity: Array<AccountLiquidity> = [];
-  public accountLiquidityLoaded!: Subject<void>;
-
-  private addToLiquidityList(asset: AccountLiquidity): void {
-    const liquidityCopy = [...this.accountLiquidity];
-    const index = liquidityCopy.findIndex((item) => item.address === asset.address);
-
-    ~index ? (liquidityCopy[index] = asset) : liquidityCopy.push(asset);
-
-    this.accountLiquidity = liquidityCopy;
-  }
 
   /**
    * Get liquidity
@@ -99,12 +83,14 @@ export class PoolXykModule<T> {
     return true;
   }
 
-  public getAccountPoolBalanceObservable(firstAddress: string, secondAddress: string): Observable<string | null> {
-    assert(this.root.account, Messages.connectWallet);
-
+  public getPoolBalanceObservable(
+    firstAddress: string,
+    secondAddress: string,
+    accountAddress: string
+  ): Observable<string | null> {
     const poolAccount = poolAccountIdFromAssetPair(this.root, firstAddress, secondAddress).toString();
 
-    return this.root.apiRx.query.poolXYK.poolProviders(poolAccount, this.root.account.pair.address).pipe(
+    return this.root.apiRx.query.poolXYK.poolProviders(poolAccount, accountAddress).pipe(
       map((result) => {
         if (!result || !result.isSome) return null;
 
@@ -263,51 +249,6 @@ export class PoolXykModule<T> {
     return [result.toCodecString(), pts.toCodecString()];
   }
 
-  private async subscribeOnAccountLiquidity(liquidity: Partial<AccountLiquidity>): Promise<void> {
-    if (this.subscriptions.has(serializeLPKey(liquidity))) return;
-
-    const { firstAddress, secondAddress } = liquidity;
-    const poolAccount = poolAccountIdFromAssetPair(this.root, firstAddress, secondAddress).toString();
-
-    const accountPoolBalanceObservable = this.getAccountPoolBalanceObservable(firstAddress, secondAddress);
-    const poolReservesObservable = this.getReservesObservable(firstAddress, secondAddress);
-    const poolTotalSupplyObservable = this.getTotalSupplyObservable(firstAddress, secondAddress);
-
-    let subscription: Subscription;
-    let isFirstTick = true;
-
-    const key = serializeLPKey(liquidity);
-
-    await new Promise<void>((resolve) => {
-      subscription = combineLatest([
-        poolReservesObservable,
-        accountPoolBalanceObservable,
-        poolTotalSupplyObservable,
-      ]).subscribe(async ([reserves, balance, supply]) => {
-        const updatedLiquidity = await this.getAccountLiquidityItem(
-          poolAccount,
-          firstAddress,
-          secondAddress,
-          reserves,
-          balance,
-          supply
-        );
-        // add or update liquidity only if subscription exists, or this is first subscription result
-        if (updatedLiquidity && (this.subscriptions.has(key) || isFirstTick)) {
-          this.addToLiquidityList(updatedLiquidity);
-        } else {
-          this.removeAccountLiquidity(liquidity); // Remove it from list if something was wrong
-        }
-
-        isFirstTick = false;
-        this.subject.next();
-        resolve();
-      });
-    });
-
-    this.subscriptions.set(key, subscription);
-  }
-
   private arrangeAssetsForParams(
     firstAsset: Asset | AccountAsset,
     secondAsset: Asset | AccountAsset,
@@ -343,7 +284,7 @@ export class PoolXykModule<T> {
     return [baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId];
   }
 
-  private async getAccountLiquidityItem(
+  public async getAccountLiquidityItem(
     poolAccount: string,
     firstAddress: string,
     secondAddress: string,
@@ -390,96 +331,6 @@ export class PoolXykModule<T> {
     } as AccountLiquidity;
   }
 
-  public unsubscribeFromAccountLiquidity(liquidity: Partial<AccountLiquidity>): void {
-    const key = serializeLPKey(liquidity);
-    this.subscriptions.get(key)?.unsubscribe();
-    this.subscriptions.delete(key);
-  }
-
-  public unsubscribeFromAllUpdates(): void {
-    for (const key of this.subscriptions.keys()) {
-      const liquidity = deserializeLPKey(key);
-      this.unsubscribeFromAccountLiquidity(liquidity);
-    }
-  }
-
-  private removeAccountLiquidity(liquidity: Partial<AccountLiquidity>): void {
-    this.unsubscribeFromAccountLiquidity(liquidity);
-    this.accountLiquidity = this.accountLiquidity.filter(({ firstAddress, secondAddress }) => {
-      return !(liquidity.firstAddress === firstAddress && liquidity.secondAddress === secondAddress);
-    });
-  }
-
-  public clearAccountLiquidity(): void {
-    this.unsubscribeFromAllUpdates();
-    this.accountLiquidity = [];
-  }
-
-  /**
-   * Set subscriptions for balance updates of the account asset list
-   * @param assetIdPairs
-   */
-  private async updateAccountLiquiditySubscriptions(assetIdPairs: Array<Array<string>>): Promise<void> {
-    assert(this.root.account, Messages.connectWallet);
-
-    // liquidities to be subscribed
-    const includedLiquidityList = assetIdPairs.map(([first, second]) => ({
-      firstAddress: first,
-      secondAddress: second,
-    }));
-    // liquidities to be unsubscribed and removed
-    const excludedLiquidityList = this.accountLiquidity.reduce<AccountLiquidity[]>(
-      (result, liquidity) =>
-        assetIdPairs.find(([first, second]) => liquidity.firstAddress === first && liquidity.secondAddress === second)
-          ? result
-          : [...result, liquidity],
-      []
-    );
-
-    for (const liquidity of excludedLiquidityList) {
-      this.removeAccountLiquidity(liquidity);
-    }
-
-    for (const liquidity of includedLiquidityList) {
-      await this.subscribeOnAccountLiquidity(liquidity);
-    }
-
-    this.subject.next();
-  }
-
-  /**
-   * Subscription which should be used when user is on the pool page.
-   * Also, it can be used in a background - it depends on the performance.
-   *
-   * Do not forget to call `unsubscribe`
-   */
-  public getUserPoolsSubscription(): Subscription {
-    assert(this.root.account, Messages.connectWallet);
-
-    this.accountLiquidityLoaded = new Subject<void>();
-
-    const account = this.root.accountPair.address;
-    const baseAssetIds = this.root.dex.baseAssetsIds;
-    const multiEntries = baseAssetIds.map((baseAssetId) => [account, baseAssetId]);
-
-    return this.root.apiRx.query.poolXYK.accountPools.multi(multiEntries).subscribe(async (lists) => {
-      const assetIdPairs = [];
-
-      lists.forEach((list, index) => {
-        const baseAssetId = baseAssetIds[index];
-
-        list.forEach((targetAssetId) => {
-          const pair = [baseAssetId, targetAssetId.code.toString()];
-          assetIdPairs.push(pair);
-        });
-      });
-
-      await this.updateAccountLiquiditySubscriptions(assetIdPairs);
-
-      this.accountLiquidityLoaded.complete();
-    });
-  }
-
   private calcAddTxParams(
     firstAsset: Asset | AccountAsset,
     secondAsset: Asset | AccountAsset,
@@ -488,7 +339,6 @@ export class PoolXykModule<T> {
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent,
     DEXId = DexId.XOR
   ) {
-    assert(this.root.account, Messages.connectWallet);
     const firstAmountNum = new FPNumber(firstAmount, firstAsset.decimals);
     const secondAmountNum = new FPNumber(secondAmount, secondAsset.decimals);
     const slippage = new FPNumber(Number(slippageTolerance) / 100);
@@ -647,7 +497,6 @@ export class PoolXykModule<T> {
     totalSupply: CodecString,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ) {
-    assert(this.root.account, Messages.connectWallet);
     const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
     const desired = new FPNumber(desiredMarker, poolToken.decimals);
     const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals);

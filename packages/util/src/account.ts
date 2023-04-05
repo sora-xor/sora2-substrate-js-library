@@ -3,6 +3,7 @@ import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 
 import { AccountHistory } from './accountHistory';
 import { AccountAssets } from './account/modules/assets';
+import { AccountPools } from './account/modules/pools';
 import { Formatters } from './formatters';
 
 import type { Storage } from './storage';
@@ -14,18 +15,19 @@ import type { BaseApi } from './BaseApi';
 class Account {
   protected storage?: typeof Storage;
   protected root?: BaseApi;
-
   protected account!: CreateResult;
-  protected assets!: AccountAssets;
 
   public accountStorage?: Storage;
+  public assets!: AccountAssets;
+  public pools!: AccountPools;
   public history!: AccountHistory;
 
   constructor(root?: BaseApi, storage?: typeof Storage) {
     this.root = root;
     this.storage = storage;
 
-    this.assets = new AccountAssets(this, root);
+    this.assets = new AccountAssets(this, this.root);
+    this.pools = new AccountPools(this, this.root);
   }
 
   public get pair(): KeyringPair {
@@ -81,6 +83,7 @@ class Account {
     this.accountStorage = undefined;
     this.history = undefined;
     this.assets.clearAccountAssets();
+    this.pools.clearAccountLiquidity();
   }
 
   public initAccountStorage() {

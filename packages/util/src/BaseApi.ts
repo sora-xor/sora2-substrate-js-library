@@ -240,83 +240,100 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   ): Promise<T> {
     const signedTx = accountPair ? await this.signExtrinsic(extrinsic, accountPair) : extrinsic;
 
-    const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
-    const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
+    const onSigned = (signedTx: SubmittableExtrinsic<'promise', ISubmittableResult>) => {
+      const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
+      const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
 
-    if (isNotFaucetOperation && accountPair) {
-      history.from = Formatters.formatAddress(accountPair.address);
-    }
+      if (isNotFaucetOperation && accountPair) {
+        history.from = Formatters.formatAddress(accountPair.address);
+      }
 
-    history.txId = signedTx.hash.toString();
+      history.txId = signedTx.hash.toString();
 
-    // History id value will be equal to transaction hash
-    if (!history.id) {
-      history.startTime = Date.now();
-      history.id = history.txId;
-    }
+      // History id value will be equal to transaction hash
+      if (!history.id) {
+        history.startTime = Date.now();
+        history.id = history.txId;
+      }
+    };
+
+    const onResult = (result: ISubmittableResult) => {
+      history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
+      if (result.status.isInBlock) {
+        history.blockId = result.status.asInBlock.toString();
+      } else if (result.status.isFinalized) {
+        history.endTime = Date.now();
+
+        result.events.forEach(({ event: { data, method, section } }: any) => {
+          if (method === 'FeeWithdrawn' && section === 'xorFee') {
+            const [_, soraNetworkFee] = data;
+            history.soraNetworkFee = soraNetworkFee.toString();
+          } else if (method === 'AssetRegistered' && section === 'assets') {
+            const [assetId, _] = data;
+            history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+          } else if (
+            method === 'Transfer' &&
+            ['balances', 'tokens'].includes(section) &&
+            isLiquidityPoolOperation(history.type)
+          ) {
+            // balances.Transfer hasn't assetId field
+            const [amount, to, from, assetId] = data.slice().reverse();
+            const amountFormatted = new FPNumber(amount).toString();
+            // events for 1st token and 2nd token are ordered in extrinsic
+            const amountKey = !history.amount ? 'amount' : 'amount2';
+            history[amountKey] = amountFormatted;
+          } else if (
+            (method === 'RequestRegistered' && isBridgeOperation(history.type)) ||
+            (method === 'RequestStatusUpdate' && isEvmOperation(history.type))
+          ) {
+            history.hash = first(data.toJSON());
+          } else if (section === 'system' && method === 'ExtrinsicFailed') {
+            history.status = TransactionStatus.Error;
+            history.endTime = Date.now();
+            const [error] = data;
+            if (error.isModule) {
+              const decoded = this.api.registry.findMetaError(error.asModule);
+              const { docs, section, name } = decoded;
+              history.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
+            } else {
+              // Other, CannotLookup, BadOrigin, no extra info
+              history.errorMessage = error.toString();
+            }
+          }
+        });
+      }
+    };
+
+    const onError = (errorInfo: string) => {
+      // override history 'id' to 'startTime', because we will delete history 'txId' below
+      history.id = Formatters.encrypt(`${history.startTime}`);
+      history.status = TransactionStatus.Error;
+      history.endTime = Date.now();
+      history.errorMessage = errorInfo;
+    };
 
     const extrinsicFn = async (subscriber?: Subscriber<ExtrinsicEvent>) => {
       const unsub = await signedTx
         .send((result: ISubmittableResult) => {
-          history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
+          onResult(result);
+
           if (result.status.isInBlock) {
-            history.blockId = result.status.asInBlock.toString();
-            subscriber?.next(['inblock', history]);
+            // subscriber?.next(['inblock', history]);
           } else if (result.status.isFinalized) {
-            history.endTime = Date.now();
-            result.events.forEach(({ event: { data, method, section } }: any) => {
-              if (method === 'FeeWithdrawn' && section === 'xorFee') {
-                const [_, soraNetworkFee] = data;
-                history.soraNetworkFee = soraNetworkFee.toString();
-              } else if (method === 'AssetRegistered' && section === 'assets') {
-                const [assetId, _] = data;
-                history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
-              } else if (
-                method === 'Transfer' &&
-                ['balances', 'tokens'].includes(section) &&
-                isLiquidityPoolOperation(history.type)
-              ) {
-                // balances.Transfer hasn't assetId field
-                const [amount, to, from, assetId] = data.slice().reverse();
-                const amountFormatted = new FPNumber(amount).toString();
-                // events for 1st token and 2nd token are ordered in extrinsic
-                const amountKey = !history.amount ? 'amount' : 'amount2';
-                history[amountKey] = amountFormatted;
-              } else if (
-                (method === 'RequestRegistered' && isBridgeOperation(history.type)) ||
-                (method === 'RequestStatusUpdate' && isEvmOperation(history.type))
-              ) {
-                history.hash = first(data.toJSON());
-              } else if (section === 'system' && method === 'ExtrinsicFailed') {
-                history.status = TransactionStatus.Error;
-                history.endTime = Date.now();
-                const [error] = data;
-                if (error.isModule) {
-                  const decoded = this.api.registry.findMetaError(error.asModule);
-                  const { docs, section, name } = decoded;
-                  history.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
-                } else {
-                  // Other, CannotLookup, BadOrigin, no extra info
-                  history.errorMessage = error.toString();
-                }
-              }
-            });
-            const state = history.status === TransactionStatus.Error ? 'error' : 'finalized';
-            subscriber?.next([state, history]);
-            subscriber?.complete();
+            // const state = history.status === TransactionStatus.Error ? 'error' : 'finalized';
+            // subscriber?.next([state, history]);
+            // subscriber?.complete();
             unsub();
           }
         })
         .catch((e: Error) => {
-          // override history 'id' to 'startTime', because we will delete history 'txId' below
-          history.id = Formatters.encrypt(`${history.startTime}`);
-          history.status = TransactionStatus.Error;
-          history.endTime = Date.now();
           const errorParts = e?.message?.split(':');
           const errorInfo = last(errorParts)?.trim();
-          history.errorMessage = errorInfo;
-          subscriber?.next(['error', history]);
-          subscriber?.complete();
+
+          onError(errorInfo);
+
+          // subscriber?.next(['error', history]);
+          // subscriber?.complete();
           throw new Error(errorInfo);
         });
     };
