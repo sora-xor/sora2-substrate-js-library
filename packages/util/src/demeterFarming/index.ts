@@ -112,10 +112,8 @@ export class DemeterFarmingModule<T> {
    * Get a list of active account pools for farming & staking
    * @returns Observable list of account pools (farming & staking)
    */
-  public getAccountPoolsObservable(): Observable<DemeterAccountPool[]> {
-    assert(this.root.account, Messages.connectWallet);
-
-    return this.root.apiRx.query.demeterFarmingPlatform.userInfos(this.root.account.pair.address).pipe(
+  public getAccountPoolsObservable(accountAddress: string): Observable<DemeterAccountPool[]> {
+    return this.root.apiRx.query.demeterFarmingPlatform.userInfos(accountAddress).pipe(
       map((userInfoVec) => {
         return userInfoVec.map((data) => ({
           isFarm: data.isFarm.isTrue,

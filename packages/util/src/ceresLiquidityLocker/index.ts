@@ -17,10 +17,8 @@ export class CeresLiquidityLockerModule<T> {
    * Get list of account locked pools
    * @param onlyActual get locked pools at that moment, not all the history
    */
-  public getLockerDataObservable(onlyActual = true): Observable<AccountLockedPool[]> {
-    assert(this.root.account, Messages.connectWallet);
-
-    return this.root.apiRx.query.ceresLiquidityLocker.lockerData(this.root.account.pair.address).pipe(
+  public getLockerDataObservable(accountAddress: string, onlyActual = true): Observable<AccountLockedPool[]> {
+    return this.root.apiRx.query.ceresLiquidityLocker.lockerData(accountAddress).pipe(
       map((lockedData) => {
         const infos = [...lockedData.values()].map((value) => {
           return {

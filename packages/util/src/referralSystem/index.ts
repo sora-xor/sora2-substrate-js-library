@@ -22,14 +22,6 @@ export class ReferralSystemModule<T> {
   }
 
   /**
-   * Returns the referrer of the account
-   * @returns referrer
-   */
-  public async getAccountReferrer(): Promise<string> {
-    return this.getReferrer(this.root.account.pair.address);
-  }
-
-  /**
    * Returns the referrer subscription
    * @param invitedUserId address of invited account
    */
@@ -37,13 +29,6 @@ export class ReferralSystemModule<T> {
     return this.root.apiRx.query.referrals
       .referrers(invitedUserId)
       .pipe(map((codec) => codec.toJSON() as null | string));
-  }
-
-  /**
-   * Returns the referrer subscription
-   */
-  public subscribeOnAccountReferrer(): Observable<null | string> {
-    return this.subscribeOnReferrer(this.root.account.pair.address);
   }
 
   /**
@@ -63,13 +48,6 @@ export class ReferralSystemModule<T> {
     return this.root.apiRx.query.referrals
       .referrals(referrerId)
       .pipe(map((data) => data.map((accountId) => accountId.toString())));
-  }
-
-  /**
-   * Account's invited users subscription
-   */
-  public subscribeOnAccountInvitedUsers(): Observable<Array<string>> {
-    return this.subscribeOnInvitedUsers(this.root.account.pair.address);
   }
 
   /**

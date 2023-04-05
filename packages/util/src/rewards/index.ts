@@ -104,10 +104,8 @@ export class RewardsModule<T> {
    * Get observable reward for liqudity provision
    * @returns observable liquidity provision RewardInfo
    */
-  public getLiquidityProvisionRewardsSubscription(): Observable<RewardInfo> {
-    assert(this.root.account, Messages.connectWallet);
-
-    return this.root.apiRx.query.pswapDistribution.shareholderAccounts(this.root.account.pair.address).pipe(
+  public getLiquidityProvisionRewardsSubscription(accountAddress: string): Observable<RewardInfo> {
+    return this.root.apiRx.query.pswapDistribution.shareholderAccounts(accountAddress).pipe(
       map((balance) =>
         /* FixnumFixedPoint.inner: CodecString */
         this.prepareRewardInfo(RewardingEvents.LiquidityProvision, FPNumber.fromCodecValue(balance.inner.toString()))
@@ -115,11 +113,9 @@ export class RewardsModule<T> {
     );
   }
 
-  public getVestedRewardsSubscription(): Observable<RewardsInfo> {
-    assert(this.root.account, Messages.connectWallet);
-
+  public getVestedRewardsSubscription(accountAddress: string): Observable<RewardsInfo> {
     return this.root.apiRx.query.vestedRewards
-      .rewards(this.root.account.pair.address)
+      .rewards(accountAddress)
       .pipe(map((data) => this.prepareVestedRewardsInfo(data.limit, data.totalAvailable, data.rewards)));
   }
 
@@ -127,23 +123,20 @@ export class RewardsModule<T> {
    * Get observable last block number, when the user claimed a reward for asset
    * @param assetAddress asset address
    */
-  public getCrowdloanClaimHistoryObservable(assetAddress: string): Observable<number> {
-    assert(this.root.account, Messages.connectWallet);
-
+  public getCrowdloanClaimHistoryObservable(accountAddress: string, assetAddress: string): Observable<number> {
     return this.root.apiRx.query.vestedRewards
-      .crowdloanClaimHistory(this.root.account.pair.address, assetAddress)
+      .crowdloanClaimHistory(accountAddress, assetAddress)
       .pipe(map((data) => data.toNumber()));
   }
 
   /**
    * Get observable rewards map vested for crowdloan
    */
-  public getCrowdloanRewardsVestedObservable(): Observable<{ [key: string]: FPNumber }> {
-    assert(this.root.account, Messages.connectWallet);
+  public getCrowdloanRewardsVestedObservable(accountAddress: string): Observable<{ [key: string]: FPNumber }> {
     // FixnumFixedPoint.inner: CodecString
     const toFP = (num: FixnumFixedPoint, decimals: number) => FPNumber.fromCodecValue(num.inner.toString(), decimals);
 
-    return this.root.apiRx.query.vestedRewards.crowdloanRewards(this.root.account.pair.address).pipe(
+    return this.root.apiRx.query.vestedRewards.crowdloanRewards(accountAddress).pipe(
       map((data) => ({
         [XOR.address]: toFP(data.xorReward, XOR.decimals),
         [VAL.address]: toFP(data.valReward, VAL.decimals),
@@ -156,9 +149,7 @@ export class RewardsModule<T> {
   /**
    * Get observable crowdloan rewards
    */
-  public async getCrowdloanRewardsSubscription(): Promise<Observable<RewardInfo[]>> {
-    assert(this.root.account, Messages.connectWallet);
-
+  public async getCrowdloanRewardsSubscription(accountAddress: string): Promise<Observable<RewardInfo[]>> {
     const consts = await this.root.api.rpc.vestedRewards.crowdloanLease();
     const blocksPerDay = Number(consts.blocksPerDay);
     const totalDays = Number(consts.totalDays);
@@ -166,9 +157,9 @@ export class RewardsModule<T> {
     const endBlock = startBlock + totalDays * blocksPerDay;
 
     const currentBlockObservable = this.root.system.getBlockNumberObservable();
-    const vestedObservable = this.getCrowdloanRewardsVestedObservable();
+    const vestedObservable = this.getCrowdloanRewardsVestedObservable(accountAddress);
     const lastClaimBlockObservables = CrowdloanRewardsCollection.map(({ asset }) =>
-      this.getCrowdloanClaimHistoryObservable(asset.address)
+      this.getCrowdloanClaimHistoryObservable(accountAddress, asset.address)
     );
 
     return combineLatest([currentBlockObservable, vestedObservable, ...lastClaimBlockObservables]).pipe(
