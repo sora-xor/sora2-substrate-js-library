@@ -39,6 +39,11 @@ export class SystemModule<T> {
     return (await this.root.api.rpc.chain.getBlockHash(blockNumber)).toString();
   }
 
+  public async getBlockNumber(blockHash: string): Promise<number> {
+    const apiInstanceAtBlock = await this.root.api.at(blockHash);
+    return (await apiInstanceAtBlock.query.system.number()).toNumber();
+  }
+
   public async getBlockTimestamp(blockHash: string): Promise<number> {
     const apiInstanceAtBlock = await this.root.api.at(blockHash);
     return (await apiInstanceAtBlock.query.timestamp.now()).toNumber();
