@@ -8,7 +8,7 @@ import type { Option } from '@polkadot/types-codec';
 import { BaseApi, isEvmOperation, Operation } from '../BaseApi';
 import { Asset } from '../assets/types';
 import { Messages } from '../logger';
-import { EvmDirection, EvmNetworkId, EvmTxStatus } from './consts';
+import { EvmDirection, EvmTxStatus } from './consts';
 import type { EvmAsset, EvmNetwork, EvmHistory, EvmTransaction } from './types';
 // TODO: remove
 type EvmBridgeProxyBridgeRequest = any;
@@ -52,19 +52,9 @@ function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): E
   return formatted;
 }
 
-export class EvmApi extends BaseApi {
-  private _externalNetwork: EvmNetwork = EvmNetworkId.EthereumClassicTestnetMordor;
-
+export class EvmApi<T> extends BaseApi<T> {
   constructor() {
     super('evmHistory');
-  }
-
-  public get externalNetwork(): EvmNetwork {
-    return this._externalNetwork;
-  }
-
-  public set externalNetwork(value: EvmNetwork) {
-    this._externalNetwork = value;
   }
 
   public generateHistoryItem(params: EvmHistory): EvmHistory | null {
@@ -94,10 +84,10 @@ export class EvmApi extends BaseApi {
    *
    * `{ [key: SoraAssetId]: { contract: string; evmAddress: string; } }`
    */
-  public async getNetworkAssets(): Promise<Record<string, EvmAsset>> {
+  public async getNetworkAssets(externalNetwork: EvmNetwork): Promise<Record<string, EvmAsset>> {
     const assetsMap: Record<string, EvmAsset> = {};
     // TODO: NetworkId will be fixed on backend. We should update type and remove this line below
-    const networkId = this.externalNetwork.toString(16);
+    const networkId = externalNetwork.toString(16);
 
     const result = await (this.api.rpc as any).evmBridgeProxy.listAppsWithSupportedAssets(networkId);
 
@@ -113,24 +103,26 @@ export class EvmApi extends BaseApi {
     return assetsMap;
   }
 
-  public async burn(asset: Asset, recipient: string, amount: string | number, historyId?: string): Promise<void> {
+  public async burn(
+    externalNetwork: EvmNetwork,
+    asset: Asset,
+    recipient: string,
+    amount: string | number,
+    historyId?: string
+  ): Promise<void> {
     // asset should be checked as registered on bridge or not
-    const fpAmount = new FPNumber(amount, asset.decimals);
-    const historyItem = this.getHistory(historyId);
+    const value = new FPNumber(amount, asset.decimals).toCodecString();
+    const historyItem = this.getHistory(historyId) || {
+      type: Operation.EvmOutgoing,
+      symbol: asset.symbol,
+      assetAddress: asset.address,
+      amount: `${amount}`,
+    };
+
     await this.submitExtrinsic(
-      (this.api.tx as any).evmBridgeProxy.burn(
-        this.externalNetwork,
-        asset.address,
-        recipient,
-        fpAmount.toCodecString()
-      ),
+      (this.api.tx as any).evmBridgeProxy.burn(externalNetwork, asset.address, recipient, value),
       this.account.pair,
-      historyItem || {
-        type: Operation.EvmOutgoing,
-        symbol: asset.symbol,
-        assetAddress: asset.address,
-        amount: `${amount}`,
-      }
+      historyItem
     );
   }
 
@@ -139,13 +131,10 @@ export class EvmApi extends BaseApi {
    *
    * **first** array item represents the **last** transaction
    */
-  public async getUserTxHashes(externalNetwork: EvmNetwork): Promise<Array<string>> {
+  public async getUserTxHashes(externalNetwork: EvmNetwork, accountAddress: string): Promise<Array<string>> {
     assert(this.account, Messages.connectWallet);
 
-    const data = await (this.api.query as any).evmBridgeProxy.userTransactions(
-      externalNetwork,
-      this.account.pair.address
-    );
+    const data = await (this.api.query as any).evmBridgeProxy.userTransactions(externalNetwork, accountAddress);
 
     return (data as any).map((value) => value.toString()).reverse();
   }
@@ -155,11 +144,9 @@ export class EvmApi extends BaseApi {
    *
    * **First** array item represents the **last** transaction
    */
-  public subscribeOnUserTxHashes(externalNetwork: EvmNetwork): Observable<Array<string>> {
-    assert(this.account, Messages.connectWallet);
-
+  public subscribeOnUserTxHashes(externalNetwork: EvmNetwork, accountAddress: string): Observable<Array<string>> {
     return (this.apiRx.query as any).evmBridgeProxy
-      .userTransactions(externalNetwork, this.account.pair.address)
+      .userTransactions(externalNetwork, accountAddress)
       .pipe(map((items) => (items as any).map((value) => value.toString()).reverse()));
   }
 
