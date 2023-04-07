@@ -6320,9 +6320,9 @@ returns: `FixnumFixedPoint`
 
 <hr>
 
-#### **api.query.pswapDistribution.parliamentPswapFraction**
+#### **api.query.pswapDistribution.buyBackXSTFraction**
 
-> Fraction of PSWAP that could be reminted for parliament.
+> Fraction of PSWAP that could be buy backed to XST
 
 arguments: -
 
