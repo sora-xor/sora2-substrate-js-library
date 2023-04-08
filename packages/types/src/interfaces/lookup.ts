@@ -3667,7 +3667,6 @@ export default {
     valHolders: 'MulticollateralBondingCurvePoolDistributionAccountData',
     soraCitizens: 'MulticollateralBondingCurvePoolDistributionAccountData',
     storesAndShops: 'MulticollateralBondingCurvePoolDistributionAccountData',
-    parliamentAndDevelopment: 'MulticollateralBondingCurvePoolDistributionAccountData',
     projects: 'MulticollateralBondingCurvePoolDistributionAccountData'
   },
   /**

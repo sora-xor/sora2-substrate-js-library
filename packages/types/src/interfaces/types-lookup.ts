@@ -3990,7 +3990,6 @@ declare module '@polkadot/types/lookup' {
     readonly valHolders: MulticollateralBondingCurvePoolDistributionAccountData;
     readonly soraCitizens: MulticollateralBondingCurvePoolDistributionAccountData;
     readonly storesAndShops: MulticollateralBondingCurvePoolDistributionAccountData;
-    readonly parliamentAndDevelopment: MulticollateralBondingCurvePoolDistributionAccountData;
     readonly projects: MulticollateralBondingCurvePoolDistributionAccountData;
   }
 
