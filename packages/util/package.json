@@ -8,7 +8,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@polkadot/ui-keyring": "2.9.14",
+    "@polkadot/ui-keyring": "2.12.1",
     "@sora-substrate/api": "1.16.0",
     "@sora-substrate/liquidity-proxy": "1.16.0",
     "@sora-substrate/math": "1.16.0",
