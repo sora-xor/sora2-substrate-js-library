@@ -6,7 +6,7 @@ import type { BTreeMap, Bytes, Compact, DoNotConstruct, Enum, Int, Null, Option,
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
 import type { Signature } from '@polkadot/types/interfaces/extrinsics';
-import type { DispatchError, SystemOrigin } from '@polkadot/types/interfaces/system';
+import type { DispatchError, Event, SystemOrigin } from '@polkadot/types/interfaces/system';
 
 /** @name AccountId */
 export interface AccountId extends AccountId32 {}
@@ -532,11 +532,17 @@ export interface RewardReason extends Enum {
   readonly type: 'Unspecified' | 'BuyOnBondingCurve' | 'LiquidityProvisionFarming' | 'MarketMakerVolume';
 }
 
+/** @name RuntimeCall */
+export interface RuntimeCall extends Call {}
+
 /** @name RuntimeDbWeight */
 export interface RuntimeDbWeight extends Struct {
   readonly read: Weight;
   readonly write: Weight;
 }
+
+/** @name RuntimeEvent */
+export interface RuntimeEvent extends Event {}
 
 /** @name Scope */
 export interface Scope extends Enum {
@@ -727,10 +733,13 @@ export interface ValidatorId extends AccountId {}
 export interface ValidatorIdOf extends ValidatorId {}
 
 /** @name Weight */
-export interface Weight extends WeightV1 {}
+export interface Weight extends WeightV2 {}
 
 /** @name WeightMultiplier */
 export interface WeightMultiplier extends Fixed64 {}
+
+/** @name WeightV0 */
+export interface WeightV0 extends u32 {}
 
 /** @name WeightV1 */
 export interface WeightV1 extends u64 {}

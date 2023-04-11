@@ -44,8 +44,8 @@ export class MstTransfersModule<T> {
   ): SubmittableExtrinsic {
     assert(this.root.account, Messages.connectWallet);
     const MAX_WEIGHT = 640000000;
-
-    return this.root.api.tx.multisig.approveAsMulti(threshold, coSigners, null, call.method.hash, MAX_WEIGHT);
+    // TODO: [MST] check MAX_WEIGHT arg
+    return this.root.api.tx.multisig.approveAsMulti(threshold, coSigners, null, call.method.hash, `${MAX_WEIGHT}`);
   }
 
   /**

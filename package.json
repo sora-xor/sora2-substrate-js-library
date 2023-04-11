@@ -58,11 +58,8 @@
     "verify-pool-account-gen": "node -r ts-node/register -r tsconfig-paths/register scripts/verifyPoolAccountGeneration.ts"
   },
   "devDependencies": {
-    "@babel/core": "^7.10.2",
-    "@babel/register": "^7.10.1",
-    "@babel/runtime": "^7.10.2",
     "@lerna/publish": "^3.22.1",
-    "@open-web3/util": "^0.8.2-9",
+    "@open-web3/util": "^0.8.2-11",
     "@polkadot/dev": "^0.32.17",
     "@types/jest": "^26.0.19",
     "eslint": "^7.32.0",
