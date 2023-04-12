@@ -6,7 +6,6 @@ import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
-import type { Option } from '@polkadot/types';
 import type { PalletIdentityRegistration } from '@polkadot/types/lookup';
 
 import { decrypt, encrypt } from './crypto';
@@ -168,8 +167,8 @@ export class Api<T = void> extends BaseApi<T> {
    * Get on-chain account's identity
    * @param address account address
    */
-  public async getAccountOnChainIdentity(address: string): Promise<Option<PalletIdentityRegistration | null>> {
-    return (await this.api.query.identity.identityOf(address)) || null;
+  public async getAccountOnChainIdentity(address: string): Promise<PalletIdentityRegistration | null> {
+    return (await this.api.query.identity.identityOf(address)).unwrap() || null;
   }
 
   private updateAccountData(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
