@@ -549,7 +549,6 @@ export class SwapModule<T> {
     const value = !result.isNone
       ? result.unwrap()
       : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0, route: [] };
-    console.info((value as any).route);
     return {
       amount: toCodecString(value.amount),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
