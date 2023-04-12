@@ -546,11 +546,14 @@ export class SwapModule<T> {
       liquiditySources as any,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
     );
-    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
+    const value = !result.isNone
+      ? result.unwrap()
+      : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0, route: [] };
     return {
       amount: toCodecString(value.amount),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
+      route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
     } as SwapResult;
   }
 
