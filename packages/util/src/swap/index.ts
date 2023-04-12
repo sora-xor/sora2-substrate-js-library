@@ -512,7 +512,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Get swap result using `liquidityProxy.quote` rpc call.
    *
@@ -558,7 +558,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Check swap operation using `liquidityProxy.isPathAvailable` rpc call
    * @param firstAssetAddress
@@ -572,7 +572,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Get liquidity sources for selected pair using `tradingPair.listEnabledSourcesForPair` rpc call
    * @param firstAssetAddress
@@ -594,7 +594,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Check liquidity Source availability for the selected pair using `tradingPair.isSourceEnabledForPair` rpc call
    * @param firstAssetAddress
