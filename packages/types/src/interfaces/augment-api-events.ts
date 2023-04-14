@@ -25,6 +25,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       AssetSetNonMintable: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
       /**
+       * Asset info has been updated
+       **/
+      AssetUpdated: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, Option<Bytes>, Option<Bytes>]>;
+      /**
        * Asset amount has been burned. [Issuer Account, Burned Asset Id, Amount Burned]
        **/
       Burn: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;

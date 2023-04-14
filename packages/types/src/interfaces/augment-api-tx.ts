@@ -87,6 +87,15 @@ declare module '@polkadot/api-base/types/submittable' {
        * TODO: move into tests extrinsic collection pallet
        **/
       updateBalance: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array, currencyId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: i128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, CommonPrimitivesAssetId32, i128]>;
+      /**
+       * Change information about asset. Can only be done by root
+       * 
+       * - `origin`: caller Account, should be root
+       * - `asset_id`: Id of asset to change,
+       * - `new_symbol`: New asset symbol. If None asset symbol will not change
+       * - `new_name`: New asset name. If None asset name will not change
+       **/
+      updateInfo: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newSymbol: Option<Bytes> | null | Uint8Array | Bytes | string, newName: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, Option<Bytes>, Option<Bytes>]>;
     };
     babe: {
       /**
