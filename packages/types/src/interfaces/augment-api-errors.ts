@@ -1866,6 +1866,40 @@ declare module '@polkadot/api-base/types/errors' {
       OracleAlreadyDisabled: AugmentedError<ApiType>;
       OracleAlreadyEnabled: AugmentedError<ApiType>;
     };
+    orderBook: {
+      /**
+       * Cannot delete the limit order
+       **/
+      DeleteLimitOrderError: AugmentedError<ApiType>;
+      /**
+       * Lifespan exceeds defined limits
+       **/
+      InvalidLifespan: AugmentedError<ApiType>;
+      /**
+       * Cannot insert the limit order because bounds are reached
+       **/
+      LimitOrderStorageOverflow: AugmentedError<ApiType>;
+      /**
+       * There is not enough liquidity in the order book to cover the deal
+       **/
+      NotEnoughLiquidity: AugmentedError<ApiType>;
+      /**
+       * Order book already exists for this trading pair
+       **/
+      OrderBookAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * Trading pair currently reached its capacity
+       **/
+      OrderLimitReached: AugmentedError<ApiType>;
+      /**
+       * Price in given order exceeds allowed limits for the trading pair
+       **/
+      PriceExceedsLimits: AugmentedError<ApiType>;
+      /**
+       * Order book does not exist for this trading pair
+       **/
+      UnknownOrderBook: AugmentedError<ApiType>;
+    };
     permissions: {
       /**
        * The account either doesn't have the permission.
