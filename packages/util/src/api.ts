@@ -101,7 +101,7 @@ export class Api<T = void> extends BaseApi<T> {
     this.bridge.setAccount(account);
   }
 
-  private async initKeyring(silent = false): Promise<void> {
+  public async initKeyring(silent = false): Promise<void> {
     keyring = new Keyring();
 
     await cryptoWaitReady();
@@ -117,27 +117,29 @@ export class Api<T = void> extends BaseApi<T> {
     }
   }
 
+  public restoreActiveAccount(): void {
+    const address = this.storage?.get('address');
+
+    if (address) {
+      const defaultAddress = this.formatAddress(address, false);
+      const name = this.storage?.get('name');
+      const source = this.storage?.get('source');
+      const isExternalFlag = this.storage?.get('isExternal');
+      const isExternal = isExternalFlag ? JSON.parse(isExternalFlag) : null;
+      const isExternalAccount = isExternal || (isExternal === null && !!source);
+
+      this.loginAccount(defaultAddress, name, source, isExternalAccount);
+    }
+  }
+
   /**
    * The first method you should run. Includes initialization process
    * @param withKeyringLoading `true` by default
    */
   public async initialize(withKeyringLoading = true): Promise<void> {
-    const isExternalFlag = this.storage?.get('isExternal');
-
-    const address = this.storage?.get('address');
-    const name = this.storage?.get('name');
-    const source = this.storage?.get('source');
-    const isExternal = isExternalFlag ? JSON.parse(isExternalFlag) : null;
-
     if (withKeyringLoading) {
       await this.initKeyring();
-
-      if (address) {
-        const defaultAddress = this.formatAddress(address, false);
-        const isExternalAccount = isExternal || (isExternal === null && !!source);
-
-        this.loginAccount(defaultAddress, name, source, isExternalAccount);
-      }
+      this.restoreActiveAccount();
     }
 
     // Update available dex list
