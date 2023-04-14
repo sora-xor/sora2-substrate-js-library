@@ -705,6 +705,9 @@ declare module '@polkadot/api-base/types/events' {
        **/
       OracleEnabled: AugmentedEvent<ApiType, [CommonPrimitivesOracle]>;
     };
+    orderBook: {
+      OrderPlaced: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, orderId: u128, ownerId: AccountId32 }>;
+    };
     permissions: {
       /**
        * Permission was assigned to the account in the scope. [permission, who]
