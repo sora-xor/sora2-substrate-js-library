@@ -8,6 +8,7 @@ export enum RewardingEvents {
   BuyOnBondingCurve = 'BuyOnBondingCurve',
   LiquidityProvisionFarming = 'LiquidityProvisionFarming',
   MarketMakerVolume = 'MarketMakerVolume',
+  Crowdloan = 'Crowdloan',
   CrowdloanXOR = 'CrowdloanXOR',
   CrowdloanVAL = 'CrowdloanVAL',
   CrowdloanPSWAP = 'CrowdloanPSWAP',
