@@ -6,12 +6,12 @@ import type { Vec, u128 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
-import { RewardingEvents, CrowdloanRewardsCollection } from './consts';
-import { XOR, VAL, PSWAP, XSTUSD } from '../assets/consts';
+import { RewardingEvents, RewardType } from './consts';
+import { VAL, PSWAP } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
-import type { RewardInfo, RewardsInfo } from './types';
+import type { RewardInfo, RewardsInfo, RewardTypedEvent } from './types';
 import type { Asset } from '../assets/types';
 
 type CrowdloanInfo = {
@@ -47,20 +47,16 @@ export class RewardsModule<T> {
     return !fpAmount.isZero();
   }
 
-  private hasRewardsForEvents(rewards: Array<RewardInfo>, events: Array<RewardingEvents>): boolean {
-    return rewards.some((item) => this.isClaimableReward(item) && events.includes(item.type));
-  }
-
-  private containsRewardsForEvents(items: Array<RewardInfo | RewardsInfo>, events: Array<RewardingEvents>): boolean {
+  private containsRewardsForType(items: Array<RewardInfo | RewardsInfo>, type: RewardType): boolean {
     return items.some((item) => {
       const key = 'rewards' in item ? item.rewards : [item];
 
-      return this.hasRewardsForEvents(key, events);
+      return key.some((item) => this.isClaimableReward(item) && item.type[0] === type);
     });
   }
 
   private prepareRewardInfo(
-    type: RewardingEvents,
+    type: RewardTypedEvent,
     amount: Codec | number | string | FPNumber,
     rewardAsset?: Asset
   ): RewardInfo {
@@ -85,14 +81,14 @@ export class RewardsModule<T> {
     ].reduce((result, key) => {
       return {
         ...result,
-        [key]: this.prepareRewardInfo(key, 0, asset),
+        [key]: this.prepareRewardInfo([RewardType.Strategic, key], 0, asset),
       };
     }, {});
 
     // update reward table with real values
     for (const [event, balance] of rewards.entries()) {
       const key = event.toString();
-      buffer[key] = this.prepareRewardInfo(key, balance, asset);
+      buffer[key] = this.prepareRewardInfo([RewardType.Strategic, key], balance, asset);
     }
 
     const fpLimit = new FPNumber(limit, asset.decimals);
@@ -116,9 +112,9 @@ export class RewardsModule<T> {
     );
 
     const rewards = [
-      this.prepareRewardInfo(RewardingEvents.SoraFarmHarvest, soraFarmHarvestAmount, PSWAP),
-      this.prepareRewardInfo(RewardingEvents.NftAirdrop, nftAirdropAmount, PSWAP),
-      this.prepareRewardInfo(RewardingEvents.XorErc20, xorErc20Amount, VAL),
+      this.prepareRewardInfo([RewardType.Externals, RewardingEvents.SoraFarmHarvest], soraFarmHarvestAmount, PSWAP),
+      this.prepareRewardInfo([RewardType.Externals, RewardingEvents.NftAirdrop], nftAirdropAmount, PSWAP),
+      this.prepareRewardInfo([RewardType.Externals, RewardingEvents.XorErc20], xorErc20Amount, VAL),
     ].filter((item) => this.isClaimableReward(item));
 
     return rewards;
@@ -135,7 +131,7 @@ export class RewardsModule<T> {
       map((balance) =>
         /* FixnumFixedPoint.inner: CodecString */
         this.prepareRewardInfo(
-          RewardingEvents.LiquidityProvision,
+          [RewardType.Provision, RewardingEvents.LiquidityProvision],
           FPNumber.fromCodecValue(balance.inner.toString()),
           PSWAP
         )
@@ -244,7 +240,11 @@ export class RewardsModule<T> {
               ? currentAmount.sub(rewardedAmount)
               : FPNumber.ZERO;
 
-            const rewardInfo = this.prepareRewardInfo(RewardingEvents.Crowdloan, claimableAmount, assetsMap[assetId]);
+            const rewardInfo = this.prepareRewardInfo(
+              [RewardType.Crowdloan, crowdloan.tag],
+              claimableAmount,
+              assetsMap[assetId]
+            );
 
             return {
               ...rewardInfo,
@@ -265,7 +265,7 @@ export class RewardsModule<T> {
     const transactions = [];
 
     // liquidity provision
-    if (this.containsRewardsForEvents(rewards, [RewardingEvents.LiquidityProvision])) {
+    if (this.containsRewardsForType(rewards, RewardType.Provision)) {
       transactions.push({
         extrinsic: this.root.api.tx.pswapDistribution.claimIncentive,
         args: [],
@@ -273,13 +273,7 @@ export class RewardsModule<T> {
     }
 
     // vested
-    if (
-      this.containsRewardsForEvents(rewards, [
-        RewardingEvents.BuyOnBondingCurve,
-        RewardingEvents.LiquidityProvisionFarming,
-        RewardingEvents.MarketMakerVolume,
-      ])
-    ) {
+    if (this.containsRewardsForType(rewards, RewardType.Strategic)) {
       transactions.push({
         extrinsic: this.root.api.tx.vestedRewards.claimRewards,
         args: [],
@@ -287,13 +281,7 @@ export class RewardsModule<T> {
     }
 
     // external
-    if (
-      this.containsRewardsForEvents(rewards, [
-        RewardingEvents.SoraFarmHarvest,
-        RewardingEvents.XorErc20,
-        RewardingEvents.NftAirdrop,
-      ])
-    ) {
+    if (this.containsRewardsForType(rewards, RewardType.Externals)) {
       transactions.push({
         extrinsic: this.root.api.tx.rewards.claim,
         args: [signature],
@@ -301,20 +289,32 @@ export class RewardsModule<T> {
     }
 
     // crowdloan
-    [
-      [RewardingEvents.CrowdloanXOR, XOR],
-      [RewardingEvents.CrowdloanVAL, VAL],
-      [RewardingEvents.CrowdloanPSWAP, PSWAP],
-      [RewardingEvents.CrowdloanXSTUSD, XSTUSD],
-    ].forEach((item: [RewardingEvents, Asset]) => {
-      if (this.containsRewardsForEvents(rewards, [item[0]])) {
-        transactions.push({
-          extrinsic: this.root.api.tx.vestedRewards.claimCrowdloanRewards,
-          args: [item[1].address],
-        });
-      }
+    const crowdloanTags = rewards
+      .map((reward) => {
+        const items = 'rewards' in reward ? reward.rewards : [reward];
+        const tags = items.reduce<string[]>((buffer, item) => {
+          const [rewardType, rewardEvent] = item.type;
+
+          if (rewardType === RewardType.Crowdloan) {
+            buffer.push(rewardEvent);
+          }
+          return buffer;
+        }, []);
+
+        return tags;
+      })
+      .flat(1);
+
+    const uniqueTags = [...new Set(crowdloanTags)];
+
+    uniqueTags.forEach((tag) => {
+      transactions.push({
+        extrinsic: this.root.api.tx.vestedRewards.claimCrowdloanRewards,
+        args: [tag],
+      });
     });
 
+    // batch or simple tx
     if (transactions.length > 1)
       return {
         extrinsic: this.root.api.tx.utility.batchAll,
