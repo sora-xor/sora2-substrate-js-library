@@ -117,7 +117,7 @@ export class Api<T = void> extends BaseApi<T> {
     }
   }
 
-  public restoreActiveAccount(): void {
+  public async restoreActiveAccount(): Promise<void> {
     const address = this.storage?.get('address');
 
     if (address) {
@@ -128,7 +128,7 @@ export class Api<T = void> extends BaseApi<T> {
       const isExternal = isExternalFlag ? JSON.parse(isExternalFlag) : null;
       const isExternalAccount = isExternal || (isExternal === null && !!source);
 
-      this.loginAccount(defaultAddress, name, source, isExternalAccount);
+      await this.loginAccount(defaultAddress, name, source, isExternalAccount);
     }
   }
 
@@ -139,7 +139,7 @@ export class Api<T = void> extends BaseApi<T> {
   public async initialize(withKeyringLoading = true): Promise<void> {
     if (withKeyringLoading) {
       await this.initKeyring();
-      this.restoreActiveAccount();
+      await this.restoreActiveAccount();
     }
 
     // Update available dex list
