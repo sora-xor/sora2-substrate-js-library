@@ -6,7 +6,7 @@
 import '@polkadot/api-base/types/calls';
 
 import type { ApiTypes, AugmentedCall, DecoratedCallBase } from '@polkadot/api-base/types';
-import type { Bytes, Null, Option, Result, Vec, u32 } from '@polkadot/types-codec';
+import type { Bytes, Null, Option, Result, Vec } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { BabeEquivocationProof, BabeGenesisConfiguration, Epoch, OpaqueKeyOwnershipProof } from '@polkadot/types/interfaces/babe';
 import type { ValidatorSet } from '@polkadot/types/interfaces/beefy';
@@ -17,8 +17,7 @@ import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import type { AuthorityList, GrandpaEquivocationProof, SetId } from '@polkadot/types/interfaces/grandpa';
 import type { OpaqueMetadata } from '@polkadot/types/interfaces/metadata';
 import type { MmrBatchProof, MmrEncodableOpaqueLeaf, MmrError, MmrLeafIndex, MmrProof } from '@polkadot/types/interfaces/mmr';
-import type { FeeDetails, RuntimeDispatchInfo } from '@polkadot/types/interfaces/payment';
-import type { AccountId, Balance, Block, Hash, Header, Index, KeyTypeId, Slot, Weight } from '@polkadot/types/interfaces/runtime';
+import type { AccountId, Block, Hash, Header, Index, KeyTypeId, Slot } from '@polkadot/types/interfaces/runtime';
 import type { RuntimeVersion } from '@polkadot/types/interfaces/state';
 import type { ApplyExtrinsicResult } from '@polkadot/types/interfaces/system';
 import type { TransactionSource, TransactionValidity } from '@polkadot/types/interfaces/txqueue';
@@ -185,25 +184,6 @@ declare module '@polkadot/api-base/types/calls' {
        * Validate the transaction.
        **/
       validateTransaction: AugmentedCall<ApiType, (source: TransactionSource | 'InBlock' | 'Local' | 'External' | number | Uint8Array, tx: Extrinsic | IExtrinsic | string | Uint8Array, blockHash: BlockHash | string | Uint8Array) => Observable<TransactionValidity>>;
-    };
-    /** 0x37c8bb1350a9a2a8/3 */
-    transactionPaymentApi: {
-      /**
-       * The transaction fee details
-       **/
-      queryFeeDetails: AugmentedCall<ApiType, (uxt: Extrinsic | IExtrinsic | string | Uint8Array, len: u32 | AnyNumber | Uint8Array) => Observable<FeeDetails>>;
-      /**
-       * The transaction info
-       **/
-      queryInfo: AugmentedCall<ApiType, (uxt: Extrinsic | IExtrinsic | string | Uint8Array, len: u32 | AnyNumber | Uint8Array) => Observable<RuntimeDispatchInfo>>;
-      /**
-       * Query the output of the current LengthToFee given some input
-       **/
-      queryLengthToFee: AugmentedCall<ApiType, (length: u32 | AnyNumber | Uint8Array) => Observable<Balance>>;
-      /**
-       * Query the output of the current WeightToFee given some input
-       **/
-      queryWeightToFee: AugmentedCall<ApiType, (weight: Weight | { refTime?: any; proofSize?: any } | string | Uint8Array) => Observable<Balance>>;
     };
   } // AugmentedCalls
 } // declare module

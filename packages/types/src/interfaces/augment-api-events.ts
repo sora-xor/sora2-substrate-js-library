@@ -1170,6 +1170,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ActualDoesntMatchAvailable: AugmentedEvent<ApiType, [CommonPrimitivesRewardReason]>;
       /**
+       * Claimed crowdloan rewards
+       **/
+      CrowdloanClaimed: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
        * Saving reward for account has failed in a distribution series. [account]
        **/
       FailedToSaveCalculatedReward: AugmentedEvent<ApiType, [AccountId32]>;

@@ -554,5 +554,13 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       batchedCallsLimit: u32 & AugmentedConst<ApiType>;
     };
+    vestedRewards: {
+      getBondingCurveRewardsAccountId: AccountId32 & AugmentedConst<ApiType>;
+      getFarmingRewardsAccountId: AccountId32 & AugmentedConst<ApiType>;
+      /**
+       * Accounts holding PSWAP dedicated for rewards.
+       **/
+      getMarketMakerRewardsAccountId: AccountId32 & AugmentedConst<ApiType>;
+    };
   } // AugmentedConsts
 } // declare module

@@ -2971,11 +2971,12 @@ declare module '@polkadot/api-base/types/submittable' {
       withWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: SpWeightsWeightV2Weight | { refTime?: any; proofSize?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, SpWeightsWeightV2Weight]>;
     };
     vestedRewards: {
-      claimCrowdloanRewards: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      claimCrowdloanRewards: AugmentedSubmittable<(crowdloan: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
       /**
        * Claim all available PSWAP rewards by account signing this transaction.
        **/
       claimRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      registerCrowdloan: AugmentedSubmittable<(tag: Bytes | string | Uint8Array, startBlock: u32 | AnyNumber | Uint8Array, length: u32 | AnyNumber | Uint8Array, rewards: Vec<ITuple<[CommonPrimitivesAssetId32, u128]>> | ([CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, u128 | AnyNumber | Uint8Array])[], contributions: Vec<ITuple<[AccountId32, u128]>> | ([AccountId32 | string | Uint8Array, u128 | AnyNumber | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [Bytes, u32, u32, Vec<ITuple<[CommonPrimitivesAssetId32, u128]>>, Vec<ITuple<[AccountId32, u128]>>]>;
       updateRewards: AugmentedSubmittable<(rewards: BTreeMap<AccountId32, BTreeMap<CommonPrimitivesRewardReason, u128>>) => SubmittableExtrinsic<ApiType>, [BTreeMap<AccountId32, BTreeMap<CommonPrimitivesRewardReason, u128>>]>;
     };
     xorFee: {
