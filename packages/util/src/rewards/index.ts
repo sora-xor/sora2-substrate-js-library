@@ -233,6 +233,7 @@ export class RewardsModule<T> {
           const elapsedPart = FPNumber.fromNatural(elapsedDays).div(FPNumber.fromNatural(lenghtDays));
 
           return Object.entries(crowdloan.rewards).map(([assetId, assetTotalAmount]) => {
+            const asset = { ...assetsMap[assetId] };
             const totalAmount = assetTotalAmount.mul(userContributionPart);
             const currentAmount = totalAmount.mul(elapsedPart);
             const rewardedAmount = userCrowdloan.rewarded[assetId] ?? FPNumber.ZERO;
@@ -240,11 +241,7 @@ export class RewardsModule<T> {
               ? currentAmount.sub(rewardedAmount)
               : FPNumber.ZERO;
 
-            const rewardInfo = this.prepareRewardInfo(
-              [RewardType.Crowdloan, crowdloan.tag],
-              claimableAmount,
-              assetsMap[assetId]
-            );
+            const rewardInfo = this.prepareRewardInfo([RewardType.Crowdloan, crowdloan.tag], claimableAmount, asset);
 
             return {
               ...rewardInfo,
