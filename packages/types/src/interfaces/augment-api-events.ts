@@ -710,7 +710,26 @@ declare module '@polkadot/api-base/types/events' {
       OracleEnabled: AugmentedEvent<ApiType, [CommonPrimitivesOracle]>;
     };
     orderBook: {
-      OrderPlaced: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * New order book is created by user
+       **/
+      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, creator: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, creator: AccountId32 }>;
+      /**
+       * Order book is deleted by Council
+       **/
+      OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32 }>;
+      /**
+       * Order book attributes are updated by Council
+       **/
+      OrderBookUpdated: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32 }>;
+      /**
+       * User canceled their limit order
+       **/
+      OrderCanceled: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * User placed new limit order
+       **/
+      OrderPlaced: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
     };
     permissions: {
       /**

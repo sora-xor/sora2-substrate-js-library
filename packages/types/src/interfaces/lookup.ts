@@ -1181,143 +1181,7 @@ export default {
     _enum: ['Yes', 'No']
   },
   /**
-   * Lookup136: order_book::pallet::Event<T>
-   **/
-  OrderBookEvent: {
-    _enum: {
-      OrderPlaced: {
-        orderBookId: 'CommonPrimitivesTradingPairAssetId32',
-        orderId: 'u128',
-        ownerId: 'AccountId32'
-      }
-    }
-  },
-  /**
-   * Lookup137: ethereum_light_client::pallet::Event<T>
-   **/
-  EthereumLightClientEvent: {
-    _enum: {
-      Finalized: '(U256,BridgeTypesHeaderHeaderId)'
-    }
-  },
-  /**
-   * Lookup140: bridge_types::header::HeaderId
-   **/
-  BridgeTypesHeaderHeaderId: {
-    _alias: {
-      hash_: 'hash'
-    },
-    number: 'u64',
-    hash_: 'H256'
-  },
-  /**
-   * Lookup141: bridge_inbound_channel::pallet::Event<T>
-   **/
-  BridgeInboundChannelEvent: 'Null',
-  /**
-   * Lookup142: bridge_outbound_channel::pallet::Event<T>
-   **/
-  BridgeOutboundChannelEvent: {
-    _enum: {
-      MessageAccepted: '(U256,u64)'
-    }
-  },
-  /**
-   * Lookup143: dispatch::pallet::Event<T, I>
-   **/
-  DispatchEvent: {
-    _enum: {
-      MessageDispatched: '(BridgeTypesMessageId,Result<Null, SpRuntimeDispatchError>)',
-      MessageRejected: 'BridgeTypesMessageId',
-      MessageDecodeFailed: 'BridgeTypesMessageId'
-    }
-  },
-  /**
-   * Lookup144: bridge_types::types::MessageId
-   **/
-  BridgeTypesMessageId: {
-    direction: 'BridgeTypesMessageDirection',
-    nonce: 'u64'
-  },
-  /**
-   * Lookup145: bridge_types::types::MessageDirection
-   **/
-  BridgeTypesMessageDirection: {
-    _enum: ['Inbound', 'Outbound']
-  },
-  /**
-   * Lookup146: leaf_provider::pallet::Event<T>
-   **/
-  LeafProviderEvent: 'Null',
-  /**
-   * Lookup147: eth_app::pallet::Event<T>
-   **/
-  EthAppEvent: {
-    _enum: {
-      Burned: '(U256,AccountId32,H160,u128)',
-      Minted: '(U256,H160,AccountId32,u128)',
-      Refunded: '(U256,AccountId32,u128)'
-    }
-  },
-  /**
-   * Lookup150: erc20_app::pallet::Event<T>
-   **/
-  Erc20AppEvent: {
-    _enum: {
-      Burned: '(U256,CommonPrimitivesAssetId32,AccountId32,H160,u128)',
-      Minted: '(U256,CommonPrimitivesAssetId32,H160,AccountId32,u128)',
-      Refunded: '(U256,AccountId32,CommonPrimitivesAssetId32,u128)'
-    }
-  },
-  /**
-   * Lookup151: migration_app::pallet::Event<T>
-   **/
-  MigrationAppEvent: {
-    _enum: {
-      Erc20Migrated: '(U256,H160)',
-      SidechainMigrated: '(U256,H160)',
-      EthMigrated: '(U256,H160)'
-    }
-  },
-  /**
-   * Lookup152: evm_bridge_proxy::pallet::Event
-   **/
-  EvmBridgeProxyEvent: {
-    _enum: {
-      RequestStatusUpdate: '(H256,BridgeTypesMessageStatus)',
-      RefundFailed: 'H256'
-    }
-  },
-  /**
-   * Lookup153: bridge_types::types::MessageStatus
-   **/
-  BridgeTypesMessageStatus: {
-    _enum: ['InQueue', 'Committed', 'Done', 'Failed', 'Refunded']
-  },
-  /**
-   * Lookup154: beefy_light_client::pallet::Event<T>
-   **/
-  BeefyLightClientEvent: {
-    _enum: {
-      VerificationSuccessful: '(BridgeTypesSubNetworkId,AccountId32,u32)',
-      NewMMRRoot: '(BridgeTypesSubNetworkId,H256,u64)',
-      ValidatorRegistryUpdated: '(BridgeTypesSubNetworkId,H256,u32,u64)'
-    }
-  },
-  /**
-   * Lookup155: bridge_types::SubNetworkId
-   **/
-  BridgeTypesSubNetworkId: {
-    _enum: {
-      Mainnet: 'Null',
-      Kusama: 'Null',
-      Polkadot: 'Null',
-      Rococo: 'Null',
-      Custom: 'u32'
-    }
-  },
-  /**
-   * Lookup156: pallet_preimage::pallet::Event<T>
+   * Lookup136: pallet_preimage::pallet::Event<T>
    **/
   PalletPreimageEvent: {
     _enum: {
@@ -1339,6 +1203,162 @@ export default {
         },
         hash_: 'H256'
       }
+    }
+  },
+  /**
+   * Lookup137: order_book::pallet::Event<T>
+   **/
+  OrderBookEvent: {
+    _enum: {
+      OrderBookCreated: {
+        orderBookId: 'CommonPrimitivesTradingPairAssetId32',
+        dexId: 'u32',
+        creator: 'AccountId32',
+      },
+      OrderBookDeleted: {
+        orderBookId: 'CommonPrimitivesTradingPairAssetId32',
+        dexId: 'u32',
+      },
+      OrderBookUpdated: {
+        orderBookId: 'CommonPrimitivesTradingPairAssetId32',
+        dexId: 'u32',
+      },
+      OrderPlaced: {
+        orderBookId: 'CommonPrimitivesTradingPairAssetId32',
+        dexId: 'u32',
+        orderId: 'u128',
+        ownerId: 'AccountId32',
+      },
+      OrderCanceled: {
+        orderBookId: 'CommonPrimitivesTradingPairAssetId32',
+        dexId: 'u32',
+        orderId: 'u128',
+        ownerId: 'AccountId32'
+      }
+    }
+  },
+  /**
+   * Lookup138: leaf_provider::pallet::Event<T>
+   **/
+  LeafProviderEvent: 'Null',
+  /**
+   * Lookup139: evm_bridge_proxy::pallet::Event
+   **/
+  EvmBridgeProxyEvent: {
+    _enum: {
+      RequestStatusUpdate: '(H256,BridgeTypesMessageStatus)',
+      RefundFailed: 'H256'
+    }
+  },
+  /**
+   * Lookup140: bridge_types::types::MessageStatus
+   **/
+  BridgeTypesMessageStatus: {
+    _enum: ['InQueue', 'Committed', 'Done', 'Failed', 'Refunded']
+  },
+  /**
+   * Lookup141: ethereum_light_client::pallet::Event<T>
+   **/
+  EthereumLightClientEvent: {
+    _enum: {
+      Finalized: '(U256,BridgeTypesHeaderHeaderId)'
+    }
+  },
+  /**
+   * Lookup144: bridge_types::header::HeaderId
+   **/
+  BridgeTypesHeaderHeaderId: {
+    _alias: {
+      hash_: 'hash'
+    },
+    number: 'u64',
+    hash_: 'H256'
+  },
+  /**
+   * Lookup145: bridge_inbound_channel::pallet::Event<T>
+   **/
+  BridgeInboundChannelEvent: 'Null',
+  /**
+   * Lookup146: bridge_outbound_channel::pallet::Event<T>
+   **/
+  BridgeOutboundChannelEvent: {
+    _enum: {
+      MessageAccepted: '(U256,u64)'
+    }
+  },
+  /**
+   * Lookup147: dispatch::pallet::Event<T, I>
+   **/
+  DispatchEvent: {
+    _enum: {
+      MessageDispatched: '(BridgeTypesMessageId,Result<Null, SpRuntimeDispatchError>)',
+      MessageRejected: 'BridgeTypesMessageId',
+      MessageDecodeFailed: 'BridgeTypesMessageId'
+    }
+  },
+  /**
+   * Lookup148: bridge_types::types::MessageId
+   **/
+  BridgeTypesMessageId: {
+    direction: 'BridgeTypesMessageDirection',
+    nonce: 'u64'
+  },
+  /**
+   * Lookup149: bridge_types::types::MessageDirection
+   **/
+  BridgeTypesMessageDirection: {
+    _enum: ['Inbound', 'Outbound']
+  },
+  /**
+   * Lookup150: eth_app::pallet::Event<T>
+   **/
+  EthAppEvent: {
+    _enum: {
+      Burned: '(U256,AccountId32,H160,u128)',
+      Minted: '(U256,H160,AccountId32,u128)',
+      Refunded: '(U256,AccountId32,u128)'
+    }
+  },
+  /**
+   * Lookup153: erc20_app::pallet::Event<T>
+   **/
+  Erc20AppEvent: {
+    _enum: {
+      Burned: '(U256,CommonPrimitivesAssetId32,AccountId32,H160,u128)',
+      Minted: '(U256,CommonPrimitivesAssetId32,H160,AccountId32,u128)',
+      Refunded: '(U256,AccountId32,CommonPrimitivesAssetId32,u128)'
+    }
+  },
+  /**
+   * Lookup154: migration_app::pallet::Event<T>
+   **/
+  MigrationAppEvent: {
+    _enum: {
+      Erc20Migrated: '(U256,H160)',
+      SidechainMigrated: '(U256,H160)',
+      EthMigrated: '(U256,H160)'
+    }
+  },
+  /**
+   * Lookup155: beefy_light_client::pallet::Event<T>
+   **/
+  BeefyLightClientEvent: {
+    _enum: {
+      VerificationSuccessful: '(BridgeTypesSubNetworkId,AccountId32,u32)',
+      NewMMRRoot: '(BridgeTypesSubNetworkId,H256,u64)',
+      ValidatorRegistryUpdated: '(BridgeTypesSubNetworkId,H256,u32,u64)'
+    }
+  },
+  /**
+   * Lookup156: bridge_types::SubNetworkId
+   **/
+  BridgeTypesSubNetworkId: {
+    _enum: {
+      Mainnet: 'Null',
+      Kusama: 'Null',
+      Polkadot: 'Null',
+      Rococo: 'Null',
+      Custom: 'u32'
     }
   },
   /**
@@ -3920,17 +3940,41 @@ export default {
     }
   },
   /**
-   * Lookup515: order_book::pallet::Call<T>
+   * Lookup515: pallet_preimage::pallet::Call<T>
+   **/
+  PalletPreimageCall: {
+    _enum: {
+      note_preimage: {
+        bytes: 'Bytes',
+      },
+      unnote_preimage: {
+        _alias: {
+          hash_: 'hash',
+        },
+        hash_: 'H256',
+      },
+      request_preimage: {
+        _alias: {
+          hash_: 'hash',
+        },
+        hash_: 'H256',
+      },
+      unrequest_preimage: {
+        _alias: {
+          hash_: 'hash',
+        },
+        hash_: 'H256'
+      }
+    }
+  },
+  /**
+   * Lookup516: order_book::pallet::Call<T>
    **/
   OrderBookCall: {
     _enum: {
       create_orderbook: {
         dexId: 'u32',
         orderBookId: 'CommonPrimitivesTradingPairAssetId32',
-        tickSize: 'u128',
-        stepLotSize: 'u128',
-        minLotSize: 'u128',
-        maxLotSize: 'u128',
       },
       delete_orderbook: {
         orderBookId: 'CommonPrimitivesTradingPairAssetId32',
@@ -3960,19 +4004,52 @@ export default {
     }
   },
   /**
-   * Lookup516: order_book::order_book::OrderBookStatus
+   * Lookup517: order_book::order_book::OrderBookStatus
    **/
   OrderBookOrderBookStatus: {
     _enum: ['Trade', 'PlaceAndCancel', 'OnlyCancel', 'Stop']
   },
   /**
-   * Lookup517: common::primitives::PriceVariant
+   * Lookup518: common::primitives::PriceVariant
    **/
   CommonPrimitivesPriceVariant: {
     _enum: ['Buy', 'Sell']
   },
   /**
-   * Lookup518: ethereum_light_client::pallet::Call<T>
+   * Lookup519: evm_bridge_proxy::pallet::Call<T>
+   **/
+  EvmBridgeProxyCall: {
+    _enum: {
+      burn: {
+        networkId: 'BridgeTypesGenericNetworkId',
+        assetId: 'CommonPrimitivesAssetId32',
+        recipient: 'BridgeTypesGenericAccount',
+        amount: 'u128'
+      }
+    }
+  },
+  /**
+   * Lookup520: bridge_types::GenericNetworkId
+   **/
+  BridgeTypesGenericNetworkId: {
+    _enum: {
+      EVM: 'U256',
+      Sub: 'BridgeTypesSubNetworkId'
+    }
+  },
+  /**
+   * Lookup521: bridge_types::GenericAccount<sp_core::crypto::AccountId32>
+   **/
+  BridgeTypesGenericAccount: {
+    _enum: {
+      EVM: 'H160',
+      Sora: 'AccountId32',
+      Parachain: 'XcmVersionedMultiLocation',
+      Unknown: 'Null'
+    }
+  },
+  /**
+   * Lookup522: ethereum_light_client::pallet::Call<T>
    **/
   EthereumLightClientCall: {
     _enum: {
@@ -3995,7 +4072,7 @@ export default {
     }
   },
   /**
-   * Lookup519: bridge_types::network_config::NetworkConfig
+   * Lookup523: bridge_types::network_config::NetworkConfig
    **/
   BridgeTypesNetworkConfig: {
     _enum: {
@@ -4013,7 +4090,7 @@ export default {
     }
   },
   /**
-   * Lookup520: bridge_types::network_config::Consensus
+   * Lookup524: bridge_types::network_config::Consensus
    **/
   BridgeTypesNetworkConfigConsensus: {
     _enum: {
@@ -4030,7 +4107,7 @@ export default {
     }
   },
   /**
-   * Lookup521: bridge_types::difficulty::ForkConfig
+   * Lookup525: bridge_types::difficulty::ForkConfig
    **/
   BridgeTypesDifficultyForkConfig: {
     byzantiumForkBlock: 'u64',
@@ -4041,14 +4118,14 @@ export default {
     grayGlacierForkBlock: 'u64'
   },
   /**
-   * Lookup522: bridge_types::difficulty::ClassicForkConfig
+   * Lookup526: bridge_types::difficulty::ClassicForkConfig
    **/
   BridgeTypesDifficultyClassicForkConfig: {
     ecip1041Block: 'u64',
     ecip1099Block: 'u64'
   },
   /**
-   * Lookup523: bridge_types::header::Header
+   * Lookup527: bridge_types::header::Header
    **/
   BridgeTypesHeader: {
     parentHash: 'H256',
@@ -4068,22 +4145,22 @@ export default {
     baseFee: 'Option<U256>'
   },
   /**
-   * Lookup524: ethbloom::Bloom
+   * Lookup528: ethbloom::Bloom
    **/
   EthbloomBloom: '[u8;256]',
   /**
-   * Lookup528: bridge_types::ethashproof::DoubleNodeWithMerkleProof
+   * Lookup532: bridge_types::ethashproof::DoubleNodeWithMerkleProof
    **/
   BridgeTypesEthashproofDoubleNodeWithMerkleProof: {
     dagNodes: '[H512;2]',
     proof: 'Vec<H128>'
   },
   /**
-   * Lookup532: bridge_types::ethashproof::MixNonce
+   * Lookup536: bridge_types::ethashproof::MixNonce
    **/
   BridgeTypesEthashproofMixNonce: '[u8;32]',
   /**
-   * Lookup533: sp_runtime::MultiSignature
+   * Lookup537: sp_runtime::MultiSignature
    **/
   SpRuntimeMultiSignature: {
     _enum: {
@@ -4093,11 +4170,11 @@ export default {
     }
   },
   /**
-   * Lookup534: sp_core::ecdsa::Signature
+   * Lookup538: sp_core::ecdsa::Signature
    **/
   SpCoreEcdsaSignature: '[u8;65]',
   /**
-   * Lookup536: bridge_inbound_channel::pallet::Call<T>
+   * Lookup540: bridge_inbound_channel::pallet::Call<T>
    **/
   BridgeInboundChannelCall: {
     _enum: {
@@ -4120,14 +4197,14 @@ export default {
     }
   },
   /**
-   * Lookup537: bridge_types::types::Message
+   * Lookup541: bridge_types::types::Message
    **/
   BridgeTypesMessage: {
     data: 'Bytes',
     proof: 'BridgeTypesProof'
   },
   /**
-   * Lookup538: bridge_types::types::Proof
+   * Lookup542: bridge_types::types::Proof
    **/
   BridgeTypesProof: {
     blockHash: 'H256',
@@ -4135,7 +4212,7 @@ export default {
     data: 'Vec<Bytes>'
   },
   /**
-   * Lookup539: eth_app::pallet::Call<T>
+   * Lookup543: eth_app::pallet::Call<T>
    **/
   EthAppCall: {
     _enum: {
@@ -4164,7 +4241,7 @@ export default {
     }
   },
   /**
-   * Lookup540: erc20_app::pallet::Call<T>
+   * Lookup544: erc20_app::pallet::Call<T>
    **/
   Erc20AppCall: {
     _enum: {
@@ -4211,7 +4288,7 @@ export default {
     }
   },
   /**
-   * Lookup541: migration_app::pallet::Call<T>
+   * Lookup545: migration_app::pallet::Call<T>
    **/
   MigrationAppCall: {
     _enum: {
@@ -4233,40 +4310,7 @@ export default {
     }
   },
   /**
-   * Lookup544: evm_bridge_proxy::pallet::Call<T>
-   **/
-  EvmBridgeProxyCall: {
-    _enum: {
-      burn: {
-        networkId: 'BridgeTypesGenericNetworkId',
-        assetId: 'CommonPrimitivesAssetId32',
-        recipient: 'BridgeTypesGenericAccount',
-        amount: 'u128'
-      }
-    }
-  },
-  /**
-   * Lookup545: bridge_types::GenericNetworkId
-   **/
-  BridgeTypesGenericNetworkId: {
-    _enum: {
-      EVM: 'U256',
-      Sub: 'BridgeTypesSubNetworkId'
-    }
-  },
-  /**
-   * Lookup546: bridge_types::GenericAccount<sp_core::crypto::AccountId32>
-   **/
-  BridgeTypesGenericAccount: {
-    _enum: {
-      EVM: 'H160',
-      Sora: 'AccountId32',
-      Parachain: 'XcmVersionedMultiLocation',
-      Unknown: 'Null'
-    }
-  },
-  /**
-   * Lookup547: beefy_light_client::pallet::Call<T>
+   * Lookup548: beefy_light_client::pallet::Call<T>
    **/
   BeefyLightClientCall: {
     _enum: {
@@ -4286,7 +4330,7 @@ export default {
     }
   },
   /**
-   * Lookup548: sp_beefy::mmr::BeefyAuthoritySet<primitive_types::H256>
+   * Lookup549: sp_beefy::mmr::BeefyAuthoritySet<primitive_types::H256>
    **/
   SpBeefyMmrBeefyAuthoritySet: {
     id: 'u64',
@@ -4294,7 +4338,7 @@ export default {
     root: 'H256'
   },
   /**
-   * Lookup549: sp_beefy::commitment::Commitment<TBlockNumber>
+   * Lookup550: sp_beefy::commitment::Commitment<TBlockNumber>
    **/
   SpBeefyCommitment: {
     payload: 'SpBeefyPayload',
@@ -4302,11 +4346,11 @@ export default {
     validatorSetId: 'u64'
   },
   /**
-   * Lookup550: sp_beefy::payload::Payload
+   * Lookup551: sp_beefy::payload::Payload
    **/
   SpBeefyPayload: 'Vec<([u8;2],Bytes)>',
   /**
-   * Lookup553: bridge_common::beefy_types::ValidatorProof
+   * Lookup554: bridge_common::beefy_types::ValidatorProof
    **/
   BridgeCommonBeefyTypesValidatorProof: {
     validatorClaimsBitfield: 'BitVec',
@@ -4316,11 +4360,11 @@ export default {
     publicKeyMerkleProofs: 'Vec<Vec<H256>>'
   },
   /**
-   * Lookup556: bitvec::order::Msb0
+   * Lookup557: bitvec::order::Msb0
    **/
   BitvecOrderMsb0: 'Null',
   /**
-   * Lookup558: sp_beefy::mmr::MmrLeaf<BlockNumber, primitive_types::H256, primitive_types::H256, bridge_types::types::LeafExtraData<primitive_types::H256, primitive_types::H256>>
+   * Lookup559: sp_beefy::mmr::MmrLeaf<BlockNumber, primitive_types::H256, primitive_types::H256, bridge_types::types::LeafExtraData<primitive_types::H256, primitive_types::H256>>
    **/
   SpBeefyMmrMmrLeaf: {
     version: 'u8',
@@ -4329,46 +4373,18 @@ export default {
     leafExtra: 'BridgeTypesLeafExtraData'
   },
   /**
-   * Lookup559: bridge_types::types::LeafExtraData<primitive_types::H256, primitive_types::H256>
+   * Lookup560: bridge_types::types::LeafExtraData<primitive_types::H256, primitive_types::H256>
    **/
   BridgeTypesLeafExtraData: {
     randomSeed: 'H256',
     digestHash: 'H256'
   },
   /**
-   * Lookup562: bridge_common::simplified_proof::Proof<primitive_types::H256>
+   * Lookup563: bridge_common::simplified_proof::Proof<primitive_types::H256>
    **/
   BridgeCommonSimplifiedProofProof: {
     order: 'u64',
     items: 'Vec<H256>'
-  },
-  /**
-   * Lookup563: pallet_preimage::pallet::Call<T>
-   **/
-  PalletPreimageCall: {
-    _enum: {
-      note_preimage: {
-        bytes: 'Bytes',
-      },
-      unnote_preimage: {
-        _alias: {
-          hash_: 'hash',
-        },
-        hash_: 'H256',
-      },
-      request_preimage: {
-        _alias: {
-          hash_: 'hash',
-        },
-        hash_: 'H256',
-      },
-      unrequest_preimage: {
-        _alias: {
-          hash_: 'hash',
-        },
-        hash_: 'H256'
-      }
-    }
   },
   /**
    * Lookup564: substrate_bridge_channel::inbound::pallet::Call<T>
@@ -5396,127 +5412,7 @@ export default {
     _enum: ['PollIsNotStarted', 'PollIsFinished', 'InvalidStartTimestamp', 'InvalidEndTimestamp', 'NotEnoughHermesForCreatingPoll', 'FundsAlreadyWithdrawn', 'PollIsNotFinished', 'YouAreNotCreator', 'Unauthorized', 'PollDoesNotExist', 'NotEnoughHermesForVoting', 'AlreadyVoted', 'InvalidMinimumDurationOfPoll', 'InvalidMaximumDurationOfPoll', 'NotVoted']
   },
   /**
-   * Lookup787: order_book::order_book::OrderBook<T>
-   **/
-  OrderBook: {
-    orderBookId: 'CommonPrimitivesTradingPairAssetId32',
-    dexId: 'u32',
-    status: 'OrderBookOrderBookStatus',
-    lastOrderId: 'u128',
-    tickSize: 'u128',
-    stepLotSize: 'u128',
-    minLotSize: 'u128',
-    maxLotSize: 'u128'
-  },
-  /**
-   * Lookup789: order_book::limit_order::LimitOrder<T>
-   **/
-  OrderBookLimitOrder: {
-    id: 'u128',
-    owner: 'AccountId32',
-    side: 'CommonPrimitivesPriceVariant',
-    price: 'u128',
-    originalAmount: 'u128',
-    amount: 'u128',
-    time: 'u64',
-    lifespan: 'u64'
-  },
-  /**
-   * Lookup795: order_book::pallet::Error<T>
-   **/
-  OrderBookError: {
-    _enum: ['OrderLimitReached', 'PriceExceedsLimits', 'InvalidLifespan', 'UnknownOrderBook', 'OrderBookAlreadyExists', 'LimitOrderStorageOverflow', 'DeleteLimitOrderError', 'NotEnoughLiquidity']
-  },
-  /**
-   * Lookup799: ethereum_light_client::PruningRange
-   **/
-  EthereumLightClientPruningRange: {
-    oldestUnprunedBlock: 'u64',
-    oldestBlockToKeep: 'u64'
-  },
-  /**
-   * Lookup801: ethereum_light_client::StoredHeader<sp_core::crypto::AccountId32>
-   **/
-  EthereumLightClientStoredHeader: {
-    submitter: 'Option<AccountId32>',
-    header: 'BridgeTypesHeader',
-    totalDifficulty: 'U256',
-    finalized: 'bool'
-  },
-  /**
-   * Lookup803: ethereum_light_client::pallet::Error<T>
-   **/
-  EthereumLightClientError: {
-    _enum: ['AncientHeader', 'MissingHeader', 'MissingParentHeader', 'DuplicateHeader', 'HeaderNotFinalized', 'HeaderOnStaleFork', 'InvalidHeader', 'InvalidProof', 'DecodeFailed', 'NetworkNotFound', 'NetworkAlreadyExists', 'DifficultyTooLow', 'NetworkStateInvalid', 'Unknown', 'ConsensusNotSupported', 'InvalidSignature']
-  },
-  /**
-   * Lookup804: bridge_inbound_channel::pallet::Error<T>
-   **/
-  BridgeInboundChannelError: {
-    _enum: ['InvalidNetwork', 'InvalidSourceChannel', 'InvalidEnvelope', 'InvalidMessageDispatchedEvent', 'InvalidNonce', 'InvalidRewardFraction', 'ContractExists', 'CallEncodeFailed']
-  },
-  /**
-   * Lookup806: bridge_outbound_channel::Message
-   **/
-  BridgeOutboundChannelMessage: {
-    networkId: 'U256',
-    target: 'H160',
-    nonce: 'u64',
-    fee: 'U256',
-    maxGas: 'U256',
-    payload: 'Bytes'
-  },
-  /**
-   * Lookup807: bridge_outbound_channel::pallet::Error<T>
-   **/
-  BridgeOutboundChannelError: {
-    _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists']
-  },
-  /**
-   * Lookup809: eth_app::pallet::Error<T>
-   **/
-  EthAppError: {
-    _enum: ['InvalidPayload', 'AppIsNotRegistered', 'InvalidAppAddress', 'AppAlreadyExists', 'DestAccountIsNotSet', 'CallEncodeFailed', 'WrongAmount', 'WrongRequest', 'WrongRequestStatus']
-  },
-  /**
-   * Lookup813: erc20_app::pallet::Error<T>
-   **/
-  Erc20AppError: {
-    _enum: ['TokenIsNotRegistered', 'AppIsNotRegistered', 'NotEnoughFunds', 'InvalidNetwork', 'TokenAlreadyRegistered', 'AppAlreadyRegistered', 'CallEncodeFailed', 'WrongAmount', 'WrongRequest', 'WrongRequestStatus']
-  },
-  /**
-   * Lookup814: migration_app::pallet::Error<T>
-   **/
-  MigrationAppError: {
-    _enum: ['InvalidPayload', 'AppIsNotRegistered', 'InvalidAppAddress', 'AppAlreadyExists', 'TokenRegisteredWithAnotherAddress', 'CallEncodeFailed']
-  },
-  /**
-   * Lookup817: evm_bridge_proxy::BridgeRequest<sp_core::crypto::AccountId32, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
-   **/
-  EvmBridgeProxyBridgeRequest: {
-    source: 'BridgeTypesGenericAccount',
-    dest: 'BridgeTypesGenericAccount',
-    assetId: 'CommonPrimitivesAssetId32',
-    amount: 'u128',
-    status: 'BridgeTypesMessageStatus',
-    startTimestamp: 'u64',
-    endTimestamp: 'Option<u64>',
-    direction: 'BridgeTypesMessageDirection'
-  },
-  /**
-   * Lookup818: evm_bridge_proxy::pallet::Error<T>
-   **/
-  EvmBridgeProxyError: {
-    _enum: ['PathIsNotAvailable', 'WrongAccountKind']
-  },
-  /**
-   * Lookup820: beefy_light_client::pallet::Error<T>
-   **/
-  BeefyLightClientError: {
-    _enum: ['InvalidValidatorSetId', 'InvalidMMRProof', 'PayloadBlocknumberTooOld', 'PayloadBlocknumberTooNew', 'CannotSwitchOldValidatorSet', 'NotEnoughValidatorSignatures', 'InvalidNumberOfSignatures', 'InvalidNumberOfPositions', 'InvalidNumberOfPublicKeys', 'ValidatorNotOnceInbitfield', 'ValidatorSetIncorrectPosition', 'InvalidSignature', 'MerklePositionTooHigh', 'MerkleProofTooShort', 'MerkleProofTooHigh', 'PalletNotInitialized', 'InvalidDigestHash', 'CommitmentNotFoundInDigest', 'MMRPayloadNotFound']
-  },
-  /**
-   * Lookup821: pallet_preimage::RequestStatus<sp_core::crypto::AccountId32, Balance>
+   * Lookup787: pallet_preimage::RequestStatus<sp_core::crypto::AccountId32, Balance>
    **/
   PalletPreimageRequestStatus: {
     _enum: {
@@ -5532,10 +5428,130 @@ export default {
     }
   },
   /**
-   * Lookup824: pallet_preimage::pallet::Error<T>
+   * Lookup791: pallet_preimage::pallet::Error<T>
    **/
   PalletPreimageError: {
     _enum: ['TooBig', 'AlreadyNoted', 'NotAuthorized', 'NotNoted', 'Requested', 'NotRequested']
+  },
+  /**
+   * Lookup792: order_book::order_book::OrderBook<T>
+   **/
+  OrderBook: {
+    orderBookId: 'CommonPrimitivesTradingPairAssetId32',
+    dexId: 'u32',
+    status: 'OrderBookOrderBookStatus',
+    lastOrderId: 'u128',
+    tickSize: 'u128',
+    stepLotSize: 'u128',
+    minLotSize: 'u128',
+    maxLotSize: 'u128'
+  },
+  /**
+   * Lookup794: order_book::limit_order::LimitOrder<T>
+   **/
+  OrderBookLimitOrder: {
+    id: 'u128',
+    owner: 'AccountId32',
+    side: 'CommonPrimitivesPriceVariant',
+    price: 'u128',
+    originalAmount: 'u128',
+    amount: 'u128',
+    time: 'u64',
+    lifespan: 'u64'
+  },
+  /**
+   * Lookup800: order_book::pallet::Error<T>
+   **/
+  OrderBookError: {
+    _enum: ['OrderLimitReached', 'PriceExceedsLimits', 'InvalidLifespan', 'UnknownOrderBook', 'OrderBookAlreadyExists', 'LimitOrderStorageOverflow', 'DeleteLimitOrderError', 'NotEnoughLiquidity', 'ForbiddenToCreateOrderBookWithSameAssets', 'NotAllowedBaseAsset', 'UserDoesntHaveNft']
+  },
+  /**
+   * Lookup805: evm_bridge_proxy::BridgeRequest<sp_core::crypto::AccountId32, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
+   **/
+  EvmBridgeProxyBridgeRequest: {
+    source: 'BridgeTypesGenericAccount',
+    dest: 'BridgeTypesGenericAccount',
+    assetId: 'CommonPrimitivesAssetId32',
+    amount: 'u128',
+    status: 'BridgeTypesMessageStatus',
+    startTimestamp: 'u64',
+    endTimestamp: 'Option<u64>',
+    direction: 'BridgeTypesMessageDirection'
+  },
+  /**
+   * Lookup806: evm_bridge_proxy::pallet::Error<T>
+   **/
+  EvmBridgeProxyError: {
+    _enum: ['PathIsNotAvailable', 'WrongAccountKind']
+  },
+  /**
+   * Lookup808: ethereum_light_client::PruningRange
+   **/
+  EthereumLightClientPruningRange: {
+    oldestUnprunedBlock: 'u64',
+    oldestBlockToKeep: 'u64'
+  },
+  /**
+   * Lookup810: ethereum_light_client::StoredHeader<sp_core::crypto::AccountId32>
+   **/
+  EthereumLightClientStoredHeader: {
+    submitter: 'Option<AccountId32>',
+    header: 'BridgeTypesHeader',
+    totalDifficulty: 'U256',
+    finalized: 'bool'
+  },
+  /**
+   * Lookup812: ethereum_light_client::pallet::Error<T>
+   **/
+  EthereumLightClientError: {
+    _enum: ['AncientHeader', 'MissingHeader', 'MissingParentHeader', 'DuplicateHeader', 'HeaderNotFinalized', 'HeaderOnStaleFork', 'InvalidHeader', 'InvalidProof', 'DecodeFailed', 'NetworkNotFound', 'NetworkAlreadyExists', 'DifficultyTooLow', 'NetworkStateInvalid', 'Unknown', 'ConsensusNotSupported', 'InvalidSignature']
+  },
+  /**
+   * Lookup813: bridge_inbound_channel::pallet::Error<T>
+   **/
+  BridgeInboundChannelError: {
+    _enum: ['InvalidNetwork', 'InvalidSourceChannel', 'InvalidEnvelope', 'InvalidMessageDispatchedEvent', 'InvalidNonce', 'InvalidRewardFraction', 'ContractExists', 'CallEncodeFailed']
+  },
+  /**
+   * Lookup815: bridge_outbound_channel::Message
+   **/
+  BridgeOutboundChannelMessage: {
+    networkId: 'U256',
+    target: 'H160',
+    nonce: 'u64',
+    fee: 'U256',
+    maxGas: 'U256',
+    payload: 'Bytes'
+  },
+  /**
+   * Lookup816: bridge_outbound_channel::pallet::Error<T>
+   **/
+  BridgeOutboundChannelError: {
+    _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists']
+  },
+  /**
+   * Lookup818: eth_app::pallet::Error<T>
+   **/
+  EthAppError: {
+    _enum: ['InvalidPayload', 'AppIsNotRegistered', 'InvalidAppAddress', 'AppAlreadyExists', 'DestAccountIsNotSet', 'CallEncodeFailed', 'WrongAmount', 'WrongRequest', 'WrongRequestStatus']
+  },
+  /**
+   * Lookup822: erc20_app::pallet::Error<T>
+   **/
+  Erc20AppError: {
+    _enum: ['TokenIsNotRegistered', 'AppIsNotRegistered', 'NotEnoughFunds', 'InvalidNetwork', 'TokenAlreadyRegistered', 'AppAlreadyRegistered', 'CallEncodeFailed', 'WrongAmount', 'WrongRequest', 'WrongRequestStatus']
+  },
+  /**
+   * Lookup823: migration_app::pallet::Error<T>
+   **/
+  MigrationAppError: {
+    _enum: ['InvalidPayload', 'AppIsNotRegistered', 'InvalidAppAddress', 'AppAlreadyExists', 'TokenRegisteredWithAnotherAddress', 'CallEncodeFailed']
+  },
+  /**
+   * Lookup824: beefy_light_client::pallet::Error<T>
+   **/
+  BeefyLightClientError: {
+    _enum: ['InvalidValidatorSetId', 'InvalidMMRProof', 'PayloadBlocknumberTooOld', 'PayloadBlocknumberTooNew', 'CannotSwitchOldValidatorSet', 'NotEnoughValidatorSignatures', 'InvalidNumberOfSignatures', 'InvalidNumberOfPositions', 'InvalidNumberOfPublicKeys', 'ValidatorNotOnceInbitfield', 'ValidatorSetIncorrectPosition', 'InvalidSignature', 'MerklePositionTooHigh', 'MerkleProofTooShort', 'MerkleProofTooHigh', 'PalletNotInitialized', 'InvalidDigestHash', 'CommitmentNotFoundInDigest', 'MMRPayloadNotFound']
   },
   /**
    * Lookup825: substrate_bridge_channel::inbound::pallet::Error<T>

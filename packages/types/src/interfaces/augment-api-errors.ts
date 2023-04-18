@@ -1872,6 +1872,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       DeleteLimitOrderError: AugmentedError<ApiType>;
       /**
+       * Cannot create order book with equal base and target assets
+       **/
+      ForbiddenToCreateOrderBookWithSameAssets: AugmentedError<ApiType>;
+      /**
        * Lifespan exceeds defined limits
        **/
       InvalidLifespan: AugmentedError<ApiType>;
@@ -1879,6 +1883,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Cannot insert the limit order because bounds are reached
        **/
       LimitOrderStorageOverflow: AugmentedError<ApiType>;
+      /**
+       * The asset is not allowed to be base. Only dex base asset can be a base asset for order book
+       **/
+      NotAllowedBaseAsset: AugmentedError<ApiType>;
       /**
        * There is not enough liquidity in the order book to cover the deal
        **/
@@ -1899,6 +1907,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Order book does not exist for this trading pair
        **/
       UnknownOrderBook: AugmentedError<ApiType>;
+      /**
+       * User cannot create an order book with NFT if they don't have NFT
+       **/
+      UserDoesntHaveNft: AugmentedError<ApiType>;
     };
     permissions: {
       /**
