@@ -1872,6 +1872,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       DeleteLimitOrderError: AugmentedError<ApiType>;
       /**
+       * Cannot create order book with equal base and target assets
+       **/
+      ForbiddenToCreateOrderBookWithSameAssets: AugmentedError<ApiType>;
+      /**
        * Lifespan exceeds defined limits
        **/
       InvalidLifespan: AugmentedError<ApiType>;
@@ -1879,6 +1883,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Cannot insert the limit order because bounds are reached
        **/
       LimitOrderStorageOverflow: AugmentedError<ApiType>;
+      /**
+       * The asset is not allowed to be base. Only dex base asset can be a base asset for order book
+       **/
+      NotAllowedBaseAsset: AugmentedError<ApiType>;
       /**
        * There is not enough liquidity in the order book to cover the deal
        **/
@@ -1899,6 +1907,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Order book does not exist for this trading pair
        **/
       UnknownOrderBook: AugmentedError<ApiType>;
+      /**
+       * User cannot create an order book with NFT if they don't have NFT
+       **/
+      UserDoesntHaveNft: AugmentedError<ApiType>;
     };
     permissions: {
       /**
@@ -2763,6 +2775,18 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ClaimLimitExceeded: AugmentedError<ApiType>;
       /**
+       * Crowdloan with given tag already registered
+       **/
+      CrowdloanAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * Crowdloan does not exists
+       **/
+      CrowdloanDoesNotExists: AugmentedError<ApiType>;
+      /**
+       * Crowdloan rewards distribution is not started
+       **/
+      CrowdloanRewardsDistributionNotStarted: AugmentedError<ApiType>;
+      /**
        * Increment account reference error.
        **/
       IncRefError: AugmentedError<ApiType>;
@@ -2770,6 +2794,10 @@ declare module '@polkadot/api-base/types/errors' {
        * There are no rewards for the asset ID.
        **/
       NoRewardsForAsset: AugmentedError<ApiType>;
+      /**
+       * User is not crowdloan participant
+       **/
+      NotCrowdloanParticipant: AugmentedError<ApiType>;
       /**
        * Account has no pending rewards to claim.
        **/
@@ -2791,6 +2819,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Attempt to claim rewards of type, which is not handled.
        **/
       UnhandledRewardType: AugmentedError<ApiType>;
+      /**
+       * Wrong crowdloan data passed
+       **/
+      WrongCrowdloanInfo: AugmentedError<ApiType>;
     };
     xstPool: {
       /**

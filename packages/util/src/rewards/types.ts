@@ -1,8 +1,11 @@
 import type { CodecString } from '@sora-substrate/math';
 
 import type { Asset } from '../assets/types';
-import type { RewardingEvents } from './consts';
+import type { RewardingEvents, RewardType } from './consts';
 import type { History } from '../BaseApi';
+
+// for tagged crowdloans
+export type RewardTypedEvent = [RewardType, RewardingEvents | string];
 
 export interface RewardsInfo {
   limit: CodecString;
@@ -11,7 +14,7 @@ export interface RewardsInfo {
 }
 
 export interface RewardInfo {
-  type: RewardingEvents;
+  type: RewardTypedEvent;
   asset: Asset;
   amount: CodecString;
   total?: CodecString;
