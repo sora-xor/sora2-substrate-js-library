@@ -1953,7 +1953,7 @@ declare module '@polkadot/api-base/types/submittable' {
     orderBook: {
       cancelLimitOrder: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, orderId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32, u128]>;
       changeOrderbookStatus: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, status: OrderBookOrderBookStatus | 'Trade' | 'PlaceAndCancel' | 'OnlyCancel' | 'Stop' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32, OrderBookOrderBookStatus]>;
-      createOrderbook: AugmentedSubmittable<(dexId: u32 | AnyNumber | Uint8Array, orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, CommonPrimitivesTradingPairAssetId32, u128, u128, u128, u128]>;
+      createOrderbook: AugmentedSubmittable<(dexId: u32 | AnyNumber | Uint8Array, orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, CommonPrimitivesTradingPairAssetId32]>;
       deleteOrderbook: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32]>;
       placeLimitOrder: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, price: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array, side: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, lifespan: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32, u128, u128, CommonPrimitivesPriceVariant, u64]>;
       updateOrderbook: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32, u128, u128, u128, u128]>;
@@ -2971,11 +2971,12 @@ declare module '@polkadot/api-base/types/submittable' {
       withWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: SpWeightsWeightV2Weight | { refTime?: any; proofSize?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, SpWeightsWeightV2Weight]>;
     };
     vestedRewards: {
-      claimCrowdloanRewards: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      claimCrowdloanRewards: AugmentedSubmittable<(crowdloan: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
       /**
        * Claim all available PSWAP rewards by account signing this transaction.
        **/
       claimRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      registerCrowdloan: AugmentedSubmittable<(tag: Bytes | string | Uint8Array, startBlock: u32 | AnyNumber | Uint8Array, length: u32 | AnyNumber | Uint8Array, rewards: Vec<ITuple<[CommonPrimitivesAssetId32, u128]>> | ([CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, u128 | AnyNumber | Uint8Array])[], contributions: Vec<ITuple<[AccountId32, u128]>> | ([AccountId32 | string | Uint8Array, u128 | AnyNumber | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [Bytes, u32, u32, Vec<ITuple<[CommonPrimitivesAssetId32, u128]>>, Vec<ITuple<[AccountId32, u128]>>]>;
       updateRewards: AugmentedSubmittable<(rewards: BTreeMap<AccountId32, BTreeMap<CommonPrimitivesRewardReason, u128>>) => SubmittableExtrinsic<ApiType>, [BTreeMap<AccountId32, BTreeMap<CommonPrimitivesRewardReason, u128>>]>;
     };
     xorFee: {
