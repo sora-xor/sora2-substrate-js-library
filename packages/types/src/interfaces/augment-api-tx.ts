@@ -2986,15 +2986,41 @@ declare module '@polkadot/api-base/types/submittable' {
       updateMultiplier: AugmentedSubmittable<(newMultiplier: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
     };
     xstPool: {
-      enableSyntheticAsset: AugmentedSubmittable<(syntheticAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
       /**
-       * Enable exchange path on the pool for pair BaseAsset-SyntheticAsset.
+       * Disable synthetic asset.
+       * 
+       * Just remove synthetic from exchanging.
+       * Will not unregister trading pair because `trading_pair` pallet does not provide this
+       * ability. And will not unregister trading synthetic asset because of that.
+       * 
+       * - `origin`: the sudo account on whose behalf the transaction is being executed,
+       * - `synthetic_asset`: synthetic asset id to disable.
        **/
-      initializePool: AugmentedSubmittable<(syntheticAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      disableSyntheticAsset: AugmentedSubmittable<(syntheticAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      enableSyntheticAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, referenceSymbol: Bytes | string | Uint8Array, feeRatio: FixnumFixedPoint | { inner?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, Bytes, FixnumFixedPoint]>;
       /**
-       * Change reference asset which is used to determine collateral assets value. Intended to be e.g., stablecoin DAI.
+       * Register and enable new synthetic asset with `reference_symbol` price binding
+       **/
+      registerSyntheticAsset: AugmentedSubmittable<(assetSymbol: Bytes | string | Uint8Array, assetName: Bytes | string | Uint8Array, referenceSymbol: Bytes | string | Uint8Array, feeRatio: FixnumFixedPoint | { inner?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Bytes, FixnumFixedPoint]>;
+      /**
+       * Change reference asset which is used to determine collateral assets value.
+       * Intended to be e.g., stablecoin DAI.
+       * 
+       * - `origin`: the sudo account on whose behalf the transaction is being executed,
+       * - `reference_asset_id`: asset id of the new reference asset.
        **/
       setReferenceAsset: AugmentedSubmittable<(referenceAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      /**
+       * Set synthetic asset fee.
+       * 
+       * This fee will be used to determine the amount of synthetic base asset (e.g. XST) to be
+       * burned when user buys synthetic asset.
+       * 
+       * - `origin`: the sudo account on whose behalf the transaction is being executed,
+       * - `synthetic_asset`: synthetic asset id to set fee for,
+       * - `fee_ratio`: fee ratio with precision = 18, so 1000000000000000000 = 1 = 100% fee.
+       **/
+      setSyntheticAssetFee: AugmentedSubmittable<(syntheticAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, feeRatio: FixnumFixedPoint | { inner?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, FixnumFixedPoint]>;
       /**
        * Set floor price for the synthetic base asset
        * 

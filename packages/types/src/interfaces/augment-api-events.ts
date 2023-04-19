@@ -1218,17 +1218,21 @@ declare module '@polkadot/api-base/types/events' {
     };
     xstPool: {
       /**
-       * Pool is initialized for pair. [DEX Id, Synthetic Asset Id]
-       **/
-      PoolInitialized: AugmentedEvent<ApiType, [u32, CommonPrimitivesAssetId32]>;
-      /**
        * Reference Asset has been changed for pool. [New Reference Asset Id]
        **/
       ReferenceAssetChanged: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
       /**
-       * Synthetic asset was enabled. [Synthetic Asset Id]
+       * Synthetic asset has been disabled. [Synthetic Asset Id]
        **/
-      SyntheticAssetEnabled: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      SyntheticAssetDisabled: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      /**
+       * Synthetic asset has been enabled. [Synthetic Asset Id, Reference Symbol]
+       **/
+      SyntheticAssetEnabled: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, Bytes]>;
+      /**
+       * Synthetic asset fee has been changed. [Synthetic Asset Id, New Fee]
+       **/
+      SyntheticAssetFeeChanged: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, FixnumFixedPoint]>;
       /**
        * Floor price of the synthetic base asset has been changed. [New Floor Price]
        **/
