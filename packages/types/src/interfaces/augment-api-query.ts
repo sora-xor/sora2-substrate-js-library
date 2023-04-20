@@ -7,10 +7,10 @@ import '@polkadot/api-base/types/storage';
 
 import type { ApiTypes, AugmentedQuery, QueryableStorageEntry } from '@polkadot/api-base/types';
 import type { Data } from '@polkadot/types';
-import type { BTreeMap, BTreeSet, Bytes, Null, Option, Text, U256, U8aFixed, Vec, WrapperOpaque, bool, u128, u32, u64, u8 } from '@polkadot/types-codec';
+import type { BTreeSet, Bytes, Null, Option, Text, U8aFixed, Vec, WrapperOpaque, bool, u128, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { AssetsAssetRecord, BandBandRate, BridgeOutboundChannelMessage, BridgeTypesAssetKind, BridgeTypesAuxiliaryDigestItem, BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesNetworkConfig, BridgeTypesParachainMessage, BridgeTypesSubNetworkId, CeresGovernancePlatformPollInfo, CeresGovernancePlatformStorageVersion, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresLiquidityLockerStorageVersion, CeresStakingStakingInfo, CeresTokenLockerStorageVersion, CeresTokenLockerTokenLockInfo, CommonPrimitivesAssetId32, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformStorageVersion, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeSignatureVersion, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, EthereumLightClientPruningRange, EthereumLightClientStoredHeader, EvmBridgeProxyBridgeRequest, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportDispatchPerDispatchClassWeight, FrameSupportPreimagesBounded, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, HermesGovernancePlatformHermesPollInfo, HermesGovernancePlatformHermesVotingInfo, IrohaMigrationPendingMultisigAccount, MulticollateralBondingCurvePoolDistributionAccounts, OrderBook, OrderBookLimitOrder, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyReferendumInfo, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletPreimageRequestStatus, PalletSchedulerScheduled, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsAggregatedPriceInfo, RewardsRewardInfo, SpBeefyCryptoPublic, SpBeefyMmrBeefyAuthoritySet, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanInfo, VestedRewardsCrowdloanUserInfo, VestedRewardsRewardInfo } from '@polkadot/types/lookup';
+import type { AssetsAssetRecord, BandBandRate, CeresGovernancePlatformPollInfo, CeresGovernancePlatformStorageVersion, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresLiquidityLockerStorageVersion, CeresStakingStakingInfo, CeresTokenLockerStorageVersion, CeresTokenLockerTokenLockInfo, CommonPrimitivesAssetId32, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformStorageVersion, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeSignatureVersion, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportDispatchPerDispatchClassWeight, FrameSupportPreimagesBounded, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, HermesGovernancePlatformHermesPollInfo, HermesGovernancePlatformHermesVotingInfo, IrohaMigrationPendingMultisigAccount, MulticollateralBondingCurvePoolDistributionAccounts, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyReferendumInfo, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletPreimageRequestStatus, PalletSchedulerScheduled, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsAggregatedPriceInfo, RewardsRewardInfo, SpBeefyCryptoPublic, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanInfo, VestedRewardsCrowdloanUserInfo, VestedRewardsRewardInfo } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -218,27 +218,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       validatorSetId: AugmentedQuery<ApiType, () => Observable<u64>, []>;
     };
-    beefyLightClient: {
-      currentValidatorSet: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Option<SpBeefyMmrBeefyAuthoritySet>>, [BridgeTypesSubNetworkId]>;
-      latestBeefyBlock: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
-      latestMMRRoots: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Vec<H256>>, [BridgeTypesSubNetworkId]>;
-      latestRandomSeed: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<ITuple<[H256, u32]>>, [BridgeTypesSubNetworkId]>;
-      nextValidatorSet: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Option<SpBeefyMmrBeefyAuthoritySet>>, [BridgeTypesSubNetworkId]>;
-      thisNetworkId: AugmentedQuery<ApiType, () => Observable<BridgeTypesSubNetworkId>, []>;
-    };
-    bridgeInboundChannel: {
-      /**
-       * Source channel (OutboundChannel contract) on the ethereum side
-       **/
-      channelAddresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<H160>>, [U256]>;
-      channelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
-      /**
-       * InboundChannel contract address on the ethereum side
-       **/
-      inboundChannelAddresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<H160>>, [U256]>;
-      inboundChannelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
-      rewardFraction: AugmentedQuery<ApiType, () => Observable<Perbill>, []>;
-    };
     bridgeMultisig: {
       /**
        * Multisignature accounts.
@@ -250,23 +229,6 @@ declare module '@polkadot/api-base/types/storage' {
        * The set of open multisig operations.
        **/
       multisigs: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: U8aFixed | string | Uint8Array) => Observable<Option<PalletMultisigMultisig>>, [AccountId32, U8aFixed]>;
-    };
-    bridgeOutboundChannel: {
-      channelNonces: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<u64>, [U256]>;
-      fee: AugmentedQuery<ApiType, () => Observable<u128>, []>;
-      /**
-       * Interval between committing messages.
-       **/
-      interval: AugmentedQuery<ApiType, () => Observable<u32>, []>;
-      /**
-       * Messages waiting to be committed. To update the queue, use `append_message_queue` and `take_message_queue` methods
-       * (to keep correct value in [QueuesTotalGas]).
-       **/
-      messageQueues: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Vec<BridgeOutboundChannelMessage>>, [U256]>;
-      /**
-       * Total gas for each queue. Updated by mutating the queues with methods `append_message_queue` and `take_message_queue`.
-       **/
-      queuesTotalGas: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<U256>, [U256]>;
     };
     ceresGovernancePlatform: {
       /**
@@ -467,8 +429,6 @@ declare module '@polkadot/api-base/types/storage' {
     dexManager: {
       dexInfos: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Option<CommonPrimitivesDexInfo>>, [u32]>;
     };
-    dispatch: {
-    };
     electionProviderMultiPhase: {
       /**
        * Current phase.
@@ -578,15 +538,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       voting: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<PalletElectionsPhragmenVoter>, [AccountId32]>;
     };
-    erc20App: {
-      appAddresses: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: BridgeTypesAssetKind | 'Thischain' | 'Sidechain' | number | Uint8Array) => Observable<Option<H160>>, [U256, BridgeTypesAssetKind]>;
-      assetKinds: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<BridgeTypesAssetKind>>, [U256, CommonPrimitivesAssetId32]>;
-      assetsByAddresses: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: H160 | string | Uint8Array) => Observable<Option<CommonPrimitivesAssetId32>>, [U256, H160]>;
-      tokenAddresses: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<H160>>, [U256, CommonPrimitivesAssetId32]>;
-    };
-    ethApp: {
-      addresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<ITuple<[H160, CommonPrimitivesAssetId32]>>>, [U256]>;
-    };
     ethBridge: {
       /**
        * Requests made by an account.
@@ -688,36 +639,6 @@ declare module '@polkadot/api-base/types/storage' {
        * Sora XOR master contract address.
        **/
       xorMasterContractAddress: AugmentedQuery<ApiType, () => Observable<H160>, []>;
-    };
-    ethereumLightClient: {
-      /**
-       * Best known block.
-       **/
-      bestBlock: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<ITuple<[BridgeTypesHeaderHeaderId, U256]>>>, [U256]>;
-      /**
-       * Range of blocks that we want to prune.
-       **/
-      blocksToPrune: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<EthereumLightClientPruningRange>>, [U256]>;
-      /**
-       * Best finalized block.
-       **/
-      finalizedBlock: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<BridgeTypesHeaderHeaderId>>, [U256]>;
-      /**
-       * Map of imported headers by hash.
-       **/
-      headers: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<Option<EthereumLightClientStoredHeader>>, [U256, H256]>;
-      /**
-       * Map of imported header hashes by number.
-       **/
-      headersByNumber: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: u64 | AnyNumber | Uint8Array) => Observable<Option<Vec<H256>>>, [U256, u64]>;
-      /**
-       * Network config
-       **/
-      networkConfig: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<BridgeTypesNetworkConfig>>, [U256]>;
-    };
-    evmBridgeProxy: {
-      senders: AugmentedQuery<ApiType, (arg1: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | string | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<Option<AccountId32>>, [BridgeTypesGenericNetworkId, H256]>;
-      transactions: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: ITuple<[BridgeTypesGenericNetworkId, H256]> | [BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | string | Uint8Array, H256 | string | Uint8Array]) => Observable<Option<EvmBridgeProxyBridgeRequest>>, [AccountId32, ITuple<[BridgeTypesGenericNetworkId, H256]>]>;
     };
     farming: {
       /**
@@ -846,44 +767,6 @@ declare module '@polkadot/api-base/types/storage' {
       quorums: AugmentedQuery<ApiType, (arg: Text | string) => Observable<u8>, [Text]>;
       referrers: AugmentedQuery<ApiType, (arg: Text | string) => Observable<Option<Text>>, [Text]>;
     };
-    leafProvider: {
-      /**
-       * Latest digest
-       **/
-      latestDigest: AugmentedQuery<ApiType, () => Observable<Option<Vec<BridgeTypesAuxiliaryDigestItem>>>, []>;
-    };
-    migrationApp: {
-      addresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<H160>>, [U256]>;
-    };
-    mmr: {
-      /**
-       * Hashes of the nodes in the MMR.
-       * 
-       * Note this collection only contains MMR peaks, the inner nodes (and leaves)
-       * are pruned and only stored in the Offchain DB.
-       **/
-      nodes: AugmentedQuery<ApiType, (arg: u64 | AnyNumber | Uint8Array) => Observable<Option<H256>>, [u64]>;
-      /**
-       * Current size of the MMR (number of leaves).
-       **/
-      numberOfLeaves: AugmentedQuery<ApiType, () => Observable<u64>, []>;
-      /**
-       * Latest MMR Root hash.
-       **/
-      rootHash: AugmentedQuery<ApiType, () => Observable<H256>, []>;
-    };
-    mmrLeaf: {
-      /**
-       * Details of current BEEFY authority set.
-       **/
-      beefyAuthorities: AugmentedQuery<ApiType, () => Observable<SpBeefyMmrBeefyAuthoritySet>, []>;
-      /**
-       * Details of next BEEFY authority set.
-       * 
-       * This storage entry is used as cache for calls to `update_beefy_next_authority_set`.
-       **/
-      beefyNextAuthorities: AugmentedQuery<ApiType, () => Observable<SpBeefyMmrBeefyAuthoritySet>, []>;
-    };
     multicollateralBondingCurvePool: {
       /**
        * Coefficient which determines the fraction of input collateral token to be exchanged to XOR and
@@ -983,15 +866,6 @@ declare module '@polkadot/api-base/types/storage' {
     oracleProxy: {
       enabledOracles: AugmentedQuery<ApiType, () => Observable<BTreeSet<CommonPrimitivesOracle>>, []>;
       symbolProviders: AugmentedQuery<ApiType, (arg: Bytes | string | Uint8Array) => Observable<Option<CommonPrimitivesOracle>>, [Bytes]>;
-    };
-    orderBook: {
-      aggregatedAsks: AugmentedQuery<ApiType, (arg: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array) => Observable<BTreeMap<u128, u128>>, [CommonPrimitivesTradingPairAssetId32]>;
-      aggregatedBids: AugmentedQuery<ApiType, (arg: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array) => Observable<BTreeMap<u128, u128>>, [CommonPrimitivesTradingPairAssetId32]>;
-      asks: AugmentedQuery<ApiType, (arg1: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, arg2: u128 | AnyNumber | Uint8Array) => Observable<Option<Vec<u128>>>, [CommonPrimitivesTradingPairAssetId32, u128]>;
-      bids: AugmentedQuery<ApiType, (arg1: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, arg2: u128 | AnyNumber | Uint8Array) => Observable<Option<Vec<u128>>>, [CommonPrimitivesTradingPairAssetId32, u128]>;
-      limitOrders: AugmentedQuery<ApiType, (arg1: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, arg2: u128 | AnyNumber | Uint8Array) => Observable<Option<OrderBookLimitOrder>>, [CommonPrimitivesTradingPairAssetId32, u128]>;
-      orderBooks: AugmentedQuery<ApiType, (arg: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array) => Observable<Option<OrderBook>>, [CommonPrimitivesTradingPairAssetId32]>;
-      userLimitOrders: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array) => Observable<Option<Vec<u128>>>, [AccountId32, CommonPrimitivesTradingPairAssetId32]>;
     };
     permissions: {
       owners: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: PermissionsScope | { Limited: any } | { Unlimited: any } | string | Uint8Array) => Observable<Vec<AccountId32>>, [u32, PermissionsScope]>;
@@ -1412,28 +1286,6 @@ declare module '@polkadot/api-base/types/storage' {
        * and slash value of the era.
        **/
       validatorSlashInEra: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<ITuple<[Perbill, u128]>>>, [u32, AccountId32]>;
-    };
-    substrateBridgeApp: {
-      assetKinds: AugmentedQuery<ApiType, (arg1: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<BridgeTypesAssetKind>>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32]>;
-    };
-    substrateBridgeInboundChannel: {
-      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
-      rewardFraction: AugmentedQuery<ApiType, () => Observable<Perbill>, []>;
-    };
-    substrateBridgeOutboundChannel: {
-      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
-      fee: AugmentedQuery<ApiType, () => Observable<u128>, []>;
-      /**
-       * Interval between committing messages.
-       **/
-      interval: AugmentedQuery<ApiType, () => Observable<u32>, []>;
-      /**
-       * Messages waiting to be committed. To update the queue, use `append_message_queue` and `take_message_queue` methods
-       * (to keep correct value in [QueuesTotalGas]).
-       **/
-      messageQueues: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Vec<BridgeTypesParachainMessage>>, [BridgeTypesSubNetworkId]>;
-    };
-    substrateDispatch: {
     };
     sudo: {
       /**

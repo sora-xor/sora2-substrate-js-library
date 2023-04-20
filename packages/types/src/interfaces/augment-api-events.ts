@@ -6,10 +6,10 @@
 import '@polkadot/api-base/types/events';
 
 import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
-import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
+import type { Bytes, Null, Option, Result, Text, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, H256, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, HermesGovernancePlatformVotingOption, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { AccountId32, H256, Perbill } from '@polkadot/types/interfaces/runtime';
+import type { CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, HermesGovernancePlatformVotingOption, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -109,13 +109,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       SymbolsRelayed: AugmentedEvent<ApiType, [Vec<Bytes>]>;
     };
-    beefyLightClient: {
-      NewMMRRoot: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u64]>;
-      ValidatorRegistryUpdated: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u32, u64]>;
-      VerificationSuccessful: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, AccountId32, u32]>;
-    };
-    bridgeInboundChannel: {
-    };
     bridgeMultisig: {
       /**
        * A new multisig created. [multisig]
@@ -137,9 +130,6 @@ declare module '@polkadot/api-base/types/events' {
        * A new multisig operation has begun. [approving, multisig, call_hash]
        **/
       NewMultisig: AugmentedEvent<ApiType, [AccountId32, AccountId32, U8aFixed]>;
-    };
-    bridgeOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [U256, u64]>;
     };
     ceresGovernancePlatform: {
       /**
@@ -375,20 +365,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Voted: AugmentedEvent<ApiType, [voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote], { voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote }>;
     };
-    dispatch: {
-      /**
-       * We have failed to decode a Call from the message.
-       **/
-      MessageDecodeFailed: AugmentedEvent<ApiType, [BridgeTypesMessageId]>;
-      /**
-       * Message has been dispatched with given result.
-       **/
-      MessageDispatched: AugmentedEvent<ApiType, [BridgeTypesMessageId, Result<Null, SpRuntimeDispatchError>]>;
-      /**
-       * Message has been rejected
-       **/
-      MessageRejected: AugmentedEvent<ApiType, [BridgeTypesMessageId]>;
-    };
     electionProviderMultiPhase: {
       /**
        * An election failed.
@@ -462,25 +438,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       SeatHolderSlashed: AugmentedEvent<ApiType, [seatHolder: AccountId32, amount: u128], { seatHolder: AccountId32, amount: u128 }>;
     };
-    erc20App: {
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Burned: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, AccountId32, H160, u128]>;
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Minted: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, H160, AccountId32, u128]>;
-      /**
-       * [network_id, sender, asset_id, amount]
-       **/
-      Refunded: AugmentedEvent<ApiType, [U256, AccountId32, CommonPrimitivesAssetId32, u128]>;
-    };
-    ethApp: {
-      Burned: AugmentedEvent<ApiType, [U256, AccountId32, H160, u128]>;
-      Minted: AugmentedEvent<ApiType, [U256, H160, AccountId32, u128]>;
-      Refunded: AugmentedEvent<ApiType, [U256, AccountId32, u128]>;
-    };
     ethBridge: {
       /**
        * The request's approvals have been collected. [Encoded Outgoing Request, Signatures]
@@ -514,13 +471,6 @@ declare module '@polkadot/api-base/types/events' {
        * New request has been registered. [Request Hash]
        **/
       RequestRegistered: AugmentedEvent<ApiType, [H256]>;
-    };
-    ethereumLightClient: {
-      Finalized: AugmentedEvent<ApiType, [U256, BridgeTypesHeaderHeaderId]>;
-    };
-    evmBridgeProxy: {
-      RefundFailed: AugmentedEvent<ApiType, [H256]>;
-      RequestStatusUpdate: AugmentedEvent<ApiType, [H256, BridgeTypesMessageStatus]>;
     };
     faucet: {
       LimitUpdated: AugmentedEvent<ApiType, [u128]>;
@@ -629,8 +579,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Migrated: AugmentedEvent<ApiType, [Text, AccountId32]>;
     };
-    leafProvider: {
-    };
     liquidityProxy: {
       /**
        * Exchange of tokens has been performed
@@ -645,11 +593,6 @@ declare module '@polkadot/api-base/types/events' {
        * Liquidity source was enabled
        **/
       LiquiditySourceEnabled: AugmentedEvent<ApiType, [CommonPrimitivesLiquiditySourceType]>;
-    };
-    migrationApp: {
-      Erc20Migrated: AugmentedEvent<ApiType, [U256, H160]>;
-      EthMigrated: AugmentedEvent<ApiType, [U256, H160]>;
-      SidechainMigrated: AugmentedEvent<ApiType, [U256, H160]>;
     };
     multicollateralBondingCurvePool: {
       /**
@@ -708,28 +651,6 @@ declare module '@polkadot/api-base/types/events' {
        * Oracle was successfully enabled. [oracle]
        **/
       OracleEnabled: AugmentedEvent<ApiType, [CommonPrimitivesOracle]>;
-    };
-    orderBook: {
-      /**
-       * New order book is created by user
-       **/
-      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, creator: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, creator: AccountId32 }>;
-      /**
-       * Order book is deleted by Council
-       **/
-      OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32 }>;
-      /**
-       * Order book attributes are updated by Council
-       **/
-      OrderBookUpdated: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32 }>;
-      /**
-       * User canceled their limit order
-       **/
-      OrderCanceled: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
-      /**
-       * User placed new limit order
-       **/
-      OrderPlaced: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
     };
     permissions: {
       /**
@@ -923,35 +844,6 @@ declare module '@polkadot/api-base/types/events' {
        * from the unlocking queue.
        **/
       Withdrawn: AugmentedEvent<ApiType, [stash: AccountId32, amount: u128], { stash: AccountId32, amount: u128 }>;
-    };
-    substrateBridgeApp: {
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Burned: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, AccountId32, XcmVersionedMultiLocation, u128]>;
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Minted: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, Option<XcmVersionedMultiLocation>, AccountId32, u128]>;
-    };
-    substrateBridgeInboundChannel: {
-    };
-    substrateBridgeOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, u64]>;
-    };
-    substrateDispatch: {
-      /**
-       * We have failed to decode a Call from the message.
-       **/
-      MessageDecodeFailed: AugmentedEvent<ApiType, [BridgeTypesMessageId]>;
-      /**
-       * Message has been dispatched with given result.
-       **/
-      MessageDispatched: AugmentedEvent<ApiType, [BridgeTypesMessageId, Result<Null, SpRuntimeDispatchError>]>;
-      /**
-       * Message has been rejected
-       **/
-      MessageRejected: AugmentedEvent<ApiType, [BridgeTypesMessageId]>;
     };
     sudo: {
       /**

@@ -307,26 +307,6 @@ declare module '@polkadot/api-base/types/consts' {
       removePendingOutgoingRequestsAfter: u32 & AugmentedConst<ApiType>;
       trackPendingIncomingRequestsAfter: ITuple<[u32, u64]> & AugmentedConst<ApiType>;
     };
-    ethereumLightClient: {
-      /**
-       * The number of descendants, in the highest difficulty chain, a block
-       * needs to have in order to be considered final.
-       **/
-      descendantsUntilFinalized: u8 & AugmentedConst<ApiType>;
-      /**
-       * A configuration for longevity of unsigned transactions.
-       **/
-      unsignedLongevity: u64 & AugmentedConst<ApiType>;
-      /**
-       * A configuration for base priority of unsigned transactions.
-       **/
-      unsignedPriority: u64 & AugmentedConst<ApiType>;
-      /**
-       * Determines whether Ethash PoW is verified for headers
-       * NOTE: Should only be false for dev
-       **/
-      verifyPoW: bool & AugmentedConst<ApiType>;
-    };
     grandpa: {
       /**
        * Max Authorities in use

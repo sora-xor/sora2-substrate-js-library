@@ -141,61 +141,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnauthorizedRelayer: AugmentedError<ApiType>;
     };
-    beefyLightClient: {
-      CannotSwitchOldValidatorSet: AugmentedError<ApiType>;
-      CommitmentNotFoundInDigest: AugmentedError<ApiType>;
-      InvalidDigestHash: AugmentedError<ApiType>;
-      InvalidMMRProof: AugmentedError<ApiType>;
-      InvalidNumberOfPositions: AugmentedError<ApiType>;
-      InvalidNumberOfPublicKeys: AugmentedError<ApiType>;
-      InvalidNumberOfSignatures: AugmentedError<ApiType>;
-      InvalidSignature: AugmentedError<ApiType>;
-      InvalidValidatorSetId: AugmentedError<ApiType>;
-      MerklePositionTooHigh: AugmentedError<ApiType>;
-      MerkleProofTooHigh: AugmentedError<ApiType>;
-      MerkleProofTooShort: AugmentedError<ApiType>;
-      MMRPayloadNotFound: AugmentedError<ApiType>;
-      NotEnoughValidatorSignatures: AugmentedError<ApiType>;
-      PalletNotInitialized: AugmentedError<ApiType>;
-      PayloadBlocknumberTooNew: AugmentedError<ApiType>;
-      PayloadBlocknumberTooOld: AugmentedError<ApiType>;
-      ValidatorNotOnceInbitfield: AugmentedError<ApiType>;
-      ValidatorSetIncorrectPosition: AugmentedError<ApiType>;
-    };
-    bridgeInboundChannel: {
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * This contract already exists
-       **/
-      ContractExists: AugmentedError<ApiType>;
-      /**
-       * Message has an invalid envelope.
-       **/
-      InvalidEnvelope: AugmentedError<ApiType>;
-      /**
-       * Malformed MessageDispatched event
-       **/
-      InvalidMessageDispatchedEvent: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid network.
-       **/
-      InvalidNetwork: AugmentedError<ApiType>;
-      /**
-       * Message has an unexpected nonce.
-       **/
-      InvalidNonce: AugmentedError<ApiType>;
-      /**
-       * Incorrect reward fraction
-       **/
-      InvalidRewardFraction: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid outbound channel on the Ethereum side.
-       **/
-      InvalidSourceChannel: AugmentedError<ApiType>;
-    };
     bridgeMultisig: {
       /**
        * Call is already approved by this signatory.
@@ -281,32 +226,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Threshold should not be zero.
        **/
       ZeroThreshold: AugmentedError<ApiType>;
-    };
-    bridgeOutboundChannel: {
-      /**
-       * This channel already exists
-       **/
-      ChannelExists: AugmentedError<ApiType>;
-      /**
-       * Maximum gas for queued batch exceeds limit.
-       **/
-      MaxGasTooBig: AugmentedError<ApiType>;
-      /**
-       * Cannot pay the fee to submit a message.
-       **/
-      NoFunds: AugmentedError<ApiType>;
-      /**
-       * Cannot increment nonce
-       **/
-      Overflow: AugmentedError<ApiType>;
-      /**
-       * The message payload exceeds byte limit.
-       **/
-      PayloadTooLarge: AugmentedError<ApiType>;
-      /**
-       * No more messages can be queued for the channel during this commit cycle.
-       **/
-      QueueSizeLimitReached: AugmentedError<ApiType>;
     };
     ceresGovernancePlatform: {
       /**
@@ -937,68 +856,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnableToVote: AugmentedError<ApiType>;
     };
-    erc20App: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request for refund
-       **/
-      WrongRequest: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request status, must be Failed
-       **/
-      WrongRequestStatus: AugmentedError<ApiType>;
-    };
-    ethApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Destination account is not set.
-       **/
-      DestAccountIsNotSet: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request for refund
-       **/
-      WrongRequest: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request status, must be Failed
-       **/
-      WrongRequestStatus: AugmentedError<ApiType>;
-    };
     ethBridge: {
       /**
        * Account not found.
@@ -1345,77 +1202,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongPendingPeer: AugmentedError<ApiType>;
     };
-    ethereumLightClient: {
-      /**
-       * Header is same height or older than finalized block (we don't support forks).
-       **/
-      AncientHeader: AugmentedError<ApiType>;
-      /**
-       * Unsupported consensus engine
-       **/
-      ConsensusNotSupported: AugmentedError<ApiType>;
-      /**
-       * Log could not be decoded
-       **/
-      DecodeFailed: AugmentedError<ApiType>;
-      /**
-       * Difficulty is too low comparing to last blocks difficulty
-       **/
-      DifficultyTooLow: AugmentedError<ApiType>;
-      /**
-       * Header has already been imported.
-       **/
-      DuplicateHeader: AugmentedError<ApiType>;
-      /**
-       * Header referenced in inclusion proof is not final yet.
-       **/
-      HeaderNotFinalized: AugmentedError<ApiType>;
-      /**
-       * Header is on a stale fork, i.e. it's not a descendant of the latest finalized block
-       **/
-      HeaderOnStaleFork: AugmentedError<ApiType>;
-      /**
-       * One or more header fields are invalid.
-       **/
-      InvalidHeader: AugmentedError<ApiType>;
-      /**
-       * Proof could not be applied / verified.
-       **/
-      InvalidProof: AugmentedError<ApiType>;
-      /**
-       * Signature provided inside unsigned extrinsic is not correct
-       **/
-      InvalidSignature: AugmentedError<ApiType>;
-      /**
-       * Header referenced in inclusion proof doesn't exist, e.g. because it's
-       * pruned or older than genesis.
-       **/
-      MissingHeader: AugmentedError<ApiType>;
-      /**
-       * Header's parent has not been imported.
-       **/
-      MissingParentHeader: AugmentedError<ApiType>;
-      /**
-       * Network with given id already registered
-       **/
-      NetworkAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * Unknown network id passed
-       **/
-      NetworkNotFound: AugmentedError<ApiType>;
-      /**
-       * Network state is not suitable to proceed transacton
-       **/
-      NetworkStateInvalid: AugmentedError<ApiType>;
-      /**
-       * This should never be returned - indicates a bug
-       **/
-      Unknown: AugmentedError<ApiType>;
-    };
-    evmBridgeProxy: {
-      PathIsNotAvailable: AugmentedError<ApiType>;
-      WrongAccountKind: AugmentedError<ApiType>;
-    };
     farming: {
       /**
        * Increment account reference error.
@@ -1716,32 +1502,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnavailableExchangePath: AugmentedError<ApiType>;
     };
-    migrationApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-      /**
-       * Token already registered with another address.
-       **/
-      TokenRegisteredWithAnotherAddress: AugmentedError<ApiType>;
-    };
     multicollateralBondingCurvePool: {
       /**
        * An error occured during balance type conversion.
@@ -1865,52 +1625,6 @@ declare module '@polkadot/api-base/types/errors' {
     oracleProxy: {
       OracleAlreadyDisabled: AugmentedError<ApiType>;
       OracleAlreadyEnabled: AugmentedError<ApiType>;
-    };
-    orderBook: {
-      /**
-       * Cannot delete the limit order
-       **/
-      DeleteLimitOrderError: AugmentedError<ApiType>;
-      /**
-       * Cannot create order book with equal base and target assets
-       **/
-      ForbiddenToCreateOrderBookWithSameAssets: AugmentedError<ApiType>;
-      /**
-       * Lifespan exceeds defined limits
-       **/
-      InvalidLifespan: AugmentedError<ApiType>;
-      /**
-       * Cannot insert the limit order because bounds are reached
-       **/
-      LimitOrderStorageOverflow: AugmentedError<ApiType>;
-      /**
-       * The asset is not allowed to be base. Only dex base asset can be a base asset for order book
-       **/
-      NotAllowedBaseAsset: AugmentedError<ApiType>;
-      /**
-       * There is not enough liquidity in the order book to cover the deal
-       **/
-      NotEnoughLiquidity: AugmentedError<ApiType>;
-      /**
-       * Order book already exists for this trading pair
-       **/
-      OrderBookAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * Trading pair currently reached its capacity
-       **/
-      OrderLimitReached: AugmentedError<ApiType>;
-      /**
-       * Price in given order exceeds allowed limits for the trading pair
-       **/
-      PriceExceedsLimits: AugmentedError<ApiType>;
-      /**
-       * Order book does not exist for this trading pair
-       **/
-      UnknownOrderBook: AugmentedError<ApiType>;
-      /**
-       * User cannot create an order book with NFT if they don't have NFT
-       **/
-      UserDoesntHaveNft: AugmentedError<ApiType>;
     };
     permissions: {
       /**
@@ -2449,78 +2163,6 @@ declare module '@polkadot/api-base/types/errors' {
        * staking settings to keep things safe for the runtime.
        **/
       TooManyValidators: AugmentedError<ApiType>;
-    };
-    substrateBridgeApp: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-    };
-    substrateBridgeInboundChannel: {
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * This contract already exists
-       **/
-      ContractExists: AugmentedError<ApiType>;
-      /**
-       * Message has an invalid envelope.
-       **/
-      InvalidEnvelope: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid network.
-       **/
-      InvalidNetwork: AugmentedError<ApiType>;
-      /**
-       * Message has an unexpected nonce.
-       **/
-      InvalidNonce: AugmentedError<ApiType>;
-      /**
-       * Incorrect reward fraction
-       **/
-      InvalidRewardFraction: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid outbound channel on the Ethereum side.
-       **/
-      InvalidSourceChannel: AugmentedError<ApiType>;
-    };
-    substrateBridgeOutboundChannel: {
-      /**
-       * This channel already exists
-       **/
-      ChannelExists: AugmentedError<ApiType>;
-      /**
-       * Maximum gas for queued batch exceeds limit.
-       **/
-      MaxGasTooBig: AugmentedError<ApiType>;
-      /**
-       * Cannot pay the fee to submit a message.
-       **/
-      NoFunds: AugmentedError<ApiType>;
-      /**
-       * Cannot increment nonce
-       **/
-      Overflow: AugmentedError<ApiType>;
-      /**
-       * The message payload exceeds byte limit.
-       **/
-      PayloadTooLarge: AugmentedError<ApiType>;
-      /**
-       * No more messages can be queued for the channel during this commit cycle.
-       **/
-      QueueSizeLimitReached: AugmentedError<ApiType>;
     };
     sudo: {
       /**
