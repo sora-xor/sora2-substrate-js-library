@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "yarn build:interfaces:dev && polkadot-dev-build-ts",
-    "build:interfaces:dev": "yarn generate:defs:dev && yarn generate:meta:dev",
+    "build:interfaces:dev": "yarn build:interfaces:test",
     "build:interfaces:test": "yarn generate:defs:test && yarn generate:meta:test",
     "build:interfaces:stage": "yarn generate:defs:stage && yarn generate:meta:stage",
     "build:interfaces:prod": "yarn generate:defs:prod && yarn generate:meta:prod",
@@ -34,7 +34,7 @@
     "demo": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
     "example": "wrap () { node -r ts-node/register -r tsconfig-paths/register scripts/examples/\"$*\".ts; }; wrap",
     "export-types:all": "yarn export-types:prod && yarn export-types:stage && yarn export-types:test && yarn export-types:dev",
-    "export-types:dev": "yarn build:interfaces:dev && ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts dev",
+    "export-types:dev": "yarn export-types:test",
     "export-types:test": "yarn build:interfaces:test && ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts test",
     "export-types:stage": "yarn build:interfaces:stage && ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts stage",
     "export-types:prod": "yarn build:interfaces:prod && ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts prod",
