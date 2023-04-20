@@ -32,11 +32,8 @@ const toAssetId = (o: Observable<CommonPrimitivesAssetId32>): Observable<string>
     distinctUntilChanged(comparator)
   );
 
-const toAssetIds = (o: Observable<BTreeSet<CommonPrimitivesAssetId32>>): Observable<string[]> =>
-  o.pipe(
-    map((data) => [...data.values()].map((asset) => asset.code.toString())),
-    distinctUntilChanged(comparator)
-  );
+const toAssetIds = (data: BTreeSet<CommonPrimitivesAssetId32>): string[] =>
+  [...data.values()].map((asset) => asset.code.toString());
 
 const toCodec = (o: Observable<any>) =>
   o.pipe(
@@ -182,19 +179,36 @@ export class SwapModule<T> {
     );
   }
 
+  public async getTbcAssetsIds(): Promise<string[]> {
+    const assets = await this.root.api.query.multicollateralBondingCurvePool.enabledTargets();
+    return toAssetIds(assets);
+  }
+
+  public async getXstAssetsIds(): Promise<string[]> {
+    const assets = await this.root.api.query.xstPool.enabledSynthetics.keys();
+    return assets.map((key) => key.args[0].code.toString());
+  }
+
+  public async getLockedSources(): Promise<LiquiditySourceTypes[]> {
+    const sources = await this.root.api.query.tradingPair.lockedLiquiditySources();
+    return sources.map((source) => source.toString() as LiquiditySourceTypes);
+  }
+
   /**
    * Get primary markets enabled assets observable
    */
-  public subscribeOnPrimaryMarketsEnabledAssets(): Observable<PrimaryMarketsEnabledAssets> {
-    const tbcAssets = toAssetIds(this.root.apiRx.query.multicollateralBondingCurvePool.enabledTargets());
-    const xstAssets = toAssetIds(this.root.apiRx.query.xstPool.enabledSynthetics());
-    const lockedLiquiditySources = this.root.apiRx.query.tradingPair
-      .lockedLiquiditySources()
-      .pipe(map((sources) => sources.map((source) => source.toString() as LiquiditySourceTypes)));
+  public async getPrimaryMarketsEnabledAssets(): Promise<PrimaryMarketsEnabledAssets> {
+    const [tbc, xst, lockedSources] = await Promise.all([
+      this.getTbcAssetsIds(),
+      this.getXstAssetsIds(),
+      this.getLockedSources(),
+    ]);
 
-    return combineLatest([tbcAssets, xstAssets, lockedLiquiditySources]).pipe(
-      map(([tbc, xst, lockedSources]) => ({ tbc, xst, lockedSources }))
-    );
+    return {
+      tbc,
+      xst,
+      lockedSources,
+    };
   }
 
   /**
