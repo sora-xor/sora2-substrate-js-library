@@ -17,5 +17,5 @@ export enum RewardType {
   Provision = 'Provision',
   Strategic = 'Strategic',
   Crowdloan = 'Crowdloan',
-  Externals = 'Externals',
+  External = 'External',
 }

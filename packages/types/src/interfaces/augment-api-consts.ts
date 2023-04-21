@@ -98,6 +98,12 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxReserves: u32 & AugmentedConst<ApiType>;
     };
+    band: {
+      /**
+       * Rate expiration period in seconds.
+       **/
+      getBandRateStalePeriod: u64 & AugmentedConst<ApiType>;
+    };
     currencies: {
       getNativeCurrencyId: CommonPrimitivesAssetId32 & AugmentedConst<ApiType>;
     };

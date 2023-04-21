@@ -137,6 +137,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       RateConversionOverflow: AugmentedError<ApiType>;
       /**
+       * Rate is expired and can't be used until next update.
+       **/
+      RateExpired: AugmentedError<ApiType>;
+      /**
+       * Rate has invalid timestamp.
+       **/
+      RateHasInvalidTimestamp: AugmentedError<ApiType>;
+      /**
        * An untrusted account tried to relay data.
        **/
       UnauthorizedRelayer: AugmentedError<ApiType>;
@@ -2846,6 +2854,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       IncRefError: AugmentedError<ApiType>;
       /**
+       * Invalid fee ratio value.
+       **/
+      InvalidFeeRatio: AugmentedError<ApiType>;
+      /**
+       * Error quoting price from oracle.
+       **/
+      OracleQuoteError: AugmentedError<ApiType>;
+      /**
        * Attempt to initialize pool for pair that already exists.
        **/
       PoolAlreadyInitializedForPair: AugmentedError<ApiType>;
@@ -2861,6 +2877,23 @@ declare module '@polkadot/api-base/types/errors' {
        * Indicated limits for slippage has not been met during transaction execution.
        **/
       SlippageLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Attempt to enable synthetic asset with symbol
+       * that is already referenced to another synthetic.
+       **/
+      SymbolAlreadyReferencedToSynthetic: AugmentedError<ApiType>;
+      /**
+       * Attempt to enable synthetic asset with inexistent symbol.
+       **/
+      SymbolDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Synthetic asset does not exist.
+       **/
+      SyntheticDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Attempt to disable synthetic asset that is not enabled.
+       **/
+      SyntheticIsNotEnabled: AugmentedError<ApiType>;
       /**
        * Indicated collateral asset is not enabled for pool.
        **/
