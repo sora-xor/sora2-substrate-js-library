@@ -19,41 +19,49 @@ function sortObjectByKey(value) {
     }, {});
 }
 
+const snakeToCamel = str =>
+str.toLowerCase().replace(/([-_][a-z])/g, group =>
+  group
+    .toUpperCase()
+    .replace('-', '')
+    .replace('_', '')
+)
+
 export async function generateTypesJson(env: string) {
   console.log('NOTE: Make sure `yarn build` was run with latest types');
   let sortedTypes = sortObjectByKey(localTypes);
-  const data = stringify(sortedTypes);
   const provider = new WsProvider(SORA_ENV[env]);
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
   const specVersion = api.consts.system.version.specVersion;
   await api.disconnect();
-  let typesScalecodec_mobile: string | NodeJS.ArrayBufferView;
+  let typesScalecodec_mobile: object;
   if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`)) {
     const currentTypes = JSON.parse(
       fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`, 'utf-8')
     );
-    typesScalecodec_mobile = stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes));
+    typesScalecodec_mobile = convertTypes(sortedTypes, specVersion.toNumber(), currentTypes);
   } else {
-    typesScalecodec_mobile = stringify(convertTypes(sortedTypes, 1, {}));
+    typesScalecodec_mobile = convertTypes(sortedTypes, 1, {});
   }
-  let typesScalecodec_python: string | NodeJS.ArrayBufferView;
+  let typesScalecodec_python: object;
   if (fs.existsSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`)) {
     const currentTypes = JSON.parse(
       fs.readFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`, 'utf-8')
     );
-    typesScalecodec_python = stringify(convertTypes(sortedTypes, specVersion.toNumber(), currentTypes));
+    typesScalecodec_python = convertTypes(sortedTypes, specVersion.toNumber(), currentTypes);
   } else {
-    typesScalecodec_python = stringify(convertTypes(sortedTypes, 1, {}));
+    typesScalecodec_python = convertTypes(sortedTypes, 1, {});
   }
-  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types.json`, data);
+  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types.json`, stringify(sortedTypes));
+  fs.writeFileSync(`packages/types/src/metadata${env ? '/' + env : ''}/types_subsquid.json`, stringify(convertTypesSubsquid(typesScalecodec_python, sortedTypes)));
   fs.writeFileSync(
     `packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_mobile.json`,
-    typesScalecodec_mobile
+    stringify(typesScalecodec_mobile)
   );
   fs.writeFileSync(
     `packages/types/src/metadata${env ? '/' + env : ''}/types_scalecodec_python.json`,
-    typesScalecodec_python
+    stringify(typesScalecodec_python)
   );
 }
 
@@ -130,6 +138,73 @@ function convertTypes(inputContent: object, specVersion: number, currentTypes: o
     }
     return currentTypes;
   }
+}
+
+function convertTypesSubsquid(inputContent: any, sortedTypes: any) {
+  const convertedTypes = { versions: [] }
+
+  convertedTypes['types'] = sortedTypes
+  convertedTypes['types']['String'] = 'Vec<u8>'
+  convertedTypes['types']['Text'] = 'Vec<u8>'
+
+  inputContent.versioning.forEach((version, i: number) => {
+    const convertedVersion = {}
+    const convertedVersionTypes = {}
+
+    const minSpecVersion = version['runtime_range'][0]
+    const maxSpecVersion = inputContent.versioning[i + 1]?.['runtime_range'][0] - 1
+    convertedVersion['minmax'] = [minSpecVersion, maxSpecVersion]
+
+    for (let [key, type] of Object.entries(version['types'])) {
+      let convertedType = {}
+
+      if (type['type'] === 'struct') {
+        type['type_mapping'].forEach(item => {
+          const key = snakeToCamel(item[0])
+          const value = item[1]
+          convertedType[key] = value
+        })
+
+      } else if (type['type_mapping']) {
+        const prefix = '_' + type['type']
+        convertedType[prefix] = {}
+        
+        type['type_mapping'].forEach(item => {
+          const key = item[0]
+          const value = item[1]
+          convertedType[prefix][key] = value
+        })
+
+      } else if (type['value_list']) {
+        const prefix = '_' + type['type']
+        convertedType[prefix] = []
+
+        type['value_list'].forEach(item => {
+          convertedType[prefix].push(item)
+        })
+
+      } else {
+        convertedType = type
+      }
+
+      convertedVersionTypes[key] = convertedType
+
+      if (convertedType === 'AccountIdAddress') {
+        convertedVersionTypes[key] = 'AccountId'
+      }
+    }
+
+    convertedVersion['types'] = convertedVersionTypes
+    convertedTypes.versions.push(convertedVersion)
+  })
+
+  convertedTypes['typesAlias'] = {
+    bridgeMultisig: {
+      Timepoint: 'BridgeTimepoint'
+    }
+  }
+
+  return convertedTypes;
 }
 
 function buildTop(inputContent: object) {

@@ -557,7 +557,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Get swap result using `liquidityProxy.quote` rpc call.
    *
@@ -591,16 +591,19 @@ export class SwapModule<T> {
       liquiditySources as any,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
     );
-    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
+    const value = !result.isNone
+      ? result.unwrap()
+      : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0, route: [] };
     return {
       amount: toCodecString(value.amount),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
+      route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
     } as SwapResult;
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Check swap operation using `liquidityProxy.isPathAvailable` rpc call
    * @param firstAssetAddress
@@ -614,7 +617,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Get liquidity sources for selected pair using `tradingPair.listEnabledSourcesForPair` rpc call
    * @param firstAssetAddress
@@ -636,7 +639,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Check liquidity Source availability for the selected pair using `tradingPair.isSourceEnabledForPair` rpc call
    * @param firstAssetAddress

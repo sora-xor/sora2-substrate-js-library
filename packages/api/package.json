@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/api",
-  "version": "1.15.4",
+  "version": "1.16.5-beta.0",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -8,11 +8,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@open-web3/orml-api-derive": "0.9.4-26",
-    "@polkadot/api": "9.6.2",
-    "@sora-substrate/types": "1.15.4"
-  },
-  "devDependencies": {
-    "@babel/runtime": "^7.10.2"
+    "@open-web3/orml-api-derive": "1.1.4",
+    "@polkadot/api": "9.14.2",
+    "@sora-substrate/types": "1.16.5-beta.0"
   }
 }

@@ -114,10 +114,18 @@ export function isNativeAsset(asset: any): boolean {
   return !!NativeAssets.get(asset.address);
 }
 
+export function excludePoolXYKAssets(assets: Asset[]): Asset[] {
+  return assets.filter((asset) => asset.symbol !== PoolTokens.XYKPOOL);
+}
+
+export function isBlacklistedAssetAddress(address: string, blacklist: Blacklist): boolean {
+  return blacklist.includes(address);
+}
+
 export function getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist): Array<Asset> {
   if (!blacklist.length) return allAssets;
 
-  return allAssets.filter(({ address }) => !blacklist.includes(address));
+  return allAssets.filter(({ address }) => !isBlacklistedAssetAddress(address, blacklist));
 }
 
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
@@ -462,14 +470,25 @@ export class AssetsModule<T> {
 
   /**
    * Get all tokens list registered in the blockchain network
+   * @param withPoolTokens `false` by default
    * @param whitelist set of whitelist tokens
    * @param blacklist set of blacklist tokens
-   * @param withPoolTokens `false` by default
    */
-  public async getAssets(whitelist?: Whitelist, withPoolTokens = false, blacklist?: Blacklist): Promise<Array<Asset>> {
+  public async getAssets(withPoolTokens = false, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
     const assets = await getAssets(this.root.api, whitelist, blacklist);
 
-    return withPoolTokens ? assets : assets.filter((asset) => asset.symbol !== PoolTokens.XYKPOOL);
+    return withPoolTokens ? assets : excludePoolXYKAssets(assets);
+  }
+
+  /**
+   * Get all tokens addresses list registered in the blockchain network
+   * @param blacklist set of blacklist tokens
+   */
+  public async getAssetsIds(blacklist?: Blacklist): Promise<string[]> {
+    const ids = (await this.root.api.rpc.assets.listAssetIds()).map((codec) => codec.toString());
+    const filtered = blacklist?.length ? ids.filter((id) => !isBlacklistedAssetAddress(id, blacklist)) : ids;
+
+    return filtered;
   }
 
   private calcRegisterAssetParams(

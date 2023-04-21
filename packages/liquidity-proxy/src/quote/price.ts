@@ -15,6 +15,8 @@ export const getAveragePrice = (
   priceVariant: PriceVariant,
   payload: QuotePayload
 ): FPNumber => {
+  if (inputAssetId === outputAssetId) return FPNumber.ONE;
+
   if (inputAssetId === Consts.XOR) {
     const averagePrice = getAssetAveragePrice(outputAssetId, priceVariant, payload);
 
