@@ -13,11 +13,12 @@ import type {
   CommonPrimitivesAssetId32,
   FixnumFixedPoint,
   PriceToolsAggregatedPriceInfo,
+  BandBandRate,
 } from '@polkadot/types/lookup';
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
-import { XOR, DAI } from '../assets/consts';
+import { XOR, DAI, XSTUSD } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
@@ -61,6 +62,17 @@ const toAveragePrice = (o: Observable<Option<PriceToolsAggregatedPriceInfo>>) =>
 const getAssetAveragePrice = <T>(root: Api<T>, assetAddress: string): Observable<{ buy: string; sell: string }> => {
   return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
 };
+
+const toBandRate = (o: Observable<Option<BandBandRate>>) =>
+  o.pipe(
+    map((codec) => {
+      const data = codec.unwrap();
+      const value = new FPNumber(data.value).toCodecString();
+      const lastUpdated = data.lastUpdated.toNumber();
+
+      return { value, lastUpdated };
+    })
+  );
 
 const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key: string]: T } =>
   values.reduce(
@@ -273,6 +285,7 @@ export class SwapModule<T> {
   ): Observable<QuotePayload> {
     const xor = XOR.address;
     const dai = DAI.address;
+    const xstusd = XSTUSD.address;
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
     const tbcAssets = enabledAssets?.tbc ?? [];
@@ -305,6 +318,13 @@ export class SwapModule<T> {
     const assetsWithAveragePrices = [...new Set([...assetsWithTbcReserves, dai])];
     // Assets for which we need to know the total supply
     const assetsWithIssuances = [xor];
+    // Tickers with rates in oracle (except USD ticker, because it is the same as DAI)
+    const tickersWithOracleRates = assetsInPaths.reduce((buffer, address) => {
+      if (address !== xstusd && !!xstAssets[address]) {
+        buffer.push(address);
+      }
+      return buffer;
+    }, []);
 
     const xykReserves = assetsWithXykReserves.map((address) =>
       toCodec(this.root.apiRx.query.poolXYK.reserves(baseAssetId, address))
@@ -324,6 +344,10 @@ export class SwapModule<T> {
     // if TBC source available
     const assetsIssuances = tbcUsed ? [toCodec(this.root.apiRx.query.balances.totalIssuance())] : [];
 
+    const tickersRates = xstUsed
+      ? tickersWithOracleRates.map((address) => toBandRate(this.root.apiRx.query.band.symbolRates(address)))
+      : [];
+
     const tbcConsts = tbcUsed
       ? [
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.initialPrice()),
@@ -342,6 +366,7 @@ export class SwapModule<T> {
       : [];
 
     return combineLatest([
+      ...tickersRates,
       ...assetsIssuances,
       ...assetsPrices,
       ...tbcReserves,
@@ -350,9 +375,10 @@ export class SwapModule<T> {
       ...xstConsts,
     ]).pipe(
       map((data) => {
-        let position = assetsIssuances.length;
+        let position = tickersRates.length;
 
-        const issuances: Array<string> = data.slice(0, position);
+        const rates = data.slice(0, position);
+        const issuances: Array<string> = data.slice(position, (position += assetsIssuances.length));
         const prices: Array<{ buy: CodecString; sell: CodecString }> = data.slice(
           position,
           (position += assetsPrices.length)
@@ -366,6 +392,7 @@ export class SwapModule<T> {
         const [floorPrice, xstReferenceAsset] = data.slice(position, (position += xstConsts.length));
 
         const payload: QuotePayload = {
+          rates: combineValuesWithKeys(rates, tickersWithOracleRates),
           reserves: {
             xyk: combineValuesWithKeys(xyk, assetsWithXykReserves),
             tbc: combineValuesWithKeys(tbc, assetsWithTbcReserves),

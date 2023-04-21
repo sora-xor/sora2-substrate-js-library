@@ -29,17 +29,11 @@ const xstReferencePrice = (
     }
   } else {
     const symbol = enabledAssets.xst[assetAddress].referenceSymbol;
-
-    // [TODO] Oracle proxy usage
-
-    // let price = FixedWrapper::from(balance!(T::Oracle::quote(&symbol)?
-    //     .map(|rate| rate.value)
-    //     .ok_or(Error::<T>::OracleQuoteError)?));
-    const symbolPrice = FPNumber.ONE;
+    const price = FPNumber.fromCodecValue(payload.rates[symbol].value);
     // Just for convenience. Right now will always return 1.
     const referenceAssetPrice = xstReferencePrice(referenceAssetId, priceVariant, payload, enabledAssets);
 
-    return safeDivide(symbolPrice, referenceAssetPrice);
+    return safeDivide(price, referenceAssetPrice);
   }
 };
 

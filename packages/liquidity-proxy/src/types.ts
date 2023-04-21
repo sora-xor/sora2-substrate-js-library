@@ -51,6 +51,7 @@ export type QuotePaths = {
 };
 
 export type QuotePayload = {
+  rates: Record<string, { value: CodecString; lastUpdated: number }>;
   reserves: {
     xyk: {
       [key: string]: [CodecString, CodecString];
