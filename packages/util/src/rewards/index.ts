@@ -222,7 +222,8 @@ export class RewardsModule<T> {
     return combineLatest([currentBlockObservable, ...userCrowdloansObservable]).pipe(
       map(([currentBlock, ...userCrowdloans]) => {
         return crowdloans.reduce<Record<string, RewardInfo[]>>((buffer, crowdloan, index) => {
-          const elapsedBlocks = Math.max(currentBlock - crowdloan.startBlock, 0);
+          const endBlock = crowdloan.startBlock + crowdloan.length;
+          const elapsedBlocks = Math.max(Math.min(endBlock, currentBlock) - crowdloan.startBlock, 0);
           const userCrowdloan = userCrowdloans[index];
           const userContributionPart = crowdloan.totalContribution.isZero()
             ? FPNumber.ZERO
