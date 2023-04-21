@@ -1,5 +1,5 @@
 import { assert } from '@polkadot/util';
-import { combineLatest, of, map, distinctUntilChanged } from 'rxjs';
+import { combineLatest, map, distinctUntilChanged } from 'rxjs';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
 import { quote, LiquiditySourceTypes, PriceVariant, newTrivial } from '@sora-substrate/liquidity-proxy';
 import type {
@@ -17,7 +17,7 @@ import type {
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
-import { XOR, DAI, XSTUSD } from '../assets/consts';
+import { XOR, DAI } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
@@ -179,14 +179,27 @@ export class SwapModule<T> {
     );
   }
 
-  public async getTbcAssetsIds(): Promise<string[]> {
+  public async getTbcAssets(): Promise<string[]> {
     const assets = await this.root.api.query.multicollateralBondingCurvePool.enabledTargets();
     return toAssetIds(assets);
   }
 
-  public async getXstAssetsIds(): Promise<string[]> {
-    const assets = await this.root.api.query.xstPool.enabledSynthetics.keys();
-    return assets.map((key) => key.args[0].code.toString());
+  public async getXstAssets(): Promise<Record<string, { referenceSymbol: string; feeRatio: FPNumber }>> {
+    const entries = await this.root.api.query.xstPool.enabledSynthetics.entries();
+
+    return entries.reduce((buffer, [key, value]) => {
+      const id = key.args[0].code.toString();
+      const data = value.unwrap();
+      const referenceSymbol = new TextDecoder().decode(data.referenceSymbol);
+      const feeRatio = FPNumber.fromCodecValue(data.feeRatio.inner.toString());
+
+      buffer[id] = {
+        referenceSymbol,
+        feeRatio,
+      };
+
+      return buffer;
+    }, {});
   }
 
   public async getLockedSources(): Promise<LiquiditySourceTypes[]> {
@@ -199,8 +212,8 @@ export class SwapModule<T> {
    */
   public async getPrimaryMarketsEnabledAssets(): Promise<PrimaryMarketsEnabledAssets> {
     const [tbc, xst, lockedSources] = await Promise.all([
-      this.getTbcAssetsIds(),
-      this.getXstAssetsIds(),
+      this.getTbcAssets(),
+      this.getXstAssets(),
       this.getLockedSources(),
     ]);
 
@@ -263,7 +276,7 @@ export class SwapModule<T> {
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
     const tbcAssets = enabledAssets?.tbc ?? [];
-    const xstAssets = enabledAssets?.xst ?? [];
+    const xstAssets = enabledAssets?.xst ?? {};
     const lockedSources = enabledAssets?.lockedSources ?? [];
 
     // is TBC or XST sources used (only for XOR Dex)
@@ -278,7 +291,7 @@ export class SwapModule<T> {
     const exchangePaths = newTrivial(
       baseAssetId,
       syntheticBaseAssetId,
-      xstAssets,
+      Object.keys(xstAssets),
       firstAssetAddress,
       secondAssetAddress
     );
