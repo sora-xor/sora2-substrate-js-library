@@ -305,7 +305,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
     if (isNotFaucetOperation && signer) {
-      history.from = signer.address;
+      history.from = this.formatAddress(signer.address);
     }
 
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
@@ -651,23 +651,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
    */
   public encrypt(value: string): string {
     return encrypt(value);
-  }
-
-  /**
-   * Get pair of account by address
-   * @param accountAddress address of account
-   * @returns account pair or throws error
-   */
-  public getAccountPair(accountAddress: string): KeyringPair | null {
-    try {
-      const keyringInstance = new Keyring({ type: KeyringType });
-      const pair = keyringInstance.addFromAddress(accountAddress);
-
-      return pair;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
   }
 }
 
