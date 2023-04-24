@@ -321,7 +321,7 @@ export class SwapModule<T> {
     // Tickers with rates in oracle (except USD ticker, because it is the same as DAI)
     const tickersWithOracleRates = assetsInPaths.reduce((buffer, address) => {
       if (address !== xstusd && !!xstAssets[address]) {
-        buffer.push(address);
+        buffer.push(xstAssets[address].referenceSymbol);
       }
       return buffer;
     }, []);
@@ -345,7 +345,7 @@ export class SwapModule<T> {
     const assetsIssuances = tbcUsed ? [toCodec(this.root.apiRx.query.balances.totalIssuance())] : [];
 
     const tickersRates = xstUsed
-      ? tickersWithOracleRates.map((address) => toBandRate(this.root.apiRx.query.band.symbolRates(address)))
+      ? tickersWithOracleRates.map((symbol) => toBandRate(this.root.apiRx.query.band.symbolRates(symbol)))
       : [];
 
     const tbcConsts = tbcUsed
