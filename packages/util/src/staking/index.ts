@@ -1,8 +1,8 @@
 import { assert } from '@polkadot/util';
-import { map } from '@polkadot/x-rxjs/operators';
+import { FPNumber } from '@sora-substrate/math';
+import { map } from 'rxjs';
 
 import { Messages } from '../logger';
-import { FPNumber } from '../fp';
 import { Operation } from '../BaseApi';
 import { XOR } from '../assets/consts';
 import { StakingRewardsDestination } from './types';
@@ -12,7 +12,7 @@ import type { Exposure } from '@polkadot/types/interfaces/staking';
 import type { Observable } from '@polkadot/types/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
 import type { Api } from '../api';
-import type { CodecString, NumberLike } from '../fp';
+import type { CodecString, NumberLike } from '@sora-substrate/math';
 import type {
   ValidatorInfo,
   StashNominatorsInfo,
@@ -39,8 +39,8 @@ const formatPayee = (payee: StakingRewardsDestination | string): string | { Acco
   return payee in StakingRewardsDestination ? payee : { Account: payee };
 };
 
-export class StakingModule {
-  constructor(private readonly root: Api) {}
+export class StakingModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   public getSignerPair(signerPair?: KeyringPair) {
     const pair = signerPair || this.root.account.pair;
@@ -83,10 +83,16 @@ export class StakingModule {
    * Get observable active era
    * @returns era index & era start timestamp
    */
-  public getActiveEraObservable(): Observable<ActiveEra> {
+  public getActiveEraObservable(): Observable<ActiveEra | null> {
     return this.root.apiRx.query.staking.activeEra().pipe(
       map((data) => {
-        return data.toJSON() as ActiveEra;
+        if (data.isEmpty) return null;
+
+        const era = data.unwrap();
+        const index = era.index.toNumber();
+        const start = era.start.unwrap().toNumber();
+
+        return { index, start };
       })
     );
   }
@@ -98,7 +104,8 @@ export class StakingModule {
   public getCurrentEraObservable(): Observable<number> {
     return this.root.apiRx.query.staking.currentEra().pipe(
       map((data) => {
-        return data.toJSON() as number;
+        const era = data.unwrap();
+        return era.toNumber();
       })
     );
   }
@@ -108,13 +115,13 @@ export class StakingModule {
    * This value is very important from the point of view that many calls to the Staking module are only allowed when election is completed.
    * @returns election status of current era
    */
-  public getEraElectionStatusObservable(): Observable<EraElectionStatus> {
-    return this.root.apiRx.query.staking.eraElectionStatus().pipe(
-      map((electionStatus) => {
-        return electionStatus.toJSON() as EraElectionStatus;
-      })
-    );
-  }
+  // public getEraElectionStatusObservable(): Observable<EraElectionStatus> {
+  //   return this.root.apiRx.query.staking.eraElectionStatus().pipe(
+  //     map((electionStatus) => {
+  //       return electionStatus.toJSON() as EraElectionStatus;
+  //     })
+  //   );
+  // }
 
   /**
    * Get observable eras total stake
@@ -124,7 +131,7 @@ export class StakingModule {
   public getEraTotalStakeObservable(eraIndex: number): Observable<CodecString> {
     return this.root.apiRx.query.staking.erasTotalStake(eraIndex).pipe(
       map((data) => {
-        return data.toString();
+        return new FPNumber(data).toCodecString();
       })
     );
   }
@@ -137,7 +144,14 @@ export class StakingModule {
   public getEraRewardPointsObservable(eraIndex: number): Observable<EraRewardPoints> {
     return this.root.apiRx.query.staking.erasRewardPoints(eraIndex).pipe(
       map((data) => {
-        return data.toJSON() as EraRewardPoints;
+        const total = data.total.toNumber();
+        const individual = {};
+
+        for (const [account, points] of data.individual.entries()) {
+          individual[account.toString()] = points.toNumber();
+        }
+
+        return { individual, total };
       })
     );
   }
@@ -172,7 +186,12 @@ export class StakingModule {
    * @param stashAddress address of stash account
    */
   public getControllerObservable(stashAddress: string): Observable<string | null> {
-    return this.root.apiRx.query.staking.bonded(stashAddress).pipe(map((data) => data.toHuman() as string | null));
+    return this.root.apiRx.query.staking.bonded(stashAddress).pipe(
+      map((data) => {
+        if (data.isEmpty) return null;
+        return data.unwrap().toString();
+      })
+    );
   }
 
   /**
@@ -198,13 +217,13 @@ export class StakingModule {
    */
   public async getWannabeValidators(): Promise<ValidatorInfo[]> {
     const validators = (await this.root.api.query.staking.validators.entries()).map(([key, codec]) => {
-      const [address] = key.toHuman() as any;
+      const address = key.args[0].toString();
       const { commission, blocked } = codec;
 
       return {
-        address: address as string,
+        address,
         blocked: blocked.isTrue,
-        commission: commission.toHuman() as string,
+        commission: commission.unwrap().toString(),
       };
     });
 
@@ -221,10 +240,10 @@ export class StakingModule {
     const storage = clipped ? this.root.api.query.staking.erasStakersClipped : this.root.api.query.staking.erasStakers;
 
     const validators = (await storage.entries(eraIndex)).map(([key, codec]) => {
-      const [eraIdx, accountId] = key.args;
+      const address = key.args[1].toString();
       const data = formatValidatorExposure(codec);
 
-      return { address: accountId.toString(), ...data };
+      return { address, ...data };
     });
 
     return validators;
@@ -259,9 +278,9 @@ export class StakingModule {
    * @returns list of validator addresses
    */
   public async getSessionValidators(): Promise<string[]> {
-    const data = (await this.root.api.query.session.validators()).toHuman() as any;
+    const data = await this.root.api.query.session.validators();
 
-    return data as string[];
+    return data.map((id) => id.toString());
   }
 
   /**
@@ -270,10 +289,15 @@ export class StakingModule {
    * @param stashAddress address of stash account
    * @returns The structure with the list of validators, eraIndex
    */
-  public getNominationsObservable(stashAddress: string): Observable<StashNominatorsInfo> {
+  public getNominationsObservable(stashAddress: string): Observable<StashNominatorsInfo | null> {
     return this.root.apiRx.query.staking.nominators(stashAddress).pipe(
       map((codec) => {
-        return codec.toJSON() as StashNominatorsInfo;
+        if (codec.isEmpty) return null;
+        const data = codec.unwrap();
+        const targets = data.targets.map((target) => target.toString());
+        const suppressed = data.suppressed.isTrue;
+        const submittedIn = data.submittedIn.toNumber();
+        return { targets, suppressed, submittedIn };
       })
     );
   }

@@ -4,6 +4,7 @@
 
 - [substrate](#substrate-pallet)
 - [system](#system-pallet)
+- [babe](#babe-pallet)
 - [timestamp](#timestamp-pallet)
 - [balances](#balances-pallet)
 - [randomnessCollectiveFlip](#randomnesscollectiveflip-pallet)
@@ -13,17 +14,19 @@
 - [rewards](#rewards-pallet)
 - [xorFee](#xorfee-pallet)
 - [bridgeMultisig](#bridgemultisig-pallet)
-- [session](#session-pallet)
-- [babe](#babe-pallet)
-- [grandpa](#grandpa-pallet)
 - [authorship](#authorship-pallet)
 - [staking](#staking-pallet)
+- [offences](#offences-pallet)
+- [session](#session-pallet)
+- [grandpa](#grandpa-pallet)
+- [imOnline](#imonline-pallet)
 - [tokens](#tokens-pallet)
 - [tradingPair](#tradingpair-pallet)
 - [assets](#assets-pallet)
 - [dexManager](#dexmanager-pallet)
 - [multicollateralBondingCurvePool](#multicollateralbondingcurvepool-pallet)
-- [poolXyk](#poolxyk-pallet)
+- [technical](#technical-pallet)
+- [poolXYK](#poolxyk-pallet)
 - [council](#council-pallet)
 - [technicalCommittee](#technicalcommittee-pallet)
 - [democracy](#democracy-pallet)
@@ -33,8 +36,6 @@
 - [multisig](#multisig-pallet)
 - [scheduler](#scheduler-pallet)
 - [irohaMigration](#irohamigration-pallet)
-- [imOnline](#imonline-pallet)
-- [offences](#offences-pallet)
 - [technicalMembership](#technicalmembership-pallet)
 - [electionsPhragmen](#electionsphragmen-pallet)
 - [vestedRewards](#vestedrewards-pallet)
@@ -44,17 +45,47 @@
 - [priceTools](#pricetools-pallet)
 - [ceresStaking](#ceresstaking-pallet)
 - [ceresLiquidityLocker](#ceresliquiditylocker-pallet)
+- [ceresTokenLocker](#cerestokenlocker-pallet)
+- [ceresGovernancePlatform](#ceresgovernanceplatform-pallet)
+- [ceresLaunchpad](#cereslaunchpad-pallet)
+- [demeterFarmingPlatform](#demeterfarmingplatform-pallet)
+- [bagsList](#bagslist-pallet)
+- [electionProviderMultiPhase](#electionprovidermultiphase-pallet)
+- [band](#band-pallet)
+- [oracleProxy](#oracleproxy-pallet)
+- [hermesGovernancePlatform](#hermesgovernanceplatform-pallet)
+- [preimage](#preimage-pallet)
+- [orderBook](#orderbook-pallet)
+- [mmr](#mmr-pallet)
+- [beefy](#beefy-pallet)
+- [mmrLeaf](#mmrleaf-pallet)
+- [leafProvider](#leafprovider-pallet)
+- [evmBridgeProxy](#evmbridgeproxy-pallet)
+- [ethereumLightClient](#ethereumlightclient-pallet)
+- [bridgeInboundChannel](#bridgeinboundchannel-pallet)
+- [bridgeOutboundChannel](#bridgeoutboundchannel-pallet)
+- [dispatch](#dispatch-pallet)
+- [ethApp](#ethapp-pallet)
+- [erc20App](#erc20app-pallet)
+- [migrationApp](#migrationapp-pallet)
+- [beefyLightClient](#beefylightclient-pallet)
+- [substrateBridgeInboundChannel](#substratebridgeinboundchannel-pallet)
+- [substrateBridgeOutboundChannel](#substratebridgeoutboundchannel-pallet)
+- [substrateDispatch](#substratedispatch-pallet)
+- [substrateBridgeApp](#substratebridgeapp-pallet)
+- [sudo](#sudo-pallet)
 - [utility](#utility-pallet)
-- [currencies](#currencies-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
-- [rpc](#rpc-pallet)
+- [faucet](#faucet-pallet)
 - [author](#author-pallet)
 - [chain](#chain-pallet)
 - [childstate](#childstate-pallet)
 - [offchain](#offchain-pallet)
 - [payment](#payment-pallet)
+- [rpc](#rpc-pallet)
 - [state](#state-pallet)
 - [dexApi](#dexapi-pallet)
+- [intentivizedChannel](#intentivizedchannel-pallet)
 
 ## Substrate pallet
 
@@ -114,15 +145,25 @@ returns: `u64`
 
 ### _State Queries_
 
+#### **api.query.system.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.system.account**
 
 > The full account information for a particular account ID.
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `AccountInfo`
+returns: `FrameSystemAccountInfo`
 
 <hr>
 
@@ -142,7 +183,7 @@ returns: `u32`
 
 arguments: -
 
-returns: `ConsumedWeight`
+returns: `FrameSupportDispatchPerDispatchClassWeight`
 
 <hr>
 
@@ -162,9 +203,9 @@ returns: `u32`
 
 arguments:
 
-- key: `BlockNumber`
+- key: `u32`
 
-returns: `Hash`
+returns: `H256`
 
 <hr>
 
@@ -186,7 +227,7 @@ returns: `Bytes`
 
 arguments: -
 
-returns: `BlockNumber`
+returns: `u32`
 
 <hr>
 
@@ -196,7 +237,7 @@ returns: `BlockNumber`
 
 arguments: -
 
-returns: `Hash`
+returns: `H256`
 
 <hr>
 
@@ -206,17 +247,23 @@ returns: `Hash`
 
 arguments: -
 
-returns: `DigestOf`
+returns: `SpRuntimeDigest`
 
 <hr>
 
 #### **api.query.system.events**
 
 > Events deposited for the current block.
+>
+> NOTE: The item is unbound and should therefore never be read on chain.
+> It could otherwise inflate the PoV size of a block.
+>
+> Events have a large in-memory size. Box the events to not go out-of-memory
+> just in case someone still reads them from within the runtime.
 
 arguments: -
 
-returns: `Vec<EventRecord>`
+returns: `Vec<FrameSystemEventRecord>`
 
 <hr>
 
@@ -226,7 +273,7 @@ returns: `Vec<EventRecord>`
 
 arguments: -
 
-returns: `EventIndex`
+returns: `u32`
 
 <hr>
 
@@ -245,9 +292,9 @@ returns: `EventIndex`
 
 arguments:
 
-- key: `Hash`
+- key: `H256`
 
-returns: `Vec<(BlockNumber,EventIndex)>`
+returns: `Vec<(u32,u32)>`
 
 <hr>
 
@@ -257,7 +304,7 @@ returns: `Vec<(BlockNumber,EventIndex)>`
 
 arguments: -
 
-returns: `LastRuntimeUpgradeInfo`
+returns: `FrameSystemLastRuntimeUpgradeInfo`
 
 <hr>
 
@@ -271,9 +318,9 @@ returns: `bool`
 
 <hr>
 
-#### **api.query.system.upgradedToDualRefCount**
+#### **api.query.system.upgradedToTripleRefCount**
 
-> True if we have upgraded so that AccountInfo contains two types of `RefCount`. False
+> True if we have upgraded so that AccountInfo contains three types of `RefCount`. False
 > (default) if not.
 
 arguments: -
@@ -288,20 +335,11 @@ returns: `bool`
 
 arguments: -
 
-returns: `Phase`
+returns: `FrameSystemPhase`
 
 <hr>
 
 ### _Extrinsics_
-
-#### **api.tx.system.fillBlock**
-
-> A dispatch that will fill the block weight up to the given ratio.
-
-arguments:
-
-- \_ratio: `Perbill`
-<hr>
 
 #### **api.tx.system.remark**
 
@@ -310,28 +348,17 @@ arguments:
 > # <weight>
 >
 > - `O(1)`
-> - Base Weight: 0.665 µs, independent of remark length.
-> - No DB operations.
 >
 > # </weight>
 
 arguments:
 
-- \_remark: `Bytes`
+- remark: `Bytes`
 <hr>
 
 #### **api.tx.system.setHeapPages**
 
 > Set the number of pages in the WebAssembly environment's heap.
->
-> # <weight>
->
-> - `O(1)`
-> - 1 storage write.
-> - Base Weight: 1.405 µs
-> - 1 write to HEAP_PAGES
->
-> # </weight>
 
 arguments:
 
@@ -345,11 +372,13 @@ arguments:
 > # <weight>
 >
 > - `O(C + S)` where `C` length of `code` and `S` complexity of `can_set_code`
+> - 1 call to `can_set_code`: `O(S)` (calls `sp_io::misc::runtime_version` which is
+>   expensive).
 > - 1 storage write (codec `O(C)`).
-> - 1 call to `can_set_code`: `O(S)` (calls `sp_io::misc::runtime_version` which is expensive).
+> - 1 digest item.
 > - 1 event.
->   The weight of this function is dependent on the runtime, but generally this is very expensive.
->   We will treat this as a full block.
+>   The weight of this function is dependent on the runtime, but generally this is very
+>   expensive. We will treat this as a full block.
 >
 > # </weight>
 
@@ -366,70 +395,32 @@ arguments:
 >
 > - `O(C)` where `C` length of `code`
 > - 1 storage write (codec `O(C)`).
+> - 1 digest item.
 > - 1 event.
->   The weight of this function is dependent on the runtime. We will treat this as a full block.
->
-> # </weight>
+>   The weight of this function is dependent on the runtime. We will treat this as a full
+>   block. # </weight>
 
 arguments:
 
 - code: `Bytes`
 <hr>
 
-#### **api.tx.system.setChangesTrieConfig**
-
-> Set the new changes trie configuration.
->
-> # <weight>
->
-> - `O(1)`
-> - 1 storage write or delete (codec `O(1)`).
-> - 1 call to `deposit_log`: Uses `append` API, so O(1)
-> - Base Weight: 7.218 µs
-> - DB Weight:
->   - Writes: Changes Trie, System Digest
->
-> # </weight>
-
-arguments:
-
-- changes_trie_config: `Option<ChangesTrieConfiguration>`
-<hr>
-
 #### **api.tx.system.setStorage**
 
 > Set some items of storage.
->
-> # <weight>
->
-> - `O(I)` where `I` length of `items`
-> - `I` storage writes (`O(1)`).
-> - Base Weight: 0.568 \* i µs
-> - Writes: Number of items
->
-> # </weight>
 
 arguments:
 
-- items: `Vec<KeyValue>`
+- items: `Vec<(Bytes,Bytes)>`
 <hr>
 
 #### **api.tx.system.killStorage**
 
 > Kill some items from storage.
->
-> # <weight>
->
-> - `O(IK)` where `I` length of `keys` and `K` length of one key
-> - `I` storage deletions.
-> - Base Weight: .378 \* i µs
-> - Writes: Number of items
->
-> # </weight>
 
 arguments:
 
-- keys: `Vec<Key>`
+- keys: `Vec<Bytes>`
 <hr>
 
 #### **api.tx.system.killPrefix**
@@ -438,20 +429,20 @@ arguments:
 >
 > **NOTE:** We rely on the Root origin to provide us the number of subkeys under
 > the prefix we are removing to accurately calculate the weight of this function.
->
-> # <weight>
->
-> - `O(P)` where `P` amount of keys with prefix `prefix`
-> - `P` storage deletions.
-> - Base Weight: 0.834 \* P µs
-> - Writes: Number of subkeys + 1
->
-> # </weight>
 
 arguments:
 
-- prefix: `Key`
-- \_subkeys: `u32`
+- prefix: `Bytes`
+- subkeys: `u32`
+<hr>
+
+#### **api.tx.system.remarkWithEvent**
+
+> Make some on-chain remark and emit event.
+
+arguments:
+
+- remark: `Bytes`
 <hr>
 
 ### _Custom RPCs_
@@ -468,34 +459,25 @@ returns: `Index`
 
 <hr>
 
-#### **api.rpc.system.dryRun**
+#### **api.rpc.system.addLogFilter**
 
-> Dry run an extrinsic at a given block
+> Adds the supplied directives to the current log filter
 
 arguments:
 
-- extrinsic: `Bytes`
-- at: `BlockHash`
+- directives: `Text`
 
-returns: `ApplyExtrinsicResult`
-
-<hr>
-
-#### **api.rpc.system.name**
-
-> Retrieves the node name
-
-arguments: -
-
-returns: `Text`
+returns: `Null`
 
 <hr>
 
-#### **api.rpc.system.version**
+#### **api.rpc.system.addReservedPeer**
 
-> Retrieves the version of the node
+> Adds a reserved peer
 
-arguments: -
+arguments:
+
+- peer: `Text`
 
 returns: `Text`
 
@@ -521,13 +503,16 @@ returns: `ChainType`
 
 <hr>
 
-#### **api.rpc.system.properties**
+#### **api.rpc.system.dryRun**
 
-> Get a custom set of properties as a JSON object, defined in the chain spec
+> Dry run an extrinsic at a given block
 
-arguments: -
+arguments:
 
-returns: `ChainProperties`
+- extrinsic: `Bytes`
+- at: `BlockHash`
+
+returns: `ApplyExtrinsicResult`
 
 <hr>
 
@@ -541,16 +526,6 @@ returns: `Health`
 
 <hr>
 
-#### **api.rpc.system.localPeerId**
-
-> Returns the base58-encoded PeerId of the node
-
-arguments: -
-
-returns: `Text`
-
-<hr>
-
 #### **api.rpc.system.localListenAddresses**
 
 > The addresses include a trailing /p2p/ with the local PeerId, and are thus suitable to be passed to addReservedPeer or as a bootnode address for example
@@ -561,35 +536,21 @@ returns: `Vec<Text>`
 
 <hr>
 
-#### **api.rpc.system.peers**
+#### **api.rpc.system.localPeerId**
 
-> Returns the currently connected peers
+> Returns the base58-encoded PeerId of the node
 
 arguments: -
-
-returns: `Vec<PeerInfo>`
-
-<hr>
-
-#### **api.rpc.system.addReservedPeer**
-
-> Adds a reserved peer
-
-arguments:
-
-- peer: `Text`
 
 returns: `Text`
 
 <hr>
 
-#### **api.rpc.system.removeReservedPeer**
+#### **api.rpc.system.name**
 
-> Remove a reserved peer
+> Retrieves the node name
 
-arguments:
-
-- peerId: `Text`
+arguments: -
 
 returns: `Text`
 
@@ -605,25 +566,45 @@ returns: `Vec<NodeRole>`
 
 <hr>
 
-#### **api.rpc.system.syncState**
+#### **api.rpc.system.peers**
 
-> Returns the state of the syncing of the node
+> Returns the currently connected peers
 
 arguments: -
 
-returns: `SyncState`
+returns: `Vec<PeerInfo>`
 
 <hr>
 
-#### **api.rpc.system.addLogFilter**
+#### **api.rpc.system.properties**
 
-> Adds the supplied directives to the current log filter
+> Get a custom set of properties as a JSON object, defined in the chain spec
+
+arguments: -
+
+returns: `ChainProperties`
+
+<hr>
+
+#### **api.rpc.system.removeReservedPeer**
+
+> Remove a reserved peer
 
 arguments:
 
-- directives: `Text`
+- peerId: `Text`
 
-returns: `Null`
+returns: `Text`
+
+<hr>
+
+#### **api.rpc.system.reservedPeers**
+
+> Returns the list of reserved peers
+
+arguments: -
+
+returns: `Vec<Text>`
 
 <hr>
 
@@ -637,9 +618,291 @@ returns: `Null`
 
 <hr>
 
+#### **api.rpc.system.syncState**
+
+> Returns the state of the syncing of the node
+
+arguments: -
+
+returns: `SyncState`
+
+<hr>
+
+#### **api.rpc.system.version**
+
+> Retrieves the version of the node
+
+arguments: -
+
+returns: `Text`
+
+<hr>
+
+## Babe pallet
+
+### _State Queries_
+
+#### **api.query.babe.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.babe.epochIndex**
+
+> Current epoch index.
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.babe.authorities**
+
+> Current epoch authorities.
+
+arguments: -
+
+returns: `Vec<(SpConsensusBabeAppPublic,u64)>`
+
+<hr>
+
+#### **api.query.babe.genesisSlot**
+
+> The slot at which the first epoch actually started. This is 0
+> until the first block of the chain.
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.babe.currentSlot**
+
+> Current slot number.
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.babe.randomness**
+
+> The epoch randomness for the _current_ epoch.
+>
+> # Security
+>
+> This MUST NOT be used for gambling, as it can be influenced by a
+> malicious validator in the short term. It MAY be used in many
+> cryptographic protocols, however, so long as one remembers that this
+> (like everything else on-chain) it is public. For example, it can be
+> used where a number is needed that cannot have been chosen by an
+> adversary, for purposes such as public-coin zero-knowledge proofs.
+
+arguments: -
+
+returns: `[u8;32]`
+
+<hr>
+
+#### **api.query.babe.pendingEpochConfigChange**
+
+> Pending epoch configuration change that will be applied when the next epoch is enacted.
+
+arguments: -
+
+returns: `SpConsensusBabeDigestsNextConfigDescriptor`
+
+<hr>
+
+#### **api.query.babe.nextRandomness**
+
+> Next epoch randomness.
+
+arguments: -
+
+returns: `[u8;32]`
+
+<hr>
+
+#### **api.query.babe.nextAuthorities**
+
+> Next epoch authorities.
+
+arguments: -
+
+returns: `Vec<(SpConsensusBabeAppPublic,u64)>`
+
+<hr>
+
+#### **api.query.babe.segmentIndex**
+
+> Randomness under construction.
+>
+> We make a trade-off between storage accesses and list length.
+> We store the under-construction randomness in segments of up to
+> `UNDER_CONSTRUCTION_SEGMENT_LENGTH`.
+>
+> Once a segment reaches this length, we begin the next one.
+> We reset all segments and return to `0` at the beginning of every
+> epoch.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.babe.underConstruction**
+
+> TWOX-NOTE: `SegmentIndex` is an increasing integer, so this is okay.
+
+arguments:
+
+- key: `u32`
+
+returns: `Vec<[u8;32]>`
+
+<hr>
+
+#### **api.query.babe.initialized**
+
+> Temporary value (cleared at block finalization) which is `Some`
+> if per-block initialization has already been called for current block.
+
+arguments: -
+
+returns: `Option<SpConsensusBabeDigestsPreDigest>`
+
+<hr>
+
+#### **api.query.babe.authorVrfRandomness**
+
+> This field should always be populated during block processing unless
+> secondary plain slots are enabled (which don't contain a VRF output).
+>
+> It is set in `on_finalize`, before it will contain the value from the last block.
+
+arguments: -
+
+returns: `Option<[u8;32]>`
+
+<hr>
+
+#### **api.query.babe.epochStart**
+
+> The block numbers when the last and current epoch have started, respectively `N-1` and
+> `N`.
+> NOTE: We track this is in order to annotate the block number when a given pool of
+> entropy was fixed (i.e. it was known to chain observers). Since epochs are defined in
+> slots, which may be skipped, the block numbers may not line up with the slot numbers.
+
+arguments: -
+
+returns: `(u32,u32)`
+
+<hr>
+
+#### **api.query.babe.lateness**
+
+> How late the current block is compared to its parent.
+>
+> This entry is populated as part of block execution and is cleaned up
+> on block finalization. Querying this storage entry outside of block
+> execution context should always yield zero.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.babe.epochConfig**
+
+> The configuration for the current epoch. Should never be `None` as it is initialized in
+> genesis.
+
+arguments: -
+
+returns: `SpConsensusBabeBabeEpochConfiguration`
+
+<hr>
+
+#### **api.query.babe.nextEpochConfig**
+
+> The configuration for the next epoch, `None` if the config will not change
+> (you can fallback to `EpochConfig` instead in that case).
+
+arguments: -
+
+returns: `SpConsensusBabeBabeEpochConfiguration`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.babe.reportEquivocation**
+
+> Report authority equivocation/misbehavior. This method will verify
+> the equivocation proof and validate the given key ownership proof
+> against the extracted offender. If both are valid, the offence will
+> be reported.
+
+arguments:
+
+- equivocationProof: `SpConsensusSlotsEquivocationProof`
+- keyOwnerProof: `SpSessionMembershipProof`
+<hr>
+
+#### **api.tx.babe.reportEquivocationUnsigned**
+
+> Report authority equivocation/misbehavior. This method will verify
+> the equivocation proof and validate the given key ownership proof
+> against the extracted offender. If both are valid, the offence will
+> be reported.
+> This extrinsic must be called unsigned and it is expected that only
+> block authors will call it (validated in `ValidateUnsigned`), as such
+> if the block author is defined it will be defined as the equivocation
+> reporter.
+
+arguments:
+
+- equivocationProof: `SpConsensusSlotsEquivocationProof`
+- keyOwnerProof: `SpSessionMembershipProof`
+<hr>
+
+#### **api.tx.babe.planConfigChange**
+
+> Plan an epoch config change. The epoch config change is recorded and will be enacted on
+> the next call to `enact_epoch_change`. The config will be activated one epoch after.
+> Multiple calls to this method will replace any existing planned config change that had
+> not been enacted yet.
+
+arguments:
+
+- config: `SpConsensusBabeDigestsNextConfigDescriptor`
+<hr>
+
 ## Timestamp pallet
 
 ### _State Queries_
+
+#### **api.query.timestamp.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.timestamp.now**
 
@@ -647,7 +910,7 @@ returns: `Null`
 
 arguments: -
 
-returns: `Moment`
+returns: `u64`
 
 <hr>
 
@@ -678,19 +941,30 @@ returns: `bool`
 > # <weight>
 >
 > - `O(1)` (Note that implementations of `OnTimestampSet` must also be `O(1)`)
-> - 1 storage read and 1 storage mutation (codec `O(1)`). (because of `DidUpdate::take` in `on_finalize`)
+> - 1 storage read and 1 storage mutation (codec `O(1)`). (because of `DidUpdate::take` in
+>   `on_finalize`)
 > - 1 event handler `on_timestamp_set`. Must be `O(1)`.
 >
 > # </weight>
 
 arguments:
 
-- now: `Compact<Moment>`
+- now: `Compact<u64>`
 <hr>
 
 ## Balances pallet
 
 ### _State Queries_
+
+#### **api.query.balances.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.balances.totalIssuance**
 
@@ -698,21 +972,52 @@ arguments:
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
+
+<hr>
+
+#### **api.query.balances.inactiveIssuance**
+
+> The total units of outstanding deactivated balance in the system.
+
+arguments: -
+
+returns: `u128`
 
 <hr>
 
 #### **api.query.balances.account**
 
-> The balance of an account.
+> The Balances pallet example of storing the balance of an account.
 >
+> # Example
+>
+> ```nocompile
+>  impl pallet_balances::Config for Runtime {
+>    type AccountStore = StorageMapShim<Self::Account<Runtime>, frame_system::Provider<Runtime>, AccountId, Self::AccountData<Balance>>
+>  }
+> ```
+>
+> You can also store the balance of an account in the `System` pallet.
+>
+> # Example
+>
+> ```nocompile
+>  impl pallet_balances::Config for Runtime {
+>   type AccountStore = System
+>  }
+> ```
+>
+> But this comes with tradeoffs, storing account balances in the system pallet stores
+> `frame_system` data alongside the account data contrary to storing account balances in the
+> `Balances` pallet, which uses a `StorageMap` to store balances data only.
 > NOTE: This is only used in the case that this pallet is used to store balances.
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `AccountData`
+returns: `PalletBalancesAccountData`
 
 <hr>
 
@@ -723,141 +1028,37 @@ returns: `AccountData`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Vec<BalanceLock>`
-
-<hr>
-
-#### **api.query.balances.storageVersion**
-
-> Storage version of the pallet.
->
-> This is set to v2.0.0 for new networks.
-
-arguments: -
-
-returns: `Releases`
+returns: `Vec<PalletBalancesBalanceLock>`
 
 <hr>
 
-### _Extrinsics_
+#### **api.query.balances.reserves**
 
-#### **api.tx.balances.transfer**
-
-> Transfer some liquid free balance to another account.
->
-> `transfer` will set the `FreeBalance` of the sender and receiver.
-> It will decrease the total issuance of the system by the `TransferFee`.
-> If the sender's account is below the existential deposit as a result
-> of the transfer, the account will be reaped.
->
-> The dispatch origin for this call must be `Signed` by the transactor.
->
-> # <weight>
->
-> - Dependent on arguments but not critical, given proper implementations for
->   input config types. See related functions below.
-> - It contains a limited number of reads and writes internally and no complex computation.
->
-> Related functions:
->
-> - `ensure_can_withdraw` is always called internally but has a bounded complexity.
-> - Transferring balances to accounts that did not exist before will cause
->   `T::OnNewAccount::on_new_account` to be called.
-> - Removing enough funds from an account will trigger `T::DustRemoval::on_unbalanced`.
-> - `transfer_keep_alive` works the same way as `transfer`, but has an additional
->   check that the transfer will not kill the origin account.
->
-> ---
->
-> - Base Weight: 73.64 µs, worst case scenario (account created, account removed)
-> - DB Weight: 1 Read and 1 Write to destination account
-> - Origin account is already in memory, so no DB operations for them.
->
-> # </weight>
+> Named reserves on some account balances.
 
 arguments:
 
-- dest: `LookupSource`
-- value: `Compact<Balance>`
-<hr>
+- key: `AccountId32`
 
-#### **api.tx.balances.setBalance**
+returns: `Vec<PalletBalancesReserveData>`
 
-> Set the balances of a given account.
->
-> This will alter `FreeBalance` and `ReservedBalance` in storage. it will
-> also decrease the total issuance of the system (`TotalIssuance`).
-> If the new free or reserved balance is below the existential deposit,
-> it will reset the account nonce (`frame_system::AccountNonce`).
->
-> The dispatch origin for this call is `root`.
->
-> # <weight>
->
-> - Independent of the arguments.
-> - Contains a limited number of reads and writes.
->
-> ---
->
-> - Base Weight:
->   - Creating: 27.56 µs
->   - Killing: 35.11 µs
-> - DB Weight: 1 Read, 1 Write to `who`
->
-> # </weight>
-
-arguments:
-
-- who: `LookupSource`
-- new_free: `Compact<Balance>`
-- new_reserved: `Compact<Balance>`
-<hr>
-
-#### **api.tx.balances.forceTransfer**
-
-> Exactly as `transfer`, except the origin must be root and the source account may be
-> specified.
->
-> # <weight>
->
-> - Same as transfer, but additional read and write because the source account is
->   not assumed to be in the overlay.
->
-> # </weight>
-
-arguments:
-
-- source: `LookupSource`
-- dest: `LookupSource`
-- value: `Compact<Balance>`
-<hr>
-
-#### **api.tx.balances.transferKeepAlive**
-
-> Same as the [`transfer`] call, but with a check that the transfer will not kill the
-> origin account.
->
-> 99% of the time you want [`transfer`] instead.
->
-> [`transfer`]: struct.Pallet.html#method.transfer
->
-> # <weight>
->
-> - Cheaper than transfer because account cannot be killed.
-> - Base Weight: 51.4 µs
-> - DB Weight: 1 Read and 1 Write to dest (sender is in overlay already) #</weight>
-
-arguments:
-
-- dest: `LookupSource`
-- value: `Compact<Balance>`
 <hr>
 
 ## RandomnessCollectiveFlip pallet
 
 ### _State Queries_
+
+#### **api.query.randomnessCollectiveFlip.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.randomnessCollectiveFlip.randomMaterial**
 
@@ -867,7 +1068,7 @@ arguments:
 
 arguments: -
 
-returns: `Vec<Hash>`
+returns: `Vec<H256>`
 
 <hr>
 
@@ -875,11 +1076,21 @@ returns: `Vec<Hash>`
 
 ### _State Queries_
 
+#### **api.query.transactionPayment.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.transactionPayment.nextFeeMultiplier**
 
 arguments: -
 
-returns: `Multiplier`
+returns: `u128`
 
 <hr>
 
@@ -887,7 +1098,7 @@ returns: `Multiplier`
 
 arguments: -
 
-returns: `Releases`
+returns: `PalletTransactionPaymentReleases`
 
 <hr>
 
@@ -895,14 +1106,23 @@ returns: `Releases`
 
 ### _State Queries_
 
+#### **api.query.permissions.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.permissions.owners**
 
 arguments:
 
-- key1: `PermissionId`
-- key2: `Scope`
+- key: `(u32,PermissionsScope)`
 
-returns: `Vec<OwnerId>`
+returns: `Vec<AccountId32>`
 
 <hr>
 
@@ -910,10 +1130,9 @@ returns: `Vec<OwnerId>`
 
 arguments:
 
-- key1: `HolderId`
-- key2: `Scope`
+- key: `(AccountId32,PermissionsScope)`
 
-returns: `Vec<PermissionId>`
+returns: `Vec<u32>`
 
 <hr>
 
@@ -921,13 +1140,23 @@ returns: `Vec<PermissionId>`
 
 ### _State Queries_
 
+#### **api.query.referrals.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.referrals.referrers**
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -935,9 +1164,9 @@ returns: `AccountId`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -945,9 +1174,9 @@ returns: `Balance`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Vec<AccountId>`
+returns: `Vec<AccountId32>`
 
 <hr>
 
@@ -959,7 +1188,7 @@ returns: `Vec<AccountId>`
 
 arguments:
 
-- balance: `Balance`
+- balance: `u128`
 <hr>
 
 #### **api.tx.referrals.unreserve**
@@ -968,7 +1197,7 @@ arguments:
 
 arguments:
 
-- balance: `Balance`
+- balance: `u128`
 <hr>
 
 #### **api.tx.referrals.setReferrer**
@@ -977,18 +1206,28 @@ arguments:
 
 arguments:
 
-- referrer: `AccountId`
+- referrer: `AccountId32`
 <hr>
 
 ## Rewards pallet
 
 ### _State Queries_
 
+#### **api.query.rewards.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.rewards.reservesAcc**
 
 arguments: -
 
-returns: `TechAccountId`
+returns: `CommonPrimitivesTechAccountId`
 
 <hr>
 
@@ -998,9 +1237,9 @@ returns: `TechAccountId`
 
 arguments:
 
-- key: `EthereumAddress`
+- key: `H160`
 
-returns: `RewardInfo`
+returns: `RewardsRewardInfo`
 
 <hr>
 
@@ -1008,9 +1247,9 @@ returns: `RewardInfo`
 
 arguments:
 
-- key: `EthereumAddress`
+- key: `H160`
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -1018,9 +1257,21 @@ returns: `Balance`
 
 arguments:
 
-- key: `EthereumAddress`
+- key: `H160`
 
-returns: `Balance`
+returns: `u128`
+
+<hr>
+
+#### **api.query.rewards.umiNftReceivers**
+
+> UMI NFT receivers storage
+
+arguments:
+
+- key: `H160`
+
+returns: `Vec<u128>`
 
 <hr>
 
@@ -1030,7 +1281,7 @@ returns: `Balance`
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -1040,7 +1291,7 @@ returns: `Balance`
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -1052,7 +1303,7 @@ arguments:
 
 - key: `u32`
 
-returns: `Vec<EthereumAddress>`
+returns: `Vec<H160>`
 
 <hr>
 
@@ -1062,7 +1313,7 @@ returns: `Vec<EthereumAddress>`
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -1072,7 +1323,7 @@ returns: `Balance`
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -1086,22 +1337,47 @@ returns: `bool`
 
 <hr>
 
+#### **api.query.rewards.umiNfts**
+
+> The storage of available UMI NFTs.
+
+arguments: -
+
+returns: `Vec<CommonPrimitivesAssetId32>`
+
+<hr>
+
+#### **api.query.rewards.umiNftClaimed**
+
+> Stores whether address already claimed UMI NFT rewards.
+
+arguments:
+
+- key: `H160`
+
+returns: `bool`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.rewards.claim**
+
+> Claim the reward with signature.
 
 arguments:
 
 - signature: `Bytes`
 <hr>
 
-#### **api.tx.rewards.finalizeStorageMigration**
+#### **api.tx.rewards.addUmiNftReceivers**
 
 > Finalize the update of unclaimed VAL data in storage
+> Add addresses, who will receive UMI NFT rewards.
 
 arguments:
 
-- amounts: `Vec<(EthereumAddress,Balance)>`
+- receivers: `Vec<H160>`
 <hr>
 
 ### _Custom RPCs_
@@ -1112,7 +1388,7 @@ arguments:
 
 arguments:
 
-- eth_address: `EthereumAddress`
+- ethAddress: `EthAddress`
 - at: `BlockHash`
 
 returns: `Vec<BalanceInfo>`
@@ -1123,19 +1399,58 @@ returns: `Vec<BalanceInfo>`
 
 ### _State Queries_
 
+#### **api.query.xorFee.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.xorFee.xorToVal**
 
 > The amount of XOR to be reminted and exchanged for VAL at the end of the session
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
+<hr>
+
+#### **api.query.xorFee.multiplier**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.xorFee.updateMultiplier**
+
+> Update the multiplier for weight -> fee conversion.
+
+arguments:
+
+- newMultiplier: `u128`
 <hr>
 
 ## BridgeMultisig pallet
 
 ### _State Queries_
+
+#### **api.query.bridgeMultisig.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.bridgeMultisig.accounts**
 
@@ -1143,9 +1458,9 @@ returns: `Balance`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `MultisigAccount`
+returns: `PalletMultisigMultisigAccount`
 
 <hr>
 
@@ -1155,10 +1470,9 @@ returns: `MultisigAccount`
 
 arguments:
 
-- key1: `AccountId`
-- key2: `[u8;32]`
+- key: `(AccountId32,[u8;32])`
 
-returns: `Multisig`
+returns: `PalletMultisigMultisig`
 
 <hr>
 
@@ -1168,7 +1482,7 @@ arguments:
 
 - key: `[u8;32]`
 
-returns: `(OpaqueCall,AccountId,BalanceOf)`
+returns: `(Bytes,AccountId32,u128)`
 
 <hr>
 
@@ -1176,10 +1490,9 @@ returns: `(OpaqueCall,AccountId,BalanceOf)`
 
 arguments:
 
-- key1: `[u8;32]`
-- key2: `BridgeTimepoint`
+- key: `([u8;32],PalletMultisigBridgeTimepoint)`
 
-returns: `()`
+returns: `Null`
 
 <hr>
 
@@ -1205,7 +1518,7 @@ returns: `()`
 
 arguments:
 
-- signatories: `Vec<AccountId>`
+- signatories: `Vec<AccountId32>`
 <hr>
 
 #### **api.tx.bridgeMultisig.removeSignatory**
@@ -1227,7 +1540,7 @@ arguments:
 
 arguments:
 
-- signatory: `AccountId`
+- signatory: `AccountId32`
 <hr>
 
 #### **api.tx.bridgeMultisig.addSignatory**
@@ -1250,7 +1563,7 @@ arguments:
 
 arguments:
 
-- new_member: `AccountId`
+- newMember: `AccountId32`
 <hr>
 
 #### **api.tx.bridgeMultisig.asMultiThreshold1**
@@ -1277,9 +1590,9 @@ arguments:
 
 arguments:
 
-- id: `AccountId`
+- id: `AccountId32`
 - call: `Call`
-- timepoint: `BridgeTimepoint`
+- timepoint: `PalletMultisigBridgeTimepoint`
 <hr>
 
 #### **api.tx.bridgeMultisig.asMulti**
@@ -1342,11 +1655,11 @@ arguments:
 
 arguments:
 
-- id: `AccountId`
-- maybe_timepoint: `Option<BridgeTimepoint>`
-- call: `OpaqueCall`
-- store_call: `bool`
-- max_weight: `Weight`
+- id: `AccountId32`
+- maybeTimepoint: `Option<PalletMultisigBridgeTimepoint>`
+- call: `Bytes`
+- storeCall: `bool`
+- maxWeight: `SpWeightsWeightV2Weight`
 <hr>
 
 #### **api.tx.bridgeMultisig.approveAsMulti**
@@ -1397,10 +1710,10 @@ arguments:
 
 arguments:
 
-- id: `AccountId`
-- maybe_timepoint: `Option<BridgeTimepoint>`
-- call_hash: `[u8;32]`
-- max_weight: `Weight`
+- id: `AccountId32`
+- maybeTimepoint: `Option<PalletMultisigBridgeTimepoint>`
+- callHash: `[u8;32]`
+- maxWeight: `SpWeightsWeightV2Weight`
 <hr>
 
 #### **api.tx.bridgeMultisig.cancelAsMulti**
@@ -1439,464 +1752,22 @@ arguments:
 
 arguments:
 
-- id: `AccountId`
-- timepoint: `BridgeTimepoint`
-- call_hash: `[u8;32]`
-<hr>
-
-## Session pallet
-
-### _State Queries_
-
-#### **api.query.session.validators**
-
-> The current set of validators.
-
-arguments: -
-
-returns: `Vec<ValidatorId>`
-
-<hr>
-
-#### **api.query.session.currentIndex**
-
-> Current index of the session.
-
-arguments: -
-
-returns: `SessionIndex`
-
-<hr>
-
-#### **api.query.session.queuedChanged**
-
-> True if the underlying economic identities or weighting behind the validators
-> has changed in the queued validator set.
-
-arguments: -
-
-returns: `bool`
-
-<hr>
-
-#### **api.query.session.queuedKeys**
-
-> The queued keys for the next session. When the next session begins, these keys
-> will be used to determine the validator's session keys.
-
-arguments: -
-
-returns: `Vec<(ValidatorId,Keys)>`
-
-<hr>
-
-#### **api.query.session.disabledValidators**
-
-> Indices of disabled validators.
->
-> The set is cleared when `on_session_ending` returns a new set of identities.
-
-arguments: -
-
-returns: `Vec<u32>`
-
-<hr>
-
-#### **api.query.session.nextKeys**
-
-> The next session keys for a validator.
-
-arguments:
-
-- key: `ValidatorId`
-
-returns: `Keys`
-
-<hr>
-
-#### **api.query.session.keyOwner**
-
-> The owner of a key. The key is the `KeyTypeId` + the encoded key.
-
-arguments:
-
-- key: `(KeyTypeId,Bytes)`
-
-returns: `ValidatorId`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.session.setKeys**
-
-> Sets the session key(s) of the function caller to `keys`.
-> Allows an account to set its session key prior to becoming a validator.
-> This doesn't take effect until the next session.
->
-> The dispatch origin of this function must be signed.
->
-> # <weight>
->
-> - Complexity: `O(1)`
->   Actual cost depends on the number of length of `T::Keys::key_ids()` which is fixed.
-> - DbReads: `origin account`, `T::ValidatorIdOf`, `NextKeys`
-> - DbWrites: `origin account`, `NextKeys`
-> - DbReads per key id: `KeyOwner`
-> - DbWrites per key id: `KeyOwner`
->
-> # </weight>
-
-arguments:
-
-- keys: `Keys`
-- proof: `Bytes`
-<hr>
-
-#### **api.tx.session.purgeKeys**
-
-> Removes any session key(s) of the function caller.
-> This doesn't take effect until the next session.
->
-> The dispatch origin of this function must be signed.
->
-> # <weight>
->
-> - Complexity: `O(1)` in number of key types.
->   Actual cost depends on the number of length of `T::Keys::key_ids()` which is fixed.
-> - DbReads: `T::ValidatorIdOf`, `NextKeys`, `origin account`
-> - DbWrites: `NextKeys`, `origin account`
-> - DbWrites per key id: `KeyOwnder`
->
-> # </weight>
-
-arguments: -
-
-<hr>
-
-## Babe pallet
-
-### _State Queries_
-
-#### **api.query.babe.epochIndex**
-
-> Current epoch index.
-
-arguments: -
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.babe.authorities**
-
-> Current epoch authorities.
-
-arguments: -
-
-returns: `Vec<(AuthorityId,BabeAuthorityWeight)>`
-
-<hr>
-
-#### **api.query.babe.genesisSlot**
-
-> The slot at which the first epoch actually started. This is 0
-> until the first block of the chain.
-
-arguments: -
-
-returns: `Slot`
-
-<hr>
-
-#### **api.query.babe.currentSlot**
-
-> Current slot number.
-
-arguments: -
-
-returns: `Slot`
-
-<hr>
-
-#### **api.query.babe.randomness**
-
-> The epoch randomness for the _current_ epoch.
->
-> # Security
->
-> This MUST NOT be used for gambling, as it can be influenced by a
-> malicious validator in the short term. It MAY be used in many
-> cryptographic protocols, however, so long as one remembers that this
-> (like everything else on-chain) it is public. For example, it can be
-> used where a number is needed that cannot have been chosen by an
-> adversary, for purposes such as public-coin zero-knowledge proofs.
-
-arguments: -
-
-returns: `Randomness`
-
-<hr>
-
-#### **api.query.babe.nextEpochConfig**
-
-> Next epoch configuration, if changed.
-
-arguments: -
-
-returns: `NextConfigDescriptor`
-
-<hr>
-
-#### **api.query.babe.nextRandomness**
-
-> Next epoch randomness.
-
-arguments: -
-
-returns: `Randomness`
-
-<hr>
-
-#### **api.query.babe.nextAuthorities**
-
-> Next epoch authorities.
-
-arguments: -
-
-returns: `Vec<(AuthorityId,BabeAuthorityWeight)>`
-
-<hr>
-
-#### **api.query.babe.segmentIndex**
-
-> Randomness under construction.
->
-> We make a tradeoff between storage accesses and list length.
-> We store the under-construction randomness in segments of up to
-> `UNDER_CONSTRUCTION_SEGMENT_LENGTH`.
->
-> Once a segment reaches this length, we begin the next one.
-> We reset all segments and return to `0` at the beginning of every
-> epoch.
-
-arguments: -
-
-returns: `u32`
-
-<hr>
-
-#### **api.query.babe.underConstruction**
-
-> TWOX-NOTE: `SegmentIndex` is an increasing integer, so this is okay.
-
-arguments:
-
-- key: `u32`
-
-returns: `Vec<Randomness>`
-
-<hr>
-
-#### **api.query.babe.initialized**
-
-> Temporary value (cleared at block finalization) which is `Some`
-> if per-block initialization has already been called for current block.
-
-arguments: -
-
-returns: `MaybeRandomness`
-
-<hr>
-
-#### **api.query.babe.authorVrfRandomness**
-
-> Temporary value (cleared at block finalization) that includes the VRF output generated
-> at this block. This field should always be populated during block processing unless
-> secondary plain slots are enabled (which don't contain a VRF output).
-
-arguments: -
-
-returns: `MaybeRandomness`
-
-<hr>
-
-#### **api.query.babe.lateness**
-
-> How late the current block is compared to its parent.
->
-> This entry is populated as part of block execution and is cleaned up
-> on block finalization. Querying this storage entry outside of block
-> execution context should always yield zero.
-
-arguments: -
-
-returns: `BlockNumber`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.babe.reportEquivocation**
-
-> Report authority equivocation/misbehavior. This method will verify
-> the equivocation proof and validate the given key ownership proof
-> against the extracted offender. If both are valid, the offence will
-> be reported.
-
-arguments:
-
-- equivocation_proof: `BabeEquivocationProof`
-- key_owner_proof: `KeyOwnerProof`
-<hr>
-
-#### **api.tx.babe.reportEquivocationUnsigned**
-
-> Report authority equivocation/misbehavior. This method will verify
-> the equivocation proof and validate the given key ownership proof
-> against the extracted offender. If both are valid, the offence will
-> be reported.
-> This extrinsic must be called unsigned and it is expected that only
-> block authors will call it (validated in `ValidateUnsigned`), as such
-> if the block author is defined it will be defined as the equivocation
-> reporter.
-
-arguments:
-
-- equivocation_proof: `BabeEquivocationProof`
-- key_owner_proof: `KeyOwnerProof`
-<hr>
-
-## Grandpa pallet
-
-### _State Queries_
-
-#### **api.query.grandpa.state**
-
-> State of the current authority set.
-
-arguments: -
-
-returns: `StoredState`
-
-<hr>
-
-#### **api.query.grandpa.pendingChange**
-
-> Pending change: (signaled at, scheduled change).
-
-arguments: -
-
-returns: `StoredPendingChange`
-
-<hr>
-
-#### **api.query.grandpa.nextForced**
-
-> next block number where we can force a change.
-
-arguments: -
-
-returns: `BlockNumber`
-
-<hr>
-
-#### **api.query.grandpa.stalled**
-
-> `true` if we are currently stalled.
-
-arguments: -
-
-returns: `(BlockNumber,BlockNumber)`
-
-<hr>
-
-#### **api.query.grandpa.currentSetId**
-
-> The number of changes (both in terms of keys and underlying economic responsibilities)
-> in the "set" of Grandpa validators from genesis.
-
-arguments: -
-
-returns: `SetId`
-
-<hr>
-
-#### **api.query.grandpa.setIdSession**
-
-> A mapping from grandpa set ID to the index of the _most recent_ session for which its
-> members were responsible.
->
-> TWOX-NOTE: `SetId` is not under user control.
-
-arguments:
-
-- key: `SetId`
-
-returns: `SessionIndex`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.grandpa.reportEquivocation**
-
-> Report voter equivocation/misbehavior. This method will verify the
-> equivocation proof and validate the given key ownership proof
-> against the extracted offender. If both are valid, the offence
-> will be reported.
-
-arguments:
-
-- equivocation_proof: `GrandpaEquivocationProof`
-- key_owner_proof: `KeyOwnerProof`
-<hr>
-
-#### **api.tx.grandpa.reportEquivocationUnsigned**
-
-> Report voter equivocation/misbehavior. This method will verify the
-> equivocation proof and validate the given key ownership proof
-> against the extracted offender. If both are valid, the offence
-> will be reported.
->
-> This extrinsic must be called unsigned and it is expected that only
-> block authors will call it (validated in `ValidateUnsigned`), as such
-> if the block author is defined it will be defined as the equivocation
-> reporter.
-
-arguments:
-
-- equivocation_proof: `GrandpaEquivocationProof`
-- key_owner_proof: `KeyOwnerProof`
-<hr>
-
-#### **api.tx.grandpa.noteStalled**
-
-> Note that the current authority set of the GRANDPA finality gadget has
-> stalled. This will trigger a forced authority set change at the beginning
-> of the next session, to be enacted `delay` blocks after that. The delay
-> should be high enough to safely assume that the block signalling the
-> forced change will not be re-orged (e.g. 1000 blocks). The GRANDPA voters
-> will start the new authority set using the given finalized block as base.
-> Only callable by root.
-
-arguments:
-
-- delay: `BlockNumber`
-- best_finalized_block_number: `BlockNumber`
+- id: `AccountId32`
+- timepoint: `PalletMultisigBridgeTimepoint`
+- callHash: `[u8;32]`
 <hr>
 
 ## Authorship pallet
 
 ### _State Queries_
 
-#### **api.query.authorship.uncles**
+#### **api.query.authorship.palletVersion**
 
-> Uncles
+> Returns the current pallet version from storage
 
 arguments: -
 
-returns: `Vec<UncleEntryItem>`
+returns: `u16`
 
 <hr>
 
@@ -1906,48 +1777,21 @@ returns: `Vec<UncleEntryItem>`
 
 arguments: -
 
-returns: `AccountId`
+returns: `AccountId32`
 
-<hr>
-
-#### **api.query.authorship.didSetUncles**
-
-> Whether uncles were already set in this block.
-
-arguments: -
-
-returns: `bool`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.authorship.setUncles**
-
-> Provide a set of uncles.
-
-arguments:
-
-- new_uncles: `Vec<Header>`
 <hr>
 
 ## Staking pallet
 
 ### _State Queries_
 
-#### **api.query.staking.historyDepth**
+#### **api.query.staking.palletVersion**
 
-> Number of eras to keep in history.
->
-> Information is kept for eras in `[current_era - history_depth; current_era]`.
->
-> Must be more than the number of eras delayed by session otherwise. I.e. active era must
-> always be in history. I.e. `active_era > current_era - history_depth` must be
-> guaranteed.
+> Returns the current pallet version from storage
 
 arguments: -
 
-returns: `u32`
+returns: `u16`
 
 <hr>
 
@@ -1957,13 +1801,13 @@ returns: `u32`
 
 arguments: -
 
-returns: `Duration`
+returns: `PalletStakingSoraDurationWrapper`
 
 <hr>
 
 #### **api.query.staking.validatorCount**
 
-> The ideal number of staking participants.
+> The ideal number of active validators.
 
 arguments: -
 
@@ -1989,19 +1833,63 @@ returns: `u32`
 
 arguments: -
 
-returns: `Vec<AccountId>`
+returns: `Vec<AccountId32>`
 
 <hr>
 
 #### **api.query.staking.bonded**
 
 > Map from all locked "stash" accounts to the controller account.
+>
+> TWOX-NOTE: SAFE since `AccountId` is a secure hash.
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `AccountId`
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.staking.minNominatorBond**
+
+> The minimum active bond to become and maintain the role of a nominator.
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.staking.minValidatorBond**
+
+> The minimum active bond to become and maintain the role of a validator.
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.staking.minimumActiveStake**
+
+> The minimum active nominator stake of the last successful election.
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.staking.minCommission**
+
+> The minimum amount of commission that validators can set.
+>
+> If set to `0`, no limit exists.
+
+arguments: -
+
+returns: `Perbill`
 
 <hr>
 
@@ -2011,45 +1899,110 @@ returns: `AccountId`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `StakingLedger`
+returns: `PalletStakingStakingLedger`
 
 <hr>
 
 #### **api.query.staking.payee**
 
 > Where the reward payment should be made. Keyed by stash.
+>
+> TWOX-NOTE: SAFE since `AccountId` is a secure hash.
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `RewardDestination`
+returns: `PalletStakingRewardDestination`
 
 <hr>
 
 #### **api.query.staking.validators**
 
 > The map from (wannabe) validator stash key to the preferences of that validator.
+>
+> TWOX-NOTE: SAFE since `AccountId` is a secure hash.
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `ValidatorPrefs`
+returns: `PalletStakingValidatorPrefs`
+
+<hr>
+
+#### **api.query.staking.counterForValidators**
+
+> Counter for the related counted storage map
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.staking.maxValidatorsCount**
+
+> The maximum validator count before we stop allowing new validators to join.
+>
+> When this value is not set, no limits are enforced.
+
+arguments: -
+
+returns: `u32`
 
 <hr>
 
 #### **api.query.staking.nominators**
 
-> The map from nominator stash key to the set of stash keys of all validators to nominate.
+> The map from nominator stash key to their nomination preferences, namely the validators that
+> they wish to support.
+>
+> Note that the keys of this storage map might become non-decodable in case the
+> [`Config::MaxNominations`] configuration is decreased. In this rare case, these nominators
+> are still existent in storage, their key is correct and retrievable (i.e. `contains_key`
+> indicates that they exist), but their value cannot be decoded. Therefore, the non-decodable
+> nominators will effectively not-exist, until they re-submit their preferences such that it
+> is within the bounds of the newly set `Config::MaxNominations`.
+>
+> This implies that `::iter_keys().count()` and `::iter().count()` might return different
+> values for this map. Moreover, the main `::count()` is aligned with the former, namely the
+> number of keys that exist.
+>
+> Lastly, if any of the nominators become non-decodable, they can be chilled immediately via
+> [`Call::chill_other`] dispatchable by anyone.
+>
+> TWOX-NOTE: SAFE since `AccountId` is a secure hash.
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Nominations`
+returns: `PalletStakingNominations`
+
+<hr>
+
+#### **api.query.staking.counterForNominators**
+
+> Counter for the related counted storage map
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.staking.maxNominatorsCount**
+
+> The maximum nominator count before we stop allowing new validators to join.
+>
+> When this value is not set, no limits are enforced.
+
+arguments: -
+
+returns: `u32`
 
 <hr>
 
@@ -2062,7 +2015,7 @@ returns: `Nominations`
 
 arguments: -
 
-returns: `EraIndex`
+returns: `u32`
 
 <hr>
 
@@ -2075,7 +2028,7 @@ returns: `EraIndex`
 
 arguments: -
 
-returns: `ActiveEraInfo`
+returns: `PalletStakingActiveEraInfo`
 
 <hr>
 
@@ -2088,9 +2041,9 @@ returns: `ActiveEraInfo`
 
 arguments:
 
-- key: `EraIndex`
+- key: `u32`
 
-returns: `SessionIndex`
+returns: `u32`
 
 <hr>
 
@@ -2105,10 +2058,9 @@ returns: `SessionIndex`
 
 arguments:
 
-- key1: `EraIndex`
-- key2: `AccountId`
+- key: `(u32,AccountId32)`
 
-returns: `Exposure`
+returns: `PalletStakingExposure`
 
 <hr>
 
@@ -2128,10 +2080,9 @@ returns: `Exposure`
 
 arguments:
 
-- key1: `EraIndex`
-- key2: `AccountId`
+- key: `(u32,AccountId32)`
 
-returns: `Exposure`
+returns: `PalletStakingExposure`
 
 <hr>
 
@@ -2145,10 +2096,9 @@ returns: `Exposure`
 
 arguments:
 
-- key1: `EraIndex`
-- key2: `AccountId`
+- key: `(u32,AccountId32)`
 
-returns: `ValidatorPrefs`
+returns: `PalletStakingValidatorPrefs`
 
 <hr>
 
@@ -2160,9 +2110,9 @@ returns: `ValidatorPrefs`
 
 arguments:
 
-- key: `EraIndex`
+- key: `u32`
 
-returns: `MultiCurrencyBalanceOf`
+returns: `u128`
 
 <hr>
 
@@ -2173,9 +2123,9 @@ returns: `MultiCurrencyBalanceOf`
 
 arguments:
 
-- key: `EraIndex`
+- key: `u32`
 
-returns: `EraRewardPoints`
+returns: `PalletStakingEraRewardPoints`
 
 <hr>
 
@@ -2185,7 +2135,7 @@ returns: `EraRewardPoints`
 
 arguments: -
 
-returns: `MultiCurrencyBalanceOf`
+returns: `u128`
 
 <hr>
 
@@ -2196,9 +2146,9 @@ returns: `MultiCurrencyBalanceOf`
 
 arguments:
 
-- key: `EraIndex`
+- key: `u32`
 
-returns: `BalanceOf`
+returns: `u128`
 
 <hr>
 
@@ -2208,7 +2158,7 @@ returns: `BalanceOf`
 
 arguments: -
 
-returns: `Forcing`
+returns: `PalletStakingForcing`
 
 <hr>
 
@@ -2231,7 +2181,7 @@ returns: `Perbill`
 
 arguments: -
 
-returns: `BalanceOf`
+returns: `u128`
 
 <hr>
 
@@ -2241,9 +2191,9 @@ returns: `BalanceOf`
 
 arguments:
 
-- key: `EraIndex`
+- key: `u32`
 
-returns: `Vec<UnappliedSlash>`
+returns: `Vec<PalletStakingUnappliedSlash>`
 
 <hr>
 
@@ -2256,7 +2206,7 @@ returns: `Vec<UnappliedSlash>`
 
 arguments: -
 
-returns: `Vec<(EraIndex,SessionIndex)>`
+returns: `Vec<(u32,u32)>`
 
 <hr>
 
@@ -2267,10 +2217,9 @@ returns: `Vec<(EraIndex,SessionIndex)>`
 
 arguments:
 
-- key1: `EraIndex`
-- key2: `AccountId`
+- key: `(u32,AccountId32)`
 
-returns: `(Perbill,BalanceOf)`
+returns: `(Perbill,u128)`
 
 <hr>
 
@@ -2280,10 +2229,9 @@ returns: `(Perbill,BalanceOf)`
 
 arguments:
 
-- key1: `EraIndex`
-- key2: `AccountId`
+- key: `(u32,AccountId32)`
 
-returns: `BalanceOf`
+returns: `u128`
 
 <hr>
 
@@ -2293,9 +2241,9 @@ returns: `BalanceOf`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `SlashingSpans`
+returns: `PalletStakingSlashingSlashingSpans`
 
 <hr>
 
@@ -2306,98 +2254,51 @@ returns: `SlashingSpans`
 
 arguments:
 
-- key: `(AccountId,SpanIndex)`
+- key: `(AccountId32,u32)`
 
-returns: `SpanRecord`
-
-<hr>
-
-#### **api.query.staking.earliestUnappliedSlash**
-
-> The earliest era for which we have a pending, unapplied slash.
-
-arguments: -
-
-returns: `EraIndex`
+returns: `PalletStakingSlashingSpanRecord`
 
 <hr>
 
-#### **api.query.staking.snapshotValidators**
+#### **api.query.staking.currentPlannedSession**
 
-> Snapshot of validators at the beginning of the current election window. This should only
-> have a value when [`EraElectionStatus`] == `ElectionStatus::Open(_)`.
-
-arguments: -
-
-returns: `Vec<AccountId>`
-
-<hr>
-
-#### **api.query.staking.snapshotNominators**
-
-> Snapshot of nominators at the beginning of the current election window. This should only
-> have a value when [`EraElectionStatus`] == `ElectionStatus::Open(_)`.
-
-arguments: -
-
-returns: `Vec<AccountId>`
-
-<hr>
-
-#### **api.query.staking.queuedElected**
-
-> The next validator set. At the end of an era, if this is available (potentially from the
-> result of an offchain worker), it is immediately used. Otherwise, the on-chain election
-> is executed.
-
-arguments: -
-
-returns: `ElectionResult`
-
-<hr>
-
-#### **api.query.staking.queuedScore**
-
-> The score of the current [`QueuedElected`].
-
-arguments: -
-
-returns: `ElectionScore`
-
-<hr>
-
-#### **api.query.staking.eraElectionStatus**
-
-> Flag to control the execution of the offchain election. When `Open(_)`, we accept
-> solutions to be submitted.
-
-arguments: -
-
-returns: `ElectionStatus`
-
-<hr>
-
-#### **api.query.staking.isCurrentSessionFinal**
-
-> True if the current **planned** session is final. Note that this does not take era
-> forcing into account.
-
-arguments: -
-
-returns: `bool`
-
-<hr>
-
-#### **api.query.staking.storageVersion**
-
-> True if network has been upgraded to this version.
-> Storage version of the pallet.
+> The last planned session scheduled by the session pallet.
 >
-> This is set to v5.0.0 for new networks.
+> This is basically in sync with the call to [`pallet_session::SessionManager::new_session`].
 
 arguments: -
 
-returns: `Releases`
+returns: `u32`
+
+<hr>
+
+#### **api.query.staking.offendingValidators**
+
+> Indices of validators that have offended in the active era and whether they are currently
+> disabled.
+>
+> This value should be a superset of disabled validators since not all offences lead to the
+> validator being disabled (if there was no slash). This is needed to track the percentage of
+> validators that have offended in the current era, ensuring a new era is forced if
+> `OffendingValidatorsThreshold` is reached. The vec is always kept sorted so that we can find
+> whether a given validator has previously offended using binary search. It gets cleared when
+> the era ends.
+
+arguments: -
+
+returns: `Vec<(u32,bool)>`
+
+<hr>
+
+#### **api.query.staking.chillThreshold**
+
+> The threshold for when users can start calling `chill_other` for other validators /
+> nominators. The threshold is compared to the actual number of validators / nominators
+> (`CountFor*`) in the system compared to the configured max (`Max*Count`).
+
+arguments: -
+
+returns: `Percent`
 
 <hr>
 
@@ -2425,19 +2326,13 @@ returns: `Releases`
 >
 > ---
 >
-> Weight: O(1)
-> DB Weight:
->
-> - Read: Bonded, Ledger, [Origin Account], Current Era, History Depth, Locks
-> - Write: Bonded, Payee, [Origin Account], Locks, Ledger
->
 > # </weight>
 
 arguments:
 
-- controller: `LookupSource`
-- value: `Compact<BalanceOf>`
-- payee: `RewardDestination`
+- controller: `AccountId32`
+- value: `Compact<u128>`
+- payee: `PalletStakingRewardDestination`
 <hr>
 
 #### **api.tx.staking.bondExtra**
@@ -2445,12 +2340,11 @@ arguments:
 > Add some extra amount that have appeared in the stash `free_balance` into the balance up
 > for staking.
 >
-> Use this if there are additional funds in your stash account that you wish to bond.
-> Unlike [`bond`] or [`unbond`] this function does not impose any limitation on the amount
-> that can be added.
+> The dispatch origin for this call must be _Signed_ by the stash, not the controller.
 >
-> The dispatch origin for this call must be _Signed_ by the stash, not the controller and
-> it can be only called when [`EraElectionStatus`] is `Closed`.
+> Use this if there are additional funds in your stash account that you wish to bond.
+> Unlike [`bond`](Self::bond) or [`unbond`](Self::unbond) this function does not impose
+> any limitation on the amount that can be added.
 >
 > Emits `Bonded`.
 >
@@ -2458,20 +2352,12 @@ arguments:
 >
 > - Independent of the arguments. Insignificant complexity.
 > - O(1).
-> - One DB entry.
->
-> ---
->
-> DB Weight:
->
-> - Read: Era Election Status, Bonded, Ledger, [Origin Account], Locks
-> - Write: [Origin Account], Locks, Ledger
 >
 > # </weight>
 
 arguments:
 
-- max_additional: `Compact<BalanceOf>`
+- maxAdditional: `Compact<u128>`
 <hr>
 
 #### **api.tx.staking.unbond**
@@ -2480,42 +2366,25 @@ arguments:
 > period ends. If this leaves an amount actively bonded less than
 > T::Currency::minimum_balance(), then it is increased to the full amount.
 >
+> The dispatch origin for this call must be _Signed_ by the controller, not the stash.
+>
 > Once the unlock period is done, you can call `withdraw_unbonded` to actually move
 > the funds out of management ready for transfer.
 >
-> No more than a limited number of unlocking chunks (see `MAX_UNLOCKING_CHUNKS`)
-> can co-exists at the same time. In that case, [`Call::withdraw_unbonded`] need
-> to be called first to remove some of the chunks (if possible).
+> No more than a limited number of unlocking chunks (see `MaxUnlockingChunks`)
+> can co-exists at the same time. If there are no unlocking chunks slots available
+> [`Call::withdraw_unbonded`] is called to remove some of the chunks (if possible).
 >
-> The dispatch origin for this call must be _Signed_ by the controller, not the stash.
-> And, it can be only called when [`EraElectionStatus`] is `Closed`.
+> If a user encounters the `InsufficientBond` error when calling this extrinsic,
+> they should call `chill` first in order to free up their bonded funds.
 >
 > Emits `Unbonded`.
 >
 > See also [`Call::withdraw_unbonded`].
->
-> # <weight>
->
-> - Independent of the arguments. Limited but potentially exploitable complexity.
-> - Contains a limited number of reads.
-> - Each call (requires the remainder of the bonded balance to be above `minimum_balance`)
->   will cause a new entry to be inserted into a vector (`Ledger.unlocking`) kept in storage.
->   The only way to clean the aforementioned storage item is also user-controlled via
->   `withdraw_unbonded`.
-> - One DB entry.
->
-> ---
->
-> Weight: O(1)
-> DB Weight:
->
-> - Read: EraElectionStatus, Ledger, CurrentEra, Locks, BalanceOf Stash,
-> - Write: Locks, Ledger, BalanceOf Stash,
->   </weight>
 
 arguments:
 
-- value: `Compact<BalanceOf>`
+- value: `Compact<u128>`
 <hr>
 
 #### **api.tx.staking.withdrawUnbonded**
@@ -2525,8 +2394,7 @@ arguments:
 > This essentially frees up that balance to be used by the stash account to do
 > whatever it wants.
 >
-> The dispatch origin for this call must be _Signed_ by the controller, not the stash.
-> And, it can be only called when [`EraElectionStatus`] is `Closed`.
+> The dispatch origin for this call must be _Signed_ by the controller.
 >
 > Emits `Withdrawn`.
 >
@@ -2534,32 +2402,14 @@ arguments:
 >
 > # <weight>
 >
-> - Could be dependent on the `origin` argument and how much `unlocking` chunks exist.
->   It implies `consolidate_unlocked` which loops over `Ledger.unlocking`, which is
->   indirectly user-controlled. See [`unbond`] for more detail.
-> - Contains a limited number of reads, yet the size of which could be large based on `ledger`.
-> - Writes are limited to the `origin` account key.
->
-> ---
->
 > Complexity O(S) where S is the number of slashing spans to remove
-> Update:
->
-> - Reads: EraElectionStatus, Ledger, Current Era, Locks, [Origin Account]
-> - Writes: [Origin Account], Locks, Ledger
->   Kill:
-> - Reads: EraElectionStatus, Ledger, Current Era, Bonded, Slashing Spans, [Origin
->   > Account], Locks, BalanceOf stash
-> - Writes: Bonded, Slashing Spans (if S > 0), Ledger, Payee, Validators, Nominators,
->   [Origin Account], Locks, BalanceOf stash.
-> - Writes Each: SpanSlash \* S
->   NOTE: Weight annotation is the kill scenario, we refund otherwise.
+> NOTE: Weight annotation is the kill scenario, we refund otherwise.
 >
 > # </weight>
 
 arguments:
 
-- num_slashing_spans: `u32`
+- numSlashingSpans: `u32`
 <hr>
 
 #### **api.tx.staking.validate**
@@ -2569,59 +2419,31 @@ arguments:
 > Effects will be felt at the beginning of the next era.
 >
 > The dispatch origin for this call must be _Signed_ by the controller, not the stash.
-> And, it can be only called when [`EraElectionStatus`] is `Closed`.
->
-> # <weight>
->
-> - Independent of the arguments. Insignificant complexity.
-> - Contains a limited number of reads.
-> - Writes are limited to the `origin` account key.
->
-> ---
->
-> Weight: O(1)
-> DB Weight:
->
-> - Read: Era Election Status, Ledger
-> - Write: Nominators, Validators
->
-> # </weight>
 
 arguments:
 
-- prefs: `ValidatorPrefs`
+- prefs: `PalletStakingValidatorPrefs`
 <hr>
 
 #### **api.tx.staking.nominate**
 
 > Declare the desire to nominate `targets` for the origin controller.
 >
-> Effects will be felt at the beginning of the next era. This can only be called when
-> [`EraElectionStatus`] is `Closed`.
+> Effects will be felt at the beginning of the next era.
 >
 > The dispatch origin for this call must be _Signed_ by the controller, not the stash.
-> And, it can be only called when [`EraElectionStatus`] is `Closed`.
 >
 > # <weight>
 >
 > - The transaction's complexity is proportional to the size of `targets` (N)
->   which is capped at CompactAssignments::LIMIT (MAX_NOMINATIONS).
+>   which is capped at CompactAssignments::LIMIT (T::MaxNominations).
 > - Both the reads and writes follow a similar pattern.
->
-> ---
->
-> Weight: O(N)
-> where N is the number of targets
-> DB Weight:
->
-> - Reads: Era Election Status, Ledger, Current Era
-> - Writes: Validators, Nominators
 >
 > # </weight>
 
 arguments:
 
-- targets: `Vec<LookupSource>`
+- targets: `Vec<AccountId32>`
 <hr>
 
 #### **api.tx.staking.chill**
@@ -2631,21 +2453,12 @@ arguments:
 > Effects will be felt at the beginning of the next era.
 >
 > The dispatch origin for this call must be _Signed_ by the controller, not the stash.
-> And, it can be only called when [`EraElectionStatus`] is `Closed`.
 >
 > # <weight>
 >
 > - Independent of the arguments. Insignificant complexity.
 > - Contains one read.
 > - Writes are limited to the `origin` account key.
->
-> ---
->
-> Weight: O(1)
-> DB Weight:
->
-> - Read: EraElectionStatus, Ledger
-> - Write: Validators, Nominators
 >
 > # </weight>
 
@@ -2657,7 +2470,7 @@ arguments: -
 
 > (Re-)set the payment target for a controller.
 >
-> Effects will be felt at the beginning of the next era.
+> Effects will be felt instantly (as soon as this function is completed successfully).
 >
 > The dispatch origin for this call must be _Signed_ by the controller, not the stash.
 >
@@ -2678,14 +2491,14 @@ arguments: -
 
 arguments:
 
-- payee: `RewardDestination`
+- payee: `PalletStakingRewardDestination`
 <hr>
 
 #### **api.tx.staking.setController**
 
 > (Re-)set the controller of a stash.
 >
-> Effects will be felt at the beginning of the next era.
+> Effects will be felt instantly (as soon as this function is completed successfully).
 >
 > The dispatch origin for this call must be _Signed_ by the stash, not the controller.
 >
@@ -2707,7 +2520,7 @@ arguments:
 
 arguments:
 
-- controller: `LookupSource`
+- controller: `AccountId32`
 <hr>
 
 #### **api.tx.staking.setValidatorCount**
@@ -2730,13 +2543,14 @@ arguments:
 
 #### **api.tx.staking.increaseValidatorCount**
 
-> Increments the ideal number of validators.
+> Increments the ideal number of validators upto maximum of
+> `ElectionProviderBase::MaxWinners`.
 >
 > The dispatch origin must be Root.
 >
 > # <weight>
 >
-> Same as [`set_validator_count`].
+> Same as [`Self::set_validator_count`].
 >
 > # </weight>
 
@@ -2747,13 +2561,14 @@ arguments:
 
 #### **api.tx.staking.scaleValidatorCount**
 
-> Scale up the ideal number of validators by a factor.
+> Scale up the ideal number of validators by a factor upto maximum of
+> `ElectionProviderBase::MaxWinners`.
 >
 > The dispatch origin must be Root.
 >
 > # <weight>
 >
-> Same as [`set_validator_count`].
+> Same as [`Self::set_validator_count`].
 >
 > # </weight>
 
@@ -2767,6 +2582,12 @@ arguments:
 > Force there to be no new eras indefinitely.
 >
 > The dispatch origin must be Root.
+>
+> # Warning
+>
+> The election process starts multiple blocks before the end of the era.
+> Thus the election process may be ongoing when this is called. In this case the
+> election will continue until the next era is triggered.
 >
 > # <weight>
 >
@@ -2787,6 +2608,12 @@ arguments: -
 >
 > The dispatch origin must be Root.
 >
+> # Warning
+>
+> The election process starts multiple blocks before the end of the era.
+> If this is called just before a new era is triggered, the election process may not
+> have enough blocks to get a result.
+>
 > # <weight>
 >
 > - No arguments.
@@ -2804,17 +2631,10 @@ arguments: -
 > Set the validators who cannot be slashed (if any).
 >
 > The dispatch origin must be Root.
->
-> # <weight>
->
-> - O(V)
-> - Write: Invulnerables
->
-> # </weight>
 
 arguments:
 
-- invulnerables: `Vec<AccountId>`
+- invulnerables: `Vec<AccountId32>`
 <hr>
 
 #### **api.tx.staking.forceUnstake**
@@ -2822,20 +2642,11 @@ arguments:
 > Force a current staker to become completely unstaked, immediately.
 >
 > The dispatch origin must be Root.
->
-> # <weight>
->
-> O(S) where S is the number of slashing spans to be removed
-> Reads: Bonded, Slashing Spans, Account, Locks
-> Writes: Bonded, Slashing Spans (if S > 0), Ledger, Payee, Validators, Nominators, Account, Locks
-> Writes Each: SpanSlash \* S
->
-> # </weight>
 
 arguments:
 
-- stash: `AccountId`
-- num_slashing_spans: `u32`
+- stash: `AccountId32`
+- numSlashingSpans: `u32`
 <hr>
 
 #### **api.tx.staking.forceNewEraAlways**
@@ -2844,12 +2655,11 @@ arguments:
 >
 > The dispatch origin must be Root.
 >
-> # <weight>
+> # Warning
 >
-> - Weight: O(1)
-> - Write: ForceEra
->
-> # </weight>
+> The election process starts multiple blocks before the end of the era.
+> If this is called just before a new era is triggered, the election process may not
+> have enough blocks to get a result.
 
 arguments: -
 
@@ -2859,25 +2669,14 @@ arguments: -
 
 > Cancel enactment of a deferred slash.
 >
-> Can be called by the `T::SlashCancelOrigin`.
+> Can be called by the `T::AdminOrigin`.
 >
 > Parameters: era and indices of the slashes for that era to kill.
->
-> # <weight>
->
-> Complexity: O(U + S)
-> with U unapplied slashes weighted with U=1000
-> and S is the number of slash indices to be canceled.
->
-> - Read: Unapplied Slashes
-> - Write: Unapplied Slashes
->
-> # </weight>
 
 arguments:
 
-- era: `EraIndex`
-- slash_indices: `Vec<u32>`
+- era: `u32`
+- slashIndices: `Vec<u32>`
 <hr>
 
 #### **api.tx.staking.payoutStakers**
@@ -2891,8 +2690,6 @@ arguments:
 > The origin of this call must be _Signed_. Any account can call this function, even if
 > it is not one of the stakers.
 >
-> This can only be called when [`EraElectionStatus`] is `Closed`.
->
 > # <weight>
 >
 > - Time complexity: at most O(MaxNominatorRewardedPerValidator).
@@ -2905,194 +2702,56 @@ arguments:
 >
 > - Reward Destination Staked: O(N)
 > - Reward Destination Controller (Creating): O(N)
->   DB Weight:
-> - Read: EraElectionStatus, CurrentEra, HistoryDepth, ErasValidatorReward,
->   ErasStakersClipped, ErasRewardPoints, ErasValidatorPrefs (8 items)
-> - Read Each: Bonded, Ledger, Payee, Locks, System Account (5 items)
-> - Write Each: System Account, Locks, Ledger (3 items)
 >
->   NOTE: weights are assuming that payouts are made to alive stash account (Staked).
->   Paying even a dead controller is cheaper weight-wise. We don't do any refunds here.
+> NOTE: weights are assuming that payouts are made to alive stash account (Staked).
+> Paying even a dead controller is cheaper weight-wise. We don't do any refunds here.
 >
 > # </weight>
 
 arguments:
 
-- validator_stash: `AccountId`
-- era: `EraIndex`
+- validatorStash: `AccountId32`
+- era: `u32`
 <hr>
 
 #### **api.tx.staking.rebond**
 
 > Rebond a portion of the stash scheduled to be unlocked.
 >
-> The dispatch origin must be signed by the controller, and it can be only called when
-> [`EraElectionStatus`] is `Closed`.
+> The dispatch origin must be signed by the controller.
 >
 > # <weight>
 >
 > - Time complexity: O(L), where L is unlocking chunks
-> - Bounded by `MAX_UNLOCKING_CHUNKS`.
+> - Bounded by `MaxUnlockingChunks`.
 > - Storage changes: Can't increase storage, only decrease it.
 >
-> ---
->
-> - DB Weight:
->   - Reads: EraElectionStatus, Ledger, Locks, [Origin Account]
->   - Writes: [Origin Account], Locks, Ledger
->
 > # </weight>
 
 arguments:
 
-- value: `Compact<BalanceOf>`
-<hr>
-
-#### **api.tx.staking.setHistoryDepth**
-
-> Set `HistoryDepth` value. This function will delete any history information
-> when `HistoryDepth` is reduced.
->
-> Parameters:
->
-> - `new_history_depth`: The new history depth you would like to set.
-> - `era_items_deleted`: The number of items that will be deleted by this dispatch.
->   This should report all the storage items that will be deleted by clearing old
->   era history. Needed to report an accurate weight for the dispatch. Trusted by
->   `Root` to report an accurate number.
->
-> Origin must be root.
->
-> # <weight>
->
-> - E: Number of history depths removed, i.e. 10 -> 7 = 3
-> - Weight: O(E)
-> - DB Weight:
->   - Reads: Current Era, History Depth
->   - Writes: History Depth
->   - Clear Prefix Each: Era Stakers, EraStakersClipped, ErasValidatorPrefs
->   - Writes Each: ErasValidatorReward, ErasRewardPoints, ErasTotalStake, ErasStartSessionIndex
->
-> # </weight>
-
-arguments:
-
-- new_history_depth: `Compact<EraIndex>`
-- \_era_items_deleted: `Compact<u32>`
+- value: `Compact<u128>`
 <hr>
 
 #### **api.tx.staking.reapStash**
 
-> Remove all data structure concerning a staker/stash once its balance is at the minimum.
-> This is essentially equivalent to `withdraw_unbonded` except it can be called by anyone
-> and the target `stash` must have no funds left beyond the ED.
+> Remove all data structures concerning a staker/stash once it is at a state where it can
+> be considered `dust` in the staking system. The requirements are:
 >
-> This can be called from any origin.
+> 1.  the `total_balance` of the stash is below existential deposit.
+> 2.  or, the `ledger.total` of the stash is below existential deposit.
 >
-> - `stash`: The stash account to reap. Its balance must be zero.
+> The former can happen in cases like a slash; the latter when a fully unbonded account
+> is still receiving staking rewards in `RewardDestination::Staked`.
 >
-> # <weight>
+> It can be called by anyone, as long as `stash` meets the above requirements.
 >
-> Complexity: O(S) where S is the number of slashing spans on the account.
-> DB Weight:
->
-> - Reads: Stash Account, Bonded, Slashing Spans, Locks
-> - Writes: Bonded, Slashing Spans (if S > 0), Ledger, Payee, Validators, Nominators, Stash Account, Locks
-> - Writes Each: SpanSlash \* S
->
-> # </weight>
+> Refunds the transaction fees upon successful execution.
 
 arguments:
 
-- stash: `AccountId`
-- num_slashing_spans: `u32`
-<hr>
-
-#### **api.tx.staking.submitElectionSolution**
-
-> Submit an election result to the chain. If the solution:
->
-> 1. is valid.
-> 2. has a better score than a potentially existing solution on chain.
->
-> then, it will be _put_ on chain.
->
-> A solution consists of two pieces of data:
->
-> 1. `winners`: a flat vector of all the winners of the round.
-> 2. `assignments`: the compact version of an assignment vector that encodes the edge
->    weights.
->
-> Both of which may be computed using _phragmen_, or any other algorithm.
->
-> Additionally, the submitter must provide:
->
-> - The `score` that they claim their solution has.
->
-> Both validators and nominators will be represented by indices in the solution. The
-> indices should respect the corresponding types ([`ValidatorIndex`] and
-> [`NominatorIndex`]). Moreover, they should be valid when used to index into
-> [`SnapshotValidators`] and [`SnapshotNominators`]. Any invalid index will cause the
-> solution to be rejected. These two storage items are set during the election window and
-> may be used to determine the indices.
->
-> A solution is valid if:
->
-> 0. It is submitted when [`EraElectionStatus`] is `Open`.
-> 1. Its claimed score is equal to the score computed on-chain.
-> 2. Presents the correct number of winners.
-> 3. All indexes must be value according to the snapshot vectors. All edge values must
->    also be correct and should not overflow the granularity of the ratio type (i.e. 256
->    or billion).
-> 4. For each edge, all targets are actually nominated by the voter.
-> 5. Has correct self-votes.
->
-> A solutions score is consisted of 3 parameters:
->
-> 1. `min { support.total }` for each support of a winner. This value should be maximized.
-> 2. `sum { support.total }` for each support of a winner. This value should be minimized.
-> 3. `sum { support.total^2 }` for each support of a winner. This value should be
->    minimized (to ensure less variance)
->
-> # <weight>
->
-> The transaction is assumed to be the longest path, a better solution.
->
-> - Initial solution is almost the same.
-> - Worse solution is retraced in pre-dispatch-checks which sets its own weight.
->
-> # </weight>
-
-arguments:
-
-- winners: `Vec<ValidatorIndex>`
-- compact: `CompactAssignments`
-- score: `ElectionScore`
-- era: `EraIndex`
-- size: `ElectionSize`
-<hr>
-
-#### **api.tx.staking.submitElectionSolutionUnsigned**
-
-> Unsigned version of `submit_election_solution`.
->
-> Note that this must pass the [`ValidateUnsigned`] check which only allows transactions
-> from the local node to be included. In other words, only the block author can include a
-> transaction in the block.
->
-> # <weight>
->
-> See [`submit_election_solution`].
->
-> # </weight>
-
-arguments:
-
-- winners: `Vec<ValidatorIndex>`
-- compact: `CompactAssignments`
-- score: `ElectionScore`
-- era: `EraIndex`
-- size: `ElectionSize`
+- stash: `AccountId32`
+- numSlashingSpans: `u32`
 <hr>
 
 #### **api.tx.staking.kick**
@@ -3102,8 +2761,6 @@ arguments:
 > Effects will be felt at the beginning of the next era.
 >
 > The dispatch origin for this call must be _Signed_ by the controller, not the stash.
-> And, it can be only called when [`EraElectionStatus`] is `Closed`. The controller
-> account should represent a validator.
 >
 > - `who`: A list of nominator stash accounts who are nominating this validator which
 >   should no longer be nominating this validator.
@@ -3113,12 +2770,542 @@ arguments:
 
 arguments:
 
-- who: `Vec<LookupSource>`
+- who: `Vec<AccountId32>`
+<hr>
+
+#### **api.tx.staking.setStakingConfigs**
+
+> Update the various staking configurations .
+>
+> - `min_nominator_bond`: The minimum active bond needed to be a nominator.
+> - `min_validator_bond`: The minimum active bond needed to be a validator.
+> - `max_nominator_count`: The max number of users who can be a nominator at once. When
+>   set to `None`, no limit is enforced.
+> - `max_validator_count`: The max number of users who can be a validator at once. When
+>   set to `None`, no limit is enforced.
+> - `chill_threshold`: The ratio of `max_nominator_count` or `max_validator_count` which
+>   should be filled in order for the `chill_other` transaction to work.
+> - `min_commission`: The minimum amount of commission that each validators must maintain.
+>   This is checked only upon calling `validate`. Existing validators are not affected.
+>
+> RuntimeOrigin must be Root to call this function.
+>
+> NOTE: Existing nominators and validators will not be affected by this update.
+> to kick people under the new limits, `chill_other` should be called.
+
+arguments:
+
+- minNominatorBond: `PalletStakingPalletConfigOpU128`
+- minValidatorBond: `PalletStakingPalletConfigOpU128`
+- maxNominatorCount: `PalletStakingPalletConfigOpU32`
+- maxValidatorCount: `PalletStakingPalletConfigOpU32`
+- chillThreshold: `PalletStakingPalletConfigOpPercent`
+- minCommission: `PalletStakingPalletConfigOpPerbill`
+<hr>
+
+#### **api.tx.staking.chillOther**
+
+> Declare a `controller` to stop participating as either a validator or nominator.
+>
+> Effects will be felt at the beginning of the next era.
+>
+> The dispatch origin for this call must be _Signed_, but can be called by anyone.
+>
+> If the caller is the same as the controller being targeted, then no further checks are
+> enforced, and this function behaves just like `chill`.
+>
+> If the caller is different than the controller being targeted, the following conditions
+> must be met:
+>
+> - `controller` must belong to a nominator who has become non-decodable,
+>
+> Or:
+>
+> - A `ChillThreshold` must be set and checked which defines how close to the max
+>   nominators or validators we must reach before users can start chilling one-another.
+> - A `MaxNominatorCount` and `MaxValidatorCount` must be set which is used to determine
+>   how close we are to the threshold.
+> - A `MinNominatorBond` and `MinValidatorBond` must be set and checked, which determines
+>   if this is a person that should be chilled because they have not met the threshold
+>   bond required.
+>
+> This can be helpful if bond requirements are updated, and we need to remove old users
+> who do not satisfy these requirements.
+
+arguments:
+
+- controller: `AccountId32`
+<hr>
+
+#### **api.tx.staking.forceApplyMinCommission**
+
+> Force a validator to have at least the minimum commission. This will not affect a
+> validator who already has a commission greater than or equal to the minimum. Any account
+> can call this.
+
+arguments:
+
+- validatorStash: `AccountId32`
+<hr>
+
+#### **api.tx.staking.setMinCommission**
+
+> Sets the minimum amount of commission that each validators must maintain.
+>
+> This call has lower privilege requirements than `set_staking_config` and can be called
+> by the `T::AdminOrigin`. Root can always call this.
+
+arguments:
+
+- new: `Perbill`
+<hr>
+
+## Offences pallet
+
+### _State Queries_
+
+#### **api.query.offences.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.offences.reports**
+
+> The primary structure that holds all offence records keyed by report identifiers.
+
+arguments:
+
+- key: `H256`
+
+returns: `SpStakingOffenceOffenceDetails`
+
+<hr>
+
+#### **api.query.offences.concurrentReportsIndex**
+
+> A vector of reports of the same kind that happened at the same time slot.
+
+arguments:
+
+- key: `([u8;16],Bytes)`
+
+returns: `Vec<H256>`
+
+<hr>
+
+#### **api.query.offences.reportsByKindIndex**
+
+> Enumerates all reports of a kind along with the time they happened.
+>
+> All reports are sorted by the time of offence.
+>
+> Note that the actual type of this mapping is `Vec<u8>`, this is because values of
+> different types are not supported at the moment so we are doing the manual serialization.
+
+arguments:
+
+- key: `[u8;16]`
+
+returns: `Bytes`
+
+<hr>
+
+## Session pallet
+
+### _State Queries_
+
+#### **api.query.session.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.session.validators**
+
+> The current set of validators.
+
+arguments: -
+
+returns: `Vec<AccountId32>`
+
+<hr>
+
+#### **api.query.session.currentIndex**
+
+> Current index of the session.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.session.queuedChanged**
+
+> True if the underlying economic identities or weighting behind the validators
+> has changed in the queued validator set.
+
+arguments: -
+
+returns: `bool`
+
+<hr>
+
+#### **api.query.session.queuedKeys**
+
+> The queued keys for the next session. When the next session begins, these keys
+> will be used to determine the validator's session keys.
+
+arguments: -
+
+returns: `Vec<(AccountId32,FramenodeRuntimeOpaqueSessionKeys)>`
+
+<hr>
+
+#### **api.query.session.disabledValidators**
+
+> Indices of disabled validators.
+>
+> The vec is always kept sorted so that we can find whether a given validator is
+> disabled using binary search. It gets cleared when `on_session_ending` returns
+> a new set of identities.
+
+arguments: -
+
+returns: `Vec<u32>`
+
+<hr>
+
+#### **api.query.session.nextKeys**
+
+> The next session keys for a validator.
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `FramenodeRuntimeOpaqueSessionKeys`
+
+<hr>
+
+#### **api.query.session.keyOwner**
+
+> The owner of a key. The key is the `KeyTypeId` + the encoded key.
+
+arguments:
+
+- key: `(SpCoreCryptoKeyTypeId,Bytes)`
+
+returns: `AccountId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.session.setKeys**
+
+> Sets the session key(s) of the function caller to `keys`.
+> Allows an account to set its session key prior to becoming a validator.
+> This doesn't take effect until the next session.
+>
+> The dispatch origin of this function must be signed.
+>
+> # <weight>
+>
+> - Complexity: `O(1)`. Actual cost depends on the number of length of
+>   `T::Keys::key_ids()` which is fixed.
+> - DbReads: `origin account`, `T::ValidatorIdOf`, `NextKeys`
+> - DbWrites: `origin account`, `NextKeys`
+> - DbReads per key id: `KeyOwner`
+> - DbWrites per key id: `KeyOwner`
+>
+> # </weight>
+
+arguments:
+
+- keys: `FramenodeRuntimeOpaqueSessionKeys`
+- proof: `Bytes`
+<hr>
+
+#### **api.tx.session.purgeKeys**
+
+> Removes any session key(s) of the function caller.
+>
+> This doesn't take effect until the next session.
+>
+> The dispatch origin of this function must be Signed and the account must be either be
+> convertible to a validator ID using the chain's typical addressing system (this usually
+> means being a controller account) or directly convertible into a validator ID (which
+> usually means being a stash account).
+>
+> # <weight>
+>
+> - Complexity: `O(1)` in number of key types. Actual cost depends on the number of length
+>   of `T::Keys::key_ids()` which is fixed.
+> - DbReads: `T::ValidatorIdOf`, `NextKeys`, `origin account`
+> - DbWrites: `NextKeys`, `origin account`
+> - DbWrites per key id: `KeyOwner`
+>
+> # </weight>
+
+arguments: -
+
+<hr>
+
+## Grandpa pallet
+
+### _State Queries_
+
+#### **api.query.grandpa.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.grandpa.state**
+
+> State of the current authority set.
+
+arguments: -
+
+returns: `PalletGrandpaStoredState`
+
+<hr>
+
+#### **api.query.grandpa.pendingChange**
+
+> Pending change: (signaled at, scheduled change).
+
+arguments: -
+
+returns: `PalletGrandpaStoredPendingChange`
+
+<hr>
+
+#### **api.query.grandpa.nextForced**
+
+> next block number where we can force a change.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.grandpa.stalled**
+
+> `true` if we are currently stalled.
+
+arguments: -
+
+returns: `(u32,u32)`
+
+<hr>
+
+#### **api.query.grandpa.currentSetId**
+
+> The number of changes (both in terms of keys and underlying economic responsibilities)
+> in the "set" of Grandpa validators from genesis.
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.grandpa.setIdSession**
+
+> A mapping from grandpa set ID to the index of the _most recent_ session for which its
+> members were responsible.
+>
+> This is only used for validating equivocation proofs. An equivocation proof must
+> contains a key-ownership proof for a given session, therefore we need a way to tie
+> together sessions and GRANDPA set ids, i.e. we need to validate that a validator
+> was the owner of a given key on a given session, and what the active set ID was
+> during that session.
+>
+> TWOX-NOTE: `SetId` is not under user control.
+
+arguments:
+
+- key: `u64`
+
+returns: `u32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.grandpa.reportEquivocation**
+
+> Report voter equivocation/misbehavior. This method will verify the
+> equivocation proof and validate the given key ownership proof
+> against the extracted offender. If both are valid, the offence
+> will be reported.
+
+arguments:
+
+- equivocationProof: `SpFinalityGrandpaEquivocationProof`
+- keyOwnerProof: `SpSessionMembershipProof`
+<hr>
+
+#### **api.tx.grandpa.reportEquivocationUnsigned**
+
+> Report voter equivocation/misbehavior. This method will verify the
+> equivocation proof and validate the given key ownership proof
+> against the extracted offender. If both are valid, the offence
+> will be reported.
+>
+> This extrinsic must be called unsigned and it is expected that only
+> block authors will call it (validated in `ValidateUnsigned`), as such
+> if the block author is defined it will be defined as the equivocation
+> reporter.
+
+arguments:
+
+- equivocationProof: `SpFinalityGrandpaEquivocationProof`
+- keyOwnerProof: `SpSessionMembershipProof`
+<hr>
+
+#### **api.tx.grandpa.noteStalled**
+
+> Note that the current authority set of the GRANDPA finality gadget has stalled.
+>
+> This will trigger a forced authority set change at the beginning of the next session, to
+> be enacted `delay` blocks after that. The `delay` should be high enough to safely assume
+> that the block signalling the forced change will not be re-orged e.g. 1000 blocks.
+> The block production rate (which may be slowed down because of finality lagging) should
+> be taken into account when choosing the `delay`. The GRANDPA voters based on the new
+> authority will start voting on top of `best_finalized_block_number` for new finalized
+> blocks. `best_finalized_block_number` should be the highest of the latest finalized
+> block of all validators of the new authority set.
+>
+> Only callable by root.
+
+arguments:
+
+- delay: `u32`
+- bestFinalizedBlockNumber: `u32`
+<hr>
+
+## ImOnline pallet
+
+### _State Queries_
+
+#### **api.query.imOnline.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.imOnline.heartbeatAfter**
+
+> The block number after which it's ok to send heartbeats in the current
+> session.
+>
+> At the beginning of each session we set this to a value that should fall
+> roughly in the middle of the session duration. The idea is to first wait for
+> the validators to produce a block in the current session, so that the
+> heartbeat later on will not be necessary.
+>
+> This value will only be used as a fallback if we fail to get a proper session
+> progress estimate from `NextSessionRotation`, as those estimates should be
+> more accurate then the value we calculate for `HeartbeatAfter`.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.imOnline.keys**
+
+> The current set of keys that may issue a heartbeat.
+
+arguments: -
+
+returns: `Vec<PalletImOnlineSr25519AppSr25519Public>`
+
+<hr>
+
+#### **api.query.imOnline.receivedHeartbeats**
+
+> For each session index, we keep a mapping of `SessionIndex` and `AuthIndex` to
+> `WrapperOpaque<BoundedOpaqueNetworkState>`.
+
+arguments:
+
+- key: `(u32,u32)`
+
+returns: `WrapperOpaque<PalletImOnlineBoundedOpaqueNetworkState>`
+
+<hr>
+
+#### **api.query.imOnline.authoredBlocks**
+
+> For each session index, we keep a mapping of `ValidatorId<T>` to the
+> number of blocks authored by the given authority.
+
+arguments:
+
+- key: `(u32,AccountId32)`
+
+returns: `u32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.imOnline.heartbeat**
+
+> # <weight>
+>
+> - Complexity: `O(K + E)` where K is length of `Keys` (heartbeat.validators_len) and E is
+>   length of `heartbeat.network_state.external_address`
+> - `O(K)`: decoding of length `K`
+> - `O(E)`: decoding/encoding of length `E`
+> - DbReads: pallet_session `Validators`, pallet_session `CurrentIndex`, `Keys`,
+>   `ReceivedHeartbeats`
+> - DbWrites: `ReceivedHeartbeats`
+>
+> # </weight>
+
+arguments:
+
+- heartbeat: `PalletImOnlineHeartbeat`
+- signature: `PalletImOnlineSr25519AppSr25519Signature`
 <hr>
 
 ## Tokens pallet
 
 ### _State Queries_
+
+#### **api.query.tokens.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.tokens.totalIssuance**
 
@@ -3126,9 +3313,9 @@ arguments:
 
 arguments:
 
-- key: `CurrencyId`
+- key: `CommonPrimitivesAssetId32`
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -3139,10 +3326,9 @@ returns: `Balance`
 
 arguments:
 
-- key1: `AccountId`
-- key2: `CurrencyId`
+- key: `(AccountId32,CommonPrimitivesAssetId32)`
 
-returns: `Vec<OrmlBalanceLock>`
+returns: `Vec<OrmlTokensBalanceLock>`
 
 <hr>
 
@@ -3157,10 +3343,21 @@ returns: `Vec<OrmlBalanceLock>`
 
 arguments:
 
-- key1: `AccountId`
-- key2: `CurrencyId`
+- key: `(AccountId32,CommonPrimitivesAssetId32)`
 
-returns: `OrmlAccountData`
+returns: `OrmlTokensAccountData`
+
+<hr>
+
+#### **api.query.tokens.reserves**
+
+> Named reserves on some account balances.
+
+arguments:
+
+- key: `(AccountId32,CommonPrimitivesAssetId32)`
+
+returns: `Vec<OrmlTokensReserveData>`
 
 <hr>
 
@@ -3168,14 +3365,31 @@ returns: `OrmlAccountData`
 
 ### _State Queries_
 
+#### **api.query.tradingPair.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.tradingPair.enabledSources**
 
 arguments:
 
-- key1: `DEXId`
-- key2: `TradingPair`
+- key: `(u32,CommonPrimitivesTradingPairAssetId32)`
 
-returns: `BTreeSet<LiquiditySourceType>`
+returns: `BTreeSet<CommonPrimitivesLiquiditySourceType>`
+
+<hr>
+
+#### **api.query.tradingPair.lockedLiquiditySources**
+
+arguments: -
+
+returns: `Vec<CommonPrimitivesLiquiditySourceType>`
 
 <hr>
 
@@ -3192,9 +3406,9 @@ returns: `BTreeSet<LiquiditySourceType>`
 
 arguments:
 
-- dex_id: `DEXId`
-- base_asset_id: `AssetId`
-- target_asset_id: `AssetId`
+- dexId: `u32`
+- baseAssetId: `CommonPrimitivesAssetId32`
+- targetAssetId: `CommonPrimitivesAssetId32`
 <hr>
 
 ### _Custom RPCs_
@@ -3262,27 +3476,37 @@ returns: `bool`
 
 ### _State Queries_
 
+#### **api.query.assets.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.assets.assetOwners**
 
 > Asset Id -> Owner Account Id
 
 arguments:
 
-- key: `AssetId`
+- key: `CommonPrimitivesAssetId32`
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
 #### **api.query.assets.assetInfos**
 
-> Asset Id -> (Symbol, Name, Precision, Is Mintable)
+> Asset Id -> (Symbol, Name, Precision, Is Mintable, Content Source, Description)
 
 arguments:
 
-- key: `AssetId`
+- key: `CommonPrimitivesAssetId32`
 
-returns: `(AssetSymbol,AssetName,BalancePrecision,bool)`
+returns: `(Bytes,Bytes,u8,bool,Option<Bytes>,Option<Bytes>)`
 
 <hr>
 
@@ -3292,33 +3516,9 @@ returns: `(AssetSymbol,AssetName,BalancePrecision,bool)`
 
 arguments:
 
-- key: `AssetId`
+- key: `CommonPrimitivesAssetId32`
 
-returns: `AssetRecord`
-
-<hr>
-
-#### **api.query.assets.assetContentSource**
-
-> Asset Id -> Content Source
-
-arguments:
-
-- key: `AssetId`
-
-returns: `ContentSource`
-
-<hr>
-
-#### **api.query.assets.assetDescription**
-
-> Asset Id -> Description
-
-arguments:
-
-- key: `AssetId`
-
-returns: `Description`
+returns: `AssetsAssetRecord`
 
 <hr>
 
@@ -3334,13 +3534,13 @@ returns: `Description`
 
 arguments:
 
-- symbol: `AssetSymbol`
-- name: `AssetName`
-- initial_supply: `TAssetBalance`
-- is_mintable: `bool`
-- is_nft: `bool`
-- opt_content_src: `Option<ContentSource>`
-- opt_desc: `Option<Description>`
+- symbol: `Bytes`
+- name: `Bytes`
+- initialSupply: `u128`
+- isMintable: `bool`
+- isIndivisible: `bool`
+- optContentSrc: `Option<Bytes>`
+- optDesc: `Option<Bytes>`
 <hr>
 
 #### **api.tx.assets.transfer**
@@ -3354,9 +3554,9 @@ arguments:
 
 arguments:
 
-- asset_id: `AssetId`
-- to: `AccountId`
-- amount: `TAssetBalance`
+- assetId: `CommonPrimitivesAssetId32`
+- to: `AccountId32`
+- amount: `u128`
 <hr>
 
 #### **api.tx.assets.mint**
@@ -3371,9 +3571,30 @@ arguments:
 
 arguments:
 
-- asset_id: `AssetId`
-- to: `AccountId`
-- amount: `TAssetBalance`
+- assetId: `CommonPrimitivesAssetId32`
+- to: `AccountId32`
+- amount: `u128`
+<hr>
+
+#### **api.tx.assets.forceMint**
+
+> Performs an unchecked Asset mint, can only be done
+> by root account.
+>
+> Should be used as extrinsic call only.
+> `Currencies::updated_balance()` should be deprecated. Using `force_mint` allows us to
+> perform extra actions for minting, such as buy-back, extra-minting and etc.
+>
+> - `origin`: caller Account, which issues Asset minting,
+> - `asset_id`: Id of minted Asset,
+> - `to`: Id of Account, to which Asset amount is minted,
+> - `amount`: minted Asset amount.
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- to: `AccountId32`
+- amount: `u128`
 <hr>
 
 #### **api.tx.assets.burn**
@@ -3387,8 +3608,25 @@ arguments:
 
 arguments:
 
-- asset_id: `AssetId`
-- amount: `TAssetBalance`
+- assetId: `CommonPrimitivesAssetId32`
+- amount: `u128`
+<hr>
+
+#### **api.tx.assets.updateBalance**
+
+> Add or remove abs(`by_amount`) from the balance of `who` under
+> `currency_id`. If positive `by_amount`, do add, else do remove.
+>
+> Basically a wrapper of `MultiCurrencyExtended::update_balance`
+> for testing purposes.
+>
+> TODO: move into tests extrinsic collection pallet
+
+arguments:
+
+- who: `AccountId32`
+- currencyId: `CommonPrimitivesAssetId32`
+- amount: `i128`
 <hr>
 
 #### **api.tx.assets.setNonMintable**
@@ -3401,7 +3639,23 @@ arguments:
 
 arguments:
 
-- asset_id: `AssetId`
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.assets.updateInfo**
+
+> Change information about asset. Can only be done by root
+>
+> - `origin`: caller Account, should be root
+> - `asset_id`: Id of asset to change,
+> - `new_symbol`: New asset symbol. If None asset symbol will not change
+> - `new_name`: New asset name. If None asset name will not change
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- newSymbol: `Option<Bytes>`
+- newName: `Option<Bytes>`
 <hr>
 
 ### _Custom RPCs_
@@ -3502,13 +3756,23 @@ returns: `Option<AssetInfo>`
 
 ### _State Queries_
 
-#### **api.query.dexManager.dEXInfos**
+#### **api.query.dexManager.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.dexManager.dexInfos**
 
 arguments:
 
-- key: `DEXId`
+- key: `u32`
 
-returns: `DEXInfo`
+returns: `CommonPrimitivesDexInfo`
 
 <hr>
 
@@ -3530,13 +3794,23 @@ returns: `Vec<DEXId>`
 
 ### _State Queries_
 
+#### **api.query.multicollateralBondingCurvePool.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.multicollateralBondingCurvePool.reservesAcc**
 
 > Technical account used to store collateral tokens.
 
 arguments: -
 
-returns: `TechAccountId`
+returns: `CommonPrimitivesTechAccountId`
 
 <hr>
 
@@ -3544,7 +3818,7 @@ returns: `TechAccountId`
 
 arguments: -
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -3552,7 +3826,7 @@ returns: `AccountId`
 
 arguments: -
 
-returns: `Vec<(AssetId,Balance)>`
+returns: `Vec<(CommonPrimitivesAssetId32,u128)>`
 
 <hr>
 
@@ -3562,7 +3836,7 @@ returns: `Vec<(AssetId,Balance)>`
 
 arguments: -
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
@@ -3572,7 +3846,7 @@ returns: `Fixed`
 
 arguments: -
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
@@ -3580,7 +3854,7 @@ returns: `Fixed`
 
 arguments: -
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
@@ -3590,7 +3864,7 @@ returns: `Fixed`
 
 arguments: -
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
@@ -3601,47 +3875,47 @@ returns: `Fixed`
 
 arguments: -
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
 #### **api.query.multicollateralBondingCurvePool.baseFee**
 
-> Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
+> Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%
 
 arguments: -
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
 #### **api.query.multicollateralBondingCurvePool.distributionAccountsEntry**
 
-> Accounts that receive 20% buy/sell margin according predefined proportions.
+> Accounts that receive 20% buy/sell margin according to predefined proportions
 
 arguments: -
 
-returns: `DistributionAccounts`
+returns: `MulticollateralBondingCurvePoolDistributionAccounts`
 
 <hr>
 
 #### **api.query.multicollateralBondingCurvePool.enabledTargets**
 
-> Collateral Assets allowed to be sold on bonding curve.
+> Collateral Assets allowed to be sold by the token bonding curve
 
 arguments: -
 
-returns: `BTreeSet<AssetId>`
+returns: `BTreeSet<CommonPrimitivesAssetId32>`
 
 <hr>
 
 #### **api.query.multicollateralBondingCurvePool.referenceAssetId**
 
-> Asset that is used to compare collateral assets by value, e.g., DAI.
+> Asset that is used to compare collateral assets by value, e.g., DAI
 
 arguments: -
 
-returns: `AssetId`
+returns: `CommonPrimitivesAssetId32`
 
 <hr>
 
@@ -3651,25 +3925,25 @@ returns: `AssetId`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `(Balance,Balance)`
+returns: `(u128,u128)`
 
 <hr>
 
 #### **api.query.multicollateralBondingCurvePool.totalRewards**
 
-> Total amount of PSWAP owned by accounts.
+> Total amount of PSWAP owned by accounts
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
 #### **api.query.multicollateralBondingCurvePool.incentivisedCurrenciesNum**
 
-> Number of reserve currencies selling which user will get rewards, namely all registered collaterals except PSWAP and VAL.
+> Number of reserve currencies selling which user will get rewards, namely all registered collaterals except PSWAP and VAL
 
 arguments: -
 
@@ -3679,11 +3953,11 @@ returns: `u32`
 
 #### **api.query.multicollateralBondingCurvePool.incentivesAccountId**
 
-> Account which stores actual PSWAP intended for rewards.
+> Account which stores actual PSWAP intended for rewards
 
 arguments: -
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -3693,20 +3967,20 @@ returns: `AccountId`
 
 arguments:
 
-- key: `AssetId`
+- key: `CommonPrimitivesAssetId32`
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
 #### **api.query.multicollateralBondingCurvePool.initialPswapRewardsSupply**
 
 > Amount of PSWAP initially stored in account dedicated for TBC rewards. Actual account balance will deplete over time,
-> however this constant is not modified.
+> however this constant is not modified
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -3716,9 +3990,9 @@ returns: `Balance`
 
 arguments:
 
-- key: `AssetId`
+- key: `CommonPrimitivesAssetId32`
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -3730,7 +4004,7 @@ returns: `Balance`
 
 arguments:
 
-- collateral_asset_id: `AssetId`
+- collateralAssetId: `CommonPrimitivesAssetId32`
 <hr>
 
 #### **api.tx.multicollateralBondingCurvePool.setReferenceAsset**
@@ -3739,7 +4013,7 @@ arguments:
 
 arguments:
 
-- reference_asset_id: `AssetId`
+- referenceAssetId: `CommonPrimitivesAssetId32`
 <hr>
 
 #### **api.tx.multicollateralBondingCurvePool.setOptionalRewardMultiplier**
@@ -3749,8 +4023,8 @@ arguments:
 
 arguments:
 
-- collateral_asset_id: `AssetId`
-- multiplier: `Option<Fixed>`
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- multiplier: `Option<FixnumFixedPoint>`
 <hr>
 
 #### **api.tx.multicollateralBondingCurvePool.setPriceBias**
@@ -3759,7 +4033,7 @@ arguments:
 
 arguments:
 
-- price_bias: `Balance`
+- priceBias: `u128`
 <hr>
 
 #### **api.tx.multicollateralBondingCurvePool.setPriceChangeConfig**
@@ -3768,15 +4042,51 @@ arguments:
 
 arguments:
 
-- price_change_rate: `Balance`
-- price_change_step: `Balance`
+- priceChangeRate: `u128`
+- priceChangeStep: `u128`
 <hr>
 
-## PoolXyk pallet
+## Technical pallet
 
 ### _State Queries_
 
-#### **api.query.poolXyk.reserves**
+#### **api.query.technical.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.technical.techAccounts**
+
+> Registered technical account identifiers. Map from repr `AccountId` into pure `TechAccountId`.
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `CommonPrimitivesTechAccountId`
+
+<hr>
+
+## PoolXYK pallet
+
+### _State Queries_
+
+#### **api.query.poolXYK.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.poolXYK.reserves**
 
 > Updated after last liquidity change operation.
 > [Base Asset Id (XOR) -> Target Asset Id => (Base Balance, Target Balance)].
@@ -3787,105 +4097,112 @@ arguments:
 
 arguments:
 
-- key1: `AssetId`
-- key2: `AssetId`
+- key: `(CommonPrimitivesAssetId32,CommonPrimitivesAssetId32)`
 
-returns: `(Balance,Balance)`
+returns: `(u128,u128)`
 
 <hr>
 
-#### **api.query.poolXyk.poolProviders**
+#### **api.query.poolXYK.poolProviders**
 
 > Liquidity providers of particular pool.
 > Pool account => Liquidity provider account => Pool token balance
 
 arguments:
 
-- key1: `AccountIdOf`
-- key2: `AccountIdOf`
+- key: `(AccountId32,AccountId32)`
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
-#### **api.query.poolXyk.accountPools**
+#### **api.query.poolXYK.accountPools**
 
 > Set of pools in which accounts have some share.
 > Liquidity provider account => Target Asset of pair (assuming base asset is XOR)
 
 arguments:
 
-- key: `AccountIdOf`
+- key: `(AccountId32,CommonPrimitivesAssetId32)`
 
-returns: `BTreeSet<AssetIdOf>`
+returns: `BTreeSet<CommonPrimitivesAssetId32>`
 
 <hr>
 
-#### **api.query.poolXyk.totalIssuances**
+#### **api.query.poolXYK.totalIssuances**
 
 > Total issuance of particular pool.
 > Pool account => Total issuance
 
 arguments:
 
-- key: `AccountIdOf`
+- key: `AccountId32`
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
-#### **api.query.poolXyk.properties**
+#### **api.query.poolXYK.properties**
 
 > Properties of particular pool. Base Asset => Target Asset => (Reserves Account Id, Fees Account Id)
 
 arguments:
 
-- key1: `AssetId`
-- key2: `AssetId`
+- key: `(CommonPrimitivesAssetId32,CommonPrimitivesAssetId32)`
 
-returns: `(AccountId,AccountId)`
+returns: `(AccountId32,AccountId32)`
 
 <hr>
 
 ### _Extrinsics_
 
-#### **api.tx.poolXyk.depositLiquidity**
+#### **api.tx.poolXYK.depositLiquidity**
 
 arguments:
 
-- dex_id: `DEXIdOf`
-- input_asset_a: `AssetIdOf`
-- input_asset_b: `AssetIdOf`
-- input_a_desired: `Balance`
-- input_b_desired: `Balance`
-- input_a_min: `Balance`
-- input_b_min: `Balance`
+- dexId: `u32`
+- inputAssetA: `CommonPrimitivesAssetId32`
+- inputAssetB: `CommonPrimitivesAssetId32`
+- inputADesired: `u128`
+- inputBDesired: `u128`
+- inputAMin: `u128`
+- inputBMin: `u128`
 <hr>
 
-#### **api.tx.poolXyk.withdrawLiquidity**
+#### **api.tx.poolXYK.withdrawLiquidity**
 
 arguments:
 
-- dex_id: `DEXIdOf`
-- output_asset_a: `AssetIdOf`
-- output_asset_b: `AssetIdOf`
-- marker_asset_desired: `Balance`
-- output_a_min: `Balance`
-- output_b_min: `Balance`
+- dexId: `u32`
+- outputAssetA: `CommonPrimitivesAssetId32`
+- outputAssetB: `CommonPrimitivesAssetId32`
+- markerAssetDesired: `u128`
+- outputAMin: `u128`
+- outputBMin: `u128`
 <hr>
 
-#### **api.tx.poolXyk.initializePool**
+#### **api.tx.poolXYK.initializePool**
 
 arguments:
 
-- dex_id: `DEXIdOf`
-- asset_a: `AssetIdOf`
-- asset_b: `AssetIdOf`
+- dexId: `u32`
+- assetA: `CommonPrimitivesAssetId32`
+- assetB: `CommonPrimitivesAssetId32`
 <hr>
 
 ## Council pallet
 
 ### _State Queries_
+
+#### **api.query.council.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.council.proposals**
 
@@ -3893,7 +4210,7 @@ arguments:
 
 arguments: -
 
-returns: `Vec<Hash>`
+returns: `Vec<H256>`
 
 <hr>
 
@@ -3903,9 +4220,9 @@ returns: `Vec<Hash>`
 
 arguments:
 
-- key: `Hash`
+- key: `H256`
 
-returns: `Proposal`
+returns: `Call`
 
 <hr>
 
@@ -3915,9 +4232,9 @@ returns: `Proposal`
 
 arguments:
 
-- key: `Hash`
+- key: `H256`
 
-returns: `Votes`
+returns: `PalletCollectiveVotes`
 
 <hr>
 
@@ -3937,7 +4254,7 @@ returns: `u32`
 
 arguments: -
 
-returns: `Vec<AccountId>`
+returns: `Vec<AccountId32>`
 
 <hr>
 
@@ -3947,7 +4264,7 @@ returns: `Vec<AccountId>`
 
 arguments: -
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -3959,35 +4276,43 @@ returns: `AccountId`
 >
 > - `new_members`: The new member list. Be nice to the chain and provide it sorted.
 > - `prime`: The prime member whose vote sets the default.
-> - `old_count`: The upper bound for the previous number of members in storage.
->   Used for weight estimation.
+> - `old_count`: The upper bound for the previous number of members in storage. Used for
+>   weight estimation.
 >
 > Requires root origin.
 >
 > NOTE: Does not enforce the expected `MaxMembers` limit on the amount of members, but
 > the weight estimations rely on it to estimate dispatchable weight.
 >
+> # WARNING:
+>
+> The `pallet-collective` can also be managed by logic outside of the pallet through the
+> implementation of the trait [`ChangeMembers`].
+> Any call to `set_members` must be careful that the member set doesn't get out of sync
+> with other logic managing the member set.
+>
 > # <weight>
 >
 > ## Weight
 >
 > - `O(MP + N)` where:
->   - `M` old-members-count (code- and governance-bounded)
->   - `N` new-members-count (code- and governance-bounded)
->   - `P` proposals-count (code-bounded)
+> - `M` old-members-count (code- and governance-bounded)
+> - `N` new-members-count (code- and governance-bounded)
+> - `P` proposals-count (code-bounded)
 > - DB:
->   - 1 storage mutation (codec `O(M)` read, `O(N)` write) for reading and writing the members
->   - 1 storage read (codec `O(P)`) for reading the proposals
->   - `P` storage mutations (codec `O(M)`) for updating the votes for each proposal
->   - 1 storage write (codec `O(1)`) for deleting the old `prime` and setting the new one
+> - 1 storage mutation (codec `O(M)` read, `O(N)` write) for reading and writing the
+>   members
+> - 1 storage read (codec `O(P)`) for reading the proposals
+> - `P` storage mutations (codec `O(M)`) for updating the votes for each proposal
+> - 1 storage write (codec `O(1)`) for deleting the old `prime` and setting the new one
 >
 > # </weight>
 
 arguments:
 
-- new_members: `Vec<AccountId>`
-- prime: `Option<AccountId>`
-- old_count: `MemberCount`
+- newMembers: `Vec<AccountId32>`
+- prime: `Option<AccountId32>`
+- oldCount: `u32`
 <hr>
 
 #### **api.tx.council.execute**
@@ -4000,7 +4325,8 @@ arguments:
 >
 > ## Weight
 >
-> - `O(M + P)` where `M` members-count (code-bounded) and `P` complexity of dispatching `proposal`
+> - `O(M + P)` where `M` members-count (code-bounded) and `P` complexity of dispatching
+>   `proposal`
 > - DB: 1 read (codec `O(M)`) + DB access of `proposal`
 > - 1 event
 >
@@ -4008,8 +4334,8 @@ arguments:
 
 arguments:
 
-- proposal: `Proposal`
-- length_bound: `Compact<u32>`
+- proposal: `Call`
+- lengthBound: `Compact<u32>`
 <hr>
 
 #### **api.tx.council.propose**
@@ -4026,30 +4352,30 @@ arguments:
 > ## Weight
 >
 > - `O(B + M + P1)` or `O(B + M + P2)` where:
->   - `B` is `proposal` size in bytes (length-fee-bounded)
->   - `M` is members-count (code- and governance-bounded)
->   - branching is influenced by `threshold` where:
->     - `P1` is proposal execution complexity (`threshold < 2`)
->     - `P2` is proposals-count (code-bounded) (`threshold >= 2`)
+> - `B` is `proposal` size in bytes (length-fee-bounded)
+> - `M` is members-count (code- and governance-bounded)
+> - branching is influenced by `threshold` where:
+>   - `P1` is proposal execution complexity (`threshold < 2`)
+>   - `P2` is proposals-count (code-bounded) (`threshold >= 2`)
 > - DB:
->   - 1 storage read `is_member` (codec `O(M)`)
->   - 1 storage read `ProposalOf::contains_key` (codec `O(1)`)
->   - DB accesses influenced by `threshold`:
->     - EITHER storage accesses done by `proposal` (`threshold < 2`)
->     - OR proposal insertion (`threshold <= 2`)
->       - 1 storage mutation `Proposals` (codec `O(P2)`)
->       - 1 storage mutation `ProposalCount` (codec `O(1)`)
->       - 1 storage write `ProposalOf` (codec `O(B)`)
->       - 1 storage write `Voting` (codec `O(M)`)
->   - 1 event
+> - 1 storage read `is_member` (codec `O(M)`)
+> - 1 storage read `ProposalOf::contains_key` (codec `O(1)`)
+> - DB accesses influenced by `threshold`:
+>   - EITHER storage accesses done by `proposal` (`threshold < 2`)
+>   - OR proposal insertion (`threshold <= 2`)
+>     - 1 storage mutation `Proposals` (codec `O(P2)`)
+>     - 1 storage mutation `ProposalCount` (codec `O(1)`)
+>     - 1 storage write `ProposalOf` (codec `O(B)`)
+>     - 1 storage write `Voting` (codec `O(M)`)
+> - 1 event
 >
 > # </weight>
 
 arguments:
 
-- threshold: `Compact<MemberCount>`
-- proposal: `Proposal`
-- length_bound: `Compact<u32>`
+- threshold: `Compact<u32>`
+- proposal: `Call`
+- lengthBound: `Compact<u32>`
 <hr>
 
 #### **api.tx.council.vote**
@@ -4059,7 +4385,8 @@ arguments:
 > Requires the sender to be a member.
 >
 > Transaction fees will be waived if the member is voting on any particular proposal
-> for the first time and the call is successful. Subsequent vote changes will charge a fee.
+> for the first time and the call is successful. Subsequent vote changes will charge a
+> fee.
 >
 > # <weight>
 >
@@ -4067,20 +4394,20 @@ arguments:
 >
 > - `O(M)` where `M` is members-count (code- and governance-bounded)
 > - DB:
->   - 1 storage read `Members` (codec `O(M)`)
->   - 1 storage mutation `Voting` (codec `O(M)`)
+> - 1 storage read `Members` (codec `O(M)`)
+> - 1 storage mutation `Voting` (codec `O(M)`)
 > - 1 event
 >
 > # </weight>
 
 arguments:
 
-- proposal: `Hash`
-- index: `Compact<ProposalIndex>`
+- proposal: `H256`
+- index: `Compact<u32>`
 - approve: `bool`
 <hr>
 
-#### **api.tx.council.close**
+#### **api.tx.council.closeOldWeight**
 
 > Close a vote that is either approved, disapproved or whose voting period has ended.
 >
@@ -4095,7 +4422,8 @@ arguments:
 > If the close operation completes successfully with disapproval, the transaction fee will
 > be waived. Otherwise execution of the approved operation will be charged to the caller.
 >
-> - `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed proposal.
+> - `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed
+>   proposal.
 > - `length_bound`: The upper bound for the length of the proposal in storage. Checked via
 >   `storage::read` so it is `size_of::<u32>() == 4` larger than the pure length.
 >
@@ -4104,13 +4432,14 @@ arguments:
 > ## Weight
 >
 > - `O(B + M + P1 + P2)` where:
->   - `B` is `proposal` size in bytes (length-fee-bounded)
->   - `M` is members-count (code- and governance-bounded)
->   - `P1` is the complexity of `proposal` preimage.
->   - `P2` is proposal-count (code-bounded)
+> - `B` is `proposal` size in bytes (length-fee-bounded)
+> - `M` is members-count (code- and governance-bounded)
+> - `P1` is the complexity of `proposal` preimage.
+> - `P2` is proposal-count (code-bounded)
 > - DB:
 > - 2 storage reads (`Members`: codec `O(M)`, `Prime`: codec `O(1)`)
-> - 3 mutations (`Voting`: codec `O(M)`, `ProposalOf`: codec `O(B)`, `Proposals`: codec `O(P2)`)
+> - 3 mutations (`Voting`: codec `O(M)`, `ProposalOf`: codec `O(B)`, `Proposals`: codec
+>   `O(P2)`)
 > - any mutations done while executing `proposal` (`P1`)
 > - up to 3 events
 >
@@ -4118,15 +4447,16 @@ arguments:
 
 arguments:
 
-- proposal_hash: `Hash`
-- index: `Compact<ProposalIndex>`
-- proposal_weight_bound: `Compact<Weight>`
-- length_bound: `Compact<u32>`
+- proposalHash: `H256`
+- index: `Compact<u32>`
+- proposalWeightBound: `Compact<u64>`
+- lengthBound: `Compact<u32>`
 <hr>
 
 #### **api.tx.council.disapproveProposal**
 
-> Disapprove a proposal, close, and remove it from the system, regardless of its current state.
+> Disapprove a proposal, close, and remove it from the system, regardless of its current
+> state.
 >
 > Must be called by the Root origin.
 >
@@ -4146,12 +4476,68 @@ arguments:
 
 arguments:
 
-- proposal_hash: `Hash`
+- proposalHash: `H256`
+<hr>
+
+#### **api.tx.council.close**
+
+> Close a vote that is either approved, disapproved or whose voting period has ended.
+>
+> May be called by any signed account in order to finish voting and close the proposal.
+>
+> If called before the end of the voting period it will only close the vote if it is
+> has enough votes to be approved or disapproved.
+>
+> If called after the end of the voting period abstentions are counted as rejections
+> unless there is a prime member set and the prime member cast an approval.
+>
+> If the close operation completes successfully with disapproval, the transaction fee will
+> be waived. Otherwise execution of the approved operation will be charged to the caller.
+>
+> - `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed
+>   proposal.
+> - `length_bound`: The upper bound for the length of the proposal in storage. Checked via
+>   `storage::read` so it is `size_of::<u32>() == 4` larger than the pure length.
+>
+> # <weight>
+>
+> ## Weight
+>
+> - `O(B + M + P1 + P2)` where:
+> - `B` is `proposal` size in bytes (length-fee-bounded)
+> - `M` is members-count (code- and governance-bounded)
+> - `P1` is the complexity of `proposal` preimage.
+> - `P2` is proposal-count (code-bounded)
+> - DB:
+> - 2 storage reads (`Members`: codec `O(M)`, `Prime`: codec `O(1)`)
+> - 3 mutations (`Voting`: codec `O(M)`, `ProposalOf`: codec `O(B)`, `Proposals`: codec
+>   `O(P2)`)
+> - any mutations done while executing `proposal` (`P1`)
+> - up to 3 events
+>
+> # </weight>
+
+arguments:
+
+- proposalHash: `H256`
+- index: `Compact<u32>`
+- proposalWeightBound: `SpWeightsWeightV2Weight`
+- lengthBound: `Compact<u32>`
 <hr>
 
 ## TechnicalCommittee pallet
 
 ### _State Queries_
+
+#### **api.query.technicalCommittee.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.technicalCommittee.proposals**
 
@@ -4159,7 +4545,7 @@ arguments:
 
 arguments: -
 
-returns: `Vec<Hash>`
+returns: `Vec<H256>`
 
 <hr>
 
@@ -4169,9 +4555,9 @@ returns: `Vec<Hash>`
 
 arguments:
 
-- key: `Hash`
+- key: `H256`
 
-returns: `Proposal`
+returns: `Call`
 
 <hr>
 
@@ -4181,9 +4567,9 @@ returns: `Proposal`
 
 arguments:
 
-- key: `Hash`
+- key: `H256`
 
-returns: `Votes`
+returns: `PalletCollectiveVotes`
 
 <hr>
 
@@ -4203,7 +4589,7 @@ returns: `u32`
 
 arguments: -
 
-returns: `Vec<AccountId>`
+returns: `Vec<AccountId32>`
 
 <hr>
 
@@ -4213,7 +4599,7 @@ returns: `Vec<AccountId>`
 
 arguments: -
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -4225,35 +4611,43 @@ returns: `AccountId`
 >
 > - `new_members`: The new member list. Be nice to the chain and provide it sorted.
 > - `prime`: The prime member whose vote sets the default.
-> - `old_count`: The upper bound for the previous number of members in storage.
->   Used for weight estimation.
+> - `old_count`: The upper bound for the previous number of members in storage. Used for
+>   weight estimation.
 >
 > Requires root origin.
 >
 > NOTE: Does not enforce the expected `MaxMembers` limit on the amount of members, but
 > the weight estimations rely on it to estimate dispatchable weight.
 >
+> # WARNING:
+>
+> The `pallet-collective` can also be managed by logic outside of the pallet through the
+> implementation of the trait [`ChangeMembers`].
+> Any call to `set_members` must be careful that the member set doesn't get out of sync
+> with other logic managing the member set.
+>
 > # <weight>
 >
 > ## Weight
 >
 > - `O(MP + N)` where:
->   - `M` old-members-count (code- and governance-bounded)
->   - `N` new-members-count (code- and governance-bounded)
->   - `P` proposals-count (code-bounded)
+> - `M` old-members-count (code- and governance-bounded)
+> - `N` new-members-count (code- and governance-bounded)
+> - `P` proposals-count (code-bounded)
 > - DB:
->   - 1 storage mutation (codec `O(M)` read, `O(N)` write) for reading and writing the members
->   - 1 storage read (codec `O(P)`) for reading the proposals
->   - `P` storage mutations (codec `O(M)`) for updating the votes for each proposal
->   - 1 storage write (codec `O(1)`) for deleting the old `prime` and setting the new one
+> - 1 storage mutation (codec `O(M)` read, `O(N)` write) for reading and writing the
+>   members
+> - 1 storage read (codec `O(P)`) for reading the proposals
+> - `P` storage mutations (codec `O(M)`) for updating the votes for each proposal
+> - 1 storage write (codec `O(1)`) for deleting the old `prime` and setting the new one
 >
 > # </weight>
 
 arguments:
 
-- new_members: `Vec<AccountId>`
-- prime: `Option<AccountId>`
-- old_count: `MemberCount`
+- newMembers: `Vec<AccountId32>`
+- prime: `Option<AccountId32>`
+- oldCount: `u32`
 <hr>
 
 #### **api.tx.technicalCommittee.execute**
@@ -4266,7 +4660,8 @@ arguments:
 >
 > ## Weight
 >
-> - `O(M + P)` where `M` members-count (code-bounded) and `P` complexity of dispatching `proposal`
+> - `O(M + P)` where `M` members-count (code-bounded) and `P` complexity of dispatching
+>   `proposal`
 > - DB: 1 read (codec `O(M)`) + DB access of `proposal`
 > - 1 event
 >
@@ -4274,8 +4669,8 @@ arguments:
 
 arguments:
 
-- proposal: `Proposal`
-- length_bound: `Compact<u32>`
+- proposal: `Call`
+- lengthBound: `Compact<u32>`
 <hr>
 
 #### **api.tx.technicalCommittee.propose**
@@ -4292,30 +4687,30 @@ arguments:
 > ## Weight
 >
 > - `O(B + M + P1)` or `O(B + M + P2)` where:
->   - `B` is `proposal` size in bytes (length-fee-bounded)
->   - `M` is members-count (code- and governance-bounded)
->   - branching is influenced by `threshold` where:
->     - `P1` is proposal execution complexity (`threshold < 2`)
->     - `P2` is proposals-count (code-bounded) (`threshold >= 2`)
+> - `B` is `proposal` size in bytes (length-fee-bounded)
+> - `M` is members-count (code- and governance-bounded)
+> - branching is influenced by `threshold` where:
+>   - `P1` is proposal execution complexity (`threshold < 2`)
+>   - `P2` is proposals-count (code-bounded) (`threshold >= 2`)
 > - DB:
->   - 1 storage read `is_member` (codec `O(M)`)
->   - 1 storage read `ProposalOf::contains_key` (codec `O(1)`)
->   - DB accesses influenced by `threshold`:
->     - EITHER storage accesses done by `proposal` (`threshold < 2`)
->     - OR proposal insertion (`threshold <= 2`)
->       - 1 storage mutation `Proposals` (codec `O(P2)`)
->       - 1 storage mutation `ProposalCount` (codec `O(1)`)
->       - 1 storage write `ProposalOf` (codec `O(B)`)
->       - 1 storage write `Voting` (codec `O(M)`)
->   - 1 event
+> - 1 storage read `is_member` (codec `O(M)`)
+> - 1 storage read `ProposalOf::contains_key` (codec `O(1)`)
+> - DB accesses influenced by `threshold`:
+>   - EITHER storage accesses done by `proposal` (`threshold < 2`)
+>   - OR proposal insertion (`threshold <= 2`)
+>     - 1 storage mutation `Proposals` (codec `O(P2)`)
+>     - 1 storage mutation `ProposalCount` (codec `O(1)`)
+>     - 1 storage write `ProposalOf` (codec `O(B)`)
+>     - 1 storage write `Voting` (codec `O(M)`)
+> - 1 event
 >
 > # </weight>
 
 arguments:
 
-- threshold: `Compact<MemberCount>`
-- proposal: `Proposal`
-- length_bound: `Compact<u32>`
+- threshold: `Compact<u32>`
+- proposal: `Call`
+- lengthBound: `Compact<u32>`
 <hr>
 
 #### **api.tx.technicalCommittee.vote**
@@ -4325,7 +4720,8 @@ arguments:
 > Requires the sender to be a member.
 >
 > Transaction fees will be waived if the member is voting on any particular proposal
-> for the first time and the call is successful. Subsequent vote changes will charge a fee.
+> for the first time and the call is successful. Subsequent vote changes will charge a
+> fee.
 >
 > # <weight>
 >
@@ -4333,20 +4729,20 @@ arguments:
 >
 > - `O(M)` where `M` is members-count (code- and governance-bounded)
 > - DB:
->   - 1 storage read `Members` (codec `O(M)`)
->   - 1 storage mutation `Voting` (codec `O(M)`)
+> - 1 storage read `Members` (codec `O(M)`)
+> - 1 storage mutation `Voting` (codec `O(M)`)
 > - 1 event
 >
 > # </weight>
 
 arguments:
 
-- proposal: `Hash`
-- index: `Compact<ProposalIndex>`
+- proposal: `H256`
+- index: `Compact<u32>`
 - approve: `bool`
 <hr>
 
-#### **api.tx.technicalCommittee.close**
+#### **api.tx.technicalCommittee.closeOldWeight**
 
 > Close a vote that is either approved, disapproved or whose voting period has ended.
 >
@@ -4361,7 +4757,8 @@ arguments:
 > If the close operation completes successfully with disapproval, the transaction fee will
 > be waived. Otherwise execution of the approved operation will be charged to the caller.
 >
-> - `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed proposal.
+> - `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed
+>   proposal.
 > - `length_bound`: The upper bound for the length of the proposal in storage. Checked via
 >   `storage::read` so it is `size_of::<u32>() == 4` larger than the pure length.
 >
@@ -4370,13 +4767,14 @@ arguments:
 > ## Weight
 >
 > - `O(B + M + P1 + P2)` where:
->   - `B` is `proposal` size in bytes (length-fee-bounded)
->   - `M` is members-count (code- and governance-bounded)
->   - `P1` is the complexity of `proposal` preimage.
->   - `P2` is proposal-count (code-bounded)
+> - `B` is `proposal` size in bytes (length-fee-bounded)
+> - `M` is members-count (code- and governance-bounded)
+> - `P1` is the complexity of `proposal` preimage.
+> - `P2` is proposal-count (code-bounded)
 > - DB:
 > - 2 storage reads (`Members`: codec `O(M)`, `Prime`: codec `O(1)`)
-> - 3 mutations (`Voting`: codec `O(M)`, `ProposalOf`: codec `O(B)`, `Proposals`: codec `O(P2)`)
+> - 3 mutations (`Voting`: codec `O(M)`, `ProposalOf`: codec `O(B)`, `Proposals`: codec
+>   `O(P2)`)
 > - any mutations done while executing `proposal` (`P1`)
 > - up to 3 events
 >
@@ -4384,15 +4782,16 @@ arguments:
 
 arguments:
 
-- proposal_hash: `Hash`
-- index: `Compact<ProposalIndex>`
-- proposal_weight_bound: `Compact<Weight>`
-- length_bound: `Compact<u32>`
+- proposalHash: `H256`
+- index: `Compact<u32>`
+- proposalWeightBound: `Compact<u64>`
+- lengthBound: `Compact<u32>`
 <hr>
 
 #### **api.tx.technicalCommittee.disapproveProposal**
 
-> Disapprove a proposal, close, and remove it from the system, regardless of its current state.
+> Disapprove a proposal, close, and remove it from the system, regardless of its current
+> state.
 >
 > Must be called by the Root origin.
 >
@@ -4412,12 +4811,68 @@ arguments:
 
 arguments:
 
-- proposal_hash: `Hash`
+- proposalHash: `H256`
+<hr>
+
+#### **api.tx.technicalCommittee.close**
+
+> Close a vote that is either approved, disapproved or whose voting period has ended.
+>
+> May be called by any signed account in order to finish voting and close the proposal.
+>
+> If called before the end of the voting period it will only close the vote if it is
+> has enough votes to be approved or disapproved.
+>
+> If called after the end of the voting period abstentions are counted as rejections
+> unless there is a prime member set and the prime member cast an approval.
+>
+> If the close operation completes successfully with disapproval, the transaction fee will
+> be waived. Otherwise execution of the approved operation will be charged to the caller.
+>
+> - `proposal_weight_bound`: The maximum amount of weight consumed by executing the closed
+>   proposal.
+> - `length_bound`: The upper bound for the length of the proposal in storage. Checked via
+>   `storage::read` so it is `size_of::<u32>() == 4` larger than the pure length.
+>
+> # <weight>
+>
+> ## Weight
+>
+> - `O(B + M + P1 + P2)` where:
+> - `B` is `proposal` size in bytes (length-fee-bounded)
+> - `M` is members-count (code- and governance-bounded)
+> - `P1` is the complexity of `proposal` preimage.
+> - `P2` is proposal-count (code-bounded)
+> - DB:
+> - 2 storage reads (`Members`: codec `O(M)`, `Prime`: codec `O(1)`)
+> - 3 mutations (`Voting`: codec `O(M)`, `ProposalOf`: codec `O(B)`, `Proposals`: codec
+>   `O(P2)`)
+> - any mutations done while executing `proposal` (`P1`)
+> - up to 3 events
+>
+> # </weight>
+
+arguments:
+
+- proposalHash: `H256`
+- index: `Compact<u32>`
+- proposalWeightBound: `SpWeightsWeightV2Weight`
+- lengthBound: `Compact<u32>`
 <hr>
 
 ## Democracy pallet
 
 ### _State Queries_
+
+#### **api.query.democracy.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.democracy.publicPropCount**
 
@@ -4425,17 +4880,17 @@ arguments:
 
 arguments: -
 
-returns: `PropIndex`
+returns: `u32`
 
 <hr>
 
 #### **api.query.democracy.publicProps**
 
-> The public proposals. Unsorted. The second item is the proposal's hash.
+> The public proposals. Unsorted. The second item is the proposal.
 
 arguments: -
 
-returns: `Vec<(PropIndex,Hash,AccountId)>`
+returns: `Vec<(u32,FrameSupportPreimagesBounded,AccountId32)>`
 
 <hr>
 
@@ -4447,22 +4902,9 @@ returns: `Vec<(PropIndex,Hash,AccountId)>`
 
 arguments:
 
-- key: `PropIndex`
+- key: `u32`
 
-returns: `(Vec<AccountId>,BalanceOf)`
-
-<hr>
-
-#### **api.query.democracy.preimages**
-
-> Map of hashes to the proposal preimage, along with who registered it and their deposit.
-> The block number is the block at which it was deposited.
-
-arguments:
-
-- key: `Hash`
-
-returns: `PreimageStatus`
+returns: `(Vec<AccountId32>,u128)`
 
 <hr>
 
@@ -4472,7 +4914,7 @@ returns: `PreimageStatus`
 
 arguments: -
 
-returns: `ReferendumIndex`
+returns: `u32`
 
 <hr>
 
@@ -4483,7 +4925,7 @@ returns: `ReferendumIndex`
 
 arguments: -
 
-returns: `ReferendumIndex`
+returns: `u32`
 
 <hr>
 
@@ -4495,9 +4937,9 @@ returns: `ReferendumIndex`
 
 arguments:
 
-- key: `ReferendumIndex`
+- key: `u32`
 
-returns: `ReferendumInfo`
+returns: `PalletDemocracyReferendumInfo`
 
 <hr>
 
@@ -4510,24 +4952,9 @@ returns: `ReferendumInfo`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Voting`
-
-<hr>
-
-#### **api.query.democracy.locks**
-
-> Accounts for which there are locks in action which may be removed at some point in the
-> future. The value is the block number at which the lock expires and may be removed.
->
-> TWOX-NOTE: OK ― `AccountId` is a secure hash.
-
-arguments:
-
-- key: `AccountId`
-
-returns: `BlockNumber`
+returns: `PalletDemocracyVoteVoting`
 
 <hr>
 
@@ -4552,7 +4979,7 @@ returns: `bool`
 
 arguments: -
 
-returns: `(Hash,VoteThreshold)`
+returns: `(FrameSupportPreimagesBounded,PalletDemocracyVoteThreshold)`
 
 <hr>
 
@@ -4563,9 +4990,9 @@ returns: `(Hash,VoteThreshold)`
 
 arguments:
 
-- key: `Hash`
+- key: `H256`
 
-returns: `(BlockNumber,Vec<AccountId>)`
+returns: `(u32,Vec<AccountId32>)`
 
 <hr>
 
@@ -4575,21 +5002,9 @@ returns: `(BlockNumber,Vec<AccountId>)`
 
 arguments:
 
-- key: `Hash`
+- key: `H256`
 
 returns: `bool`
-
-<hr>
-
-#### **api.query.democracy.storageVersion**
-
-> Storage version of the pallet.
->
-> New networks start with last version.
-
-arguments: -
-
-returns: `Releases`
 
 <hr>
 
@@ -4606,13 +5021,11 @@ returns: `Releases`
 > - `value`: The amount of deposit (must be at least `MinimumDeposit`).
 >
 > Emits `Proposed`.
->
-> Weight: `O(p)`
 
 arguments:
 
-- proposal_hash: `Hash`
-- value: `Compact<BalanceOf>`
+- proposal: `FrameSupportPreimagesBounded`
+- value: `Compact<u128>`
 <hr>
 
 #### **api.tx.democracy.second**
@@ -4623,15 +5036,10 @@ arguments:
 > must have funds to cover the deposit, equal to the original deposit.
 >
 > - `proposal`: The index of the proposal to second.
-> - `seconds_upper_bound`: an upper bound on the current number of seconds on this
->   proposal. Extrinsic is weighted according to this value with no refund.
->
-> Weight: `O(S)` where S is the number of seconds a proposal already has.
 
 arguments:
 
-- proposal: `Compact<PropIndex>`
-- seconds_upper_bound: `Compact<u32>`
+- proposal: `Compact<u32>`
 <hr>
 
 #### **api.tx.democracy.vote**
@@ -4643,13 +5051,11 @@ arguments:
 >
 > - `ref_index`: The index of the referendum to vote for.
 > - `vote`: The vote configuration.
->
-> Weight: `O(R)` where R is the number of referendums the voter has voted on.
 
 arguments:
 
-- ref_index: `Compact<ReferendumIndex>`
-- vote: `AccountVote`
+- refIndex: `Compact<u32>`
+- vote: `PalletDemocracyVoteAccountVote`
 <hr>
 
 #### **api.tx.democracy.emergencyCancel**
@@ -4665,7 +5071,7 @@ arguments:
 
 arguments:
 
-- ref_index: `ReferendumIndex`
+- refIndex: `u32`
 <hr>
 
 #### **api.tx.democracy.externalPropose**
@@ -4676,13 +5082,10 @@ arguments:
 > The dispatch origin of this call must be `ExternalOrigin`.
 >
 > - `proposal_hash`: The preimage hash of the proposal.
->
-> Weight: `O(V)` with V number of vetoers in the blacklist of proposal.
-> Decoding vec of length V. Charged as maximum
 
 arguments:
 
-- proposal_hash: `Hash`
+- proposal: `FrameSupportPreimagesBounded`
 <hr>
 
 #### **api.tx.democracy.externalProposeMajority**
@@ -4701,7 +5104,7 @@ arguments:
 
 arguments:
 
-- proposal_hash: `Hash`
+- proposal: `FrameSupportPreimagesBounded`
 <hr>
 
 #### **api.tx.democracy.externalProposeDefault**
@@ -4720,7 +5123,7 @@ arguments:
 
 arguments:
 
-- proposal_hash: `Hash`
+- proposal: `FrameSupportPreimagesBounded`
 <hr>
 
 #### **api.tx.democracy.fastTrack**
@@ -4733,7 +5136,8 @@ arguments:
 >
 > - `proposal_hash`: The hash of the current external proposal.
 > - `voting_period`: The period that is allowed for voting on this proposal. Increased to
->   `FastTrackVotingPeriod` if too low.
+>   Must be always greater than zero.
+>   For `FastTrackOrigin` must be equal or greater than `FastTrackVotingPeriod`.
 > - `delay`: The number of block after voting has ended in approval and this should be
 >   enacted. This doesn't have a minimum amount.
 >
@@ -4743,9 +5147,9 @@ arguments:
 
 arguments:
 
-- proposal_hash: `Hash`
-- voting_period: `BlockNumber`
-- delay: `BlockNumber`
+- proposalHash: `H256`
+- votingPeriod: `u32`
+- delay: `u32`
 <hr>
 
 #### **api.tx.democracy.vetoExternal**
@@ -4762,7 +5166,7 @@ arguments:
 
 arguments:
 
-- proposal_hash: `Hash`
+- proposalHash: `H256`
 <hr>
 
 #### **api.tx.democracy.cancelReferendum**
@@ -4777,22 +5181,7 @@ arguments:
 
 arguments:
 
-- ref_index: `Compact<ReferendumIndex>`
-<hr>
-
-#### **api.tx.democracy.cancelQueued**
-
-> Cancel a proposal queued for enactment.
->
-> The dispatch origin of this call must be _Root_.
->
-> - `which`: The index of the referendum to cancel.
->
-> Weight: `O(D)` where `D` is the items in the dispatch queue. Weighted as `D = 10`.
-
-arguments:
-
-- which: `ReferendumIndex`
+- refIndex: `Compact<u32>`
 <hr>
 
 #### **api.tx.democracy.delegate**
@@ -4811,8 +5200,8 @@ arguments:
 > - `to`: The account whose voting the `target` account's voting power will follow.
 > - `conviction`: The conviction that will be attached to the delegated votes. When the
 >   account is undelegated, the funds will be locked for the corresponding period.
-> - `balance`: The amount of the account's balance to be used in delegating. This must
->   not be more than the account's current balance.
+> - `balance`: The amount of the account's balance to be used in delegating. This must not
+>   be more than the account's current balance.
 >
 > Emits `Delegated`.
 >
@@ -4821,9 +5210,9 @@ arguments:
 
 arguments:
 
-- to: `AccountId`
-- conviction: `Conviction`
-- balance: `BalanceOf`
+- to: `AccountId32`
+- conviction: `PalletDemocracyConviction`
+- balance: `u128`
 <hr>
 
 #### **api.tx.democracy.undelegate**
@@ -4857,86 +5246,6 @@ arguments: -
 
 <hr>
 
-#### **api.tx.democracy.notePreimage**
-
-> Register the preimage for an upcoming proposal. This doesn't require the proposal to be
-> in the dispatch queue but does require a deposit, returned once enacted.
->
-> The dispatch origin of this call must be _Signed_.
->
-> - `encoded_proposal`: The preimage of a proposal.
->
-> Emits `PreimageNoted`.
->
-> Weight: `O(E)` with E size of `encoded_proposal` (protected by a required deposit).
-
-arguments:
-
-- encoded_proposal: `Bytes`
-<hr>
-
-#### **api.tx.democracy.notePreimageOperational**
-
-> Same as `note_preimage` but origin is `OperationalPreimageOrigin`.
-
-arguments:
-
-- encoded_proposal: `Bytes`
-<hr>
-
-#### **api.tx.democracy.noteImminentPreimage**
-
-> Register the preimage for an upcoming proposal. This requires the proposal to be
-> in the dispatch queue. No deposit is needed. When this call is successful, i.e.
-> the preimage has not been uploaded before and matches some imminent proposal,
-> no fee is paid.
->
-> The dispatch origin of this call must be _Signed_.
->
-> - `encoded_proposal`: The preimage of a proposal.
->
-> Emits `PreimageNoted`.
->
-> Weight: `O(E)` with E size of `encoded_proposal` (protected by a required deposit).
-
-arguments:
-
-- encoded_proposal: `Bytes`
-<hr>
-
-#### **api.tx.democracy.noteImminentPreimageOperational**
-
-> Same as `note_imminent_preimage` but origin is `OperationalPreimageOrigin`.
-
-arguments:
-
-- encoded_proposal: `Bytes`
-<hr>
-
-#### **api.tx.democracy.reapPreimage**
-
-> Remove an expired proposal preimage and collect the deposit.
->
-> The dispatch origin of this call must be _Signed_.
->
-> - `proposal_hash`: The preimage hash of a proposal.
-> - `proposal_length_upper_bound`: an upper bound on length of the proposal.
->   Extrinsic is weighted according to this value with no refund.
->
-> This will only work after `VotingPeriod` blocks from the time that the preimage was
-> noted, if it's the same account doing it. If it's a different account, then it'll only
-> work an additional `EnactmentPeriod` later.
->
-> Emits `PreimageReaped`.
->
-> Weight: `O(D)` where D is length of proposal.
-
-arguments:
-
-- proposal_hash: `Hash`
-- proposal_len_upper_bound: `Compact<u32>`
-<hr>
-
 #### **api.tx.democracy.unlock**
 
 > Unlock tokens that have an expired lock.
@@ -4949,7 +5258,7 @@ arguments:
 
 arguments:
 
-- target: `AccountId`
+- target: `AccountId32`
 <hr>
 
 #### **api.tx.democracy.removeVote**
@@ -4961,11 +5270,11 @@ arguments:
 > - the referendum was cancelled, or
 > - the referendum is ongoing, or
 > - the referendum has ended such that
->   - the vote of the account was in opposition to the result; or
->   - there was no conviction to the account's vote; or
->   - the account made a split vote
->     ...then the vote is removed cleanly and a following call to `unlock` may result in more
->     funds being available.
+> - the vote of the account was in opposition to the result; or
+> - there was no conviction to the account's vote; or
+> - the account made a split vote
+>   ...then the vote is removed cleanly and a following call to `unlock` may result in more
+>   funds being available.
 >
 > If, however, the referendum has ended and:
 >
@@ -4986,7 +5295,7 @@ arguments:
 
 arguments:
 
-- index: `ReferendumIndex`
+- index: `u32`
 <hr>
 
 #### **api.tx.democracy.removeOtherVote**
@@ -5009,18 +5318,8 @@ arguments:
 
 arguments:
 
-- target: `AccountId`
-- index: `ReferendumIndex`
-<hr>
-
-#### **api.tx.democracy.enactProposal**
-
-> Enact a proposal from a referendum. For now we just make the weight be the maximum.
-
-arguments:
-
-- proposal_hash: `Hash`
-- index: `ReferendumIndex`
+- target: `AccountId32`
+- index: `u32`
 <hr>
 
 #### **api.tx.democracy.blacklist**
@@ -5043,8 +5342,8 @@ arguments:
 
 arguments:
 
-- proposal_hash: `Hash`
-- maybe_ref_index: `Option<ReferendumIndex>`
+- proposalHash: `H256`
+- maybeRefIndex: `Option<u32>`
 <hr>
 
 #### **api.tx.democracy.cancelProposal**
@@ -5059,52 +5358,44 @@ arguments:
 
 arguments:
 
-- prop_index: `Compact<PropIndex>`
+- propIndex: `Compact<u32>`
 <hr>
 
 ## Dexapi pallet
 
 ### _State Queries_
 
+#### **api.query.dexapi.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.dexapi.enabledSourceTypes**
 
 arguments: -
 
-returns: `Vec<LiquiditySourceType>`
+returns: `Vec<CommonPrimitivesLiquiditySourceType>`
 
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.dexapi.swap**
-
-> Perform swap with specified parameters. Gateway for invoking liquidity source exchanges.
->
-> - `dex_id`: ID of the exchange.
-> - `liquidity_source_type`: Type of liquidity source to perform swap on.
-> - `input_asset_id`: ID of Asset to be deposited from sender account into pool reserves.
-> - `output_asset_id`: ID of Asset t0 be withdrawn from pool reserves into receiver account.
-> - `amount`: Either amount of desired input or output tokens, determined by `swap_variant` parameter.
-> - `limit`: Either maximum input amount or minimum output amount tolerated for successful swap,
->   determined by `swap_variant` parameter.
-> - `swap_variant`: Either 'WithDesiredInput' or 'WithDesiredOutput', indicates amounts purpose.
-> - `receiver`: Optional value, indicates AccountId for swap receiver. If not set, default is `sender`.
-
-arguments:
-
-- dex_id: `DEXId`
-- liquidity_source_type: `LiquiditySourceType`
-- input_asset_id: `AssetId`
-- output_asset_id: `AssetId`
-- amount: `Balance`
-- limit: `Balance`
-- swap_variant: `SwapVariant`
-- receiver: `Option<AccountId>`
 <hr>
 
 ## EthBridge pallet
 
 ### _State Queries_
+
+#### **api.query.ethBridge.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.ethBridge.requestsQueue**
 
@@ -5112,7 +5403,7 @@ arguments:
 
 arguments:
 
-- key: `BridgeNetworkId`
+- key: `u32`
 
 returns: `Vec<H256>`
 
@@ -5124,10 +5415,9 @@ returns: `Vec<H256>`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `H256`
+- key: `(u32,H256)`
 
-returns: `OffchainRequest`
+returns: `EthBridgeRequestsOffchainRequest`
 
 <hr>
 
@@ -5137,8 +5427,7 @@ returns: `OffchainRequest`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `H256`
+- key: `(u32,H256)`
 
 returns: `H256`
 
@@ -5150,10 +5439,9 @@ returns: `H256`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `H256`
+- key: `(u32,H256)`
 
-returns: `RequestStatus`
+returns: `EthBridgeRequestsRequestStatus`
 
 <hr>
 
@@ -5163,10 +5451,9 @@ returns: `RequestStatus`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `H256`
+- key: `(u32,H256)`
 
-returns: `BlockNumber`
+returns: `u32`
 
 <hr>
 
@@ -5176,10 +5463,9 @@ returns: `BlockNumber`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `H256`
+- key: `(u32,H256)`
 
-returns: `BTreeSet<SignatureParams>`
+returns: `BTreeSet<EthBridgeOffchainSignatureParams>`
 
 <hr>
 
@@ -5189,9 +5475,9 @@ returns: `BTreeSet<SignatureParams>`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Vec<(BridgeNetworkId,H256)>`
+returns: `Vec<(u32,H256)>`
 
 <hr>
 
@@ -5201,10 +5487,9 @@ returns: `Vec<(BridgeNetworkId,H256)>`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `AssetId`
+- key: `(u32,CommonPrimitivesAssetId32)`
 
-returns: `AssetKind`
+returns: `EthBridgeRequestsAssetKind`
 
 <hr>
 
@@ -5215,10 +5500,9 @@ returns: `AssetKind`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `AssetId`
+- key: `(u32,CommonPrimitivesAssetId32)`
 
-returns: `BalancePrecision`
+returns: `u8`
 
 <hr>
 
@@ -5228,10 +5512,9 @@ returns: `BalancePrecision`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `Address`
+- key: `(u32,H160)`
 
-returns: `AssetId`
+returns: `CommonPrimitivesAssetId32`
 
 <hr>
 
@@ -5241,10 +5524,9 @@ returns: `AssetId`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `AssetId`
+- key: `(u32,CommonPrimitivesAssetId32)`
 
-returns: `Address`
+returns: `H160`
 
 <hr>
 
@@ -5254,9 +5536,9 @@ returns: `Address`
 
 arguments:
 
-- key: `BridgeNetworkId`
+- key: `u32`
 
-returns: `BTreeSet<AccountId>`
+returns: `BTreeSet<AccountId32>`
 
 <hr>
 
@@ -5266,9 +5548,9 @@ returns: `BTreeSet<AccountId>`
 
 arguments:
 
-- key: `BridgeNetworkId`
+- key: `u32`
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -5278,7 +5560,7 @@ returns: `AccountId`
 
 arguments: -
 
-returns: `EthPeersSync`
+returns: `EthBridgeRequestsOutgoingEthPeersSync`
 
 <hr>
 
@@ -5288,10 +5570,9 @@ returns: `EthPeersSync`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `Address`
+- key: `(u32,H160)`
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -5301,10 +5582,9 @@ returns: `AccountId`
 
 arguments:
 
-- key1: `BridgeNetworkId`
-- key2: `AccountId`
+- key: `(u32,AccountId32)`
 
-returns: `Address`
+returns: `H160`
 
 <hr>
 
@@ -5314,9 +5594,9 @@ returns: `Address`
 
 arguments:
 
-- key: `BridgeNetworkId`
+- key: `u32`
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -5326,7 +5606,7 @@ returns: `AccountId`
 
 arguments: -
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -5336,9 +5616,9 @@ returns: `AccountId`
 
 arguments:
 
-- key: `BridgeNetworkId`
+- key: `u32`
 
-returns: `BridgeStatus`
+returns: `EthBridgeBridgeStatus`
 
 <hr>
 
@@ -5348,9 +5628,9 @@ returns: `BridgeStatus`
 
 arguments:
 
-- key: `BridgeNetworkId`
+- key: `u32`
 
-returns: `Address`
+returns: `H160`
 
 <hr>
 
@@ -5360,7 +5640,7 @@ returns: `Address`
 
 arguments: -
 
-returns: `Address`
+returns: `H160`
 
 <hr>
 
@@ -5370,7 +5650,7 @@ returns: `Address`
 
 arguments: -
 
-returns: `Address`
+returns: `H160`
 
 <hr>
 
@@ -5380,7 +5660,7 @@ returns: `Address`
 
 arguments: -
 
-returns: `BridgeNetworkId`
+returns: `u32`
 
 <hr>
 
@@ -5392,6 +5672,26 @@ returns: `BridgeNetworkId`
 arguments: -
 
 returns: `Vec<H256>`
+
+<hr>
+
+#### **api.query.ethBridge.bridgeSignatureVersions**
+
+arguments:
+
+- key: `u32`
+
+returns: `EthBridgeBridgeSignatureVersion`
+
+<hr>
+
+#### **api.query.ethBridge.pendingBridgeSignatureVersions**
+
+arguments:
+
+- key: `u32`
+
+returns: `EthBridgeBridgeSignatureVersion`
 
 <hr>
 
@@ -5409,8 +5709,9 @@ returns: `Vec<H256>`
 
 arguments:
 
-- bridge_contract_address: `EthereumAddress`
-- initial_peers: `Vec<AccountId>`
+- bridgeContractAddress: `H160`
+- initialPeers: `Vec<AccountId32>`
+- signatureVersion: `EthBridgeBridgeSignatureVersion`
 <hr>
 
 #### **api.tx.ethBridge.addAsset**
@@ -5426,8 +5727,8 @@ arguments:
 
 arguments:
 
-- asset_id: `AssetIdOf`
-- network_id: `BridgeNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.addSidechainToken**
@@ -5444,11 +5745,11 @@ arguments:
 
 arguments:
 
-- token_address: `EthereumAddress`
+- tokenAddress: `H160`
 - symbol: `Text`
 - name: `Text`
 - decimals: `u8`
-- network_id: `BridgeNetworkId`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.transferToSidechain**
@@ -5471,10 +5772,10 @@ arguments:
 
 arguments:
 
-- asset_id: `AssetIdOf`
-- to: `EthereumAddress`
-- amount: `Balance`
-- network_id: `BridgeNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- to: `H160`
+- amount: `u128`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.requestFromSidechain**
@@ -5489,9 +5790,9 @@ arguments:
 
 arguments:
 
-- eth_tx_hash: `H256`
-- kind: `IncomingRequestKind`
-- network_id: `BridgeNetworkId`
+- ethTxHash: `H256`
+- kind: `EthBridgeRequestsIncomingRequestKind`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.finalizeIncomingRequest**
@@ -5508,7 +5809,7 @@ arguments:
 arguments:
 
 - hash: `H256`
-- network_id: `BridgeNetworkId`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.addPeer**
@@ -5523,9 +5824,9 @@ arguments:
 
 arguments:
 
-- account_id: `AccountId`
-- address: `EthereumAddress`
-- network_id: `BridgeNetworkId`
+- accountId: `AccountId32`
+- address: `H160`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.removePeer**
@@ -5539,8 +5840,9 @@ arguments:
 
 arguments:
 
-- account_id: `AccountId`
-- network_id: `BridgeNetworkId`
+- accountId: `AccountId32`
+- peerAddress: `Option<H160>`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.prepareForMigration**
@@ -5555,7 +5857,7 @@ arguments:
 
 arguments:
 
-- network_id: `BridgeNetworkId`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.migrate**
@@ -5572,9 +5874,10 @@ arguments:
 
 arguments:
 
-- new_contract_address: `EthereumAddress`
-- erc20_native_tokens: `Vec<EthereumAddress>`
-- network_id: `BridgeNetworkId`
+- newContractAddress: `H160`
+- erc20NativeTokens: `Vec<H160>`
+- networkId: `u32`
+- newSignatureVersion: `EthBridgeBridgeSignatureVersion`
 <hr>
 
 #### **api.tx.ethBridge.registerIncomingRequest**
@@ -5588,7 +5891,7 @@ arguments:
 
 arguments:
 
-- incoming_request: `IncomingRequest`
+- incomingRequest: `EthBridgeRequestsIncomingRequest`
 <hr>
 
 #### **api.tx.ethBridge.importIncomingRequest**
@@ -5602,8 +5905,8 @@ arguments:
 
 arguments:
 
-- load_incoming_request: `LoadIncomingRequest`
-- incoming_request_result: `Result<IncomingRequest,DispatchError>`
+- loadIncomingRequest: `EthBridgeRequestsLoadIncomingRequest`
+- incomingRequestResult: `Result<EthBridgeRequestsIncomingRequest,SpRuntimeDispatchError>`
 <hr>
 
 #### **api.tx.ethBridge.approveRequest**
@@ -5615,10 +5918,10 @@ arguments:
 
 arguments:
 
-- ocw_public: `Public`
+- ocwPublic: `SpCoreEcdsaPublic`
 - hash: `H256`
-- signature_params: `SignatureParams`
-- network_id: `BridgeNetworkId`
+- signatureParams: `EthBridgeOffchainSignatureParams`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.abortRequest**
@@ -5633,8 +5936,8 @@ arguments:
 arguments:
 
 - hash: `H256`
-- error: `DispatchError`
-- network_id: `BridgeNetworkId`
+- error: `SpRuntimeDispatchError`
+- networkId: `u32`
 <hr>
 
 #### **api.tx.ethBridge.forceAddPeer**
@@ -5645,15 +5948,34 @@ arguments:
 
 arguments:
 
-- who: `AccountId`
-- address: `EthereumAddress`
-- network_id: `BridgeNetworkId`
+- who: `AccountId32`
+- address: `H160`
+- networkId: `u32`
 <hr>
 
-#### **api.tx.ethBridge.migrateTo020**
+#### **api.tx.ethBridge.removeSidechainAsset**
 
-arguments: -
+> Remove asset
+>
+> Can only be called by root.
 
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- networkId: `u32`
+<hr>
+
+#### **api.tx.ethBridge.registerExistingSidechainAsset**
+
+> Register existing asset
+>
+> Can only be called by root.
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- tokenAddress: `H160`
+- networkId: `u32`
 <hr>
 
 ### _Custom RPCs_
@@ -5665,8 +5987,8 @@ arguments: -
 arguments:
 
 - requestHashes: `Vec<H256>`
-- networkId: `Option<BridgeNetworkId>`
-- redirectFinishedLoadRequests: `Option<bool>`
+- networkId: `BridgeNetworkId`
+- redirectFinishedLoadRequests: `bool`
 - at: `BlockHash`
 
 returns: `Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>`
@@ -5680,7 +6002,7 @@ returns: `Result<Vec<(OffchainRequest, RequestStatus)>, DispatchError>`
 arguments:
 
 - requestHashes: `Vec<H256>`
-- networkId: `Option<BridgeNetworkId>`
+- networkId: `BridgeNetworkId`
 - at: `BlockHash`
 
 returns: `Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchError>`
@@ -5694,7 +6016,7 @@ returns: `Result<Vec<(OutgoingRequestEncoded, Vec<SignatureParams>)>, DispatchEr
 arguments:
 
 - requestHashes: `Vec<H256>`
-- networkId: `Option<BridgeNetworkId>`
+- networkId: `BridgeNetworkId`
 - at: `BlockHash`
 
 returns: `Result<Vec<Vec<SignatureParams>>, DispatchError>`
@@ -5708,7 +6030,7 @@ returns: `Result<Vec<Vec<SignatureParams>>, DispatchError>`
 arguments:
 
 - accountId: `AccountId`
-- statusFilter: `Option<RequestStatus>`
+- statusFilter: `RequestStatus`
 - at: `BlockHash`
 
 returns: `Result<Vec<(BridgeNetworkId, H256)>, DispatchError>`
@@ -5721,7 +6043,7 @@ returns: `Result<Vec<(BridgeNetworkId, H256)>, DispatchError>`
 
 arguments:
 
-- networkId: `Option<BridgeNetworkId>`
+- networkId: `BridgeNetworkId`
 - at: `BlockHash`
 
 returns: `Result<Vec<(AssetKind, (AssetId, BalancePrecision), Option<(H160, BalancePrecision)>)>, DispatchError>`
@@ -5732,6 +6054,16 @@ returns: `Result<Vec<(AssetKind, (AssetId, BalancePrecision), Option<(H160, Bala
 
 ### _State Queries_
 
+#### **api.query.pswapDistribution.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.pswapDistribution.subscribedAccounts**
 
 > Store for information about accounts containing fees, that participate in incentive distribution mechanism.
@@ -5739,9 +6071,9 @@ returns: `Result<Vec<(AssetKind, (AssetId, BalancePrecision), Option<(H160, Bala
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `(DEXId,AccountIdOf,BlockNumber,BlockNumber)`
+returns: `(u32,AccountId32,u32,u32)`
 
 <hr>
 
@@ -5751,7 +6083,7 @@ returns: `(DEXId,AccountIdOf,BlockNumber,BlockNumber)`
 
 arguments: -
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
@@ -5761,7 +6093,7 @@ returns: `Fixed`
 
 arguments: -
 
-returns: `(Fixed,Fixed)`
+returns: `(FixnumFixedPoint,FixnumFixedPoint)`
 
 <hr>
 
@@ -5771,9 +6103,9 @@ returns: `(Fixed,Fixed)`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
@@ -5783,17 +6115,17 @@ returns: `Fixed`
 
 arguments: -
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
-#### **api.query.pswapDistribution.parliamentPswapFraction**
+#### **api.query.pswapDistribution.buyBackXSTFraction**
 
-> Fraction of PSWAP that could be reminted for parliament.
+> Fraction of PSWAP that could be buy backed to XST
 
 arguments: -
 
-returns: `Fixed`
+returns: `FixnumFixedPoint`
 
 <hr>
 
@@ -5824,26 +6156,25 @@ returns: `BalanceInfo`
 
 ### _State Queries_
 
+#### **api.query.multisig.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.multisig.multisigs**
 
 > The set of open multisig operations.
 
 arguments:
 
-- key1: `AccountId`
-- key2: `[u8;32]`
+- key: `(AccountId32,[u8;32])`
 
-returns: `Multisig`
-
-<hr>
-
-#### **api.query.multisig.calls**
-
-arguments:
-
-- key: `[u8;32]`
-
-returns: `(OpaqueCall,AccountId,BalanceOf)`
+returns: `PalletMultisigMultisig`
 
 <hr>
 
@@ -5872,7 +6203,7 @@ returns: `(OpaqueCall,AccountId,BalanceOf)`
 
 arguments:
 
-- other_signatories: `Vec<AccountId>`
+- otherSignatories: `Vec<AccountId32>`
 - call: `Call`
 <hr>
 
@@ -5916,15 +6247,14 @@ arguments:
 > - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
 > - One event.
 > - The weight of the `call`.
-> - Storage: inserts one item, value size bounded by `MaxSignatories`, with a
->   deposit taken for its lifetime of
->   `DepositBase + threshold * DepositFactor`.
+> - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+>   taken for its lifetime of `DepositBase + threshold * DepositFactor`.
 >
 > ---
 >
 > - DB Weight:
->   - Reads: Multisig Storage, [Caller Account], Calls (if `store_call`)
->   - Writes: Multisig Storage, [Caller Account], Calls (if `store_call`)
+>   - Reads: Multisig Storage, [Caller Account]
+>   - Writes: Multisig Storage, [Caller Account]
 > - Plus Call Weight
 >
 > # </weight>
@@ -5932,11 +6262,10 @@ arguments:
 arguments:
 
 - threshold: `u16`
-- other_signatories: `Vec<AccountId>`
-- maybe_timepoint: `Option<Timepoint>`
-- call: `OpaqueCall`
-- store_call: `bool`
-- max_weight: `Weight`
+- otherSignatories: `Vec<AccountId32>`
+- maybeTimepoint: `Option<PalletMultisigTimepoint>`
+- call: `Call`
+- maxWeight: `SpWeightsWeightV2Weight`
 <hr>
 
 #### **api.tx.multisig.approveAsMulti**
@@ -5970,9 +6299,8 @@ arguments:
 > - Up to one binary search and insert (`O(logS + S)`).
 > - I/O: 1 read `O(S)`, up to 1 mutate `O(S)`. Up to one remove.
 > - One event.
-> - Storage: inserts one item, value size bounded by `MaxSignatories`, with a
->   deposit taken for its lifetime of
->   `DepositBase + threshold * DepositFactor`.
+> - Storage: inserts one item, value size bounded by `MaxSignatories`, with a deposit
+>   taken for its lifetime of `DepositBase + threshold * DepositFactor`.
 >
 > ---
 >
@@ -5985,10 +6313,10 @@ arguments:
 arguments:
 
 - threshold: `u16`
-- other_signatories: `Vec<AccountId>`
-- maybe_timepoint: `Option<Timepoint>`
-- call_hash: `[u8;32]`
-- max_weight: `Weight`
+- otherSignatories: `Vec<AccountId32>`
+- maybeTimepoint: `Option<PalletMultisigTimepoint>`
+- callHash: `[u8;32]`
+- maxWeight: `SpWeightsWeightV2Weight`
 <hr>
 
 #### **api.tx.multisig.cancelAsMulti**
@@ -6019,22 +6347,40 @@ arguments:
 > ---
 >
 > - DB Weight:
->   - Read: Multisig Storage, [Caller Account], Refund Account, Calls
->   - Write: Multisig Storage, [Caller Account], Refund Account, Calls
+>   - Read: Multisig Storage, [Caller Account], Refund Account
+>   - Write: Multisig Storage, [Caller Account], Refund Account
 >
 > # </weight>
 
 arguments:
 
 - threshold: `u16`
-- other_signatories: `Vec<AccountId>`
-- timepoint: `Timepoint`
-- call_hash: `[u8;32]`
+- otherSignatories: `Vec<AccountId32>`
+- timepoint: `PalletMultisigTimepoint`
+- callHash: `[u8;32]`
 <hr>
 
 ## Scheduler pallet
 
 ### _State Queries_
+
+#### **api.query.scheduler.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.scheduler.incompleteSince**
+
+arguments: -
+
+returns: `u32`
+
+<hr>
 
 #### **api.query.scheduler.agenda**
 
@@ -6042,33 +6388,24 @@ arguments:
 
 arguments:
 
-- key: `BlockNumber`
+- key: `u32`
 
-returns: `Vec<Option<Scheduled>>`
+returns: `Vec<Option<PalletSchedulerScheduled>>`
 
 <hr>
 
 #### **api.query.scheduler.lookup**
 
-> Lookup from identity to the block number and index of the task.
+> Lookup from a name to the block number and index of the task.
+>
+> For v3 -> v4 the previously unbounded identities are Blake2-256 hashed to form the v4
+> identities.
 
 arguments:
 
-- key: `Bytes`
+- key: `[u8;32]`
 
-returns: `TaskAddress`
-
-<hr>
-
-#### **api.query.scheduler.storageVersion**
-
-> Storage version of the pallet.
->
-> New networks start with last version.
-
-arguments: -
-
-returns: `Releases`
+returns: `(u32,u32)`
 
 <hr>
 
@@ -6077,89 +6414,45 @@ returns: `Releases`
 #### **api.tx.scheduler.schedule**
 
 > Anonymously schedule a task.
->
-> # <weight>
->
-> - S = Number of already scheduled calls
-> - Base Weight: 22.29 + .126 \* S µs
-> - DB Weight:
->   - Read: Agenda
->   - Write: Agenda
-> - Will use base weight of 25 which should be good for up to 30 scheduled calls
->
-> # </weight>
 
 arguments:
 
-- when: `BlockNumber`
-- maybe_periodic: `Option<Period>`
-- priority: `Priority`
+- when: `u32`
+- maybePeriodic: `Option<(u32,u32)>`
+- priority: `u8`
 - call: `Call`
 <hr>
 
 #### **api.tx.scheduler.cancel**
 
 > Cancel an anonymously scheduled task.
->
-> # <weight>
->
-> - S = Number of already scheduled calls
-> - Base Weight: 22.15 + 2.869 \* S µs
-> - DB Weight:
->   - Read: Agenda
->   - Write: Agenda, Lookup
-> - Will use base weight of 100 which should be good for up to 30 scheduled calls
->
-> # </weight>
 
 arguments:
 
-- when: `BlockNumber`
+- when: `u32`
 - index: `u32`
 <hr>
 
 #### **api.tx.scheduler.scheduleNamed**
 
 > Schedule a named task.
->
-> # <weight>
->
-> - S = Number of already scheduled calls
-> - Base Weight: 29.6 + .159 \* S µs
-> - DB Weight:
->   - Read: Agenda, Lookup
->   - Write: Agenda, Lookup
-> - Will use base weight of 35 which should be good for more than 30 scheduled calls
->
-> # </weight>
 
 arguments:
 
-- id: `Bytes`
-- when: `BlockNumber`
-- maybe_periodic: `Option<Period>`
-- priority: `Priority`
+- id: `[u8;32]`
+- when: `u32`
+- maybePeriodic: `Option<(u32,u32)>`
+- priority: `u8`
 - call: `Call`
 <hr>
 
 #### **api.tx.scheduler.cancelNamed**
 
 > Cancel a named scheduled task.
->
-> # <weight>
->
-> - S = Number of already scheduled calls
-> - Base Weight: 24.91 + 2.907 \* S µs
-> - DB Weight:
->   - Read: Agenda, Lookup
->   - Write: Agenda, Lookup
-> - Will use base weight of 100 which should be good for up to 30 scheduled calls
->
-> # </weight>
 
 arguments:
 
-- id: `Bytes`
+- id: `[u8;32]`
 <hr>
 
 #### **api.tx.scheduler.scheduleAfter**
@@ -6174,9 +6467,9 @@ arguments:
 
 arguments:
 
-- after: `BlockNumber`
-- maybe_periodic: `Option<Period>`
-- priority: `Priority`
+- after: `u32`
+- maybePeriodic: `Option<(u32,u32)>`
+- priority: `u8`
 - call: `Call`
 <hr>
 
@@ -6186,16 +6479,16 @@ arguments:
 >
 > # <weight>
 >
-> Same as [`schedule_named`].
+> Same as [`schedule_named`](Self::schedule_named).
 >
 > # </weight>
 
 arguments:
 
-- id: `Bytes`
-- after: `BlockNumber`
-- maybe_periodic: `Option<Period>`
-- priority: `Priority`
+- id: `[u8;32]`
+- after: `u32`
+- maybePeriodic: `Option<(u32,u32)>`
+- priority: `u8`
 - call: `Call`
 <hr>
 
@@ -6203,13 +6496,23 @@ arguments:
 
 ### _State Queries_
 
+#### **api.query.irohaMigration.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.irohaMigration.balances**
 
 arguments:
 
 - key: `Text`
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -6247,7 +6550,7 @@ returns: `u8`
 
 arguments: -
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -6257,7 +6560,7 @@ arguments:
 
 - key: `Text`
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -6267,7 +6570,7 @@ arguments:
 
 - key: `Text`
 
-returns: `PendingMultisigAccount`
+returns: `IrohaMigrationPendingMultisigAccount`
 
 <hr>
 
@@ -6277,7 +6580,7 @@ arguments:
 
 - key: `Text`
 
-returns: `Vec<AccountId>`
+returns: `Vec<AccountId32>`
 
 <hr>
 
@@ -6287,9 +6590,9 @@ returns: `Vec<AccountId>`
 
 arguments:
 
-- iroha_address: `Text`
-- iroha_public_key: `Text`
-- iroha_signature: `Text`
+- irohaAddress: `Text`
+- irohaPublicKey: `Text`
+- irohaSignature: `Text`
 <hr>
 
 ### _Custom RPCs_
@@ -6300,146 +6603,10 @@ arguments:
 
 arguments:
 
-- iroha_address: `String`
+- irohaAddress: `String`
 - at: `BlockHash`
 
 returns: `bool`
-
-<hr>
-
-## ImOnline pallet
-
-### _State Queries_
-
-#### **api.query.imOnline.heartbeatAfter**
-
-> The block number after which it's ok to send heartbeats in current session.
->
-> At the beginning of each session we set this to a value that should
-> fall roughly in the middle of the session duration.
-> The idea is to first wait for the validators to produce a block
-> in the current session, so that the heartbeat later on will not be necessary.
-
-arguments: -
-
-returns: `BlockNumber`
-
-<hr>
-
-#### **api.query.imOnline.keys**
-
-> The current set of keys that may issue a heartbeat.
-
-arguments: -
-
-returns: `Vec<AuthorityId>`
-
-<hr>
-
-#### **api.query.imOnline.receivedHeartbeats**
-
-> For each session index, we keep a mapping of `AuthIndex` to
-> `offchain::OpaqueNetworkState`.
-
-arguments:
-
-- key1: `SessionIndex`
-- key2: `AuthIndex`
-
-returns: `Bytes`
-
-<hr>
-
-#### **api.query.imOnline.authoredBlocks**
-
-> For each session index, we keep a mapping of `ValidatorId<T>` to the
-> number of blocks authored by the given authority.
-
-arguments:
-
-- key1: `SessionIndex`
-- key2: `ValidatorId`
-
-returns: `u32`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.imOnline.heartbeat**
-
-> # <weight>
->
-> - Complexity: `O(K + E)` where K is length of `Keys` (heartbeat.validators_len)
->   and E is length of `heartbeat.network_state.external_address`
->   - `O(K)`: decoding of length `K`
->   - `O(E)`: decoding/encoding of length `E`
-> - DbReads: pallet_session `Validators`, pallet_session `CurrentIndex`, `Keys`,
->   `ReceivedHeartbeats`
-> - DbWrites: `ReceivedHeartbeats`
->
-> # </weight>
-
-arguments:
-
-- heartbeat: `Heartbeat`
-- \_signature: `Signature`
-<hr>
-
-## Offences pallet
-
-### _State Queries_
-
-#### **api.query.offences.reports**
-
-> The primary structure that holds all offence records keyed by report identifiers.
-
-arguments:
-
-- key: `ReportIdOf`
-
-returns: `OffenceDetails`
-
-<hr>
-
-#### **api.query.offences.deferredOffences**
-
-> Deferred reports that have been rejected by the offence handler and need to be submitted
-> at a later time.
-
-arguments: -
-
-returns: `Vec<DeferredOffenceOf>`
-
-<hr>
-
-#### **api.query.offences.concurrentReportsIndex**
-
-> A vector of reports of the same kind that happened at the same time slot.
-
-arguments:
-
-- key1: `Kind`
-- key2: `OpaqueTimeSlot`
-
-returns: `Vec<ReportIdOf>`
-
-<hr>
-
-#### **api.query.offences.reportsByKindIndex**
-
-> Enumerates all reports of a kind along with the time they happened.
->
-> All reports are sorted by the time of offence.
->
-> Note that the actual type of this mapping is `Vec<u8>`, this is because values of
-> different types are not supported at the moment so we are doing the manual serialization.
-
-arguments:
-
-- key: `Kind`
-
-returns: `Bytes`
 
 <hr>
 
@@ -6447,13 +6614,23 @@ returns: `Bytes`
 
 ### _State Queries_
 
+#### **api.query.technicalMembership.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.technicalMembership.members**
 
 > The current membership, stored as an ordered Vec.
 
 arguments: -
 
-returns: `Vec<AccountId>`
+returns: `Vec<AccountId32>`
 
 <hr>
 
@@ -6463,7 +6640,7 @@ returns: `Vec<AccountId>`
 
 arguments: -
 
-returns: `AccountId`
+returns: `AccountId32`
 
 <hr>
 
@@ -6477,7 +6654,7 @@ returns: `AccountId`
 
 arguments:
 
-- who: `AccountId`
+- who: `AccountId32`
 <hr>
 
 #### **api.tx.technicalMembership.removeMember**
@@ -6488,7 +6665,7 @@ arguments:
 
 arguments:
 
-- who: `AccountId`
+- who: `AccountId32`
 <hr>
 
 #### **api.tx.technicalMembership.swapMember**
@@ -6501,8 +6678,8 @@ arguments:
 
 arguments:
 
-- remove: `AccountId`
-- add: `AccountId`
+- remove: `AccountId32`
+- add: `AccountId32`
 <hr>
 
 #### **api.tx.technicalMembership.resetMembers**
@@ -6514,7 +6691,7 @@ arguments:
 
 arguments:
 
-- members: `Vec<AccountId>`
+- members: `Vec<AccountId32>`
 <hr>
 
 #### **api.tx.technicalMembership.changeKey**
@@ -6527,7 +6704,7 @@ arguments:
 
 arguments:
 
-- new: `AccountId`
+- new: `AccountId32`
 <hr>
 
 #### **api.tx.technicalMembership.setPrime**
@@ -6538,7 +6715,7 @@ arguments:
 
 arguments:
 
-- who: `AccountId`
+- who: `AccountId32`
 <hr>
 
 #### **api.tx.technicalMembership.clearPrime**
@@ -6555,6 +6732,16 @@ arguments: -
 
 ### _State Queries_
 
+#### **api.query.electionsPhragmen.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.electionsPhragmen.members**
 
 > The current elected members.
@@ -6563,7 +6750,7 @@ arguments: -
 
 arguments: -
 
-returns: `Vec<SeatHolder>`
+returns: `Vec<PalletElectionsPhragmenSeatHolder>`
 
 <hr>
 
@@ -6576,7 +6763,7 @@ returns: `Vec<SeatHolder>`
 
 arguments: -
 
-returns: `Vec<SeatHolder>`
+returns: `Vec<PalletElectionsPhragmenSeatHolder>`
 
 <hr>
 
@@ -6591,7 +6778,7 @@ returns: `Vec<SeatHolder>`
 
 arguments: -
 
-returns: `Vec<(AccountId,BalanceOf)>`
+returns: `Vec<(AccountId32,u128)>`
 
 <hr>
 
@@ -6613,9 +6800,9 @@ returns: `u32`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Voter`
+returns: `PalletElectionsPhragmenVoter`
 
 <hr>
 
@@ -6635,7 +6822,7 @@ returns: `Voter`
 > - be less than the number of possible candidates. Note that all current members and
 >   runners-up are also automatically candidates for the next round.
 >
-> If `value` is more than `who`'s total balance, then the maximum of the two is used.
+> If `value` is more than `who`'s free balance, then the maximum of the two is used.
 >
 > The dispatch origin of this call must be signed.
 >
@@ -6652,8 +6839,8 @@ returns: `Voter`
 
 arguments:
 
-- votes: `Vec<AccountId>`
-- value: `Compact<BalanceOf>`
+- votes: `Vec<AccountId32>`
+- value: `Compact<u128>`
 <hr>
 
 #### **api.tx.electionsPhragmen.removeVoter**
@@ -6690,7 +6877,7 @@ arguments: -
 
 arguments:
 
-- candidate_count: `Compact<u32>`
+- candidateCount: `Compact<u32>`
 <hr>
 
 #### **api.tx.electionsPhragmen.renounceCandidacy**
@@ -6704,8 +6891,9 @@ arguments:
 >   origin is removed as a runner-up.
 > - `origin` is a current member. In this case, the deposit is unreserved and origin is
 >   removed as a member, consequently not being a candidate for the next round anymore.
->   Similar to [`remove_members`], if replacement runners exists, they are immediately used.
->   If the prime is renouncing, then no prime will exist until the next round.
+>   Similar to [`remove_member`](Self::remove_member), if replacement runners exists, they
+>   are immediately used. If the prime is renouncing, then no prime will exist until the
+>   next round.
 >
 > The dispatch origin of this call must be signed, and have one of the above roles.
 >
@@ -6717,7 +6905,7 @@ arguments:
 
 arguments:
 
-- renouncing: `Renouncing`
+- renouncing: `PalletElectionsPhragmenRenouncing`
 <hr>
 
 #### **api.tx.electionsPhragmen.removeMember**
@@ -6726,7 +6914,11 @@ arguments:
 > the outgoing member is slashed.
 >
 > If a runner-up is available, then the best runner-up will be removed and replaces the
-> outgoing member. Otherwise, a new phragmen election is started.
+> outgoing member. Otherwise, if `rerun_election` is `true`, a new phragmen election is
+> started, else, nothing happens.
+>
+> If `slash_bond` is set to true, the bond of the member being removed is slashed. Else,
+> it is returned.
 >
 > The dispatch origin of this call must be root.
 >
@@ -6741,8 +6933,9 @@ arguments:
 
 arguments:
 
-- who: `LookupSource`
-- has_replacement: `bool`
+- who: `AccountId32`
+- slashBond: `bool`
+- rerunElection: `bool`
 <hr>
 
 #### **api.tx.electionsPhragmen.cleanDefunctVoters**
@@ -6762,13 +6955,23 @@ arguments:
 
 arguments:
 
-- \_num_voters: `u32`
-- \_num_defunct: `u32`
+- numVoters: `u32`
+- numDefunct: `u32`
 <hr>
 
 ## VestedRewards pallet
 
 ### _State Queries_
+
+#### **api.query.vestedRewards.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.vestedRewards.rewards**
 
@@ -6777,9 +6980,9 @@ arguments:
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `RewardInfo`
+returns: `VestedRewardsRewardInfo`
 
 <hr>
 
@@ -6790,32 +6993,31 @@ returns: `RewardInfo`
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
-#### **api.query.vestedRewards.marketMakersRegistry**
+#### **api.query.vestedRewards.crowdloanInfos**
 
-> Registry of market makers with large transaction volumes (>1 XOR per transaction).
+> Information about crowdloan
 
 arguments:
 
-- key: `AccountId`
+- key: `Bytes`
 
-returns: `MarketMakerInfo`
+returns: `VestedRewardsCrowdloanInfo`
 
 <hr>
 
-#### **api.query.vestedRewards.marketMakingPairs**
+#### **api.query.vestedRewards.crowdloanUserInfos**
 
-> Market making pairs storage.
+> Information about crowdloan rewards claimed by user
 
 arguments:
 
-- key1: `AssetId`
-- key2: `AssetId`
+- key: `(AccountId32,Bytes)`
 
-returns: `()`
+returns: `VestedRewardsCrowdloanUserInfo`
 
 <hr>
 
@@ -6829,29 +7031,72 @@ arguments: -
 
 <hr>
 
-#### **api.tx.vestedRewards.injectMarketMakers**
-
-> Inject market makers snapshot into storage.
+#### **api.tx.vestedRewards.claimCrowdloanRewards**
 
 arguments:
 
-- snapshot: `Vec<(AccountId,u32,Balance)>`
+- crowdloan: `Bytes`
 <hr>
 
-#### **api.tx.vestedRewards.setAssetPair**
-
-> Allow/disallow a market making pair.
+#### **api.tx.vestedRewards.updateRewards**
 
 arguments:
 
-- from_asset_id: `AssetId`
-- to_asset_id: `AssetId`
-- market_making_rewards_allowed: `bool`
+- rewards: `BTreeMap<AccountId32,BTreeMap<CommonPrimitivesRewardReason,u128>>`
+<hr>
+
+#### **api.tx.vestedRewards.registerCrowdloan**
+
+arguments:
+
+- tag: `Bytes`
+- startBlock: `u32`
+- length: `u32`
+- rewards: `Vec<(CommonPrimitivesAssetId32,u128)>`
+- contributions: `Vec<(AccountId32,u128)>`
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.vestedRewards.crowdloanClaimable**
+
+> Get available crowdloan reward for a user.
+
+arguments:
+
+- accountId: `AccountId`
+- assetId: `AssetId`
+- at: `BlockHash`
+
+returns: `Option<BalanceInfo>`
+
+<hr>
+
+#### **api.rpc.vestedRewards.crowdloanLease**
+
+> Get crowdloan rewards lease period info.
+
+arguments:
+
+- at: `BlockHash`
+
+returns: `CrowdloanLease`
+
 <hr>
 
 ## Identity pallet
 
 ### _State Queries_
+
+#### **api.query.identity.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.identity.identityOf**
 
@@ -6861,9 +7106,9 @@ arguments:
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Registration`
+returns: `PalletIdentityRegistration`
 
 <hr>
 
@@ -6874,9 +7119,9 @@ returns: `Registration`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `(AccountId,Data)`
+returns: `(AccountId32,Data)`
 
 <hr>
 
@@ -6890,9 +7135,9 @@ returns: `(AccountId,Data)`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `(BalanceOf,Vec<AccountId>)`
+returns: `(u128,Vec<AccountId32>)`
 
 <hr>
 
@@ -6905,7 +7150,7 @@ returns: `(BalanceOf,Vec<AccountId>)`
 
 arguments: -
 
-returns: `Vec<Option<RegistrarInfo>>`
+returns: `Vec<Option<PalletIdentityRegistrarInfo>>`
 
 <hr>
 
@@ -6931,7 +7176,7 @@ returns: `Vec<Option<RegistrarInfo>>`
 
 arguments:
 
-- account: `AccountId`
+- account: `AccountId32`
 <hr>
 
 #### **api.tx.identity.setIdentity**
@@ -6950,8 +7195,8 @@ arguments:
 > # <weight>
 >
 > - `O(X + X' + R)`
->   - where `X` additional-field-count (deposit-bounded and code-bounded)
->   - where `R` judgements-count (registrar-count-bounded)
+> - where `X` additional-field-count (deposit-bounded and code-bounded)
+> - where `R` judgements-count (registrar-count-bounded)
 > - One balance reserve operation.
 > - One storage mutation (codec-read `O(X' + R)`, codec-write `O(X + R)`).
 > - One event.
@@ -6960,7 +7205,7 @@ arguments:
 
 arguments:
 
-- info: `IdentityInfo`
+- info: `PalletIdentityIdentityInfo`
 <hr>
 
 #### **api.tx.identity.setSubs**
@@ -6978,20 +7223,20 @@ arguments:
 > # <weight>
 >
 > - `O(P + S)`
->   - where `P` old-subs-count (hard- and deposit-bounded).
->   - where `S` subs-count (hard- and deposit-bounded).
+> - where `P` old-subs-count (hard- and deposit-bounded).
+> - where `S` subs-count (hard- and deposit-bounded).
 > - At most one balance operations.
 > - DB:
->   - `P + S` storage mutations (codec complexity `O(1)`)
->   - One storage read (codec complexity `O(P)`).
->   - One storage write (codec complexity `O(S)`).
->   - One storage-exists (`IdentityOf::contains_key`).
+> - `P + S` storage mutations (codec complexity `O(1)`)
+> - One storage read (codec complexity `O(P)`).
+> - One storage write (codec complexity `O(S)`).
+> - One storage-exists (`IdentityOf::contains_key`).
 >
 > # </weight>
 
 arguments:
 
-- subs: `Vec<(AccountId,Data)>`
+- subs: `Vec<(AccountId32,Data)>`
 <hr>
 
 #### **api.tx.identity.clearIdentity**
@@ -7008,9 +7253,9 @@ arguments:
 > # <weight>
 >
 > - `O(R + S + X)`
->   - where `R` registrar-count (governance-bounded).
->   - where `S` subs-count (hard- and deposit-bounded).
->   - where `X` additional-field-count (deposit-bounded and code-bounded).
+> - where `R` registrar-count (governance-bounded).
+> - where `S` subs-count (hard- and deposit-bounded).
+> - where `X` additional-field-count (deposit-bounded and code-bounded).
 > - One balance-unreserve operation.
 > - `2` storage reads and `S + 2` storage deletions.
 > - One event.
@@ -7051,8 +7296,8 @@ arguments: -
 
 arguments:
 
-- reg_index: `Compact<RegistrarIndex>`
-- max_fee: `Compact<BalanceOf>`
+- regIndex: `Compact<u32>`
+- maxFee: `Compact<u128>`
 <hr>
 
 #### **api.tx.identity.cancelRequest**
@@ -7079,7 +7324,7 @@ arguments:
 
 arguments:
 
-- reg_index: `RegistrarIndex`
+- regIndex: `u32`
 <hr>
 
 #### **api.tx.identity.setFee**
@@ -7102,8 +7347,8 @@ arguments:
 
 arguments:
 
-- index: `Compact<RegistrarIndex>`
-- fee: `Compact<BalanceOf>`
+- index: `Compact<u32>`
+- fee: `Compact<u128>`
 <hr>
 
 #### **api.tx.identity.setAccountId**
@@ -7126,8 +7371,8 @@ arguments:
 
 arguments:
 
-- index: `Compact<RegistrarIndex>`
-- new: `AccountId`
+- index: `Compact<u32>`
+- new: `AccountId32`
 <hr>
 
 #### **api.tx.identity.setFields**
@@ -7150,8 +7395,8 @@ arguments:
 
 arguments:
 
-- index: `Compact<RegistrarIndex>`
-- fields: `IdentityFields`
+- index: `Compact<u32>`
+- fields: `PalletIdentityBitFlags`
 <hr>
 
 #### **api.tx.identity.provideJudgement**
@@ -7165,6 +7410,7 @@ arguments:
 > - `target`: the account whose identity the judgement is upon. This must be an account
 >   with a registered identity.
 > - `judgement`: the judgement of the registrar of index `reg_index` about `target`.
+> - `identity`: The hash of the [`IdentityInfo`] for that the judgement is provided.
 >
 > Emits `JudgementGiven` if successful.
 >
@@ -7180,9 +7426,10 @@ arguments:
 
 arguments:
 
-- reg_index: `Compact<RegistrarIndex>`
-- target: `LookupSource`
-- judgement: `IdentityJudgement`
+- regIndex: `Compact<u32>`
+- target: `AccountId32`
+- judgement: `PalletIdentityJudgement`
+- identity: `H256`
 <hr>
 
 #### **api.tx.identity.killIdentity**
@@ -7211,7 +7458,7 @@ arguments:
 
 arguments:
 
-- target: `LookupSource`
+- target: `AccountId32`
 <hr>
 
 #### **api.tx.identity.addSub**
@@ -7226,7 +7473,7 @@ arguments:
 
 arguments:
 
-- sub: `LookupSource`
+- sub: `AccountId32`
 - data: `Data`
 <hr>
 
@@ -7239,7 +7486,7 @@ arguments:
 
 arguments:
 
-- sub: `LookupSource`
+- sub: `AccountId32`
 - data: `Data`
 <hr>
 
@@ -7255,7 +7502,7 @@ arguments:
 
 arguments:
 
-- sub: `LookupSource`
+- sub: `AccountId32`
 <hr>
 
 #### **api.tx.identity.quitSub**
@@ -7279,15 +7526,25 @@ arguments: -
 
 ### _State Queries_
 
+#### **api.query.farming.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.farming.pools**
 
 > Pools whose farmers are refreshed at the specific block. Block => Pools
 
 arguments:
 
-- key: `BlockNumber`
+- key: `u32`
 
-returns: `Vec<AccountId>`
+returns: `Vec<AccountId32>`
 
 <hr>
 
@@ -7297,17 +7554,21 @@ returns: `Vec<AccountId>`
 
 arguments:
 
-- key: `AccountId`
+- key: `AccountId32`
 
-returns: `Vec<PoolFarmer>`
+returns: `Vec<FarmingPoolFarmer>`
 
 <hr>
 
-### _Extrinsics_
+### _Custom RPCs_
 
-#### **api.tx.farming.migrateTo11**
+#### **api.rpc.farming.rewardDoublingAssets**
+
+> Get list of double rewarding assets
 
 arguments: -
+
+returns: `Vec<AssetId>`
 
 <hr>
 
@@ -7315,33 +7576,41 @@ arguments: -
 
 ### _State Queries_
 
-#### **api.query.xstPool.permissionedTechAccount**
+#### **api.query.xstPool.palletVersion**
 
-> Technical account used to store collateral tokens.
-
-arguments: -
-
-returns: `TechAccountId`
-
-<hr>
-
-#### **api.query.xstPool.baseFee**
-
-> Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
+> Returns the current pallet version from storage
 
 arguments: -
 
-returns: `Fixed`
+returns: `u16`
 
 <hr>
 
 #### **api.query.xstPool.enabledSynthetics**
 
-> XST Assets allowed to be traded using XST.
+> Synthetic assets and their reference symbols.
+>
+> It's a programmer responsibility to keep this collection consistent with [`EnabledSymbols`].
 
-arguments: -
+arguments:
 
-returns: `BTreeSet<AssetId>`
+- key: `CommonPrimitivesAssetId32`
+
+returns: `XstSyntheticInfo`
+
+<hr>
+
+#### **api.query.xstPool.enabledSymbols**
+
+> Reference symbols and their synthetic assets.
+>
+> It's a programmer responsibility to keep this collection consistent with [`EnabledSynthetics`].
+
+arguments:
+
+- key: `Bytes`
+
+returns: `CommonPrimitivesAssetId32`
 
 <hr>
 
@@ -7351,7 +7620,7 @@ returns: `BTreeSet<AssetId>`
 
 arguments: -
 
-returns: `AssetId`
+returns: `CommonPrimitivesAssetId32`
 
 <hr>
 
@@ -7361,50 +7630,124 @@ returns: `AssetId`
 
 arguments:
 
-- key: `AssetId`
+- key: `CommonPrimitivesAssetId32`
 
-returns: `Balance`
+returns: `u128`
+
+<hr>
+
+#### **api.query.xstPool.syntheticBaseAssetFloorPrice**
+
+> Floor price for the synthetic base asset.
+
+arguments: -
+
+returns: `u128`
 
 <hr>
 
 ### _Extrinsics_
 
-#### **api.tx.xstPool.initializePool**
-
-> Enable exchange path on the pool for pair BaseAsset-SyntheticAsset.
-
-arguments:
-
-- synthetic_asset_id: `AssetId`
-<hr>
-
 #### **api.tx.xstPool.setReferenceAsset**
 
-> Change reference asset which is used to determine collateral assets value. Intended to be e.g., stablecoin DAI.
+> Change reference asset which is used to determine collateral assets value.
+> Intended to be e.g., stablecoin DAI.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `reference_asset_id`: asset id of the new reference asset.
 
 arguments:
 
-- reference_asset_id: `AssetId`
+- referenceAssetId: `CommonPrimitivesAssetId32`
 <hr>
 
 #### **api.tx.xstPool.enableSyntheticAsset**
 
 arguments:
 
-- synthetic_asset: `AssetId`
+- assetId: `CommonPrimitivesAssetId32`
+- referenceSymbol: `Bytes`
+- feeRatio: `FixnumFixedPoint`
+<hr>
+
+#### **api.tx.xstPool.registerSyntheticAsset**
+
+> Register and enable new synthetic asset with `reference_symbol` price binding
+
+arguments:
+
+- assetSymbol: `Bytes`
+- assetName: `Bytes`
+- referenceSymbol: `Bytes`
+- feeRatio: `FixnumFixedPoint`
+<hr>
+
+#### **api.tx.xstPool.disableSyntheticAsset**
+
+> Disable synthetic asset.
+>
+> Just remove synthetic from exchanging.
+> Will not unregister trading pair because `trading_pair` pallet does not provide this
+> ability. And will not unregister trading synthetic asset because of that.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `synthetic_asset`: synthetic asset id to disable.
+
+arguments:
+
+- syntheticAsset: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.xstPool.setSyntheticAssetFee**
+
+> Set synthetic asset fee.
+>
+> This fee will be used to determine the amount of synthetic base asset (e.g. XST) to be
+> burned when user buys synthetic asset.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `synthetic_asset`: synthetic asset id to set fee for,
+> - `fee_ratio`: fee ratio with precision = 18, so 1000000000000000000 = 1 = 100% fee.
+
+arguments:
+
+- syntheticAsset: `CommonPrimitivesAssetId32`
+- feeRatio: `FixnumFixedPoint`
+<hr>
+
+#### **api.tx.xstPool.setSyntheticBaseAssetFloorPrice**
+
+> Set floor price for the synthetic base asset
+>
+> - `origin`: root account
+> - `floor_price`: floor price for the synthetic base asset
+
+arguments:
+
+- floorPrice: `u128`
 <hr>
 
 ## PriceTools pallet
 
 ### _State Queries_
 
+#### **api.query.priceTools.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
 #### **api.query.priceTools.priceInfos**
 
 arguments:
 
-- key: `AssetId`
+- key: `CommonPrimitivesAssetId32`
 
-returns: `PriceInfo`
+returns: `PriceToolsAggregatedPriceInfo`
 
 <hr>
 
@@ -7412,15 +7755,35 @@ returns: `PriceInfo`
 
 ### _State Queries_
 
+#### **api.query.ceresStaking.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.ceresStaking.authorityAccount**
+
+> Account which has permissions for changing remaining rewards
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
 #### **api.query.ceresStaking.stakers**
 
 > AccountId -> StakingInfo
 
 arguments:
 
-- key: `AccountIdOf`
+- key: `AccountId32`
 
-returns: `StakingInfo`
+returns: `CeresStakingStakingInfo`
 
 <hr>
 
@@ -7428,7 +7791,7 @@ returns: `StakingInfo`
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -7436,7 +7799,7 @@ returns: `Balance`
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -7446,7 +7809,7 @@ returns: `Balance`
 
 arguments:
 
-- amount: `Balance`
+- amount: `u128`
 <hr>
 
 #### **api.tx.ceresStaking.withdraw**
@@ -7455,9 +7818,28 @@ arguments: -
 
 <hr>
 
+#### **api.tx.ceresStaking.changeRewardsRemaining**
+
+> Change RewardsRemaining
+
+arguments:
+
+- rewardsRemaining: `u128`
+<hr>
+
 ## CeresLiquidityLocker pallet
 
 ### _State Queries_
+
+#### **api.query.ceresLiquidityLocker.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
 
 #### **api.query.ceresLiquidityLocker.feesOptionOneAccount**
 
@@ -7465,7 +7847,7 @@ arguments: -
 
 arguments: -
 
-returns: `AccountIdOf`
+returns: `AccountId32`
 
 <hr>
 
@@ -7475,7 +7857,7 @@ returns: `AccountIdOf`
 
 arguments: -
 
-returns: `AccountIdOf`
+returns: `AccountId32`
 
 <hr>
 
@@ -7485,7 +7867,7 @@ returns: `AccountIdOf`
 
 arguments: -
 
-returns: `Balance`
+returns: `u128`
 
 <hr>
 
@@ -7495,17 +7877,29 @@ returns: `Balance`
 
 arguments: -
 
-returns: `AccountIdOf`
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.ceresLiquidityLocker.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `CeresLiquidityLockerStorageVersion`
 
 <hr>
 
 #### **api.query.ceresLiquidityLocker.lockerData**
 
+> Contains data about lockups for each account
+
 arguments:
 
-- key: `AccountIdOf`
+- key: `AccountId32`
 
-returns: `Vec<LockInfo>`
+returns: `Vec<CeresLiquidityLockerLockInfo>`
 
 <hr>
 
@@ -7517,10 +7911,10 @@ returns: `Vec<LockInfo>`
 
 arguments:
 
-- asset_a: `AssetIdOf`
-- asset_b: `AssetIdOf`
-- unlocking_block: `BlockNumber`
-- percentage_of_pool_tokens: `Balance`
+- assetA: `CommonPrimitivesAssetId32`
+- assetB: `CommonPrimitivesAssetId32`
+- unlockingTimestamp: `u64`
+- percentageOfPoolTokens: `u128`
 - option: `bool`
 <hr>
 
@@ -7530,7 +7924,2699 @@ arguments:
 
 arguments:
 
-- ceres_fee: `Balance`
+- ceresFee: `u128`
+<hr>
+
+## CeresTokenLocker pallet
+
+### _State Queries_
+
+#### **api.query.ceresTokenLocker.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.ceresTokenLocker.feesAccount**
+
+> Account for collecting fees
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.ceresTokenLocker.authorityAccount**
+
+> Account which has permissions for changing fee
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.ceresTokenLocker.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `CeresTokenLockerStorageVersion`
+
+<hr>
+
+#### **api.query.ceresTokenLocker.feeAmount**
+
+> Amount of CERES for locker fees option two
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.ceresTokenLocker.tokenLockerData**
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `Vec<CeresTokenLockerTokenLockInfo>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.ceresTokenLocker.lockTokens**
+
+> Lock tokens
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- unlockingTimestamp: `u64`
+- numberOfTokens: `u128`
+<hr>
+
+#### **api.tx.ceresTokenLocker.withdrawTokens**
+
+> Withdraw tokens
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- unlockingTimestamp: `u64`
+- numberOfTokens: `u128`
+<hr>
+
+#### **api.tx.ceresTokenLocker.changeFee**
+
+> Change fee
+
+arguments:
+
+- newFee: `u128`
+<hr>
+
+## CeresGovernancePlatform pallet
+
+### _State Queries_
+
+#### **api.query.ceresGovernancePlatform.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.ceresGovernancePlatform.voting**
+
+> A vote of a particular user for a particular poll
+
+arguments:
+
+- key: `(Bytes,AccountId32)`
+
+returns: `CeresGovernancePlatformVotingInfo`
+
+<hr>
+
+#### **api.query.ceresGovernancePlatform.pollData**
+
+arguments:
+
+- key: `Bytes`
+
+returns: `CeresGovernancePlatformPollInfo`
+
+<hr>
+
+#### **api.query.ceresGovernancePlatform.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `CeresGovernancePlatformStorageVersion`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.ceresGovernancePlatform.vote**
+
+> Voting for option
+
+arguments:
+
+- pollId: `Bytes`
+- votingOption: `u32`
+- numberOfVotes: `u128`
+<hr>
+
+#### **api.tx.ceresGovernancePlatform.createPoll**
+
+> Create poll
+
+arguments:
+
+- pollId: `Bytes`
+- numberOfOptions: `u32`
+- pollStartTimestamp: `u64`
+- pollEndTimestamp: `u64`
+<hr>
+
+#### **api.tx.ceresGovernancePlatform.withdraw**
+
+> Withdraw voting funds
+
+arguments:
+
+- pollId: `Bytes`
+<hr>
+
+## CeresLaunchpad pallet
+
+### _State Queries_
+
+#### **api.query.ceresLaunchpad.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.penaltiesAccount**
+
+> Account for collecting penalties
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.ceresBurnFeeAmount**
+
+> Amount of CERES for burn fee
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.ceresForContributionInILO**
+
+> Amount of CERES for contribution in ILO
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.feePercentOnRaisedFunds**
+
+> Fee percent on raised funds in successful ILO
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.authorityAccount**
+
+> Account which has permissions for changing CERES burn amount fee
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.ilOs**
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `CeresLaunchpadIloInfo`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.contributions**
+
+arguments:
+
+- key: `(CommonPrimitivesAssetId32,AccountId32)`
+
+returns: `CeresLaunchpadContributionInfo`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.whitelistedContributors**
+
+arguments: -
+
+returns: `Vec<AccountId32>`
+
+<hr>
+
+#### **api.query.ceresLaunchpad.whitelistedIloOrganizers**
+
+arguments: -
+
+returns: `Vec<AccountId32>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.ceresLaunchpad.createIlo**
+
+> Create ILO
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- assetId: `CommonPrimitivesAssetId32`
+- tokensForIlo: `u128`
+- tokensForLiquidity: `u128`
+- iloPrice: `u128`
+- softCap: `u128`
+- hardCap: `u128`
+- minContribution: `u128`
+- maxContribution: `u128`
+- refundType: `bool`
+- liquidityPercent: `u128`
+- listingPrice: `u128`
+- lockupDays: `u32`
+- startTimestamp: `u64`
+- endTimestamp: `u64`
+- teamVestingTotalTokens: `u128`
+- teamVestingFirstReleasePercent: `u128`
+- teamVestingPeriod: `u64`
+- teamVestingPercent: `u128`
+- firstReleasePercent: `u128`
+- vestingPeriod: `u64`
+- vestingPercent: `u128`
+<hr>
+
+#### **api.tx.ceresLaunchpad.contribute**
+
+> Contribute
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- fundsToContribute: `u128`
+<hr>
+
+#### **api.tx.ceresLaunchpad.emergencyWithdraw**
+
+> Emergency withdraw
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.ceresLaunchpad.finishIlo**
+
+> Finish ILO
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.ceresLaunchpad.claimLpTokens**
+
+> Claim LP tokens
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.ceresLaunchpad.claim**
+
+> Claim tokens
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.ceresLaunchpad.changeFeePercentForRaisedFunds**
+
+> Change fee percent on raised funds in successful ILO
+
+arguments:
+
+- feePercent: `u128`
+<hr>
+
+#### **api.tx.ceresLaunchpad.changeCeresBurnFee**
+
+> Change CERES burn fee
+
+arguments:
+
+- ceresFee: `u128`
+<hr>
+
+#### **api.tx.ceresLaunchpad.changeCeresContributionFee**
+
+> Change CERES contribution fee
+
+arguments:
+
+- ceresFee: `u128`
+<hr>
+
+#### **api.tx.ceresLaunchpad.claimPswapRewards**
+
+> Claim PSWAP rewards
+
+arguments: -
+
+<hr>
+
+#### **api.tx.ceresLaunchpad.addWhitelistedContributor**
+
+> Add whitelisted contributor
+
+arguments:
+
+- contributor: `AccountId32`
+<hr>
+
+#### **api.tx.ceresLaunchpad.removeWhitelistedContributor**
+
+> Remove whitelisted contributor
+
+arguments:
+
+- contributor: `AccountId32`
+<hr>
+
+#### **api.tx.ceresLaunchpad.addWhitelistedIloOrganizer**
+
+> Add whitelisted ILO organizer
+
+arguments:
+
+- iloOrganizer: `AccountId32`
+<hr>
+
+#### **api.tx.ceresLaunchpad.removeWhitelistedIloOrganizer**
+
+> Remove whitelisted ILO organizer
+
+arguments:
+
+- iloOrganizer: `AccountId32`
+<hr>
+
+## DemeterFarmingPlatform pallet
+
+### _State Queries_
+
+#### **api.query.demeterFarmingPlatform.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.tokenInfos**
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `DemeterFarmingPlatformTokenInfo`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.userInfos**
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `Vec<DemeterFarmingPlatformUserInfo>`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.pools**
+
+arguments:
+
+- key: `(CommonPrimitivesAssetId32,CommonPrimitivesAssetId32)`
+
+returns: `Vec<DemeterFarmingPlatformPoolData>`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `DemeterFarmingPlatformStorageVersion`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.authorityAccount**
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.demeterFarmingPlatform.feeAccount**
+
+> Account for fees
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.demeterFarmingPlatform.registerToken**
+
+> Register token for farming
+
+arguments:
+
+- poolAsset: `CommonPrimitivesAssetId32`
+- tokenPerBlock: `u128`
+- farmsAllocation: `u128`
+- stakingAllocation: `u128`
+- teamAllocation: `u128`
+- teamAccount: `AccountId32`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.addPool**
+
+> Add pool
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- isFarm: `bool`
+- multiplier: `u32`
+- depositFee: `u128`
+- isCore: `bool`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.deposit**
+
+> Deposit to pool
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- isFarm: `bool`
+- pooledTokens: `u128`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.getRewards**
+
+> Get rewards
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- isFarm: `bool`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.withdraw**
+
+> Withdraw
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- pooledTokens: `u128`
+- isFarm: `bool`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.removePool**
+
+> Remove pool
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- isFarm: `bool`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changePoolMultiplier**
+
+> Change pool multiplier
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- isFarm: `bool`
+- newMultiplier: `u32`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changeTotalTokens**
+
+> Change total tokens
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- isFarm: `bool`
+- totalTokens: `u128`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changeInfo**
+
+> Change info
+
+arguments:
+
+- changedUser: `AccountId32`
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- isFarm: `bool`
+- poolTokens: `u128`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changePoolDepositFee**
+
+> Change pool deposit fee
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- isFarm: `bool`
+- depositFee: `u128`
+<hr>
+
+#### **api.tx.demeterFarmingPlatform.changeTokenInfo**
+
+> Change token info
+
+arguments:
+
+- poolAsset: `CommonPrimitivesAssetId32`
+- tokenPerBlock: `u128`
+- farmsAllocation: `u128`
+- stakingAllocation: `u128`
+- teamAllocation: `u128`
+- teamAccount: `AccountId32`
+<hr>
+
+## BagsList pallet
+
+### _State Queries_
+
+#### **api.query.bagsList.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.bagsList.listNodes**
+
+> A single node, within some bag.
+>
+> Nodes store links forward and back within their respective bags.
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `PalletBagsListListNode`
+
+<hr>
+
+#### **api.query.bagsList.counterForListNodes**
+
+> Counter for the related counted storage map
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.bagsList.listBags**
+
+> A bag stored in storage.
+>
+> Stores a `Bag` struct, which stores head and tail pointers to itself.
+
+arguments:
+
+- key: `u64`
+
+returns: `PalletBagsListListBag`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.bagsList.rebag**
+
+> Declare that some `dislocated` account has, through rewards or penalties, sufficiently
+> changed its score that it should properly fall into a different bag than its current
+> one.
+>
+> Anyone can call this function about any potentially dislocated account.
+>
+> Will always update the stored score of `dislocated` to the correct score, based on
+> `ScoreProvider`.
+>
+> If `dislocated` does not exists, it returns an error.
+
+arguments:
+
+- dislocated: `AccountId32`
+<hr>
+
+#### **api.tx.bagsList.putInFrontOf**
+
+> Move the caller's Id directly in front of `lighter`.
+>
+> The dispatch origin for this call must be _Signed_ and can only be called by the Id of
+> the account going in front of `lighter`.
+>
+> Only works if
+>
+> - both nodes are within the same bag,
+> - and `origin` has a greater `Score` than `lighter`.
+
+arguments:
+
+- lighter: `AccountId32`
+<hr>
+
+## ElectionProviderMultiPhase pallet
+
+### _State Queries_
+
+#### **api.query.electionProviderMultiPhase.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.round**
+
+> Internal counter for the number of rounds.
+>
+> This is useful for de-duplication of transactions submitted to the pool, and general
+> diagnostics of the pallet.
+>
+> This is merely incremented once per every time that an upstream `elect` is called.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.currentPhase**
+
+> Current phase.
+
+arguments: -
+
+returns: `PalletElectionProviderMultiPhasePhase`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.queuedSolution**
+
+> Current best solution, signed or unsigned, queued to be returned upon `elect`.
+
+arguments: -
+
+returns: `PalletElectionProviderMultiPhaseReadySolution`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.snapshot**
+
+> Snapshot data of the round.
+>
+> This is created at the beginning of the signed phase and cleared upon calling `elect`.
+
+arguments: -
+
+returns: `PalletElectionProviderMultiPhaseRoundSnapshot`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.desiredTargets**
+
+> Desired number of targets to elect for this round.
+>
+> Only exists when [`Snapshot`] is present.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.snapshotMetadata**
+
+> The metadata of the [`RoundSnapshot`]
+>
+> Only exists when [`Snapshot`] is present.
+
+arguments: -
+
+returns: `PalletElectionProviderMultiPhaseSolutionOrSnapshotSize`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.signedSubmissionNextIndex**
+
+> The next index to be assigned to an incoming signed submission.
+>
+> Every accepted submission is assigned a unique index; that index is bound to that particular
+> submission for the duration of the election. On election finalization, the next index is
+> reset to 0.
+>
+> We can't just use `SignedSubmissionIndices.len()`, because that's a bounded set; past its
+> capacity, it will simply saturate. We can't just iterate over `SignedSubmissionsMap`,
+> because iteration is slow. Instead, we store the value here.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.signedSubmissionIndices**
+
+> A sorted, bounded vector of `(score, block_number, index)`, where each `index` points to a
+> value in `SignedSubmissions`.
+>
+> We never need to process more than a single signed submission at a time. Signed submissions
+> can be quite large, so we're willing to pay the cost of multiple database accesses to access
+> them one at a time instead of reading and decoding all of them at once.
+
+arguments: -
+
+returns: `Vec<(SpNposElectionsElectionScore,u32,u32)>`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.signedSubmissionsMap**
+
+> Unchecked, signed solutions.
+>
+> Together with `SubmissionIndices`, this stores a bounded set of `SignedSubmissions` while
+> allowing us to keep only a single one in memory at a time.
+>
+> Twox note: the key of the map is an auto-incrementing index which users cannot inspect or
+> affect; we shouldn't need a cryptographically secure hasher.
+
+arguments:
+
+- key: `u32`
+
+returns: `PalletElectionProviderMultiPhaseSignedSignedSubmission`
+
+<hr>
+
+#### **api.query.electionProviderMultiPhase.minimumUntrustedScore**
+
+> The minimum score that each 'untrusted' solution must attain in order to be considered
+> feasible.
+>
+> Can be set via `set_minimum_untrusted_score`.
+
+arguments: -
+
+returns: `SpNposElectionsElectionScore`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.electionProviderMultiPhase.submitUnsigned**
+
+> Submit a solution for the unsigned phase.
+>
+> The dispatch origin fo this call must be **none**.
+>
+> This submission is checked on the fly. Moreover, this unsigned solution is only
+> validated when submitted to the pool from the **local** node. Effectively, this means
+> that only active validators can submit this transaction when authoring a block (similar
+> to an inherent).
+>
+> To prevent any incorrect solution (and thus wasted time/weight), this transaction will
+> panic if the solution submitted by the validator is invalid in any way, effectively
+> putting their authoring reward at risk.
+>
+> No deposit or reward is associated with this submission.
+
+arguments:
+
+- rawSolution: `PalletElectionProviderMultiPhaseRawSolution`
+- witness: `PalletElectionProviderMultiPhaseSolutionOrSnapshotSize`
+<hr>
+
+#### **api.tx.electionProviderMultiPhase.setMinimumUntrustedScore**
+
+> Set a new value for `MinimumUntrustedScore`.
+>
+> Dispatch origin must be aligned with `T::ForceOrigin`.
+>
+> This check can be turned off by setting the value to `None`.
+
+arguments:
+
+- maybeNextScore: `Option<SpNposElectionsElectionScore>`
+<hr>
+
+#### **api.tx.electionProviderMultiPhase.setEmergencyElectionResult**
+
+> Set a solution in the queue, to be handed out to the client of this pallet in the next
+> call to `ElectionProvider::elect`.
+>
+> This can only be set by `T::ForceOrigin`, and only when the phase is `Emergency`.
+>
+> The solution is not checked for any feasibility and is assumed to be trustworthy, as any
+> feasibility check itself can in principle cause the election process to fail (due to
+> memory/weight constrains).
+
+arguments:
+
+- supports: `Vec<(AccountId32,SpNposElectionsSupport)>`
+<hr>
+
+#### **api.tx.electionProviderMultiPhase.submit**
+
+> Submit a solution for the signed phase.
+>
+> The dispatch origin fo this call must be **signed**.
+>
+> The solution is potentially queued, based on the claimed score and processed at the end
+> of the signed phase.
+>
+> A deposit is reserved and recorded for the solution. Based on the outcome, the solution
+> might be rewarded, slashed, or get all or a part of the deposit back.
+
+arguments:
+
+- rawSolution: `PalletElectionProviderMultiPhaseRawSolution`
+<hr>
+
+#### **api.tx.electionProviderMultiPhase.governanceFallback**
+
+> Trigger the governance fallback.
+>
+> This can only be called when [`Phase::Emergency`] is enabled, as an alternative to
+> calling [`Call::set_emergency_election_result`].
+
+arguments:
+
+- maybeMaxVoters: `Option<u32>`
+- maybeMaxTargets: `Option<u32>`
+<hr>
+
+## Band pallet
+
+### _State Queries_
+
+#### **api.query.band.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.band.trustedRelayers**
+
+arguments: -
+
+returns: `BTreeSet<AccountId32>`
+
+<hr>
+
+#### **api.query.band.symbolRates**
+
+arguments:
+
+- key: `Bytes`
+
+returns: `Option<BandBandRate>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.band.relay**
+
+> Relay a list of symbols and their associated rates along with the resolve time and request id on `BandChain`.
+>
+> Checks if:
+>
+> - The caller is a relayer;
+> - The `resolve_time` for a particular symbol is not lower than previous saved value, ignores this rate if so;
+>
+> If `rates` contains duplicated symbols, then the last rate will be stored.
+>
+> - `origin`: the relayer account on whose behalf the transaction is being executed,
+> - `rates`: symbols with rates in USD represented as fixed point with precision = 9,
+> - `resolve_time`: symbols which rates are provided,
+> - `request_id`: id of the request sent to the _BandChain_ to retrieve this data.
+
+arguments:
+
+- rates: `Vec<(Bytes,u64)>`
+- resolveTime: `u64`
+- requestId: `u64`
+<hr>
+
+#### **api.tx.band.forceRelay**
+
+> Similar to [`relay()`] but without the resolve time guard.
+>
+> Should be used in emergency situations i.e. then previous value was
+> relayed by a faulty/malicious actor.
+>
+> - `origin`: the relayer account on whose behalf the transaction is being executed,
+> - `rates`: symbols with rates in USD represented as fixed point with precision = 9,
+> - `resolve_time`: symbols which rates are provided,
+> - `request_id`: id of the request sent to the _BandChain_ to retrieve this data.
+
+arguments:
+
+- rates: `Vec<(Bytes,u64)>`
+- resolveTime: `u64`
+- requestId: `u64`
+<hr>
+
+#### **api.tx.band.addRelayers**
+
+> Add `account_ids` to the list of trusted relayers.
+>
+> Ignores repeated accounts in `account_ids`.
+> If one of account is already a trusted relayer an [`Error::AlreadyATrustedRelayer`] will
+> be returned.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `account_ids`: list of new trusted relayers to add.
+
+arguments:
+
+- accountIds: `Vec<AccountId32>`
+<hr>
+
+#### **api.tx.band.removeRelayers**
+
+> Remove `account_ids` from the list of trusted relayers.
+>
+> Ignores repeated accounts in `account_ids`.
+> If one of account is not a trusted relayer an [`Error::AlreadyATrustedRelayer`] will
+> be returned.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `account_ids`: list of relayers to remove.
+
+arguments:
+
+- accountIds: `Vec<AccountId32>`
+<hr>
+
+## OracleProxy pallet
+
+### _State Queries_
+
+#### **api.query.oracleProxy.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.oracleProxy.enabledOracles**
+
+arguments: -
+
+returns: `BTreeSet<CommonPrimitivesOracle>`
+
+<hr>
+
+#### **api.query.oracleProxy.symbolProviders**
+
+arguments:
+
+- key: `Bytes`
+
+returns: `CommonPrimitivesOracle`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.oracleProxy.enableOracle**
+
+> Enables a specified oracle
+>
+> Checks if the caller is root
+>
+> - `origin`: the sudo account
+> - `oracle`: oracle variant which should be enabled
+
+arguments:
+
+- oracle: `CommonPrimitivesOracle`
+<hr>
+
+#### **api.tx.oracleProxy.disableOracle**
+
+> Disables a specified oracle
+>
+> Checks if the caller is root
+>
+> - `origin`: the sudo account
+> - `oracle`: oracle variant which should be disabled
+
+arguments:
+
+- oracle: `CommonPrimitivesOracle`
+<hr>
+
+## HermesGovernancePlatform pallet
+
+### _State Queries_
+
+#### **api.query.hermesGovernancePlatform.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.hermesVotings**
+
+> A vote of a particular user for a particular poll
+
+arguments:
+
+- key: `(H256,AccountId32)`
+
+returns: `HermesGovernancePlatformHermesVotingInfo`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.hermesPollData**
+
+arguments:
+
+- key: `H256`
+
+returns: `HermesGovernancePlatformHermesPollInfo`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.minimumHermesVotingAmount**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.minimumHermesAmountForCreatingPoll**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.hermesGovernancePlatform.authorityAccount**
+
+> Account which has permissions for changing Hermes minimum amount for voting and creating a poll
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.hermesGovernancePlatform.vote**
+
+> Vote for some option
+
+arguments:
+
+- pollId: `H256`
+- votingOption: `HermesGovernancePlatformVotingOption`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.createPoll**
+
+> Create poll
+
+arguments:
+
+- pollStartTimestamp: `u64`
+- pollEndTimestamp: `u64`
+- title: `Text`
+- description: `Text`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.withdrawFundsVoter**
+
+> Withdraw funds voter
+
+arguments:
+
+- pollId: `H256`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.withdrawFundsCreator**
+
+> Withdraw funds creator
+
+arguments:
+
+- pollId: `H256`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.changeMinHermesForVoting**
+
+> Change minimum Hermes for voting
+
+arguments:
+
+- hermesAmount: `u128`
+<hr>
+
+#### **api.tx.hermesGovernancePlatform.changeMinHermesForCreatingPoll**
+
+> Change minimum Hermes for creating a poll
+
+arguments:
+
+- hermesAmount: `u128`
+<hr>
+
+## Preimage pallet
+
+### _State Queries_
+
+#### **api.query.preimage.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.preimage.statusFor**
+
+> The request status of a given hash.
+
+arguments:
+
+- key: `H256`
+
+returns: `PalletPreimageRequestStatus`
+
+<hr>
+
+#### **api.query.preimage.preimageFor**
+
+arguments:
+
+- key: `(H256,u32)`
+
+returns: `Bytes`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.preimage.notePreimage**
+
+> Register a preimage on-chain.
+>
+> If the preimage was previously requested, no fees or deposits are taken for providing
+> the preimage. Otherwise, a deposit is taken proportional to the size of the preimage.
+
+arguments:
+
+- bytes: `Bytes`
+<hr>
+
+#### **api.tx.preimage.unnotePreimage**
+
+> Clear an unrequested preimage from the runtime storage.
+>
+> If `len` is provided, then it will be a much cheaper operation.
+>
+> - `hash`: The hash of the preimage to be removed from the store.
+> - `len`: The length of the preimage of `hash`.
+
+arguments:
+
+- hash: `H256`
+<hr>
+
+#### **api.tx.preimage.requestPreimage**
+
+> Request a preimage be uploaded to the chain without paying any fees or deposits.
+>
+> If the preimage requests has already been provided on-chain, we unreserve any deposit
+> a user may have paid, and take the control of the preimage out of their hands.
+
+arguments:
+
+- hash: `H256`
+<hr>
+
+#### **api.tx.preimage.unrequestPreimage**
+
+> Clear a previously made request for a preimage.
+>
+> NOTE: THIS MUST NOT BE CALLED ON `hash` MORE TIMES THAN `request_preimage`.
+
+arguments:
+
+- hash: `H256`
+<hr>
+
+## OrderBook pallet
+
+### _State Queries_
+
+#### **api.query.orderBook.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.orderBook.orderBooks**
+
+arguments:
+
+- key: `CommonPrimitivesTradingPairAssetId32`
+
+returns: `OrderBook`
+
+<hr>
+
+#### **api.query.orderBook.limitOrders**
+
+arguments:
+
+- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+
+returns: `OrderBookLimitOrder`
+
+<hr>
+
+#### **api.query.orderBook.bids**
+
+arguments:
+
+- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+
+returns: `Vec<u128>`
+
+<hr>
+
+#### **api.query.orderBook.asks**
+
+arguments:
+
+- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+
+returns: `Vec<u128>`
+
+<hr>
+
+#### **api.query.orderBook.aggregatedBids**
+
+arguments:
+
+- key: `CommonPrimitivesTradingPairAssetId32`
+
+returns: `BTreeMap<u128, u128>`
+
+<hr>
+
+#### **api.query.orderBook.aggregatedAsks**
+
+arguments:
+
+- key: `CommonPrimitivesTradingPairAssetId32`
+
+returns: `BTreeMap<u128, u128>`
+
+<hr>
+
+#### **api.query.orderBook.userLimitOrders**
+
+arguments:
+
+- key: `(AccountId32,CommonPrimitivesTradingPairAssetId32)`
+
+returns: `Vec<u128>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.orderBook.createOrderbook**
+
+arguments:
+
+- dexId: `u32`
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+<hr>
+
+#### **api.tx.orderBook.deleteOrderbook**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+<hr>
+
+#### **api.tx.orderBook.updateOrderbook**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- tickSize: `u128`
+- stepLotSize: `u128`
+- minLotSize: `u128`
+- maxLotSize: `u128`
+<hr>
+
+#### **api.tx.orderBook.changeOrderbookStatus**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- status: `OrderBookOrderBookStatus`
+<hr>
+
+#### **api.tx.orderBook.placeLimitOrder**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- price: `u128`
+- amount: `u128`
+- side: `CommonPrimitivesPriceVariant`
+- lifespan: `u64`
+<hr>
+
+#### **api.tx.orderBook.cancelLimitOrder**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderId: `u128`
+<hr>
+
+## Mmr pallet
+
+### _State Queries_
+
+#### **api.query.mmr.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.mmr.rootHash**
+
+> Latest MMR Root hash.
+
+arguments: -
+
+returns: `H256`
+
+<hr>
+
+#### **api.query.mmr.numberOfLeaves**
+
+> Current size of the MMR (number of leaves).
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.mmr.nodes**
+
+> Hashes of the nodes in the MMR.
+>
+> Note this collection only contains MMR peaks, the inner nodes (and leaves)
+> are pruned and only stored in the Offchain DB.
+
+arguments:
+
+- key: `u64`
+
+returns: `H256`
+
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.mmr.generateProof**
+
+> Generate MMR proof for given leaf index.
+
+arguments:
+
+- leafIndex: `u64`
+- at: `BlockHash`
+
+returns: `MmrLeafBatchProof`
+
+<hr>
+
+## Beefy pallet
+
+### _State Queries_
+
+#### **api.query.beefy.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.beefy.authorities**
+
+> The current authorities set
+
+arguments: -
+
+returns: `Vec<SpBeefyCryptoPublic>`
+
+<hr>
+
+#### **api.query.beefy.validatorSetId**
+
+> The current validator set id
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.beefy.nextAuthorities**
+
+> Authorities set scheduled to be used with the next session
+
+arguments: -
+
+returns: `Vec<SpBeefyCryptoPublic>`
+
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.beefy.getFinalizedHead**
+
+> Returns hash of the latest BEEFY finalized block as seen by this client.
+
+arguments: -
+
+returns: `H256`
+
+<hr>
+
+#### **api.rpc.beefy.subscribeJustifications**
+
+> Returns the block most recently finalized by BEEFY, alongside side its justification.
+
+arguments: -
+
+returns: `BeefySignedCommitment`
+
+<hr>
+
+## MmrLeaf pallet
+
+### _State Queries_
+
+#### **api.query.mmrLeaf.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.mmrLeaf.beefyAuthorities**
+
+> Details of current BEEFY authority set.
+
+arguments: -
+
+returns: `SpBeefyMmrBeefyAuthoritySet`
+
+<hr>
+
+#### **api.query.mmrLeaf.beefyNextAuthorities**
+
+> Details of next BEEFY authority set.
+>
+> This storage entry is used as cache for calls to `update_beefy_next_authority_set`.
+
+arguments: -
+
+returns: `SpBeefyMmrBeefyAuthoritySet`
+
+<hr>
+
+## LeafProvider pallet
+
+### _State Queries_
+
+#### **api.query.leafProvider.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.leafProvider.latestDigest**
+
+> Latest digest
+
+arguments: -
+
+returns: `Vec<BridgeTypesAuxiliaryDigestItem>`
+
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.leafProvider.latestDigest**
+
+> Get leaf provider logs.
+
+arguments:
+
+- at: `BlockHash`
+
+returns: `AuxiliaryDigest`
+
+<hr>
+
+## EvmBridgeProxy pallet
+
+### _State Queries_
+
+#### **api.query.evmBridgeProxy.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.evmBridgeProxy.transactions**
+
+arguments:
+
+- key: `(AccountId32,(BridgeTypesGenericNetworkId,H256))`
+
+returns: `EvmBridgeProxyBridgeRequest`
+
+<hr>
+
+#### **api.query.evmBridgeProxy.senders**
+
+arguments:
+
+- key: `(BridgeTypesGenericNetworkId,H256)`
+
+returns: `AccountId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.evmBridgeProxy.burn**
+
+arguments:
+
+- networkId: `BridgeTypesGenericNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- recipient: `BridgeTypesGenericAccount`
+- amount: `u128`
+<hr>
+
+## EthereumLightClient pallet
+
+### _State Queries_
+
+#### **api.query.ethereumLightClient.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.ethereumLightClient.bestBlock**
+
+> Best known block.
+
+arguments:
+
+- key: `U256`
+
+returns: `(BridgeTypesHeaderHeaderId,U256)`
+
+<hr>
+
+#### **api.query.ethereumLightClient.blocksToPrune**
+
+> Range of blocks that we want to prune.
+
+arguments:
+
+- key: `U256`
+
+returns: `EthereumLightClientPruningRange`
+
+<hr>
+
+#### **api.query.ethereumLightClient.finalizedBlock**
+
+> Best finalized block.
+
+arguments:
+
+- key: `U256`
+
+returns: `BridgeTypesHeaderHeaderId`
+
+<hr>
+
+#### **api.query.ethereumLightClient.networkConfig**
+
+> Network config
+
+arguments:
+
+- key: `U256`
+
+returns: `BridgeTypesNetworkConfig`
+
+<hr>
+
+#### **api.query.ethereumLightClient.headers**
+
+> Map of imported headers by hash.
+
+arguments:
+
+- key: `(U256,H256)`
+
+returns: `EthereumLightClientStoredHeader`
+
+<hr>
+
+#### **api.query.ethereumLightClient.headersByNumber**
+
+> Map of imported header hashes by number.
+
+arguments:
+
+- key: `(U256,u64)`
+
+returns: `Vec<H256>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.ethereumLightClient.registerNetwork**
+
+arguments:
+
+- networkConfig: `BridgeTypesNetworkConfig`
+- header: `BridgeTypesHeader`
+- initialDifficulty: `U256`
+<hr>
+
+#### **api.tx.ethereumLightClient.updateDifficultyConfig**
+
+arguments:
+
+- networkConfig: `BridgeTypesNetworkConfig`
+<hr>
+
+#### **api.tx.ethereumLightClient.importHeader**
+
+> Import a single Ethereum PoW header.
+>
+> Note that this extrinsic has a very high weight. The weight is affected by the
+> value of `DescendantsUntilFinalized`. Regenerate weights if it changes.
+>
+> The largest contributors to the worst case weight, in decreasing order, are:
+>
+> - Pruning: max 2 writes per pruned header + 2 writes to finalize pruning state.
+>   Up to `HEADERS_TO_PRUNE_IN_SINGLE_IMPORT` can be pruned in one call.
+> - Ethash validation: this cost is pure CPU. EthashProver checks a merkle proof
+>   for each DAG node selected in the "hashimoto"-loop.
+> - Iterating over ancestors: min `DescendantsUntilFinalized` reads to find the
+>   newly finalized ancestor of a header.
+
+arguments:
+
+- networkId: `U256`
+- header: `BridgeTypesHeader`
+- proof: `Vec<BridgeTypesEthashproofDoubleNodeWithMerkleProof>`
+- mixNonce: `BridgeTypesEthashproofMixNonce`
+- submitter: `AccountId32`
+- signature: `SpRuntimeMultiSignature`
+<hr>
+
+## BridgeInboundChannel pallet
+
+### _State Queries_
+
+#### **api.query.bridgeInboundChannel.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.bridgeInboundChannel.inboundChannelAddresses**
+
+> InboundChannel contract address on the ethereum side
+
+arguments:
+
+- key: `U256`
+
+returns: `H160`
+
+<hr>
+
+#### **api.query.bridgeInboundChannel.inboundChannelNonces**
+
+arguments:
+
+- key: `U256`
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.bridgeInboundChannel.channelAddresses**
+
+> Source channel (OutboundChannel contract) on the ethereum side
+
+arguments:
+
+- key: `U256`
+
+returns: `H160`
+
+<hr>
+
+#### **api.query.bridgeInboundChannel.channelNonces**
+
+arguments:
+
+- key: `U256`
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.bridgeInboundChannel.rewardFraction**
+
+arguments: -
+
+returns: `Perbill`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.bridgeInboundChannel.submit**
+
+arguments:
+
+- networkId: `U256`
+- message: `BridgeTypesMessage`
+<hr>
+
+#### **api.tx.bridgeInboundChannel.messageDispatched**
+
+arguments:
+
+- networkId: `U256`
+- message: `BridgeTypesMessage`
+<hr>
+
+#### **api.tx.bridgeInboundChannel.registerChannel**
+
+arguments:
+
+- networkId: `U256`
+- inboundChannel: `H160`
+- outboundChannel: `H160`
+<hr>
+
+#### **api.tx.bridgeInboundChannel.setRewardFraction**
+
+arguments:
+
+- fraction: `Perbill`
+<hr>
+
+## BridgeOutboundChannel pallet
+
+### _State Queries_
+
+#### **api.query.bridgeOutboundChannel.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.bridgeOutboundChannel.interval**
+
+> Interval between committing messages.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.bridgeOutboundChannel.messageQueues**
+
+> Messages waiting to be committed. To update the queue, use `append_message_queue` and `take_message_queue` methods
+> (to keep correct value in [QueuesTotalGas]).
+
+arguments:
+
+- key: `U256`
+
+returns: `Vec<BridgeOutboundChannelMessage>`
+
+<hr>
+
+#### **api.query.bridgeOutboundChannel.queuesTotalGas**
+
+> Total gas for each queue. Updated by mutating the queues with methods `append_message_queue` and `take_message_queue`.
+
+arguments:
+
+- key: `U256`
+
+returns: `U256`
+
+<hr>
+
+#### **api.query.bridgeOutboundChannel.channelNonces**
+
+arguments:
+
+- key: `U256`
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.bridgeOutboundChannel.fee**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+## Dispatch pallet
+
+### _State Queries_
+
+#### **api.query.dispatch.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+## EthApp pallet
+
+### _State Queries_
+
+#### **api.query.ethApp.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.ethApp.addresses**
+
+arguments:
+
+- key: `U256`
+
+returns: `(H160,CommonPrimitivesAssetId32)`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.ethApp.burn**
+
+arguments:
+
+- networkId: `U256`
+- recipient: `H160`
+- amount: `u128`
+<hr>
+
+#### **api.tx.ethApp.mint**
+
+arguments:
+
+- sender: `H160`
+- recipient: `AccountId32`
+- amount: `U256`
+<hr>
+
+#### **api.tx.ethApp.registerNetwork**
+
+arguments:
+
+- networkId: `U256`
+- name: `Bytes`
+- symbol: `Bytes`
+- decimals: `u8`
+- contract: `H160`
+<hr>
+
+#### **api.tx.ethApp.registerNetworkWithExistingAsset**
+
+arguments:
+
+- networkId: `U256`
+- assetId: `CommonPrimitivesAssetId32`
+- contract: `H160`
+<hr>
+
+## Erc20App pallet
+
+### _State Queries_
+
+#### **api.query.erc20App.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.erc20App.appAddresses**
+
+arguments:
+
+- key: `(U256,BridgeTypesAssetKind)`
+
+returns: `H160`
+
+<hr>
+
+#### **api.query.erc20App.assetKinds**
+
+arguments:
+
+- key: `(U256,CommonPrimitivesAssetId32)`
+
+returns: `BridgeTypesAssetKind`
+
+<hr>
+
+#### **api.query.erc20App.tokenAddresses**
+
+arguments:
+
+- key: `(U256,CommonPrimitivesAssetId32)`
+
+returns: `H160`
+
+<hr>
+
+#### **api.query.erc20App.assetsByAddresses**
+
+arguments:
+
+- key: `(U256,H160)`
+
+returns: `CommonPrimitivesAssetId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.erc20App.mint**
+
+arguments:
+
+- token: `H160`
+- sender: `H160`
+- recipient: `AccountId32`
+- amount: `U256`
+<hr>
+
+#### **api.tx.erc20App.registerAssetInternal**
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- contract: `H160`
+<hr>
+
+#### **api.tx.erc20App.burn**
+
+arguments:
+
+- networkId: `U256`
+- assetId: `CommonPrimitivesAssetId32`
+- recipient: `H160`
+- amount: `u128`
+<hr>
+
+#### **api.tx.erc20App.registerErc20Asset**
+
+arguments:
+
+- networkId: `U256`
+- address: `H160`
+- symbol: `Bytes`
+- name: `Bytes`
+- decimals: `u8`
+<hr>
+
+#### **api.tx.erc20App.registerExistingErc20Asset**
+
+arguments:
+
+- networkId: `U256`
+- address: `H160`
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.erc20App.registerNativeAsset**
+
+arguments:
+
+- networkId: `U256`
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.erc20App.registerNativeApp**
+
+arguments:
+
+- networkId: `U256`
+- contract: `H160`
+<hr>
+
+#### **api.tx.erc20App.registerErc20App**
+
+arguments:
+
+- networkId: `U256`
+- contract: `H160`
+<hr>
+
+## MigrationApp pallet
+
+### _State Queries_
+
+#### **api.query.migrationApp.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.migrationApp.addresses**
+
+arguments:
+
+- key: `U256`
+
+returns: `H160`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.migrationApp.migrateErc20**
+
+arguments:
+
+- networkId: `U256`
+- erc20Assets: `Vec<(CommonPrimitivesAssetId32,H160)>`
+<hr>
+
+#### **api.tx.migrationApp.migrateSidechain**
+
+arguments:
+
+- networkId: `U256`
+- sidechainAssets: `Vec<(CommonPrimitivesAssetId32,H160)>`
+<hr>
+
+#### **api.tx.migrationApp.migrateEth**
+
+arguments:
+
+- networkId: `U256`
+<hr>
+
+#### **api.tx.migrationApp.registerNetwork**
+
+arguments:
+
+- networkId: `U256`
+- contract: `H160`
+<hr>
+
+## BeefyLightClient pallet
+
+### _State Queries_
+
+#### **api.query.beefyLightClient.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.beefyLightClient.latestMMRRoots**
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `Vec<H256>`
+
+<hr>
+
+#### **api.query.beefyLightClient.latestBeefyBlock**
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.beefyLightClient.latestRandomSeed**
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `(H256,u32)`
+
+<hr>
+
+#### **api.query.beefyLightClient.currentValidatorSet**
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `SpBeefyMmrBeefyAuthoritySet`
+
+<hr>
+
+#### **api.query.beefyLightClient.nextValidatorSet**
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `SpBeefyMmrBeefyAuthoritySet`
+
+<hr>
+
+#### **api.query.beefyLightClient.thisNetworkId**
+
+arguments: -
+
+returns: `BridgeTypesSubNetworkId`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.beefyLightClient.initialize**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- latestBeefyBlock: `u64`
+- validatorSet: `SpBeefyMmrBeefyAuthoritySet`
+- nextValidatorSet: `SpBeefyMmrBeefyAuthoritySet`
+<hr>
+
+#### **api.tx.beefyLightClient.submitSignatureCommitment**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- commitment: `SpBeefyCommitment`
+- validatorProof: `BridgeCommonBeefyTypesValidatorProof`
+- latestMmrLeaf: `SpBeefyMmrMmrLeaf`
+- proof: `BridgeCommonSimplifiedProofProof`
+<hr>
+
+## SubstrateBridgeInboundChannel pallet
+
+### _State Queries_
+
+#### **api.query.substrateBridgeInboundChannel.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.substrateBridgeInboundChannel.channelNonces**
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.substrateBridgeInboundChannel.rewardFraction**
+
+arguments: -
+
+returns: `Perbill`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.substrateBridgeInboundChannel.submit**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- message: `BeefyLightClientProvedSubstrateBridgeMessage`
+<hr>
+
+#### **api.tx.substrateBridgeInboundChannel.setRewardFraction**
+
+arguments:
+
+- fraction: `Perbill`
+<hr>
+
+## SubstrateBridgeOutboundChannel pallet
+
+### _State Queries_
+
+#### **api.query.substrateBridgeOutboundChannel.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.substrateBridgeOutboundChannel.interval**
+
+> Interval between committing messages.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
+#### **api.query.substrateBridgeOutboundChannel.messageQueues**
+
+> Messages waiting to be committed. To update the queue, use `append_message_queue` and `take_message_queue` methods
+> (to keep correct value in [QueuesTotalGas]).
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `Vec<BridgeTypesParachainMessage>`
+
+<hr>
+
+#### **api.query.substrateBridgeOutboundChannel.channelNonces**
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.substrateBridgeOutboundChannel.fee**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+## SubstrateDispatch pallet
+
+### _State Queries_
+
+#### **api.query.substrateDispatch.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+## SubstrateBridgeApp pallet
+
+### _State Queries_
+
+#### **api.query.substrateBridgeApp.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.assetKinds**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,CommonPrimitivesAssetId32)`
+
+returns: `BridgeTypesAssetKind`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.substrateBridgeApp.mint**
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- sender: `Option<XcmVersionedMultiLocation>`
+- recipient: `AccountId32`
+- amount: `u128`
+<hr>
+
+#### **api.tx.substrateBridgeApp.finalizeAssetRegistration**
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- assetKind: `BridgeTypesAssetKind`
+<hr>
+
+#### **api.tx.substrateBridgeApp.burn**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- recipient: `XcmVersionedMultiLocation`
+- amount: `u128`
+<hr>
+
+#### **api.tx.substrateBridgeApp.registerThischainAsset**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- sidechainAsset: `XcmV3MultiassetAssetId`
+<hr>
+
+#### **api.tx.substrateBridgeApp.registerSidechainAsset**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- sidechainAsset: `XcmV3MultiassetAssetId`
+- symbol: `Bytes`
+- name: `Bytes`
+- decimals: `u8`
+<hr>
+
+## Sudo pallet
+
+### _State Queries_
+
+#### **api.query.sudo.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.sudo.key**
+
+> The `AccountId` of the sudo key.
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.sudo.sudo**
+
+> Authenticates the sudo key and dispatches a function call with `Root` origin.
+>
+> The dispatch origin for this call must be _Signed_.
+>
+> # <weight>
+>
+> - O(1).
+> - Limited storage reads.
+> - One DB write (event).
+> - Weight of derivative `call` execution + 10,000.
+>
+> # </weight>
+
+arguments:
+
+- call: `Call`
+<hr>
+
+#### **api.tx.sudo.sudoUncheckedWeight**
+
+> Authenticates the sudo key and dispatches a function call with `Root` origin.
+> This function does not check the weight of the call, and instead allows the
+> Sudo user to specify the weight of the call.
+>
+> The dispatch origin for this call must be _Signed_.
+>
+> # <weight>
+>
+> - O(1).
+> - The weight of this call is defined by the caller.
+>
+> # </weight>
+
+arguments:
+
+- call: `Call`
+- weight: `SpWeightsWeightV2Weight`
+<hr>
+
+#### **api.tx.sudo.setKey**
+
+> Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
+> key.
+>
+> The dispatch origin for this call must be _Signed_.
+>
+> # <weight>
+>
+> - O(1).
+> - Limited storage reads.
+> - One DB change.
+>
+> # </weight>
+
+arguments:
+
+- new: `AccountId32`
+<hr>
+
+#### **api.tx.sudo.sudoAs**
+
+> Authenticates the sudo key and dispatches a function call with `Signed` origin from
+> a given account.
+>
+> The dispatch origin for this call must be _Signed_.
+>
+> # <weight>
+>
+> - O(1).
+> - Limited storage reads.
+> - One DB write (event).
+> - Weight of derivative `call` execution + 10,000.
+>
+> # </weight>
+
+arguments:
+
+- who: `AccountId32`
+- call: `Call`
 <hr>
 
 ## Utility pallet
@@ -7541,12 +10627,13 @@ arguments:
 
 > Send a batch of dispatch calls.
 >
-> May be called from any origin.
+> May be called from any origin except `None`.
 >
-> - `calls`: The calls to be dispatched from the same origin.
+> - `calls`: The calls to be dispatched from the same origin. The number of call must not
+>   exceed the constant: `batched_calls_limit` (available in constant metadata).
 >
-> If origin is root then call are dispatch without checking origin filter. (This includes
-> bypassing `frame_system::Config::BaseCallFilter`).
+> If origin is root then the calls are dispatched without checking origin filter. (This
+> includes bypassing `frame_system::Config::BaseCallFilter`).
 >
 > # <weight>
 >
@@ -7592,12 +10679,13 @@ arguments:
 > Send a batch of dispatch calls and atomically execute them.
 > The whole transaction will rollback and fail if any of the calls failed.
 >
-> May be called from any origin.
+> May be called from any origin except `None`.
 >
-> - `calls`: The calls to be dispatched from the same origin.
+> - `calls`: The calls to be dispatched from the same origin. The number of call must not
+>   exceed the constant: `batched_calls_limit` (available in constant metadata).
 >
-> If origin is root then call are dispatch without checking origin filter. (This includes
-> bypassing `frame_system::Config::BaseCallFilter`).
+> If origin is root then the calls are dispatched without checking origin filter. (This
+> includes bypassing `frame_system::Config::BaseCallFilter`).
 >
 > # <weight>
 >
@@ -7610,48 +10698,64 @@ arguments:
 - calls: `Vec<Call>`
 <hr>
 
-## Currencies pallet
+#### **api.tx.utility.dispatchAs**
 
-### _Extrinsics_
-
-#### **api.tx.currencies.transfer**
-
-> Transfer some balance to another account under `currency_id`.
+> Dispatches a function call with a provided origin.
 >
-> The dispatch origin for this call must be `Signed` by the
-> transactor.
+> The dispatch origin for this call must be _Root_.
+>
+> # <weight>
+>
+> - O(1).
+> - Limited storage reads.
+> - One DB write (event).
+> - Weight of derivative `call` execution + T::WeightInfo::dispatch_as().
+>
+> # </weight>
 
 arguments:
 
-- dest: `LookupSource`
-- currency_id: `CurrencyIdOf`
-- amount: `Compact<BalanceOf>`
+- asOrigin: `FramenodeRuntimeOriginCaller`
+- call: `Call`
 <hr>
 
-#### **api.tx.currencies.transferNativeCurrency**
+#### **api.tx.utility.forceBatch**
 
-> Transfer some native currency to another account.
+> Send a batch of dispatch calls.
+> Unlike `batch`, it allows errors and won't interrupt.
 >
-> The dispatch origin for this call must be `Signed` by the
-> transactor.
+> May be called from any origin except `None`.
+>
+> - `calls`: The calls to be dispatched from the same origin. The number of call must not
+>   exceed the constant: `batched_calls_limit` (available in constant metadata).
+>
+> If origin is root then the calls are dispatch without checking origin filter. (This
+> includes bypassing `frame_system::Config::BaseCallFilter`).
+>
+> # <weight>
+>
+> - Complexity: O(C) where C is the number of calls to be batched.
+>
+> # </weight>
 
 arguments:
 
-- dest: `LookupSource`
-- amount: `Compact<BalanceOf>`
+- calls: `Vec<Call>`
 <hr>
 
-#### **api.tx.currencies.updateBalance**
+#### **api.tx.utility.withWeight**
 
-> update amount of account `who` under `currency_id`.
+> Dispatch a function call with a specified weight.
 >
-> The dispatch origin of this call must be _Root_.
+> This function does not check the weight of the call, and instead allows the
+> Root origin to specify the weight of the call.
+>
+> The dispatch origin for this call must be _Root_.
 
 arguments:
 
-- who: `LookupSource`
-- currency_id: `CurrencyIdOf`
-- amount: `AmountOf`
+- call: `Call`
+- weight: `SpWeightsWeightV2Weight`
 <hr>
 
 ## LiquidityProxy pallet
@@ -7672,12 +10776,82 @@ arguments:
 
 arguments:
 
-- dex_id: `DEXId`
-- input_asset_id: `AssetId`
-- output_asset_id: `AssetId`
-- swap_amount: `SwapAmount`
-- selected_source_types: `Vec<LiquiditySourceType>`
-- filter_mode: `FilterMode`
+- dexId: `u32`
+- inputAssetId: `CommonPrimitivesAssetId32`
+- outputAssetId: `CommonPrimitivesAssetId32`
+- swapAmount: `CommonSwapAmount`
+- selectedSourceTypes: `Vec<CommonPrimitivesLiquiditySourceType>`
+- filterMode: `CommonPrimitivesFilterMode`
+<hr>
+
+#### **api.tx.liquidityProxy.swapTransfer**
+
+> Perform swap of tokens (input/output defined via SwapAmount direction).
+>
+> - `origin`: the account on whose behalf the transaction is being executed,
+> - `receiver`: the account that receives the output,
+> - `dex_id`: DEX ID for which liquidity sources aggregation is being done,
+> - `input_asset_id`: ID of the asset being sold,
+> - `output_asset_id`: ID of the asset being bought,
+> - `swap_amount`: the exact amount to be sold (either in input_asset_id or output_asset_id units with corresponding slippage tolerance absolute bound),
+> - `selected_source_types`: list of selected LiquiditySource types, selection effect is determined by filter_mode,
+> - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
+
+arguments:
+
+- receiver: `AccountId32`
+- dexId: `u32`
+- inputAssetId: `CommonPrimitivesAssetId32`
+- outputAssetId: `CommonPrimitivesAssetId32`
+- swapAmount: `CommonSwapAmount`
+- selectedSourceTypes: `Vec<CommonPrimitivesLiquiditySourceType>`
+- filterMode: `CommonPrimitivesFilterMode`
+<hr>
+
+#### **api.tx.liquidityProxy.swapTransferBatch**
+
+> Dispatches multiple swap & transfer operations. `swap_batches` contains vector of
+> SwapBatchInfo structs, where each batch specifies which asset ID and DEX ID should
+> be used for swapping, receiver accounts and their desired outcome amount in asset,
+> specified for the current batch.
+>
+> - `origin`: the account on whose behalf the transaction is being executed,
+> - `swap_batches`: the vector containing the SwapBatchInfo structs,
+> - `input_asset_id`: ID of the asset being sold,
+> - `max_input_amount`: the maximum amount to be sold in input_asset_id,
+> - `selected_source_types`: list of selected LiquiditySource types, selection effect is
+>   determined by filter_mode,
+> - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
+
+arguments:
+
+- swapBatches: `Vec<LiquidityProxySwapBatchInfo>`
+- inputAssetId: `CommonPrimitivesAssetId32`
+- maxInputAmount: `u128`
+- selectedSourceTypes: `Vec<CommonPrimitivesLiquiditySourceType>`
+- filterMode: `CommonPrimitivesFilterMode`
+<hr>
+
+#### **api.tx.liquidityProxy.enableLiquiditySource**
+
+> Enables XST or TBC liquidity source.
+>
+> - `liquidity_source`: the liquidity source to be enabled.
+
+arguments:
+
+- liquiditySource: `CommonPrimitivesLiquiditySourceType`
+<hr>
+
+#### **api.tx.liquidityProxy.disableLiquiditySource**
+
+> Disables XST or TBC liquidity source. The liquidity source becomes unavailable for swap.
+>
+> - `liquidity_source`: the liquidity source to be disabled.
+
+arguments:
+
+- liquiditySource: `CommonPrimitivesLiquiditySourceType`
 <hr>
 
 ### _Custom RPCs_
@@ -7731,18 +10905,39 @@ returns: `Vec<LiquiditySourceType>`
 
 <hr>
 
-## Rpc pallet
+## Faucet pallet
 
-### _Custom RPCs_
+### _Extrinsics_
 
-#### **api.rpc.rpc.methods**
+#### **api.tx.faucet.transfer**
 
-> Retrieves the list of RPC methods that are exposed by the node
+> Transfers the specified amount of asset to the specified account.
+> The supported assets are: XOR, VAL, PSWAP.
+>
+> # Errors
+>
+> AssetNotSupported is returned if `asset_id` is something the function doesn't support.
+> AmountAboveLimit is returned if `target` has already received their daily limit of `asset_id`.
+> NotEnoughReserves is returned if `amount` is greater than the reserves
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- target: `AccountId32`
+- amount: `u128`
+<hr>
+
+#### **api.tx.faucet.resetRewards**
 
 arguments: -
 
-returns: `RpcMethods`
+<hr>
 
+#### **api.tx.faucet.updateLimit**
+
+arguments:
+
+- newLimit: `u128`
 <hr>
 
 ## Author pallet
@@ -7774,18 +10969,6 @@ returns: `bool`
 
 <hr>
 
-#### **api.rpc.author.removeExtrinsic**
-
-> Remove given extrinsic from the pool and temporarily ban it to prevent reimporting
-
-arguments:
-
-- bytesOrHash: `Vec<ExtrinsicOrHash>`
-
-returns: `Vec<Hash>`
-
-<hr>
-
 #### **api.rpc.author.insertKey**
 
 > Insert a key into the keystore.
@@ -7795,16 +10978,6 @@ arguments:
 - keyType: `Text`
 - suri: `Text`
 - publicKey: `Bytes`
-
-returns: `Bytes`
-
-<hr>
-
-#### **api.rpc.author.rotateKeys**
-
-> Generate new session keys and returns the corresponding public keys
-
-arguments: -
 
 returns: `Bytes`
 
@@ -7820,15 +10993,25 @@ returns: `Vec<Extrinsic>`
 
 <hr>
 
-#### **api.rpc.author.submitExtrinsic**
+#### **api.rpc.author.removeExtrinsic**
 
-> Submit a fully formatted extrinsic for block inclusion
+> Remove given extrinsic from the pool and temporarily ban it to prevent reimporting
 
 arguments:
 
-- extrinsic: `Extrinsic`
+- bytesOrHash: `Vec<ExtrinsicOrHash>`
 
-returns: `Hash`
+returns: `Vec<Hash>`
+
+<hr>
+
+#### **api.rpc.author.rotateKeys**
+
+> Generate new session keys and returns the corresponding public keys
+
+arguments: -
+
+returns: `Bytes`
 
 <hr>
 
@@ -7844,21 +11027,21 @@ returns: `ExtrinsicStatus`
 
 <hr>
 
-## Chain pallet
+#### **api.rpc.author.submitExtrinsic**
 
-### _Custom RPCs_
-
-#### **api.rpc.chain.getHeader**
-
-> Retrieves the header for a specific block
+> Submit a fully formatted extrinsic for block inclusion
 
 arguments:
 
-- hash: `BlockHash`
+- extrinsic: `Extrinsic`
 
-returns: `Header`
+returns: `Hash`
 
 <hr>
+
+## Chain pallet
+
+### _Custom RPCs_
 
 #### **api.rpc.chain.getBlock**
 
@@ -7894,9 +11077,21 @@ returns: `BlockHash`
 
 <hr>
 
-#### **api.rpc.chain.subscribeNewHeads**
+#### **api.rpc.chain.getHeader**
 
-> Retrieves the best header via subscription
+> Retrieves the header for a specific block
+
+arguments:
+
+- hash: `BlockHash`
+
+returns: `Header`
+
+<hr>
+
+#### **api.rpc.chain.subscribeAllHeads**
+
+> Retrieves the newest header via subscription
 
 arguments: -
 
@@ -7914,9 +11109,9 @@ returns: `Header`
 
 <hr>
 
-#### **api.rpc.chain.subscribeAllHeads**
+#### **api.rpc.chain.subscribeNewHeads**
 
-> Retrieves the newest header via subscription
+> Retrieves the best header via subscription
 
 arguments: -
 
@@ -7942,6 +11137,22 @@ returns: `Vec<StorageKey>`
 
 <hr>
 
+#### **api.rpc.childstate.getKeysPaged**
+
+> Returns the keys with prefix from a child storage with pagination support
+
+arguments:
+
+- childKey: `PrefixedStorageKey`
+- prefix: `StorageKey`
+- count: `u32`
+- startKey: `StorageKey`
+- at: `Hash`
+
+returns: `Vec<StorageKey>`
+
+<hr>
+
 #### **api.rpc.childstate.getStorage**
 
 > Returns a child storage entry at a specific block state
@@ -7953,6 +11164,20 @@ arguments:
 - at: `Hash`
 
 returns: `Option<StorageData>`
+
+<hr>
+
+#### **api.rpc.childstate.getStorageEntries**
+
+> Returns child storage entries for multiple keys at a specific block state
+
+arguments:
+
+- childKey: `PrefixedStorageKey`
+- keys: `Vec<StorageKey>`
+- at: `Hash`
+
+returns: `Vec<Option<StorageData>>`
 
 <hr>
 
@@ -7988,6 +11213,19 @@ returns: `Option<u64>`
 
 ### _Custom RPCs_
 
+#### **api.rpc.offchain.localStorageGet**
+
+> Get offchain local storage under given key and prefix
+
+arguments:
+
+- kind: `StorageKind`
+- key: `Bytes`
+
+returns: `Option<Bytes>`
+
+<hr>
+
 #### **api.rpc.offchain.localStorageSet**
 
 > Set offchain local storage under given key and prefix
@@ -8002,35 +11240,9 @@ returns: `Null`
 
 <hr>
 
-#### **api.rpc.offchain.localStorageGet**
-
-> Get offchain local storage under given key and prefix
-
-arguments:
-
-- kind: `StorageKind`
-- key: `Bytes`
-
-returns: `Option<Bytes>`
-
-<hr>
-
 ## Payment pallet
 
 ### _Custom RPCs_
-
-#### **api.rpc.payment.queryInfo**
-
-> Retrieves the fee information for an encoded extrinsic
-
-arguments:
-
-- extrinsic: `Bytes`
-- at: `BlockHash`
-
-returns: `RuntimeDispatchInfo`
-
-<hr>
 
 #### **api.rpc.payment.queryFeeDetails**
 
@@ -8042,6 +11254,33 @@ arguments:
 - at: `BlockHash`
 
 returns: `FeeDetails`
+
+<hr>
+
+#### **api.rpc.payment.queryInfo**
+
+> Retrieves the fee information for an encoded extrinsic
+
+arguments:
+
+- extrinsic: `Bytes`
+- at: `BlockHash`
+
+returns: `RuntimeDispatchInfoV1`
+
+<hr>
+
+## Rpc pallet
+
+### _Custom RPCs_
+
+#### **api.rpc.rpc.methods**
+
+> Retrieves the list of RPC methods that are exposed by the node
+
+arguments: -
+
+returns: `RpcMethods`
 
 <hr>
 
@@ -8063,6 +11302,20 @@ returns: `Bytes`
 
 <hr>
 
+#### **api.rpc.state.getChildReadProof**
+
+> Returns proof of storage for child key entries at a specific block state.
+
+arguments:
+
+- childStorageKey: `PrefixedStorageKey`
+- keys: `Vec<StorageKey>`
+- at: `BlockHash`
+
+returns: `ReadProof`
+
+<hr>
+
 #### **api.rpc.state.getKeys**
 
 > Retrieves the keys with a certain prefix
@@ -8073,6 +11326,33 @@ arguments:
 - at: `BlockHash`
 
 returns: `Vec<StorageKey>`
+
+<hr>
+
+#### **api.rpc.state.getKeysPaged**
+
+> Returns the keys with prefix with pagination support.
+
+arguments:
+
+- key: `StorageKey`
+- count: `u32`
+- startKey: `StorageKey`
+- at: `BlockHash`
+
+returns: `Vec<StorageKey>`
+
+<hr>
+
+#### **api.rpc.state.getMetadata**
+
+> Returns the runtime metadata
+
+arguments:
+
+- at: `BlockHash`
+
+returns: `Metadata`
 
 <hr>
 
@@ -8089,18 +11369,28 @@ returns: `Vec<KeyValue>`
 
 <hr>
 
-#### **api.rpc.state.getKeysPaged**
+#### **api.rpc.state.getReadProof**
 
-> Returns the keys with prefix with pagination support.
+> Returns proof of storage entries at a specific block state
 
 arguments:
 
-- key: `StorageKey`
-- count: `u32`
-- startKey: `StorageKey`
+- keys: `Vec<StorageKey>`
 - at: `BlockHash`
 
-returns: `Vec<StorageKey>`
+returns: `ReadProof`
+
+<hr>
+
+#### **api.rpc.state.getRuntimeVersion**
+
+> Get the runtime version
+
+arguments:
+
+- at: `BlockHash`
+
+returns: `RuntimeVersion`
 
 <hr>
 
@@ -8143,30 +11433,6 @@ returns: `u64`
 
 <hr>
 
-#### **api.rpc.state.getMetadata**
-
-> Returns the runtime metadata
-
-arguments:
-
-- at: `BlockHash`
-
-returns: `Metadata`
-
-<hr>
-
-#### **api.rpc.state.getRuntimeVersion**
-
-> Get the runtime version
-
-arguments:
-
-- at: `BlockHash`
-
-returns: `RuntimeVersion`
-
-<hr>
-
 #### **api.rpc.state.queryStorage**
 
 > Query historical storage entries (by key) starting from a start block
@@ -8194,19 +11460,6 @@ returns: `Vec<StorageChangeSet>`
 
 <hr>
 
-#### **api.rpc.state.getReadProof**
-
-> Returns proof of storage entries at a specific block state
-
-arguments:
-
-- keys: `Vec<StorageKey>`
-- at: `BlockHash`
-
-returns: `ReadProof`
-
-<hr>
-
 #### **api.rpc.state.subscribeRuntimeVersion**
 
 > Retrieves the runtime version via subscription
@@ -8226,6 +11479,21 @@ arguments:
 - keys: `Vec<StorageKey>`
 
 returns: `StorageChangeSet`
+
+<hr>
+
+#### **api.rpc.state.traceBlock**
+
+> Provides a way to trace the re-execution of a single block
+
+arguments:
+
+- block: `Hash`
+- targets: `Option<Text>`
+- storageKeys: `Option<Text>`
+- methods: `Option<Text>`
+
+returns: `TraceBlockResponse`
 
 <hr>
 
@@ -8279,6 +11547,22 @@ returns: `Option<SwapOutcomeInfo>`
 
 <hr>
 
+## IntentivizedChannel pallet
+
+### _Custom RPCs_
+
+#### **api.rpc.intentivizedChannel.commitment**
+
+> Get intentivized channel messages.
+
+arguments:
+
+- commitmentHash: `H256`
+
+returns: `Option<Vec<IntentivizedChannelMessage>>`
+
+<hr>
+
 # Types
 
 ### AccountInfo
@@ -8327,11 +11611,11 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    asset_id: "AssetId",
+    assetId: "AssetId",
     symbol: "AssetSymbolStr",
     name: "AssetNameStr",
     precision: "u8",
-    is_mintable: "bool"
+    isMintable: "bool"
 }
 ```
 
@@ -8350,7 +11634,7 @@ returns: `Option<SwapOutcomeInfo>`
 ### AssetName
 
 ```
-"Vec<u8>"
+"Text"
 ```
 
 ### AssetNameStr
@@ -8368,13 +11652,31 @@ returns: `Option<SwapOutcomeInfo>`
 ### AssetSymbol
 
 ```
-"Vec<u8>"
+"Text"
 ```
 
 ### AssetSymbolStr
 
 ```
 "String"
+```
+
+### AuxiliaryDigest
+
+```
+{
+    logs: "Vec<AuxiliaryDigestItem>"
+}
+```
+
+### AuxiliaryDigestItem
+
+```
+{
+    _enum: {
+        Commitment: "(EthNetworkId, ChannelId, H256)"
+    }
+}
 ```
 
 ### Balance
@@ -8397,6 +11699,17 @@ returns: `Option<SwapOutcomeInfo>`
 "u8"
 ```
 
+### BasicChannelMessage
+
+```
+{
+    networkId: "EthNetworkId",
+    target: "H160",
+    nonce: "u64",
+    payload: "Vec<u8>"
+}
+```
+
 ### BasisPoints
 
 ```
@@ -8407,6 +11720,17 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 "u32"
+```
+
+### BridgeSignatureVersion
+
+```
+{
+    _enum: [
+        "V1",
+        "V2"
+    ]
+}
 ```
 
 ### BridgeStatus
@@ -8440,6 +11764,17 @@ returns: `Option<SwapOutcomeInfo>`
 }
 ```
 
+### ChannelId
+
+```
+{
+    _enum: {
+        Basic: null,
+        Incentivized: null
+    }
+}
+```
+
 ### ChargeFeeInfo
 
 ```
@@ -8459,11 +11794,46 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    funds_contributed: "Balance",
-    tokens_bought: "Balance",
-    tokens_claimed: "Balance",
-    claiming_finished: "bool",
-    number_of_claims: "u32"
+    fundsContributed: "Balance",
+    tokensBought: "Balance",
+    tokensClaimed: "Balance",
+    claimingFinished: "bool",
+    numberOfClaims: "u32"
+}
+```
+
+### ContributorsVesting
+
+```
+{
+    firstReleasePercent: "Balance",
+    vestingPeriod: "Moment",
+    vestingPercent: "Balance"
+}
+```
+
+### CrowdloanLease
+
+```
+{
+    startBlock: "String",
+    totalDays: "String",
+    blocksPerDay: "String"
+}
+```
+
+### CrowdloanReward
+
+```
+{
+    id: "Vec<u8>",
+    address: "Vec<u8>",
+    contribution: "Fixed",
+    xorReward: "Fixed",
+    valReward: "Fixed",
+    pswapReward: "Fixed",
+    xstusdReward: "Fixed",
+    percent: "Fixed"
 }
 ```
 
@@ -8514,9 +11884,9 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    base_asset_id: "AssetId",
-    default_fee: "BasisPoints",
-    default_protocol_fee: "BasisPoints"
+    baseAssetId: "AssetId",
+    defaultFee: "BasisPoints",
+    defaultProtocolFee: "BasisPoints"
 }
 ```
 
@@ -8530,7 +11900,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    post_info: "PostDispatchInfo",
+    postInfo: "PostDispatchInfo",
     error: "DispatchError"
 }
 ```
@@ -8553,6 +11923,12 @@ returns: `Option<SwapOutcomeInfo>`
 "Null"
 ```
 
+### EthAddress
+
+```
+"H160"
+```
+
 ### EthBridgeStorageVersion
 
 ```
@@ -8564,13 +11940,19 @@ returns: `Option<SwapOutcomeInfo>`
 }
 ```
 
+### EthNetworkId
+
+```
+"U256"
+```
+
 ### EthPeersSync
 
 ```
 {
-    is_bridge_ready: "bool",
-    is_xor_ready: "bool",
-    is_val_ready: "bool"
+    isBridgeReady: "bool",
+    isXorReady: "bool",
+    isValReady: "bool"
 }
 ```
 
@@ -8616,6 +11998,30 @@ returns: `Option<SwapOutcomeInfo>`
 "Vec<u8>"
 ```
 
+### HermesPollInfo
+
+```
+{
+    creator: "AccountId",
+    hermesLocked: "Balance",
+    pollStartTimestamp: "Moment",
+    pollEndTimestamp: "Moment",
+    title: "String",
+    description: "String",
+    creatorHermesWithdrawn: "bool"
+}
+```
+
+### HermesVotingInfo
+
+```
+{
+    votingOption: "VotingOption",
+    numberOfHermes: "Balance",
+    hermesWithdrawn: "bool"
+}
+```
+
 ### HolderId
 
 ```
@@ -8626,28 +12032,30 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    ilo_organizer: "AccountId",
-    tokens_for_ilo: "Balance",
-    tokens_for_liquidity: "Balance",
-    ilo_price: "Balance",
-    soft_cap: "Balance",
-    hard_cap: "Balance",
-    min_contribution: "Balance",
-    max_contribution: "Balance",
-    refund_type: "bool",
-    liquidity_percent: "Balance",
-    listing_price: "Balance",
-    lockup_days: "u32",
-    start_block: "BlockNumber",
-    end_block: "BlockNumber",
-    token_vesting: "VestingInfo",
-    sold_tokens: "Balance",
-    funds_raised: "Balance",
+    iloOrganizer: "AccountId",
+    tokensForIlo: "Balance",
+    tokensForLiquidity: "Balance",
+    iloPrice: "Balance",
+    softCap: "Balance",
+    hardCap: "Balance",
+    minContribution: "Balance",
+    maxContribution: "Balance",
+    refundType: "bool",
+    liquidityPercent: "Balance",
+    listingPrice: "Balance",
+    lockupDays: "u32",
+    startTimestamp: "Moment",
+    endTimestamp: "Moment",
+    contributorsVesting: "ContributorsVesting",
+    teamVesting: "TeamVesting",
+    soldTokens: "Balance",
+    fundsRaised: "Balance",
     succeeded: "bool",
     failed: "bool",
-    lp_tokens: "Balance",
-    claimed_lp_tokens: "bool",
-    finish_block: "BlockNumber"
+    lpTokens: "Balance",
+    claimedLpTokens: "bool",
+    finishTimestamp: "Moment",
+    baseAsset: "AssetId"
 }
 ```
 
@@ -8655,16 +12063,16 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    token_address: "EthereumAddress",
-    asset_id: "AssetId",
+    tokenAddress: "EthAddress",
+    assetId: "AssetId",
     precision: "BalancePrecision",
     symbol: "AssetSymbol",
     name: "AssetName",
     author: "AccountId",
-    tx_hash: "H256",
-    at_height: "u64",
+    txHash: "H256",
+    atHeight: "u64",
     timepoint: "BridgeTimepoint",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
 }
 ```
 
@@ -8672,15 +12080,15 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    outgoing_request: "OutgoingRequest",
-    outgoing_request_hash: "H256",
-    initial_request_hash: "H256",
-    tx_input: "Vec<u8>",
+    outgoingRequest: "OutgoingRequest",
+    outgoingRequestHash: "H256",
+    initialRequestHash: "H256",
+    txInput: "Vec<u8>",
     author: "AccountId",
-    tx_hash: "H256",
-    at_height: "u64",
+    txHash: "H256",
+    atHeight: "u64",
     timepoint: "BridgeTimepoint",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
 }
 ```
 
@@ -8688,14 +12096,14 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    peer_account_id: "AccountId",
-    peer_address: "EthereumAddress",
+    peerAccountId: "AccountId",
+    peerAddress: "EthAddress",
     added: "bool",
     author: "AccountId",
-    tx_hash: "H256",
-    at_height: "u64",
+    txHash: "H256",
+    atHeight: "u64",
     timepoint: "BridgeTimepoint",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
 }
 ```
 
@@ -8703,15 +12111,15 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    peer_account_id: "AccountId",
-    peer_address: "EthereumAddress",
+    peerAccountId: "AccountId",
+    peerAddress: "EthAddress",
     added: "bool",
     contract: "ChangePeersContract",
     author: "AccountId",
-    tx_hash: "H256",
-    at_height: "u64",
+    txHash: "H256",
+    atHeight: "u64",
     timepoint: "BridgeTimepoint",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
 }
 ```
 
@@ -8719,12 +12127,12 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    outgoing_request_hash: "H256",
-    initial_request_hash: "H256",
+    outgoingRequestHash: "H256",
+    initialRequestHash: "H256",
     author: "AccountId",
-    at_height: "u64",
+    atHeight: "u64",
     timepoint: "BridgeTimepoint",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
 }
 ```
 
@@ -8743,12 +12151,12 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    new_contract_address: "EthereumAddress",
+    newContractAddress: "EthAddress",
     author: "AccountId",
-    tx_hash: "H256",
-    at_height: "u64",
+    txHash: "H256",
+    atHeight: "u64",
     timepoint: "BridgeTimepoint",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
 }
 ```
 
@@ -8757,10 +12165,10 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    tx_hash: "H256",
-    at_height: "u64",
+    txHash: "H256",
+    atHeight: "u64",
     timepoint: "BridgeTimepoint",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
 }
 ```
 
@@ -8813,16 +12221,28 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    from: "EthereumAddress",
+    from: "EthAddress",
     to: "AccountId",
-    asset_id: "AssetId",
-    asset_kind: "AssetKind",
+    assetId: "AssetId",
+    assetKind: "AssetKind",
     amount: "Balance",
     author: "AccountId",
-    tx_hash: "H256",
-    at_height: "u64",
+    txHash: "H256",
+    atHeight: "u64",
     timepoint: "BridgeTimepoint",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
+}
+```
+
+### IntentivizedChannelMessage
+
+```
+{
+    networkId: "EthNetworkId",
+    target: "H160",
+    nonce: "u64",
+    fee: "U256",
+    payload: "Vec<u8>"
 }
 ```
 
@@ -8849,7 +12269,16 @@ returns: `Option<SwapOutcomeInfo>`
     amount: "Balance",
     fee: "Balance",
     rewards: "Vec<LPRewardsInfo>",
-    amount_without_impact: "Balance"
+    route: "Vec<AssetId>"
+}
+```
+
+### LiquiditySourceIdOf
+
+```
+{
+    dexId: "DEXId",
+    liquiditySourceIndex: "LiquiditySourceType"
 }
 ```
 
@@ -8878,7 +12307,7 @@ returns: `Option<SwapOutcomeInfo>`
     hash: "H256",
     timepoint: "BridgeTimepoint",
     kind: "IncomingMetaRequestKind",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
 }
 ```
 
@@ -8901,7 +12330,7 @@ returns: `Option<SwapOutcomeInfo>`
     hash: "H256",
     timepoint: "BridgeTimepoint",
     kind: "IncomingTransactionRequestKind",
-    network_id: "BridgeNetworkId"
+    networkId: "BridgeNetworkId"
 }
 ```
 
@@ -8909,10 +12338,10 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    pool_tokens: "Balance",
-    unlocking_block: "BlockNumber",
-    asset_a: "AssetId",
-    asset_b: "AssetId"
+    poolTokens: "Balance",
+    unlockingTimestamp: "Moment",
+    assetA: "AssetId",
+    assetB: "AssetId"
 }
 ```
 
@@ -8997,10 +12426,10 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    asset_id: "AssetId",
+    assetId: "AssetId",
     supply: "Balance",
     nonce: "Index",
-    network_id: "BridgeNetworkId",
+    networkId: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
 }
 ```
@@ -9013,9 +12442,9 @@ returns: `Option<SwapOutcomeInfo>`
     symbol: "String",
     decimal: "u8",
     supply: "U256",
-    sidechain_asset_id: "FixedBytes",
+    sidechainAssetId: "FixedBytes",
     hash: "H256",
-    network_id: "H256",
+    networkId: "H256",
     raw: "Vec<u8>"
 }
 ```
@@ -9025,10 +12454,10 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    peer_address: "EthereumAddress",
-    peer_account_id: "AccountId",
+    peerAddress: "EthAddress",
+    peerAccountId: "AccountId",
     nonce: "Index",
-    network_id: "BridgeNetworkId",
+    networkId: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
 }
 ```
@@ -9038,10 +12467,10 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    peer_address: "EthereumAddress",
-    peer_account_id: "AccountId",
+    peerAddress: "EthAddress",
+    peerAccountId: "AccountId",
     nonce: "Index",
-    network_id: "BridgeNetworkId",
+    networkId: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
 }
 ```
@@ -9050,9 +12479,9 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    peer_address: "EthereumAddress",
-    tx_hash: "H256",
-    network_id: "H256",
+    peerAddress: "EthAddress",
+    txHash: "H256",
+    networkId: "H256",
     raw: "Vec<u8>"
 }
 ```
@@ -9062,12 +12491,12 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    token_address: "EthereumAddress",
+    tokenAddress: "EthAddress",
     ticker: "String",
     name: "String",
     decimals: "u8",
     nonce: "Index",
-    network_id: "BridgeNetworkId",
+    networkId: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
 }
 ```
@@ -9076,12 +12505,12 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    token_address: "EthereumAddress",
+    tokenAddress: "EthAddress",
     ticker: "String",
     name: "String",
     decimals: "u8",
     hash: "H256",
-    network_id: "H256",
+    networkId: "H256",
     raw: "Vec<u8>"
 }
 ```
@@ -9091,10 +12520,10 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    new_contract_address: "EthereumAddress",
-    erc20_native_tokens: "Vec<EthereumAddress>",
+    newContractAddress: "EthAddress",
+    erc20NativeTokens: "Vec<EthAddress>",
     nonce: "Index",
-    network_id: "BridgeNetworkId",
+    networkId: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
 }
 ```
@@ -9103,11 +12532,11 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    this_contract_address: "EthereumAddress",
-    tx_hash: "H256",
-    new_contract_address: "EthereumAddress",
-    erc20_native_tokens: "Vec<EthereumAddress>",
-    network_id: "H256",
+    thisContractAddress: "EthAddress",
+    txHash: "H256",
+    newContractAddress: "EthAddress",
+    erc20NativeTokens: "Vec<EthAddress>",
+    networkId: "H256",
     raw: "Vec<u8>"
 }
 ```
@@ -9118,7 +12547,7 @@ returns: `Option<SwapOutcomeInfo>`
 {
     author: "AccountId",
     nonce: "Index",
-    network_id: "BridgeNetworkId",
+    networkId: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
 }
 ```
@@ -9127,9 +12556,9 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    this_contract_address: "EthereumAddress",
-    tx_hash: "H256",
-    network_id: "H256",
+    thisContractAddress: "EthAddress",
+    txHash: "H256",
+    networkId: "H256",
     raw: "Vec<u8>"
 }
 ```
@@ -9139,10 +12568,10 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    peer_account_id: "AccountId",
-    peer_address: "EthereumAddress",
+    peerAccountId: "AccountId",
+    peerAddress: "EthAddress",
     nonce: "Index",
-    network_id: "BridgeNetworkId",
+    networkId: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
 }
 ```
@@ -9152,10 +12581,10 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     author: "AccountId",
-    peer_account_id: "AccountId",
-    peer_address: "EthereumAddress",
+    peerAccountId: "AccountId",
+    peerAddress: "EthAddress",
     nonce: "Index",
-    network_id: "BridgeNetworkId",
+    networkId: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
 }
 ```
@@ -9164,9 +12593,9 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    peer_address: "EthereumAddress",
-    tx_hash: "H256",
-    network_id: "H256",
+    peerAddress: "EthAddress",
+    txHash: "H256",
+    networkId: "H256",
     raw: "Vec<u8>"
 }
 ```
@@ -9208,11 +12637,11 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     from: "AccountId",
-    to: "EthereumAddress",
-    asset_id: "AssetId",
+    to: "EthAddress",
+    assetId: "AssetId",
     amount: "Balance",
     nonce: "Index",
-    network_id: "BridgeNetworkId",
+    networkId: "BridgeNetworkId",
     timepoint: "BridgeTimepoint"
 }
 ```
@@ -9221,12 +12650,12 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    currency_id: "CurrencyIdEncoded",
+    currencyId: "CurrencyIdEncoded",
     amount: "U256",
-    to: "EthereumAddress",
-    from: "EthereumAddress",
-    tx_hash: "H256",
-    network_id: "H256",
+    to: "EthAddress",
+    from: "EthAddress",
+    txHash: "H256",
+    networkId: "H256",
     raw: "Vec<u8>"
 }
 ```
@@ -9241,8 +12670,8 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    approving_accounts: "Vec<AccountId>",
-    migrate_at: "Option<BlockNumber>"
+    approvingAccounts: "Vec<AccountId>",
+    migrateAt: "Option<BlockNumber>"
 }
 ```
 
@@ -9262,9 +12691,25 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    number_of_options: "u32",
-    poll_start_block: "BlockNumber",
-    poll_end_block: "BlockNumber"
+    numberOfOptions: "u32",
+    pollStartTimestamp: "Moment",
+    pollEndTimestamp: "Moment"
+}
+```
+
+### PoolData
+
+```
+{
+    multiplier: "u32",
+    depositFee: "Balance",
+    isCore: "bool",
+    isFarm: "bool",
+    totalTokensInPool: "Balance",
+    rewards: "Balance",
+    rewardsToBeDistributed: "Balance",
+    isRemoved: "bool",
+    baseAsset: "AssetId"
 }
 ```
 
@@ -9282,8 +12727,8 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    actual_weight: "Option<Weight>",
-    pays_fee: "Pays"
+    actualWeight: "Option<Weight>",
+    paysFee: "Pays"
 }
 ```
 
@@ -9300,7 +12745,9 @@ returns: `Option<SwapOutcomeInfo>`
         "PSWAP",
         "DAI",
         "ETH",
-        "XSTUSD"
+        "XSTUSD",
+        "XST",
+        "TBCD"
     ]
 }
 ```
@@ -9309,11 +12756,11 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    price_failures: "u32",
-    spot_prices: "Vec<Balance>",
-    average_price: "Balance",
-    needs_update: "bool",
-    last_spot_price: "Balance"
+    priceFailures: "u32",
+    spotPrices: "Vec<Balance>",
+    averagePrice: "Balance",
+    needsUpdate: "bool",
+    lastSpotPrice: "Balance"
 }
 ```
 
@@ -9338,7 +12785,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    desired_amount_in: "Balance"
+    desiredAmountIn: "Balance"
 }
 ```
 
@@ -9346,7 +12793,7 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    desired_amount_out: "Balance"
+    desiredAmountOut: "Balance"
 }
 ```
 
@@ -9375,7 +12822,7 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     limit: "Balance",
-    total_available: "Balance",
+    totalAvailable: "Balance",
     rewards: "BTreeMap<RewardReason, Balance>"
 }
 ```
@@ -9485,8 +12932,8 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    desired_amount_in: "Balance",
-    min_amount_out: "Balance"
+    desiredAmountIn: "Balance",
+    minAmountOut: "Balance"
 }
 ```
 
@@ -9494,8 +12941,8 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    desired_amount_out: "Balance",
-    max_amount_in: "Balance"
+    desiredAmountOut: "Balance",
+    maxAmountIn: "Balance"
 }
 ```
 
@@ -9509,6 +12956,17 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 "TradingPair"
+```
+
+### TeamVesting
+
+```
+{
+    teamVestingTotalTokens: "Balance",
+    teamVestingFirstReleasePercent: "Balance",
+    teamVestingPeriod: "Moment",
+    teamVestingPercent: "Balance"
+}
 ```
 
 ### TechAccountId
@@ -9564,8 +13022,22 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    base_asset_id: "TechAssetId",
-    target_asset_id: "TechAssetId"
+    baseAssetId: "TechAssetId",
+    targetAssetId: "TechAssetId"
+}
+```
+
+### TokenInfo
+
+```
+{
+    farmsTotalMultiplier: "u32",
+    stakingTotalMultiplier: "u32",
+    tokenPerBlock: "Balance",
+    farmsAllocation: "Balance",
+    stakingAllocation: "Balance",
+    teamAllocation: "Balance",
+    teamAccount: "AccountId"
 }
 ```
 
@@ -9574,8 +13046,8 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     tokens: "Balance",
-    unlocking_block: "BlockNumber",
-    asset_id: "AssetId"
+    unlockingTimestamp: "Moment",
+    assetId: "AssetId"
 }
 ```
 
@@ -9583,8 +13055,21 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    base_asset_id: "AssetId",
-    target_asset_id: "AssetId"
+    baseAssetId: "AssetId",
+    targetAssetId: "AssetId"
+}
+```
+
+### UserInfo
+
+```
+{
+    poolAsset: "AssetId",
+    rewardAsset: "AssetId",
+    isFarm: "bool",
+    pooledTokens: "Balance",
+    rewards: "Balance",
+    baseAsset: "AssetId"
 }
 ```
 
@@ -9598,8 +13083,19 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 {
-    voting_option: "u32",
-    number_of_votes: "Balance",
-    ceres_withdrawn: "bool"
+    votingOption: "u32",
+    numberOfVotes: "Balance",
+    ceresWithdrawn: "bool"
+}
+```
+
+### VotingOption
+
+```
+{
+    _enum: [
+        "Yes",
+        "No"
+    ]
 }
 ```

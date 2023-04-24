@@ -1,8 +1,9 @@
-import xxhash64AsBn from '@polkadot/util-crypto/xxhash/xxhash64/asBn';
+import { xxhashAsU8a } from '@polkadot/util-crypto/xxhash';
 import type { ApiPromise } from '@polkadot/api';
 
 import { types } from '@sora-substrate/type-definitions';
-import type { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types/interfaces';
+import type { Api } from '../api';
+import type { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types';
 
 const predefinedAssets = types['PredefinedAssetId']['_enum'];
 
@@ -27,34 +28,34 @@ export function assetIdToTechAssetId(api: ApiPromise, assetId: AssetId | string)
   return api.createType('TechAssetId', { Escaped: assetId });
 }
 
-export function poolTechAccountIdFromAssetPair(
-  api: ApiPromise,
+export function poolTechAccountIdFromAssetPair<T = void>(
+  api: Api<T>,
   baseAssetId: AssetId | string,
   targetAssetId: AssetId | string
 ): TechAccountId {
-  const techBaseAsset = assetIdToTechAssetId(api, baseAssetId);
-  const techTargetAsset = assetIdToTechAssetId(api, targetAssetId);
-  const tradingPair = api.createType('TechTradingPair', {
-    base_asset_id: techBaseAsset,
-    target_asset_id: techTargetAsset,
+  const techBaseAsset = assetIdToTechAssetId(api.api, baseAssetId);
+  const techTargetAsset = assetIdToTechAssetId(api.api, targetAssetId);
+  const tradingPair = api.api.createType('TechTradingPair', {
+    baseAssetId: techBaseAsset,
+    targetAssetId: techTargetAsset,
   });
-  const techPurpose = api.createType('TechPurpose', { LiquidityKeeper: tradingPair });
-  return api.createType('TechAccountId', { Pure: [0, techPurpose] });
+  const techPurpose = api.api.createType('TechPurpose', { LiquidityKeeper: tradingPair });
+  const dexId = api.dex.getDexId(baseAssetId.toString());
+  return api.api.createType('TechAccountId', { Pure: [dexId, techPurpose] });
 }
 
 export function techAccountIdToAccountId(api: ApiPromise, techAccountId: TechAccountId): AccountId {
   const magicPrefix = new Uint8Array([84, 115, 79, 144, 249, 113, 160, 44, 96, 155, 45, 104, 78, 97, 181, 87]);
   const u8a = new Uint8Array(32);
   u8a.set(magicPrefix, 0);
-  u8a.set(xxhash64AsBn(techAccountId.toU8a(), 0).toArray('le', 8), 16);
-  u8a.set(xxhash64AsBn(techAccountId.toU8a(), 1).toArray('le', 8), 24);
+  u8a.set(xxhashAsU8a(techAccountId.toU8a(), 128), 16);
   return api.createType('AccountId', u8a);
 }
 
-export function poolAccountIdFromAssetPair(
-  api: ApiPromise,
+export function poolAccountIdFromAssetPair<T = void>(
+  api: Api<T>,
   baseAssetId: AssetId | string,
   targetAssetId: AssetId | string
 ): AccountId {
-  return techAccountIdToAccountId(api, poolTechAccountIdFromAssetPair(api, baseAssetId, targetAssetId));
+  return techAccountIdToAccountId(api.api, poolTechAccountIdFromAssetPair(api, baseAssetId, targetAssetId));
 }

@@ -1,23 +1,49 @@
 import { assert } from '@polkadot/util';
+import { map } from 'rxjs';
+import { FPNumber, NumberLike } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 
 import { Messages } from '../logger';
-import { FPNumber, NumberLike } from '../fp';
 import { XOR } from '../assets/consts';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 
-export class ReferralSystemModule {
-  constructor(private readonly root: Api) {}
+export class ReferralSystemModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   /**
-   * Returns the referral of the invited user by Id
+   * Returns the referrer of the invited user by Id
    * @param invitedUserId address of invited account
-   * @returns referral
+   * @returns referrer
    */
-  public async getReferral(invitedUserId: string): Promise<string> {
-    const referral = (await this.root.api.query.referrals.referrers(invitedUserId)) as any;
-    return !referral ? '' : referral.toString();
+  public async getReferrer(invitedUserId: string): Promise<string> {
+    const referrer = await this.root.api.query.referrals.referrers(invitedUserId);
+    return !referrer ? '' : referrer.toString();
+  }
+
+  /**
+   * Returns the referrer of the account
+   * @returns referrer
+   */
+  public async getAccountReferrer(): Promise<string> {
+    return this.getReferrer(this.root.account.pair.address);
+  }
+
+  /**
+   * Returns the referrer subscription
+   * @param invitedUserId address of invited account
+   */
+  public subscribeOnReferrer(invitedUserId: string): Observable<null | string> {
+    return this.root.apiRx.query.referrals
+      .referrers(invitedUserId)
+      .pipe(map((codec) => codec.toJSON() as null | string));
+  }
+
+  /**
+   * Returns the referrer subscription
+   */
+  public subscribeOnAccountReferrer(): Observable<null | string> {
+    return this.subscribeOnReferrer(this.root.account.pair.address);
   }
 
   /**
@@ -26,7 +52,7 @@ export class ReferralSystemModule {
    * @returns array of invited users
    */
   public async getInvitedUsers(referrerId: string): Promise<Array<string>> {
-    return (await this.root.api.query.referrals.referrals(referrerId)) as any;
+    return (await this.root.api.query.referrals.referrals(referrerId)).map((accountId) => accountId.toString());
   }
 
   /**
@@ -34,7 +60,16 @@ export class ReferralSystemModule {
    * @param referrerId address of referrer account
    */
   public subscribeOnInvitedUsers(referrerId: string): Observable<Array<string>> {
-    return this.root.apiRx.query.referrals.referrals(referrerId) as unknown as Observable<Array<string>>;
+    return this.root.apiRx.query.referrals
+      .referrals(referrerId)
+      .pipe(map((data) => data.map((accountId) => accountId.toString())));
+  }
+
+  /**
+   * Account's invited users subscription
+   */
+  public subscribeOnAccountInvitedUsers(): Observable<Array<string>> {
+    return this.subscribeOnInvitedUsers(this.root.account.pair.address);
   }
 
   /**
@@ -42,9 +77,9 @@ export class ReferralSystemModule {
    * This balance can be used by referrals to pay the fee
    * @param amount balance to reserve
    */
-  public async reserveXor(amount: NumberLike): Promise<void> {
+  public reserveXor(amount: NumberLike): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.referrals.reserve(new FPNumber(amount, XOR.decimals).toCodecString()),
       this.root.account.pair,
       { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralReserveXor }
@@ -55,9 +90,9 @@ export class ReferralSystemModule {
    * Unreserve XOR balance
    * @param amount balance to unreserve
    */
-  public async unreserveXor(amount: NumberLike): Promise<void> {
+  public unreserveXor(amount: NumberLike): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.referrals.unreserve(new FPNumber(amount, XOR.decimals).toCodecString()),
       this.root.account.pair,
       { symbol: XOR.symbol, amount: `${amount}`, assetAddress: XOR.address, type: Operation.ReferralUnreserveXor }
@@ -65,15 +100,22 @@ export class ReferralSystemModule {
   }
 
   /**
-   * Sets invited user to their referral if the account doesn’t have a referral yet.
-   * This extrinsic is paid by the special balance of the referral if the invited user doesn’t have a referral,
-   * otherwise the extrinsic fails and the fee is paid by the invited user
-   * @param referralId address of referral account
+   * Sets invited user to their referrer if the account doesn’t have a referrer yet.
+   * This extrinsic is paid by the bonded balance of the referrer if the invited user doesn’t have a referrer,
+   * otherwise the extrinsic fails and the fee is paid by the invited user. Also, if referrer doesn't have enough
+   * bonded balance for this call, then this method will fail.
+   * @param referrerId address of referrer account
    */
-  public async setInvitedUser(referralId: string): Promise<void> {
+  public async setInvitedUser(referrerId: string): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
-    const formattedToAddress = referralId.slice(0, 2) === 'cn' ? referralId : this.root.formatAddress(referralId);
-    await this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referralId), this.root.account.pair, {
+    // Check the ability for paying fee
+    const bondedData = await this.root.api.query.referrals.referrerBalances(referrerId);
+    const bonded = new FPNumber(bondedData || 0);
+    const requiredFeeValue = FPNumber.fromCodecValue(this.root.NetworkFee.ReferralSetInvitedUser || 0);
+    assert(FPNumber.gte(bonded, requiredFeeValue), Messages.inabilityOfReferrerToPayFee);
+
+    const formattedToAddress = referrerId.slice(0, 2) === 'cn' ? referrerId : this.root.formatAddress(referrerId);
+    return this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referrerId), this.root.account.pair, {
       to: formattedToAddress,
       type: Operation.ReferralSetInvitedUser,
     });

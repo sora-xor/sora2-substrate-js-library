@@ -32,7 +32,7 @@ This file should be located in "scripts" directory.\n\n`
     return [];
   }
   const accountDataArray = data.split(/\r?\n/).filter((item, index) => item && index);
-  const transferParams = [];
+  const transferParams: Array<any> = [];
   for (const accountData of accountDataArray) {
     const [_, toAddress, amount, symbolOrAssetId] = accountData.split(';');
     const asset = NativeAssets.get(symbolOrAssetId);
@@ -73,7 +73,7 @@ ______________________________________________________________\n`
   // Open connection & import account
   const usedEndpoint = endpoint.trim() || ENDPOINT;
   await connection.open(usedEndpoint);
-  api.initialize();
+  await api.initialize();
   console.log('Connected to:', usedEndpoint);
   // Get mnemonic seed
   const mnemonicSeed = await question(

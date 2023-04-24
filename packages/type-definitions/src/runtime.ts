@@ -13,21 +13,21 @@ export default {
     DEXId: 'u32',
     DEXIdOf: 'DEXId',
     DEXInfo: {
-      base_asset_id: 'AssetId',
-      default_fee: 'BasisPoints',
-      default_protocol_fee: 'BasisPoints',
+      baseAssetId: 'AssetId',
+      defaultFee: 'BasisPoints',
+      defaultProtocolFee: 'BasisPoints',
     },
     BalancePrecision: 'u8',
-    AssetSymbol: 'Vec<u8>',
-    AssetName: 'Vec<u8>',
+    AssetSymbol: 'Text',
+    AssetName: 'Text',
     AssetId32: '[u8; 32]',
     SwapWithDesiredInput: {
-      desired_amount_in: 'Balance',
-      min_amount_out: 'Balance',
+      desiredAmountIn: 'Balance',
+      minAmountOut: 'Balance',
     },
     SwapWithDesiredOutput: {
-      desired_amount_out: 'Balance',
-      max_amount_in: 'Balance',
+      desiredAmountOut: 'Balance',
+      maxAmountIn: 'Balance',
     },
     SwapAmount: {
       _enum: {
@@ -36,10 +36,10 @@ export default {
       },
     },
     QuoteWithDesiredInput: {
-      desired_amount_in: 'Balance',
+      desiredAmountIn: 'Balance',
     },
     QuoteWithDesiredOutput: {
-      desired_amount_out: 'Balance',
+      desiredAmountOut: 'Balance',
     },
     QuoteAmount: {
       _enum: {
@@ -76,8 +76,8 @@ export default {
       fee: 'Balance',
     },
     TradingPair: {
-      base_asset_id: 'AssetId',
-      target_asset_id: 'AssetId',
+      baseAssetId: 'AssetId',
+      targetAssetId: 'AssetId',
     },
     PermissionId: 'u32',
     HolderId: 'AccountId',
@@ -110,11 +110,11 @@ export default {
     MultiCurrencyBalanceOf: 'Null',
     Duration: 'Null',
     PostDispatchInfo: {
-      actual_weight: 'Option<Weight>',
-      pays_fee: 'Pays',
+      actualWeight: 'Option<Weight>',
+      paysFee: 'Pays',
     },
     DispatchErrorWithPostInfoTPostDispatchInfo: {
-      post_info: 'PostDispatchInfo',
+      postInfo: 'PostDispatchInfo',
       error: 'DispatchError',
     },
     DispatchResultWithPostInfo: 'Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>',
@@ -126,6 +126,16 @@ export default {
     MarketMakerInfo: {
       count: 'u32',
       volume: 'Balance',
+    },
+    CrowdloanReward: {
+      id: 'Vec<u8>',
+      address: 'Vec<u8>',
+      contribution: 'Fixed',
+      xorReward: 'Fixed',
+      valReward: 'Fixed',
+      pswapReward: 'Fixed',
+      xstusdReward: 'Fixed',
+      percent: 'Fixed',
     },
     PredefinedAssetId: {
       _enum: [
@@ -139,16 +149,18 @@ export default {
         'DAI',
         'ETH',
         'XSTUSD',
+        'XST',
+        'TBCD',
       ],
     },
     RewardInfo: {
       limit: 'Balance',
-      total_available: 'Balance',
+      totalAvailable: 'Balance',
       rewards: 'BTreeMap<RewardReason, Balance>',
     },
     TechTradingPair: {
-      base_asset_id: 'TechAssetId',
-      target_asset_id: 'TechAssetId',
+      baseAssetId: 'TechAssetId',
+      targetAssetId: 'TechAssetId',
     },
     TechAssetId: {
       _enum: {
@@ -173,11 +185,11 @@ export default {
       },
     },
     PriceInfo: {
-      price_failures: 'u32',
-      spot_prices: 'Vec<Balance>',
-      average_price: 'Balance',
-      needs_update: 'bool',
-      last_spot_price: 'Balance',
+      priceFailures: 'u32',
+      spotPrices: 'Vec<Balance>',
+      averagePrice: 'Balance',
+      needsUpdate: 'bool',
+      lastSpotPrice: 'Balance',
     },
     ContentSource: 'Text',
     Description: 'Text',

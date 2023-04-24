@@ -1,25 +1,28 @@
 import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
+import { Observable, Subscriber } from 'rxjs';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { Keyring } from '@polkadot/api';
+import { CodecString, FPNumber } from '@sora-substrate/math';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
-import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
+import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types';
+import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { AccountStorage, Storage } from './storage';
+import { DexId } from './dex/consts';
 import { XOR } from './assets/consts';
-import { CodecString, FPNumber } from './fp';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
 import type { RewardClaimHistory } from './rewards/types';
 import type { StakingHistory } from './staking/types';
 
-type AccountPairOrAddressWithOptions = {
+type AccountWithOptions = {
   account: AddressOrPair;
   options: Partial<SignerOptions>;
 };
@@ -29,11 +32,29 @@ export type SaveHistoryOptions = {
   toCurrentAccount?: boolean;
 };
 
+export type ErrorMessageFields = {
+  section: string;
+  name: string;
+};
+
 export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
 export type HistoryItem = History | BridgeHistory | RewardClaimHistory | StakingHistory;
+
+export type FnResult = void | Observable<ExtrinsicEvent>;
+
+export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & BridgeHistory & RewardClaimHistory];
+
+interface ISubmitExtrinsic<T> {
+  submitExtrinsic(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    signer: KeyringPair,
+    historyData?: HistoryItem,
+    unsigned?: boolean
+  ): Promise<T>;
+}
 
 export type AccountHistory<T> = {
   [key: string]: T;
@@ -42,12 +63,15 @@ export type AccountHistory<T> = {
 export const isBridgeOperation = (operation: Operation) =>
   [Operation.EthBridgeIncoming, Operation.EthBridgeOutgoing].includes(operation);
 
+export const isEvmOperation = (operation: Operation) =>
+  [Operation.EvmIncoming, Operation.EvmOutgoing].includes(operation);
+
 const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
 
 export const KeyringType = 'sr25519';
 
-export class BaseApi {
+export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   /**
    * Network fee values which can be used right after `calcStaticNetworkFees` method.
    *
@@ -64,24 +88,30 @@ export class BaseApi {
     [Operation.SwapAndSend]: '0',
     [Operation.Transfer]: '0',
     [Operation.ClaimVestedRewards]: '0',
+    [Operation.ClaimCrowdloanRewards]: '0',
     [Operation.ClaimLiquidityProvisionRewards]: '0',
     [Operation.ClaimExternalRewards]: '0',
     [Operation.ReferralReserveXor]: '0',
     [Operation.ReferralUnreserveXor]: '0',
     [Operation.ReferralSetInvitedUser]: '0',
+    [Operation.DemeterFarmingDepositLiquidity]: '0',
+    [Operation.DemeterFarmingWithdrawLiquidity]: '0',
+    [Operation.DemeterFarmingStakeToken]: '0',
+    [Operation.DemeterFarmingUnstakeToken]: '0',
+    [Operation.DemeterFarmingGetRewards]: '0',
+    [Operation.CeresLiquidityLockerLockLiquidity]: '0',
   } as NetworkFeesObject;
 
   protected readonly prefix = 69;
-  public readonly defaultDEXId = 0;
 
   private _history: AccountHistory<HistoryItem> = {};
-  private _historySyncTimestamp: number = 0;
-  private _restored: boolean = false;
 
   protected signer?: Signer;
   public storage?: Storage; // common data storage
   public accountStorage?: AccountStorage; // account data storage
   public account: CreateResult;
+  /** If `true` you might subscribe on extrinsic statuses */
+  public shouldObservableBeUsed = false;
 
   constructor(public readonly historyNamespace = 'history') {}
 
@@ -115,9 +145,9 @@ export class BaseApi {
   }
 
   public logout(): void {
-    this.account = null;
-    this.accountStorage = null;
-    this.signer = null;
+    this.account = undefined;
+    this.accountStorage = undefined;
+    this.signer = undefined;
     this.history = {};
     if (this.storage) {
       this.storage.clear();
@@ -135,7 +165,8 @@ export class BaseApi {
   // methods for working with history
   public get history(): AccountHistory<HistoryItem> {
     if (this.accountStorage) {
-      this._history = (JSON.parse(this.accountStorage.get(this.historyNamespace)) as AccountHistory<HistoryItem>) || {};
+      const history = this.accountStorage.get(this.historyNamespace);
+      this._history = history ? (JSON.parse(history) as AccountHistory<HistoryItem>) : {};
     }
     return this._history;
   }
@@ -147,30 +178,6 @@ export class BaseApi {
 
   public get historyList(): Array<HistoryItem> {
     return Object.values(this.history);
-  }
-
-  public get restored(): boolean {
-    if (this.accountStorage) {
-      this._restored = JSON.parse(this.accountStorage.get('restored')) || false;
-    }
-    return this._restored;
-  }
-
-  public set restored(value: boolean) {
-    this.accountStorage?.set('restored', JSON.stringify(value));
-    this._restored = value;
-  }
-
-  public get historySyncTimestamp(): number {
-    if (this.accountStorage) {
-      this._historySyncTimestamp = JSON.parse(this.accountStorage.get('historySyncTimestamp')) || 0;
-    }
-    return this._historySyncTimestamp;
-  }
-
-  public set historySyncTimestamp(value: number) {
-    this.accountStorage?.set('historySyncTimestamp', JSON.stringify(value));
-    this._historySyncTimestamp = value;
   }
 
   public getHistory(id: string): HistoryItem | null {
@@ -208,7 +215,8 @@ export class BaseApi {
 
     if (needToUpdateAddressStorage) {
       addressStorage = new AccountStorage(toHmacSHA256(historyItemFromAddress));
-      historyCopy = JSON.parse(addressStorage.get(this.historyNamespace)) || {};
+      const history = addressStorage.get(this.historyNamespace);
+      historyCopy = history ? JSON.parse(history) : {};
     } else {
       historyCopy = { ...this.history };
     }
@@ -248,6 +256,23 @@ export class BaseApi {
   }
 
   /**
+   * Unlock pair to sign tx
+   * @param password
+   */
+  public unlockPair(password: string): void {
+    this.account.pair.unlock(password);
+  }
+
+  /**
+   * Lock pair
+   */
+  public lockPair(): void {
+    if (!this.account.pair?.isLocked) {
+      this.account.pair.lock();
+    }
+  }
+
+  /**
    * Set signer if the pair is locked (For polkadot js extension usage)
    * @param signer
    */
@@ -264,21 +289,19 @@ export class BaseApi {
     this.storage = storage;
   }
 
-  private getAccountPairOrAddressWithOptions(keyringPair?: KeyringPair): AccountPairOrAddressWithOptions {
-    const pair = keyringPair ?? this.accountPair;
-
+  private getAccountWithOptions(): AccountWithOptions {
     return {
-      account: pair.isLocked ? pair.address : pair,
+      account: this.accountPair.isLocked ? this.accountPair.address : this.accountPair,
       options: { signer: this.signer },
     };
   }
 
   public async submitExtrinsic(
-    extrinsic: SubmittableExtrinsic,
+    extrinsic: SubmittableExtrinsic<'promise'>,
     signer: KeyringPair,
     historyData?: HistoryItem,
     unsigned = false
-  ): Promise<void> {
+  ): Promise<T> {
     const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
     if (isNotFaucetOperation && signer) {
@@ -286,10 +309,12 @@ export class BaseApi {
     }
 
     const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
-    const { account, options } = this.getAccountPairOrAddressWithOptions(signer);
-    // TODO: Add ERA only for SWAP
-    // Check how to add ONLY as immortal era
+    const { account, options } = this.getAccountWithOptions();
+    // Signing the transaction
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
+
+    // we should lock pair, if it's not locked
+    this.lockPair();
 
     history.txId = signedTx.hash.toString();
 
@@ -299,67 +324,83 @@ export class BaseApi {
       history.id = history.txId;
     }
 
-    const extrinsicFn = (callbackFn: (result: ISubmittableResult) => void) => extrinsic.send(callbackFn);
-    const unsub = await extrinsicFn((result: ISubmittableResult) => {
-      if (isBridgeOperation(history.type)) {
-        history.signed = true;
-      }
-      history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
-      this.saveHistory(history);
-      if (result.status.isInBlock) {
-        history.blockId = result.status.asInBlock.toString();
-        this.saveHistory(history);
-      } else if (result.status.isFinalized) {
-        history.endTime = Date.now();
-        this.saveHistory(history);
-        result.events.forEach(({ event: { data, method, section } }: any) => {
-          if (method === 'Transferred' && section === 'currencies' && isLiquidityPoolOperation(history.type)) {
-            const [assetId, from, to, amount] = data;
-
-            const address = assetId.toString();
-            const amountFormatted = new FPNumber(amount).toString();
-            const amountKey = XOR.address === address ? 'amount' : 'amount2';
-
-            history[amountKey] = amountFormatted;
-            this.saveHistory(history);
-          }
-
-          if (method === 'RequestRegistered' && isBridgeOperation(history.type)) {
-            history.hash = first(data.toJSON());
-            this.saveHistory(history);
-          }
-          if (section === 'system' && method === 'ExtrinsicFailed') {
-            history.status = TransactionStatus.Error;
+    const extrinsicFn = async (subscriber?: Subscriber<ExtrinsicEvent>) => {
+      const unsub = await extrinsic
+        .send((result: ISubmittableResult) => {
+          history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
+          if (result.status.isInBlock) {
+            history.blockId = result.status.asInBlock.toString();
+            subscriber?.next(['inblock', history]);
+          } else if (result.status.isFinalized) {
             history.endTime = Date.now();
-            const [error] = data;
-            if (error.isModule) {
-              const decoded = this.api.registry.findMetaError(error.asModule);
-              const { documentation } = decoded;
-              history.errorMessage = documentation.join(' ').trim();
-            } else {
-              // Other, CannotLookup, BadOrigin, no extra info
-              history.errorMessage = error.toString();
-            }
-            this.saveHistory(history);
+            result.events.forEach(({ event: { data, method, section } }: any) => {
+              if (method === 'FeeWithdrawn' && section === 'xorFee') {
+                const [_, soraNetworkFee] = data;
+                history.soraNetworkFee = soraNetworkFee.toString();
+              } else if (method === 'AssetRegistered' && section === 'assets') {
+                const [assetId, _] = data;
+                history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+              } else if (
+                method === 'Transfer' &&
+                ['balances', 'tokens'].includes(section) &&
+                isLiquidityPoolOperation(history.type)
+              ) {
+                // balances.Transfer hasn't assetId field
+                const [amount, to, from, assetId] = data.slice().reverse();
+                const amountFormatted = new FPNumber(amount).toString();
+                // events for 1st token and 2nd token are ordered in extrinsic
+                const amountKey = !history.amount ? 'amount' : 'amount2';
+                history[amountKey] = amountFormatted;
+              } else if (
+                (method === 'RequestRegistered' && isBridgeOperation(history.type)) ||
+                (method === 'RequestStatusUpdate' && isEvmOperation(history.type))
+              ) {
+                history.hash = first(data.toJSON());
+              } else if (section === 'system' && method === 'ExtrinsicFailed') {
+                history.status = TransactionStatus.Error;
+                history.endTime = Date.now();
+                const [error] = data;
+                if (error.isModule) {
+                  const decoded = this.api.registry.findMetaError(error.asModule);
+                  const { docs, section, name } = decoded;
+                  history.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
+                } else {
+                  // Other, CannotLookup, BadOrigin, no extra info
+                  history.errorMessage = error.toString();
+                }
+              }
+            });
+            const state = history.status === TransactionStatus.Error ? 'error' : 'finalized';
+            subscriber?.next([state, history]);
+            subscriber?.complete();
+            unsub();
           }
+          this.saveHistory(history); // Save history during each status update
+        })
+        .catch((e: Error) => {
+          // override history 'id' to 'startTime', because we will delete history 'txId' below
+          history.id = this.encrypt(`${history.startTime}`);
+          history.status = TransactionStatus.Error;
+          history.endTime = Date.now();
+          const errorParts = e?.message?.split(':');
+          const errorInfo = last(errorParts)?.trim();
+          history.errorMessage = errorInfo;
+          // at the moment the history has not yet been saved;
+          // save history and then delete 'txId'
+          this.saveHistory(history, {
+            wasNotGenerated: true,
+          });
+          subscriber?.next(['error', history]);
+          subscriber?.complete();
+          throw new Error(errorInfo);
         });
-        unsub();
-      }
-    }).catch((e: Error) => {
-      // override history 'id' to 'startTime', because we will delete history 'txId' below
-      history.id = this.encrypt(`${history.startTime}`);
-      history.status = TransactionStatus.Error;
-      history.endTime = Date.now();
-      const errorParts = e.message.split(':');
-      const errorInfo = last(errorParts).trim();
-      history.errorMessage = errorInfo;
-      // at the moment the history has not yet been saved;
-      // save history and then delete 'txId'
-      this.saveHistory(history, {
-        wasNotGenerated: true,
-      });
-      throw new Error(errorInfo);
-    });
+    };
+    if (this.shouldObservableBeUsed) {
+      return new Observable<ExtrinsicEvent>((subscriber) => {
+        extrinsicFn(subscriber);
+      }) as unknown as T; // T is `Observable<ExtrinsicEvent>` here
+    }
+    return extrinsicFn() as unknown as Promise<T>; // T is `void` here
   }
 
   /**
@@ -369,8 +410,8 @@ export class BaseApi {
    * @returns value * 10 ^ decimals
    */
   public async getNetworkFee(type: Operation, ...params: Array<any>): Promise<CodecString> {
-    let extrinsicParams = params;
-    let extrinsic = null;
+    let extrinsicParams: any = params;
+    let extrinsic: any = null;
     switch (type) {
       case Operation.Transfer:
         extrinsic = this.api.tx.assets.transfer;
@@ -379,18 +420,18 @@ export class BaseApi {
         extrinsic = this.api.tx.liquidityProxy.swap;
         break;
       case Operation.AddLiquidity:
-        extrinsic = this.api.tx.poolXyk.depositLiquidity;
+        extrinsic = this.api.tx.poolXYK.depositLiquidity;
         break;
       case Operation.RemoveLiquidity:
-        extrinsic = this.api.tx.poolXyk.withdrawLiquidity;
+        extrinsic = this.api.tx.poolXYK.withdrawLiquidity;
         break;
       case Operation.CreatePair:
         extrinsic = this.api.tx.utility.batchAll;
         extrinsicParams = [
           [
             (this.api.tx.tradingPair as any).register(...params[0].pairCreationArgs),
-            this.api.tx.poolXyk.initializePool(...params[0].pairCreationArgs),
-            this.api.tx.poolXyk.depositLiquidity(...params[0].addLiquidityArgs),
+            (this.api.tx.poolXYK as any).initializePool(...params[0].pairCreationArgs),
+            (this.api.tx.poolXYK as any).depositLiquidity(...params[0].addLiquidityArgs),
           ],
         ];
         break;
@@ -412,13 +453,7 @@ export class BaseApi {
         extrinsicParams = null;
         break;
       case Operation.SwapAndSend:
-        extrinsic = this.api.tx.utility.batchAll;
-        extrinsicParams = [
-          [
-            (this.api.tx.liquidityProxy as any).swap(...params[0].args),
-            (this.api.tx.assets as any).transfer(...params[0].transferArgs),
-          ],
-        ];
+        extrinsic = this.api.tx.liquidityProxy.swapTransfer;
         break;
       case Operation.ReferralReserveXor:
         extrinsic = this.api.tx.referrals.reserve;
@@ -429,11 +464,26 @@ export class BaseApi {
       case Operation.ReferralSetInvitedUser:
         extrinsic = this.api.tx.referrals.setReferrer;
         break;
+      case Operation.DemeterFarmingDepositLiquidity:
+      case Operation.DemeterFarmingStakeToken:
+        extrinsic = this.api.tx.demeterFarmingPlatform.deposit;
+        break;
+      case Operation.DemeterFarmingWithdrawLiquidity:
+      case Operation.DemeterFarmingUnstakeToken:
+        extrinsic = this.api.tx.demeterFarmingPlatform.withdraw;
+        break;
+      case Operation.DemeterFarmingGetRewards:
+        extrinsic = this.api.tx.demeterFarmingPlatform.getRewards;
+        break;
+      case Operation.CeresLiquidityLockerLockLiquidity:
+        extrinsic = this.api.tx.ceresLiquidityLocker.lockLiquidity;
+        break;
       default:
         throw new Error('Unknown function');
     }
-    const { account, options } = this.getAccountPairOrAddressWithOptions();
-    const tx = type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic);
+    const { account, options } = this.getAccountWithOptions();
+    const tx =
+      type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic<'promise'>);
     const res = await tx.paymentInfo(account, options);
     return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
   }
@@ -444,15 +494,15 @@ export class BaseApi {
    * Actually, network fee value doesn't depend on extrinsic params, so, we can use empty/default values
    * @param operation
    */
-  private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic | null {
+  private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic<'promise'> | null {
     switch (operation) {
       case Operation.AddLiquidity:
-        return this.api.tx.poolXyk.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0');
+        return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0');
       case Operation.CreatePair:
         return this.api.tx.utility.batchAll([
-          this.api.tx.tradingPair.register(this.defaultDEXId, '', ''),
-          this.api.tx.poolXyk.initializePool(this.defaultDEXId, '', ''),
-          this.api.tx.poolXyk.depositLiquidity(this.defaultDEXId, '', '', '0', '0', '0', '0'),
+          this.api.tx.tradingPair.register(DexId.XOR, '', ''),
+          this.api.tx.poolXYK.initializePool(DexId.XOR, '', ''),
+          this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0'),
         ]);
       case Operation.EthBridgeIncoming:
         return this.api.tx.ethBridge.requestFromSidechain('', { Transaction: 'Transfer' }, 0);
@@ -461,32 +511,32 @@ export class BaseApi {
       case Operation.RegisterAsset:
         return this.api.tx.assets.register('', '', '0', false, false, null, null);
       case Operation.RemoveLiquidity:
-        return this.api.tx.poolXyk.withdrawLiquidity(this.defaultDEXId, '', '', '0', '0', '0');
+        return this.api.tx.poolXYK.withdrawLiquidity(DexId.XOR, '', '', '0', '0', '0');
       case Operation.Swap:
         return this.api.tx.liquidityProxy.swap(
-          this.defaultDEXId,
+          DexId.XOR,
           '',
           '',
-          { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } },
+          { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
           [],
           'Disabled'
         );
       case Operation.SwapAndSend:
-        return this.api.tx.utility.batchAll([
-          this.api.tx.liquidityProxy.swap(
-            this.defaultDEXId,
-            '',
-            '',
-            { WithDesiredInput: { desired_amount_in: '0', min_amount_out: '0' } },
-            [],
-            'Disabled'
-          ),
-          this.api.tx.assets.transfer('', '', '0'),
-        ]);
+        return this.api.tx.liquidityProxy.swapTransfer(
+          '',
+          DexId.XOR,
+          '',
+          '',
+          { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
+          [],
+          'Disabled'
+        );
       case Operation.Transfer:
         return this.api.tx.assets.transfer('', '', '0');
       case Operation.ClaimVestedRewards:
         return this.api.tx.vestedRewards.claimRewards();
+      case Operation.ClaimCrowdloanRewards:
+        return this.api.tx.vestedRewards.claimCrowdloanRewards(XOR.address);
       case Operation.ClaimLiquidityProvisionRewards:
         return this.api.tx.pswapDistribution.claimIncentive();
       case Operation.ClaimExternalRewards:
@@ -499,6 +549,18 @@ export class BaseApi {
         return this.api.tx.referrals.unreserve('0');
       case Operation.ReferralSetInvitedUser:
         return this.api.tx.referrals.setReferrer('');
+      case Operation.DemeterFarmingDepositLiquidity:
+        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, XOR.address, true, 0);
+      case Operation.DemeterFarmingWithdrawLiquidity:
+        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, XOR.address, 0, true);
+      case Operation.DemeterFarmingStakeToken:
+        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, XOR.address, false, 0);
+      case Operation.DemeterFarmingUnstakeToken:
+        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, XOR.address, 0, false);
+      case Operation.DemeterFarmingGetRewards:
+        return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, XOR.address, true);
+      case Operation.CeresLiquidityLockerLockLiquidity:
+        return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
       default:
         return null;
     }
@@ -521,11 +583,18 @@ export class BaseApi {
       Operation.SwapAndSend,
       Operation.Transfer,
       Operation.ClaimVestedRewards,
+      Operation.ClaimCrowdloanRewards,
       Operation.ClaimLiquidityProvisionRewards,
       Operation.ClaimExternalRewards,
       Operation.ReferralReserveXor,
       Operation.ReferralUnreserveXor,
       Operation.ReferralSetInvitedUser,
+      Operation.DemeterFarmingDepositLiquidity,
+      Operation.DemeterFarmingWithdrawLiquidity,
+      Operation.DemeterFarmingStakeToken,
+      Operation.DemeterFarmingUnstakeToken,
+      Operation.DemeterFarmingGetRewards,
+      Operation.CeresLiquidityLockerLockLiquidity,
     ];
     // We don't need to know real account address for checking network fees
     const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
@@ -622,9 +691,13 @@ export enum Operation {
   RegisterAsset = 'RegisterAsset',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
+  EvmOutgoing = 'EvmOutgoing',
+  EvmIncoming = 'EvmIncoming',
   ClaimRewards = 'ClaimRewards',
   /** it's used for calc network fee */
   ClaimVestedRewards = 'ClaimVestedRewards',
+  /** it's used for calc network fee */
+  ClaimCrowdloanRewards = 'ClaimCrowdloanRewards',
   /** it's used for calc network fee */
   ClaimLiquidityProvisionRewards = 'LiquidityProvisionRewards',
   /** it's used for calc network fee */
@@ -635,6 +708,7 @@ export enum Operation {
   ReferralReserveXor = 'ReferralReserveXor',
   ReferralUnreserveXor = 'ReferralUnreserveXor',
   ReferralSetInvitedUser = 'ReferralSetInvitedUser',
+  /** Staking */
   StakingBond = 'StakingBond',
   StakingBondExtra = 'StakingBondExtra',
   StakingRebond = 'StakingRebond',
@@ -645,6 +719,14 @@ export enum Operation {
   StakingSetPayee = 'StakingSetPayee',
   StakingSetController = 'StakingSetController',
   StakingPayout = 'StakingPayout',
+  /** Demeter Farming Platform  */
+  DemeterFarmingDepositLiquidity = 'DemeterFarmingDepositLiquidity',
+  DemeterFarmingWithdrawLiquidity = 'DemeterFarmingWithdrawLiquidity',
+  DemeterFarmingStakeToken = 'DemeterFarmingStakeToken',
+  DemeterFarmingUnstakeToken = 'DemeterFarmingUnstakeToken',
+  DemeterFarmingGetRewards = 'DemeterFarmingGetRewards',
+  /** Ceres Liquidity Locker  */
+  CeresLiquidityLockerLockLiquidity = 'CeresLiquidityLockerLockLiquidity',
 }
 
 export interface History {
@@ -666,7 +748,7 @@ export interface History {
   endTime?: number;
   from?: string;
   status?: string;
-  errorMessage?: string;
+  errorMessage?: ErrorMessageFields | string;
   liquiditySource?: string;
   liquidityProviderFee?: CodecString;
   soraNetworkFee?: CodecString;

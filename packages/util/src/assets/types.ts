@@ -1,4 +1,4 @@
-import type { CodecString } from '../fp';
+import type { CodecString } from '@sora-substrate/math';
 
 export interface WhitelistItem {
   symbol: string;
@@ -15,6 +15,10 @@ export type Whitelist = {
   [key: string]: WhitelistItem;
 };
 
+export type WhitelistIdsBySymbol = { [key: string]: string };
+
+export type Blacklist = Array<string>;
+
 /**
  * Account Balance structure. Each value === value * 10 ^ decimals
  *
@@ -24,7 +28,7 @@ export type Whitelist = {
  *
  * transferable = free - locked
  *
- * frozen = locked + reserved
+ * frozen = locked + reserved + bonded
  */
 export interface AccountBalance {
   reserved: CodecString;
@@ -35,7 +39,7 @@ export interface AccountBalance {
   bonded: CodecString;
 }
 
-interface AssetBase {
+export interface Asset {
   address: string;
   symbol: string;
   name: string;
@@ -44,10 +48,6 @@ interface AssetBase {
   description?: string;
 }
 
-export interface Asset extends AssetBase {
-  totalSupply?: string;
-}
-
-export interface AccountAsset extends AssetBase {
+export interface AccountAsset extends Asset {
   balance: AccountBalance;
 }

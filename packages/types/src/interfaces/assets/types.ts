@@ -1,16 +1,16 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Null, Struct, Text, bool, u8 } from '@polkadot/types';
+import type { Null, Struct, Text, bool, u8 } from '@polkadot/types-codec';
 import type { AssetId, Balance } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name AssetInfo */
 export interface AssetInfo extends Struct {
-  readonly asset_id: AssetId;
+  readonly assetId: AssetId;
   readonly symbol: AssetSymbolStr;
   readonly name: AssetNameStr;
   readonly precision: u8;
-  readonly is_mintable: bool;
+  readonly isMintable: bool;
 }
 
 /** @name AssetNameStr */

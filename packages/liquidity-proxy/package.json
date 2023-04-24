@@ -1,0 +1,13 @@
+{
+  "name": "@sora-substrate/liquidity-proxy",
+  "version": "1.17.1",
+  "license": "Apache-2.0",
+  "main": "./build/index.js",
+  "typings": "./build/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@sora-substrate/math": "1.17.1"
+  }
+}

@@ -1,22 +1,35 @@
 {
   "extends": "./node_modules/@polkadot/dev/config/tsconfig",
   "compilerOptions": {
+    "module": "none",
+    "moduleResolution": "node",
     "strict": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "noImplicitOverride": false,
+    "noImplicitThis": false,
+    "alwaysStrict": false,
+    "strictNullChecks": false,
+    "noFallthroughCasesInSwitch": false,
+    "emitDeclarationOnly": false,
     "noImplicitAny": false,
     "noUnusedLocals": false,
     "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
+      "@polkadot/types/lookup": ["packages/types/src/interfaces/types-lookup.ts"],
       "@sora-substrate/api": ["packages/api/src"],
       "@sora-substrate/api/*": ["packages/api/src/*"],
-      "@sora-substrate/api-derive": ["packages/api-derive/src"],
-      "@sora-substrate/api-derive/*": ["packages/api-derive/src/*"],
       "@sora-substrate/types": ["packages/types/src"],
       "@sora-substrate/types/*": ["packages/types/src/*"],
       "@sora-substrate/type-definitions": ["packages/type-definitions/src"],
       "@sora-substrate/type-definitions/*": ["packages/type-definitions/src/*"],
       "@sora-substrate/util": ["packages/util/src"],
-      "@sora-substrate/util/*": ["packages/util/src/*"]
+      "@sora-substrate/util/*": ["packages/util/src/*"],
+      "@sora-substrate/math": ["packages/math/src"],
+      "@sora-substrate/math/*": ["packages/math/src/*"],
+      "@sora-substrate/liquidity-proxy": ["packages/liquidity-proxy/src"],
+      "@sora-substrate/liquidity-proxy/*": ["packages/liquidity-proxy/src/*"]
     },
     "skipLibCheck": true,
     "typeRoots": ["./node_modules/@polkadot/ts", "./node_modules/@types"]

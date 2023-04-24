@@ -1,7 +1,11 @@
+import type { CodecString } from '@sora-substrate/math';
+
 import type { Asset } from '../assets/types';
-import type { CodecString } from '../fp';
-import type { RewardingEvents, RewardReason } from './consts';
+import type { RewardingEvents, RewardType } from './consts';
 import type { History } from '../BaseApi';
+
+// for tagged crowdloans
+export type RewardTypedEvent = [RewardType, RewardingEvents | string];
 
 export interface RewardsInfo {
   limit: CodecString;
@@ -10,23 +14,13 @@ export interface RewardsInfo {
 }
 
 export interface RewardInfo {
-  type: RewardingEvents;
+  type: RewardTypedEvent;
   asset: Asset;
   amount: CodecString;
-}
-
-export interface LPRewardsInfo {
-  amount: CodecString;
-  currency: string;
-  reason: RewardReason;
+  total?: CodecString;
 }
 
 export interface RewardClaimHistory extends History {
   externalAddress?: string;
   rewards?: Array<RewardInfo | RewardsInfo>;
-}
-
-export interface AccountMarketMakerInfo {
-  count: number;
-  volume: CodecString;
 }

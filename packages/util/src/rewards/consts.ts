@@ -1,15 +1,21 @@
 export enum RewardingEvents {
+  // Strategic
+  LiquidityProvision = 'LiquidityProvision',
+  // Externals
   XorErc20 = 'XorErc20',
   SoraFarmHarvest = 'SoraFarmHarvest',
   NftAirdrop = 'NftAirdrop',
-  LiquidityProvision = 'LiquidityProvision',
+  // Strategic
   BuyOnBondingCurve = 'BuyOnBondingCurve',
   LiquidityProvisionFarming = 'LiquidityProvisionFarming',
   MarketMakerVolume = 'MarketMakerVolume',
+
   Unspecified = 'Unspecified',
 }
 
-export enum RewardReason {
-  Unspecified = 'Unspecified',
-  BuyOnBondingCurve = 'BuyOnBondingCurve',
+export enum RewardType {
+  Provision = 'Provision',
+  Strategic = 'Strategic',
+  Crowdloan = 'Crowdloan',
+  External = 'External',
 }

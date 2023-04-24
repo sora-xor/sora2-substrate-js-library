@@ -1,15 +1,17 @@
+import { assert } from '@polkadot/util';
 import keyring from '@polkadot/ui-keyring';
+import { NumberLike, FPNumber } from '@sora-substrate/math';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 
 import { BaseApi, Operation, KeyringType } from './BaseApi';
 import { getBalance } from './assets';
-import { FPNumber, NumberLike } from './fp';
 import { KnownAssets } from './assets/consts';
+import { Messages } from './logger';
 
 /**
  * Contains all necessary data and functions for the faucet
  */
-export class FaucetApi extends BaseApi {
+export class FaucetApi<T = void> extends BaseApi<T> {
   private readonly fausetSignerSeed = 'fuel start grant tackle void tree unusual teach grocery jar pulp weird';
   private readonly faucetSignerName = 'Faucet Signer';
   private readonly faucetSignerPassword = 'qwaszx';
@@ -43,10 +45,11 @@ export class FaucetApi extends BaseApi {
     return new FPNumber(result, asset.decimals).toCodecString();
   }
 
-  public async send(assetAddress: string, accountAddress: string, amount: NumberLike): Promise<void> {
+  public send(assetAddress: string, accountAddress: string, amount: NumberLike): Promise<T> {
+    assert(!!this.faucetSigner, Messages.connectWallet);
     const asset = KnownAssets.get(assetAddress);
     // For now it will be signed transaction with the fake account
-    await this.submitExtrinsic(
+    return this.submitExtrinsic(
       this.api.tx.faucet.transfer(assetAddress, accountAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.faucetSigner.pair,
       { type: Operation.Faucet, amount: `${amount}`, symbol: asset.symbol, from: accountAddress }

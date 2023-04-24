@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Struct } from '@polkadot/types';
+import type { Struct } from '@polkadot/types-codec';
 import type { Balance } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name StakingInfo */

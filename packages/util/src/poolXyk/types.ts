@@ -1,4 +1,4 @@
-import type { CodecString } from '../fp';
+import type { CodecString } from '@sora-substrate/math';
 
 export interface AccountLiquidity {
   address: string;
@@ -11,5 +11,8 @@ export interface AccountLiquidity {
   secondAddress: string;
   firstBalance: CodecString; // value * 10 ^ decimals
   secondBalance: CodecString; // value * 10 ^ decimals
-  poolShare: string; // Formatted value
+  poolShare: string;
+  reserveA: CodecString;
+  reserveB: CodecString;
+  totalSupply: CodecString;
 }

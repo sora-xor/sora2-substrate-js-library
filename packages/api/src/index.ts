@@ -1,5 +1,4 @@
 import { derive as ormlDerives } from '@open-web3/orml-api-derive';
-import { derive as soraDerives } from '@sora-substrate/api-derive';
 
 import {
   rpc as soraRpc,
@@ -7,7 +6,7 @@ import {
   typesAlias as soraTypesAlias,
   typesBundle as soraTypesBundle,
 } from '@sora-substrate/types';
-import { ApiOptions } from '@polkadot/api/types';
+import type { ApiOptions } from '@polkadot/api/types';
 
 export const defaultOptions: ApiOptions = {
   types: soraTypes,
@@ -35,7 +34,6 @@ export const options = ({
   },
   derives: {
     ...ormlDerives,
-    ...soraDerives,
   },
   typesBundle: {
     ...typesBundle,

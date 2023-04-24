@@ -1,0 +1,98 @@
+import type { FPNumber, CodecString } from '@sora-substrate/math';
+import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
+
+export type PrimaryMarketsEnabledAssets = {
+  tbc: string[];
+  xst: Record<
+    string,
+    {
+      referenceSymbol: string;
+      feeRatio: FPNumber;
+    }
+  >;
+  lockedSources: Array<LiquiditySourceTypes>;
+};
+
+export interface LPRewardsInfo {
+  amount: CodecString;
+  currency: string;
+  reason: RewardReason;
+}
+
+export type Distribution = {
+  input: string;
+  output: string;
+  market: LiquiditySourceTypes;
+  income: FPNumber;
+  outcome: FPNumber;
+  fee: FPNumber;
+};
+
+export type QuoteIntermediate = {
+  amount: FPNumber;
+  fee: FPNumber;
+  rewards: LPRewardsInfo[];
+  route: string[];
+  amountWithoutImpact: FPNumber;
+  distribution: Distribution[][];
+};
+
+export interface SwapResult {
+  amount: CodecString;
+  fee: CodecString;
+  rewards: LPRewardsInfo[];
+  route?: string[];
+  amountWithoutImpact?: CodecString;
+  distribution?: Distribution[][];
+}
+
+export type QuotePaths = {
+  [key: string]: Array<LiquiditySourceTypes>;
+};
+
+export type QuotePayload = {
+  rates: Record<string, { value: CodecString; lastUpdated: number }>;
+  reserves: {
+    xyk: {
+      [key: string]: [CodecString, CodecString];
+    };
+    tbc: {
+      [key: string]: CodecString;
+    };
+  };
+  prices: {
+    [key: string]: {
+      [PriceVariant.Buy]: CodecString;
+      [PriceVariant.Sell]: CodecString;
+    };
+  };
+  issuances: {
+    [key: string]: CodecString;
+  };
+  consts: {
+    tbc: {
+      initialPrice: CodecString;
+      priceChangeStep: CodecString;
+      priceChangeRate: CodecString;
+      sellPriceCoefficient: CodecString;
+      referenceAsset: string;
+    };
+    xst: {
+      floorPrice: CodecString;
+      referenceAsset: string;
+    };
+  };
+  lockedSources: Array<LiquiditySourceTypes>;
+};
+
+export type QuoteResult = {
+  amount: FPNumber;
+  fee: FPNumber;
+  distribution: Array<Distribution>;
+  rewards: Array<LPRewardsInfo>;
+};
+
+export type PathsAndPairLiquiditySources = {
+  paths: QuotePaths;
+  liquiditySources: Array<LiquiditySourceTypes>;
+};

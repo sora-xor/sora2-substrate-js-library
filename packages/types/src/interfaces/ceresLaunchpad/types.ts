@@ -1,43 +1,59 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Struct, bool, u32 } from '@polkadot/types';
-import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
-import type { AccountId, Balance, BlockNumber } from '@sora-substrate/types/interfaces/runtime';
+import type { Struct, bool, u32 } from '@polkadot/types-codec';
+import type { AccountId, AssetId, Balance, Moment } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name ContributionInfo */
 export interface ContributionInfo extends Struct {
-  readonly funds_contributed: Balance;
-  readonly tokens_bought: Balance;
-  readonly tokens_claimed: Balance;
-  readonly claiming_finished: bool;
-  readonly number_of_claims: u32;
+  readonly fundsContributed: Balance;
+  readonly tokensBought: Balance;
+  readonly tokensClaimed: Balance;
+  readonly claimingFinished: bool;
+  readonly numberOfClaims: u32;
+}
+
+/** @name ContributorsVesting */
+export interface ContributorsVesting extends Struct {
+  readonly firstReleasePercent: Balance;
+  readonly vestingPeriod: Moment;
+  readonly vestingPercent: Balance;
 }
 
 /** @name ILOInfo */
 export interface ILOInfo extends Struct {
-  readonly ilo_organizer: AccountId;
-  readonly tokens_for_ilo: Balance;
-  readonly tokens_for_liquidity: Balance;
-  readonly ilo_price: Balance;
-  readonly soft_cap: Balance;
-  readonly hard_cap: Balance;
-  readonly min_contribution: Balance;
-  readonly max_contribution: Balance;
-  readonly refund_type: bool;
-  readonly liquidity_percent: Balance;
-  readonly listing_price: Balance;
-  readonly lockup_days: u32;
-  readonly start_block: BlockNumber;
-  readonly end_block: BlockNumber;
-  readonly token_vesting: VestingInfo;
-  readonly sold_tokens: Balance;
-  readonly funds_raised: Balance;
+  readonly iloOrganizer: AccountId;
+  readonly tokensForIlo: Balance;
+  readonly tokensForLiquidity: Balance;
+  readonly iloPrice: Balance;
+  readonly softCap: Balance;
+  readonly hardCap: Balance;
+  readonly minContribution: Balance;
+  readonly maxContribution: Balance;
+  readonly refundType: bool;
+  readonly liquidityPercent: Balance;
+  readonly listingPrice: Balance;
+  readonly lockupDays: u32;
+  readonly startTimestamp: Moment;
+  readonly endTimestamp: Moment;
+  readonly contributorsVesting: ContributorsVesting;
+  readonly teamVesting: TeamVesting;
+  readonly soldTokens: Balance;
+  readonly fundsRaised: Balance;
   readonly succeeded: bool;
   readonly failed: bool;
-  readonly lp_tokens: Balance;
-  readonly claimed_lp_tokens: bool;
-  readonly finish_block: BlockNumber;
+  readonly lpTokens: Balance;
+  readonly claimedLpTokens: bool;
+  readonly finishTimestamp: Moment;
+  readonly baseAsset: AssetId;
+}
+
+/** @name TeamVesting */
+export interface TeamVesting extends Struct {
+  readonly teamVestingTotalTokens: Balance;
+  readonly teamVestingFirstReleasePercent: Balance;
+  readonly teamVestingPeriod: Moment;
+  readonly teamVestingPercent: Balance;
 }
 
 export type PHANTOM_CERESLAUNCHPAD = 'ceresLaunchpad';
