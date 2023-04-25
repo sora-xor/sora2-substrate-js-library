@@ -703,11 +703,13 @@ declare module '@polkadot/types/lookup' {
     readonly isFeeCollector: boolean;
     readonly isFeeCollectorForPair: boolean;
     readonly asFeeCollectorForPair: CommonPrimitivesTradingPairTechAssetId;
-    readonly isLiquidityKeeper: boolean;
-    readonly asLiquidityKeeper: CommonPrimitivesTradingPairTechAssetId;
+    readonly isXykLiquidityKeeper: boolean;
+    readonly asXykLiquidityKeeper: CommonPrimitivesTradingPairTechAssetId;
     readonly isIdentifier: boolean;
     readonly asIdentifier: Bytes;
-    readonly type: 'FeeCollector' | 'FeeCollectorForPair' | 'LiquidityKeeper' | 'Identifier';
+    readonly isOrderBookLiquidityKeeper: boolean;
+    readonly asOrderBookLiquidityKeeper: CommonPrimitivesTradingPairTechAssetId;
+    readonly type: 'FeeCollector' | 'FeeCollectorForPair' | 'XykLiquidityKeeper' | 'Identifier' | 'OrderBookLiquidityKeeper';
   }
 
   /** @name CommonPrimitivesTradingPairTechAssetId (85) */
@@ -4141,6 +4143,7 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isDeleteOrderbook: boolean;
     readonly asDeleteOrderbook: {
+      readonly dexId: u32;
       readonly orderBookId: CommonPrimitivesTradingPairAssetId32;
     } & Struct;
     readonly isUpdateOrderbook: boolean;

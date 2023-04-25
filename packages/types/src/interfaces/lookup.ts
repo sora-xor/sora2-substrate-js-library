@@ -643,8 +643,9 @@ export default {
     _enum: {
       FeeCollector: 'Null',
       FeeCollectorForPair: 'CommonPrimitivesTradingPairTechAssetId',
-      LiquidityKeeper: 'CommonPrimitivesTradingPairTechAssetId',
-      Identifier: 'Bytes'
+      XykLiquidityKeeper: 'CommonPrimitivesTradingPairTechAssetId',
+      Identifier: 'Bytes',
+      OrderBookLiquidityKeeper: 'CommonPrimitivesTradingPairTechAssetId'
     }
   },
   /**
@@ -3990,6 +3991,7 @@ export default {
         orderBookId: 'CommonPrimitivesTradingPairAssetId32',
       },
       delete_orderbook: {
+        dexId: 'u32',
         orderBookId: 'CommonPrimitivesTradingPairAssetId32',
       },
       update_orderbook: {
