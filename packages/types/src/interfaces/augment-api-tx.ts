@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, Bytes, Compact, Option, Result, Text, U256, U8aFixed, Vec, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BeefyLightClientProvedSubstrateBridgeMessage, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeTypesAssetKind, BridgeTypesEthashproofDoubleNodeWithMerkleProof, BridgeTypesEthashproofMixNonce, BridgeTypesGenericAccount, BridgeTypesGenericNetworkId, BridgeTypesHeader, BridgeTypesMessage, BridgeTypesNetworkConfig, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, HermesGovernancePlatformVotingOption, LiquidityProxySwapBatchInfo, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeMultiSignature, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BeefyLightClientProvedSubstrateBridgeMessage, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeTypesAssetKind, BridgeTypesEthashproofDoubleNodeWithMerkleProof, BridgeTypesEthashproofMixNonce, BridgeTypesGenericAccount, BridgeTypesGenericNetworkId, BridgeTypesHeader, BridgeTypesMessage, BridgeTypesNetworkConfig, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTradingPairAssetId32, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, HermesGovernancePlatformVotingOption, LiquidityProxySwapBatchInfo, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeMultiSignature, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -87,6 +87,15 @@ declare module '@polkadot/api-base/types/submittable' {
        * TODO: move into tests extrinsic collection pallet
        **/
       updateBalance: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array, currencyId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: i128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, CommonPrimitivesAssetId32, i128]>;
+      /**
+       * Change information about asset. Can only be done by root
+       * 
+       * - `origin`: caller Account, should be root
+       * - `asset_id`: Id of asset to change,
+       * - `new_symbol`: New asset symbol. If None asset symbol will not change
+       * - `new_name`: New asset name. If None asset name will not change
+       **/
+      updateInfo: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newSymbol: Option<Bytes> | null | Uint8Array | Bytes | string, newName: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, Option<Bytes>, Option<Bytes>]>;
     };
     babe: {
       /**
@@ -1941,6 +1950,14 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       enableOracle: AugmentedSubmittable<(oracle: CommonPrimitivesOracle | 'BandChainFeed' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOracle]>;
     };
+    orderBook: {
+      cancelLimitOrder: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, orderId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32, u128]>;
+      changeOrderbookStatus: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, status: OrderBookOrderBookStatus | 'Trade' | 'PlaceAndCancel' | 'OnlyCancel' | 'Stop' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32, OrderBookOrderBookStatus]>;
+      createOrderbook: AugmentedSubmittable<(dexId: u32 | AnyNumber | Uint8Array, orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, CommonPrimitivesTradingPairAssetId32]>;
+      deleteOrderbook: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32]>;
+      placeLimitOrder: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, price: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array, side: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, lifespan: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32, u128, u128, CommonPrimitivesPriceVariant, u64]>;
+      updateOrderbook: AugmentedSubmittable<(orderBookId: CommonPrimitivesTradingPairAssetId32 | { baseAssetId?: any; targetAssetId?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesTradingPairAssetId32, u128, u128, u128, u128]>;
+    };
     permissions: {
     };
     poolXYK: {
@@ -2954,11 +2971,12 @@ declare module '@polkadot/api-base/types/submittable' {
       withWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: SpWeightsWeightV2Weight | { refTime?: any; proofSize?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, SpWeightsWeightV2Weight]>;
     };
     vestedRewards: {
-      claimCrowdloanRewards: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      claimCrowdloanRewards: AugmentedSubmittable<(crowdloan: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
       /**
        * Claim all available PSWAP rewards by account signing this transaction.
        **/
       claimRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+      registerCrowdloan: AugmentedSubmittable<(tag: Bytes | string | Uint8Array, startBlock: u32 | AnyNumber | Uint8Array, length: u32 | AnyNumber | Uint8Array, rewards: Vec<ITuple<[CommonPrimitivesAssetId32, u128]>> | ([CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, u128 | AnyNumber | Uint8Array])[], contributions: Vec<ITuple<[AccountId32, u128]>> | ([AccountId32 | string | Uint8Array, u128 | AnyNumber | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [Bytes, u32, u32, Vec<ITuple<[CommonPrimitivesAssetId32, u128]>>, Vec<ITuple<[AccountId32, u128]>>]>;
       updateRewards: AugmentedSubmittable<(rewards: BTreeMap<AccountId32, BTreeMap<CommonPrimitivesRewardReason, u128>>) => SubmittableExtrinsic<ApiType>, [BTreeMap<AccountId32, BTreeMap<CommonPrimitivesRewardReason, u128>>]>;
     };
     xorFee: {
@@ -2968,15 +2986,41 @@ declare module '@polkadot/api-base/types/submittable' {
       updateMultiplier: AugmentedSubmittable<(newMultiplier: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
     };
     xstPool: {
-      enableSyntheticAsset: AugmentedSubmittable<(syntheticAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
       /**
-       * Enable exchange path on the pool for pair BaseAsset-SyntheticAsset.
+       * Disable synthetic asset.
+       * 
+       * Just remove synthetic from exchanging.
+       * Will not unregister trading pair because `trading_pair` pallet does not provide this
+       * ability. And will not unregister trading synthetic asset because of that.
+       * 
+       * - `origin`: the sudo account on whose behalf the transaction is being executed,
+       * - `synthetic_asset`: synthetic asset id to disable.
        **/
-      initializePool: AugmentedSubmittable<(syntheticAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      disableSyntheticAsset: AugmentedSubmittable<(syntheticAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      enableSyntheticAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, referenceSymbol: Bytes | string | Uint8Array, feeRatio: FixnumFixedPoint | { inner?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, Bytes, FixnumFixedPoint]>;
       /**
-       * Change reference asset which is used to determine collateral assets value. Intended to be e.g., stablecoin DAI.
+       * Register and enable new synthetic asset with `reference_symbol` price binding
+       **/
+      registerSyntheticAsset: AugmentedSubmittable<(assetSymbol: Bytes | string | Uint8Array, assetName: Bytes | string | Uint8Array, referenceSymbol: Bytes | string | Uint8Array, feeRatio: FixnumFixedPoint | { inner?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Bytes, FixnumFixedPoint]>;
+      /**
+       * Change reference asset which is used to determine collateral assets value.
+       * Intended to be e.g., stablecoin DAI.
+       * 
+       * - `origin`: the sudo account on whose behalf the transaction is being executed,
+       * - `reference_asset_id`: asset id of the new reference asset.
        **/
       setReferenceAsset: AugmentedSubmittable<(referenceAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      /**
+       * Set synthetic asset fee.
+       * 
+       * This fee will be used to determine the amount of synthetic base asset (e.g. XST) to be
+       * burned when user buys synthetic asset.
+       * 
+       * - `origin`: the sudo account on whose behalf the transaction is being executed,
+       * - `synthetic_asset`: synthetic asset id to set fee for,
+       * - `fee_ratio`: fee ratio with precision = 18, so 1000000000000000000 = 1 = 100% fee.
+       **/
+      setSyntheticAssetFee: AugmentedSubmittable<(syntheticAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, feeRatio: FixnumFixedPoint | { inner?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, FixnumFixedPoint]>;
       /**
        * Set floor price for the synthetic base asset
        * 

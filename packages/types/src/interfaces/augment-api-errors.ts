@@ -137,6 +137,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       RateConversionOverflow: AugmentedError<ApiType>;
       /**
+       * Rate is expired and can't be used until next update.
+       **/
+      RateExpired: AugmentedError<ApiType>;
+      /**
+       * Rate has invalid timestamp.
+       **/
+      RateHasInvalidTimestamp: AugmentedError<ApiType>;
+      /**
        * An untrusted account tried to relay data.
        **/
       UnauthorizedRelayer: AugmentedError<ApiType>;
@@ -1866,6 +1874,52 @@ declare module '@polkadot/api-base/types/errors' {
       OracleAlreadyDisabled: AugmentedError<ApiType>;
       OracleAlreadyEnabled: AugmentedError<ApiType>;
     };
+    orderBook: {
+      /**
+       * Cannot delete the limit order
+       **/
+      DeleteLimitOrderError: AugmentedError<ApiType>;
+      /**
+       * Cannot create order book with equal base and target assets
+       **/
+      ForbiddenToCreateOrderBookWithSameAssets: AugmentedError<ApiType>;
+      /**
+       * Lifespan exceeds defined limits
+       **/
+      InvalidLifespan: AugmentedError<ApiType>;
+      /**
+       * Cannot insert the limit order because bounds are reached
+       **/
+      LimitOrderStorageOverflow: AugmentedError<ApiType>;
+      /**
+       * The asset is not allowed to be base. Only dex base asset can be a base asset for order book
+       **/
+      NotAllowedBaseAsset: AugmentedError<ApiType>;
+      /**
+       * There is not enough liquidity in the order book to cover the deal
+       **/
+      NotEnoughLiquidity: AugmentedError<ApiType>;
+      /**
+       * Order book already exists for this trading pair
+       **/
+      OrderBookAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * Trading pair currently reached its capacity
+       **/
+      OrderLimitReached: AugmentedError<ApiType>;
+      /**
+       * Price in given order exceeds allowed limits for the trading pair
+       **/
+      PriceExceedsLimits: AugmentedError<ApiType>;
+      /**
+       * Order book does not exist for this trading pair
+       **/
+      UnknownOrderBook: AugmentedError<ApiType>;
+      /**
+       * User cannot create an order book with NFT if they don't have NFT
+       **/
+      UserDoesntHaveNft: AugmentedError<ApiType>;
+    };
     permissions: {
       /**
        * The account either doesn't have the permission.
@@ -2729,6 +2783,18 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ClaimLimitExceeded: AugmentedError<ApiType>;
       /**
+       * Crowdloan with given tag already registered
+       **/
+      CrowdloanAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * Crowdloan does not exists
+       **/
+      CrowdloanDoesNotExists: AugmentedError<ApiType>;
+      /**
+       * Crowdloan rewards distribution is not started
+       **/
+      CrowdloanRewardsDistributionNotStarted: AugmentedError<ApiType>;
+      /**
        * Increment account reference error.
        **/
       IncRefError: AugmentedError<ApiType>;
@@ -2736,6 +2802,10 @@ declare module '@polkadot/api-base/types/errors' {
        * There are no rewards for the asset ID.
        **/
       NoRewardsForAsset: AugmentedError<ApiType>;
+      /**
+       * User is not crowdloan participant
+       **/
+      NotCrowdloanParticipant: AugmentedError<ApiType>;
       /**
        * Account has no pending rewards to claim.
        **/
@@ -2757,6 +2827,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Attempt to claim rewards of type, which is not handled.
        **/
       UnhandledRewardType: AugmentedError<ApiType>;
+      /**
+       * Wrong crowdloan data passed
+       **/
+      WrongCrowdloanInfo: AugmentedError<ApiType>;
     };
     xstPool: {
       /**
@@ -2780,6 +2854,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       IncRefError: AugmentedError<ApiType>;
       /**
+       * Invalid fee ratio value.
+       **/
+      InvalidFeeRatio: AugmentedError<ApiType>;
+      /**
+       * Error quoting price from oracle.
+       **/
+      OracleQuoteError: AugmentedError<ApiType>;
+      /**
        * Attempt to initialize pool for pair that already exists.
        **/
       PoolAlreadyInitializedForPair: AugmentedError<ApiType>;
@@ -2795,6 +2877,23 @@ declare module '@polkadot/api-base/types/errors' {
        * Indicated limits for slippage has not been met during transaction execution.
        **/
       SlippageLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Attempt to enable synthetic asset with symbol
+       * that is already referenced to another synthetic.
+       **/
+      SymbolAlreadyReferencedToSynthetic: AugmentedError<ApiType>;
+      /**
+       * Attempt to enable synthetic asset with inexistent symbol.
+       **/
+      SymbolDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Synthetic asset does not exist.
+       **/
+      SyntheticDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Attempt to disable synthetic asset that is not enabled.
+       **/
+      SyntheticIsNotEnabled: AugmentedError<ApiType>;
       /**
        * Indicated collateral asset is not enabled for pool.
        **/

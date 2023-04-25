@@ -1,35 +1,21 @@
-import { XOR, VAL, PSWAP, XSTUSD } from '../assets/consts';
-
 export enum RewardingEvents {
+  // Strategic
+  LiquidityProvision = 'LiquidityProvision',
+  // Externals
   XorErc20 = 'XorErc20',
   SoraFarmHarvest = 'SoraFarmHarvest',
   NftAirdrop = 'NftAirdrop',
-  LiquidityProvision = 'LiquidityProvision',
+  // Strategic
   BuyOnBondingCurve = 'BuyOnBondingCurve',
   LiquidityProvisionFarming = 'LiquidityProvisionFarming',
   MarketMakerVolume = 'MarketMakerVolume',
-  CrowdloanXOR = 'CrowdloanXOR',
-  CrowdloanVAL = 'CrowdloanVAL',
-  CrowdloanPSWAP = 'CrowdloanPSWAP',
-  CrowdloanXSTUSD = 'CrowdloanXSTUSD',
+
   Unspecified = 'Unspecified',
 }
 
-export const CrowdloanRewardsCollection = [
-  {
-    asset: XOR,
-    type: RewardingEvents.CrowdloanXOR,
-  },
-  {
-    asset: VAL,
-    type: RewardingEvents.CrowdloanVAL,
-  },
-  {
-    asset: PSWAP,
-    type: RewardingEvents.CrowdloanPSWAP,
-  },
-  {
-    asset: XSTUSD,
-    type: RewardingEvents.CrowdloanXSTUSD,
-  },
-];
+export enum RewardType {
+  Provision = 'Provision',
+  Strategic = 'Strategic',
+  Crowdloan = 'Crowdloan',
+  External = 'External',
+}

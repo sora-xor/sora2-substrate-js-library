@@ -1,5 +1,5 @@
 import { assert } from '@polkadot/util';
-import { combineLatest, of, map, distinctUntilChanged } from 'rxjs';
+import { combineLatest, map, distinctUntilChanged } from 'rxjs';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
 import { quote, LiquiditySourceTypes, PriceVariant, newTrivial } from '@sora-substrate/liquidity-proxy';
 import type {
@@ -13,6 +13,7 @@ import type {
   CommonPrimitivesAssetId32,
   FixnumFixedPoint,
   PriceToolsAggregatedPriceInfo,
+  BandBandRate,
 } from '@polkadot/types/lookup';
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
@@ -32,11 +33,8 @@ const toAssetId = (o: Observable<CommonPrimitivesAssetId32>): Observable<string>
     distinctUntilChanged(comparator)
   );
 
-const toAssetIds = (o: Observable<BTreeSet<CommonPrimitivesAssetId32>>): Observable<string[]> =>
-  o.pipe(
-    map((data) => [...data.values()].map((asset) => asset.code.toString())),
-    distinctUntilChanged(comparator)
-  );
+const toAssetIds = (data: BTreeSet<CommonPrimitivesAssetId32>): string[] =>
+  [...data.values()].map((asset) => asset.code.toString());
 
 const toCodec = (o: Observable<any>) =>
   o.pipe(
@@ -64,6 +62,17 @@ const toAveragePrice = (o: Observable<Option<PriceToolsAggregatedPriceInfo>>) =>
 const getAssetAveragePrice = <T>(root: Api<T>, assetAddress: string): Observable<{ buy: string; sell: string }> => {
   return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
 };
+
+const toBandRate = (o: Observable<Option<BandBandRate>>) =>
+  o.pipe(
+    map((codec) => {
+      const data = codec.unwrap();
+      const value = new FPNumber(data.value).toCodecString();
+      const lastUpdated = data.lastUpdated.toNumber();
+
+      return { value, lastUpdated };
+    })
+  );
 
 const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key: string]: T } =>
   values.reduce(
@@ -182,19 +191,49 @@ export class SwapModule<T> {
     );
   }
 
+  public async getTbcAssets(): Promise<string[]> {
+    const assets = await this.root.api.query.multicollateralBondingCurvePool.enabledTargets();
+    return toAssetIds(assets);
+  }
+
+  public async getXstAssets(): Promise<Record<string, { referenceSymbol: string; feeRatio: FPNumber }>> {
+    const entries = await this.root.api.query.xstPool.enabledSynthetics.entries();
+
+    return entries.reduce((buffer, [key, value]) => {
+      const id = key.args[0].code.toString();
+      const data = value.unwrap();
+      const referenceSymbol = new TextDecoder().decode(data.referenceSymbol);
+      const feeRatio = FPNumber.fromCodecValue(data.feeRatio.inner.toString());
+
+      buffer[id] = {
+        referenceSymbol,
+        feeRatio,
+      };
+
+      return buffer;
+    }, {});
+  }
+
+  public async getLockedSources(): Promise<LiquiditySourceTypes[]> {
+    const sources = await this.root.api.query.tradingPair.lockedLiquiditySources();
+    return sources.map((source) => source.toString() as LiquiditySourceTypes);
+  }
+
   /**
    * Get primary markets enabled assets observable
    */
-  public subscribeOnPrimaryMarketsEnabledAssets(): Observable<PrimaryMarketsEnabledAssets> {
-    const tbcAssets = toAssetIds(this.root.apiRx.query.multicollateralBondingCurvePool.enabledTargets());
-    const xstAssets = toAssetIds(this.root.apiRx.query.xstPool.enabledSynthetics());
-    const lockedLiquiditySources = this.root.apiRx.query.tradingPair
-      .lockedLiquiditySources()
-      .pipe(map((sources) => sources.map((source) => source.toString() as LiquiditySourceTypes)));
+  public async getPrimaryMarketsEnabledAssets(): Promise<PrimaryMarketsEnabledAssets> {
+    const [tbc, xst, lockedSources] = await Promise.all([
+      this.getTbcAssets(),
+      this.getXstAssets(),
+      this.getLockedSources(),
+    ]);
 
-    return combineLatest([tbcAssets, xstAssets, lockedLiquiditySources]).pipe(
-      map(([tbc, xst, lockedSources]) => ({ tbc, xst, lockedSources }))
-    );
+    return {
+      tbc,
+      xst,
+      lockedSources,
+    };
   }
 
   /**
@@ -246,10 +285,11 @@ export class SwapModule<T> {
   ): Observable<QuotePayload> {
     const xor = XOR.address;
     const dai = DAI.address;
+    const xstusd = XSTUSD.address;
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
     const tbcAssets = enabledAssets?.tbc ?? [];
-    const xstAssets = enabledAssets?.xst ?? [];
+    const xstAssets = enabledAssets?.xst ?? {};
     const lockedSources = enabledAssets?.lockedSources ?? [];
 
     // is TBC or XST sources used (only for XOR Dex)
@@ -264,7 +304,7 @@ export class SwapModule<T> {
     const exchangePaths = newTrivial(
       baseAssetId,
       syntheticBaseAssetId,
-      xstAssets,
+      Object.keys(xstAssets),
       firstAssetAddress,
       secondAssetAddress
     );
@@ -278,6 +318,13 @@ export class SwapModule<T> {
     const assetsWithAveragePrices = [...new Set([...assetsWithTbcReserves, dai])];
     // Assets for which we need to know the total supply
     const assetsWithIssuances = [xor];
+    // Tickers with rates in oracle (except USD ticker, because it is the same as DAI)
+    const tickersWithOracleRates = assetsInPaths.reduce((buffer, address) => {
+      if (address !== xstusd && !!xstAssets[address]) {
+        buffer.push(xstAssets[address].referenceSymbol);
+      }
+      return buffer;
+    }, []);
 
     const xykReserves = assetsWithXykReserves.map((address) =>
       toCodec(this.root.apiRx.query.poolXYK.reserves(baseAssetId, address))
@@ -297,6 +344,10 @@ export class SwapModule<T> {
     // if TBC source available
     const assetsIssuances = tbcUsed ? [toCodec(this.root.apiRx.query.balances.totalIssuance())] : [];
 
+    const tickersRates = xstUsed
+      ? tickersWithOracleRates.map((symbol) => toBandRate(this.root.apiRx.query.band.symbolRates(symbol)))
+      : [];
+
     const tbcConsts = tbcUsed
       ? [
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.initialPrice()),
@@ -315,6 +366,7 @@ export class SwapModule<T> {
       : [];
 
     return combineLatest([
+      ...tickersRates,
       ...assetsIssuances,
       ...assetsPrices,
       ...tbcReserves,
@@ -323,9 +375,10 @@ export class SwapModule<T> {
       ...xstConsts,
     ]).pipe(
       map((data) => {
-        let position = assetsIssuances.length;
+        let position = tickersRates.length;
 
-        const issuances: Array<string> = data.slice(0, position);
+        const rates = data.slice(0, position);
+        const issuances: Array<string> = data.slice(position, (position += assetsIssuances.length));
         const prices: Array<{ buy: CodecString; sell: CodecString }> = data.slice(
           position,
           (position += assetsPrices.length)
@@ -339,6 +392,7 @@ export class SwapModule<T> {
         const [floorPrice, xstReferenceAsset] = data.slice(position, (position += xstConsts.length));
 
         const payload: QuotePayload = {
+          rates: combineValuesWithKeys(rates, tickersWithOracleRates),
           reserves: {
             xyk: combineValuesWithKeys(xyk, assetsWithXykReserves),
             tbc: combineValuesWithKeys(tbc, assetsWithTbcReserves),
@@ -512,7 +566,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Get swap result using `liquidityProxy.quote` rpc call.
    *
@@ -546,16 +600,19 @@ export class SwapModule<T> {
       liquiditySources as any,
       liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
     );
-    const value = !result.isNone ? result.unwrap() : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0 };
+    const value = !result.isNone
+      ? result.unwrap()
+      : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0, route: [] };
     return {
       amount: toCodecString(value.amount),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
+      route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
     } as SwapResult;
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Check swap operation using `liquidityProxy.isPathAvailable` rpc call
    * @param firstAssetAddress
@@ -569,7 +626,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Get liquidity sources for selected pair using `tradingPair.listEnabledSourcesForPair` rpc call
    * @param firstAssetAddress
@@ -591,7 +648,7 @@ export class SwapModule<T> {
   }
 
   /**
-   * **DEPRECATED**
+   * **RPC**
    *
    * Check liquidity Source availability for the selected pair using `tradingPair.isSourceEnabledForPair` rpc call
    * @param firstAssetAddress

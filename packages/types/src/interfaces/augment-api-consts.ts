@@ -98,6 +98,12 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxReserves: u32 & AugmentedConst<ApiType>;
     };
+    band: {
+      /**
+       * Rate expiration period in seconds.
+       **/
+      getBandRateStalePeriod: u64 & AugmentedConst<ApiType>;
+    };
     currencies: {
       getNativeCurrencyId: CommonPrimitivesAssetId32 & AugmentedConst<ApiType>;
     };
@@ -553,6 +559,14 @@ declare module '@polkadot/api-base/types/consts' {
        * The limit on the number of batched calls.
        **/
       batchedCallsLimit: u32 & AugmentedConst<ApiType>;
+    };
+    vestedRewards: {
+      getBondingCurveRewardsAccountId: AccountId32 & AugmentedConst<ApiType>;
+      getFarmingRewardsAccountId: AccountId32 & AugmentedConst<ApiType>;
+      /**
+       * Accounts holding PSWAP dedicated for rewards.
+       **/
+      getMarketMakerRewardsAccountId: AccountId32 & AugmentedConst<ApiType>;
     };
   } // AugmentedConsts
 } // declare module

@@ -54,20 +54,21 @@
 - [band](#band-pallet)
 - [oracleProxy](#oracleproxy-pallet)
 - [hermesGovernancePlatform](#hermesgovernanceplatform-pallet)
+- [preimage](#preimage-pallet)
+- [orderBook](#orderbook-pallet)
 - [mmr](#mmr-pallet)
 - [beefy](#beefy-pallet)
 - [mmrLeaf](#mmrleaf-pallet)
+- [leafProvider](#leafprovider-pallet)
+- [evmBridgeProxy](#evmbridgeproxy-pallet)
 - [ethereumLightClient](#ethereumlightclient-pallet)
 - [bridgeInboundChannel](#bridgeinboundchannel-pallet)
 - [bridgeOutboundChannel](#bridgeoutboundchannel-pallet)
 - [dispatch](#dispatch-pallet)
-- [leafProvider](#leafprovider-pallet)
 - [ethApp](#ethapp-pallet)
 - [erc20App](#erc20app-pallet)
 - [migrationApp](#migrationapp-pallet)
-- [evmBridgeProxy](#evmbridgeproxy-pallet)
 - [beefyLightClient](#beefylightclient-pallet)
-- [preimage](#preimage-pallet)
 - [substrateBridgeInboundChannel](#substratebridgeinboundchannel-pallet)
 - [substrateBridgeOutboundChannel](#substratebridgeoutboundchannel-pallet)
 - [substrateDispatch](#substratedispatch-pallet)
@@ -3641,6 +3642,22 @@ arguments:
 - assetId: `CommonPrimitivesAssetId32`
 <hr>
 
+#### **api.tx.assets.updateInfo**
+
+> Change information about asset. Can only be done by root
+>
+> - `origin`: caller Account, should be root
+> - `asset_id`: Id of asset to change,
+> - `new_symbol`: New asset symbol. If None asset symbol will not change
+> - `new_name`: New asset name. If None asset name will not change
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- newSymbol: `Option<Bytes>`
+- newName: `Option<Bytes>`
+<hr>
+
 ### _Custom RPCs_
 
 #### **api.rpc.assets.freeBalance**
@@ -6980,28 +6997,27 @@ returns: `u128`
 
 <hr>
 
-#### **api.query.vestedRewards.crowdloanRewards**
+#### **api.query.vestedRewards.crowdloanInfos**
 
-> Crowdloan vested rewards storage.
+> Information about crowdloan
 
 arguments:
 
-- key: `AccountId32`
+- key: `Bytes`
 
-returns: `VestedRewardsCrowdloanReward`
+returns: `VestedRewardsCrowdloanInfo`
 
 <hr>
 
-#### **api.query.vestedRewards.crowdloanClaimHistory**
+#### **api.query.vestedRewards.crowdloanUserInfos**
 
-> This storage keeps the last block number, when the user (the first) claimed a reward for
-> asset (the second key). The block is rounded to days.
+> Information about crowdloan rewards claimed by user
 
 arguments:
 
-- key: `(AccountId32,CommonPrimitivesAssetId32)`
+- key: `(AccountId32,Bytes)`
 
-returns: `u32`
+returns: `VestedRewardsCrowdloanUserInfo`
 
 <hr>
 
@@ -7019,7 +7035,7 @@ arguments: -
 
 arguments:
 
-- assetId: `CommonPrimitivesAssetId32`
+- crowdloan: `Bytes`
 <hr>
 
 #### **api.tx.vestedRewards.updateRewards**
@@ -7027,6 +7043,17 @@ arguments:
 arguments:
 
 - rewards: `BTreeMap<AccountId32,BTreeMap<CommonPrimitivesRewardReason,u128>>`
+<hr>
+
+#### **api.tx.vestedRewards.registerCrowdloan**
+
+arguments:
+
+- tag: `Bytes`
+- startBlock: `u32`
+- length: `u32`
+- rewards: `Vec<(CommonPrimitivesAssetId32,u128)>`
+- contributions: `Vec<(AccountId32,u128)>`
 <hr>
 
 ### _Custom RPCs_
@@ -7559,33 +7586,31 @@ returns: `u16`
 
 <hr>
 
-#### **api.query.xstPool.permissionedTechAccount**
-
-> Technical account used to store collateral tokens.
-
-arguments: -
-
-returns: `CommonPrimitivesTechAccountId`
-
-<hr>
-
-#### **api.query.xstPool.baseFee**
-
-> Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
-
-arguments: -
-
-returns: `FixnumFixedPoint`
-
-<hr>
-
 #### **api.query.xstPool.enabledSynthetics**
 
-> XST Assets allowed to be traded using XST.
+> Synthetic assets and their reference symbols.
+>
+> It's a programmer responsibility to keep this collection consistent with [`EnabledSymbols`].
 
-arguments: -
+arguments:
 
-returns: `BTreeSet<CommonPrimitivesAssetId32>`
+- key: `CommonPrimitivesAssetId32`
+
+returns: `XstSyntheticInfo`
+
+<hr>
+
+#### **api.query.xstPool.enabledSymbols**
+
+> Reference symbols and their synthetic assets.
+>
+> It's a programmer responsibility to keep this collection consistent with [`EnabledSynthetics`].
+
+arguments:
+
+- key: `Bytes`
+
+returns: `CommonPrimitivesAssetId32`
 
 <hr>
 
@@ -7623,18 +7648,13 @@ returns: `u128`
 
 ### _Extrinsics_
 
-#### **api.tx.xstPool.initializePool**
-
-> Enable exchange path on the pool for pair BaseAsset-SyntheticAsset.
-
-arguments:
-
-- syntheticAssetId: `CommonPrimitivesAssetId32`
-<hr>
-
 #### **api.tx.xstPool.setReferenceAsset**
 
-> Change reference asset which is used to determine collateral assets value. Intended to be e.g., stablecoin DAI.
+> Change reference asset which is used to determine collateral assets value.
+> Intended to be e.g., stablecoin DAI.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `reference_asset_id`: asset id of the new reference asset.
 
 arguments:
 
@@ -7645,7 +7665,54 @@ arguments:
 
 arguments:
 
+- assetId: `CommonPrimitivesAssetId32`
+- referenceSymbol: `Bytes`
+- feeRatio: `FixnumFixedPoint`
+<hr>
+
+#### **api.tx.xstPool.registerSyntheticAsset**
+
+> Register and enable new synthetic asset with `reference_symbol` price binding
+
+arguments:
+
+- assetSymbol: `Bytes`
+- assetName: `Bytes`
+- referenceSymbol: `Bytes`
+- feeRatio: `FixnumFixedPoint`
+<hr>
+
+#### **api.tx.xstPool.disableSyntheticAsset**
+
+> Disable synthetic asset.
+>
+> Just remove synthetic from exchanging.
+> Will not unregister trading pair because `trading_pair` pallet does not provide this
+> ability. And will not unregister trading synthetic asset because of that.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `synthetic_asset`: synthetic asset id to disable.
+
+arguments:
+
 - syntheticAsset: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.xstPool.setSyntheticAssetFee**
+
+> Set synthetic asset fee.
+>
+> This fee will be used to determine the amount of synthetic base asset (e.g. XST) to be
+> burned when user buys synthetic asset.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `synthetic_asset`: synthetic asset id to set fee for,
+> - `fee_ratio`: fee ratio with precision = 18, so 1000000000000000000 = 1 = 100% fee.
+
+arguments:
+
+- syntheticAsset: `CommonPrimitivesAssetId32`
+- feeRatio: `FixnumFixedPoint`
 <hr>
 
 #### **api.tx.xstPool.setSyntheticBaseAssetFloorPrice**
@@ -9120,6 +9187,232 @@ arguments:
 - hermesAmount: `u128`
 <hr>
 
+## Preimage pallet
+
+### _State Queries_
+
+#### **api.query.preimage.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.preimage.statusFor**
+
+> The request status of a given hash.
+
+arguments:
+
+- key: `H256`
+
+returns: `PalletPreimageRequestStatus`
+
+<hr>
+
+#### **api.query.preimage.preimageFor**
+
+arguments:
+
+- key: `(H256,u32)`
+
+returns: `Bytes`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.preimage.notePreimage**
+
+> Register a preimage on-chain.
+>
+> If the preimage was previously requested, no fees or deposits are taken for providing
+> the preimage. Otherwise, a deposit is taken proportional to the size of the preimage.
+
+arguments:
+
+- bytes: `Bytes`
+<hr>
+
+#### **api.tx.preimage.unnotePreimage**
+
+> Clear an unrequested preimage from the runtime storage.
+>
+> If `len` is provided, then it will be a much cheaper operation.
+>
+> - `hash`: The hash of the preimage to be removed from the store.
+> - `len`: The length of the preimage of `hash`.
+
+arguments:
+
+- hash: `H256`
+<hr>
+
+#### **api.tx.preimage.requestPreimage**
+
+> Request a preimage be uploaded to the chain without paying any fees or deposits.
+>
+> If the preimage requests has already been provided on-chain, we unreserve any deposit
+> a user may have paid, and take the control of the preimage out of their hands.
+
+arguments:
+
+- hash: `H256`
+<hr>
+
+#### **api.tx.preimage.unrequestPreimage**
+
+> Clear a previously made request for a preimage.
+>
+> NOTE: THIS MUST NOT BE CALLED ON `hash` MORE TIMES THAN `request_preimage`.
+
+arguments:
+
+- hash: `H256`
+<hr>
+
+## OrderBook pallet
+
+### _State Queries_
+
+#### **api.query.orderBook.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.orderBook.orderBooks**
+
+arguments:
+
+- key: `CommonPrimitivesTradingPairAssetId32`
+
+returns: `OrderBook`
+
+<hr>
+
+#### **api.query.orderBook.limitOrders**
+
+arguments:
+
+- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+
+returns: `OrderBookLimitOrder`
+
+<hr>
+
+#### **api.query.orderBook.bids**
+
+arguments:
+
+- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+
+returns: `Vec<u128>`
+
+<hr>
+
+#### **api.query.orderBook.asks**
+
+arguments:
+
+- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+
+returns: `Vec<u128>`
+
+<hr>
+
+#### **api.query.orderBook.aggregatedBids**
+
+arguments:
+
+- key: `CommonPrimitivesTradingPairAssetId32`
+
+returns: `BTreeMap<u128, u128>`
+
+<hr>
+
+#### **api.query.orderBook.aggregatedAsks**
+
+arguments:
+
+- key: `CommonPrimitivesTradingPairAssetId32`
+
+returns: `BTreeMap<u128, u128>`
+
+<hr>
+
+#### **api.query.orderBook.userLimitOrders**
+
+arguments:
+
+- key: `(AccountId32,CommonPrimitivesTradingPairAssetId32)`
+
+returns: `Vec<u128>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.orderBook.createOrderbook**
+
+arguments:
+
+- dexId: `u32`
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+<hr>
+
+#### **api.tx.orderBook.deleteOrderbook**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+<hr>
+
+#### **api.tx.orderBook.updateOrderbook**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- tickSize: `u128`
+- stepLotSize: `u128`
+- minLotSize: `u128`
+- maxLotSize: `u128`
+<hr>
+
+#### **api.tx.orderBook.changeOrderbookStatus**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- status: `OrderBookOrderBookStatus`
+<hr>
+
+#### **api.tx.orderBook.placeLimitOrder**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- price: `u128`
+- amount: `u128`
+- side: `CommonPrimitivesPriceVariant`
+- lifespan: `u64`
+<hr>
+
+#### **api.tx.orderBook.cancelLimitOrder**
+
+arguments:
+
+- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderId: `u128`
+<hr>
+
 ## Mmr pallet
 
 ### _State Queries_
@@ -9284,6 +9577,90 @@ arguments: -
 
 returns: `SpBeefyMmrBeefyAuthoritySet`
 
+<hr>
+
+## LeafProvider pallet
+
+### _State Queries_
+
+#### **api.query.leafProvider.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.leafProvider.latestDigest**
+
+> Latest digest
+
+arguments: -
+
+returns: `Vec<BridgeTypesAuxiliaryDigestItem>`
+
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.leafProvider.latestDigest**
+
+> Get leaf provider logs.
+
+arguments:
+
+- at: `BlockHash`
+
+returns: `AuxiliaryDigest`
+
+<hr>
+
+## EvmBridgeProxy pallet
+
+### _State Queries_
+
+#### **api.query.evmBridgeProxy.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.evmBridgeProxy.transactions**
+
+arguments:
+
+- key: `(AccountId32,(BridgeTypesGenericNetworkId,H256))`
+
+returns: `EvmBridgeProxyBridgeRequest`
+
+<hr>
+
+#### **api.query.evmBridgeProxy.senders**
+
+arguments:
+
+- key: `(BridgeTypesGenericNetworkId,H256)`
+
+returns: `AccountId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.evmBridgeProxy.burn**
+
+arguments:
+
+- networkId: `BridgeTypesGenericNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- recipient: `BridgeTypesGenericAccount`
+- amount: `u128`
 <hr>
 
 ## EthereumLightClient pallet
@@ -9597,44 +9974,6 @@ returns: `u16`
 
 <hr>
 
-## LeafProvider pallet
-
-### _State Queries_
-
-#### **api.query.leafProvider.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.leafProvider.latestDigest**
-
-> Latest digest
-
-arguments: -
-
-returns: `Vec<BridgeTypesAuxiliaryDigestItem>`
-
-<hr>
-
-### _Custom RPCs_
-
-#### **api.rpc.leafProvider.latestDigest**
-
-> Get leaf provider logs.
-
-arguments:
-
-- at: `BlockHash`
-
-returns: `AuxiliaryDigest`
-
-<hr>
-
 ## EthApp pallet
 
 ### _State Queries_
@@ -9884,52 +10223,6 @@ arguments:
 - contract: `H160`
 <hr>
 
-## EvmBridgeProxy pallet
-
-### _State Queries_
-
-#### **api.query.evmBridgeProxy.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.evmBridgeProxy.transactions**
-
-arguments:
-
-- key: `(AccountId32,(BridgeTypesGenericNetworkId,H256))`
-
-returns: `EvmBridgeProxyBridgeRequest`
-
-<hr>
-
-#### **api.query.evmBridgeProxy.senders**
-
-arguments:
-
-- key: `(BridgeTypesGenericNetworkId,H256)`
-
-returns: `AccountId32`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.evmBridgeProxy.burn**
-
-arguments:
-
-- networkId: `BridgeTypesGenericNetworkId`
-- assetId: `CommonPrimitivesAssetId32`
-- recipient: `BridgeTypesGenericAccount`
-- amount: `u128`
-<hr>
-
 ## BeefyLightClient pallet
 
 ### _State Queries_
@@ -10023,93 +10316,6 @@ arguments:
 - validatorProof: `BridgeCommonBeefyTypesValidatorProof`
 - latestMmrLeaf: `SpBeefyMmrMmrLeaf`
 - proof: `BridgeCommonSimplifiedProofProof`
-<hr>
-
-## Preimage pallet
-
-### _State Queries_
-
-#### **api.query.preimage.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.preimage.statusFor**
-
-> The request status of a given hash.
-
-arguments:
-
-- key: `H256`
-
-returns: `PalletPreimageRequestStatus`
-
-<hr>
-
-#### **api.query.preimage.preimageFor**
-
-arguments:
-
-- key: `(H256,u32)`
-
-returns: `Bytes`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.preimage.notePreimage**
-
-> Register a preimage on-chain.
->
-> If the preimage was previously requested, no fees or deposits are taken for providing
-> the preimage. Otherwise, a deposit is taken proportional to the size of the preimage.
-
-arguments:
-
-- bytes: `Bytes`
-<hr>
-
-#### **api.tx.preimage.unnotePreimage**
-
-> Clear an unrequested preimage from the runtime storage.
->
-> If `len` is provided, then it will be a much cheaper operation.
->
-> - `hash`: The hash of the preimage to be removed from the store.
-> - `len`: The length of the preimage of `hash`.
-
-arguments:
-
-- hash: `H256`
-<hr>
-
-#### **api.tx.preimage.requestPreimage**
-
-> Request a preimage be uploaded to the chain without paying any fees or deposits.
->
-> If the preimage requests has already been provided on-chain, we unreserve any deposit
-> a user may have paid, and take the control of the preimage out of their hands.
-
-arguments:
-
-- hash: `H256`
-<hr>
-
-#### **api.tx.preimage.unrequestPreimage**
-
-> Clear a previously made request for a preimage.
->
-> NOTE: THIS MUST NOT BE CALLED ON `hash` MORE TIMES THAN `request_preimage`.
-
-arguments:
-
-- hash: `H256`
 <hr>
 
 ## SubstrateBridgeInboundChannel pallet
