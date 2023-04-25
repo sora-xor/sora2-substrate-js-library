@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, BTreeSet, Bytes, Null, Option, Text, U256, U8aFixed, Vec, WrapperOpaque, bool, u128, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { AssetsAssetRecord, BandBandRate, BridgeOutboundChannelMessage, BridgeTypesAssetKind, BridgeTypesAuxiliaryDigestItem, BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesNetworkConfig, BridgeTypesParachainMessage, BridgeTypesSubNetworkId, CeresGovernancePlatformPollInfo, CeresGovernancePlatformStorageVersion, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresLiquidityLockerStorageVersion, CeresStakingStakingInfo, CeresTokenLockerStorageVersion, CeresTokenLockerTokenLockInfo, CommonPrimitivesAssetId32, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformStorageVersion, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeSignatureVersion, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, EthereumLightClientPruningRange, EthereumLightClientStoredHeader, EvmBridgeProxyBridgeRequest, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportDispatchPerDispatchClassWeight, FrameSupportPreimagesBounded, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, HermesGovernancePlatformHermesPollInfo, HermesGovernancePlatformHermesVotingInfo, IrohaMigrationPendingMultisigAccount, MulticollateralBondingCurvePoolDistributionAccounts, OrderBook, OrderBookLimitOrder, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyReferendumInfo, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletPreimageRequestStatus, PalletSchedulerScheduled, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsAggregatedPriceInfo, RewardsRewardInfo, SpBeefyCryptoPublic, SpBeefyMmrBeefyAuthoritySet, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanReward, VestedRewardsRewardInfo } from '@polkadot/types/lookup';
+import type { AssetsAssetRecord, BandBandRate, BridgeOutboundChannelMessage, BridgeTypesAssetKind, BridgeTypesAuxiliaryDigestItem, BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesNetworkConfig, BridgeTypesParachainMessage, BridgeTypesSubNetworkId, CeresGovernancePlatformPollInfo, CeresGovernancePlatformStorageVersion, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresLiquidityLockerStorageVersion, CeresStakingStakingInfo, CeresTokenLockerStorageVersion, CeresTokenLockerTokenLockInfo, CommonPrimitivesAssetId32, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformStorageVersion, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeSignatureVersion, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, EthereumLightClientPruningRange, EthereumLightClientStoredHeader, EvmBridgeProxyBridgeRequest, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportDispatchPerDispatchClassWeight, FrameSupportPreimagesBounded, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, HermesGovernancePlatformHermesPollInfo, HermesGovernancePlatformHermesVotingInfo, IrohaMigrationPendingMultisigAccount, MulticollateralBondingCurvePoolDistributionAccounts, OrderBook, OrderBookLimitOrder, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyReferendumInfo, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletPreimageRequestStatus, PalletSchedulerScheduled, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsAggregatedPriceInfo, RewardsRewardInfo, SpBeefyCryptoPublic, SpBeefyMmrBeefyAuthoritySet, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanInfo, VestedRewardsCrowdloanUserInfo, VestedRewardsRewardInfo, XstSyntheticInfo } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -1609,14 +1609,13 @@ declare module '@polkadot/api-base/types/storage' {
     };
     vestedRewards: {
       /**
-       * This storage keeps the last block number, when the user (the first) claimed a reward for
-       * asset (the second key). The block is rounded to days.
+       * Information about crowdloan
        **/
-      crowdloanClaimHistory: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<u32>, [AccountId32, CommonPrimitivesAssetId32]>;
+      crowdloanInfos: AugmentedQuery<ApiType, (arg: Bytes | string | Uint8Array) => Observable<Option<VestedRewardsCrowdloanInfo>>, [Bytes]>;
       /**
-       * Crowdloan vested rewards storage.
+       * Information about crowdloan rewards claimed by user
        **/
-      crowdloanRewards: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<VestedRewardsCrowdloanReward>, [AccountId32]>;
+      crowdloanUserInfos: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: Bytes | string | Uint8Array) => Observable<Option<VestedRewardsCrowdloanUserInfo>>, [AccountId32, Bytes]>;
       /**
        * Reserved for future use
        * Mapping between users and their owned rewards of different kinds, which are vested.
@@ -1637,21 +1636,21 @@ declare module '@polkadot/api-base/types/storage' {
     };
     xstPool: {
       /**
-       * Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
-       **/
-      baseFee: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
-      /**
        * Current reserves balance for collateral tokens, used for client usability.
        **/
       collateralReserves: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<u128>, [CommonPrimitivesAssetId32]>;
       /**
-       * XST Assets allowed to be traded using XST.
+       * Reference symbols and their synthetic assets.
+       * 
+       * It's a programmer responsibility to keep this collection consistent with [`EnabledSynthetics`].
        **/
-      enabledSynthetics: AugmentedQuery<ApiType, () => Observable<BTreeSet<CommonPrimitivesAssetId32>>, []>;
+      enabledSymbols: AugmentedQuery<ApiType, (arg: Bytes | string | Uint8Array) => Observable<Option<CommonPrimitivesAssetId32>>, [Bytes]>;
       /**
-       * Technical account used to store collateral tokens.
+       * Synthetic assets and their reference symbols.
+       * 
+       * It's a programmer responsibility to keep this collection consistent with [`EnabledSymbols`].
        **/
-      permissionedTechAccount: AugmentedQuery<ApiType, () => Observable<CommonPrimitivesTechAccountId>, []>;
+      enabledSynthetics: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<XstSyntheticInfo>>, [CommonPrimitivesAssetId32]>;
       /**
        * Asset that is used to compare collateral assets by value, e.g., DAI.
        **/

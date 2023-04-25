@@ -2,7 +2,14 @@ import type { FPNumber, CodecString } from '@sora-substrate/math';
 import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
 
 export type PrimaryMarketsEnabledAssets = {
-  [key: string]: Array<string>;
+  tbc: string[];
+  xst: Record<
+    string,
+    {
+      referenceSymbol: string;
+      feeRatio: FPNumber;
+    }
+  >;
   lockedSources: Array<LiquiditySourceTypes>;
 };
 
@@ -44,6 +51,7 @@ export type QuotePaths = {
 };
 
 export type QuotePayload = {
+  rates: Record<string, { value: CodecString; lastUpdated: number }>;
   reserves: {
     xyk: {
       [key: string]: [CodecString, CodecString];

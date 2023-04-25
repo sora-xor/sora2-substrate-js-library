@@ -25,6 +25,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       AssetSetNonMintable: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
       /**
+       * Asset info has been updated
+       **/
+      AssetUpdated: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, Option<Bytes>, Option<Bytes>]>;
+      /**
        * Asset amount has been burned. [Issuer Account, Burned Asset Id, Amount Burned]
        **/
       Burn: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
@@ -706,7 +710,26 @@ declare module '@polkadot/api-base/types/events' {
       OracleEnabled: AugmentedEvent<ApiType, [CommonPrimitivesOracle]>;
     };
     orderBook: {
-      OrderPlaced: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * New order book is created by user
+       **/
+      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, creator: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, creator: AccountId32 }>;
+      /**
+       * Order book is deleted by Council
+       **/
+      OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32 }>;
+      /**
+       * Order book attributes are updated by Council
+       **/
+      OrderBookUpdated: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32 }>;
+      /**
+       * User canceled their limit order
+       **/
+      OrderCanceled: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * User placed new limit order
+       **/
+      OrderPlaced: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
     };
     permissions: {
       /**
@@ -1166,6 +1189,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ActualDoesntMatchAvailable: AugmentedEvent<ApiType, [CommonPrimitivesRewardReason]>;
       /**
+       * Claimed crowdloan rewards
+       **/
+      CrowdloanClaimed: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
        * Saving reward for account has failed in a distribution series. [account]
        **/
       FailedToSaveCalculatedReward: AugmentedEvent<ApiType, [AccountId32]>;
@@ -1191,17 +1218,21 @@ declare module '@polkadot/api-base/types/events' {
     };
     xstPool: {
       /**
-       * Pool is initialized for pair. [DEX Id, Synthetic Asset Id]
-       **/
-      PoolInitialized: AugmentedEvent<ApiType, [u32, CommonPrimitivesAssetId32]>;
-      /**
        * Reference Asset has been changed for pool. [New Reference Asset Id]
        **/
       ReferenceAssetChanged: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
       /**
-       * Synthetic asset was enabled. [Synthetic Asset Id]
+       * Synthetic asset has been disabled. [Synthetic Asset Id]
        **/
-      SyntheticAssetEnabled: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      SyntheticAssetDisabled: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      /**
+       * Synthetic asset has been enabled. [Synthetic Asset Id, Reference Symbol]
+       **/
+      SyntheticAssetEnabled: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, Bytes]>;
+      /**
+       * Synthetic asset fee has been changed. [Synthetic Asset Id, New Fee]
+       **/
+      SyntheticAssetFeeChanged: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, FixnumFixedPoint]>;
       /**
        * Floor price of the synthetic base asset has been changed. [New Floor Price]
        **/
