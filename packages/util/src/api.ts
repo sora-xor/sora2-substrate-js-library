@@ -168,12 +168,14 @@ export class Api<T = void> extends BaseApi<T> {
    * Get on-chain account's identity
    * @param address account address
    */
-  public async getAccountOnChainIdentity(address: string): Promise<OnChainIdentity> {
-    const data = (await this.api.query.identity.identityOf(address)).unwrap();
+  public async getAccountOnChainIdentity(address: string): Promise<OnChainIdentity | null> {
+    const data = await this.api.query.identity.identityOf(address);
+    if (data.isEmpty) return null;
+    const result = data.unwrap();
 
     return {
-      legalName: data.info.legal.value.toHuman() as string,
-      approved: Boolean(data.judgements.length),
+      legalName: result.info.legal.value.toHuman() as string,
+      approved: Boolean(result.judgements.length),
     };
   }
 
