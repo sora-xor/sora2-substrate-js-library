@@ -6,7 +6,6 @@ import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
-import type { PalletIdentityRegistration } from '@polkadot/types/lookup';
 
 import { decrypt, encrypt } from './crypto';
 import { BaseApi, Operation, KeyringType, OnChainIdentity } from './BaseApi';
