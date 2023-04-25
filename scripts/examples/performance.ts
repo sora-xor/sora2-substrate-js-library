@@ -2,6 +2,7 @@ import { mnemonicGenerate } from '@polkadot/util-crypto';
 
 import { Api, connection, FaucetApi, FPNumber } from '@sora-substrate/util';
 import { XOR } from '@sora-substrate/util/assets/consts';
+import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 import { delay } from './util';
 
@@ -9,7 +10,7 @@ const TEST_PASS = 'qwasZX123';
 
 async function main(): Promise<void> {
   // Open connection & initiate the faucet instance
-  await connection.open('wss://ws.framenode-3.s3.dev.sora2.soramitsu.co.jp');
+  await connection.open(SORA_ENV.dev);
   console.log('Connected!', connection.endpoint);
   const faucet = new FaucetApi();
   // Generate array of mnemonics
