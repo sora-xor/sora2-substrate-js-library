@@ -169,8 +169,13 @@ export class Api<T = void> extends BaseApi<T> {
    * Get on-chain account's identity
    * @param address account address
    */
-  public async getAccountOnChainIdentity(address: string): Promise<PalletIdentityRegistration | null> {
-    return (await this.api.query.identity.identityOf(address)).unwrap() || null;
+  public async getAccountOnChainIdentity(address: string): Promise<any> {
+    const data = (await this.api.query.identity.identityOf(address)).unwrap();
+
+    return {
+      legalName: data.info.legal.asRaw,
+      approved: Boolean(data.judgements.length),
+    };
   }
 
   private updateAccountData(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
