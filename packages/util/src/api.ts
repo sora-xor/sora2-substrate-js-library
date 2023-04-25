@@ -9,7 +9,7 @@ import type { Signer } from '@polkadot/types/types';
 import type { PalletIdentityRegistration } from '@polkadot/types/lookup';
 
 import { decrypt, encrypt } from './crypto';
-import { BaseApi, Operation, KeyringType } from './BaseApi';
+import { BaseApi, Operation, KeyringType, OnChainIdentity } from './BaseApi';
 import { Messages } from './logger';
 import { BridgeApi } from './BridgeApi';
 import { SwapModule } from './swap';
@@ -169,11 +169,11 @@ export class Api<T = void> extends BaseApi<T> {
    * Get on-chain account's identity
    * @param address account address
    */
-  public async getAccountOnChainIdentity(address: string): Promise<any> {
+  public async getAccountOnChainIdentity(address: string): Promise<OnChainIdentity> {
     const data = (await this.api.query.identity.identityOf(address)).unwrap();
 
     return {
-      legalName: data.info.legal.asRaw,
+      legalName: data.info.legal.value.toHuman() as string,
       approved: Boolean(data.judgements.length),
     };
   }
