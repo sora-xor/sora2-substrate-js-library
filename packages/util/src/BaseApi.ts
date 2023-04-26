@@ -737,3 +737,8 @@ export interface History {
   soraNetworkFee?: CodecString;
   payload?: any; // can be used to integrate with third-party services
 }
+
+export interface OnChainIdentity {
+  legalName: string;
+  approved: boolean;
+}

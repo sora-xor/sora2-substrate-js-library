@@ -20,13 +20,9 @@ const xstReferencePrice = (
     return FPNumber.ONE;
   } else if (isAssetAddress(assetAddress, syntheticBaseAssetId)) {
     const averagePrice = getAveragePrice(assetAddress, referenceAssetId, priceVariant, payload);
+    const floorPrice = FPNumber.fromCodecValue(payload.consts.xst.floorPrice);
 
-    if (isAssetAddress(referenceAssetId, Consts.DAI)) {
-      const floorPrice = FPNumber.fromCodecValue(payload.consts.xst.floorPrice);
-      return FPNumber.max(averagePrice, floorPrice) as FPNumber;
-    } else {
-      return averagePrice;
-    }
+    return FPNumber.max(averagePrice, floorPrice) as FPNumber;
   } else {
     const symbol = enabledAssets.xst[assetAddress].referenceSymbol;
     const price = FPNumber.fromCodecValue(payload.rates[symbol].value);
@@ -246,10 +242,11 @@ export const xstQuote = (
     const outputToBase = getAveragePrice(
       Consts.XST,
       Consts.XOR,
-      // Since `Buy` is more expensive, it seems logical to
-      // show this amount in order to not accidentally lie
-      // about the price.
-      PriceVariant.Buy,
+      // Since `Sell` is more expensive in case if we are selling XST
+      // (x XST -> y XOR; y XOR -> x' XST, x' < x),
+      // it seems logical to show this amount in order
+      // to not accidentally lie about the price.
+      PriceVariant.Sell,
       payload
     );
     const fee = feeAmount.mul(outputToBase);

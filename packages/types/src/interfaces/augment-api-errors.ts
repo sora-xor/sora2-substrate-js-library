@@ -2838,6 +2838,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CannotExchangeWithSelf: AugmentedError<ApiType>;
       /**
+       * Synthetic asset must be divisible
+       **/
+      CantEnableIndivisibleAsset: AugmentedError<ApiType>;
+      /**
        * Liquidity source can't exchange assets with the given IDs on the given DEXId.
        **/
       CantExchange: AugmentedError<ApiType>;
@@ -2853,6 +2857,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Increment account reference error.
        **/
       IncRefError: AugmentedError<ApiType>;
+      /**
+       * Reference asset must be divisible
+       **/
+      IndivisibleReferenceAsset: AugmentedError<ApiType>;
       /**
        * Invalid fee ratio value.
        **/
