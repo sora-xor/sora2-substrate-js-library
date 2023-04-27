@@ -116,28 +116,26 @@ export class EvmApi<T> extends BaseApi<T> {
   }
 
   /**
-   * Get all user transactions hashes, WHERE
-   *
-   * **first** array item represents the **last** transaction
+   * Get all user transactions from external network
    */
-  // public async getUserTxHashes(externalNetwork: EvmNetwork, accountAddress: string): Promise<Array<string>> {
-  //   assert(this.account, Messages.connectWallet);
+  public async getUserTxs(accountAddress: string, externalNetwork: EvmNetwork): Promise<EvmTransaction[]> {
+    const buffer: EvmTransaction[] = [];
+    const data = await this.api.query.evmBridgeProxy.transactions.entries(accountAddress);
 
-  //   const data = await this.api.query.evmBridgeProxy.transactions(accountAddress, [String(externalNetwork)]);
+    for (const [key, value] of data) {
+      const [network, hash] = key.args[1];
 
-  //   return data.map((value) => value.toString()).reverse();
-  // }
+      if (network.asEvm.toNumber() === externalNetwork) {
+        const tx = formatEvmTx(hash.toString(), value);
 
-  /**
-   * Subscribe on user transactions hashes.
-   *
-   * **First** array item represents the **last** transaction
-   */
-  // public subscribeOnUserTxHashes(externalNetwork: EvmNetwork, accountAddress: string): Observable<Array<string>> {
-  //   return (this.apiRx.query as any).evmBridgeProxy
-  //     .userTransactions(externalNetwork, accountAddress)
-  //     .pipe(map((items) => (items as any).map((value) => value.toString()).reverse()));
-  // }
+        if (tx) {
+          buffer.push(tx);
+        }
+      }
+    }
+
+    return buffer;
+  }
 
   /** Get transaction details */
   public async getTxDetails(

@@ -17,17 +17,17 @@ export interface EvmTransaction {
   status: EvmTxStatus;
   soraHash: string;
   amount: CodecString;
-  // TODO: these fields below will be added later
-  evmHash: string;
   startTimestamp: number;
   endTimestamp: number;
+  // TODO: these fields below will be added later
+  evmHash: string;
 }
 
 export interface EvmHistory extends History {
   type: Operation.EvmIncoming | Operation.EvmOutgoing;
   hash?: string;
   evmHash?: string;
-  evmNetworkFee?: string;
+  evmNetworkFee?: CodecString;
   transactionState?: EvmTxStatus;
   externalNetwork?: EvmNetwork;
 }
