@@ -1876,7 +1876,15 @@ declare module '@polkadot/api-base/types/errors' {
     };
     orderBook: {
       /**
-       * Cannot delete the limit order
+       * An error occurred while calculating the amount
+       **/
+      AmountCalculationFailed: AugmentedError<ApiType>;
+      /**
+       * At the moment, Users cannot cancel their limit orders in the current order book
+       **/
+      CancellationOfLimitOrdersIsForbidden: AugmentedError<ApiType>;
+      /**
+       * It is impossible to delete the limit order
        **/
       DeleteLimitOrderError: AugmentedError<ApiType>;
       /**
@@ -1888,9 +1896,33 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidLifespan: AugmentedError<ApiType>;
       /**
-       * Cannot insert the limit order because bounds are reached
+       * The limit order price does not meet the requirements
+       **/
+      InvalidLimitOrderPrice: AugmentedError<ApiType>;
+      /**
+       * The order amount (limit or market) does not meet the requirements
+       **/
+      InvalidOrderAmount: AugmentedError<ApiType>;
+      /**
+       * Limit order already exists for this trading pair and order id
+       **/
+      LimitOrderAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * User cannot set the price of limit order too far from actual market price
+       **/
+      LimitOrderPriceIsTooFarFromSpread: AugmentedError<ApiType>;
+      /**
+       * It is impossible to insert the limit order because the bounds have been reached
        **/
       LimitOrderStorageOverflow: AugmentedError<ApiType>;
+      /**
+       * There are no aggregated bids/asks for the order book
+       **/
+      NoAggregatedData: AugmentedError<ApiType>;
+      /**
+       * There are no bids/asks for the price
+       **/
+      NoDataForPrice: AugmentedError<ApiType>;
       /**
        * The asset is not allowed to be base. Only dex base asset can be a base asset for order book
        **/
@@ -1904,21 +1936,41 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       OrderBookAlreadyExists: AugmentedError<ApiType>;
       /**
-       * Trading pair currently reached its capacity
+       * It is impossible to place the limit order because bounds of the max count of prices for the side have been reached
        **/
-      OrderLimitReached: AugmentedError<ApiType>;
+      OrderBookReachedMaxCountOfPricesForSide: AugmentedError<ApiType>;
       /**
-       * Price in given order exceeds allowed limits for the trading pair
+       * At the moment, Users cannot place new limit orders in the current order book
        **/
-      PriceExceedsLimits: AugmentedError<ApiType>;
+      PlacementOfLimitOrdersIsForbidden: AugmentedError<ApiType>;
+      /**
+       * It is impossible to place the limit order because bounds of the max count of orders at the current price have been reached
+       **/
+      PriceReachedMaxCountOfLimitOrders: AugmentedError<ApiType>;
+      /**
+       * At the moment, Trading is forbidden in the current order book
+       **/
+      TradingIsForbidden: AugmentedError<ApiType>;
+      /**
+       * Limit order does not exist for this trading pair and order id
+       **/
+      UnknownLimitOrder: AugmentedError<ApiType>;
       /**
        * Order book does not exist for this trading pair
        **/
       UnknownOrderBook: AugmentedError<ApiType>;
       /**
+       * It is impossible to update the limit order
+       **/
+      UpdateLimitOrderError: AugmentedError<ApiType>;
+      /**
+       * User has the max available count of open limit orders in the current order book
+       **/
+      UserHasMaxCountOfOpenedOrders: AugmentedError<ApiType>;
+      /**
        * User cannot create an order book with NFT if they don't have NFT
        **/
-      UserDoesntHaveNft: AugmentedError<ApiType>;
+      UserHasNoNft: AugmentedError<ApiType>;
     };
     permissions: {
       /**
