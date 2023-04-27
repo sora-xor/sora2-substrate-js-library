@@ -9,7 +9,11 @@ import { Asset } from '../assets/types';
 import { EvmDirection, EvmTxStatus } from './consts';
 import type { EvmAsset, EvmNetwork, EvmHistory, EvmTransaction } from './types';
 
-function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): EvmTransaction | null {
+function formatEvmTx(
+  hash: string,
+  externalNetwork: EvmNetwork,
+  data: Option<EvmBridgeProxyBridgeRequest>
+): EvmTransaction | null {
   if (!data.isSome) {
     return null;
   }
@@ -17,6 +21,7 @@ function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): E
   const unwrapped = data.unwrap();
   const formatted: EvmTransaction = {} as any;
 
+  formatted.externalNetwork = externalNetwork;
   formatted.soraHash = hash;
   formatted.amount = unwrapped.amount.toString();
   formatted.soraAssetAddress = unwrapped.assetId.code.toString();
@@ -125,8 +130,12 @@ export class EvmApi<T> extends BaseApi<T> {
     for (const [key, value] of data) {
       const [network, hash] = key.args[1];
 
-      if (network.asEvm.toNumber() === externalNetwork) {
-        const tx = formatEvmTx(hash.toString(), value);
+      if (!network.isEvm) continue;
+
+      const evmNetwork = network.asEvm.toNumber();
+
+      if (evmNetwork === externalNetwork) {
+        const tx = formatEvmTx(hash.toString(), evmNetwork, value);
 
         if (tx) {
           buffer.push(tx);
@@ -145,7 +154,7 @@ export class EvmApi<T> extends BaseApi<T> {
   ): Promise<EvmTransaction | null> {
     const data = await this.api.query.evmBridgeProxy.transactions(accountAddress, [String(externalNetwork), hash]);
 
-    return formatEvmTx(hash, data);
+    return formatEvmTx(hash, externalNetwork, data);
   }
 
   /** Subscribe on transaction details */
@@ -156,7 +165,7 @@ export class EvmApi<T> extends BaseApi<T> {
   ): Observable<EvmTransaction | null> {
     return this.apiRx.query.evmBridgeProxy
       .transactions(accountAddress, [String(externalNetwork), hash])
-      .pipe(map((value) => formatEvmTx(hash, value as any)));
+      .pipe(map((value) => formatEvmTx(hash, externalNetwork, value as any)));
   }
 
   /**
@@ -172,7 +181,7 @@ export class EvmApi<T> extends BaseApi<T> {
     const params = hashes.map((hash) => [accountAddress, [String(externalNetwork), hash]]);
     const data = await this.api.query.evmBridgeProxy.transactions.multi(params);
 
-    return data.map((item, index) => formatEvmTx(hashes[index], item)).filter((item) => !!item);
+    return data.map((item, index) => formatEvmTx(hashes[index], externalNetwork, item)).filter((item) => !!item);
   }
 
   /**
@@ -188,6 +197,10 @@ export class EvmApi<T> extends BaseApi<T> {
     const params = hashes.map((hash) => [accountAddress, [String(externalNetwork), hash]]);
     return this.apiRx.query.evmBridgeProxy.transactions
       .multi(params)
-      .pipe(map((value) => value.map((item, index) => formatEvmTx(hashes[index], item)).filter((item) => !!item)));
+      .pipe(
+        map((value) =>
+          value.map((item, index) => formatEvmTx(hashes[index], externalNetwork, item)).filter((item) => !!item)
+        )
+      );
   }
 }

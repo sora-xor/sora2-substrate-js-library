@@ -7,6 +7,7 @@ export type EvmNetwork = EvmNetworkId | number;
 
 /** Made like BridgeRequest */
 export interface EvmTransaction {
+  externalNetwork: EvmNetwork;
   /** Outgoing = 0, Incoming = 1 */
   direction: EvmDirection;
   /** SORA Account ID */
