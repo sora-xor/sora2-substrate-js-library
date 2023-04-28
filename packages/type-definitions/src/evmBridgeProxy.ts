@@ -47,9 +47,22 @@ export default {
     },
   },
   types: {
+    AppKind: {
+      _enum: ['EthApp', 'ERC20App', 'SidechainApp', 'SubstrateApp'],
+    },
     AppsWithSupportedAssets: {
       apps: 'Vec<BridgeAppInfo>',
       assets: 'Vec<BridgeAssetInfo<AssetId>>',
     },
+    BridgeAssetInfo: {
+      assetId: 'AssetId',
+      evmAddress: 'Option<H160>',
+      appKind: 'AppKind',
+    },
+    BridgeAppInfo: {
+      evmAddress: 'H160',
+      appKind: 'AppKind',
+    },
+    EVMChainId: 'U256',
   },
 };
