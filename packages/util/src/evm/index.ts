@@ -1,70 +1,54 @@
 import { map } from 'rxjs';
-import { assert } from '@polkadot/util';
 import { FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
-// import type { EvmBridgeProxyBridgeRequest } from '@polkadot/types/lookup';
+import type { EvmBridgeProxyBridgeRequest } from '@polkadot/types/lookup';
 import type { Option } from '@polkadot/types-codec';
 
 import { BaseApi, isEvmOperation, Operation } from '../BaseApi';
 import { Asset } from '../assets/types';
-import { Messages } from '../logger';
-import { EvmDirection, EvmNetworkId, EvmTxStatus } from './consts';
+import { EvmDirection, EvmTxStatus } from './consts';
 import type { EvmAsset, EvmNetwork, EvmHistory, EvmTransaction } from './types';
-// TODO: remove
-type EvmBridgeProxyBridgeRequest = any;
 
-function formatEvmTx(hash: string, data: Option<EvmBridgeProxyBridgeRequest>): EvmTransaction | null {
+function formatEvmTx(
+  hash: string,
+  externalNetwork: EvmNetwork,
+  data: Option<EvmBridgeProxyBridgeRequest>
+): EvmTransaction | null {
   if (!data.isSome) {
     return null;
   }
-  const unwrapped = data.unwrap();
 
+  const unwrapped = data.unwrap();
   const formatted: EvmTransaction = {} as any;
+
+  formatted.externalNetwork = externalNetwork;
   formatted.soraHash = hash;
-  if (unwrapped.isIncomingTransfer) {
+  formatted.amount = unwrapped.amount.toString();
+  formatted.soraAssetAddress = unwrapped.assetId.code.toString();
+  formatted.status = unwrapped.status.isFailed
+    ? EvmTxStatus.Failed
+    : unwrapped.status.isDone || unwrapped.status.isCommitted
+    ? EvmTxStatus.Done
+    : EvmTxStatus.Pending;
+
+  if (unwrapped.direction.isInbound) {
     // incoming: EVM -> SORA
-    const incoming = unwrapped.asIncomingTransfer;
-    formatted.evmAccount = incoming.source.toString();
-    formatted.soraAccount = incoming.dest.toString();
-    formatted.amount = incoming.amount.toString();
-    formatted.soraAssetAddress = incoming.assetId.code.toString();
-    formatted.status = incoming.status.isFailed
-      ? EvmTxStatus.Failed
-      : incoming.status.isDone || incoming.status.isCommitted
-      ? EvmTxStatus.Done
-      : EvmTxStatus.Pending;
+    formatted.evmAccount = unwrapped.source.toString();
+    formatted.soraAccount = unwrapped.dest.toString();
     formatted.direction = EvmDirection.Incoming;
   } else {
     // outgoing: SORA -> EVM
-    const outgoing = unwrapped.asOutgoingTransfer;
-    formatted.soraAccount = outgoing.source.toString();
-    formatted.evmAccount = outgoing.dest.toString();
-    formatted.amount = outgoing.amount.toString();
-    formatted.soraAssetAddress = outgoing.assetId.code.toString();
-    formatted.status = outgoing.status.isFailed
-      ? EvmTxStatus.Failed
-      : outgoing.status.isDone || outgoing.status.isCommitted
-      ? EvmTxStatus.Done
-      : EvmTxStatus.Pending;
+    formatted.soraAccount = unwrapped.source.toString();
+    formatted.evmAccount = unwrapped.dest.toString();
     formatted.direction = EvmDirection.Outgoing;
   }
 
   return formatted;
 }
 
-export class EvmApi extends BaseApi {
-  private _externalNetwork: EvmNetwork = EvmNetworkId.EthereumClassicTestnetMordor;
-
+export class EvmApi<T> extends BaseApi<T> {
   constructor() {
     super('evmHistory');
-  }
-
-  public get externalNetwork(): EvmNetwork {
-    return this._externalNetwork;
-  }
-
-  public set externalNetwork(value: EvmNetwork) {
-    this._externalNetwork = value;
   }
 
   public generateHistoryItem(params: EvmHistory): EvmHistory | null {
@@ -94,87 +78,95 @@ export class EvmApi extends BaseApi {
    *
    * `{ [key: SoraAssetId]: { contract: string; evmAddress: string; } }`
    */
-  public async getNetworkAssets(): Promise<Record<string, EvmAsset>> {
+  public async getNetworkAssets(externalNetwork: EvmNetwork): Promise<Record<string, EvmAsset>> {
+    const appsMap: Record<string, string> = {};
     const assetsMap: Record<string, EvmAsset> = {};
-    // TODO: NetworkId will be fixed on backend. We should update type and remove this line below
-    const networkId = this.externalNetwork.toString(16);
 
-    const result = await (this.api.rpc as any).evmBridgeProxy.listAppsWithSupportedAssets(networkId);
+    const list = await this.api.rpc.evmBridgeProxy.listAppsWithSupportedAssets(externalNetwork);
 
-    result.forEach((app) => {
-      app.supportedAssets.forEach((assetId) => {
-        assetsMap[assetId.toString()] = {
-          contract: app.address.toString(),
-          evmAddress: '', // Here will be evm address after backend updates
-        };
-      });
+    list.apps.forEach((app) => {
+      appsMap[app.appKind.toString()] = app.evmAddress.toString();
+    });
+
+    list.assets.forEach((asset) => {
+      assetsMap[asset.assetId.toString()] = {
+        contract: appsMap[asset.appKind.toString()],
+        evmAddress: asset.evmAddress.toString(),
+      };
     });
 
     return assetsMap;
   }
 
-  public async burn(asset: Asset, recipient: string, amount: string | number, historyId?: string): Promise<void> {
+  public async burn(
+    externalNetwork: EvmNetwork,
+    asset: Asset,
+    recipient: string,
+    amount: string | number,
+    historyId?: string
+  ): Promise<void> {
     // asset should be checked as registered on bridge or not
-    const fpAmount = new FPNumber(amount, asset.decimals);
-    const historyItem = this.getHistory(historyId);
+    const value = new FPNumber(amount, asset.decimals).toCodecString();
+    const historyItem = this.getHistory(historyId) || {
+      type: Operation.EvmOutgoing,
+      symbol: asset.symbol,
+      assetAddress: asset.address,
+      amount: `${amount}`,
+    };
+
     await this.submitExtrinsic(
-      (this.api.tx as any).evmBridgeProxy.burn(
-        this.externalNetwork,
-        asset.address,
-        recipient,
-        fpAmount.toCodecString()
-      ),
+      this.api.tx.evmBridgeProxy.burn(String(externalNetwork), asset.address, recipient, value),
       this.account.pair,
-      historyItem || {
-        type: Operation.EvmOutgoing,
-        symbol: asset.symbol,
-        assetAddress: asset.address,
-        amount: `${amount}`,
+      historyItem
+    );
+  }
+
+  /**
+   * Get all user transactions from external network
+   */
+  public async getUserTxs(accountAddress: string, externalNetwork: EvmNetwork): Promise<EvmTransaction[]> {
+    const buffer: EvmTransaction[] = [];
+    const data = await this.api.query.evmBridgeProxy.transactions.entries(accountAddress);
+
+    for (const [key, value] of data) {
+      const [network, hash] = key.args[1];
+
+      if (!network.isEvm) continue;
+
+      const evmNetwork = network.asEvm.toNumber();
+
+      if (evmNetwork === externalNetwork) {
+        const tx = formatEvmTx(hash.toString(), evmNetwork, value);
+
+        if (tx) {
+          buffer.push(tx);
+        }
       }
-    );
-  }
+    }
 
-  /**
-   * Get all user transactions hashes, WHERE
-   *
-   * **first** array item represents the **last** transaction
-   */
-  public async getUserTxHashes(externalNetwork: EvmNetwork): Promise<Array<string>> {
-    assert(this.account, Messages.connectWallet);
-
-    const data = await (this.api.query as any).evmBridgeProxy.userTransactions(
-      externalNetwork,
-      this.account.pair.address
-    );
-
-    return (data as any).map((value) => value.toString()).reverse();
-  }
-
-  /**
-   * Subscribe on user transactions hashes.
-   *
-   * **First** array item represents the **last** transaction
-   */
-  public subscribeOnUserTxHashes(externalNetwork: EvmNetwork): Observable<Array<string>> {
-    assert(this.account, Messages.connectWallet);
-
-    return (this.apiRx.query as any).evmBridgeProxy
-      .userTransactions(externalNetwork, this.account.pair.address)
-      .pipe(map((items) => (items as any).map((value) => value.toString()).reverse()));
+    return buffer;
   }
 
   /** Get transaction details */
-  public async getTxDetails(externalNetwork: EvmNetwork, hash: string): Promise<EvmTransaction | null> {
-    const data = await (this.api.query as any).evmBridgeProxy.transactions(externalNetwork, hash);
+  public async getTxDetails(
+    accountAddress: string,
+    externalNetwork: EvmNetwork,
+    hash: string
+  ): Promise<EvmTransaction | null> {
+    const data = await this.api.query.evmBridgeProxy.transactions(accountAddress, [String(externalNetwork), hash]);
 
-    return formatEvmTx(hash, data);
+    return formatEvmTx(hash, externalNetwork, data);
   }
 
   /** Subscribe on transaction details */
-  public subscribeOnTxDetails(externalNetwork: EvmNetwork, hash: string): Observable<EvmTransaction | null> {
-    return (this.apiRx.query as any).evmBridgeProxy
-      .transactions(externalNetwork, hash)
-      .pipe(map((value) => formatEvmTx(hash, value as any)));
+  public subscribeOnTxDetails(
+    accountAddress: string,
+    externalNetwork: EvmNetwork,
+    hash: string
+  ): Observable<EvmTransaction | null> {
+    return this.apiRx.query.evmBridgeProxy
+      .transactions(accountAddress, [String(externalNetwork), hash])
+      .pipe(map((value) => formatEvmTx(hash, externalNetwork, value as any)));
   }
 
   /**
@@ -182,11 +174,15 @@ export class EvmApi extends BaseApi {
    *
    * This method might be used for pageable items
    */
-  public async getTxsDetails(externalNetwork: EvmNetwork, hashes: Array<string>): Promise<Array<EvmTransaction>> {
-    const params = hashes.map((hash) => [externalNetwork, hash]);
-    const data = await (this.api.query as any).evmBridgeProxy.transactions.multi(params);
+  public async getTxsDetails(
+    accountAddress: string,
+    externalNetwork: EvmNetwork,
+    hashes: Array<string>
+  ): Promise<Array<EvmTransaction>> {
+    const params = hashes.map((hash) => [accountAddress, [String(externalNetwork), hash]]);
+    const data = await this.api.query.evmBridgeProxy.transactions.multi(params);
 
-    return data.map((item, index) => formatEvmTx(hashes[index], item as any)).filter((item) => !!item);
+    return data.map((item, index) => formatEvmTx(hashes[index], externalNetwork, item)).filter((item) => !!item);
   }
 
   /**
@@ -194,13 +190,17 @@ export class EvmApi extends BaseApi {
    *
    * This method might be used for pageable items
    */
-  public subscribeOnTxsDetails(externalNetwork: EvmNetwork, hashes: Array<string>): Observable<Array<EvmTransaction>> {
-    const params = hashes.map((hash) => [externalNetwork, hash]);
-    return (this.apiRx.query as any).evmBridgeProxy.transactions
+  public subscribeOnTxsDetails(
+    accountAddress: string,
+    externalNetwork: EvmNetwork,
+    hashes: Array<string>
+  ): Observable<Array<EvmTransaction>> {
+    const params = hashes.map((hash) => [accountAddress, [String(externalNetwork), hash]]);
+    return this.apiRx.query.evmBridgeProxy.transactions
       .multi(params)
       .pipe(
         map((value) =>
-          (value as any).map((item, index) => formatEvmTx(hashes[index], item as any)).filter((item) => !!item)
+          value.map((item, index) => formatEvmTx(hashes[index], externalNetwork, item)).filter((item) => !!item)
         )
       );
   }
