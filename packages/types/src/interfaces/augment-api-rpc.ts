@@ -32,7 +32,7 @@ import type { IExtrinsic, Observable } from '@polkadot/types/types';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { BasicChannelMessage } from '@sora-substrate/types/interfaces/basicChannel';
 import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
-import type { AppsWithSupportedAssets } from '@sora-substrate/types/interfaces/evmBridgeProxy';
+import type { AppsWithSupportedAssets, BridgeAppInfo, BridgeAssetInfo, EVMChainId } from '@sora-substrate/types/interfaces/evmBridgeProxy';
 import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
 import type { AuxiliaryDigest } from '@sora-substrate/types/interfaces/leafProvider';
 import type { LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
@@ -453,15 +453,15 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * 
        **/
-      listApps: AugmentedRpc<(networkId: EVMChainId, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAppInfo>>>;
+      listApps: AugmentedRpc<(networkId: EVMChainId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAppInfo>>>;
       /**
        * 
        **/
-      listAppsWithSupportedAssets: AugmentedRpc<(networkId: EVMChainId, at?: BlockHash | string | Uint8Array) => Observable<AppsWithSupportedAssets>>;
+      listAppsWithSupportedAssets: AugmentedRpc<(networkId: EVMChainId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<AppsWithSupportedAssets>>;
       /**
        * 
        **/
-      listSupportedAssets: AugmentedRpc<(networkId: EVMChainId, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAssetInfo>>>;
+      listSupportedAssets: AugmentedRpc<(networkId: EVMChainId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAssetInfo>>>;
     };
     farming: {
       /**
