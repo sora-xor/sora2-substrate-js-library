@@ -1460,7 +1460,7 @@
         {
             "minmax": [
                 47,
-                null
+                50
             ],
             "types": {
                 "LPSwapOutcomeInfo": {
@@ -1470,6 +1470,36 @@
                     "route": "Vec<AssetId>"
                 }
             }
+        },
+        {
+            "minmax": [
+                51,
+                null
+            ],
+            "types": {
+                "AppKind": {
+                    "_enum": [
+                        "EthApp",
+                        "ERC20App",
+                        "SidechainApp",
+                        "SubstrateApp"
+                    ]
+                },
+                "AppsWithSupportedAssets": {
+                    "apps": "Vec<BridgeAppInfo>",
+                    "assets": "Vec<BridgeAssetInfo<AssetId>>"
+                },
+                "BridgeAppInfo": {
+                    "evmaddress": "H160",
+                    "appkind": "AppKind"
+                },
+                "BridgeAssetInfo": {
+                    "assetid": "AssetId",
+                    "evmaddress": "Option<H160>",
+                    "appkind": "AppKind"
+                },
+                "EVMChainId": "U256"
+            }
         }
     ],
     "types": {
@@ -1477,6 +1507,18 @@
         "Address": "AccountId",
         "Amount": "i128",
         "AmountOf": "Amount",
+        "AppKind": {
+            "_enum": [
+                "EthApp",
+                "ERC20App",
+                "SidechainApp",
+                "SubstrateApp"
+            ]
+        },
+        "AppsWithSupportedAssets": {
+            "apps": "Vec<BridgeAppInfo>",
+            "assets": "Vec<BridgeAssetInfo<AssetId>>"
+        },
         "AssetId": "AssetId32",
         "AssetId32": "[u8; 32]",
         "AssetIdOf": "AssetId",
@@ -1519,6 +1561,15 @@
             "payload": "Vec<u8>"
         },
         "BasisPoints": "u16",
+        "BridgeAppInfo": {
+            "evmAddress": "H160",
+            "appKind": "AppKind"
+        },
+        "BridgeAssetInfo": {
+            "assetId": "AssetId",
+            "evmAddress": "Option<H160>",
+            "appKind": "AppKind"
+        },
         "BridgeNetworkId": "u32",
         "BridgeSignatureVersion": {
             "_enum": [
@@ -1606,6 +1657,7 @@
         "DispatchResultWithPostInfo": "Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>",
         "DistributionAccounts": "Null",
         "Duration": "Null",
+        "EVMChainId": "U256",
         "EthAddress": "H160",
         "EthBridgeStorageVersion": {
             "_enum": [
