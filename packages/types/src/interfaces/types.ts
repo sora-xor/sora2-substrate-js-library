@@ -24,3 +24,4 @@ export * from './leafProvider/types';
 export * from './basicChannel/types';
 export * from './intentivizedChannel/types';
 export * from './hermesGovernancePlatform/types';
+export * from './evmBridgeProxy/types';

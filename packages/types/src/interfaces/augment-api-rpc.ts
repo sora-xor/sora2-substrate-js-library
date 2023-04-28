@@ -15,7 +15,7 @@ import type { BeefySignedCommitment } from '@polkadot/types/interfaces/beefy';
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import type { PrefixedStorageKey } from '@polkadot/types/interfaces/childstate';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
-import type { CodeUploadRequest, CodeUploadResult, ContractCallRequest, ContractExecResult, ContractInstantiateResult, InstantiateRequest } from '@polkadot/types/interfaces/contracts';
+import type { CodeUploadRequest, CodeUploadResult, ContractCallRequest, ContractExecResult, ContractInstantiateResult, InstantiateRequestV1 } from '@polkadot/types/interfaces/contracts';
 import type { BlockStats } from '@polkadot/types/interfaces/dev';
 import type { CreatedBlock } from '@polkadot/types/interfaces/engine';
 import type { EthAccount, EthAddress, EthCallRequest, EthFeeHistory, EthFilter, EthFilterChanges, EthLog, EthReceipt, EthRichBlock, EthSubKind, EthSubParams, EthSyncStatus, EthTransaction, EthTransactionRequest, EthWork } from '@polkadot/types/interfaces/eth';
@@ -23,7 +23,7 @@ import type { Extrinsic } from '@polkadot/types/interfaces/extrinsics';
 import type { EncodedFinalityProofs, JustificationNotification, ReportedRoundStates } from '@polkadot/types/interfaces/grandpa';
 import type { MmrLeafBatchProof, MmrLeafProof } from '@polkadot/types/interfaces/mmr';
 import type { StorageKind } from '@polkadot/types/interfaces/offchain';
-import type { FeeDetails, RuntimeDispatchInfo } from '@polkadot/types/interfaces/payment';
+import type { FeeDetails, RuntimeDispatchInfoV1 } from '@polkadot/types/interfaces/payment';
 import type { RpcMethods } from '@polkadot/types/interfaces/rpc';
 import type { AccountId, AssetId, BlockNumber, H160, H256, H64, Hash, Header, Index, Justification, KeyValue, SignedBlock, StorageData } from '@polkadot/types/interfaces/runtime';
 import type { MigrationStatusResult, ReadProof, RuntimeVersion, TraceBlockResponse } from '@polkadot/types/interfaces/state';
@@ -32,6 +32,7 @@ import type { IExtrinsic, Observable } from '@polkadot/types/types';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { BasicChannelMessage } from '@sora-substrate/types/interfaces/basicChannel';
 import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AppsWithSupportedAssets } from '@sora-substrate/types/interfaces/evmBridgeProxy';
 import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
 import type { AuxiliaryDigest } from '@sora-substrate/types/interfaces/leafProvider';
 import type { LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
@@ -200,7 +201,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        * @deprecated Use the runtime interface `api.call.contractsApi.instantiate` instead
        * Instantiate a new contract
        **/
-      instantiate: AugmentedRpc<(request: InstantiateRequest | { origin?: any; value?: any; gasLimit?: any; storageDepositLimit?: any; code?: any; data?: any; salt?: any } | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<ContractInstantiateResult>>;
+      instantiate: AugmentedRpc<(request: InstantiateRequestV1 | { origin?: any; value?: any; gasLimit?: any; code?: any; data?: any; salt?: any } | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<ContractInstantiateResult>>;
       /**
        * @deprecated Not available in newer versions of the contracts interfaces
        * Returns the projected time a given contract will be able to sustain paying its rent
@@ -344,7 +345,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Returns the number of transactions sent from given address at given time (block number).
        **/
-      getTransactionCount: AugmentedRpc<(hash: H256 | string | Uint8Array, number?: BlockNumber | AnyNumber | Uint8Array) => Observable<U256>>;
+      getTransactionCount: AugmentedRpc<(address: H160 | string | Uint8Array, number?: BlockNumber | AnyNumber | Uint8Array) => Observable<U256>>;
       /**
        * Returns transaction receipt by transaction hash.
        **/
@@ -448,6 +449,20 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        **/
       getRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId?: BridgeNetworkId | AnyNumber | Uint8Array, redirectFinishedLoadRequests?: bool | boolean | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[OffchainRequest, RequestStatus]>>, DispatchError>>>;
     };
+    evmBridgeProxy: {
+      /**
+       * 
+       **/
+      listApps: AugmentedRpc<(networkId: EVMChainId, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAppInfo>>>;
+      /**
+       * 
+       **/
+      listAppsWithSupportedAssets: AugmentedRpc<(networkId: EVMChainId, at?: BlockHash | string | Uint8Array) => Observable<AppsWithSupportedAssets>>;
+      /**
+       * 
+       **/
+      listSupportedAssets: AugmentedRpc<(networkId: EVMChainId, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAssetInfo>>>;
+    };
     farming: {
       /**
        * Get list of double rewarding assets
@@ -536,13 +551,15 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
     };
     payment: {
       /**
+       * @deprecated Use `api.call.transactionPaymentApi.queryFeeDetails` instead
        * Query the detailed fee of a given encoded extrinsic
        **/
       queryFeeDetails: AugmentedRpc<(extrinsic: Bytes | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<FeeDetails>>;
       /**
+       * @deprecated Use `api.call.transactionPaymentApi.queryInfo` instead
        * Retrieves the fee information for an encoded extrinsic
        **/
-      queryInfo: AugmentedRpc<(extrinsic: Bytes | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<RuntimeDispatchInfo>>;
+      queryInfo: AugmentedRpc<(extrinsic: Bytes | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<RuntimeDispatchInfoV1>>;
     };
     pswapDistribution: {
       /**
