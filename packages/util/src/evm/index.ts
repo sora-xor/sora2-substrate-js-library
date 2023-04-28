@@ -81,10 +81,8 @@ export class EvmApi<T> extends BaseApi<T> {
   public async getNetworkAssets(externalNetwork: EvmNetwork): Promise<Record<string, EvmAsset>> {
     const appsMap: Record<string, string> = {};
     const assetsMap: Record<string, EvmAsset> = {};
-    // TODO: NetworkId will be fixed on backend. We should update type and remove this line below
-    const networkId = externalNetwork.toString(16);
 
-    const list = await this.api.rpc.evmBridgeProxy.listAppsWithSupportedAssets(networkId);
+    const list = await this.api.rpc.evmBridgeProxy.listAppsWithSupportedAssets(externalNetwork);
 
     list.apps.forEach((app) => {
       appsMap[app.appKind.toString()] = app.evmAddress.toString();
