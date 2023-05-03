@@ -99,10 +99,10 @@ export class EvmApi<T> extends BaseApi<T> {
   }
 
   public async burn(
-    externalNetwork: EvmNetwork,
     asset: Asset,
     recipient: string,
     amount: string | number,
+    externalNetwork: EvmNetwork,
     historyId?: string
   ): Promise<void> {
     // asset should be checked as registered on bridge or not
@@ -115,7 +115,7 @@ export class EvmApi<T> extends BaseApi<T> {
     };
 
     await this.submitExtrinsic(
-      this.api.tx.evmBridgeProxy.burn(String(externalNetwork), asset.address, recipient, value),
+      this.api.tx.evmBridgeProxy.burn({ EVM: externalNetwork }, asset.address, { EVM: recipient }, value),
       this.account.pair,
       historyItem
     );
@@ -153,7 +153,7 @@ export class EvmApi<T> extends BaseApi<T> {
     externalNetwork: EvmNetwork,
     hash: string
   ): Promise<EvmTransaction | null> {
-    const data = await this.api.query.evmBridgeProxy.transactions(accountAddress, [String(externalNetwork), hash]);
+    const data = await this.api.query.evmBridgeProxy.transactions(accountAddress, [{ EVM: externalNetwork }, hash]);
 
     return formatEvmTx(hash, externalNetwork, data);
   }
@@ -165,7 +165,7 @@ export class EvmApi<T> extends BaseApi<T> {
     hash: string
   ): Observable<EvmTransaction | null> {
     return this.apiRx.query.evmBridgeProxy
-      .transactions(accountAddress, [String(externalNetwork), hash])
+      .transactions(accountAddress, [{ EVM: externalNetwork }, hash])
       .pipe(map((value) => formatEvmTx(hash, externalNetwork, value as any)));
   }
 
@@ -179,7 +179,7 @@ export class EvmApi<T> extends BaseApi<T> {
     externalNetwork: EvmNetwork,
     hashes: Array<string>
   ): Promise<Array<EvmTransaction>> {
-    const params = hashes.map((hash) => [accountAddress, [String(externalNetwork), hash]]);
+    const params = hashes.map((hash) => [accountAddress, [{ EVM: externalNetwork }, hash]]);
     const data = await this.api.query.evmBridgeProxy.transactions.multi(params);
 
     return data.map((item, index) => formatEvmTx(hashes[index], externalNetwork, item)).filter((item) => !!item);
@@ -195,7 +195,7 @@ export class EvmApi<T> extends BaseApi<T> {
     externalNetwork: EvmNetwork,
     hashes: Array<string>
   ): Observable<Array<EvmTransaction>> {
-    const params = hashes.map((hash) => [accountAddress, [String(externalNetwork), hash]]);
+    const params = hashes.map((hash) => [accountAddress, [{ EVM: externalNetwork }, hash]]);
     return this.apiRx.query.evmBridgeProxy.transactions
       .multi(params)
       .pipe(
