@@ -22,23 +22,22 @@ function assertRequest(result: Result<any, any>, message: string): void {
   }
 }
 
-export interface RegisteredAccountAsset extends AccountAsset {
+export type RegisteredAsset = Asset & {
   externalAddress: string;
-  externalBalance: CodecString;
-}
+  externalDecimals: number;
+};
 
-export interface RegisteredAsset extends Asset {
-  externalAddress: string;
-  externalDecimals: string | number;
-}
+export type RegisteredAccountAsset = RegisteredAsset &
+  AccountAsset & {
+    externalBalance: CodecString;
+  };
 
 export interface BridgeHistory extends History {
   type: Operation.EthBridgeIncoming | Operation.EthBridgeOutgoing;
   hash?: string;
-  ethereumHash?: string;
   transactionState?: string;
-  soraNetworkFee?: CodecString;
-  ethereumNetworkFee?: CodecString;
+  externalHash?: string;
+  externalNetworkFee?: CodecString;
   externalNetwork?: BridgeNetworks;
 }
 
@@ -89,11 +88,6 @@ export enum RequestType {
   ClaimPswap = 'ClaimPswap',
   CancelOutgoingRequest = 'CancelOutgoingRequest',
   MarkAsDone = 'MarkAsDone',
-}
-
-enum IncomingRequestKind {
-  Transaction = 'Transaction',
-  Meta = 'Meta',
 }
 
 export interface BridgeRequest {

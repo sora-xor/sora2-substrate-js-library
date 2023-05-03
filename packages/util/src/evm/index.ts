@@ -72,7 +72,7 @@ export class EvmApi<T> extends BaseApi<T> {
 
   /**
    * Get registered assets object for selected evm network.
-   * Should be called after switching evm network `api.evm.externalNetwork = EvmNetwork.Mordor`
+   * Should be called after switching evm network
    *
    * Format:
    *

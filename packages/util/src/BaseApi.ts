@@ -18,6 +18,7 @@ import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
+import type { EvmHistory } from './evm/types';
 import type { RewardClaimHistory } from './rewards/types';
 
 type AccountWithOptions = {
@@ -39,11 +40,14 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
-export type HistoryItem = History | BridgeHistory | RewardClaimHistory;
+export type HistoryItem = History | EvmHistory | BridgeHistory | RewardClaimHistory;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
-export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & BridgeHistory & RewardClaimHistory];
+export type ExtrinsicEvent = [
+  'inblock' | 'finalized' | 'error',
+  History & (EvmHistory | BridgeHistory) & RewardClaimHistory
+];
 
 interface ISubmitExtrinsic<T> {
   submitExtrinsic(
@@ -80,6 +84,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.CreatePair]: '0',
     [Operation.EthBridgeIncoming]: '0',
     [Operation.EthBridgeOutgoing]: '0',
+    [Operation.EvmIncoming]: '0',
+    [Operation.EvmOutgoing]: '0',
     [Operation.RegisterAsset]: '0',
     [Operation.RemoveLiquidity]: '0',
     [Operation.Swap]: '0',
@@ -300,7 +306,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
+    const history = (historyData || {}) as History & (EvmHistory | BridgeHistory) & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
     if (isNotFaucetOperation && signer) {
       history.from = this.address;
@@ -439,6 +445,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       case Operation.EthBridgeIncoming:
         extrinsic = this.api.tx.ethBridge.requestFromSidechain;
         break;
+      case Operation.EvmOutgoing:
+        extrinsic = this.api.tx.evmBridgeProxy.burn;
+        break;
       case Operation.RegisterAsset:
         extrinsic = this.api.tx.assets.register;
         break;
@@ -506,6 +515,10 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         return this.api.tx.ethBridge.requestFromSidechain('', { Transaction: 'Transfer' }, 0);
       case Operation.EthBridgeOutgoing:
         return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0);
+      case Operation.EvmOutgoing:
+        return this.api.tx.evmBridgeProxy.burn('1', '', '', '0');
+      case Operation.EvmIncoming:
+        return null;
       case Operation.RegisterAsset:
         return this.api.tx.assets.register('', '', '0', false, false, null, null);
       case Operation.RemoveLiquidity:
@@ -575,6 +588,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.CreatePair,
       Operation.EthBridgeIncoming,
       Operation.EthBridgeOutgoing,
+      Operation.EvmIncoming,
+      Operation.EvmOutgoing,
       Operation.RegisterAsset,
       Operation.RemoveLiquidity,
       Operation.Swap,

@@ -27,9 +27,9 @@ export interface EvmTransaction {
 export interface EvmHistory extends History {
   type: Operation.EvmIncoming | Operation.EvmOutgoing;
   hash?: string;
-  evmHash?: string;
-  evmNetworkFee?: CodecString;
   transactionState?: EvmTxStatus;
+  externalHash?: string;
+  externalNetworkFee?: CodecString;
   externalNetwork?: EvmNetwork;
 }
 
