@@ -516,7 +516,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       case Operation.EthBridgeOutgoing:
         return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0);
       case Operation.EvmOutgoing:
-        return this.api.tx.evmBridgeProxy.burn('1', '', '', '0');
+        return this.api.tx.evmBridgeProxy.burn({ EVM: 1 }, '', { EVM: '' }, '0');
       case Operation.EvmIncoming:
         return null;
       case Operation.RegisterAsset:
