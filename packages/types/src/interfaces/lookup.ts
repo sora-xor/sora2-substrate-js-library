@@ -1220,6 +1220,7 @@ export default {
       OrderBookDeleted: {
         orderBookId: 'OrderBookOrderBookId',
         dexId: 'u32',
+        countOfCanceledOrders: 'u32',
       },
       OrderBookUpdated: {
         orderBookId: 'OrderBookOrderBookId',
@@ -5491,7 +5492,7 @@ export default {
    * Lookup803: order_book::pallet::Error<T>
    **/
   OrderBookError: {
-    _enum: ['UnknownOrderBook', 'OrderBookAlreadyExists', 'UnknownLimitOrder', 'LimitOrderAlreadyExists', 'LimitOrderStorageOverflow', 'UpdateLimitOrderError', 'DeleteLimitOrderError', 'NoDataForPrice', 'NoAggregatedData', 'NotEnoughLiquidity', 'ForbiddenToCreateOrderBookWithSameAssets', 'NotAllowedBaseAsset', 'UserHasNoNft', 'InvalidLifespan', 'InvalidOrderAmount', 'InvalidLimitOrderPrice', 'LimitOrderPriceIsTooFarFromSpread', 'TradingIsForbidden', 'PlacementOfLimitOrdersIsForbidden', 'CancellationOfLimitOrdersIsForbidden', 'UserHasMaxCountOfOpenedOrders', 'PriceReachedMaxCountOfLimitOrders', 'OrderBookReachedMaxCountOfPricesForSide', 'AmountCalculationFailed']
+    _enum: ['UnknownOrderBook', 'OrderBookAlreadyExists', 'UnknownLimitOrder', 'LimitOrderAlreadyExists', 'LimitOrderStorageOverflow', 'UpdateLimitOrderError', 'DeleteLimitOrderError', 'NoDataForPrice', 'NoAggregatedData', 'NotEnoughLiquidity', 'ForbiddenToCreateOrderBookWithSameAssets', 'NotAllowedBaseAsset', 'UserHasNoNft', 'InvalidLifespan', 'InvalidOrderAmount', 'InvalidLimitOrderPrice', 'LimitOrderPriceIsTooFarFromSpread', 'TradingIsForbidden', 'PlacementOfLimitOrdersIsForbidden', 'CancellationOfLimitOrdersIsForbidden', 'UserHasMaxCountOfOpenedOrders', 'PriceReachedMaxCountOfLimitOrders', 'OrderBookReachedMaxCountOfPricesForSide', 'AmountCalculationFailed', 'Unauthorized']
   },
   /**
    * Lookup808: evm_bridge_proxy::BridgeRequest<sp_core::crypto::AccountId32, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>

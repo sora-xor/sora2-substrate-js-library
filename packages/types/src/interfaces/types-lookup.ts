@@ -1367,6 +1367,7 @@ declare module '@polkadot/types/lookup' {
     readonly asOrderBookDeleted: {
       readonly orderBookId: OrderBookOrderBookId;
       readonly dexId: u32;
+      readonly countOfCanceledOrders: u32;
     } & Struct;
     readonly isOrderBookUpdated: boolean;
     readonly asOrderBookUpdated: {
@@ -6142,7 +6143,8 @@ declare module '@polkadot/types/lookup' {
     readonly isPriceReachedMaxCountOfLimitOrders: boolean;
     readonly isOrderBookReachedMaxCountOfPricesForSide: boolean;
     readonly isAmountCalculationFailed: boolean;
-    readonly type: 'UnknownOrderBook' | 'OrderBookAlreadyExists' | 'UnknownLimitOrder' | 'LimitOrderAlreadyExists' | 'LimitOrderStorageOverflow' | 'UpdateLimitOrderError' | 'DeleteLimitOrderError' | 'NoDataForPrice' | 'NoAggregatedData' | 'NotEnoughLiquidity' | 'ForbiddenToCreateOrderBookWithSameAssets' | 'NotAllowedBaseAsset' | 'UserHasNoNft' | 'InvalidLifespan' | 'InvalidOrderAmount' | 'InvalidLimitOrderPrice' | 'LimitOrderPriceIsTooFarFromSpread' | 'TradingIsForbidden' | 'PlacementOfLimitOrdersIsForbidden' | 'CancellationOfLimitOrdersIsForbidden' | 'UserHasMaxCountOfOpenedOrders' | 'PriceReachedMaxCountOfLimitOrders' | 'OrderBookReachedMaxCountOfPricesForSide' | 'AmountCalculationFailed';
+    readonly isUnauthorized: boolean;
+    readonly type: 'UnknownOrderBook' | 'OrderBookAlreadyExists' | 'UnknownLimitOrder' | 'LimitOrderAlreadyExists' | 'LimitOrderStorageOverflow' | 'UpdateLimitOrderError' | 'DeleteLimitOrderError' | 'NoDataForPrice' | 'NoAggregatedData' | 'NotEnoughLiquidity' | 'ForbiddenToCreateOrderBookWithSameAssets' | 'NotAllowedBaseAsset' | 'UserHasNoNft' | 'InvalidLifespan' | 'InvalidOrderAmount' | 'InvalidLimitOrderPrice' | 'LimitOrderPriceIsTooFarFromSpread' | 'TradingIsForbidden' | 'PlacementOfLimitOrdersIsForbidden' | 'CancellationOfLimitOrdersIsForbidden' | 'UserHasMaxCountOfOpenedOrders' | 'PriceReachedMaxCountOfLimitOrders' | 'OrderBookReachedMaxCountOfPricesForSide' | 'AmountCalculationFailed' | 'Unauthorized';
   }
 
   /** @name EvmBridgeProxyBridgeRequest (808) */
