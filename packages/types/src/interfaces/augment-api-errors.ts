@@ -1952,6 +1952,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TradingIsForbidden: AugmentedError<ApiType>;
       /**
+       * Unauthorized action
+       **/
+      Unauthorized: AugmentedError<ApiType>;
+      /**
        * Limit order does not exist for this trading pair and order id
        **/
       UnknownLimitOrder: AugmentedError<ApiType>;
