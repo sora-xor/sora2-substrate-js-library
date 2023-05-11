@@ -114,8 +114,10 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   public storage?: Storage; // common data storage
   public accountStorage?: AccountStorage; // account data storage
   public account: CreateResult;
-  /** If `true` you might subscribe on extrinsic statuses */
+  /** If `true` you might subscribe on extrinsic statuses (`false` by default) */
   public shouldObservableBeUsed = false;
+  /** If `true` it'll be locked during extrinsics submit (`false` by default) */
+  public shouldPairBeLocked = false;
 
   constructor(public readonly historyNamespace = 'history') {}
 
@@ -318,7 +320,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
 
     // we should lock pair, if it's not locked
-    this.lockPair();
+    this.shouldPairBeLocked && this.lockPair();
 
     history.txId = signedTx.hash.toString();
 
