@@ -22,29 +22,27 @@ function assertRequest(result: Result<any, any>, message: string): void {
   }
 }
 
-export interface RegisteredAccountAsset extends AccountAsset {
+export type RegisteredAsset = Asset & {
   externalAddress: string;
-  externalBalance: CodecString;
-}
+  externalDecimals: number;
+};
 
-export interface RegisteredAsset extends Asset {
-  externalAddress: string;
-  externalDecimals: string | number;
-}
+export type RegisteredAccountAsset = RegisteredAsset &
+  AccountAsset & {
+    externalBalance: CodecString;
+  };
 
 export interface BridgeHistory extends History {
   type: Operation.EthBridgeIncoming | Operation.EthBridgeOutgoing;
   hash?: string;
-  ethereumHash?: string;
   transactionState?: string;
-  soraNetworkFee?: CodecString;
-  ethereumNetworkFee?: CodecString;
+  externalHash?: string;
+  externalNetworkFee?: CodecString;
   externalNetwork?: BridgeNetworks;
 }
 
 export enum BridgeNetworks {
   ETH_NETWORK_ID = 0,
-  ENERGY_NETWORK_ID = 1,
 }
 
 /**
@@ -91,11 +89,6 @@ export enum RequestType {
   MarkAsDone = 'MarkAsDone',
 }
 
-enum IncomingRequestKind {
-  Transaction = 'Transaction',
-  Meta = 'Meta',
-}
-
 export interface BridgeRequest {
   direction: BridgeDirection;
   from?: string;
@@ -134,20 +127,19 @@ export interface BridgeApprovedRequest {
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
 export class BridgeApi<T> extends BaseApi<T> {
-  private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
+  private externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
 
   constructor() {
-    super('bridgeHistory');
+    super('ethBridgeHistory');
   }
 
-  public get externalNetwork(): BridgeNetworks {
-    return this._externalNetwork;
-  }
-
-  public set externalNetwork(networkId: BridgeNetworks) {
-    const key = 'externalNetwork';
-    this.storage?.set(key, networkId);
-    this._externalNetwork = networkId;
+  public initAccountStorage(): void {
+    super.initAccountStorage();
+    // 1.18 migration
+    // "bridgeHistory" -> "ethBridgeHistory"
+    // "bridgeHistorySyncTimestamp" -> "ethBridgeHistorySyncTimestamp"
+    this.accountStorage?.remove('bridgeHistory');
+    this.accountStorage?.remove('bridgeHistorySyncTimestamp');
   }
 
   public generateHistoryItem(params: BridgeHistory): BridgeHistory | null {
