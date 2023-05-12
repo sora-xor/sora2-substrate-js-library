@@ -43,7 +43,6 @@ export interface BridgeHistory extends History {
 
 export enum BridgeNetworks {
   ETH_NETWORK_ID = 0,
-  ENERGY_NETWORK_ID = 1,
 }
 
 /**
@@ -128,20 +127,13 @@ export interface BridgeApprovedRequest {
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
 export class BridgeApi<T> extends BaseApi<T> {
-  private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
+  private externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
 
   constructor() {
-    super('bridgeHistory');
-  }
-
-  public get externalNetwork(): BridgeNetworks {
-    return this._externalNetwork;
-  }
-
-  public set externalNetwork(networkId: BridgeNetworks) {
-    const key = 'externalNetwork';
-    this.storage?.set(key, networkId);
-    this._externalNetwork = networkId;
+    super('ethBridgeHistory');
+    // 1.18 migration
+    this.accountStorage?.remove('bridgeHistory');
+    this.accountStorage?.remove('bridgeHistorySyncTimestamp');
   }
 
   public generateHistoryItem(params: BridgeHistory): BridgeHistory | null {
