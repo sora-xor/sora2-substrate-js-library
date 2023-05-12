@@ -443,12 +443,10 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       case Operation.EthBridgeOutgoing:
         extrinsic = this.api.tx.ethBridge.transferToSidechain;
         break;
-      case Operation.EthBridgeIncoming:
-        extrinsic = this.api.tx.ethBridge.requestFromSidechain;
-        break;
       case Operation.EvmOutgoing:
         extrinsic = this.api.tx.evmBridgeProxy.burn;
         break;
+      case Operation.EthBridgeIncoming:
       case Operation.EvmIncoming:
         break;
       case Operation.RegisterAsset:
@@ -519,11 +517,10 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0'),
         ]);
       case Operation.EthBridgeIncoming:
+      case Operation.EvmIncoming:
         return null;
       case Operation.EthBridgeOutgoing:
         return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0);
-      case Operation.EvmIncoming:
-        return null;
       case Operation.EvmOutgoing:
         return this.api.tx.evmBridgeProxy.burn({ EVM: 1 }, '', { EVM: '' }, '0');
       case Operation.RegisterAsset:
