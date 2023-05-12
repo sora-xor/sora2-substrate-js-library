@@ -40,14 +40,13 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
-export type HistoryItem = History | EvmHistory | BridgeHistory | RewardClaimHistory;
+export type IBridgeTransaction = EvmHistory | BridgeHistory;
+
+export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
-export type ExtrinsicEvent = [
-  'inblock' | 'finalized' | 'error',
-  History & (EvmHistory | BridgeHistory) & RewardClaimHistory
-];
+export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & IBridgeTransaction & RewardClaimHistory];
 
 interface ISubmitExtrinsic<T> {
   submitExtrinsic(
@@ -308,7 +307,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    const history = (historyData || {}) as History & (EvmHistory | BridgeHistory) & RewardClaimHistory;
+    const history = (historyData || {}) as History & IBridgeTransaction & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
     if (isNotFaucetOperation && signer) {
       history.from = this.address;
