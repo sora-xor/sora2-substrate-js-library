@@ -131,7 +131,13 @@ export class BridgeApi<T> extends BaseApi<T> {
 
   constructor() {
     super('ethBridgeHistory');
+  }
+
+  public initAccountStorage(): void {
+    super.initAccountStorage();
     // 1.18 migration
+    // "bridgeHistory" -> "ethBridgeHistory"
+    // "bridgeHistorySyncTimestamp" -> "ethBridgeHistorySyncTimestamp"
     this.accountStorage?.remove('bridgeHistory');
     this.accountStorage?.remove('bridgeHistorySyncTimestamp');
   }
