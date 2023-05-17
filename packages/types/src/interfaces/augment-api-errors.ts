@@ -154,6 +154,7 @@ declare module '@polkadot/api-base/types/errors' {
       CommitmentNotFoundInDigest: AugmentedError<ApiType>;
       InvalidDigestHash: AugmentedError<ApiType>;
       InvalidMMRProof: AugmentedError<ApiType>;
+      InvalidNetworkId: AugmentedError<ApiType>;
       InvalidNumberOfPositions: AugmentedError<ApiType>;
       InvalidNumberOfPublicKeys: AugmentedError<ApiType>;
       InvalidNumberOfSignatures: AugmentedError<ApiType>;
@@ -169,6 +170,22 @@ declare module '@polkadot/api-base/types/errors' {
       PayloadBlocknumberTooOld: AugmentedError<ApiType>;
       ValidatorNotOnceInbitfield: AugmentedError<ApiType>;
       ValidatorSetIncorrectPosition: AugmentedError<ApiType>;
+    };
+    bridgeDataSigner: {
+      ApprovalsNotFound: AugmentedError<ApiType>;
+      DontHavePendingPeerUpdates: AugmentedError<ApiType>;
+      FailedToVerifySignature: AugmentedError<ApiType>;
+      HasPendingPeerUpdate: AugmentedError<ApiType>;
+      NetworkNotSupported: AugmentedError<ApiType>;
+      PalletInitialized: AugmentedError<ApiType>;
+      PalletNotInitialized: AugmentedError<ApiType>;
+      PeerExists: AugmentedError<ApiType>;
+      PeerNotExists: AugmentedError<ApiType>;
+      PeerNotFound: AugmentedError<ApiType>;
+      SignatureAlreadyExists: AugmentedError<ApiType>;
+      SignaturesNotFound: AugmentedError<ApiType>;
+      TooMuchApprovals: AugmentedError<ApiType>;
+      TooMuchPeers: AugmentedError<ApiType>;
     };
     bridgeInboundChannel: {
       /**
@@ -1869,6 +1886,18 @@ declare module '@polkadot/api-base/types/errors' {
        * A different timepoint was given to the multisig operation that is underway.
        **/
       WrongTimepoint: AugmentedError<ApiType>;
+    };
+    multisigVerifier: {
+      CommitmentNotFoundInDigest: AugmentedError<ApiType>;
+      InvalidInitParams: AugmentedError<ApiType>;
+      InvalidNetworkId: AugmentedError<ApiType>;
+      InvalidNumberOfSignatures: AugmentedError<ApiType>;
+      InvalidSignature: AugmentedError<ApiType>;
+      NetworkNotInitialized: AugmentedError<ApiType>;
+      NoSuchPeer: AugmentedError<ApiType>;
+      NotTrustedPeerSignature: AugmentedError<ApiType>;
+      PeerExists: AugmentedError<ApiType>;
+      TooMuchPeers: AugmentedError<ApiType>;
     };
     oracleProxy: {
       OracleAlreadyDisabled: AugmentedError<ApiType>;

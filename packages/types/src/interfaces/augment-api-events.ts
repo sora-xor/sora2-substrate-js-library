@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, HermesGovernancePlatformVotingOption, OrderBookOrderBookId, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, HermesGovernancePlatformVotingOption, OrderBookOrderBookId, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -113,6 +113,13 @@ declare module '@polkadot/api-base/types/events' {
       NewMMRRoot: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u64]>;
       ValidatorRegistryUpdated: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u32, u64]>;
       VerificationSuccessful: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, AccountId32, u32]>;
+    };
+    bridgeDataSigner: {
+      AddedPeer: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic], { networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic }>;
+      ApprovalAccepted: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, data: H256, signature: SpCoreEcdsaSignature], { networkId: BridgeTypesGenericNetworkId, data: H256, signature: SpCoreEcdsaSignature }>;
+      Approved: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, data: H256, signatures: Vec<SpCoreEcdsaSignature>], { networkId: BridgeTypesGenericNetworkId, data: H256, signatures: Vec<SpCoreEcdsaSignature> }>;
+      Initialized: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, peers: Vec<SpCoreEcdsaPublic>], { networkId: BridgeTypesGenericNetworkId, peers: Vec<SpCoreEcdsaPublic> }>;
+      RemovedPeer: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic], { networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic }>;
     };
     bridgeInboundChannel: {
     };
@@ -690,6 +697,12 @@ declare module '@polkadot/api-base/types/events' {
        * A new multisig operation has begun.
        **/
       NewMultisig: AugmentedEvent<ApiType, [approving: AccountId32, multisig: AccountId32, callHash: U8aFixed], { approving: AccountId32, multisig: AccountId32, callHash: U8aFixed }>;
+    };
+    multisigVerifier: {
+      NetworkInitialized: AugmentedEvent<ApiType, [BridgeTypesGenericNetworkId]>;
+      PeerAdded: AugmentedEvent<ApiType, [SpCoreEcdsaPublic]>;
+      PeerRemoved: AugmentedEvent<ApiType, [SpCoreEcdsaPublic]>;
+      VerificationSuccessful: AugmentedEvent<ApiType, [BridgeTypesGenericNetworkId]>;
     };
     offences: {
       /**
