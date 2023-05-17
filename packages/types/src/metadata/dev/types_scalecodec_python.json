@@ -1,5 +1,5 @@
 {
-    "runtime_id": 49,
+    "runtime_id": 51,
     "versioning": [
         {
             "runtime_range": [
@@ -4472,6 +4472,67 @@
                         ]
                     ]
                 }
+            }
+        },
+        {
+            "runtime_range": [
+                51,
+                null
+            ],
+            "types": {
+                "AppKind": {
+                    "type": "enum",
+                    "value_list": [
+                        "EthApp",
+                        "ERC20App",
+                        "SidechainApp",
+                        "SubstrateApp"
+                    ]
+                },
+                "AppsWithSupportedAssets": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "apps",
+                            "Vec<BridgeAppInfo>"
+                        ],
+                        [
+                            "assets",
+                            "Vec<BridgeAssetInfo<AssetId>>"
+                        ]
+                    ]
+                },
+                "BridgeAppInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "evmAddress",
+                            "H160"
+                        ],
+                        [
+                            "appKind",
+                            "AppKind"
+                        ]
+                    ]
+                },
+                "BridgeAssetInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "assetId",
+                            "AssetId"
+                        ],
+                        [
+                            "evmAddress",
+                            "Option<H160>"
+                        ],
+                        [
+                            "appKind",
+                            "AppKind"
+                        ]
+                    ]
+                },
+                "EVMChainId": "U256"
             }
         }
     ]

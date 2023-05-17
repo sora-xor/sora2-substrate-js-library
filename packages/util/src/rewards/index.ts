@@ -112,9 +112,9 @@ export class RewardsModule<T> {
     );
 
     const rewards = [
-      this.prepareRewardInfo([RewardType.Externals, RewardingEvents.SoraFarmHarvest], soraFarmHarvestAmount, PSWAP),
-      this.prepareRewardInfo([RewardType.Externals, RewardingEvents.NftAirdrop], nftAirdropAmount, PSWAP),
-      this.prepareRewardInfo([RewardType.Externals, RewardingEvents.XorErc20], xorErc20Amount, VAL),
+      this.prepareRewardInfo([RewardType.External, RewardingEvents.SoraFarmHarvest], soraFarmHarvestAmount, PSWAP),
+      this.prepareRewardInfo([RewardType.External, RewardingEvents.NftAirdrop], nftAirdropAmount, PSWAP),
+      this.prepareRewardInfo([RewardType.External, RewardingEvents.XorErc20], xorErc20Amount, VAL),
     ].filter((item) => this.isClaimableReward(item));
 
     return rewards;
@@ -163,7 +163,7 @@ export class RewardsModule<T> {
           startBlock: data.startBlock.toNumber(),
           length: data.length.toNumber(),
           account: data.account.toString(),
-          tag: key.args[0].toString(),
+          tag: new TextDecoder().decode(key.args[0]),
         });
       }
 
@@ -202,7 +202,7 @@ export class RewardsModule<T> {
   /**
    * Get observable crowdloan rewards
    */
-  public async getCrowdloanRewardsSubscription(): Promise<Observable<RewardInfo[][]>> {
+  public async getCrowdloanRewardsSubscription(): Promise<Observable<Record<string, RewardInfo[]>>> {
     assert(this.root.account, Messages.connectWallet);
 
     const blocksPerDay = 14_400;
@@ -221,8 +221,9 @@ export class RewardsModule<T> {
 
     return combineLatest([currentBlockObservable, ...userCrowdloansObservable]).pipe(
       map(([currentBlock, ...userCrowdloans]) => {
-        return crowdloans.map((crowdloan, index) => {
-          const elapsedBlocks = Math.max(currentBlock - crowdloan.startBlock, 0);
+        return crowdloans.reduce<Record<string, RewardInfo[]>>((buffer, crowdloan, index) => {
+          const endBlock = crowdloan.startBlock + crowdloan.length;
+          const elapsedBlocks = Math.max(Math.min(endBlock, currentBlock) - crowdloan.startBlock, 0);
           const userCrowdloan = userCrowdloans[index];
           const userContributionPart = crowdloan.totalContribution.isZero()
             ? FPNumber.ZERO
@@ -232,7 +233,7 @@ export class RewardsModule<T> {
           const elapsedDays = Math.floor(elapsedBlocks / blocksPerDay);
           const elapsedPart = FPNumber.fromNatural(elapsedDays).div(FPNumber.fromNatural(lenghtDays));
 
-          return Object.entries(crowdloan.rewards).map(([assetId, assetTotalAmount]) => {
+          const rewards = Object.entries(crowdloan.rewards).map(([assetId, assetTotalAmount]) => {
             const asset = { ...assetsMap[assetId] };
             const totalAmount = assetTotalAmount.mul(userContributionPart);
             const currentAmount = totalAmount.mul(elapsedPart);
@@ -248,7 +249,11 @@ export class RewardsModule<T> {
               total: totalAmount.sub(rewardedAmount).toCodecString(),
             };
           });
-        });
+
+          buffer[crowdloan.tag] = rewards;
+
+          return buffer;
+        }, {});
       })
     );
   }
@@ -278,7 +283,7 @@ export class RewardsModule<T> {
     }
 
     // external
-    if (this.containsRewardsForType(rewards, RewardType.Externals)) {
+    if (this.containsRewardsForType(rewards, RewardType.External)) {
       transactions.push({
         extrinsic: this.root.api.tx.rewards.claim,
         args: [signature],

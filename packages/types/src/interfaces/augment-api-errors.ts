@@ -137,6 +137,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       RateConversionOverflow: AugmentedError<ApiType>;
       /**
+       * Rate is expired and can't be used until next update.
+       **/
+      RateExpired: AugmentedError<ApiType>;
+      /**
+       * Rate has invalid timestamp.
+       **/
+      RateHasInvalidTimestamp: AugmentedError<ApiType>;
+      /**
        * An untrusted account tried to relay data.
        **/
       UnauthorizedRelayer: AugmentedError<ApiType>;
@@ -146,6 +154,7 @@ declare module '@polkadot/api-base/types/errors' {
       CommitmentNotFoundInDigest: AugmentedError<ApiType>;
       InvalidDigestHash: AugmentedError<ApiType>;
       InvalidMMRProof: AugmentedError<ApiType>;
+      InvalidNetworkId: AugmentedError<ApiType>;
       InvalidNumberOfPositions: AugmentedError<ApiType>;
       InvalidNumberOfPublicKeys: AugmentedError<ApiType>;
       InvalidNumberOfSignatures: AugmentedError<ApiType>;
@@ -161,6 +170,22 @@ declare module '@polkadot/api-base/types/errors' {
       PayloadBlocknumberTooOld: AugmentedError<ApiType>;
       ValidatorNotOnceInbitfield: AugmentedError<ApiType>;
       ValidatorSetIncorrectPosition: AugmentedError<ApiType>;
+    };
+    bridgeDataSigner: {
+      ApprovalsNotFound: AugmentedError<ApiType>;
+      DontHavePendingPeerUpdates: AugmentedError<ApiType>;
+      FailedToVerifySignature: AugmentedError<ApiType>;
+      HasPendingPeerUpdate: AugmentedError<ApiType>;
+      NetworkNotSupported: AugmentedError<ApiType>;
+      PalletInitialized: AugmentedError<ApiType>;
+      PalletNotInitialized: AugmentedError<ApiType>;
+      PeerExists: AugmentedError<ApiType>;
+      PeerNotExists: AugmentedError<ApiType>;
+      PeerNotFound: AugmentedError<ApiType>;
+      SignatureAlreadyExists: AugmentedError<ApiType>;
+      SignaturesNotFound: AugmentedError<ApiType>;
+      TooMuchApprovals: AugmentedError<ApiType>;
+      TooMuchPeers: AugmentedError<ApiType>;
     };
     bridgeInboundChannel: {
       /**
@@ -1862,13 +1887,33 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongTimepoint: AugmentedError<ApiType>;
     };
+    multisigVerifier: {
+      CommitmentNotFoundInDigest: AugmentedError<ApiType>;
+      InvalidInitParams: AugmentedError<ApiType>;
+      InvalidNetworkId: AugmentedError<ApiType>;
+      InvalidNumberOfSignatures: AugmentedError<ApiType>;
+      InvalidSignature: AugmentedError<ApiType>;
+      NetworkNotInitialized: AugmentedError<ApiType>;
+      NoSuchPeer: AugmentedError<ApiType>;
+      NotTrustedPeerSignature: AugmentedError<ApiType>;
+      PeerExists: AugmentedError<ApiType>;
+      TooMuchPeers: AugmentedError<ApiType>;
+    };
     oracleProxy: {
       OracleAlreadyDisabled: AugmentedError<ApiType>;
       OracleAlreadyEnabled: AugmentedError<ApiType>;
     };
     orderBook: {
       /**
-       * Cannot delete the limit order
+       * An error occurred while calculating the amount
+       **/
+      AmountCalculationFailed: AugmentedError<ApiType>;
+      /**
+       * At the moment, Users cannot cancel their limit orders in the current order book
+       **/
+      CancellationOfLimitOrdersIsForbidden: AugmentedError<ApiType>;
+      /**
+       * It is impossible to delete the limit order
        **/
       DeleteLimitOrderError: AugmentedError<ApiType>;
       /**
@@ -1880,9 +1925,33 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidLifespan: AugmentedError<ApiType>;
       /**
-       * Cannot insert the limit order because bounds are reached
+       * The limit order price does not meet the requirements
+       **/
+      InvalidLimitOrderPrice: AugmentedError<ApiType>;
+      /**
+       * The order amount (limit or market) does not meet the requirements
+       **/
+      InvalidOrderAmount: AugmentedError<ApiType>;
+      /**
+       * Limit order already exists for this trading pair and order id
+       **/
+      LimitOrderAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * User cannot set the price of limit order too far from actual market price
+       **/
+      LimitOrderPriceIsTooFarFromSpread: AugmentedError<ApiType>;
+      /**
+       * It is impossible to insert the limit order because the bounds have been reached
        **/
       LimitOrderStorageOverflow: AugmentedError<ApiType>;
+      /**
+       * There are no aggregated bids/asks for the order book
+       **/
+      NoAggregatedData: AugmentedError<ApiType>;
+      /**
+       * There are no bids/asks for the price
+       **/
+      NoDataForPrice: AugmentedError<ApiType>;
       /**
        * The asset is not allowed to be base. Only dex base asset can be a base asset for order book
        **/
@@ -1896,21 +1965,45 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       OrderBookAlreadyExists: AugmentedError<ApiType>;
       /**
-       * Trading pair currently reached its capacity
+       * It is impossible to place the limit order because bounds of the max count of prices for the side have been reached
        **/
-      OrderLimitReached: AugmentedError<ApiType>;
+      OrderBookReachedMaxCountOfPricesForSide: AugmentedError<ApiType>;
       /**
-       * Price in given order exceeds allowed limits for the trading pair
+       * At the moment, Users cannot place new limit orders in the current order book
        **/
-      PriceExceedsLimits: AugmentedError<ApiType>;
+      PlacementOfLimitOrdersIsForbidden: AugmentedError<ApiType>;
+      /**
+       * It is impossible to place the limit order because bounds of the max count of orders at the current price have been reached
+       **/
+      PriceReachedMaxCountOfLimitOrders: AugmentedError<ApiType>;
+      /**
+       * At the moment, Trading is forbidden in the current order book
+       **/
+      TradingIsForbidden: AugmentedError<ApiType>;
+      /**
+       * Unauthorized action
+       **/
+      Unauthorized: AugmentedError<ApiType>;
+      /**
+       * Limit order does not exist for this trading pair and order id
+       **/
+      UnknownLimitOrder: AugmentedError<ApiType>;
       /**
        * Order book does not exist for this trading pair
        **/
       UnknownOrderBook: AugmentedError<ApiType>;
       /**
+       * It is impossible to update the limit order
+       **/
+      UpdateLimitOrderError: AugmentedError<ApiType>;
+      /**
+       * User has the max available count of open limit orders in the current order book
+       **/
+      UserHasMaxCountOfOpenedOrders: AugmentedError<ApiType>;
+      /**
        * User cannot create an order book with NFT if they don't have NFT
        **/
-      UserDoesntHaveNft: AugmentedError<ApiType>;
+      UserHasNoNft: AugmentedError<ApiType>;
     };
     permissions: {
       /**
@@ -2830,6 +2923,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CannotExchangeWithSelf: AugmentedError<ApiType>;
       /**
+       * Synthetic asset must be divisible
+       **/
+      CantEnableIndivisibleAsset: AugmentedError<ApiType>;
+      /**
        * Liquidity source can't exchange assets with the given IDs on the given DEXId.
        **/
       CantExchange: AugmentedError<ApiType>;
@@ -2846,6 +2943,18 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       IncRefError: AugmentedError<ApiType>;
       /**
+       * Reference asset must be divisible
+       **/
+      IndivisibleReferenceAsset: AugmentedError<ApiType>;
+      /**
+       * Invalid fee ratio value.
+       **/
+      InvalidFeeRatio: AugmentedError<ApiType>;
+      /**
+       * Error quoting price from oracle.
+       **/
+      OracleQuoteError: AugmentedError<ApiType>;
+      /**
        * Attempt to initialize pool for pair that already exists.
        **/
       PoolAlreadyInitializedForPair: AugmentedError<ApiType>;
@@ -2861,6 +2970,23 @@ declare module '@polkadot/api-base/types/errors' {
        * Indicated limits for slippage has not been met during transaction execution.
        **/
       SlippageLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Attempt to enable synthetic asset with symbol
+       * that is already referenced to another synthetic.
+       **/
+      SymbolAlreadyReferencedToSynthetic: AugmentedError<ApiType>;
+      /**
+       * Attempt to enable synthetic asset with inexistent symbol.
+       **/
+      SymbolDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Synthetic asset does not exist.
+       **/
+      SyntheticDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Attempt to disable synthetic asset that is not enabled.
+       **/
+      SyntheticIsNotEnabled: AugmentedError<ApiType>;
       /**
        * Indicated collateral asset is not enabled for pool.
        **/

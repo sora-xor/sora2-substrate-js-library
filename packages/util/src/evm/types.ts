@@ -7,6 +7,7 @@ export type EvmNetwork = EvmNetworkId | number;
 
 /** Made like BridgeRequest */
 export interface EvmTransaction {
+  externalNetwork: EvmNetwork;
   /** Outgoing = 0, Incoming = 1 */
   direction: EvmDirection;
   /** SORA Account ID */
@@ -17,18 +18,18 @@ export interface EvmTransaction {
   status: EvmTxStatus;
   soraHash: string;
   amount: CodecString;
-  // TODO: these fields below will be added later
-  evmHash: string;
   startTimestamp: number;
   endTimestamp: number;
+  // TODO: these fields below will be added later
+  evmHash: string;
 }
 
 export interface EvmHistory extends History {
   type: Operation.EvmIncoming | Operation.EvmOutgoing;
   hash?: string;
-  evmHash?: string;
-  evmNetworkFee?: string;
   transactionState?: EvmTxStatus;
+  externalHash?: string;
+  externalNetworkFee?: CodecString;
   externalNetwork?: EvmNetwork;
 }
 

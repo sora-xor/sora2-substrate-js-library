@@ -7586,33 +7586,31 @@ returns: `u16`
 
 <hr>
 
-#### **api.query.xstPool.permissionedTechAccount**
-
-> Technical account used to store collateral tokens.
-
-arguments: -
-
-returns: `CommonPrimitivesTechAccountId`
-
-<hr>
-
-#### **api.query.xstPool.baseFee**
-
-> Base fee in XOR which is deducted on all trades, currently it's burned: 0.3%.
-
-arguments: -
-
-returns: `FixnumFixedPoint`
-
-<hr>
-
 #### **api.query.xstPool.enabledSynthetics**
 
-> XST Assets allowed to be traded using XST.
+> Synthetic assets and their reference symbols.
+>
+> It's a programmer responsibility to keep this collection consistent with [`EnabledSymbols`].
 
-arguments: -
+arguments:
 
-returns: `BTreeSet<CommonPrimitivesAssetId32>`
+- key: `CommonPrimitivesAssetId32`
+
+returns: `XstSyntheticInfo`
+
+<hr>
+
+#### **api.query.xstPool.enabledSymbols**
+
+> Reference symbols and their synthetic assets.
+>
+> It's a programmer responsibility to keep this collection consistent with [`EnabledSynthetics`].
+
+arguments:
+
+- key: `Bytes`
+
+returns: `CommonPrimitivesAssetId32`
 
 <hr>
 
@@ -7650,18 +7648,13 @@ returns: `u128`
 
 ### _Extrinsics_
 
-#### **api.tx.xstPool.initializePool**
-
-> Enable exchange path on the pool for pair BaseAsset-SyntheticAsset.
-
-arguments:
-
-- syntheticAssetId: `CommonPrimitivesAssetId32`
-<hr>
-
 #### **api.tx.xstPool.setReferenceAsset**
 
-> Change reference asset which is used to determine collateral assets value. Intended to be e.g., stablecoin DAI.
+> Change reference asset which is used to determine collateral assets value.
+> Intended to be e.g., stablecoin DAI.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `reference_asset_id`: asset id of the new reference asset.
 
 arguments:
 
@@ -7672,7 +7665,54 @@ arguments:
 
 arguments:
 
+- assetId: `CommonPrimitivesAssetId32`
+- referenceSymbol: `Bytes`
+- feeRatio: `FixnumFixedPoint`
+<hr>
+
+#### **api.tx.xstPool.registerSyntheticAsset**
+
+> Register and enable new synthetic asset with `reference_symbol` price binding
+
+arguments:
+
+- assetSymbol: `Bytes`
+- assetName: `Bytes`
+- referenceSymbol: `Bytes`
+- feeRatio: `FixnumFixedPoint`
+<hr>
+
+#### **api.tx.xstPool.disableSyntheticAsset**
+
+> Disable synthetic asset.
+>
+> Just remove synthetic from exchanging.
+> Will not unregister trading pair because `trading_pair` pallet does not provide this
+> ability. And will not unregister trading synthetic asset because of that.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `synthetic_asset`: synthetic asset id to disable.
+
+arguments:
+
 - syntheticAsset: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.xstPool.setSyntheticAssetFee**
+
+> Set synthetic asset fee.
+>
+> This fee will be used to determine the amount of synthetic base asset (e.g. XST) to be
+> burned when user buys synthetic asset.
+>
+> - `origin`: the sudo account on whose behalf the transaction is being executed,
+> - `synthetic_asset`: synthetic asset id to set fee for,
+> - `fee_ratio`: fee ratio with precision = 18, so 1000000000000000000 = 1 = 100% fee.
+
+arguments:
+
+- syntheticAsset: `CommonPrimitivesAssetId32`
+- feeRatio: `FixnumFixedPoint`
 <hr>
 
 #### **api.tx.xstPool.setSyntheticBaseAssetFloorPrice**
@@ -9252,7 +9292,7 @@ returns: `u16`
 
 arguments:
 
-- key: `CommonPrimitivesTradingPairAssetId32`
+- key: `OrderBookOrderBookId`
 
 returns: `OrderBook`
 
@@ -9262,7 +9302,7 @@ returns: `OrderBook`
 
 arguments:
 
-- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+- key: `(OrderBookOrderBookId,u128)`
 
 returns: `OrderBookLimitOrder`
 
@@ -9272,7 +9312,7 @@ returns: `OrderBookLimitOrder`
 
 arguments:
 
-- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+- key: `(OrderBookOrderBookId,u128)`
 
 returns: `Vec<u128>`
 
@@ -9282,7 +9322,7 @@ returns: `Vec<u128>`
 
 arguments:
 
-- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+- key: `(OrderBookOrderBookId,u128)`
 
 returns: `Vec<u128>`
 
@@ -9292,7 +9332,7 @@ returns: `Vec<u128>`
 
 arguments:
 
-- key: `CommonPrimitivesTradingPairAssetId32`
+- key: `OrderBookOrderBookId`
 
 returns: `BTreeMap<u128, u128>`
 
@@ -9302,7 +9342,7 @@ returns: `BTreeMap<u128, u128>`
 
 arguments:
 
-- key: `CommonPrimitivesTradingPairAssetId32`
+- key: `OrderBookOrderBookId`
 
 returns: `BTreeMap<u128, u128>`
 
@@ -9312,7 +9352,7 @@ returns: `BTreeMap<u128, u128>`
 
 arguments:
 
-- key: `(AccountId32,CommonPrimitivesTradingPairAssetId32)`
+- key: `(AccountId32,OrderBookOrderBookId)`
 
 returns: `Vec<u128>`
 
@@ -9325,21 +9365,21 @@ returns: `Vec<u128>`
 arguments:
 
 - dexId: `u32`
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 <hr>
 
 #### **api.tx.orderBook.deleteOrderbook**
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 <hr>
 
 #### **api.tx.orderBook.updateOrderbook**
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 - tickSize: `u128`
 - stepLotSize: `u128`
 - minLotSize: `u128`
@@ -9350,7 +9390,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 - status: `OrderBookOrderBookStatus`
 <hr>
 
@@ -9358,7 +9398,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 - price: `u128`
 - amount: `u128`
 - side: `CommonPrimitivesPriceVariant`
@@ -9369,7 +9409,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 - orderId: `u128`
 <hr>
 
@@ -9621,6 +9661,34 @@ arguments:
 - assetId: `CommonPrimitivesAssetId32`
 - recipient: `BridgeTypesGenericAccount`
 - amount: `u128`
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.evmBridgeProxy.listApps**
+
+>
+
+arguments:
+
+- networkId: `EVMChainId`
+- at: `BlockHash`
+
+returns: `Vec<BridgeAppInfo>`
+
+<hr>
+
+#### **api.rpc.evmBridgeProxy.listAppsWithSupportedAssets**
+
+>
+
+arguments:
+
+- networkId: `EVMChainId`
+- at: `BlockHash`
+
+returns: `AppsWithSupportedAssets<AssetId>`
+
 <hr>
 
 ## EthereumLightClient pallet
@@ -11549,6 +11617,28 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 "Amount"
 ```
 
+### AppKind
+
+```
+{
+    _enum: [
+        "EthApp",
+        "ERC20App",
+        "SidechainApp",
+        "SubstrateApp"
+    ]
+}
+```
+
+### AppsWithSupportedAssets
+
+```
+{
+    apps: "Vec<BridgeAppInfo>",
+    assets: "Vec<BridgeAssetInfo<AssetId>>"
+}
+```
+
 ### AssetId
 
 ```
@@ -11674,6 +11764,25 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 "u16"
+```
+
+### BridgeAppInfo
+
+```
+{
+    evmAddress: "H160",
+    appKind: "AppKind"
+}
+```
+
+### BridgeAssetInfo
+
+```
+{
+    assetId: "AssetId",
+    evmAddress: "Option<H160>",
+    appKind: "AppKind"
+}
 ```
 
 ### BridgeNetworkId
@@ -11881,6 +11990,12 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 "Null"
+```
+
+### EVMChainId
+
+```
+"U256"
 ```
 
 ### EthAddress

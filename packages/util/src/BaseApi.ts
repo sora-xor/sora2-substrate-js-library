@@ -18,6 +18,7 @@ import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
+import type { EvmHistory } from './evm/types';
 import type { RewardClaimHistory } from './rewards/types';
 
 type AccountWithOptions = {
@@ -39,11 +40,13 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
-export type HistoryItem = History | BridgeHistory | RewardClaimHistory;
+export type IBridgeTransaction = EvmHistory | BridgeHistory;
+
+export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
-export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & BridgeHistory & RewardClaimHistory];
+export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & IBridgeTransaction & RewardClaimHistory];
 
 interface ISubmitExtrinsic<T> {
   submitExtrinsic(
@@ -80,6 +83,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.CreatePair]: '0',
     [Operation.EthBridgeIncoming]: '0',
     [Operation.EthBridgeOutgoing]: '0',
+    [Operation.EvmIncoming]: '0',
+    [Operation.EvmOutgoing]: '0',
     [Operation.RegisterAsset]: '0',
     [Operation.RemoveLiquidity]: '0',
     [Operation.Swap]: '0',
@@ -109,8 +114,10 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   public storage?: Storage; // common data storage
   public accountStorage?: AccountStorage; // account data storage
   public account: CreateResult;
-  /** If `true` you might subscribe on extrinsic statuses */
+  /** If `true` you might subscribe on extrinsic statuses (`false` by default) */
   public shouldObservableBeUsed = false;
+  /** If `true` it'll be locked during extrinsics submit (`false` by default) */
+  public shouldPairBeLocked = false;
 
   constructor(public readonly historyNamespace = 'history') {}
 
@@ -301,7 +308,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    const history = (historyData || {}) as History & BridgeHistory & RewardClaimHistory;
+    const history = (historyData || {}) as History & IBridgeTransaction & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
     if (isNotFaucetOperation && signer) {
       history.from = this.address;
@@ -313,7 +320,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
 
     // we should lock pair, if it's not locked
-    this.lockPair();
+    this.shouldPairBeLocked && this.lockPair();
 
     history.txId = signedTx.hash.toString();
 
@@ -437,8 +444,11 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       case Operation.EthBridgeOutgoing:
         extrinsic = this.api.tx.ethBridge.transferToSidechain;
         break;
+      case Operation.EvmOutgoing:
+        extrinsic = this.api.tx.evmBridgeProxy.burn;
+        break;
       case Operation.EthBridgeIncoming:
-        extrinsic = this.api.tx.ethBridge.requestFromSidechain;
+      case Operation.EvmIncoming:
         break;
       case Operation.RegisterAsset:
         extrinsic = this.api.tx.assets.register;
@@ -483,11 +493,15 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       default:
         throw new Error('Unknown function');
     }
-    const { account, options } = this.getAccountWithOptions();
-    const tx =
-      type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic<'promise'>);
-    const res = await tx.paymentInfo(account, options);
-    return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
+    if (extrinsic) {
+      const { account, options } = this.getAccountWithOptions();
+      const tx =
+        type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic<'promise'>);
+      const res = await tx.paymentInfo(account, options);
+      return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
+    } else {
+      return '0';
+    }
   }
 
   /**
@@ -497,76 +511,83 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
    * @param operation
    */
   private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic<'promise'> | null {
-    switch (operation) {
-      case Operation.AddLiquidity:
-        return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0');
-      case Operation.CreatePair:
-        return this.api.tx.utility.batchAll([
-          this.api.tx.tradingPair.register(DexId.XOR, '', ''),
-          this.api.tx.poolXYK.initializePool(DexId.XOR, '', ''),
-          this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0'),
-        ]);
-      case Operation.EthBridgeIncoming:
-        return this.api.tx.ethBridge.requestFromSidechain('', { Transaction: 'Transfer' }, 0);
-      case Operation.EthBridgeOutgoing:
-        return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0);
-      case Operation.RegisterAsset:
-        return this.api.tx.assets.register('', '', '0', false, false, null, null);
-      case Operation.RemoveLiquidity:
-        return this.api.tx.poolXYK.withdrawLiquidity(DexId.XOR, '', '', '0', '0', '0');
-      case Operation.Swap:
-        return this.api.tx.liquidityProxy.swap(
-          DexId.XOR,
-          '',
-          '',
-          { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
-          [],
-          'Disabled'
-        );
-      case Operation.SwapAndSend:
-        return this.api.tx.liquidityProxy.swapTransfer(
-          '',
-          DexId.XOR,
-          '',
-          '',
-          { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
-          [],
-          'Disabled'
-        );
-      case Operation.SwapTransferBatch:
-        return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled');
-      case Operation.Transfer:
-        return this.api.tx.assets.transfer('', '', '0');
-      case Operation.ClaimVestedRewards:
-        return this.api.tx.vestedRewards.claimRewards();
-      case Operation.ClaimCrowdloanRewards:
-        return this.api.tx.vestedRewards.claimCrowdloanRewards(XOR.address);
-      case Operation.ClaimLiquidityProvisionRewards:
-        return this.api.tx.pswapDistribution.claimIncentive();
-      case Operation.ClaimExternalRewards:
-        return this.api.tx.rewards.claim(
-          '0xa8811ca9a2f65a4e21bd82a1e121f2a7f0f94006d0d4bcacf50016aef0b67765692bb7a06367365f13a521ec129c260451a682e658048729ff514e77e4cdffab1b'
-        ); // signature mock
-      case Operation.ReferralReserveXor:
-        return this.api.tx.referrals.reserve('0');
-      case Operation.ReferralUnreserveXor:
-        return this.api.tx.referrals.unreserve('0');
-      case Operation.ReferralSetInvitedUser:
-        return this.api.tx.referrals.setReferrer('');
-      case Operation.DemeterFarmingDepositLiquidity:
-        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, XOR.address, true, 0);
-      case Operation.DemeterFarmingWithdrawLiquidity:
-        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, XOR.address, 0, true);
-      case Operation.DemeterFarmingStakeToken:
-        return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, XOR.address, false, 0);
-      case Operation.DemeterFarmingUnstakeToken:
-        return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, XOR.address, 0, false);
-      case Operation.DemeterFarmingGetRewards:
-        return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, XOR.address, true);
-      case Operation.CeresLiquidityLockerLockLiquidity:
-        return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
-      default:
-        return null;
+    try {
+      switch (operation) {
+        case Operation.AddLiquidity:
+          return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0');
+        case Operation.CreatePair:
+          return this.api.tx.utility.batchAll([
+            this.api.tx.tradingPair.register(DexId.XOR, '', ''),
+            this.api.tx.poolXYK.initializePool(DexId.XOR, '', ''),
+            this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0'),
+          ]);
+        case Operation.EthBridgeIncoming:
+        case Operation.EvmIncoming:
+          return null;
+        case Operation.EthBridgeOutgoing:
+          return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0);
+        case Operation.EvmOutgoing:
+          return this.api.tx.evmBridgeProxy.burn({ EVM: 1 }, '', { EVM: '' }, '0');
+        case Operation.RegisterAsset:
+          return this.api.tx.assets.register('', '', '0', false, false, null, null);
+        case Operation.RemoveLiquidity:
+          return this.api.tx.poolXYK.withdrawLiquidity(DexId.XOR, '', '', '0', '0', '0');
+        case Operation.Swap:
+          return this.api.tx.liquidityProxy.swap(
+            DexId.XOR,
+            '',
+            '',
+            { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
+            [],
+            'Disabled'
+          );
+        case Operation.SwapAndSend:
+          return this.api.tx.liquidityProxy.swapTransfer(
+            '',
+            DexId.XOR,
+            '',
+            '',
+            { WithDesiredInput: { desiredAmountIn: '0', minAmountOut: '0' } },
+            [],
+            'Disabled'
+          );
+        case Operation.SwapTransferBatch:
+          return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled');
+        case Operation.Transfer:
+          return this.api.tx.assets.transfer('', '', '0');
+        case Operation.ClaimVestedRewards:
+          return this.api.tx.vestedRewards.claimRewards();
+        case Operation.ClaimCrowdloanRewards:
+          return this.api.tx.vestedRewards.claimCrowdloanRewards(XOR.address);
+        case Operation.ClaimLiquidityProvisionRewards:
+          return this.api.tx.pswapDistribution.claimIncentive();
+        case Operation.ClaimExternalRewards:
+          return this.api.tx.rewards.claim(
+            '0xa8811ca9a2f65a4e21bd82a1e121f2a7f0f94006d0d4bcacf50016aef0b67765692bb7a06367365f13a521ec129c260451a682e658048729ff514e77e4cdffab1b'
+          ); // signature mock
+        case Operation.ReferralReserveXor:
+          return this.api.tx.referrals.reserve('0');
+        case Operation.ReferralUnreserveXor:
+          return this.api.tx.referrals.unreserve('0');
+        case Operation.ReferralSetInvitedUser:
+          return this.api.tx.referrals.setReferrer('');
+        case Operation.DemeterFarmingDepositLiquidity:
+          return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, XOR.address, true, 0);
+        case Operation.DemeterFarmingWithdrawLiquidity:
+          return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, XOR.address, 0, true);
+        case Operation.DemeterFarmingStakeToken:
+          return this.api.tx.demeterFarmingPlatform.deposit(XOR.address, XOR.address, XOR.address, false, 0);
+        case Operation.DemeterFarmingUnstakeToken:
+          return this.api.tx.demeterFarmingPlatform.withdraw(XOR.address, XOR.address, XOR.address, 0, false);
+        case Operation.DemeterFarmingGetRewards:
+          return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, XOR.address, true);
+        case Operation.CeresLiquidityLockerLockLiquidity:
+          return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
+        default:
+          return null;
+      }
+    } catch {
+      return null;
     }
   }
 
@@ -581,6 +602,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.CreatePair,
       Operation.EthBridgeIncoming,
       Operation.EthBridgeOutgoing,
+      Operation.EvmIncoming,
+      Operation.EvmOutgoing,
       Operation.RegisterAsset,
       Operation.RemoveLiquidity,
       Operation.Swap,
@@ -606,8 +629,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     for (const operation of operations) {
       const extrinsic = this.getEmptyExtrinsic(operation);
       if (extrinsic) {
-        const res = await extrinsic.paymentInfo(mockAccountAddress);
-        this.NetworkFee[operation] = new FPNumber(res.partialFee, XOR.decimals).toCodecString();
+        try {
+          const res = await extrinsic.paymentInfo(mockAccountAddress);
+          this.NetworkFee[operation] = new FPNumber(res.partialFee, XOR.decimals).toCodecString();
+        } catch (error) {
+          // extrinsic is not supported in chain
+        }
       }
     }
   }
@@ -731,4 +758,9 @@ export interface History {
   liquidityProviderFee?: CodecString;
   soraNetworkFee?: CodecString;
   payload?: any; // can be used to integrate with third-party services
+}
+
+export interface OnChainIdentity {
+  legalName: string;
+  approved: boolean;
 }

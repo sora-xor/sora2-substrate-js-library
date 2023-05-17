@@ -75,6 +75,7 @@ import type { StakingInfo } from '@sora-substrate/types/interfaces/ceresStaking'
 import type { TokenLockInfo } from '@sora-substrate/types/interfaces/ceresTokenLocker';
 import type { PoolData, TokenInfo, UserInfo } from '@sora-substrate/types/interfaces/demeterFarmingPlatform';
 import type { AssetKind, BridgeNetworkId, BridgeSignatureVersion, BridgeStatus, BridgeTimepoint, ChangePeersContract, CurrencyIdEncoded, EthBridgeStorageVersion, EthPeersSync, FixedBytes, IncomingAddToken, IncomingCancelOutgoingRequest, IncomingChangePeers, IncomingChangePeersCompat, IncomingMarkAsDoneRequest, IncomingMetaRequestKind, IncomingMigrate, IncomingPrepareForMigration, IncomingRequest, IncomingRequestKind, IncomingTransactionRequestKind, IncomingTransfer, LoadIncomingMetaRequest, LoadIncomingRequest, LoadIncomingTransactionRequest, MultiChainHeight, OffchainRequest, OutgoingAddAsset, OutgoingAddAssetEncoded, OutgoingAddPeer, OutgoingAddPeerCompat, OutgoingAddPeerEncoded, OutgoingAddToken, OutgoingAddTokenEncoded, OutgoingMigrate, OutgoingMigrateEncoded, OutgoingPrepareForMigration, OutgoingPrepareForMigrationEncoded, OutgoingRemovePeer, OutgoingRemovePeerCompat, OutgoingRemovePeerEncoded, OutgoingRequest, OutgoingRequestEncoded, OutgoingTransfer, OutgoingTransferEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
+import type { AppKind, AppsWithSupportedAssets, BridgeAppInfo, BridgeAssetInfo, EVMChainId } from '@sora-substrate/types/interfaces/evmBridgeProxy';
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { HermesPollInfo, HermesVotingInfo, VotingOption } from '@sora-substrate/types/interfaces/hermesGovernancePlatform';
 import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
@@ -121,10 +122,12 @@ declare module '@polkadot/types/types/registry' {
     AmountOf: AmountOf;
     AnySignature: AnySignature;
     ApiId: ApiId;
+    AppKind: AppKind;
     ApplyExtrinsicResult: ApplyExtrinsicResult;
     ApplyExtrinsicResultPre6: ApplyExtrinsicResultPre6;
     ApprovalFlag: ApprovalFlag;
     Approvals: Approvals;
+    AppsWithSupportedAssets: AppsWithSupportedAssets;
     ArithmeticError: ArithmeticError;
     AssetId: AssetId;
     AssetId32: AssetId32;
@@ -220,6 +223,8 @@ declare module '@polkadot/types/types/registry' {
     BountyStatusActive: BountyStatusActive;
     BountyStatusCuratorProposed: BountyStatusCuratorProposed;
     BountyStatusPendingPayout: BountyStatusPendingPayout;
+    BridgeAppInfo: BridgeAppInfo;
+    BridgeAssetInfo: BridgeAssetInfo;
     BridgedBlockHash: BridgedBlockHash;
     BridgedBlockNumber: BridgedBlockNumber;
     BridgedHeader: BridgedHeader;
@@ -489,6 +494,7 @@ declare module '@polkadot/types/types/registry' {
     EventRecord: EventRecord;
     EvmAccount: EvmAccount;
     EvmCallInfo: EvmCallInfo;
+    EVMChainId: EVMChainId;
     EvmCreateInfo: EvmCreateInfo;
     EvmLog: EvmLog;
     EvmVicinity: EvmVicinity;

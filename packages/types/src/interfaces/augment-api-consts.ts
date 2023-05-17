@@ -98,6 +98,23 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxReserves: u32 & AugmentedConst<ApiType>;
     };
+    band: {
+      /**
+       * Rate expiration period in seconds.
+       **/
+      getBandRateStalePeriod: u64 & AugmentedConst<ApiType>;
+    };
+    bridgeDataSigner: {
+      maxPeers: u32 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for longevity of unsigned transactions.
+       **/
+      unsignedLongevity: u64 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for base priority of unsigned transactions.
+       **/
+      unsignedPriority: u64 & AugmentedConst<ApiType>;
+    };
     currencies: {
       getNativeCurrencyId: CommonPrimitivesAssetId32 & AugmentedConst<ApiType>;
     };
@@ -401,6 +418,9 @@ declare module '@polkadot/api-base/types/consts' {
        * The maximum amount of signatories allowed in the multisig.
        **/
       maxSignatories: u32 & AugmentedConst<ApiType>;
+    };
+    multisigVerifier: {
+      maxPeers: u32 & AugmentedConst<ApiType>;
     };
     scheduler: {
       /**

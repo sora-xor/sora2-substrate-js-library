@@ -33,3 +33,8 @@ export enum EvmTxStatus {
   Failed = 'Failed',
   Pending = 'Pending',
 }
+
+export enum EvmBridgeType {
+  EVM = 'EVM',
+  SUB = 'Sub',
+}
