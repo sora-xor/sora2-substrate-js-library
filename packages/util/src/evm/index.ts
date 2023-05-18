@@ -6,7 +6,7 @@ import type { Option } from '@polkadot/types-codec';
 
 import { BaseApi, isEvmOperation, Operation } from '../BaseApi';
 import { Asset } from '../assets/types';
-import { EvmDirection, EvmTxStatus } from './consts';
+import { EvmDirection, EvmTxStatus, SubNetworkId, BridgeTypeNetwork, BridgeTypeAccount } from './consts';
 import type { EvmAsset, EvmNetwork, EvmHistory, EvmTransaction } from './types';
 
 function formatEvmTx(
@@ -116,7 +116,7 @@ export class EvmApi<T> extends BaseApi<T> {
     }
   }
 
-  public async burn(
+  public async transferToEvm(
     asset: Asset,
     recipient: string,
     amount: string | number,
@@ -133,7 +133,40 @@ export class EvmApi<T> extends BaseApi<T> {
     };
 
     await this.submitExtrinsic(
-      this.api.tx.evmBridgeProxy.burn({ EVM: externalNetwork }, asset.address, { EVM: recipient }, value),
+      this.api.tx.evmBridgeProxy.burn(
+        { [BridgeTypeNetwork.Evm]: externalNetwork },
+        asset.address,
+        { [BridgeTypeAccount.Evm]: recipient },
+        value
+      ),
+      this.account.pair,
+      historyItem
+    );
+  }
+
+  public async transferToSubstrate(
+    asset: Asset,
+    recipient: string,
+    amount: string | number,
+    externalNetwork: SubNetworkId,
+    historyId?: string
+  ): Promise<void> {
+    // asset should be checked as registered on bridge or not
+    const value = new FPNumber(amount, asset.decimals).toCodecString();
+    const historyItem = this.getHistory(historyId) || {
+      type: Operation.SubstrateOutgoing,
+      symbol: asset.symbol,
+      assetAddress: asset.address,
+      amount: `${amount}`,
+    };
+
+    await this.submitExtrinsic(
+      this.api.tx.evmBridgeProxy.burn(
+        { [BridgeTypeNetwork.Sub]: externalNetwork },
+        asset.address,
+        { [BridgeTypeAccount.Parachain]: recipient },
+        value
+      ),
       this.account.pair,
       historyItem
     );

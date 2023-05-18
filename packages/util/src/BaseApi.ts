@@ -701,6 +701,8 @@ export enum Operation {
   EthBridgeIncoming = 'EthBridgeIncoming',
   EvmOutgoing = 'EvmOutgoing',
   EvmIncoming = 'EvmIncoming',
+  SubstrateOutgoing = 'SubstrateOutgoing',
+  SubstrateIncoming = 'SubstrateIncoming',
   ClaimRewards = 'ClaimRewards',
   /** it's used for calc network fee */
   ClaimVestedRewards = 'ClaimVestedRewards',

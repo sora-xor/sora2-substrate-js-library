@@ -34,7 +34,22 @@ export enum EvmTxStatus {
   Pending = 'Pending',
 }
 
-export enum EvmBridgeType {
-  EVM = 'EVM',
-  SUB = 'Sub',
+export enum BridgeTypeNetwork {
+  Evm = 'EVM',
+  Sub = 'Sub',
+}
+
+export enum BridgeTypeAccount {
+  Evm = 'EVM',
+  Sora = 'Sora',
+  Parachain = 'Parachain',
+  Unknown = 'Unknown',
+}
+
+export enum SubNetworkId {
+  Mainnet = 'Mainnet',
+  Kusama = 'Kusama',
+  Polkadot = 'Polkadot',
+  Rococo = 'Rococo',
+  Custom = 'Custom',
 }
