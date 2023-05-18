@@ -7,6 +7,7 @@ import type {
   QuotePaths,
   QuotePayload,
   SwapResult,
+  OracleRate,
 } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
 import type {
@@ -63,7 +64,7 @@ const getAssetAveragePrice = <T>(root: Api<T>, assetAddress: string): Observable
   return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
 };
 
-const toBandRate = (o: Observable<Option<BandBandRate>>) =>
+const toBandRate = (o: Observable<Option<BandBandRate>>): Observable<OracleRate> =>
   o.pipe(
     map((codec) => {
       const data = codec.unwrap();
@@ -365,6 +366,8 @@ export class SwapModule<T> {
         ]
       : [];
 
+    const bandRateStalePeriod = this.root.api.consts.band.getBandRateStalePeriod.toNumber();
+
     return combineLatest([
       ...tickersRates,
       ...assetsIssuances,
@@ -410,6 +413,9 @@ export class SwapModule<T> {
             xst: {
               floorPrice,
               referenceAsset: xstReferenceAsset,
+            },
+            band: {
+              rateStalePeriod: bandRateStalePeriod,
             },
           },
           lockedSources,
