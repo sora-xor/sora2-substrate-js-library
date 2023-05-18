@@ -10,13 +10,13 @@ export const bandQuote = (symbol: string, payload: QuotePayload): OracleRate => 
   const stalePeriod = payload.consts.band.rateStalePeriod; //ms
   const lastUpdated = rate.lastUpdated * 1000; //ms
 
-  if (lastUpdated > currentTime) {
+  if (lastUpdated >= currentTime) {
     throw new Error(`[liquidityProxy] Band: "${symbol}" Rate has invalid timestamp: "${lastUpdated}"`);
   }
 
   const currentPeriod = currentTime - lastUpdated;
 
-  if (currentPeriod < stalePeriod) {
+  if (currentPeriod > stalePeriod) {
     throw new Error(`[liquidityProxy] Band: "${symbol}" Rate is expired and can't be used until next update`);
   }
 
