@@ -148,6 +148,10 @@ declare module '@polkadot/api-base/types/events' {
     bridgeOutboundChannel: {
       MessageAccepted: AugmentedEvent<ApiType, [U256, u64]>;
     };
+    bridgeProxy: {
+      RefundFailed: AugmentedEvent<ApiType, [H256]>;
+      RequestStatusUpdate: AugmentedEvent<ApiType, [H256, BridgeTypesMessageStatus]>;
+    };
     ceresGovernancePlatform: {
       /**
        * Create poll [who, option, start_timestamp, end_timestamp]
@@ -524,10 +528,6 @@ declare module '@polkadot/api-base/types/events' {
     };
     ethereumLightClient: {
       Finalized: AugmentedEvent<ApiType, [U256, BridgeTypesHeaderHeaderId]>;
-    };
-    evmBridgeProxy: {
-      RefundFailed: AugmentedEvent<ApiType, [H256]>;
-      RequestStatusUpdate: AugmentedEvent<ApiType, [H256, BridgeTypesMessageStatus]>;
     };
     faucet: {
       LimitUpdated: AugmentedEvent<ApiType, [u128]>;

@@ -333,6 +333,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       QueueSizeLimitReached: AugmentedError<ApiType>;
     };
+    bridgeProxy: {
+      PathIsNotAvailable: AugmentedError<ApiType>;
+      WrongAccountKind: AugmentedError<ApiType>;
+    };
     ceresGovernancePlatform: {
       /**
        * Funds already withdrawn,
@@ -1437,10 +1441,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Unknown: AugmentedError<ApiType>;
     };
-    evmBridgeProxy: {
-      PathIsNotAvailable: AugmentedError<ApiType>;
-      WrongAccountKind: AugmentedError<ApiType>;
-    };
     farming: {
       /**
        * Increment account reference error.
@@ -1921,6 +1921,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ForbiddenToCreateOrderBookWithSameAssets: AugmentedError<ApiType>;
       /**
+       * Invalid asset
+       **/
+      InvalidAsset: AugmentedError<ApiType>;
+      /**
        * Lifespan exceeds defined limits
        **/
       InvalidLifespan: AugmentedError<ApiType>;
@@ -1972,6 +1976,10 @@ declare module '@polkadot/api-base/types/errors' {
        * At the moment, Users cannot place new limit orders in the current order book
        **/
       PlacementOfLimitOrdersIsForbidden: AugmentedError<ApiType>;
+      /**
+       * An error occurred while calculating the price
+       **/
+      PriceCalculationFailed: AugmentedError<ApiType>;
       /**
        * It is impossible to place the limit order because bounds of the max count of orders at the current price have been reached
        **/
@@ -2237,6 +2245,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Cannot create a pool with indivisible assets
        **/
       UnableToCreatePoolWithIndivisibleAssets: AugmentedError<ApiType>;
+      /**
+       * Cannot create a pool with synthetic assets
+       **/
+      UnableToCreatePoolWithSyntheticAssets: AugmentedError<ApiType>;
       /**
        * Unable or impossible to decide marker asset.
        **/
