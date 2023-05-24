@@ -256,7 +256,8 @@
                         "MockPool2",
                         "MockPool3",
                         "MockPool4",
-                        "XSTPool"
+                        "XSTPool",
+                        "OrderBook"
                     ]
                 },
                 "LoadIncomingMetaRequest": {
@@ -1871,7 +1872,8 @@
                 "MockPool2",
                 "MockPool3",
                 "MockPool4",
-                "XSTPool"
+                "XSTPool",
+                "OrderBook"
             ]
         },
         "LoadIncomingMetaRequest": {
