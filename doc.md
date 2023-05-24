@@ -12369,8 +12369,7 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
         "MockPool2",
         "MockPool3",
         "MockPool4",
-        "XSTPool",
-        "OrderBook"
+        "XSTPool"
     ]
 }
 ```

@@ -66,7 +66,6 @@ export default {
         'MockPool3',
         'MockPool4',
         'XSTPool',
-        'OrderBook',
       ],
     },
     FilterMode: {

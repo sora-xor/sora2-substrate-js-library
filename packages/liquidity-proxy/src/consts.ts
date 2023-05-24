@@ -36,7 +36,6 @@ export enum LiquiditySourceTypes {
   XYKPool = 'XYKPool',
   XSTPool = 'XSTPool',
   MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool',
-  OrderBook = 'OrderBook',
 }
 
 export enum RewardReason {
