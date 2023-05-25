@@ -21,4 +21,4 @@ export { default as leafProvider } from './leafProvider/definitions';
 export { default as basicChannel } from './basicChannel/definitions';
 export { default as intentivizedChannel } from './intentivizedChannel/definitions';
 export { default as hermesGovernancePlatform } from './hermesGovernancePlatform/definitions';
-export { default as evmBridgeProxy } from './evmBridgeProxy/definitions';
+export { default as bridgeProxy } from './bridgeProxy/definitions';

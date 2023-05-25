@@ -1937,6 +1937,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidOrderAmount: AugmentedError<ApiType>;
       /**
+       * Invalid order book id
+       **/
+      InvalidOrderBookId: AugmentedError<ApiType>;
+      /**
        * Limit order already exists for this trading pair and order id
        **/
       LimitOrderAlreadyExists: AugmentedError<ApiType>;

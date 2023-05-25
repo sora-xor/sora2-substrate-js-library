@@ -31,8 +31,8 @@ import type { ApplyExtrinsicResult, ChainProperties, ChainType, DispatchError, H
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { BasicChannelMessage } from '@sora-substrate/types/interfaces/basicChannel';
+import type { BridgeAppInfo, BridgeAssetInfo, GenericNetworkId } from '@sora-substrate/types/interfaces/bridgeProxy';
 import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
-import type { AppsWithSupportedAssets, BridgeAppInfo, BridgeAssetInfo, EVMChainId } from '@sora-substrate/types/interfaces/evmBridgeProxy';
 import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
 import type { AuxiliaryDigest } from '@sora-substrate/types/interfaces/leafProvider';
 import type { LPSwapOutcomeInfo } from '@sora-substrate/types/interfaces/liquidityProxy';
@@ -129,6 +129,16 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        * Returns the block most recently finalized by BEEFY, alongside side its justification.
        **/
       subscribeJustifications: AugmentedRpc<() => Observable<BeefySignedCommitment>>;
+    };
+    bridgeProxy: {
+      /**
+       * 
+       **/
+      listApps: AugmentedRpc<(at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAppInfo>>>;
+      /**
+       * 
+       **/
+      listSupportedAssets: AugmentedRpc<(networkId: GenericNetworkId | { EVMLegacy: any } | { EVM: any } | { Sub: any } | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAssetInfo>>>;
     };
     chain: {
       /**
@@ -448,20 +458,6 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        * Get registered requests and their statuses.
        **/
       getRequests: AugmentedRpc<(requestHashes: Vec<H256> | (H256 | string | Uint8Array)[], networkId?: BridgeNetworkId | AnyNumber | Uint8Array, redirectFinishedLoadRequests?: bool | boolean | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Result<Vec<ITuple<[OffchainRequest, RequestStatus]>>, DispatchError>>>;
-    };
-    evmBridgeProxy: {
-      /**
-       * 
-       **/
-      listApps: AugmentedRpc<(networkId: EVMChainId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAppInfo>>>;
-      /**
-       * 
-       **/
-      listAppsWithSupportedAssets: AugmentedRpc<(networkId: EVMChainId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<AppsWithSupportedAssets>>;
-      /**
-       * 
-       **/
-      listSupportedAssets: AugmentedRpc<(networkId: EVMChainId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAssetInfo>>>;
     };
     farming: {
       /**
