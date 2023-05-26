@@ -23,7 +23,7 @@ export enum EvmNetworkId {
   AvalancheTestnetFuji = 43113,
 }
 
-export enum EvmDirection {
+export enum BridgeDirection {
   Outgoing = 'Outgoing',
   Incoming = 'Incoming',
 }
@@ -34,9 +34,19 @@ export enum EvmTxStatus {
   Pending = 'Pending',
 }
 
+export enum EvmAppKinds {
+  EthApp = 'EthApp',
+  ERC20App = 'ERC20App',
+  SidechainApp = 'SidechainApp',
+  HashiBridge = 'HashiBridge',
+  XorMaster = 'XorMaster',
+  ValMaster = 'ValMaster',
+}
+
 export enum BridgeTypeNetwork {
   Evm = 'EVM',
   Sub = 'Sub',
+  EvmLegacy = 'EVMLegacy',
 }
 
 export enum BridgeTypeAccount {
@@ -46,12 +56,15 @@ export enum BridgeTypeAccount {
   Unknown = 'Unknown',
 }
 
-export enum SubNetworkId {
+export enum SubNetwork {
+  // from chain
   Mainnet = 'Mainnet',
   Kusama = 'Kusama',
   Polkadot = 'Polkadot',
   Rococo = 'Rococo',
   Custom = 'Custom',
+  // working with through parachains
+  Karura = 'Karura',
 }
 
 export enum XcmVersionedMultiLocation {

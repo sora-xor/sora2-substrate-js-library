@@ -11,7 +11,7 @@ export default {
       ],
       type: 'Vec<BridgeAppInfo>',
     },
-    listSupportedAssets: {
+    listAssets: {
       description: '',
       params: [
         {

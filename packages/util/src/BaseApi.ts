@@ -18,7 +18,7 @@ import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
-import type { EvmHistory } from './evm/types';
+import type { EvmHistory } from './bridgeProxy/types';
 import type { RewardClaimHistory } from './rewards/types';
 
 type AccountWithOptions = {

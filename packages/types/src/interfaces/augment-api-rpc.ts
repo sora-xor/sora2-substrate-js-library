@@ -138,7 +138,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * 
        **/
-      listSupportedAssets: AugmentedRpc<(networkId: GenericNetworkId | { EVMLegacy: any } | { EVM: any } | { Sub: any } | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAssetInfo>>>;
+      listAssets: AugmentedRpc<(networkId: GenericNetworkId | { EVMLegacy: any } | { EVM: any } | { Sub: any } | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAssetInfo>>>;
     };
     chain: {
       /**
