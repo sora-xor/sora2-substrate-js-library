@@ -10,3 +10,9 @@ export interface SwapTransferBatchReceiver {
   accountId: string;
   targetAmount: string;
 }
+
+export interface ReceiverHistoryItem {
+  accountId: string;
+  amount: string;
+  assetId: string;
+}

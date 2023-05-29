@@ -24,7 +24,7 @@ import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
-import type { SwapTransferBatchData, SwapTransferBatchReceiver } from './types';
+import type { ReceiverHistoryItem, SwapTransferBatchData } from './types';
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
 
@@ -598,13 +598,25 @@ export class SwapModule<T> {
   ): Promise<T> {
     const params = this.calcTxParamsSwapTransferBatch(inputAsset, maxInputAmount, liquiditySource);
 
+    const recipients = receivers.reduce((acc, curr) => {
+      const arr = curr.receivers.map((item) => {
+        return {
+          accountId: item.accountId,
+          amount: item.targetAmount,
+          assetId: curr.outcomeAssetId,
+        };
+      });
+      acc.push(...arr);
+      return acc;
+    }, [] as Array<ReceiverHistoryItem>);
+
     return this.root.submitExtrinsic(
       (this.root.api.tx.liquidityProxy as any).swapTransferBatch(receivers, ...params.args),
       this.root.account.pair,
       {
         symbol: inputAsset.symbol,
         assetAddress: inputAsset.address,
-        to: this.root.account.pair.address,
+        receivers: recipients,
         type: Operation.SwapTransferBatch,
       }
     );

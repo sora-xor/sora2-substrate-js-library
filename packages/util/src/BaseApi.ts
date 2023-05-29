@@ -20,6 +20,7 @@ import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
 import type { EvmHistory } from './evm/types';
 import type { RewardClaimHistory } from './rewards/types';
+import { ReceiverHistoryItem } from './swap/types';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -744,6 +745,7 @@ export interface History {
   blockId?: string;
   blockHeight?: string;
   to?: string;
+  receivers?: Array<ReceiverHistoryItem>;
   amount2?: string;
   symbol2?: string;
   asset2Address?: string;
