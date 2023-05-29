@@ -490,6 +490,16 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       slashDeferDuration: u32 & AugmentedConst<ApiType>;
     };
+    substrateBridgeInboundChannel: {
+      /**
+       * A configuration for longevity of unsigned transactions.
+       **/
+      unsignedLongevity: u64 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for base priority of unsigned transactions.
+       **/
+      unsignedPriority: u64 & AugmentedConst<ApiType>;
+    };
     system: {
       /**
        * Maximum number of block number to block hash mappings to keep (oldest pruned first).

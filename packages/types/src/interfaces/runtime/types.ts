@@ -325,7 +325,8 @@ export interface LiquiditySourceType extends Enum {
   readonly isMockPool3: boolean;
   readonly isMockPool4: boolean;
   readonly isXstPool: boolean;
-  readonly type: 'XykPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XstPool';
+  readonly isOrderBook: boolean;
+  readonly type: 'XykPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XstPool' | 'OrderBook';
 }
 
 /** @name LockIdentifier */

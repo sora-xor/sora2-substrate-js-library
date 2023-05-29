@@ -1436,11 +1436,9 @@ declare module '@polkadot/api-base/types/storage' {
     };
     substrateBridgeInboundChannel: {
       channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
-      rewardFraction: AugmentedQuery<ApiType, () => Observable<Perbill>, []>;
     };
     substrateBridgeOutboundChannel: {
       channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
-      fee: AugmentedQuery<ApiType, () => Observable<u128>, []>;
       /**
        * Interval between committing messages.
        **/

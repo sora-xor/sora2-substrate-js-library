@@ -2222,6 +2222,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       SourceBaseAmountIsTooLarge: AugmentedError<ApiType>;
       /**
+       * Cannot create a pool with restricted target asset
+       **/
+      TargetAssetIsRestricted: AugmentedError<ApiType>;
+      /**
        * Target balance is not large enough.
        **/
       TargetBalanceIsNotLargeEnough: AugmentedError<ApiType>;
@@ -2249,10 +2253,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Cannot create a pool with indivisible assets
        **/
       UnableToCreatePoolWithIndivisibleAssets: AugmentedError<ApiType>;
-      /**
-       * Cannot create a pool with synthetic assets
-       **/
-      UnableToCreatePoolWithSyntheticAssets: AugmentedError<ApiType>;
       /**
        * Unable or impossible to decide marker asset.
        **/

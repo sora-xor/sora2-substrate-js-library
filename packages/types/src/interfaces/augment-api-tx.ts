@@ -2500,8 +2500,7 @@ declare module '@polkadot/api-base/types/submittable' {
       registerThischainAsset: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, sidechainAsset: XcmV3MultiassetAssetId | { Concrete: any } | { Abstract: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, XcmV3MultiassetAssetId]>;
     };
     substrateBridgeInboundChannel: {
-      setRewardFraction: AugmentedSubmittable<(fraction: Perbill | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Perbill]>;
-      submit: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, messages: Vec<BridgeTypesSubstrateBridgeMessage> | (BridgeTypesSubstrateBridgeMessage | { payload?: any; nonce?: any; timepoint?: any; fee?: any } | string | Uint8Array)[], proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, Vec<BridgeTypesSubstrateBridgeMessage>, FramenodeRuntimeMultiProof]>;
+      submit: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, messages: Vec<BridgeTypesSubstrateBridgeMessage> | (BridgeTypesSubstrateBridgeMessage | { payload?: any; nonce?: any; timepoint?: any } | string | Uint8Array)[], proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, Vec<BridgeTypesSubstrateBridgeMessage>, FramenodeRuntimeMultiProof]>;
     };
     sudo: {
       /**
