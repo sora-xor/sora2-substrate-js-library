@@ -5,13 +5,6 @@ import type { Enum, Struct, U256, u32, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { H160, H256 } from '@sora-substrate/types/interfaces/runtime';
 
-/** @name AssetKind */
-export interface AssetKind extends Enum {
-  readonly isThischain: boolean;
-  readonly isSidechain: boolean;
-  readonly type: 'Thischain' | 'Sidechain';
-}
-
 /** @name BridgeAppInfo */
 export interface BridgeAppInfo extends Enum {
   readonly isEvm: boolean;
@@ -85,8 +78,15 @@ export interface MainnetAssetId extends H256 {}
 /** @name SubAssetInfo */
 export interface SubAssetInfo extends Struct {
   readonly assetId: MainnetAssetId;
-  readonly assetKind: AssetKind;
+  readonly assetKind: SubAssetKind;
   readonly precision: u8;
+}
+
+/** @name SubAssetKind */
+export interface SubAssetKind extends Enum {
+  readonly isThischain: boolean;
+  readonly isSidechain: boolean;
+  readonly type: 'Thischain' | 'Sidechain';
 }
 
 /** @name SubNetworkId */

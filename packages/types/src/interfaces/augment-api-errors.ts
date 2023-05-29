@@ -1989,6 +1989,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       PriceReachedMaxCountOfLimitOrders: AugmentedError<ApiType>;
       /**
+       * Indicated limit for slippage has not been met during transaction execution.
+       **/
+      SlippageLimitExceeded: AugmentedError<ApiType>;
+      /**
        * At the moment, Trading is forbidden in the current order book
        **/
       TradingIsForbidden: AugmentedError<ApiType>;

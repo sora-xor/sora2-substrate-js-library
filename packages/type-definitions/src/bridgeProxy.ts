@@ -62,10 +62,10 @@ export default {
     },
     SubAssetInfo: {
       assetId: 'MainnetAssetId',
-      assetKind: 'AssetKind',
+      assetKind: 'SubAssetKind',
       precision: 'u8',
     },
-    AssetKind: {
+    SubAssetKind: {
       _enum: ['Thischain', 'Sidechain'],
     },
     GenericNetworkId: {
@@ -85,6 +85,11 @@ export default {
         Rococo: null,
         Custom: 'u32',
       },
+    },
+  },
+  typesAlias: {
+    bridgeProxy: {
+      AssetKind: 'SubAssetKind',
     },
   },
 };
