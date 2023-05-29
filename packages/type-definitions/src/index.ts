@@ -10,7 +10,7 @@ import assets from './assets';
 import irohaMigration from './irohaMigration';
 import liquidityProxy from './liquidityProxy';
 import ethBridge from './ethBridge';
-import evmBridgeProxy from './evmBridgeProxy';
+import bridgeProxy from './bridgeProxy';
 import pswapDistribution from './pswapDistribution';
 import rewards from './rewards';
 import farming from './farming';
@@ -39,7 +39,7 @@ const soraDefs = {
   dexApi,
   dexManager,
   ethBridge,
-  evmBridgeProxy,
+  bridgeProxy,
   farming,
   hermesGovernancePlatform,
   irohaMigration,

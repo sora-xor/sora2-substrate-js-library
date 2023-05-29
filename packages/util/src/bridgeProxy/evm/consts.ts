@@ -29,18 +29,11 @@ export enum EvmNetworkId {
   FantomTestnet = 4002,
 }
 
-export enum EvmDirection {
-  Outgoing = 'Outgoing',
-  Incoming = 'Incoming',
-}
-
-export enum EvmTxStatus {
-  Done = 'Done',
-  Failed = 'Failed',
-  Pending = 'Pending',
-}
-
-export enum EvmBridgeType {
-  EVM = 'EVM',
-  SUB = 'Sub',
+export enum EvmAppKinds {
+  EthApp = 'EthApp',
+  ERC20App = 'ERC20App',
+  SidechainApp = 'SidechainApp',
+  HashiBridge = 'HashiBridge',
+  XorMaster = 'XorMaster',
+  ValMaster = 'ValMaster',
 }

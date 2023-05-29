@@ -18,7 +18,8 @@ import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
-import type { EvmHistory } from './evm/types';
+import type { EvmHistory } from './bridgeProxy/evm/types';
+import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 
 type AccountWithOptions = {
@@ -40,7 +41,7 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
-export type IBridgeTransaction = EvmHistory | BridgeHistory;
+export type IBridgeTransaction = EvmHistory | SubHistory | BridgeHistory;
 
 export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory;
 
@@ -66,6 +67,9 @@ export const isBridgeOperation = (operation: Operation) =>
 
 export const isEvmOperation = (operation: Operation) =>
   [Operation.EvmIncoming, Operation.EvmOutgoing].includes(operation);
+
+export const isSubstrateOperation = (operation: Operation) =>
+  [Operation.SubstrateIncoming, Operation.SubstrateOutgoing].includes(operation);
 
 const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
@@ -701,6 +705,8 @@ export enum Operation {
   EthBridgeIncoming = 'EthBridgeIncoming',
   EvmOutgoing = 'EvmOutgoing',
   EvmIncoming = 'EvmIncoming',
+  SubstrateOutgoing = 'SubstrateOutgoing',
+  SubstrateIncoming = 'SubstrateIncoming',
   ClaimRewards = 'ClaimRewards',
   /** it's used for calc network fee */
   ClaimVestedRewards = 'ClaimVestedRewards',

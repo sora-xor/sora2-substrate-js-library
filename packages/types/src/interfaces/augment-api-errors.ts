@@ -333,6 +333,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       QueueSizeLimitReached: AugmentedError<ApiType>;
     };
+    bridgeProxy: {
+      PathIsNotAvailable: AugmentedError<ApiType>;
+      WrongAccountKind: AugmentedError<ApiType>;
+    };
     ceresGovernancePlatform: {
       /**
        * Funds already withdrawn,
@@ -1437,10 +1441,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Unknown: AugmentedError<ApiType>;
     };
-    evmBridgeProxy: {
-      PathIsNotAvailable: AugmentedError<ApiType>;
-      WrongAccountKind: AugmentedError<ApiType>;
-    };
     farming: {
       /**
        * Increment account reference error.
@@ -1937,6 +1937,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidOrderAmount: AugmentedError<ApiType>;
       /**
+       * Invalid order book id
+       **/
+      InvalidOrderBookId: AugmentedError<ApiType>;
+      /**
        * Limit order already exists for this trading pair and order id
        **/
       LimitOrderAlreadyExists: AugmentedError<ApiType>;
@@ -1984,6 +1988,10 @@ declare module '@polkadot/api-base/types/errors' {
        * It is impossible to place the limit order because bounds of the max count of orders at the current price have been reached
        **/
       PriceReachedMaxCountOfLimitOrders: AugmentedError<ApiType>;
+      /**
+       * Indicated limit for slippage has not been met during transaction execution.
+       **/
+      SlippageLimitExceeded: AugmentedError<ApiType>;
       /**
        * At the moment, Trading is forbidden in the current order book
        **/
@@ -2218,6 +2226,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       SourceBaseAmountIsTooLarge: AugmentedError<ApiType>;
       /**
+       * Cannot create a pool with restricted target asset
+       **/
+      TargetAssetIsRestricted: AugmentedError<ApiType>;
+      /**
        * Target balance is not large enough.
        **/
       TargetBalanceIsNotLargeEnough: AugmentedError<ApiType>;
@@ -2245,10 +2257,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Cannot create a pool with indivisible assets
        **/
       UnableToCreatePoolWithIndivisibleAssets: AugmentedError<ApiType>;
-      /**
-       * Cannot create a pool with synthetic assets
-       **/
-      UnableToCreatePoolWithSyntheticAssets: AugmentedError<ApiType>;
       /**
        * Unable or impossible to decide marker asset.
        **/
