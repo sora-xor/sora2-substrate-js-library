@@ -56,15 +56,32 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
   }
 
   public async getUserTransactions(accountAddress: string, evmNetwork: EvmNetwork) {
-    return await getUserTransactions(this.api, accountAddress, { [BridgeNetworkType.Evm]: evmNetwork });
+    return await getUserTransactions(
+      this.api,
+      accountAddress,
+      { [BridgeNetworkType.Evm]: evmNetwork },
+      BridgeNetworkType.Evm
+    );
   }
 
   public async getTransactionDetails(accountAddress: string, evmNetwork: EvmNetwork, hash: string) {
-    return await getTransactionDetails(this.api, accountAddress, { [BridgeNetworkType.Evm]: evmNetwork }, hash);
+    return await getTransactionDetails(
+      this.api,
+      accountAddress,
+      hash,
+      { [BridgeNetworkType.Evm]: evmNetwork },
+      BridgeNetworkType.Evm
+    );
   }
 
   public subscribeOnTransactionDetails(accountAddress: string, evmNetwork: EvmNetwork, hash: string) {
-    return subscribeOnTransactionDetails(this.apiRx, accountAddress, { [BridgeNetworkType.Evm]: evmNetwork }, hash);
+    return subscribeOnTransactionDetails(
+      this.apiRx,
+      accountAddress,
+      hash,
+      { [BridgeNetworkType.Evm]: evmNetwork },
+      BridgeNetworkType.Evm
+    );
   }
 
   public async transfer(

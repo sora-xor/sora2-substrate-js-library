@@ -18,7 +18,8 @@ import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
-import type { EvmHistory } from './bridgeProxy/types';
+import type { EvmHistory } from './bridgeProxy/evm/types';
+import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 
 type AccountWithOptions = {
@@ -40,7 +41,7 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
-export type IBridgeTransaction = EvmHistory | BridgeHistory;
+export type IBridgeTransaction = EvmHistory | SubHistory | BridgeHistory;
 
 export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory;
 

@@ -116,17 +116,23 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public async getUserTransactions(accountAddress: string, subNetwork: SubNetwork) {
-    return await getUserTransactions(this.api, accountAddress, {
-      [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork),
-    });
+    return await getUserTransactions(
+      this.api,
+      accountAddress,
+      {
+        [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork),
+      },
+      BridgeNetworkType.Sub
+    );
   }
 
   public async getTransactionDetails(accountAddress: string, subNetwork: SubNetwork, hash: string) {
     return await getTransactionDetails(
       this.api,
       accountAddress,
+      hash,
       { [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork) },
-      hash
+      BridgeNetworkType.Sub
     );
   }
 
@@ -134,8 +140,9 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     return subscribeOnTransactionDetails(
       this.apiRx,
       accountAddress,
+      hash,
       { [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork) },
-      hash
+      BridgeNetworkType.Sub
     );
   }
 

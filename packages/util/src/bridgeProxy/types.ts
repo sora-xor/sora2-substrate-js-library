@@ -2,7 +2,7 @@ import type { CodecString } from '@sora-substrate/math';
 
 import type { BridgeTxDirection, BridgeTxStatus, BridgeNetworkType } from './consts';
 
-import type { EvmNetworkParam, EvmSupportedApp } from './evm/types';
+import type { EvmNetwork, EvmNetworkParam, EvmSupportedApp } from './evm/types';
 import type { SubNetworkParam } from './sub/types';
 import type { SubNetwork } from './sub/consts';
 
@@ -12,9 +12,12 @@ export type EvmLegacyNetworkParam = {
 
 export type BridgeNetworkParam = EvmLegacyNetworkParam | EvmNetworkParam | SubNetworkParam;
 
+export type BridgeNetworkId = EvmNetwork | SubNetwork | number;
+
 /** Made like BridgeRequest */
 export interface BridgeTransactionData {
-  externalNetwork: BridgeNetworkParam;
+  externalNetwork: BridgeNetworkId;
+  externalNetworkType: BridgeNetworkType;
   /** Outgoing = 0, Incoming = 1 */
   direction: BridgeTxDirection;
   /** SORA Account ID */
