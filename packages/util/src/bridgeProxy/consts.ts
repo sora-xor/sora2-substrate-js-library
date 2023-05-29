@@ -23,12 +23,12 @@ export enum EvmNetworkId {
   AvalancheTestnetFuji = 43113,
 }
 
-export enum BridgeDirection {
+export enum BridgeTxDirection {
   Outgoing = 'Outgoing',
   Incoming = 'Incoming',
 }
 
-export enum EvmTxStatus {
+export enum BridgeTxStatus {
   Done = 'Done',
   Failed = 'Failed',
   Pending = 'Pending',
@@ -41,6 +41,11 @@ export enum EvmAppKinds {
   HashiBridge = 'HashiBridge',
   XorMaster = 'XorMaster',
   ValMaster = 'ValMaster',
+}
+
+export enum SubAssetKind {
+  Thischain = 'Thischain',
+  Sidechain = 'Sidechain',
 }
 
 export enum BridgeTypeNetwork {
@@ -64,7 +69,7 @@ export enum SubNetwork {
   Rococo = 'Rococo',
   Custom = 'Custom',
   // working with through parachains
-  Karura = 'Karura',
+  Karura = 'Karura', // Rococo
 }
 
 export enum XcmVersionedMultiLocation {
@@ -158,4 +163,9 @@ export enum XcmBodyPart {
   Fraction = 'Fraction',
   AtLeastProportion = 'AtLeastProportion',
   MoreThanProportion = 'MoreThanProportion',
+}
+
+export enum SupportedParachains {
+  Sora = 2011,
+  Karura = 2000,
 }

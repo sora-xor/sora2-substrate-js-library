@@ -67,6 +67,9 @@ export const isBridgeOperation = (operation: Operation) =>
 export const isEvmOperation = (operation: Operation) =>
   [Operation.EvmIncoming, Operation.EvmOutgoing].includes(operation);
 
+export const isSubstrateOperation = (operation: Operation) =>
+  [Operation.SubstrateIncoming, Operation.SubstrateOutgoing].includes(operation);
+
 const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
 

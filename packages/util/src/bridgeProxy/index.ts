@@ -5,9 +5,19 @@ import type { BridgeProxyBridgeRequest } from '@polkadot/types/lookup';
 import type { Option } from '@polkadot/types-codec';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 
-import { BaseApi, isEvmOperation, Operation } from '../BaseApi';
+import { BaseApi, isEvmOperation, isSubstrateOperation, Operation } from '../BaseApi';
 import { Asset } from '../assets/types';
-import { BridgeDirection, EvmTxStatus, SubNetwork, BridgeTypeNetwork, BridgeTypeAccount } from './consts';
+import {
+  BridgeTxDirection,
+  BridgeTxStatus,
+  SubNetwork,
+  BridgeTypeNetwork,
+  BridgeTypeAccount,
+  XcmVersionedMultiLocation,
+  XcmJunction,
+  XcmMultilocationJunction,
+  SupportedParachains,
+} from './consts';
 import type { Api } from '../api';
 import type {
   EvmAsset,
@@ -16,6 +26,8 @@ import type {
   BridgeTransactionData,
   SupportedApps,
   BridgeNetworkParam,
+  SubAsset,
+  SubHistory,
 } from './types';
 
 function formatBridgeTx(
@@ -35,10 +47,10 @@ function formatBridgeTx(
   formatted.amount = unwrapped.amount.toString();
   formatted.soraAssetAddress = unwrapped.assetId.code.toString();
   formatted.status = unwrapped.status.isFailed
-    ? EvmTxStatus.Failed
+    ? BridgeTxStatus.Failed
     : unwrapped.status.isDone || unwrapped.status.isCommitted
-    ? EvmTxStatus.Done
-    : EvmTxStatus.Pending;
+    ? BridgeTxStatus.Done
+    : BridgeTxStatus.Pending;
   formatted.startBlock = unwrapped.startTimepoint.toNumber();
   formatted.endBlock = unwrapped.endTimepoint.toNumber();
 
@@ -46,12 +58,12 @@ function formatBridgeTx(
     // incoming: network -> SORA
     formatted.externalAccount = unwrapped.source.toString();
     formatted.soraAccount = unwrapped.dest.toString();
-    formatted.direction = BridgeDirection.Incoming;
+    formatted.direction = BridgeTxDirection.Incoming;
   } else {
     // outgoing: SORA -> network
     formatted.soraAccount = unwrapped.source.toString();
     formatted.externalAccount = unwrapped.dest.toString();
-    formatted.direction = BridgeDirection.Outgoing;
+    formatted.direction = BridgeTxDirection.Outgoing;
   }
 
   return formatted;
@@ -128,7 +140,7 @@ class EvmBridgeApi<T> extends BaseApi<T> {
     const historyItem = (params || {}) as EvmHistory;
     historyItem.startTime = historyItem.startTime || Date.now();
     historyItem.id = this.encrypt(`${historyItem.startTime}`);
-    historyItem.transactionState = historyItem.transactionState || EvmTxStatus.Pending;
+    historyItem.transactionState = historyItem.transactionState || BridgeTxStatus.Pending;
     this.saveHistory(historyItem);
     return historyItem;
   }
@@ -205,10 +217,162 @@ class EvmBridgeApi<T> extends BaseApi<T> {
   }
 }
 
+class SubBridgeApi<T> extends BaseApi<T> {
+  constructor() {
+    super('subHistory');
+  }
+
+  private getParachainNetwork(subNetwork: SubNetwork): SubNetwork {
+    if (subNetwork === SubNetwork.Karura) {
+      return SubNetwork.Rococo;
+    }
+
+    return subNetwork;
+  }
+
+  private getRecipientArg(subNetwork: SubNetwork, recipient: string) {
+    const recipientPublicKey = `0x${this.getPublicKeyByAddress(recipient)}`;
+
+    if (subNetwork === SubNetwork.Karura) {
+      return {
+        [BridgeTypeAccount.Parachain]: {
+          [XcmVersionedMultiLocation.V3]: {
+            parents: 1,
+            interior: {
+              [XcmMultilocationJunction.X2]: [
+                // karura parachain
+                {
+                  [XcmJunction.Parachain]: SupportedParachains.Karura,
+                },
+                // recipient account
+                {
+                  [XcmJunction.AccountId32]: {
+                    id: recipientPublicKey,
+                  },
+                },
+              ],
+            },
+          },
+        },
+      };
+    }
+
+    // Rococo & etc
+    return {
+      [BridgeTypeAccount.Parachain]: {
+        [XcmVersionedMultiLocation.V3]: {
+          parents: 1,
+          interior: {
+            [XcmMultilocationJunction.X1]: [
+              // recipient account
+              {
+                [XcmJunction.AccountId32]: {
+                  id: recipientPublicKey,
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+  }
+
+  public generateHistoryItem(params: SubHistory): SubHistory | null {
+    if (!params.type) {
+      return null;
+    }
+    const historyItem = (params || {}) as SubHistory;
+    historyItem.startTime = historyItem.startTime || Date.now();
+    historyItem.id = this.encrypt(`${historyItem.startTime}`);
+    historyItem.transactionState = historyItem.transactionState || BridgeTxStatus.Pending;
+    this.saveHistory(historyItem);
+    return historyItem;
+  }
+
+  public saveHistory(history: SubHistory): void {
+    if (!isSubstrateOperation(history.type)) return;
+    super.saveHistory(history);
+  }
+
+  public async getRegisteredAssets(subNetwork: SubNetwork): Promise<Record<string, SubAsset>> {
+    const assets = {};
+    const network = this.getParachainNetwork(subNetwork);
+    try {
+      const data = await this.api.rpc.bridgeProxy.listAssets({ [BridgeTypeNetwork.Sub]: network });
+
+      data.forEach((assetData) => {
+        const assetInfo = assetData.asSub;
+        const soraAddress = assetInfo.assetId.toString();
+        const assetKind = assetInfo.assetKind.toString();
+        const decimals = assetInfo.precision.toNumber();
+
+        assets[soraAddress] = {
+          assetKind,
+          decimals,
+        };
+      });
+
+      return assets;
+    } catch {
+      return assets;
+    }
+  }
+
+  public async getUserTransactions(accountAddress: string, subNetwork: SubNetwork) {
+    return await getUserTransactions(this.api, accountAddress, {
+      [BridgeTypeNetwork.Sub]: this.getParachainNetwork(subNetwork),
+    });
+  }
+
+  public async getTransactionDetails(accountAddress: string, subNetwork: SubNetwork, hash: string) {
+    return await getTransactionDetails(
+      this.api,
+      accountAddress,
+      { [BridgeTypeNetwork.Sub]: this.getParachainNetwork(subNetwork) },
+      hash
+    );
+  }
+
+  public subscribeOnTransactionDetails(accountAddress: string, subNetwork: SubNetwork, hash: string) {
+    return subscribeOnTransactionDetails(
+      this.apiRx,
+      accountAddress,
+      { [BridgeTypeNetwork.Sub]: this.getParachainNetwork(subNetwork) },
+      hash
+    );
+  }
+
+  public async transfer(
+    asset: Asset,
+    recipient: string,
+    amount: string | number,
+    subNetwork: SubNetwork,
+    historyId?: string
+  ): Promise<void> {
+    // asset should be checked as registered on bridge or not
+    const value = new FPNumber(amount, asset.decimals).toCodecString();
+    const historyItem = this.getHistory(historyId) || {
+      type: Operation.SubstrateOutgoing,
+      symbol: asset.symbol,
+      assetAddress: asset.address,
+      amount: `${amount}`,
+    };
+    const network = this.getParachainNetwork(subNetwork);
+    const recipientData = this.getRecipientArg(subNetwork, recipient);
+
+    await this.submitExtrinsic(
+      this.api.tx.bridgeProxy.burn({ [BridgeTypeNetwork.Sub]: network }, asset.address, recipientData, value),
+      this.account.pair,
+      historyItem
+    );
+  }
+}
+
 export class BridgeProxyModule<T> {
   constructor(private readonly root: Api<T>) {}
 
   public readonly evm = new EvmBridgeApi<T>();
+  public readonly sub = new SubBridgeApi<T>();
 
   public async getListApps(): Promise<SupportedApps> {
     const apps: SupportedApps = {

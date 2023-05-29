@@ -50,7 +50,7 @@ export enum BridgeNetworks {
  * Outgoing: SORA -> Eth,
  * Incoming: Eth -> SORA
  */
-export enum BridgeDirection {
+export enum BridgeTxDirection {
   Outgoing = 'Outgoing',
   Incoming = 'Incoming',
   LoadIncoming = 'LoadIncoming',
@@ -90,7 +90,7 @@ export enum RequestType {
 }
 
 export interface BridgeRequest {
-  direction: BridgeDirection;
+  direction: BridgeTxDirection;
   from?: string;
   to?: string;
   soraAssetAddress?: string;
@@ -246,7 +246,7 @@ export class BridgeApi<T> extends BaseApi<T> {
   ): BridgeRequest {
     const formattedItem = {} as BridgeRequest;
     formattedItem.status = status.toString() as BridgeTxStatus;
-    formattedItem.direction = BridgeDirection.Incoming;
+    formattedItem.direction = BridgeTxDirection.Incoming;
 
     if (request.isIncoming) {
       const transferRequest = request.asIncoming[0].asTransfer;
@@ -265,7 +265,7 @@ export class BridgeApi<T> extends BaseApi<T> {
       formattedItem.kind = txRequest.kind.toString();
       formattedItem.hash = txRequest.hash.toString();
     } else if (request.isOutgoing) {
-      formattedItem.direction = BridgeDirection.Outgoing;
+      formattedItem.direction = BridgeTxDirection.Outgoing;
       const outgoingRequest = request.asOutgoing;
       const transferRequest = outgoingRequest[0].asTransfer;
       const assetId = transferRequest.assetId;
