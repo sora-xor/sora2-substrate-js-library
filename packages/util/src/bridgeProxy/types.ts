@@ -1,26 +1,13 @@
 import type { CodecString } from '@sora-substrate/math';
 
-import type { Operation, History } from '../BaseApi';
-import type {
-  BridgeTxDirection,
-  EvmNetworkId,
-  BridgeTxStatus,
-  EvmAppKinds,
-  BridgeTypeNetwork,
-  SubNetwork,
-  SubAssetKind,
-} from './consts';
+import type { BridgeTxDirection, BridgeTxStatus, BridgeNetworkType } from './consts';
+
+import type { EvmNetworkParam, EvmSupportedApp } from './evm/types';
+import type { SubNetworkParam } from './sub/types';
+import type { SubNetwork } from './sub/consts';
 
 export type EvmLegacyNetworkParam = {
-  [BridgeTypeNetwork.EvmLegacy]: number;
-};
-
-export type EvmNetworkParam = {
-  [BridgeTypeNetwork.Evm]: EvmNetwork;
-};
-
-export type SubNetworkParam = {
-  [BridgeTypeNetwork.Sub]: SubNetwork;
+  [BridgeNetworkType.EvmLegacy]: number;
 };
 
 export type BridgeNetworkParam = EvmLegacyNetworkParam | EvmNetworkParam | SubNetworkParam;
@@ -42,41 +29,8 @@ export interface BridgeTransactionData {
   endBlock: number;
 }
 
-export type EvmNetwork = EvmNetworkId | number;
-
-export interface EvmHistory extends History {
-  type: Operation.EvmIncoming | Operation.EvmOutgoing;
-  hash?: string;
-  transactionState?: BridgeTxStatus;
-  externalHash?: string;
-  externalNetworkFee?: CodecString;
-  externalNetwork?: EvmNetwork;
-}
-
-export interface SubHistory extends History {
-  type: Operation.SubstrateIncoming | Operation.SubstrateOutgoing;
-  hash?: string;
-  transactionState?: BridgeTxStatus;
-  externalHash?: string;
-  externalNetworkFee?: CodecString;
-  externalNetwork?: SubNetwork;
-}
-
-export type EvmAsset = {
-  address: string;
-  appKind: EvmAppKinds;
-  decimals: number;
-};
-
-export type SubAsset = {
-  assetKind: SubAssetKind;
-  decimals: number;
-};
-
-type EvmSupportedApp = Record<EvmAppKinds, string>;
-
 export type SupportedApps = {
-  [BridgeTypeNetwork.EvmLegacy]: Record<number, Partial<EvmSupportedApp>>;
-  [BridgeTypeNetwork.Evm]: Record<number, Partial<EvmSupportedApp>>;
-  [BridgeTypeNetwork.Sub]: SubNetwork[];
+  [BridgeNetworkType.EvmLegacy]: Record<number, Partial<EvmSupportedApp>>;
+  [BridgeNetworkType.Evm]: Record<number, Partial<EvmSupportedApp>>;
+  [BridgeNetworkType.Sub]: SubNetwork[];
 };

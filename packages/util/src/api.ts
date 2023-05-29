@@ -11,7 +11,7 @@ import { decrypt, encrypt } from './crypto';
 import { BaseApi, Operation, KeyringType, OnChainIdentity } from './BaseApi';
 import { Messages } from './logger';
 import { BridgeApi } from './BridgeApi';
-import { BridgeProxyApi } from './bridgeProxy';
+import { BridgeProxyModule } from './bridgeProxy';
 import { SwapModule } from './swap';
 import { RewardsModule } from './rewards';
 import { PoolXykModule } from './poolXyk';
@@ -39,7 +39,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly seedLength = 12;
 
   public readonly bridge = new BridgeApi<T>();
-  public readonly bridgeProxy = new BridgeProxyApi<T>();
+  public readonly bridgeProxy = new BridgeProxyModule<T>(this);
 
   public readonly swap = new SwapModule<T>(this);
   public readonly rewards = new RewardsModule<T>(this);
@@ -56,6 +56,7 @@ export class Api<T = void> extends BaseApi<T> {
   public initAccountStorage() {
     super.initAccountStorage();
     this.bridge.initAccountStorage();
+    this.bridgeProxy.initAccountStorage();
   }
 
   // # History methods
@@ -81,6 +82,7 @@ export class Api<T = void> extends BaseApi<T> {
   public setStorage(storage: Storage): void {
     super.setStorage(storage);
     this.bridge.setStorage(storage);
+    this.bridgeProxy.setStorage(storage);
   }
 
   // # Account management methods
@@ -92,6 +94,7 @@ export class Api<T = void> extends BaseApi<T> {
   public setSigner(signer: Signer): void {
     super.setSigner(signer);
     this.bridge.setSigner(signer);
+    this.bridgeProxy.setSigner(signer);
   }
 
   /**
@@ -101,6 +104,7 @@ export class Api<T = void> extends BaseApi<T> {
   public setAccount(account: CreateResult): void {
     super.setAccount(account);
     this.bridge.setAccount(account);
+    this.bridgeProxy.setAccount(account);
   }
 
   public async initKeyring(silent = false): Promise<void> {
@@ -418,6 +422,7 @@ export class Api<T = void> extends BaseApi<T> {
 
     super.logout();
     this.bridge.logout();
+    this.bridgeProxy.logout();
   }
 
   // # Formatter methods
