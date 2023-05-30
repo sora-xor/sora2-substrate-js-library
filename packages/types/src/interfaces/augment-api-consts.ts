@@ -7,8 +7,7 @@ import '@polkadot/api-base/types/consts';
 
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
 import type { U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
-import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, Perbill } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, Perbill } from '@polkadot/types/interfaces/runtime';
 import type { CommonPrimitivesAssetId32, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight, SpWeightsWeightV2Weight } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
@@ -319,11 +318,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       votingBondFactor: u128 & AugmentedConst<ApiType>;
     };
-    ethBridge: {
-      removePeerAccountIds: Vec<ITuple<[AccountId32, H160]>> & AugmentedConst<ApiType>;
-      removePendingOutgoingRequestsAfter: u32 & AugmentedConst<ApiType>;
-      trackPendingIncomingRequestsAfter: ITuple<[u32, u64]> & AugmentedConst<ApiType>;
-    };
     ethereumLightClient: {
       /**
        * The number of descendants, in the highest difficulty chain, a block
@@ -495,6 +489,16 @@ declare module '@polkadot/api-base/types/consts' {
        * should be applied immediately, without opportunity for intervention.
        **/
       slashDeferDuration: u32 & AugmentedConst<ApiType>;
+    };
+    substrateBridgeInboundChannel: {
+      /**
+       * A configuration for longevity of unsigned transactions.
+       **/
+      unsignedLongevity: u64 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for base priority of unsigned transactions.
+       **/
+      unsignedPriority: u64 & AugmentedConst<ApiType>;
     };
     system: {
       /**
