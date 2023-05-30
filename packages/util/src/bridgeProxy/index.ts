@@ -54,7 +54,9 @@ export class BridgeProxyModule<T> {
       data.forEach((appInfo) => {
         if (appInfo.isEvm) {
           const [genericNetworkId, evmAppInfo] = appInfo.asEvm;
-          const id = genericNetworkId.asEvm.toNumber();
+          const id = genericNetworkId.isEvmLegacy
+            ? genericNetworkId.asEvmLegacy.toNumber()
+            : genericNetworkId.asEvm.toNumber();
           const type = genericNetworkId.isEvmLegacy ? BridgeNetworkType.EvmLegacy : BridgeNetworkType.Evm;
           const kind = evmAppInfo.appKind.toString();
           const address = evmAppInfo.evmAddress.toString();
