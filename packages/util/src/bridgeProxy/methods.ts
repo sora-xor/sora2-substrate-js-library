@@ -1,13 +1,57 @@
 import { map } from 'rxjs';
 
 import type { Observable } from '@polkadot/types/types';
-import type { BridgeProxyBridgeRequest } from '@polkadot/types/lookup';
+import type {
+  BridgeProxyBridgeRequest,
+  BridgeTypesGenericAccount,
+  BridgeTypesGenericTimepoint,
+  XcmV2Junction,
+  XcmV3Junction,
+} from '@polkadot/types/lookup';
 import type { Option } from '@polkadot/types-codec';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 
 import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
 
 import type { BridgeNetworkParam, BridgeTransactionData } from './types';
+
+function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
+  if (junction.isAccountId32) {
+    return junction.asAccountId32.id.toString();
+  } else {
+    return '';
+  }
+}
+
+function getAccount(data: BridgeTypesGenericAccount): string {
+  if (data.isEvm) {
+    return data.asEvm.toString();
+  }
+  if (data.isSora) {
+    return data.asSora.toString();
+  }
+
+  const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
+
+  if (interior.isX1) {
+    return accountFromJunction(interior.asX1);
+  } else if (interior.isX2) {
+    return accountFromJunction(interior.asX2[1]);
+  } else {
+    return '';
+  }
+}
+
+function getBlock(data: BridgeTypesGenericTimepoint): number {
+  if (data.isEvm) {
+    return data.asEvm.toNumber();
+  }
+  if (data.isSora) {
+    return data.asSora.toNumber();
+  }
+
+  return 0;
+}
 
 function formatBridgeTx(
   hash: string,
@@ -32,18 +76,18 @@ function formatBridgeTx(
     : unwrapped.status.isDone || unwrapped.status.isCommitted
     ? BridgeTxStatus.Done
     : BridgeTxStatus.Pending;
-  formatted.startBlock = unwrapped.startTimepoint.toNumber();
-  formatted.endBlock = unwrapped.endTimepoint.toNumber();
+  formatted.startBlock = getBlock(unwrapped.startTimepoint);
+  formatted.endBlock = getBlock(unwrapped.endTimepoint);
 
   if (unwrapped.direction.isInbound) {
     // incoming: network -> SORA
-    formatted.externalAccount = unwrapped.source.toString();
-    formatted.soraAccount = unwrapped.dest.toString();
+    formatted.externalAccount = getAccount(unwrapped.source);
+    formatted.soraAccount = getAccount(unwrapped.dest);
     formatted.direction = BridgeTxDirection.Incoming;
   } else {
     // outgoing: SORA -> network
-    formatted.soraAccount = unwrapped.source.toString();
-    formatted.externalAccount = unwrapped.dest.toString();
+    formatted.soraAccount = getAccount(unwrapped.source);
+    formatted.externalAccount = getAccount(unwrapped.dest);
     formatted.direction = BridgeTxDirection.Outgoing;
   }
 
