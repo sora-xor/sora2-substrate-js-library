@@ -13,8 +13,9 @@ export interface SubHistory extends History {
   hash?: string;
   transactionState?: BridgeTxStatus;
   externalHash?: string;
-  externalNetworkFee?: CodecString;
   externalNetwork?: SubNetwork;
+  externalNetworkType?: BridgeNetworkType;
+  externalNetworkFee?: CodecString;
 }
 
 export type SubAsset = {

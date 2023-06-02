@@ -107,7 +107,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * New symbol rates were successfully relayed. [symbols]
        **/
-      SymbolsRelayed: AugmentedEvent<ApiType, [Vec<Bytes>]>;
+      SymbolsRelayed: AugmentedEvent<ApiType, [Vec<ITuple<[Bytes, u128]>>]>;
     };
     beefyLightClient: {
       NewMMRRoot: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u64]>;

@@ -89,6 +89,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.EthBridgeOutgoing]: '0',
     [Operation.EvmIncoming]: '0',
     [Operation.EvmOutgoing]: '0',
+    [Operation.SubstrateIncoming]: '0',
+    [Operation.SubstrateOutgoing]: '0',
     [Operation.RegisterAsset]: '0',
     [Operation.RemoveLiquidity]: '0',
     [Operation.Swap]: '0',
@@ -448,10 +450,14 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         extrinsic = this.api.tx.ethBridge.transferToSidechain;
         break;
       case Operation.EvmOutgoing:
-        extrinsic = this.api.tx.evmBridgeProxy.burn;
+        extrinsic = this.api.tx.bridgeProxy.burn;
+        break;
+      case Operation.SubstrateOutgoing:
+        extrinsic = this.api.tx.bridgeProxy.burn;
         break;
       case Operation.EthBridgeIncoming:
       case Operation.EvmIncoming:
+      case Operation.SubstrateIncoming:
         break;
       case Operation.RegisterAsset:
         extrinsic = this.api.tx.assets.register;
@@ -523,11 +529,19 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           ]);
         case Operation.EthBridgeIncoming:
         case Operation.EvmIncoming:
+        case Operation.SubstrateIncoming:
           return null;
         case Operation.EthBridgeOutgoing:
           return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0);
         case Operation.EvmOutgoing:
-          return this.api.tx.evmBridgeProxy.burn({ EVM: 1 }, '', { EVM: '' }, '0');
+          return this.api.tx.bridgeProxy.burn({ EVM: 1 }, '', { EVM: '' }, '0');
+        case Operation.SubstrateOutgoing:
+          return this.api.tx.bridgeProxy.burn(
+            { Sub: 'Rococo' },
+            '',
+            { Parachain: { V3: { parents: 1, interior: 'Here' } } },
+            '0'
+          );
         case Operation.RegisterAsset:
           return this.api.tx.assets.register('', '', '0', false, false, null, null);
         case Operation.RemoveLiquidity:
@@ -602,6 +616,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.EthBridgeOutgoing,
       Operation.EvmIncoming,
       Operation.EvmOutgoing,
+      Operation.SubstrateIncoming,
+      Operation.SubstrateOutgoing,
       Operation.RegisterAsset,
       Operation.RemoveLiquidity,
       Operation.Swap,

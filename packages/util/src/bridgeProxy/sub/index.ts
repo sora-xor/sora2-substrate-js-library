@@ -28,7 +28,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   private getRecipientArg(subNetwork: SubNetwork, recipient: string) {
-    const recipientPublicKey = `0x${this.getPublicKeyByAddress(recipient)}`;
+    const recipientPublicKey = this.api.createType('AccountId32', recipient).toHex();
 
     if (subNetwork === SubNetwork.Karura) {
       return {

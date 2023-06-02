@@ -15,8 +15,9 @@ export interface EvmHistory extends History {
   hash?: string;
   transactionState?: BridgeTxStatus;
   externalHash?: string;
-  externalNetworkFee?: CodecString;
   externalNetwork?: EvmNetwork;
+  externalNetworkType?: BridgeNetworkType;
+  externalNetworkFee?: CodecString;
 }
 
 export type EvmAsset = {

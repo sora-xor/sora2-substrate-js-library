@@ -12,6 +12,7 @@ import { Messages } from './logger';
 import { getAssets, isNativeAsset } from './assets';
 import type { AccountAsset, Asset } from './assets/types';
 import type { History } from './BaseApi';
+import type { BridgeNetworkType } from './bridgeProxy/consts';
 
 function assertRequest(result: Result<any, any>, message: string): void {
   if (!result.isOk) {
@@ -38,7 +39,8 @@ export interface BridgeHistory extends History {
   transactionState?: string;
   externalHash?: string;
   externalNetworkFee?: CodecString;
-  externalNetwork?: BridgeNetworks;
+  externalNetwork?: number;
+  externalNetworkType?: BridgeNetworkType;
 }
 
 export enum BridgeNetworks {

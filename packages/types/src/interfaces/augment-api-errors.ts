@@ -1933,6 +1933,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidLimitOrderPrice: AugmentedError<ApiType>;
       /**
+       * Invalid max lot size
+       **/
+      InvalidMaxLotSize: AugmentedError<ApiType>;
+      /**
+       * Invalid min lot size
+       **/
+      InvalidMinLotSize: AugmentedError<ApiType>;
+      /**
        * The order amount (limit or market) does not meet the requirements
        **/
       InvalidOrderAmount: AugmentedError<ApiType>;
@@ -1940,6 +1948,14 @@ declare module '@polkadot/api-base/types/errors' {
        * Invalid order book id
        **/
       InvalidOrderBookId: AugmentedError<ApiType>;
+      /**
+       * Invalid step lot size
+       **/
+      InvalidStepLotSize: AugmentedError<ApiType>;
+      /**
+       * Invalid tick size
+       **/
+      InvalidTickSize: AugmentedError<ApiType>;
       /**
        * Limit order already exists for this trading pair and order id
        **/
@@ -1952,6 +1968,10 @@ declare module '@polkadot/api-base/types/errors' {
        * It is impossible to insert the limit order because the bounds have been reached
        **/
       LimitOrderStorageOverflow: AugmentedError<ApiType>;
+      /**
+       * Max lot size cannot be more that total supply of base asset
+       **/
+      MaxLotSizeIsMoreThanTotalSupply: AugmentedError<ApiType>;
       /**
        * There are no aggregated bids/asks for the order book
        **/
@@ -1992,6 +2012,14 @@ declare module '@polkadot/api-base/types/errors' {
        * Indicated limit for slippage has not been met during transaction execution.
        **/
       SlippageLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Tick size & step lot size are too big and their multiplication overflows Balance
+       **/
+      TickSizeAndStepLotSizeAreTooBig: AugmentedError<ApiType>;
+      /**
+       * Tick size & step lot size are too small and their multiplication goes out of precision
+       **/
+      TickSizeAndStepLotSizeAreTooSmall: AugmentedError<ApiType>;
       /**
        * At the moment, Trading is forbidden in the current order book
        **/
@@ -2574,6 +2602,7 @@ declare module '@polkadot/api-base/types/errors' {
       NotEnoughFunds: AugmentedError<ApiType>;
       TokenAlreadyRegistered: AugmentedError<ApiType>;
       TokenIsNotRegistered: AugmentedError<ApiType>;
+      UnknownPrecision: AugmentedError<ApiType>;
       /**
        * Amount must be > 0
        **/
@@ -2939,10 +2968,6 @@ declare module '@polkadot/api-base/types/errors' {
     };
     xstPool: {
       /**
-       * The pool can't perform exchange on itself.
-       **/
-      CannotExchangeWithSelf: AugmentedError<ApiType>;
-      /**
        * Synthetic asset must be divisible
        **/
       CantEnableIndivisibleAsset: AugmentedError<ApiType>;
@@ -2950,18 +2975,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Liquidity source can't exchange assets with the given IDs on the given DEXId.
        **/
       CantExchange: AugmentedError<ApiType>;
-      /**
-       * Failure while calculating price ignoring non-linearity of liquidity source.
-       **/
-      FailedToCalculatePriceWithoutImpact: AugmentedError<ApiType>;
-      /**
-       * Could not calculate fee.
-       **/
-      FeeCalculationFailed: AugmentedError<ApiType>;
-      /**
-       * Increment account reference error.
-       **/
-      IncRefError: AugmentedError<ApiType>;
       /**
        * Reference asset must be divisible
        **/
@@ -2974,14 +2987,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Error quoting price from oracle.
        **/
       OracleQuoteError: AugmentedError<ApiType>;
-      /**
-       * Attempt to initialize pool for pair that already exists.
-       **/
-      PoolAlreadyInitializedForPair: AugmentedError<ApiType>;
-      /**
-       * Attempt to get info for uninitialized pool.
-       **/
-      PoolNotInitialized: AugmentedError<ApiType>;
       /**
        * An error occurred while calculating the price.
        **/
@@ -3007,10 +3012,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Attempt to disable synthetic asset that is not enabled.
        **/
       SyntheticIsNotEnabled: AugmentedError<ApiType>;
-      /**
-       * Indicated collateral asset is not enabled for pool.
-       **/
-      UnsupportedCollateralAssetId: AugmentedError<ApiType>;
     };
   } // AugmentedErrors
 } // declare module
