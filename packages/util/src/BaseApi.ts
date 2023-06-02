@@ -366,7 +366,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 history[amountKey] = amountFormatted;
               } else if (
                 (method === 'RequestRegistered' && isBridgeOperation(history.type)) ||
-                (method === 'RequestStatusUpdate' && isEvmOperation(history.type))
+                (method === 'RequestStatusUpdate' &&
+                  (isEvmOperation(history.type) || isSubstrateOperation(history.type)))
               ) {
                 history.hash = first(data.toJSON());
               } else if (section === 'system' && method === 'ExtrinsicFailed') {
