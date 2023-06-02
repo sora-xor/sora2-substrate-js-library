@@ -13,7 +13,7 @@ import type { ApiPromise, ApiRx } from '@polkadot/api';
 
 import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
 
-import type { BridgeNetworkParam, BridgeTransactionData } from './types';
+import type { BridgeNetworkParam, BridgeNetworkId, BridgeTransactionData } from './types';
 
 function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
   if (junction.isAccountId32) {
@@ -56,7 +56,7 @@ function getBlock(data: BridgeTypesGenericTimepoint): number {
 function formatBridgeTx(
   hash: string,
   data: Option<BridgeProxyBridgeRequest>,
-  networkParam: BridgeNetworkParam,
+  networkId: BridgeNetworkId,
   networkType: BridgeNetworkType
 ): BridgeTransactionData | null {
   if (!data.isSome) {
@@ -66,7 +66,7 @@ function formatBridgeTx(
   const unwrapped = data.unwrap();
   const formatted: BridgeTransactionData = {} as any;
 
-  formatted.externalNetwork = networkParam[networkType];
+  formatted.externalNetwork = networkId;
   formatted.externalNetworkType = networkType;
   formatted.soraHash = hash;
   formatted.amount = unwrapped.amount.toString();
@@ -100,16 +100,17 @@ function formatBridgeTx(
 export async function getUserTransactions(
   api: ApiPromise,
   accountAddress: string,
-  network: BridgeNetworkParam,
+  networkParam: BridgeNetworkParam,
+  networkId: BridgeNetworkId,
   networkType: BridgeNetworkType
 ): Promise<BridgeTransactionData[]> {
   try {
     const buffer: BridgeTransactionData[] = [];
-    const data = await api.query.bridgeProxy.transactions.entries([network, accountAddress]);
+    const data = await api.query.bridgeProxy.transactions.entries([networkParam, accountAddress]);
 
     for (const [key, value] of data) {
       const hash = key.args[1];
-      const tx = formatBridgeTx(hash.toString(), value, network, networkType);
+      const tx = formatBridgeTx(hash.toString(), value, networkId, networkType);
 
       if (tx) {
         buffer.push(tx);
@@ -127,13 +128,14 @@ export async function getTransactionDetails(
   api: ApiPromise,
   accountAddress: string,
   hash: string,
-  network: BridgeNetworkParam,
+  networkParam: BridgeNetworkParam,
+  networkId: BridgeNetworkId,
   networkType: BridgeNetworkType
 ): Promise<BridgeTransactionData | null> {
   try {
-    const data = await api.query.bridgeProxy.transactions([network, accountAddress], hash);
+    const data = await api.query.bridgeProxy.transactions([networkParam, accountAddress], hash);
 
-    return formatBridgeTx(hash, data, network, networkType);
+    return formatBridgeTx(hash, data, networkId, networkType);
   } catch {
     return null;
   }
@@ -144,13 +146,14 @@ export function subscribeOnTransactionDetails(
   apiRx: ApiRx,
   accountAddress: string,
   hash: string,
-  network: BridgeNetworkParam,
+  networkParam: BridgeNetworkParam,
+  networkId: BridgeNetworkId,
   networkType: BridgeNetworkType
 ): Observable<BridgeTransactionData | null> | null {
   try {
     return apiRx.query.bridgeProxy
-      .transactions([network, accountAddress], hash)
-      .pipe(map((value) => formatBridgeTx(hash, value, network, networkType)));
+      .transactions([networkParam, accountAddress], hash)
+      .pipe(map((value) => formatBridgeTx(hash, value, networkId, networkType)));
   } catch {
     return null;
   }

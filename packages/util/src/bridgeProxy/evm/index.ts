@@ -60,6 +60,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       this.api,
       accountAddress,
       { [BridgeNetworkType.Evm]: evmNetwork },
+      evmNetwork,
       BridgeNetworkType.Evm
     );
   }
@@ -70,6 +71,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       accountAddress,
       hash,
       { [BridgeNetworkType.Evm]: evmNetwork },
+      evmNetwork,
       BridgeNetworkType.Evm
     );
   }
@@ -80,6 +82,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       accountAddress,
       hash,
       { [BridgeNetworkType.Evm]: evmNetwork },
+      evmNetwork,
       BridgeNetworkType.Evm
     );
   }

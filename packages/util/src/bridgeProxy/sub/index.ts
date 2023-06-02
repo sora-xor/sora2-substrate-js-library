@@ -122,6 +122,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       {
         [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork),
       },
+      subNetwork,
       BridgeNetworkType.Sub
     );
   }
@@ -132,6 +133,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       accountAddress,
       hash,
       { [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork) },
+      subNetwork,
       BridgeNetworkType.Sub
     );
   }
@@ -142,6 +144,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       accountAddress,
       hash,
       { [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork) },
+      subNetwork,
       BridgeNetworkType.Sub
     );
   }
