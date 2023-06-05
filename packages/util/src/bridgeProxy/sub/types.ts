@@ -22,3 +22,7 @@ export type SubAsset = {
   assetKind: SubAssetKind;
   decimals: number;
 };
+
+export type ParachainIds = Partial<{
+  [key in SubNetwork]: number;
+}>;

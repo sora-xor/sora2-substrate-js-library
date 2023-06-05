@@ -3,21 +3,21 @@ import { FPNumber } from '@sora-substrate/math';
 import { BaseApi, isSubstrateOperation, Operation } from '../../BaseApi';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
 import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails } from '../methods';
-import {
-  SubNetwork,
-  XcmVersionedMultiLocation,
-  XcmMultilocationJunction,
-  XcmJunction,
-  SupportedParachains,
-} from './consts';
+import { SubNetwork, XcmVersionedMultiLocation, XcmMultilocationJunction, XcmJunction } from './consts';
 
 import type { Asset } from '../../assets/types';
-import type { SubHistory, SubAsset } from './types';
+import type { SubHistory, SubAsset, ParachainIds } from './types';
 
 export class SubBridgeApi<T> extends BaseApi<T> {
   constructor() {
     super('subHistory');
   }
+
+  // override it from frontend config
+  public parachainIds: ParachainIds = {
+    [SubNetwork.Mainnet]: 2011,
+    [SubNetwork.Karura]: 2000,
+  };
 
   private getParachainNetwork(subNetwork: SubNetwork): SubNetwork {
     if (subNetwork === SubNetwork.Karura) {
@@ -39,7 +39,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
               [XcmMultilocationJunction.X2]: [
                 // karura parachain
                 {
-                  [XcmJunction.Parachain]: SupportedParachains.Karura,
+                  [XcmJunction.Parachain]: this.parachainIds[SubNetwork.Karura],
                 },
                 // recipient account
                 {
@@ -123,7 +123,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
         [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork),
       },
       subNetwork,
-      BridgeNetworkType.Sub
+      BridgeNetworkType.Sub,
+      this.parachainIds
     );
   }
 
@@ -134,7 +135,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       hash,
       { [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork) },
       subNetwork,
-      BridgeNetworkType.Sub
+      BridgeNetworkType.Sub,
+      this.parachainIds
     );
   }
 
@@ -145,7 +147,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       hash,
       { [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork) },
       subNetwork,
-      BridgeNetworkType.Sub
+      BridgeNetworkType.Sub,
+      this.parachainIds
     );
   }
 

@@ -12,8 +12,10 @@ import type { Option } from '@polkadot/types-codec';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 
 import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
+import { SubNetwork } from './sub/consts';
 
 import type { BridgeNetworkParam, BridgeNetworkId, BridgeTransactionData } from './types';
+import type { ParachainIds } from './sub/types';
 
 function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
   if (junction.isAccountId32) {
@@ -42,6 +44,28 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   }
 }
 
+function getSubNetworkId(
+  data: BridgeTypesGenericAccount,
+  selectedNetworkId: BridgeNetworkId,
+  parachainIds: ParachainIds
+): BridgeNetworkId {
+  const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
+
+  if (interior.isX2) {
+    const networkParam = interior.asX2[0];
+
+    if (networkParam.isParachain) {
+      const paraId = networkParam.asParachain.toNumber();
+
+      if (paraId === parachainIds.Karura) {
+        return SubNetwork.Karura;
+      }
+    }
+  }
+
+  return selectedNetworkId;
+}
+
 function getBlock(data: BridgeTypesGenericTimepoint): number {
   if (data.isEvm) {
     return data.asEvm.toNumber();
@@ -57,7 +81,8 @@ function formatBridgeTx(
   hash: string,
   data: Option<BridgeProxyBridgeRequest>,
   networkId: BridgeNetworkId,
-  networkType: BridgeNetworkType
+  networkType: BridgeNetworkType,
+  parachainIds?: ParachainIds
 ): BridgeTransactionData | null {
   if (!data.isSome) {
     return null;
@@ -65,8 +90,13 @@ function formatBridgeTx(
 
   const unwrapped = data.unwrap();
   const formatted: BridgeTransactionData = {} as any;
+  const isSub = networkType === BridgeNetworkType.Sub;
+  const externalNetworkSrc = unwrapped.direction.isInbound ? unwrapped.source : unwrapped.dest;
+  const externalNetwork = isSub ? getSubNetworkId(externalNetworkSrc, networkId, parachainIds) : networkId;
 
-  formatted.externalNetwork = networkId;
+  if (externalNetwork !== networkId) return null;
+
+  formatted.externalNetwork = externalNetwork;
   formatted.externalNetworkType = networkType;
   formatted.soraHash = hash;
   formatted.amount = unwrapped.amount.toString();
@@ -102,7 +132,8 @@ export async function getUserTransactions(
   accountAddress: string,
   networkParam: BridgeNetworkParam,
   networkId: BridgeNetworkId,
-  networkType: BridgeNetworkType
+  networkType: BridgeNetworkType,
+  parachainIds?: ParachainIds
 ): Promise<BridgeTransactionData[]> {
   try {
     const buffer: BridgeTransactionData[] = [];
@@ -110,7 +141,7 @@ export async function getUserTransactions(
 
     for (const [key, value] of data) {
       const hash = key.args[1];
-      const tx = formatBridgeTx(hash.toString(), value, networkId, networkType);
+      const tx = formatBridgeTx(hash.toString(), value, networkId, networkType, parachainIds);
 
       if (tx) {
         buffer.push(tx);
@@ -130,12 +161,13 @@ export async function getTransactionDetails(
   hash: string,
   networkParam: BridgeNetworkParam,
   networkId: BridgeNetworkId,
-  networkType: BridgeNetworkType
+  networkType: BridgeNetworkType,
+  parachainIds?: ParachainIds
 ): Promise<BridgeTransactionData | null> {
   try {
     const data = await api.query.bridgeProxy.transactions([networkParam, accountAddress], hash);
 
-    return formatBridgeTx(hash, data, networkId, networkType);
+    return formatBridgeTx(hash, data, networkId, networkType, parachainIds);
   } catch {
     return null;
   }
@@ -148,12 +180,13 @@ export function subscribeOnTransactionDetails(
   hash: string,
   networkParam: BridgeNetworkParam,
   networkId: BridgeNetworkId,
-  networkType: BridgeNetworkType
+  networkType: BridgeNetworkType,
+  parachainIds?: ParachainIds
 ): Observable<BridgeTransactionData | null> | null {
   try {
     return apiRx.query.bridgeProxy
       .transactions([networkParam, accountAddress], hash)
-      .pipe(map((value) => formatBridgeTx(hash, value, networkId, networkType)));
+      .pipe(map((value) => formatBridgeTx(hash, value, networkId, networkType, parachainIds)));
   } catch {
     return null;
   }
