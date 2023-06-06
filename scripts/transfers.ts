@@ -3,7 +3,8 @@ import path from 'path';
 import readline from 'readline';
 import { encodeMultiAddress, sortAddresses } from '@polkadot/util-crypto';
 
-import { api, connection, FPNumber, TransactionStatus } from '@sora-substrate/util';
+import { api, FPNumber, TransactionStatus } from '@sora-substrate/util';
+import { connection } from '@sora-substrate/connection';
 import { NativeAssets } from '@sora-substrate/util/assets/consts';
 
 const ENDPOINT = 'wss://mof3.sora.org';

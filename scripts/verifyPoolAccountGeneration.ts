@@ -1,4 +1,5 @@
-import { api, connection } from '@sora-substrate/util';
+import { api } from '@sora-substrate/util';
+import { connection } from '@sora-substrate/connection';
 import { poolAccountIdFromAssetPair } from '@sora-substrate/util/poolXyk/account';
 
 async function main(): Promise<void> {
