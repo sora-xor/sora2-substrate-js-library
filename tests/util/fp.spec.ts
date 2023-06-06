@@ -1,4 +1,5 @@
-import { connection, FPNumber } from '@sora-substrate/util';
+import { FPNumber } from '@sora-substrate/util';
+import { connection } from '@sora-substrate/connection';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 describe('FPNumber', () => {
