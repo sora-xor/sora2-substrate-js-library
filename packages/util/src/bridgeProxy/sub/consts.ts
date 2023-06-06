@@ -105,8 +105,3 @@ export enum XcmBodyPart {
   AtLeastProportion = 'AtLeastProportion',
   MoreThanProportion = 'MoreThanProportion',
 }
-
-export enum SupportedParachains {
-  Sora = 2011,
-  Karura = 2000,
-}

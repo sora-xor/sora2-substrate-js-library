@@ -600,10 +600,11 @@ declare module '@polkadot/api-base/types/storage' {
       appAddresses: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: BridgeTypesAssetKind | 'Thischain' | 'Sidechain' | number | Uint8Array) => Observable<Option<H160>>, [U256, BridgeTypesAssetKind]>;
       assetKinds: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<BridgeTypesAssetKind>>, [U256, CommonPrimitivesAssetId32]>;
       assetsByAddresses: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: H160 | string | Uint8Array) => Observable<Option<CommonPrimitivesAssetId32>>, [U256, H160]>;
+      sidechainPrecision: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<u8>>, [U256, CommonPrimitivesAssetId32]>;
       tokenAddresses: AugmentedQuery<ApiType, (arg1: U256 | AnyNumber | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<H160>>, [U256, CommonPrimitivesAssetId32]>;
     };
     ethApp: {
-      addresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<ITuple<[H160, CommonPrimitivesAssetId32]>>>, [U256]>;
+      addresses: AugmentedQuery<ApiType, (arg: U256 | AnyNumber | Uint8Array) => Observable<Option<ITuple<[H160, CommonPrimitivesAssetId32, u8]>>>, [U256]>;
     };
     ethBridge: {
       /**
@@ -1433,6 +1434,7 @@ declare module '@polkadot/api-base/types/storage' {
     };
     substrateBridgeApp: {
       assetKinds: AugmentedQuery<ApiType, (arg1: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<BridgeTypesAssetKind>>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32]>;
+      sidechainPrecision: AugmentedQuery<ApiType, (arg1: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<u8>>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32]>;
     };
     substrateBridgeInboundChannel: {
       channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;

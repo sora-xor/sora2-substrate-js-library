@@ -1,11 +1,8 @@
-import { assert } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import type { ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
 import type { ApiInterfaceEvents } from '@polkadot/api/types';
-
-import { Messages } from './logger';
 
 type ConnectionEventListener = [ApiInterfaceEvents, ProviderInterfaceEmitCb];
 
@@ -37,7 +34,7 @@ const createConnectionTimeout = (timeout: number): Promise<void> => {
   });
 };
 
-class Connection {
+export class Connection {
   public api: ApiPromise | null = null;
   public endpoint = '';
   public loading = false;
@@ -109,7 +106,7 @@ class Connection {
    * @param options
    */
   public async open(endpoint?: string, options?: ConnectionRunOptions): Promise<void> {
-    assert(endpoint || this.endpoint, Messages.endpointIsUndefined);
+    if (!(endpoint || this.endpoint)) throw new Error('You should set endpoint for connection');
     await this.withLoading(async () => await this.run(endpoint || this.endpoint, options));
   }
 
@@ -122,6 +119,6 @@ class Connection {
 }
 
 /**
- * Base connection object which should be used for any api
+ * Base connection object
  */
 export const connection = new Connection();

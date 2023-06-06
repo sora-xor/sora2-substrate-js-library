@@ -4,6 +4,7 @@ import omit from 'lodash/fp/omit';
 import { Observable, Subscriber } from 'rxjs';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { CodecString, FPNumber } from '@sora-substrate/math';
+import { connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
@@ -16,7 +17,6 @@ import { AccountStorage, Storage } from './storage';
 import { DexId } from './dex/consts';
 import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
-import { connection } from './connection';
 import type { BridgeHistory } from './BridgeApi';
 import type { EvmHistory } from './bridgeProxy/evm/types';
 import type { SubHistory } from './bridgeProxy/sub/types';
@@ -90,6 +90,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.EthBridgeOutgoing]: '0',
     [Operation.EvmIncoming]: '0',
     [Operation.EvmOutgoing]: '0',
+    [Operation.SubstrateIncoming]: '0',
+    [Operation.SubstrateOutgoing]: '0',
     [Operation.RegisterAsset]: '0',
     [Operation.RemoveLiquidity]: '0',
     [Operation.Swap]: '0',
@@ -364,7 +366,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 history[amountKey] = amountFormatted;
               } else if (
                 (method === 'RequestRegistered' && isBridgeOperation(history.type)) ||
-                (method === 'RequestStatusUpdate' && isEvmOperation(history.type))
+                (method === 'RequestStatusUpdate' &&
+                  (isEvmOperation(history.type) || isSubstrateOperation(history.type)))
               ) {
                 history.hash = first(data.toJSON());
               } else if (section === 'system' && method === 'ExtrinsicFailed') {
@@ -450,10 +453,14 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         extrinsic = this.api.tx.ethBridge.transferToSidechain;
         break;
       case Operation.EvmOutgoing:
-        extrinsic = this.api.tx.evmBridgeProxy.burn;
+        extrinsic = this.api.tx.bridgeProxy.burn;
+        break;
+      case Operation.SubstrateOutgoing:
+        extrinsic = this.api.tx.bridgeProxy.burn;
         break;
       case Operation.EthBridgeIncoming:
       case Operation.EvmIncoming:
+      case Operation.SubstrateIncoming:
         break;
       case Operation.RegisterAsset:
         extrinsic = this.api.tx.assets.register;
@@ -528,11 +535,19 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           ]);
         case Operation.EthBridgeIncoming:
         case Operation.EvmIncoming:
+        case Operation.SubstrateIncoming:
           return null;
         case Operation.EthBridgeOutgoing:
           return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0);
         case Operation.EvmOutgoing:
-          return this.api.tx.evmBridgeProxy.burn({ EVM: 1 }, '', { EVM: '' }, '0');
+          return this.api.tx.bridgeProxy.burn({ EVM: 1 }, '', { EVM: '' }, '0');
+        case Operation.SubstrateOutgoing:
+          return this.api.tx.bridgeProxy.burn(
+            { Sub: 'Rococo' },
+            '',
+            { Parachain: { V3: { parents: 1, interior: 'Here' } } },
+            '0'
+          );
         case Operation.RegisterAsset:
           return this.api.tx.assets.register('', '', '0', false, false, null, null);
         case Operation.RemoveLiquidity:
@@ -609,6 +624,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.EthBridgeOutgoing,
       Operation.EvmIncoming,
       Operation.EvmOutgoing,
+      Operation.SubstrateIncoming,
+      Operation.SubstrateOutgoing,
       Operation.RegisterAsset,
       Operation.RemoveLiquidity,
       Operation.Swap,
