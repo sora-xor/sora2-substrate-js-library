@@ -29,7 +29,9 @@
       "@sora-substrate/math": ["packages/math/src"],
       "@sora-substrate/math/*": ["packages/math/src/*"],
       "@sora-substrate/liquidity-proxy": ["packages/liquidity-proxy/src"],
-      "@sora-substrate/liquidity-proxy/*": ["packages/liquidity-proxy/src/*"]
+      "@sora-substrate/liquidity-proxy/*": ["packages/liquidity-proxy/src/*"],
+      "@sora-substrate/connection": ["packages/connection/src"],
+      "@sora-substrate/connection/*": ["packages/connection/src/*"]
     },
     "skipLibCheck": true,
     "typeRoots": ["./node_modules/@polkadot/ts", "./node_modules/@types"]
