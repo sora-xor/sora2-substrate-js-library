@@ -146,7 +146,7 @@ declare module '@polkadot/api-base/types/events' {
       NewMultisig: AugmentedEvent<ApiType, [AccountId32, AccountId32, U8aFixed]>;
     };
     bridgeOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [U256, u64]>;
+      MessageAccepted: AugmentedEvent<ApiType, [U256, u64, u64]>;
     };
     bridgeProxy: {
       RefundFailed: AugmentedEvent<ApiType, [H256]>;
@@ -724,11 +724,15 @@ declare module '@polkadot/api-base/types/events' {
     };
     orderBook: {
       /**
+       * Failed to cancel expired order
+       **/
+      ExpirationFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError }>;
+      /**
        * New order book is created by user
        **/
       OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, creator: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, creator: AccountId32 }>;
       /**
-       * Order book is deleted by Council
+       * Order book is deleted
        **/
       OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, countOfCanceledOrders: u32], { orderBookId: OrderBookOrderBookId, dexId: u32, countOfCanceledOrders: u32 }>;
       /**
@@ -736,13 +740,17 @@ declare module '@polkadot/api-base/types/events' {
        **/
       OrderBookStatusChanged: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, newStatus: OrderBookOrderBookStatus], { orderBookId: OrderBookOrderBookId, dexId: u32, newStatus: OrderBookOrderBookStatus }>;
       /**
-       * Order book attributes are updated by Council
+       * Order book attributes are updated
        **/
       OrderBookUpdated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32], { orderBookId: OrderBookOrderBookId, dexId: u32 }>;
       /**
        * User canceled their limit order
        **/
       OrderCanceled: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * The order has reached the end of its lifespan
+       **/
+      OrderExpired: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
       /**
        * User placed new limit order
        **/

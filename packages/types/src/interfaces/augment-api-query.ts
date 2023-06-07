@@ -284,6 +284,10 @@ declare module '@polkadot/api-base/types/storage' {
     };
     bridgeProxy: {
       senders: AugmentedQuery<ApiType, (arg1: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<Option<AccountId32>>, [BridgeTypesGenericNetworkId, H256]>;
+      /**
+       * Fee paid for relayed tx on sidechain. Map ((Network ID, Address) => Cumulative Fee Paid).
+       **/
+      sidechainFeePaid: AugmentedQuery<ApiType, (arg1: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, arg2: H160 | string | Uint8Array) => Observable<Option<U256>>, [BridgeTypesGenericNetworkId, H160]>;
       transactions: AugmentedQuery<ApiType, (arg1: ITuple<[BridgeTypesGenericNetworkId, AccountId32]> | [BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, AccountId32 | string | Uint8Array], arg2: H256 | string | Uint8Array) => Observable<Option<BridgeProxyBridgeRequest>>, [ITuple<[BridgeTypesGenericNetworkId, AccountId32]>, H256]>;
     };
     ceresGovernancePlatform: {
@@ -1008,6 +1012,13 @@ declare module '@polkadot/api-base/types/storage' {
       aggregatedBids: AugmentedQuery<ApiType, (arg: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array) => Observable<BTreeMap<u128, u128>>, [OrderBookOrderBookId]>;
       asks: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array, arg2: u128 | AnyNumber | Uint8Array) => Observable<Option<Vec<u128>>>, [OrderBookOrderBookId, u128]>;
       bids: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array, arg2: u128 | AnyNumber | Uint8Array) => Observable<Option<Vec<u128>>>, [OrderBookOrderBookId, u128]>;
+      expirationsAgenda: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[OrderBookOrderBookId, u128]>>>, [u32]>;
+      /**
+       * Earliest block with incomplete expirations;
+       * Weight limit might not allow to finish all expirations for a block, so
+       * they might be operated later.
+       **/
+      incompleteExpirationsSince: AugmentedQuery<ApiType, () => Observable<Option<u32>>, []>;
       limitOrders: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array, arg2: u128 | AnyNumber | Uint8Array) => Observable<Option<OrderBookLimitOrder>>, [OrderBookOrderBookId, u128]>;
       orderBooks: AugmentedQuery<ApiType, (arg: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array) => Observable<Option<OrderBook>>, [OrderBookOrderBookId]>;
       userLimitOrders: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array) => Observable<Option<Vec<u128>>>, [AccountId32, OrderBookOrderBookId]>;

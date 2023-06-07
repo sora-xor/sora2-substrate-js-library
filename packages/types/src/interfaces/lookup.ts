@@ -1241,7 +1241,18 @@ export default {
         orderBookId: 'OrderBookOrderBookId',
         dexId: 'u32',
         orderId: 'u128',
-        ownerId: 'AccountId32'
+        ownerId: 'AccountId32',
+      },
+      OrderExpired: {
+        orderBookId: 'OrderBookOrderBookId',
+        dexId: 'u32',
+        orderId: 'u128',
+        ownerId: 'AccountId32',
+      },
+      ExpirationFailure: {
+        orderBookId: 'OrderBookOrderBookId',
+        orderId: 'u128',
+        error: 'SpRuntimeDispatchError'
       }
     }
   },
@@ -1304,7 +1315,7 @@ export default {
    **/
   BridgeOutboundChannelEvent: {
     _enum: {
-      MessageAccepted: '(U256,u64)'
+      MessageAccepted: '(U256,u64,u64)'
     }
   },
   /**
@@ -4095,7 +4106,7 @@ export default {
         price: 'u128',
         amount: 'u128',
         side: 'CommonPrimitivesPriceVariant',
-        lifespan: 'u64',
+        lifespan: 'Option<u64>',
       },
       cancel_limit_order: {
         orderBookId: 'OrderBookOrderBookId',
@@ -4265,7 +4276,7 @@ export default {
         log: 'BridgeTypesLog',
         proof: 'BridgeTypesProof',
       },
-      message_dispatched: {
+      batch_dispatched: {
         networkId: 'U256',
         log: 'BridgeTypesLog',
         proof: 'BridgeTypesProof',
@@ -5610,16 +5621,17 @@ export default {
     originalAmount: 'u128',
     amount: 'u128',
     time: 'u64',
-    lifespan: 'u64'
+    lifespan: 'u64',
+    expiresAt: 'u32'
   },
   /**
-   * Lookup812: order_book::pallet::Error<T>
+   * Lookup814: order_book::pallet::Error<T>
    **/
   OrderBookError: {
-    _enum: ['UnknownOrderBook', 'InvalidOrderBookId', 'OrderBookAlreadyExists', 'UnknownLimitOrder', 'LimitOrderAlreadyExists', 'LimitOrderStorageOverflow', 'UpdateLimitOrderError', 'DeleteLimitOrderError', 'NoDataForPrice', 'NoAggregatedData', 'NotEnoughLiquidity', 'ForbiddenToCreateOrderBookWithSameAssets', 'NotAllowedBaseAsset', 'UserHasNoNft', 'InvalidLifespan', 'InvalidOrderAmount', 'InvalidLimitOrderPrice', 'LimitOrderPriceIsTooFarFromSpread', 'TradingIsForbidden', 'PlacementOfLimitOrdersIsForbidden', 'CancellationOfLimitOrdersIsForbidden', 'UserHasMaxCountOfOpenedOrders', 'PriceReachedMaxCountOfLimitOrders', 'OrderBookReachedMaxCountOfPricesForSide', 'AmountCalculationFailed', 'PriceCalculationFailed', 'Unauthorized', 'InvalidAsset', 'InvalidTickSize', 'InvalidStepLotSize', 'InvalidMinLotSize', 'InvalidMaxLotSize', 'TickSizeAndStepLotSizeAreTooBig', 'TickSizeAndStepLotSizeAreTooSmall', 'MaxLotSizeIsMoreThanTotalSupply', 'SlippageLimitExceeded']
+    _enum: ['UnknownOrderBook', 'InvalidOrderBookId', 'OrderBookAlreadyExists', 'UnknownLimitOrder', 'LimitOrderAlreadyExists', 'LimitOrderStorageOverflow', 'UpdateLimitOrderError', 'DeleteLimitOrderError', 'BlockScheduleFull', 'ExpirationNotFound', 'NoDataForPrice', 'NoAggregatedData', 'NotEnoughLiquidity', 'ForbiddenToCreateOrderBookWithSameAssets', 'NotAllowedBaseAsset', 'UserHasNoNft', 'InvalidLifespan', 'InvalidOrderAmount', 'InvalidLimitOrderPrice', 'LimitOrderPriceIsTooFarFromSpread', 'TradingIsForbidden', 'PlacementOfLimitOrdersIsForbidden', 'CancellationOfLimitOrdersIsForbidden', 'UserHasMaxCountOfOpenedOrders', 'PriceReachedMaxCountOfLimitOrders', 'OrderBookReachedMaxCountOfPricesForSide', 'AmountCalculationFailed', 'PriceCalculationFailed', 'Unauthorized', 'InvalidAsset', 'InvalidTickSize', 'InvalidStepLotSize', 'InvalidMinLotSize', 'InvalidMaxLotSize', 'TickSizeAndStepLotSizeAreTooBig', 'TickSizeAndStepLotSizeAreTooSmall', 'MaxLotSizeIsMoreThanTotalSupply', 'SlippageLimitExceeded']
   },
   /**
-   * Lookup817: bridge_proxy::BridgeRequest<sp_core::crypto::AccountId32, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
+   * Lookup819: bridge_proxy::BridgeRequest<sp_core::crypto::AccountId32, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
    **/
   BridgeProxyBridgeRequest: {
     source: 'BridgeTypesGenericAccount',
@@ -5632,20 +5644,20 @@ export default {
     direction: 'BridgeTypesMessageDirection'
   },
   /**
-   * Lookup819: bridge_proxy::pallet::Error<T>
+   * Lookup822: bridge_proxy::pallet::Error<T>
    **/
   BridgeProxyError: {
     _enum: ['PathIsNotAvailable', 'WrongAccountKind']
   },
   /**
-   * Lookup821: ethereum_light_client::PruningRange
+   * Lookup824: ethereum_light_client::PruningRange
    **/
   EthereumLightClientPruningRange: {
     oldestUnprunedBlock: 'u64',
     oldestBlockToKeep: 'u64'
   },
   /**
-   * Lookup823: ethereum_light_client::StoredHeader<sp_core::crypto::AccountId32>
+   * Lookup826: ethereum_light_client::StoredHeader<sp_core::crypto::AccountId32>
    **/
   EthereumLightClientStoredHeader: {
     submitter: 'Option<AccountId32>',
@@ -5654,130 +5666,129 @@ export default {
     finalized: 'bool'
   },
   /**
-   * Lookup825: ethereum_light_client::pallet::Error<T>
+   * Lookup828: ethereum_light_client::pallet::Error<T>
    **/
   EthereumLightClientError: {
     _enum: ['AncientHeader', 'MissingHeader', 'MissingParentHeader', 'DuplicateHeader', 'HeaderNotFinalized', 'HeaderOnStaleFork', 'InvalidHeader', 'InvalidProof', 'DecodeFailed', 'NetworkNotFound', 'NetworkAlreadyExists', 'DifficultyTooLow', 'NetworkStateInvalid', 'Unknown', 'ConsensusNotSupported', 'InvalidSignature']
   },
   /**
-   * Lookup826: bridge_inbound_channel::pallet::Error<T>
+   * Lookup829: bridge_inbound_channel::pallet::Error<T>
    **/
   BridgeInboundChannelError: {
-    _enum: ['InvalidNetwork', 'InvalidSourceChannel', 'InvalidEnvelope', 'InvalidMessageDispatchedEvent', 'InvalidNonce', 'InvalidRewardFraction', 'ContractExists', 'CallEncodeFailed']
+    _enum: ['InvalidNetwork', 'InvalidSourceChannel', 'InvalidEnvelope', 'InvalidBatchDispatchedEvent', 'InvalidNonce', 'InvalidRewardFraction', 'ContractExists', 'CallEncodeFailed']
   },
   /**
-   * Lookup828: bridge_outbound_channel::Message
+   * Lookup831: bridge_outbound_channel::Message
    **/
   BridgeOutboundChannelMessage: {
     networkId: 'U256',
     target: 'H160',
-    nonce: 'u64',
     fee: 'U256',
     maxGas: 'U256',
     payload: 'Bytes'
   },
   /**
-   * Lookup829: bridge_outbound_channel::pallet::Error<T>
+   * Lookup832: bridge_outbound_channel::pallet::Error<T>
    **/
   BridgeOutboundChannelError: {
     _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists']
   },
   /**
-   * Lookup831: eth_app::pallet::Error<T>
+   * Lookup834: eth_app::pallet::Error<T>
    **/
   EthAppError: {
     _enum: ['InvalidPayload', 'AppIsNotRegistered', 'InvalidAppAddress', 'AppAlreadyExists', 'DestAccountIsNotSet', 'CallEncodeFailed', 'WrongAmount', 'WrongRequest', 'WrongRequestStatus']
   },
   /**
-   * Lookup835: erc20_app::pallet::Error<T>
+   * Lookup838: erc20_app::pallet::Error<T>
    **/
   Erc20AppError: {
     _enum: ['TokenIsNotRegistered', 'AppIsNotRegistered', 'NotEnoughFunds', 'InvalidNetwork', 'TokenAlreadyRegistered', 'AppAlreadyRegistered', 'CallEncodeFailed', 'WrongAmount', 'WrongRequest', 'WrongRequestStatus']
   },
   /**
-   * Lookup836: migration_app::pallet::Error<T>
+   * Lookup839: migration_app::pallet::Error<T>
    **/
   MigrationAppError: {
     _enum: ['InvalidPayload', 'AppIsNotRegistered', 'InvalidAppAddress', 'AppAlreadyExists', 'TokenRegisteredWithAnotherAddress', 'CallEncodeFailed']
   },
   /**
-   * Lookup837: beefy_light_client::pallet::Error<T>
+   * Lookup840: beefy_light_client::pallet::Error<T>
    **/
   BeefyLightClientError: {
     _enum: ['InvalidValidatorSetId', 'InvalidMMRProof', 'PayloadBlocknumberTooOld', 'PayloadBlocknumberTooNew', 'CannotSwitchOldValidatorSet', 'NotEnoughValidatorSignatures', 'InvalidNumberOfSignatures', 'InvalidNumberOfPositions', 'InvalidNumberOfPublicKeys', 'ValidatorNotOnceInbitfield', 'ValidatorSetIncorrectPosition', 'InvalidSignature', 'MerklePositionTooHigh', 'MerkleProofTooShort', 'MerkleProofTooHigh', 'PalletNotInitialized', 'InvalidDigestHash', 'CommitmentNotFoundInDigest', 'MMRPayloadNotFound', 'InvalidNetworkId']
   },
   /**
-   * Lookup838: substrate_bridge_channel::inbound::pallet::Error<T>
+   * Lookup841: substrate_bridge_channel::inbound::pallet::Error<T>
    **/
   SubstrateBridgeChannelInboundPalletError: {
     _enum: ['InvalidNetwork', 'InvalidSourceChannel', 'InvalidEnvelope', 'InvalidNonce', 'InvalidRewardFraction', 'ContractExists', 'CallEncodeFailed']
   },
   /**
-   * Lookup839: substrate_bridge_channel::outbound::pallet::Error<T>
+   * Lookup842: substrate_bridge_channel::outbound::pallet::Error<T>
    **/
   SubstrateBridgeChannelOutboundPalletError: {
     _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists']
   },
   /**
-   * Lookup841: substrate_bridge_app::pallet::Error<T>
+   * Lookup844: substrate_bridge_app::pallet::Error<T>
    **/
   SubstrateBridgeAppError: {
     _enum: ['TokenIsNotRegistered', 'AppIsNotRegistered', 'NotEnoughFunds', 'InvalidNetwork', 'TokenAlreadyRegistered', 'AppAlreadyRegistered', 'CallEncodeFailed', 'WrongAmount', 'UnknownPrecision']
   },
   /**
-   * Lookup848: bridge_data_signer::pallet::Error<T>
+   * Lookup851: bridge_data_signer::pallet::Error<T>
    **/
   BridgeDataSignerError: {
     _enum: ['PalletInitialized', 'PalletNotInitialized', 'PeerExists', 'PeerNotExists', 'TooMuchPeers', 'FailedToVerifySignature', 'PeerNotFound', 'TooMuchApprovals', 'ApprovalsNotFound', 'SignaturesNotFound', 'HasPendingPeerUpdate', 'DontHavePendingPeerUpdates', 'NetworkNotSupported', 'SignatureAlreadyExists']
   },
   /**
-   * Lookup849: multisig_verifier::pallet::Error<T>
+   * Lookup852: multisig_verifier::pallet::Error<T>
    **/
   MultisigVerifierError: {
     _enum: ['InvalidInitParams', 'TooMuchPeers', 'NetworkNotInitialized', 'InvalidNumberOfSignatures', 'InvalidSignature', 'NotTrustedPeerSignature', 'PeerExists', 'NoSuchPeer', 'InvalidNetworkId', 'CommitmentNotFoundInDigest']
   },
   /**
-   * Lookup850: pallet_sudo::pallet::Error<T>
+   * Lookup853: pallet_sudo::pallet::Error<T>
    **/
   PalletSudoError: {
     _enum: ['RequireSudo']
   },
   /**
-   * Lookup851: faucet::pallet::Error<T>
+   * Lookup854: faucet::pallet::Error<T>
    **/
   FaucetError: {
     _enum: ['AssetNotSupported', 'AmountAboveLimit', 'NotEnoughReserves']
   },
   /**
-   * Lookup854: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
+   * Lookup857: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
    **/
   FrameSystemExtensionsCheckSpecVersion: 'Null',
   /**
-   * Lookup855: frame_system::extensions::check_tx_version::CheckTxVersion<T>
+   * Lookup858: frame_system::extensions::check_tx_version::CheckTxVersion<T>
    **/
   FrameSystemExtensionsCheckTxVersion: 'Null',
   /**
-   * Lookup856: frame_system::extensions::check_genesis::CheckGenesis<T>
+   * Lookup859: frame_system::extensions::check_genesis::CheckGenesis<T>
    **/
   FrameSystemExtensionsCheckGenesis: 'Null',
   /**
-   * Lookup859: frame_system::extensions::check_nonce::CheckNonce<T>
+   * Lookup862: frame_system::extensions::check_nonce::CheckNonce<T>
    **/
   FrameSystemExtensionsCheckNonce: 'Compact<u32>',
   /**
-   * Lookup860: frame_system::extensions::check_weight::CheckWeight<T>
+   * Lookup863: frame_system::extensions::check_weight::CheckWeight<T>
    **/
   FrameSystemExtensionsCheckWeight: 'Null',
   /**
-   * Lookup861: framenode_runtime::extensions::ChargeTransactionPayment<T>
+   * Lookup864: framenode_runtime::extensions::ChargeTransactionPayment<T>
    **/
   FramenodeRuntimeExtensionsChargeTransactionPayment: 'PalletTransactionPaymentChargeTransactionPayment',
   /**
-   * Lookup862: pallet_transaction_payment::ChargeTransactionPayment<T>
+   * Lookup865: pallet_transaction_payment::ChargeTransactionPayment<T>
    **/
   PalletTransactionPaymentChargeTransactionPayment: 'Compact<u128>',
   /**
-   * Lookup863: framenode_runtime::Runtime
+   * Lookup866: framenode_runtime::Runtime
    **/
   FramenodeRuntimeRuntime: 'Null'
 };
