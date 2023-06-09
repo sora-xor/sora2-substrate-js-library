@@ -3,18 +3,6 @@
     "Address": "AccountId",
     "Amount": "i128",
     "AmountOf": "Amount",
-    "AppKind": {
-        "_enum": [
-            "EthApp",
-            "ERC20App",
-            "SidechainApp",
-            "SubstrateApp"
-        ]
-    },
-    "AppsWithSupportedAssets": {
-        "apps": "Vec<BridgeAppInfo>",
-        "assets": "Vec<BridgeAssetInfo<AssetId>>"
-    },
     "AssetId": "AssetId32",
     "AssetId32": "[u8; 32]",
     "AssetIdOf": "AssetId",
@@ -58,13 +46,17 @@
     },
     "BasisPoints": "u16",
     "BridgeAppInfo": {
-        "evmAddress": "H160",
-        "appKind": "AppKind"
+        "_enum": {
+            "EVM": "(GenericNetworkId, EVMAppInfo)",
+            "Sub": "(GenericNetworkId)"
+        }
     },
     "BridgeAssetInfo": {
-        "assetId": "AssetId",
-        "evmAddress": "Option<H160>",
-        "appKind": "AppKind"
+        "_enum": {
+            "EVMLegacy": "EVMLegacyAssetInfo",
+            "EVM": "EVMAssetInfo",
+            "Sub": "SubAssetInfo"
+        }
     },
     "BridgeNetworkId": "u32",
     "BridgeSignatureVersion": {
@@ -153,7 +145,33 @@
     "DispatchResultWithPostInfo": "Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>",
     "DistributionAccounts": "Null",
     "Duration": "Null",
+    "EVMAppInfo": {
+        "evmAddress": "H160",
+        "appKind": "EVMAppKind"
+    },
+    "EVMAppKind": {
+        "_enum": [
+            "EthApp",
+            "ERC20App",
+            "SidechainApp",
+            "HashiBridge",
+            "XorMaster",
+            "ValMaster"
+        ]
+    },
+    "EVMAssetInfo": {
+        "assetId": "MainnetAssetId",
+        "evmAddress": "H160",
+        "appKind": "EVMAppKind",
+        "precision": "u8"
+    },
     "EVMChainId": "U256",
+    "EVMLegacyAssetInfo": {
+        "assetId": "MainnetAssetId",
+        "evmAddress": "H160",
+        "appKind": "EVMAppKind",
+        "precision": "u8"
+    },
     "EthAddress": "H160",
     "EthBridgeStorageVersion": {
         "_enum": [
@@ -179,6 +197,13 @@
     },
     "Fixed": "FixedU128",
     "FixedBytes": "Vec<u8>",
+    "GenericNetworkId": {
+        "_enum": {
+            "EVMLegacy": "u32",
+            "EVM": "EVMChainId",
+            "Sub": "SubNetworkId"
+        }
+    },
     "HermesPollInfo": {
         "creator": "AccountId",
         "hermesLocked": "Balance",
@@ -367,7 +392,8 @@
             "MockPool2",
             "MockPool3",
             "MockPool4",
-            "XSTPool"
+            "XSTPool",
+            "OrderBook"
         ]
     },
     "LoadIncomingMetaRequest": {
@@ -397,6 +423,7 @@
         "assetB": "AssetId"
     },
     "LookupSource": "AccountId",
+    "MainnetAssetId": "H256",
     "MarketMakerInfo": {
         "count": "u32",
         "volume": "Balance"
@@ -683,6 +710,26 @@
         "rewards": "Balance"
     },
     "StorageVersion": "Null",
+    "SubAssetInfo": {
+        "assetId": "MainnetAssetId",
+        "assetKind": "SubAssetKind",
+        "precision": "u8"
+    },
+    "SubAssetKind": {
+        "_enum": [
+            "Thischain",
+            "Sidechain"
+        ]
+    },
+    "SubNetworkId": {
+        "_enum": {
+            "Mainnet": null,
+            "Kusama": null,
+            "Polkadot": null,
+            "Rococo": null,
+            "Custom": "u32"
+        }
+    },
     "SwapAction": "Null",
     "SwapAmount": {
         "_enum": {

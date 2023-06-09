@@ -4482,6 +4482,37 @@
                     ]
                 },
                 "BridgeAppInfo": {
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "EVM",
+                            "(GenericNetworkId, EVMAppInfo)"
+                        ],
+                        [
+                            "Sub",
+                            "(GenericNetworkId)"
+                        ]
+                    ]
+                },
+                "BridgeAssetInfo": {
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "EVMLegacy",
+                            "EVMLegacyAssetInfo"
+                        ],
+                        [
+                            "EVM",
+                            "EVMAssetInfo"
+                        ],
+                        [
+                            "Sub",
+                            "SubAssetInfo"
+                        ]
+                    ]
+                },
+                "EVMChainId": "U256",
+                "EVMAppInfo": {
                     "type": "struct",
                     "type_mapping": [
                         [
@@ -4490,28 +4521,144 @@
                         ],
                         [
                             "appKind",
-                            "AppKind"
+                            "EVMAppKind"
                         ]
                     ]
                 },
-                "BridgeAssetInfo": {
+                "EVMAppKind": {
+                    "type": "enum",
+                    "value_list": [
+                        "EthApp",
+                        "ERC20App",
+                        "SidechainApp",
+                        "HashiBridge",
+                        "XorMaster",
+                        "ValMaster"
+                    ]
+                },
+                "EVMAssetInfo": {
                     "type": "struct",
                     "type_mapping": [
                         [
                             "assetId",
-                            "AssetId"
+                            "MainnetAssetId"
                         ],
                         [
                             "evmAddress",
-                            "Option<H160>"
+                            "H160"
                         ],
                         [
                             "appKind",
-                            "AppKind"
+                            "EVMAppKind"
+                        ],
+                        [
+                            "precision",
+                            "u8"
                         ]
                     ]
                 },
-                "EVMChainId": "U256"
+                "EVMLegacyAssetInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "assetId",
+                            "MainnetAssetId"
+                        ],
+                        [
+                            "evmAddress",
+                            "H160"
+                        ],
+                        [
+                            "appKind",
+                            "EVMAppKind"
+                        ],
+                        [
+                            "precision",
+                            "u8"
+                        ]
+                    ]
+                },
+                "GenericNetworkId": {
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "EVMLegacy",
+                            "u32"
+                        ],
+                        [
+                            "EVM",
+                            "EVMChainId"
+                        ],
+                        [
+                            "Sub",
+                            "SubNetworkId"
+                        ]
+                    ]
+                },
+                "LiquiditySourceType": {
+                    "type": "enum",
+                    "value_list": [
+                        "XYKPool",
+                        "BondingCurvePool",
+                        "MulticollateralBondingCurvePool",
+                        "MockPool",
+                        "MockPool2",
+                        "MockPool3",
+                        "MockPool4",
+                        "XSTPool",
+                        "OrderBook"
+                    ]
+                },
+                "MainnetAssetId": "H256",
+                "SubAssetInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "assetId",
+                            "MainnetAssetId"
+                        ],
+                        [
+                            "assetKind",
+                            "SubAssetKind"
+                        ],
+                        [
+                            "precision",
+                            "u8"
+                        ]
+                    ]
+                },
+                "SubAssetKind": {
+                    "type": "enum",
+                    "value_list": [
+                        "Thischain",
+                        "Sidechain"
+                    ]
+                },
+                "SubNetworkId": {
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "Mainnet",
+                            null
+                        ],
+                        [
+                            "Kusama",
+                            null
+                        ],
+                        [
+                            "Polkadot",
+                            null
+                        ],
+                        [
+                            "Rococo",
+                            null
+                        ],
+                        [
+                            "Custom",
+                            "u32"
+                        ]
+                    ]
+                }
             }
         }
     ]

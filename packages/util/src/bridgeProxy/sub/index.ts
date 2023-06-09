@@ -54,20 +54,18 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       };
     }
 
-    // Rococo & etc
+    // Rococo
     return {
       [BridgeAccountType.Parachain]: {
         [XcmVersionedMultiLocation.V3]: {
-          parents: 1,
+          parents: 0,
           interior: {
-            [XcmMultilocationJunction.X1]: [
+            [XcmMultilocationJunction.X1]: {
               // recipient account
-              {
-                [XcmJunction.AccountId32]: {
-                  id: recipientPublicKey,
-                },
+              [XcmJunction.AccountId32]: {
+                id: recipientPublicKey,
               },
-            ],
+            },
           },
         },
       },

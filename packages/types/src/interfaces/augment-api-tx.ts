@@ -214,7 +214,11 @@ declare module '@polkadot/api-base/types/submittable' {
       removePeer: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, SpCoreEcdsaPublic]>;
     };
     bridgeInboundChannel: {
-      messageDispatched: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, log: BridgeTypesLog | { address?: any; topics?: any; data?: any } | string | Uint8Array, proof: BridgeTypesProof | { blockHash?: any; txIndex?: any; data?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, BridgeTypesLog, BridgeTypesProof]>;
+      /**
+       * BatchDispatched event from InboundChannel on Ethereum found, the function verifies tx
+       * and changes all the batch messages statuses.
+       **/
+      batchDispatched: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, log: BridgeTypesLog | { address?: any; topics?: any; data?: any } | string | Uint8Array, proof: BridgeTypesProof | { blockHash?: any; txIndex?: any; data?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, BridgeTypesLog, BridgeTypesProof]>;
       registerChannel: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, inboundChannel: H160 | string | Uint8Array, outboundChannel: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, H160, H160]>;
       setRewardFraction: AugmentedSubmittable<(fraction: Perbill | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Perbill]>;
       submit: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, log: BridgeTypesLog | { address?: any; topics?: any; data?: any } | string | Uint8Array, proof: BridgeTypesProof | { blockHash?: any; txIndex?: any; data?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [U256, BridgeTypesLog, BridgeTypesProof]>;
@@ -1968,7 +1972,7 @@ declare module '@polkadot/api-base/types/submittable' {
       changeOrderbookStatus: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array, status: OrderBookOrderBookStatus | 'Trade' | 'PlaceAndCancel' | 'OnlyCancel' | 'Stop' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, OrderBookOrderBookStatus]>;
       createOrderbook: AugmentedSubmittable<(dexId: u32 | AnyNumber | Uint8Array, orderBookId: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, OrderBookOrderBookId]>;
       deleteOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId]>;
-      placeLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array, price: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array, side: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, lifespan: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, CommonPrimitivesPriceVariant, u64]>;
+      placeLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array, price: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array, side: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, lifespan: Option<u64> | null | Uint8Array | u64 | AnyNumber) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, CommonPrimitivesPriceVariant, Option<u64>]>;
       updateOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, u128, u128]>;
     };
     permissions: {
