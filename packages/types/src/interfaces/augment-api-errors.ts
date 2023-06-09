@@ -197,13 +197,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ContractExists: AugmentedError<ApiType>;
       /**
+       * Malformed BatchDispatched event
+       **/
+      InvalidBatchDispatchedEvent: AugmentedError<ApiType>;
+      /**
        * Message has an invalid envelope.
        **/
       InvalidEnvelope: AugmentedError<ApiType>;
-      /**
-       * Malformed MessageDispatched event
-       **/
-      InvalidMessageDispatchedEvent: AugmentedError<ApiType>;
       /**
        * Message came from an invalid network.
        **/
@@ -1909,6 +1909,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AmountCalculationFailed: AugmentedError<ApiType>;
       /**
+       * Expiration schedule for expiration block is full
+       **/
+      BlockScheduleFull: AugmentedError<ApiType>;
+      /**
        * At the moment, Users cannot cancel their limit orders in the current order book
        **/
       CancellationOfLimitOrdersIsForbidden: AugmentedError<ApiType>;
@@ -1916,6 +1920,10 @@ declare module '@polkadot/api-base/types/errors' {
        * It is impossible to delete the limit order
        **/
       DeleteLimitOrderError: AugmentedError<ApiType>;
+      /**
+       * Could not find expiration in given block schedule
+       **/
+      ExpirationNotFound: AugmentedError<ApiType>;
       /**
        * Cannot create order book with equal base and target assets
        **/
@@ -1981,7 +1989,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoDataForPrice: AugmentedError<ApiType>;
       /**
-       * The asset is not allowed to be base. Only dex base asset can be a base asset for order book
+       * The asset is not allowed to be base. Only dex base asset can be a quote asset for order book
        **/
       NotAllowedBaseAsset: AugmentedError<ApiType>;
       /**
