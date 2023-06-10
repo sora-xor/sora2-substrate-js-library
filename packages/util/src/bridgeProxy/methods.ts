@@ -44,11 +44,7 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   }
 }
 
-function getSubNetworkId(
-  data: BridgeTypesGenericAccount,
-  selectedNetworkId: BridgeNetworkId,
-  parachainIds: ParachainIds
-): BridgeNetworkId {
+function getSubNetworkId(data: BridgeTypesGenericAccount, parachainIds: ParachainIds): BridgeNetworkId {
   const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
 
   if (interior.isX2) {
@@ -63,7 +59,7 @@ function getSubNetworkId(
     }
   }
 
-  return selectedNetworkId;
+  return SubNetwork.Rococo;
 }
 
 function getBlock(data: BridgeTypesGenericTimepoint): number {
@@ -92,7 +88,7 @@ function formatBridgeTx(
   const formatted: BridgeTransactionData = {} as any;
   const isSub = networkType === BridgeNetworkType.Sub;
   const externalNetworkSrc = unwrapped.direction.isInbound ? unwrapped.source : unwrapped.dest;
-  const externalNetwork = isSub ? getSubNetworkId(externalNetworkSrc, networkId, parachainIds) : networkId;
+  const externalNetwork = isSub ? getSubNetworkId(externalNetworkSrc, parachainIds) : networkId;
 
   if (externalNetwork !== networkId) return null;
 
