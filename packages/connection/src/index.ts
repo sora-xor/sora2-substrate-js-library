@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
+import type { ApiOptions } from '@polkadot/api/types';
 import type { ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
 import type { ApiInterfaceEvents } from '@polkadot/api/types';
 
@@ -34,12 +35,14 @@ const createConnectionTimeout = (timeout: number): Promise<void> => {
   });
 };
 
-export class Connection {
+class Connection {
   public api: ApiPromise | null = null;
   public endpoint = '';
   public loading = false;
 
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
+
+  constructor(private readonly apiOptions: ApiOptions) {}
 
   private async withLoading(func: Function): Promise<any> {
     this.loading = true;
@@ -60,7 +63,7 @@ export class Connection {
 
     const provider = new WsProvider(endpoint, providerAutoConnectMs);
 
-    this.api = new ApiPromise(options({ provider, noInitWarn: true }));
+    this.api = new ApiPromise({ ...this.apiOptions, provider, noInitWarn: true });
     this.endpoint = endpoint;
 
     const connectionRequests: Array<Promise<any>> = [this.api[apiConnectionPromise]];
@@ -119,6 +122,8 @@ export class Connection {
 }
 
 /**
- * Base connection object
+ * Base SORA connection object
  */
-export const connection = new Connection();
+const connection = new Connection(options());
+
+export { connection, Connection };

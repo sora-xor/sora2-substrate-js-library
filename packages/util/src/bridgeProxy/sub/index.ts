@@ -30,6 +30,12 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   private getRecipientArg(subNetwork: SubNetwork, recipient: string) {
     const recipientPublicKey = this.api.createType('AccountId32', recipient).toHex();
 
+    const accountXcmJunction = {
+      [XcmJunction.AccountId32]: {
+        id: recipientPublicKey,
+      },
+    };
+
     if (subNetwork === SubNetwork.Karura) {
       return {
         [BridgeAccountType.Parachain]: {
@@ -42,11 +48,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
                   [XcmJunction.Parachain]: this.parachainIds[SubNetwork.Karura],
                 },
                 // recipient account
-                {
-                  [XcmJunction.AccountId32]: {
-                    id: recipientPublicKey,
-                  },
-                },
+                accountXcmJunction,
               ],
             },
           },
@@ -58,14 +60,9 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     return {
       [BridgeAccountType.Parachain]: {
         [XcmVersionedMultiLocation.V3]: {
-          parents: 0,
+          parents: 1,
           interior: {
-            [XcmMultilocationJunction.X1]: {
-              // recipient account
-              [XcmJunction.AccountId32]: {
-                id: recipientPublicKey,
-              },
-            },
+            [XcmMultilocationJunction.X1]: accountXcmJunction,
           },
         },
       },
