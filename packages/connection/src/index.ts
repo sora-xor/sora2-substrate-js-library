@@ -1,6 +1,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
+import type { ApiOptions } from '@polkadot/api/types';
 import type { ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
 import type { ApiInterfaceEvents } from '@polkadot/api/types';
 
@@ -34,11 +35,12 @@ const createConnectionTimeout = (timeout: number): Promise<void> => {
   });
 };
 
-export class Connection {
+class Connection {
   public api: ApiPromise | null = null;
   public endpoint = '';
   public loading = false;
 
+  private apiOptions: ApiOptions = {};
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
 
   private async withLoading(func: Function): Promise<any> {
@@ -60,7 +62,7 @@ export class Connection {
 
     const provider = new WsProvider(endpoint, providerAutoConnectMs);
 
-    this.api = new ApiPromise(options({ provider, noInitWarn: true }));
+    this.api = new ApiPromise({ ...this.apiOptions, provider, noInitWarn: true });
     this.endpoint = endpoint;
 
     const connectionRequests: Array<Promise<any>> = [this.api[apiConnectionPromise]];
@@ -91,6 +93,10 @@ export class Connection {
     this.eventListeners = [];
   }
 
+  public setOptions(options: ApiOptions) {
+    this.apiOptions = options;
+  }
+
   public addEventListener(eventName: ApiInterfaceEvents, eventHandler: ProviderInterfaceEmitCb) {
     this.api.on(eventName, eventHandler);
     this.eventListeners.push([eventName, eventHandler]);
@@ -119,6 +125,12 @@ export class Connection {
 }
 
 /**
- * Base connection object
+ * Base SORA connection object
  */
-export const connection = new Connection();
+const connection = new Connection();
+/**
+ * Base SORA connection object
+ */
+connection.setOptions(options());
+
+export { connection, Connection };
