@@ -40,8 +40,9 @@ class Connection {
   public endpoint = '';
   public loading = false;
 
-  private apiOptions: ApiOptions = {};
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
+
+  constructor(private readonly apiOptions: ApiOptions) {}
 
   private async withLoading(func: Function): Promise<any> {
     this.loading = true;
@@ -93,10 +94,6 @@ class Connection {
     this.eventListeners = [];
   }
 
-  public setOptions(options: ApiOptions) {
-    this.apiOptions = options;
-  }
-
   public addEventListener(eventName: ApiInterfaceEvents, eventHandler: ProviderInterfaceEmitCb) {
     this.api.on(eventName, eventHandler);
     this.eventListeners.push([eventName, eventHandler]);
@@ -127,10 +124,6 @@ class Connection {
 /**
  * Base SORA connection object
  */
-const connection = new Connection();
-/**
- * Base SORA connection object
- */
-connection.setOptions(options());
+const connection = new Connection(options());
 
 export { connection, Connection };
