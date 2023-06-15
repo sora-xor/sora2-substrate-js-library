@@ -8,7 +8,7 @@ import { oracleProxyQuote } from './oracleProxy';
 import type { QuotePayload, QuoteResult, PrimaryMarketsEnabledAssets } from '../types';
 
 const ensureBaseAssetAmountWithinLimit = (amount: FPNumber, payload: QuotePayload) => {
-  const limit = new FPNumber(payload.consts.xst.syntheticBaseBuySellLimit);
+  const limit = FPNumber.fromCodecValue(payload.consts.xst.syntheticBaseBuySellLimit);
 
   if (FPNumber.isGreaterThan(amount, limit)) {
     throw new Error('Input/output amount of synthetic base asset exceeds the limit');
