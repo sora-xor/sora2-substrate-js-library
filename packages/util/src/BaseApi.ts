@@ -309,7 +309,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     };
   }
 
-  public async submitExtrinsic(
+  public async submitApiExtrinsic(
+    api: ApiPromise,
     extrinsic: SubmittableExtrinsic<'promise'>,
     signer: KeyringPair,
     historyData?: HistoryItem,
@@ -317,11 +318,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   ): Promise<T> {
     const history = (historyData || {}) as History & IBridgeTransaction & RewardClaimHistory;
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
+
     if (isNotFaucetOperation && signer) {
       history.from = this.address;
     }
 
-    const nonce = await this.api.rpc.system.accountNextIndex(signer.address);
+    const nonce = await api.rpc.system.accountNextIndex(signer.address);
     const { account, options } = this.getAccountWithOptions();
     // Signing the transaction
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
@@ -415,6 +417,15 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       }) as unknown as T; // T is `Observable<ExtrinsicEvent>` here
     }
     return extrinsicFn() as unknown as Promise<T>; // T is `void` here
+  }
+
+  public async submitExtrinsic(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    signer: KeyringPair,
+    historyData?: HistoryItem,
+    unsigned = false
+  ): Promise<T> {
+    return await this.submitApiExtrinsic(this.api, extrinsic, signer, historyData, unsigned);
   }
 
   /**
