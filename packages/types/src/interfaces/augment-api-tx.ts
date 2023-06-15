@@ -1736,6 +1736,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `liquidity_source`: the liquidity source to be enabled.
        **/
       enableLiquiditySource: AugmentedSubmittable<(liquiditySource: CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesLiquiditySourceType]>;
+      setAdarCommissionRatio: AugmentedSubmittable<(commissionRatio: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
        * Perform swap of tokens (input/output defined via SwapAmount direction).
        * 

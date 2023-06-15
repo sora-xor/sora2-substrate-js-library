@@ -586,5 +586,11 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       getMarketMakerRewardsAccountId: AccountId32 & AugmentedConst<ApiType>;
     };
+    xstPool: {
+      /**
+       * Maximum tradable amount of XST
+       **/
+      getSyntheticBaseBuySellLimit: u128 & AugmentedConst<ApiType>;
+    };
   } // AugmentedConsts
 } // declare module
