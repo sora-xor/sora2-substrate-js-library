@@ -640,6 +640,11 @@ declare module '@polkadot/api-base/types/events' {
     };
     liquidityProxy: {
       /**
+       * Batch of swap transfers has been performed
+       * [ADAR Fee, Input amount]
+       **/
+      BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128]>;
+      /**
        * Exchange of tokens has been performed
        * [Caller Account, DEX Id, Input Asset Id, Output Asset Id, Input Amount, Output Amount, Fee Amount]
        **/
