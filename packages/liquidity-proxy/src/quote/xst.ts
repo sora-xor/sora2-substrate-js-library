@@ -7,6 +7,14 @@ import { oracleProxyQuote } from './oracleProxy';
 
 import type { QuotePayload, QuoteResult, PrimaryMarketsEnabledAssets } from '../types';
 
+const ensureBaseAssetAmountWithinLimit = (amount: FPNumber, payload: QuotePayload) => {
+  const limit = new FPNumber(payload.consts.xst.syntheticBaseBuySellLimit);
+
+  if (FPNumber.isGreaterThan(amount, limit)) {
+    throw new Error('Input/output amount of synthetic base asset exceeds the limit');
+  }
+};
+
 const xstReferencePrice = (
   assetAddress: string,
   priceVariant: PriceVariant,
@@ -86,6 +94,7 @@ const xstBuyPriceWithFee = (
 
   if (isDesiredInput) {
     const outputAmount = xstBuyPrice(syntheticAsset, amount, isDesiredInput, payload, enabledAssets);
+    ensureBaseAssetAmountWithinLimit(outputAmount, payload);
     const feeAmount = feeRatio.mul(outputAmount);
     const output = outputAmount.sub(feeAmount);
 
@@ -105,6 +114,7 @@ const xstBuyPriceWithFee = (
       ],
     };
   } else {
+    ensureBaseAssetAmountWithinLimit(amount, payload);
     const fpFee = FPNumber.ONE.sub(feeRatio);
     const amountWithFee = safeDivide(amount, fpFee);
     const fee = amountWithFee.sub(amount);
@@ -138,6 +148,7 @@ const xstSellPriceWithFee = (
   const feeRatio = enabledAssets.xst[syntheticAsset]?.feeRatio ?? Consts.XST_FEE;
 
   if (isDesiredInput) {
+    ensureBaseAssetAmountWithinLimit(amount, payload);
     const fee = amount.mul(feeRatio);
     const output = xstSellPrice(syntheticAsset, amount.sub(fee), isDesiredInput, payload, enabledAssets);
 
@@ -158,6 +169,7 @@ const xstSellPriceWithFee = (
     };
   } else {
     const inputAmount = xstSellPrice(syntheticAsset, amount, isDesiredInput, payload, enabledAssets);
+    ensureBaseAssetAmountWithinLimit(inputAmount, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
     const fee = inputAmountWithFee.sub(inputAmount);
 

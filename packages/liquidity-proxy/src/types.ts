@@ -85,6 +85,7 @@ export type QuotePayload = {
     xst: {
       floorPrice: CodecString;
       referenceAsset: string;
+      syntheticBaseBuySellLimit: CodecString;
     };
     band: {
       rateStalePeriod: number;

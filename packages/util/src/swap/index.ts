@@ -368,6 +368,7 @@ export class SwapModule<T> {
       : [];
 
     const bandRateStalePeriod = this.root.api.consts.band.getBandRateStalePeriod.toNumber();
+    const syntheticBaseBuySellLimit = this.root.api.consts.xstPool.getSyntheticBaseBuySellLimit.toString();
 
     return combineLatest([
       ...tickersRates,
@@ -414,6 +415,7 @@ export class SwapModule<T> {
             xst: {
               floorPrice,
               referenceAsset: xstReferenceAsset,
+              syntheticBaseBuySellLimit,
             },
             band: {
               rateStalePeriod: bandRateStalePeriod,
