@@ -2000,7 +2000,7 @@ declare module '@polkadot/api-base/types/errors' {
       /**
        * There is not enough liquidity in the order book to cover the deal
        **/
-      NotEnoughLiquidity: AugmentedError<ApiType>;
+      NotEnoughLiquidityInOrderBook: AugmentedError<ApiType>;
       /**
        * Order book already exists for this trading pair
        **/
