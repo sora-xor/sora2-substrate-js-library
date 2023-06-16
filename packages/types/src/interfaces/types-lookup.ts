@@ -733,7 +733,9 @@ declare module '@polkadot/types/lookup' {
     readonly asLiquiditySourceEnabled: CommonPrimitivesLiquiditySourceType;
     readonly isLiquiditySourceDisabled: boolean;
     readonly asLiquiditySourceDisabled: CommonPrimitivesLiquiditySourceType;
-    readonly type: 'Exchange' | 'LiquiditySourceEnabled' | 'LiquiditySourceDisabled';
+    readonly isBatchSwapExecuted: boolean;
+    readonly asBatchSwapExecuted: ITuple<[u128, u128]>;
+    readonly type: 'Exchange' | 'LiquiditySourceEnabled' | 'LiquiditySourceDisabled' | 'BatchSwapExecuted';
   }
 
   /** @name CommonPrimitivesLiquiditySourceId (89) */
@@ -2890,7 +2892,11 @@ declare module '@polkadot/types/lookup' {
     readonly asDisableLiquiditySource: {
       readonly liquiditySource: CommonPrimitivesLiquiditySourceType;
     } & Struct;
-    readonly type: 'Swap' | 'SwapTransfer' | 'SwapTransferBatch' | 'EnableLiquiditySource' | 'DisableLiquiditySource';
+    readonly isSetAdarCommissionRatio: boolean;
+    readonly asSetAdarCommissionRatio: {
+      readonly commissionRatio: u128;
+    } & Struct;
+    readonly type: 'Swap' | 'SwapTransfer' | 'SwapTransferBatch' | 'EnableLiquiditySource' | 'DisableLiquiditySource' | 'SetAdarCommissionRatio';
   }
 
   /** @name CommonSwapAmount (325) */
@@ -5340,7 +5346,8 @@ declare module '@polkadot/types/lookup' {
     readonly isLiquiditySourceAlreadyDisabled: boolean;
     readonly isInvalidReceiversInfo: boolean;
     readonly isFailedToTransferAdarCommission: boolean;
-    readonly type: 'UnavailableExchangePath' | 'MaxFeeExceeded' | 'InvalidFeeValue' | 'InsufficientLiquidity' | 'AggregationError' | 'CalculationError' | 'SlippageNotTolerated' | 'ForbiddenFilter' | 'FailedToCalculatePriceWithoutImpact' | 'UnableToSwapIndivisibleAssets' | 'UnableToEnableLiquiditySource' | 'LiquiditySourceAlreadyEnabled' | 'UnableToDisableLiquiditySource' | 'LiquiditySourceAlreadyDisabled' | 'InvalidReceiversInfo' | 'FailedToTransferAdarCommission';
+    readonly isInvalidADARCommissionRatio: boolean;
+    readonly type: 'UnavailableExchangePath' | 'MaxFeeExceeded' | 'InvalidFeeValue' | 'InsufficientLiquidity' | 'AggregationError' | 'CalculationError' | 'SlippageNotTolerated' | 'ForbiddenFilter' | 'FailedToCalculatePriceWithoutImpact' | 'UnableToSwapIndivisibleAssets' | 'UnableToEnableLiquiditySource' | 'LiquiditySourceAlreadyEnabled' | 'UnableToDisableLiquiditySource' | 'LiquiditySourceAlreadyDisabled' | 'InvalidReceiversInfo' | 'FailedToTransferAdarCommission' | 'InvalidADARCommissionRatio';
   }
 
   /** @name PalletCollectiveVotes (667) */
@@ -5787,7 +5794,8 @@ declare module '@polkadot/types/lookup' {
     readonly isInvalidFeeRatio: boolean;
     readonly isIndivisibleReferenceAsset: boolean;
     readonly isCantEnableIndivisibleAsset: boolean;
-    readonly type: 'PriceCalculationFailed' | 'SlippageLimitExceeded' | 'CantExchange' | 'SyntheticDoesNotExist' | 'SymbolDoesNotExist' | 'SymbolAlreadyReferencedToSynthetic' | 'SyntheticIsNotEnabled' | 'OracleQuoteError' | 'InvalidFeeRatio' | 'IndivisibleReferenceAsset' | 'CantEnableIndivisibleAsset';
+    readonly isSyntheticBaseBuySellLimitExceeded: boolean;
+    readonly type: 'PriceCalculationFailed' | 'SlippageLimitExceeded' | 'CantExchange' | 'SyntheticDoesNotExist' | 'SymbolDoesNotExist' | 'SymbolAlreadyReferencedToSynthetic' | 'SyntheticIsNotEnabled' | 'OracleQuoteError' | 'InvalidFeeRatio' | 'IndivisibleReferenceAsset' | 'CantEnableIndivisibleAsset' | 'SyntheticBaseBuySellLimitExceeded';
   }
 
   /** @name PriceToolsAggregatedPriceInfo (742) */
@@ -6302,7 +6310,8 @@ declare module '@polkadot/types/lookup' {
     readonly isTickSizeAndStepLotSizeAreTooSmall: boolean;
     readonly isMaxLotSizeIsMoreThanTotalSupply: boolean;
     readonly isSlippageLimitExceeded: boolean;
-    readonly type: 'UnknownOrderBook' | 'InvalidOrderBookId' | 'OrderBookAlreadyExists' | 'UnknownLimitOrder' | 'LimitOrderAlreadyExists' | 'LimitOrderStorageOverflow' | 'UpdateLimitOrderError' | 'DeleteLimitOrderError' | 'BlockScheduleFull' | 'ExpirationNotFound' | 'NoDataForPrice' | 'NoAggregatedData' | 'NotEnoughLiquidity' | 'ForbiddenToCreateOrderBookWithSameAssets' | 'NotAllowedBaseAsset' | 'UserHasNoNft' | 'InvalidLifespan' | 'InvalidOrderAmount' | 'InvalidLimitOrderPrice' | 'LimitOrderPriceIsTooFarFromSpread' | 'TradingIsForbidden' | 'PlacementOfLimitOrdersIsForbidden' | 'CancellationOfLimitOrdersIsForbidden' | 'UserHasMaxCountOfOpenedOrders' | 'PriceReachedMaxCountOfLimitOrders' | 'OrderBookReachedMaxCountOfPricesForSide' | 'AmountCalculationFailed' | 'PriceCalculationFailed' | 'Unauthorized' | 'InvalidAsset' | 'InvalidTickSize' | 'InvalidStepLotSize' | 'InvalidMinLotSize' | 'InvalidMaxLotSize' | 'TickSizeAndStepLotSizeAreTooBig' | 'TickSizeAndStepLotSizeAreTooSmall' | 'MaxLotSizeIsMoreThanTotalSupply' | 'SlippageLimitExceeded';
+    readonly isNftOrderBooksAreTemporarilyForbidden: boolean;
+    readonly type: 'UnknownOrderBook' | 'InvalidOrderBookId' | 'OrderBookAlreadyExists' | 'UnknownLimitOrder' | 'LimitOrderAlreadyExists' | 'LimitOrderStorageOverflow' | 'UpdateLimitOrderError' | 'DeleteLimitOrderError' | 'BlockScheduleFull' | 'ExpirationNotFound' | 'NoDataForPrice' | 'NoAggregatedData' | 'NotEnoughLiquidity' | 'ForbiddenToCreateOrderBookWithSameAssets' | 'NotAllowedBaseAsset' | 'UserHasNoNft' | 'InvalidLifespan' | 'InvalidOrderAmount' | 'InvalidLimitOrderPrice' | 'LimitOrderPriceIsTooFarFromSpread' | 'TradingIsForbidden' | 'PlacementOfLimitOrdersIsForbidden' | 'CancellationOfLimitOrdersIsForbidden' | 'UserHasMaxCountOfOpenedOrders' | 'PriceReachedMaxCountOfLimitOrders' | 'OrderBookReachedMaxCountOfPricesForSide' | 'AmountCalculationFailed' | 'PriceCalculationFailed' | 'Unauthorized' | 'InvalidAsset' | 'InvalidTickSize' | 'InvalidStepLotSize' | 'InvalidMinLotSize' | 'InvalidMaxLotSize' | 'TickSizeAndStepLotSizeAreTooBig' | 'TickSizeAndStepLotSizeAreTooSmall' | 'MaxLotSizeIsMoreThanTotalSupply' | 'SlippageLimitExceeded' | 'NftOrderBooksAreTemporarilyForbidden';
   }
 
   /** @name BridgeProxyBridgeRequest (819) */

@@ -1703,6 +1703,7 @@ declare module '@polkadot/api-base/types/errors' {
        * None of the sources has enough reserves to execute a trade
        **/
       InsufficientLiquidity: AugmentedError<ApiType>;
+      InvalidADARCommissionRatio: AugmentedError<ApiType>;
       /**
        * Fee value outside of the basis points range [0..10000]
        **/
@@ -1980,6 +1981,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Max lot size cannot be more that total supply of base asset
        **/
       MaxLotSizeIsMoreThanTotalSupply: AugmentedError<ApiType>;
+      /**
+       * NFT order books are temporarily forbidden
+       **/
+      NftOrderBooksAreTemporarilyForbidden: AugmentedError<ApiType>;
       /**
        * There are no aggregated bids/asks for the order book
        **/
@@ -3012,6 +3017,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Attempt to enable synthetic asset with inexistent symbol.
        **/
       SymbolDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Input/output amount of synthetic base asset exceeds the limit
+       **/
+      SyntheticBaseBuySellLimitExceeded: AugmentedError<ApiType>;
       /**
        * Synthetic asset does not exist.
        **/
