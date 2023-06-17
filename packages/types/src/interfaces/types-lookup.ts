@@ -6311,6 +6311,7 @@ declare module '@polkadot/types/lookup' {
     readonly isNotEnoughLiquidityInOrderBook: boolean;
     readonly isForbiddenToCreateOrderBookWithSameAssets: boolean;
     readonly isNotAllowedBaseAsset: boolean;
+    readonly isNotAllowedDEXId: boolean;
     readonly isUserHasNoNft: boolean;
     readonly isInvalidLifespan: boolean;
     readonly isInvalidOrderAmount: boolean;
@@ -6335,7 +6336,7 @@ declare module '@polkadot/types/lookup' {
     readonly isMaxLotSizeIsMoreThanTotalSupply: boolean;
     readonly isSlippageLimitExceeded: boolean;
     readonly isNftOrderBooksAreTemporarilyForbidden: boolean;
-    readonly type: 'UnknownOrderBook' | 'InvalidOrderBookId' | 'OrderBookAlreadyExists' | 'UnknownLimitOrder' | 'LimitOrderAlreadyExists' | 'LimitOrderStorageOverflow' | 'UpdateLimitOrderError' | 'DeleteLimitOrderError' | 'BlockScheduleFull' | 'ExpirationNotFound' | 'NoDataForPrice' | 'NoAggregatedData' | 'NotEnoughLiquidityInOrderBook' | 'ForbiddenToCreateOrderBookWithSameAssets' | 'NotAllowedBaseAsset' | 'UserHasNoNft' | 'InvalidLifespan' | 'InvalidOrderAmount' | 'InvalidLimitOrderPrice' | 'LimitOrderPriceIsTooFarFromSpread' | 'TradingIsForbidden' | 'PlacementOfLimitOrdersIsForbidden' | 'CancellationOfLimitOrdersIsForbidden' | 'UserHasMaxCountOfOpenedOrders' | 'PriceReachedMaxCountOfLimitOrders' | 'OrderBookReachedMaxCountOfPricesForSide' | 'AmountCalculationFailed' | 'PriceCalculationFailed' | 'Unauthorized' | 'InvalidAsset' | 'InvalidTickSize' | 'InvalidStepLotSize' | 'InvalidMinLotSize' | 'InvalidMaxLotSize' | 'TickSizeAndStepLotSizeAreTooBig' | 'TickSizeAndStepLotSizeAreTooSmall' | 'MaxLotSizeIsMoreThanTotalSupply' | 'SlippageLimitExceeded' | 'NftOrderBooksAreTemporarilyForbidden';
+    readonly type: 'UnknownOrderBook' | 'InvalidOrderBookId' | 'OrderBookAlreadyExists' | 'UnknownLimitOrder' | 'LimitOrderAlreadyExists' | 'LimitOrderStorageOverflow' | 'UpdateLimitOrderError' | 'DeleteLimitOrderError' | 'BlockScheduleFull' | 'ExpirationNotFound' | 'NoDataForPrice' | 'NoAggregatedData' | 'NotEnoughLiquidityInOrderBook' | 'ForbiddenToCreateOrderBookWithSameAssets' | 'NotAllowedBaseAsset' | 'NotAllowedDEXId' | 'UserHasNoNft' | 'InvalidLifespan' | 'InvalidOrderAmount' | 'InvalidLimitOrderPrice' | 'LimitOrderPriceIsTooFarFromSpread' | 'TradingIsForbidden' | 'PlacementOfLimitOrdersIsForbidden' | 'CancellationOfLimitOrdersIsForbidden' | 'UserHasMaxCountOfOpenedOrders' | 'PriceReachedMaxCountOfLimitOrders' | 'OrderBookReachedMaxCountOfPricesForSide' | 'AmountCalculationFailed' | 'PriceCalculationFailed' | 'Unauthorized' | 'InvalidAsset' | 'InvalidTickSize' | 'InvalidStepLotSize' | 'InvalidMinLotSize' | 'InvalidMaxLotSize' | 'TickSizeAndStepLotSizeAreTooBig' | 'TickSizeAndStepLotSizeAreTooSmall' | 'MaxLotSizeIsMoreThanTotalSupply' | 'SlippageLimitExceeded' | 'NftOrderBooksAreTemporarilyForbidden';
   }
 
   /** @name BridgeProxyBridgeRequest (820) */

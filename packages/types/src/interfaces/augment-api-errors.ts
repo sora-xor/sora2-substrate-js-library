@@ -1998,6 +1998,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotAllowedBaseAsset: AugmentedError<ApiType>;
       /**
+       * Orderbooks cannot be created with given dex id.
+       **/
+      NotAllowedDEXId: AugmentedError<ApiType>;
+      /**
        * There is not enough liquidity in the order book to cover the deal
        **/
       NotEnoughLiquidityInOrderBook: AugmentedError<ApiType>;

@@ -436,7 +436,7 @@ export default {
     },
     EthAddress: 'H160',
     BridgeSignatureVersion: {
-      _enum: ['V1', 'V2'],
+      _enum: ['V1', 'V2', 'V3'],
     },
   },
   typesAlias: {
