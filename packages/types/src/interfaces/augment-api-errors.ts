@@ -317,10 +317,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       MaxGasTooBig: AugmentedError<ApiType>;
       /**
-       * Cannot pay the fee to submit a message.
-       **/
-      NoFunds: AugmentedError<ApiType>;
-      /**
        * Cannot increment nonce
        **/
       Overflow: AugmentedError<ApiType>;
@@ -1997,6 +1993,10 @@ declare module '@polkadot/api-base/types/errors' {
        * The asset is not allowed to be base. Only dex base asset can be a quote asset for order book
        **/
       NotAllowedBaseAsset: AugmentedError<ApiType>;
+      /**
+       * Orderbooks cannot be created with given dex id.
+       **/
+      NotAllowedDEXId: AugmentedError<ApiType>;
       /**
        * There is not enough liquidity in the order book to cover the deal
        **/
