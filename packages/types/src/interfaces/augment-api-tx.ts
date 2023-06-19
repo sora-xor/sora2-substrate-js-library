@@ -1305,21 +1305,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       transferToSidechain: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, to: H160 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array, networkId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, H160, u128, u32]>;
     };
-    faucet: {
-      resetRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
-      /**
-       * Transfers the specified amount of asset to the specified account.
-       * The supported assets are: XOR, VAL, PSWAP.
-       * 
-       * # Errors
-       * 
-       * AssetNotSupported is returned if `asset_id` is something the function doesn't support.
-       * AmountAboveLimit is returned if `target` has already received their daily limit of `asset_id`.
-       * NotEnoughReserves is returned if `amount` is greater than the reserves
-       **/
-      transfer: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, target: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, AccountId32, u128]>;
-      updateLimit: AugmentedSubmittable<(newLimit: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
-    };
     grandpa: {
       /**
        * Note that the current authority set of the GRANDPA finality gadget has stalled.
@@ -2416,61 +2401,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       withdrawUnbonded: AugmentedSubmittable<(numSlashingSpans: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
-    };
-    sudo: {
-      /**
-       * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
-       * key.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB change.
-       * # </weight>
-       **/
-      setKey: AugmentedSubmittable<(updated: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudo: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call]>;
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Signed` origin from
-       * a given account.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - Limited storage reads.
-       * - One DB write (event).
-       * - Weight of derivative `call` execution + 10,000.
-       * # </weight>
-       **/
-      sudoAs: AugmentedSubmittable<(who: AccountId32 | string | Uint8Array, call: Call | IMethod | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, Call]>;
-      /**
-       * Authenticates the sudo key and dispatches a function call with `Root` origin.
-       * This function does not check the weight of the call, and instead allows the
-       * Sudo user to specify the weight of the call.
-       * 
-       * The dispatch origin for this call must be _Signed_.
-       * 
-       * # <weight>
-       * - O(1).
-       * - The weight of this call is defined by the caller.
-       * # </weight>
-       **/
-      sudoUncheckedWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: SpWeightsWeightV2Weight | { refTime?: any; proofSize?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, SpWeightsWeightV2Weight]>;
     };
     system: {
       /**

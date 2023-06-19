@@ -1208,20 +1208,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       IncRefError: AugmentedError<ApiType>;
     };
-    faucet: {
-      /**
-       * Amount is above limit.
-       **/
-      AmountAboveLimit: AugmentedError<ApiType>;
-      /**
-       * Asset is not supported.
-       **/
-      AssetNotSupported: AugmentedError<ApiType>;
-      /**
-       * Not enough reserves.
-       **/
-      NotEnoughReserves: AugmentedError<ApiType>;
-    };
     grandpa: {
       /**
        * Attempt to signal GRANDPA change with one already pending.
@@ -2163,12 +2149,6 @@ declare module '@polkadot/api-base/types/errors' {
        * staking settings to keep things safe for the runtime.
        **/
       TooManyValidators: AugmentedError<ApiType>;
-    };
-    sudo: {
-      /**
-       * Sender must be the Sudo account
-       **/
-      RequireSudo: AugmentedError<ApiType>;
     };
     system: {
       /**

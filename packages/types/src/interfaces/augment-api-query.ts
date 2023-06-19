@@ -1287,12 +1287,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       validatorSlashInEra: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<ITuple<[Perbill, u128]>>>, [u32, AccountId32]>;
     };
-    sudo: {
-      /**
-       * The `AccountId` of the sudo key.
-       **/
-      key: AugmentedQuery<ApiType, () => Observable<Option<AccountId32>>, []>;
-    };
     system: {
       /**
        * The full account information for a particular account ID.

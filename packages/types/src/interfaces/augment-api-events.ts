@@ -472,10 +472,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       RequestRegistered: AugmentedEvent<ApiType, [H256]>;
     };
-    faucet: {
-      LimitUpdated: AugmentedEvent<ApiType, [u128]>;
-      Transferred: AugmentedEvent<ApiType, [AccountId32, u128]>;
-    };
     grandpa: {
       /**
        * New authority set has been applied.
@@ -844,20 +840,6 @@ declare module '@polkadot/api-base/types/events' {
        * from the unlocking queue.
        **/
       Withdrawn: AugmentedEvent<ApiType, [stash: AccountId32, amount: u128], { stash: AccountId32, amount: u128 }>;
-    };
-    sudo: {
-      /**
-       * The \[sudoer\] just switched identity; the old key is supplied if one existed.
-       **/
-      KeyChanged: AugmentedEvent<ApiType, [oldSudoer: Option<AccountId32>], { oldSudoer: Option<AccountId32> }>;
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      Sudid: AugmentedEvent<ApiType, [sudoResult: Result<Null, SpRuntimeDispatchError>], { sudoResult: Result<Null, SpRuntimeDispatchError> }>;
-      /**
-       * A sudo just took place. \[result\]
-       **/
-      SudoAsDone: AugmentedEvent<ApiType, [sudoResult: Result<Null, SpRuntimeDispatchError>], { sudoResult: Result<Null, SpRuntimeDispatchError> }>;
     };
     system: {
       /**
