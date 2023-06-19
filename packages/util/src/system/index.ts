@@ -1,9 +1,10 @@
 import { map, Subject } from 'rxjs';
+import { FPNumber } from '@sora-substrate/math';
 import type { Subscription } from 'rxjs';
 import type { EventRecord } from '@polkadot/types/interfaces/system';
 import type { Observable } from '@polkadot/types/types';
 import type { GenericExtrinsic } from '@polkadot/types';
-import type { u32, Vec } from '@polkadot/types-codec';
+import type { u32, Vec, u128 } from '@polkadot/types-codec';
 import type { AnyTuple } from '@polkadot/types-codec/types';
 import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
 
@@ -17,6 +18,10 @@ export class SystemModule<T> {
 
   get specVersion(): number {
     return this.root.api.consts.system.version.specVersion.toNumber();
+  }
+
+  public getNetworkFeeMultiplierObservable(): Observable<number> {
+    return this.root.apiRx.query.xorFee.multiplier().pipe(map<u128, number>((codec) => new FPNumber(codec).toNumber()));
   }
 
   public getBlockNumberObservable(): Observable<number> {
