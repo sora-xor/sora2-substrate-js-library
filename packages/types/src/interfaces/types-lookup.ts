@@ -6410,7 +6410,6 @@ declare module '@polkadot/types/lookup' {
   interface BridgeOutboundChannelMessage extends Struct {
     readonly networkId: U256;
     readonly target: H160;
-    readonly fee: U256;
     readonly maxGas: U256;
     readonly payload: Bytes;
   }
@@ -6420,10 +6419,9 @@ declare module '@polkadot/types/lookup' {
     readonly isPayloadTooLarge: boolean;
     readonly isQueueSizeLimitReached: boolean;
     readonly isMaxGasTooBig: boolean;
-    readonly isNoFunds: boolean;
     readonly isOverflow: boolean;
     readonly isChannelExists: boolean;
-    readonly type: 'PayloadTooLarge' | 'QueueSizeLimitReached' | 'MaxGasTooBig' | 'NoFunds' | 'Overflow' | 'ChannelExists';
+    readonly type: 'PayloadTooLarge' | 'QueueSizeLimitReached' | 'MaxGasTooBig' | 'Overflow' | 'ChannelExists';
   }
 
   /** @name EthAppError (835) */

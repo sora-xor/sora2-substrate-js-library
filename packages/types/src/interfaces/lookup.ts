@@ -5709,7 +5709,6 @@ export default {
   BridgeOutboundChannelMessage: {
     networkId: 'U256',
     target: 'H160',
-    fee: 'U256',
     maxGas: 'U256',
     payload: 'Bytes'
   },
@@ -5717,7 +5716,7 @@ export default {
    * Lookup833: bridge_outbound_channel::pallet::Error<T>
    **/
   BridgeOutboundChannelError: {
-    _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists']
+    _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'Overflow', 'ChannelExists']
   },
   /**
    * Lookup835: eth_app::pallet::Error<T>

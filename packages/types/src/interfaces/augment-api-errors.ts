@@ -317,10 +317,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       MaxGasTooBig: AugmentedError<ApiType>;
       /**
-       * Cannot pay the fee to submit a message.
-       **/
-      NoFunds: AugmentedError<ApiType>;
-      /**
        * Cannot increment nonce
        **/
       Overflow: AugmentedError<ApiType>;
