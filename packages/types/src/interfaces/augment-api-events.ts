@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, HermesGovernancePlatformVotingOption, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -551,7 +551,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Create poll [who, title, start_timestamp, end_timestamp]
        **/
-      Created: AugmentedEvent<ApiType, [AccountId32, Text, u64, u64]>;
+      Created: AugmentedEvent<ApiType, [AccountId32, Bytes, u64, u64]>;
       /**
        * Creator Funds Withdrawn [who, balance]
        **/
@@ -567,7 +567,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Voting [who, poll, option]
        **/
-      Voted: AugmentedEvent<ApiType, [AccountId32, H256, HermesGovernancePlatformVotingOption]>;
+      Voted: AugmentedEvent<ApiType, [AccountId32, H256, Bytes]>;
       /**
        * Voter Funds Withdrawn [who, balance]
        **/
@@ -976,7 +976,7 @@ declare module '@polkadot/api-base/types/events' {
     substrateBridgeInboundChannel: {
     };
     substrateBridgeOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, u64]>;
+      MessageAccepted: AugmentedEvent<ApiType, [networkId: BridgeTypesSubNetworkId, batchNonce: u64, messageNonce: u64], { networkId: BridgeTypesSubNetworkId, batchNonce: u64, messageNonce: u64 }>;
     };
     substrateDispatch: {
       /**
