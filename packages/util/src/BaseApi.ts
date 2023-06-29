@@ -777,7 +777,7 @@ export interface History {
   assetAddress?: string;
   id?: string;
   blockId?: string;
-  blockHeight?: string;
+  blockHeight?: number;
   to?: string;
   receivers?: Array<ReceiverHistoryItem>;
   amount2?: string;

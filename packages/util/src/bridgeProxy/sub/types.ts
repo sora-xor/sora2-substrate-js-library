@@ -12,6 +12,8 @@ export interface SubHistory extends History {
   type: Operation.SubstrateIncoming | Operation.SubstrateOutgoing;
   hash?: string;
   transactionState?: BridgeTxStatus;
+  externalBlockId?: string;
+  externalBlockHeight?: number;
   externalHash?: string;
   externalNetwork?: SubNetwork;
   externalNetworkType?: BridgeNetworkType;
