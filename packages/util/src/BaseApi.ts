@@ -48,7 +48,7 @@ export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
-export type ExtrinsicEvent = ['inblock' | 'finalized' | 'error', History & IBridgeTransaction & RewardClaimHistory];
+export type ExtrinsicEvent = [TransactionStatus, HistoryItem];
 
 interface ISubmitExtrinsic<T> {
   submitExtrinsic(
@@ -212,7 +212,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   }
 
   public saveHistory(historyItem: HistoryItem, options?: SaveHistoryOptions): void {
-    if (!historyItem || !historyItem.id) return;
+    if (!historyItem?.id) return;
 
     let historyCopy: AccountHistory<HistoryItem>;
     let addressStorage: Storage;
@@ -316,13 +316,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    const history = (historyData || {}) as History & IBridgeTransaction & RewardClaimHistory;
-    const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
-
-    if (isNotFaucetOperation && signer) {
-      history.from = this.address;
-    }
-
     const nonce = await api.rpc.system.accountNextIndex(signer.address);
     const { account, options } = this.getAccountWithOptions();
     // Signing the transaction
@@ -331,82 +324,101 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     // we should lock pair, if it's not locked
     this.shouldPairBeLocked && this.lockPair();
 
-    history.txId = signedTx.hash.toString();
+    const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
 
-    // History id value will be equal to transaction hash
-    if (!history.id) {
-      history.startTime = Date.now();
-      history.id = history.txId;
-    }
+    // history initial params
+    const from = isNotFaucetOperation && signer ? this.address : undefined;
+    const txId = signedTx.hash.toString();
+    const id = historyData.id ?? txId;
+    const type = historyData.type;
+    const startTime = historyData.startTime ?? Date.now();
+    // history required params for each update
+    const requiredParams = { id, from, type };
+
+    this.saveHistory({ ...historyData, ...requiredParams, txId, startTime });
 
     const extrinsicFn = async (subscriber?: Subscriber<ExtrinsicEvent>) => {
       const unsub = await extrinsic
         .send((result: ISubmittableResult) => {
-          history.status = first(Object.keys(result.status.toJSON())).toLowerCase();
+          const status = first(Object.keys(result.status.toJSON())).toLowerCase() as TransactionStatus;
+          const updated: any = {};
+
+          updated.status = status;
+
           if (result.status.isInBlock) {
-            history.blockId = result.status.asInBlock.toString();
-            subscriber?.next(['inblock', history]);
+            updated.blockId = result.status.asInBlock.toString();
           } else if (result.status.isFinalized) {
-            history.endTime = Date.now();
+            updated.endTime = Date.now();
+
             result.events.forEach(({ event: { data, method, section } }: any) => {
               if (method === 'FeeWithdrawn' && section === 'xorFee') {
                 const [_, soraNetworkFee] = data;
-                history.soraNetworkFee = soraNetworkFee.toString();
+                updated.soraNetworkFee = soraNetworkFee.toString();
               } else if (method === 'AssetRegistered' && section === 'assets') {
                 const [assetId, _] = data;
-                history.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+                updated.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
               } else if (
                 method === 'Transfer' &&
                 ['balances', 'tokens'].includes(section) &&
-                isLiquidityPoolOperation(history.type)
+                isLiquidityPoolOperation(type)
               ) {
                 // balances.Transfer hasn't assetId field
                 const [amount, to, from, assetId] = data.slice().reverse();
                 const amountFormatted = new FPNumber(amount).toString();
+                const history = this.getHistory(id);
                 // events for 1st token and 2nd token are ordered in extrinsic
                 const amountKey = !history.amount ? 'amount' : 'amount2';
-                history[amountKey] = amountFormatted;
+                updated[amountKey] = amountFormatted;
               } else if (
-                (method === 'RequestRegistered' && isBridgeOperation(history.type)) ||
-                (method === 'RequestStatusUpdate' &&
-                  (isEvmOperation(history.type) || isSubstrateOperation(history.type)))
+                (method === 'RequestRegistered' && isBridgeOperation(type)) ||
+                (method === 'RequestStatusUpdate' && (isEvmOperation(type) || isSubstrateOperation(type)))
               ) {
-                history.hash = first(data.toJSON());
+                updated.hash = first(data.toJSON());
               } else if (section === 'system' && method === 'ExtrinsicFailed') {
-                history.status = TransactionStatus.Error;
-                history.endTime = Date.now();
+                updated.status = TransactionStatus.Error;
+                updated.endTime = Date.now();
+
                 const [error] = data;
                 if (error.isModule) {
                   const decoded = this.api.registry.findMetaError(error.asModule);
                   const { docs, section, name } = decoded;
-                  history.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
+                  updated.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
                 } else {
                   // Other, CannotLookup, BadOrigin, no extra info
-                  history.errorMessage = error.toString();
+                  updated.errorMessage = error.toString();
                 }
               }
             });
-            const state = history.status === TransactionStatus.Error ? 'error' : 'finalized';
-            subscriber?.next([state, history]);
+          }
+
+          this.saveHistory({ ...requiredParams, ...updated }); // Save history during each status update
+
+          subscriber?.next([status, this.getHistory(id)]);
+
+          if (result.status.isFinalized) {
             subscriber?.complete();
             unsub();
           }
-          this.saveHistory(history); // Save history during each status update
         })
         .catch((e: Error) => {
-          // override history 'id' to 'startTime', because we will delete history 'txId' below
-          history.id = this.encrypt(`${history.startTime}`);
-          history.status = TransactionStatus.Error;
-          history.endTime = Date.now();
           const errorParts = e?.message?.split(':');
           const errorInfo = last(errorParts)?.trim();
-          history.errorMessage = errorInfo;
-          // at the moment the history has not yet been saved;
+          const status = TransactionStatus.Error;
+          const updated: any = {};
+
+          updated.status = status;
+          updated.endTime = Date.now();
+          updated.errorMessage = errorInfo;
+
           // save history and then delete 'txId'
-          this.saveHistory(history, {
-            wasNotGenerated: true,
-          });
-          subscriber?.next(['error', history]);
+          this.saveHistory(
+            { ...requiredParams, ...updated },
+            {
+              wasNotGenerated: true,
+            }
+          );
+
+          subscriber?.next([status, this.getHistory(id)]);
           subscriber?.complete();
           throw new Error(errorInfo);
         });
