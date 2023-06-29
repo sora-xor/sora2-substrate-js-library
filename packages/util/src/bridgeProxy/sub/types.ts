@@ -10,10 +10,14 @@ export type SubNetworkParam = {
 
 export interface SubHistory extends History {
   type: Operation.SubstrateIncoming | Operation.SubstrateOutgoing;
+  /* SORA network bridge transaction hash */
   hash?: string;
   transactionState?: BridgeTxStatus;
+  /* External network block hash */
   externalBlockId?: string;
+  /* External network block number */
   externalBlockHeight?: number;
+  /* External network transaction hash */
   externalHash?: string;
   externalNetwork?: SubNetwork;
   externalNetworkType?: BridgeNetworkType;
