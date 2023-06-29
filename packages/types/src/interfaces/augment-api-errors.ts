@@ -330,6 +330,8 @@ declare module '@polkadot/api-base/types/errors' {
       QueueSizeLimitReached: AugmentedError<ApiType>;
     };
     bridgeProxy: {
+      NotEnoughLockedLiquidity: AugmentedError<ApiType>;
+      Overflow: AugmentedError<ApiType>;
       PathIsNotAvailable: AugmentedError<ApiType>;
       WrongAccountKind: AugmentedError<ApiType>;
     };
@@ -1495,6 +1497,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AlreadyVoted: AugmentedError<ApiType>;
       /**
+       * Duplicate options
+       **/
+      DuplicateOptions: AugmentedError<ApiType>;
+      /**
        * Funds Already Withdrawn
        **/
       FundsAlreadyWithdrawn: AugmentedError<ApiType>;
@@ -1511,9 +1517,17 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidMinimumDurationOfPoll: AugmentedError<ApiType>;
       /**
+       * Invalid Option
+       **/
+      InvalidOption: AugmentedError<ApiType>;
+      /**
        * Invalid Start Timestamp
        **/
       InvalidStartTimestamp: AugmentedError<ApiType>;
+      /**
+       * Invalid Voting Options
+       **/
+      InvalidVotingOptions: AugmentedError<ApiType>;
       /**
        * Not Enough Hermes For Creating Poll
        **/
@@ -1523,7 +1537,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotEnoughHermesForVoting: AugmentedError<ApiType>;
       /**
-       * NotVoted
+       * Not Voted
        **/
       NotVoted: AugmentedError<ApiType>;
       /**
@@ -1542,6 +1556,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Poll Is Not Started
        **/
       PollIsNotStarted: AugmentedError<ApiType>;
+      /**
+       * Too Many Voting Options
+       **/
+      TooManyVotingOptions: AugmentedError<ApiType>;
       /**
        * Unauthorized
        **/
@@ -2615,6 +2633,7 @@ declare module '@polkadot/api-base/types/errors' {
       NotEnoughFunds: AugmentedError<ApiType>;
       TokenAlreadyRegistered: AugmentedError<ApiType>;
       TokenIsNotRegistered: AugmentedError<ApiType>;
+      TransferLimitReached: AugmentedError<ApiType>;
       UnknownPrecision: AugmentedError<ApiType>;
       /**
        * Amount must be > 0
@@ -2631,9 +2650,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ContractExists: AugmentedError<ApiType>;
       /**
-       * Message has an invalid envelope.
+       * Submitted invalid commitment type.
        **/
-      InvalidEnvelope: AugmentedError<ApiType>;
+      InvalidCommitment: AugmentedError<ApiType>;
       /**
        * Message came from an invalid network.
        **/
