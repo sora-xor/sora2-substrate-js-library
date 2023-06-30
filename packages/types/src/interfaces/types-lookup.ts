@@ -4787,6 +4787,7 @@ declare module '@polkadot/types/lookup' {
       readonly networkId: BridgeTypesSubNetworkId;
       readonly assetId: CommonPrimitivesAssetId32;
       readonly sidechainAsset: XcmV3MultiassetAssetId;
+      readonly allowedParachains: Vec<u32>;
     } & Struct;
     readonly isRegisterSidechainAsset: boolean;
     readonly asRegisterSidechainAsset: {
@@ -4795,12 +4796,25 @@ declare module '@polkadot/types/lookup' {
       readonly symbol: Bytes;
       readonly name: Bytes;
       readonly decimals: u8;
+      readonly allowedParachains: Vec<u32>;
     } & Struct;
     readonly isSetTransferLimit: boolean;
     readonly asSetTransferLimit: {
       readonly limitCount: Option<u128>;
     } & Struct;
-    readonly type: 'Mint' | 'FinalizeAssetRegistration' | 'Burn' | 'RegisterThischainAsset' | 'RegisterSidechainAsset' | 'SetTransferLimit';
+    readonly isAddAssetidParaid: boolean;
+    readonly asAddAssetidParaid: {
+      readonly networkId: BridgeTypesSubNetworkId;
+      readonly paraId: u32;
+      readonly assetId: CommonPrimitivesAssetId32;
+    } & Struct;
+    readonly isRemoveAssetidParaid: boolean;
+    readonly asRemoveAssetidParaid: {
+      readonly networkId: BridgeTypesSubNetworkId;
+      readonly paraId: u32;
+      readonly assetId: CommonPrimitivesAssetId32;
+    } & Struct;
+    readonly type: 'Mint' | 'FinalizeAssetRegistration' | 'Burn' | 'RegisterThischainAsset' | 'RegisterSidechainAsset' | 'SetTransferLimit' | 'AddAssetidParaid' | 'RemoveAssetidParaid';
   }
 
   /** @name BridgeTypesAssetKind (596) */
@@ -6548,7 +6562,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'PayloadTooLarge' | 'QueueSizeLimitReached' | 'MaxGasTooBig' | 'NoFunds' | 'Overflow' | 'ChannelExists';
   }
 
-  /** @name SubstrateBridgeAppError (857) */
+  /** @name SubstrateBridgeAppError (858) */
   interface SubstrateBridgeAppError extends Enum {
     readonly isTokenIsNotRegistered: boolean;
     readonly isAppIsNotRegistered: boolean;
@@ -6560,10 +6574,15 @@ declare module '@polkadot/types/lookup' {
     readonly isWrongAmount: boolean;
     readonly isTransferLimitReached: boolean;
     readonly isUnknownPrecision: boolean;
-    readonly type: 'TokenIsNotRegistered' | 'AppIsNotRegistered' | 'NotEnoughFunds' | 'InvalidNetwork' | 'TokenAlreadyRegistered' | 'AppAlreadyRegistered' | 'CallEncodeFailed' | 'WrongAmount' | 'TransferLimitReached' | 'UnknownPrecision';
+    readonly isInvalidDestinationParachain: boolean;
+    readonly isInvalidDestinationParams: boolean;
+    readonly isRelaychainAssetNotRegistered: boolean;
+    readonly isNotRelayTransferableAsset: boolean;
+    readonly isRelaychainAssetRegistered: boolean;
+    readonly type: 'TokenIsNotRegistered' | 'AppIsNotRegistered' | 'NotEnoughFunds' | 'InvalidNetwork' | 'TokenAlreadyRegistered' | 'AppAlreadyRegistered' | 'CallEncodeFailed' | 'WrongAmount' | 'TransferLimitReached' | 'UnknownPrecision' | 'InvalidDestinationParachain' | 'InvalidDestinationParams' | 'RelaychainAssetNotRegistered' | 'NotRelayTransferableAsset' | 'RelaychainAssetRegistered';
   }
 
-  /** @name BridgeDataSignerError (864) */
+  /** @name BridgeDataSignerError (865) */
   interface BridgeDataSignerError extends Enum {
     readonly isPalletInitialized: boolean;
     readonly isPalletNotInitialized: boolean;
@@ -6582,7 +6601,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'PalletInitialized' | 'PalletNotInitialized' | 'PeerExists' | 'PeerNotExists' | 'TooMuchPeers' | 'FailedToVerifySignature' | 'PeerNotFound' | 'TooMuchApprovals' | 'ApprovalsNotFound' | 'SignaturesNotFound' | 'HasPendingPeerUpdate' | 'DontHavePendingPeerUpdates' | 'NetworkNotSupported' | 'SignatureAlreadyExists';
   }
 
-  /** @name MultisigVerifierError (865) */
+  /** @name MultisigVerifierError (866) */
   interface MultisigVerifierError extends Enum {
     readonly isInvalidInitParams: boolean;
     readonly isTooMuchPeers: boolean;
@@ -6597,13 +6616,13 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'InvalidInitParams' | 'TooMuchPeers' | 'NetworkNotInitialized' | 'InvalidNumberOfSignatures' | 'InvalidSignature' | 'NotTrustedPeerSignature' | 'PeerExists' | 'NoSuchPeer' | 'InvalidNetworkId' | 'CommitmentNotFoundInDigest';
   }
 
-  /** @name PalletSudoError (866) */
+  /** @name PalletSudoError (867) */
   interface PalletSudoError extends Enum {
     readonly isRequireSudo: boolean;
     readonly type: 'RequireSudo';
   }
 
-  /** @name FaucetError (867) */
+  /** @name FaucetError (868) */
   interface FaucetError extends Enum {
     readonly isAssetNotSupported: boolean;
     readonly isAmountAboveLimit: boolean;
@@ -6611,28 +6630,28 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'AssetNotSupported' | 'AmountAboveLimit' | 'NotEnoughReserves';
   }
 
-  /** @name FrameSystemExtensionsCheckSpecVersion (870) */
+  /** @name FrameSystemExtensionsCheckSpecVersion (871) */
   type FrameSystemExtensionsCheckSpecVersion = Null;
 
-  /** @name FrameSystemExtensionsCheckTxVersion (871) */
+  /** @name FrameSystemExtensionsCheckTxVersion (872) */
   type FrameSystemExtensionsCheckTxVersion = Null;
 
-  /** @name FrameSystemExtensionsCheckGenesis (872) */
+  /** @name FrameSystemExtensionsCheckGenesis (873) */
   type FrameSystemExtensionsCheckGenesis = Null;
 
-  /** @name FrameSystemExtensionsCheckNonce (875) */
+  /** @name FrameSystemExtensionsCheckNonce (876) */
   interface FrameSystemExtensionsCheckNonce extends Compact<u32> {}
 
-  /** @name FrameSystemExtensionsCheckWeight (876) */
+  /** @name FrameSystemExtensionsCheckWeight (877) */
   type FrameSystemExtensionsCheckWeight = Null;
 
-  /** @name FramenodeRuntimeExtensionsChargeTransactionPayment (877) */
+  /** @name FramenodeRuntimeExtensionsChargeTransactionPayment (878) */
   interface FramenodeRuntimeExtensionsChargeTransactionPayment extends PalletTransactionPaymentChargeTransactionPayment {}
 
-  /** @name PalletTransactionPaymentChargeTransactionPayment (878) */
+  /** @name PalletTransactionPaymentChargeTransactionPayment (879) */
   interface PalletTransactionPaymentChargeTransactionPayment extends Compact<u128> {}
 
-  /** @name FramenodeRuntimeRuntime (879) */
+  /** @name FramenodeRuntimeRuntime (880) */
   type FramenodeRuntimeRuntime = Null;
 
 } // declare module
