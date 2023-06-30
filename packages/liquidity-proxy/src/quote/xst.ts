@@ -7,7 +7,9 @@ import { oracleProxyQuote } from './oracleProxy';
 
 import type { QuotePayload, QuoteResult, PrimaryMarketsEnabledAssets } from '../types';
 
-const ensureBaseAssetAmountWithinLimit = (amount: FPNumber, payload: QuotePayload) => {
+const ensureBaseAssetAmountWithinLimit = (amount: FPNumber, payload: QuotePayload, checkLimits = true) => {
+  if (!checkLimits) return;
+
   const limit = FPNumber.fromCodecValue(payload.consts.xst.syntheticBaseBuySellLimit);
 
   if (FPNumber.isGreaterThan(amount, limit)) {
@@ -89,13 +91,13 @@ const xstBuyPriceWithFee = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
-  withLimitCheck = true // check on XST buy-sell limit (no need for price impact)
+  checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
   const feeRatio = enabledAssets.xst[syntheticAsset]?.feeRatio ?? Consts.XST_FEE;
 
   if (isDesiredInput) {
     const outputAmount = xstBuyPrice(syntheticAsset, amount, isDesiredInput, payload, enabledAssets);
-    if (withLimitCheck) ensureBaseAssetAmountWithinLimit(outputAmount, payload);
+    ensureBaseAssetAmountWithinLimit(outputAmount, payload, checkLimits);
     const feeAmount = feeRatio.mul(outputAmount);
     const output = outputAmount.sub(feeAmount);
 
@@ -115,7 +117,7 @@ const xstBuyPriceWithFee = (
       ],
     };
   } else {
-    if (withLimitCheck) ensureBaseAssetAmountWithinLimit(amount, payload);
+    ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
     const fpFee = FPNumber.ONE.sub(feeRatio);
     const amountWithFee = safeDivide(amount, fpFee);
     const fee = amountWithFee.sub(amount);
@@ -145,12 +147,12 @@ const xstSellPriceWithFee = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
-  withLimitCheck = true // check on XST buy-sell limit (no need for price impact)
+  checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
   const feeRatio = enabledAssets.xst[syntheticAsset]?.feeRatio ?? Consts.XST_FEE;
 
   if (isDesiredInput) {
-    if (withLimitCheck) ensureBaseAssetAmountWithinLimit(amount, payload);
+    ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
     const fee = amount.mul(feeRatio);
     const output = xstSellPrice(syntheticAsset, amount.sub(fee), isDesiredInput, payload, enabledAssets);
 
@@ -171,7 +173,7 @@ const xstSellPriceWithFee = (
     };
   } else {
     const inputAmount = xstSellPrice(syntheticAsset, amount, isDesiredInput, payload, enabledAssets);
-    if (withLimitCheck) ensureBaseAssetAmountWithinLimit(inputAmount, payload);
+    ensureBaseAssetAmountWithinLimit(inputAmount, payload, checkLimits);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
     const fee = inputAmountWithFee.sub(inputAmount);
 
@@ -240,7 +242,7 @@ export const xstQuote = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
-  withLimitCheck = true // check on XST buy-sell limit (no need for price impact)
+  checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
   try {
     const {
@@ -249,8 +251,8 @@ export const xstQuote = (
       rewards,
       distribution,
     } = isAssetAddress(inputAsset, Consts.XST)
-      ? xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, enabledAssets, withLimitCheck)
-      : xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload, enabledAssets, withLimitCheck);
+      ? xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, enabledAssets, checkLimits)
+      : xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload, enabledAssets, checkLimits);
     // `fee_amount` is always computed to be in `main_asset_id`, which is
     // `SyntheticBaseAssetId` (e.g. XST), but `SwapOutcome` assumes XOR
     // (`BaseAssetId`), so we convert.
