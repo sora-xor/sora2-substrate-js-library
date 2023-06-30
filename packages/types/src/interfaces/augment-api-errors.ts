@@ -2629,8 +2629,13 @@ declare module '@polkadot/api-base/types/errors' {
        * Call encoding failed.
        **/
       CallEncodeFailed: AugmentedError<ApiType>;
+      InvalidDestinationParachain: AugmentedError<ApiType>;
+      InvalidDestinationParams: AugmentedError<ApiType>;
       InvalidNetwork: AugmentedError<ApiType>;
       NotEnoughFunds: AugmentedError<ApiType>;
+      NotRelayTransferableAsset: AugmentedError<ApiType>;
+      RelaychainAssetNotRegistered: AugmentedError<ApiType>;
+      RelaychainAssetRegistered: AugmentedError<ApiType>;
       TokenAlreadyRegistered: AugmentedError<ApiType>;
       TokenIsNotRegistered: AugmentedError<ApiType>;
       TransferLimitReached: AugmentedError<ApiType>;
