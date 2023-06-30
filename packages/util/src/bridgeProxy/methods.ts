@@ -63,13 +63,15 @@ function getSubNetworkId(
     if (networkParam.isParachain) {
       const paraId = networkParam.asParachain.toNumber();
 
-      if (paraId === parachainIds.Karura) {
-        return SubNetwork.Karura;
+      for (const parachainKey in parachainIds) {
+        if (parachainIds[parachainKey] === paraId) {
+          return SubNetwork[parachainKey];
+        }
       }
     }
   }
 
-  return SubNetwork.Rococo;
+  return usedNetwork;
 }
 
 function getBlock(data: BridgeTypesGenericTimepoint): number {
