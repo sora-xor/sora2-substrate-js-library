@@ -4623,6 +4623,7 @@ export default {
         networkId: 'BridgeTypesSubNetworkId',
         assetId: 'CommonPrimitivesAssetId32',
         sidechainAsset: 'XcmV3MultiassetAssetId',
+        allowedParachains: 'Vec<u32>',
       },
       register_sidechain_asset: {
         networkId: 'BridgeTypesSubNetworkId',
@@ -4630,9 +4631,20 @@ export default {
         symbol: 'Bytes',
         name: 'Bytes',
         decimals: 'u8',
+        allowedParachains: 'Vec<u32>',
       },
       set_transfer_limit: {
-        limitCount: 'Option<u128>'
+        limitCount: 'Option<u128>',
+      },
+      add_assetid_paraid: {
+        networkId: 'BridgeTypesSubNetworkId',
+        paraId: 'u32',
+        assetId: 'CommonPrimitivesAssetId32',
+      },
+      remove_assetid_paraid: {
+        networkId: 'BridgeTypesSubNetworkId',
+        paraId: 'u32',
+        assetId: 'CommonPrimitivesAssetId32'
       }
     }
   },
@@ -5786,65 +5798,65 @@ export default {
     _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists']
   },
   /**
-   * Lookup857: substrate_bridge_app::pallet::Error<T>
+   * Lookup858: substrate_bridge_app::pallet::Error<T>
    **/
   SubstrateBridgeAppError: {
-    _enum: ['TokenIsNotRegistered', 'AppIsNotRegistered', 'NotEnoughFunds', 'InvalidNetwork', 'TokenAlreadyRegistered', 'AppAlreadyRegistered', 'CallEncodeFailed', 'WrongAmount', 'TransferLimitReached', 'UnknownPrecision']
+    _enum: ['TokenIsNotRegistered', 'AppIsNotRegistered', 'NotEnoughFunds', 'InvalidNetwork', 'TokenAlreadyRegistered', 'AppAlreadyRegistered', 'CallEncodeFailed', 'WrongAmount', 'TransferLimitReached', 'UnknownPrecision', 'InvalidDestinationParachain', 'InvalidDestinationParams', 'RelaychainAssetNotRegistered', 'NotRelayTransferableAsset', 'RelaychainAssetRegistered']
   },
   /**
-   * Lookup864: bridge_data_signer::pallet::Error<T>
+   * Lookup865: bridge_data_signer::pallet::Error<T>
    **/
   BridgeDataSignerError: {
     _enum: ['PalletInitialized', 'PalletNotInitialized', 'PeerExists', 'PeerNotExists', 'TooMuchPeers', 'FailedToVerifySignature', 'PeerNotFound', 'TooMuchApprovals', 'ApprovalsNotFound', 'SignaturesNotFound', 'HasPendingPeerUpdate', 'DontHavePendingPeerUpdates', 'NetworkNotSupported', 'SignatureAlreadyExists']
   },
   /**
-   * Lookup865: multisig_verifier::pallet::Error<T>
+   * Lookup866: multisig_verifier::pallet::Error<T>
    **/
   MultisigVerifierError: {
     _enum: ['InvalidInitParams', 'TooMuchPeers', 'NetworkNotInitialized', 'InvalidNumberOfSignatures', 'InvalidSignature', 'NotTrustedPeerSignature', 'PeerExists', 'NoSuchPeer', 'InvalidNetworkId', 'CommitmentNotFoundInDigest']
   },
   /**
-   * Lookup866: pallet_sudo::pallet::Error<T>
+   * Lookup867: pallet_sudo::pallet::Error<T>
    **/
   PalletSudoError: {
     _enum: ['RequireSudo']
   },
   /**
-   * Lookup867: faucet::pallet::Error<T>
+   * Lookup868: faucet::pallet::Error<T>
    **/
   FaucetError: {
     _enum: ['AssetNotSupported', 'AmountAboveLimit', 'NotEnoughReserves']
   },
   /**
-   * Lookup870: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
+   * Lookup871: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
    **/
   FrameSystemExtensionsCheckSpecVersion: 'Null',
   /**
-   * Lookup871: frame_system::extensions::check_tx_version::CheckTxVersion<T>
+   * Lookup872: frame_system::extensions::check_tx_version::CheckTxVersion<T>
    **/
   FrameSystemExtensionsCheckTxVersion: 'Null',
   /**
-   * Lookup872: frame_system::extensions::check_genesis::CheckGenesis<T>
+   * Lookup873: frame_system::extensions::check_genesis::CheckGenesis<T>
    **/
   FrameSystemExtensionsCheckGenesis: 'Null',
   /**
-   * Lookup875: frame_system::extensions::check_nonce::CheckNonce<T>
+   * Lookup876: frame_system::extensions::check_nonce::CheckNonce<T>
    **/
   FrameSystemExtensionsCheckNonce: 'Compact<u32>',
   /**
-   * Lookup876: frame_system::extensions::check_weight::CheckWeight<T>
+   * Lookup877: frame_system::extensions::check_weight::CheckWeight<T>
    **/
   FrameSystemExtensionsCheckWeight: 'Null',
   /**
-   * Lookup877: framenode_runtime::extensions::ChargeTransactionPayment<T>
+   * Lookup878: framenode_runtime::extensions::ChargeTransactionPayment<T>
    **/
   FramenodeRuntimeExtensionsChargeTransactionPayment: 'PalletTransactionPaymentChargeTransactionPayment',
   /**
-   * Lookup878: pallet_transaction_payment::ChargeTransactionPayment<T>
+   * Lookup879: pallet_transaction_payment::ChargeTransactionPayment<T>
    **/
   PalletTransactionPaymentChargeTransactionPayment: 'Compact<u128>',
   /**
-   * Lookup879: framenode_runtime::Runtime
+   * Lookup880: framenode_runtime::Runtime
    **/
   FramenodeRuntimeRuntime: 'Null'
 };
