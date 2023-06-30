@@ -14,6 +14,8 @@ export interface EvmHistory extends History {
   type: Operation.EvmIncoming | Operation.EvmOutgoing;
   hash?: string;
   transactionState?: BridgeTxStatus;
+  externalBlockId?: string;
+  externalBlockHeight?: number;
   externalHash?: string;
   externalNetwork?: EvmNetwork;
   externalNetworkType?: BridgeNetworkType;

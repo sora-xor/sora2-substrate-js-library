@@ -37,6 +37,8 @@ export interface BridgeHistory extends History {
   type: Operation.EthBridgeIncoming | Operation.EthBridgeOutgoing;
   hash?: string;
   transactionState?: string;
+  externalBlockId?: string;
+  externalBlockHeight?: number;
   externalHash?: string;
   externalNetworkFee?: CodecString;
   externalNetwork?: number;
