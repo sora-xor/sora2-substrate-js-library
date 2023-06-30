@@ -72,10 +72,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       };
     }
 
-    const parachainId = this.parachainIds[subNetwork];
-
-    if (!parachainId) throw new Error(`Parachain id is not defined for "${subNetwork}" parachain`);
-
     return {
       [BridgeAccountType.Parachain]: {
         [XcmVersionedMultiLocation.V3]: {
@@ -84,7 +80,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
             [XcmMultilocationJunction.X2]: [
               // parachain id in relaychain
               {
-                [XcmJunction.Parachain]: parachainId,
+                [XcmJunction.Parachain]: this.getParachainId(subNetwork),
               },
               // recipient account
               accountXcmJunction,
@@ -213,7 +209,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     subNetwork: SubNetwork,
     historyId?: string
   ): Promise<void> {
-    // asset should be checked as registered on bridge or not
     const value = new FPNumber(amount, asset.decimals).toCodecString();
     const historyItem = this.getHistory(historyId) || {
       type: Operation.SubstrateOutgoing,
