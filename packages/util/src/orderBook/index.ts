@@ -79,7 +79,14 @@ export class OrderBookModule<T> {
     );
   }
 
-  placeLimitOrder() {}
+  placeLimitOrder(base: string, quote: string) {
+    this.root.submitExtrinsic(
+      this.root.api.tx.orderBook.placeLimitOrder({ base, quote }, 10000, 1000, 'Buy', 9999),
+      this.root.account.pair
+    );
+  }
 
-  cancelLimitOrder() {}
+  cancelLimitOrder(base: string, quote: string) {
+    this.root.submitExtrinsic(this.root.api.tx.orderBook.cancelLimitOrder({ base, quote }, 1), this.root.account.pair);
+  }
 }
