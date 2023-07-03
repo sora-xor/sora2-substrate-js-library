@@ -17,6 +17,7 @@ import { RewardsModule } from './rewards';
 import { PoolXykModule } from './poolXyk';
 import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
+import { OrderBookModule } from './orderBook';
 import { MstTransfersModule } from './mstTransfers';
 import { SystemModule } from './system';
 import { DemeterFarmingModule } from './demeterFarming';
@@ -46,6 +47,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly poolXyk = new PoolXykModule<T>(this);
   public readonly referralSystem = new ReferralSystemModule<T>(this);
   public readonly assets = new AssetsModule<T>(this);
+  public readonly orderBook = new OrderBookModule<T>(this);
   /** This module is used for internal needs */
   public readonly mstTransfers = new MstTransfersModule<T>(this);
   public readonly system = new SystemModule<T>(this);
