@@ -26,6 +26,9 @@ function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
 }
 
 function getAccount(data: BridgeTypesGenericAccount): string {
+  if (data.isUnknown) {
+    return '';
+  }
   if (data.isEvm) {
     return data.asEvm.toString();
   }
@@ -44,7 +47,14 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   }
 }
 
-function getSubNetworkId(data: BridgeTypesGenericAccount, parachainIds: ParachainIds): BridgeNetworkId {
+function getSubNetworkId(
+  data: BridgeTypesGenericAccount,
+  parachainIds: ParachainIds,
+  usedNetwork: BridgeNetworkId
+): BridgeNetworkId {
+  // we don't know from where are this tx. For now this will be a used network
+  if (data.isUnknown) return usedNetwork;
+
   const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
 
   if (interior.isX2) {
@@ -53,13 +63,15 @@ function getSubNetworkId(data: BridgeTypesGenericAccount, parachainIds: Parachai
     if (networkParam.isParachain) {
       const paraId = networkParam.asParachain.toNumber();
 
-      if (paraId === parachainIds.Karura) {
-        return SubNetwork.Karura;
+      for (const parachainKey in parachainIds) {
+        if (parachainIds[parachainKey] === paraId) {
+          return SubNetwork[parachainKey];
+        }
       }
     }
   }
 
-  return SubNetwork.Rococo;
+  return usedNetwork;
 }
 
 function getBlock(data: BridgeTypesGenericTimepoint): number {
@@ -88,7 +100,7 @@ function formatBridgeTx(
   const formatted: BridgeTransactionData = {} as any;
   const isSub = networkType === BridgeNetworkType.Sub;
   const externalNetworkSrc = unwrapped.direction.isInbound ? unwrapped.source : unwrapped.dest;
-  const externalNetwork = isSub ? getSubNetworkId(externalNetworkSrc, parachainIds) : networkId;
+  const externalNetwork = isSub ? getSubNetworkId(externalNetworkSrc, parachainIds, networkId) : networkId;
 
   if (externalNetwork !== networkId) return null;
 
