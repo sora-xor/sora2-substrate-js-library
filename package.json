@@ -53,7 +53,7 @@
     "publish-workspaces": "lerna publish from-package",
     "set-version": "lerna version --no-push --no-git-tag-version",
     "test": "jest --testPathIgnorePatterns",
-    "test:all": "yarn build && yarn test",
+    "test:all": "yarn build && yarn test --coverage",
     "transfers": "node -r ts-node/register -r tsconfig-paths/register scripts/transfers.ts",
     "verify-pool-account-gen": "node -r ts-node/register -r tsconfig-paths/register scripts/verifyPoolAccountGeneration.ts"
   },
