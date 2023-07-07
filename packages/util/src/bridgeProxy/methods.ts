@@ -10,6 +10,7 @@ import type {
 } from '@polkadot/types/lookup';
 import type { Option } from '@polkadot/types-codec';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
+import type { CodecString } from '@sora-substrate/math';
 
 import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
 import { SubNetwork } from './sub/consts';
@@ -195,6 +196,19 @@ export function subscribeOnTransactionDetails(
     return apiRx.query.bridgeProxy
       .transactions([networkParam, accountAddress], hash)
       .pipe(map((value) => formatBridgeTx(hash, value, networkId, networkType, parachainIds)));
+  } catch {
+    return null;
+  }
+}
+
+/** Subscribe to the amount of the asset locked on the bridge on the SORA side */
+export function subscribeOnLockedAsset(
+  apiRx: ApiRx,
+  networkParam: BridgeNetworkParam,
+  assetAddress: string
+): Observable<CodecString> | null {
+  try {
+    return apiRx.query.bridgeProxy.lockedAssets(networkParam, assetAddress).pipe(map((value) => value.toString()));
   } catch {
     return null;
   }
