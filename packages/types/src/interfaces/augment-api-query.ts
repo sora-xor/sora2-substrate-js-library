@@ -1020,7 +1020,7 @@ declare module '@polkadot/api-base/types/storage' {
       aggregatedBids: AugmentedQuery<ApiType, (arg: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array) => Observable<BTreeMap<u128, u128>>, [OrderBookOrderBookId]>;
       asks: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array, arg2: u128 | AnyNumber | Uint8Array) => Observable<Option<Vec<u128>>>, [OrderBookOrderBookId, u128]>;
       bids: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { base?: any; quote?: any } | string | Uint8Array, arg2: u128 | AnyNumber | Uint8Array) => Observable<Option<Vec<u128>>>, [OrderBookOrderBookId, u128]>;
-      expirationsAgenda: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[OrderBookOrderBookId, u128]>>>, [u32]>;
+      expirationsAgenda: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[OrderBookOrderBookId, u32, u128]>>>, [u32]>;
       /**
        * Earliest block with incomplete expirations;
        * Weight limit might not allow to finish all expirations for a block, so
