@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -731,7 +731,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Failed to cancel expired order
        **/
-      ExpirationFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError }>;
+      ExpirationFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, error: SpRuntimeDispatchError }>;
       /**
        * User canceled their limit order
        **/
@@ -739,20 +739,28 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * User tried to place the limit order out of the spread. The limit order is converted into a market order.
        **/
-      LimitOrderConvertedToMarketOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32 }>;
+      LimitOrderConvertedToMarketOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount }>;
       /**
-       * The order has reached the end of its lifespan
+       * Some amount of the limit order is executed
+       **/
+      LimitOrderExecuted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32, side: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32, side: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount }>;
+      /**
+       * The limit order has reached the end of its lifespan
        **/
       LimitOrderExpired: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
       /**
        * User tried to place the limit order out of the spread.
        * One part of the liquidity of the limit order is converted into a market order, and the other part is placed as a limit order.
        **/
-      LimitOrderIsSplitIntoMarketOrderAndLimitOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, marketOrderInput: OrderBookOrderAmount, limitOrderId: u128, limitOrderInput: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, marketOrderInput: OrderBookOrderAmount, limitOrderId: u128, limitOrderInput: OrderBookOrderAmount }>;
+      LimitOrderIsSplitIntoMarketOrderAndLimitOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, marketOrderDirection: CommonPrimitivesPriceVariant, marketOrderAmount: OrderBookOrderAmount, marketOrderAveragePrice: u128, limitOrderId: u128], { orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, marketOrderDirection: CommonPrimitivesPriceVariant, marketOrderAmount: OrderBookOrderAmount, marketOrderAveragePrice: u128, limitOrderId: u128 }>;
       /**
        * User placed new limit order
        **/
       LimitOrderPlaced: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * User executes a deal by the market order
+       **/
+      MarketOrderExecuted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32>], { orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32> }>;
       /**
        * New order book is created by user
        **/
