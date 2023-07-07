@@ -2,7 +2,12 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { BaseApi, isSubstrateOperation, Operation } from '../../BaseApi';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
-import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails } from '../methods';
+import {
+  getTransactionDetails,
+  getUserTransactions,
+  subscribeOnTransactionDetails,
+  subscribeOnLockedAsset,
+} from '../methods';
 import { SubNetwork, SubAssetKind, XcmVersionedMultiLocation, XcmMultilocationJunction, XcmJunction } from './consts';
 
 import type { Asset } from '../../assets/types';
@@ -200,6 +205,10 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       BridgeNetworkType.Sub,
       this.parachainIds
     );
+  }
+
+  public subscribeOnLockedAsset(subNetwork: SubNetwork, assetAddress: string) {
+    return subscribeOnLockedAsset(this.apiRx, { [BridgeNetworkType.Sub]: subNetwork }, assetAddress);
   }
 
   public async transfer(
