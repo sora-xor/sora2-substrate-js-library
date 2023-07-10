@@ -390,8 +390,11 @@ export class BridgeApi<T> extends BaseApi<T> {
     return soraBlockHash;
   }
 
-  public async getAssetKind(assetAddress: string): Promise<BridgeRequestAssetKind> {
+  public async getAssetKind(assetAddress: string): Promise<BridgeRequestAssetKind | null> {
     const data = await this.api.query.ethBridge.registeredAsset(this.externalNetwork, assetAddress);
+
+    if (!data.isSome) return null;
+
     const kind = data.unwrap();
 
     return kind.toString() as BridgeRequestAssetKind;
