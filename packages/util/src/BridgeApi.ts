@@ -79,6 +79,12 @@ export enum BridgeCurrencyType {
   TokenAddress = 'TokenAddress',
 }
 
+export enum BridgeRequestAssetKind {
+  Sidechain = 'Sidechain',
+  SidechainOwned = 'SidechainOwned',
+  Thischain = 'Thischain',
+}
+
 /**
  * Type of request which we will wait
  */
@@ -382,5 +388,12 @@ export class BridgeApi<T> extends BaseApi<T> {
     const soraBlockHash = (await this.api.rpc.chain.getBlockHash(soraBlockNumber)).toString();
 
     return soraBlockHash;
+  }
+
+  public async getAssetKind(assetAddress: string): Promise<BridgeRequestAssetKind> {
+    const data = await this.api.query.ethBridge.registeredAsset(this.externalNetwork, assetAddress);
+    const kind = data.unwrap();
+
+    return kind.toString() as BridgeRequestAssetKind;
   }
 }
