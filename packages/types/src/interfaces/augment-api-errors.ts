@@ -129,6 +129,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AlreadyATrustedRelayer: AugmentedError<ApiType>;
       /**
+       * Error during dynamic fee calculation
+       **/
+      DynamicFeeCalculationError: AugmentedError<ApiType>;
+      /**
+       * Dynamic fee parameters are invalid,
+       **/
+      InvalidDynamicFeeParameters: AugmentedError<ApiType>;
+      /**
        * A request to remove an account, which is not a trusted relayer, was supplied.
        **/
       NoSuchRelayer: AugmentedError<ApiType>;

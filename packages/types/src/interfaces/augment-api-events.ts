@@ -731,52 +731,52 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Failed to cancel expired order
        **/
-      ExpirationFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, error: SpRuntimeDispatchError }>;
+      ExpirationFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError }>;
       /**
        * User canceled their limit order
        **/
-      LimitOrderCanceled: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
+      LimitOrderCanceled: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32 }>;
       /**
        * User tried to place the limit order out of the spread. The limit order is converted into a market order.
        **/
-      LimitOrderConvertedToMarketOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount }>;
+      LimitOrderConvertedToMarketOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount }>;
       /**
        * Some amount of the limit order is executed
        **/
-      LimitOrderExecuted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32, side: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32, side: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount }>;
+      LimitOrderExecuted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32, side: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32, side: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount }>;
       /**
        * The limit order has reached the end of its lifespan
        **/
-      LimitOrderExpired: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
+      LimitOrderExpired: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32 }>;
       /**
        * User tried to place the limit order out of the spread.
        * One part of the liquidity of the limit order is converted into a market order, and the other part is placed as a limit order.
        **/
-      LimitOrderIsSplitIntoMarketOrderAndLimitOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, marketOrderDirection: CommonPrimitivesPriceVariant, marketOrderAmount: OrderBookOrderAmount, marketOrderAveragePrice: u128, limitOrderId: u128], { orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, marketOrderDirection: CommonPrimitivesPriceVariant, marketOrderAmount: OrderBookOrderAmount, marketOrderAveragePrice: u128, limitOrderId: u128 }>;
+      LimitOrderIsSplitIntoMarketOrderAndLimitOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, ownerId: AccountId32, marketOrderDirection: CommonPrimitivesPriceVariant, marketOrderAmount: OrderBookOrderAmount, marketOrderAveragePrice: u128, limitOrderId: u128], { orderBookId: OrderBookOrderBookId, ownerId: AccountId32, marketOrderDirection: CommonPrimitivesPriceVariant, marketOrderAmount: OrderBookOrderAmount, marketOrderAveragePrice: u128, limitOrderId: u128 }>;
       /**
        * User placed new limit order
        **/
-      LimitOrderPlaced: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
+      LimitOrderPlaced: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32 }>;
       /**
        * User executes a deal by the market order
        **/
-      MarketOrderExecuted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32>], { orderBookId: OrderBookOrderBookId, dexId: u32, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32> }>;
+      MarketOrderExecuted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32>], { orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32> }>;
       /**
        * New order book is created by user
        **/
-      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, creator: AccountId32], { orderBookId: OrderBookOrderBookId, dexId: u32, creator: AccountId32 }>;
+      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, creator: AccountId32], { orderBookId: OrderBookOrderBookId, creator: AccountId32 }>;
       /**
        * Order book is deleted
        **/
-      OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, countOfCanceledOrders: u32], { orderBookId: OrderBookOrderBookId, dexId: u32, countOfCanceledOrders: u32 }>;
+      OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, countOfCanceledOrders: u32], { orderBookId: OrderBookOrderBookId, countOfCanceledOrders: u32 }>;
       /**
        * Order book status is changed
        **/
-      OrderBookStatusChanged: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32, newStatus: OrderBookOrderBookStatus], { orderBookId: OrderBookOrderBookId, dexId: u32, newStatus: OrderBookOrderBookStatus }>;
+      OrderBookStatusChanged: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, newStatus: OrderBookOrderBookStatus], { orderBookId: OrderBookOrderBookId, newStatus: OrderBookOrderBookStatus }>;
       /**
        * Order book attributes are updated
        **/
-      OrderBookUpdated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, dexId: u32], { orderBookId: OrderBookOrderBookId, dexId: u32 }>;
+      OrderBookUpdated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId], { orderBookId: OrderBookOrderBookId }>;
     };
     permissions: {
       /**
