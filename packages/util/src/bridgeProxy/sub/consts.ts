@@ -4,15 +4,18 @@ export enum SubAssetKind {
 }
 
 export enum SubNetwork {
-  /* Relaychains */
+  /** Kusama relaychain */
   Kusama = 'Kusama',
+  /** Polkadot relaychain */
   Polkadot = 'Polkadot',
-  Rococo = 'Rococo', // testnet for Kusama
+  /** Rococo relaychain (Kusama testnet) */
+  Rococo = 'Rococo',
   Custom = 'Custom', // not used yet
-  /* Parachains */
-  RococoKarura = 'RococoKarura',
+  /** SORA parachain in Rococo relaychain */
   RococoSora = 'RococoSora',
+  /** Karura parachain in Kusama relaychain */
   KusamaKarura = 'KusamaKarura',
+  /** SORA parachain in Kusama relaychain */
   KusamaSora = 'KusamaSora',
 }
 
