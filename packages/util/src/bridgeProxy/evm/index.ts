@@ -7,6 +7,7 @@ import {
   getUserTransactions,
   subscribeOnTransactionDetails,
   subscribeOnLockedAsset,
+  getLockedAssets,
 } from '../methods';
 
 import type { Asset } from '../../assets/types';
@@ -90,6 +91,10 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       evmNetwork,
       BridgeNetworkType.Evm
     );
+  }
+
+  public async getLockedAssets(evmNetwork: EvmNetwork, assetAddress: string) {
+    return await getLockedAssets(this.api, { [BridgeNetworkType.Evm]: evmNetwork }, assetAddress);
   }
 
   public subscribeOnLockedAsset(evmNetwork: EvmNetwork, assetAddress: string) {

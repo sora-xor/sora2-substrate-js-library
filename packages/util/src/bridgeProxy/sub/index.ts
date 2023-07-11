@@ -7,6 +7,7 @@ import {
   getUserTransactions,
   subscribeOnTransactionDetails,
   subscribeOnLockedAsset,
+  getLockedAssets,
 } from '../methods';
 import { SubNetwork, SubAssetKind, XcmVersionedMultiLocation, XcmMultilocationJunction, XcmJunction } from './consts';
 
@@ -24,7 +25,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     [SubNetwork.RococoSora]: 2011,
     [SubNetwork.KusamaSora]: 2011,
     // Karura
-    [SubNetwork.RococoKarura]: 2000,
     [SubNetwork.KusamaKarura]: 2000,
   };
 
@@ -32,7 +32,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     if (this.isRelayChain(subNetwork)) return subNetwork;
 
     switch (subNetwork) {
-      case SubNetwork.RococoKarura:
       case SubNetwork.RococoSora:
         return SubNetwork.Rococo;
       case SubNetwork.KusamaKarura:
@@ -205,6 +204,10 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       BridgeNetworkType.Sub,
       this.parachainIds
     );
+  }
+
+  public async getLockedAssets(subNetwork: SubNetwork, assetAddress: string) {
+    return await getLockedAssets(this.api, { [BridgeNetworkType.Sub]: subNetwork }, assetAddress);
   }
 
   public subscribeOnLockedAsset(subNetwork: SubNetwork, assetAddress: string) {

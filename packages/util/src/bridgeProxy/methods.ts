@@ -213,3 +213,18 @@ export function subscribeOnLockedAsset(
     return null;
   }
 }
+
+/** Get the amount of the asset locked on the bridge on the SORA side */
+export async function getLockedAssets(
+  api: ApiPromise,
+  networkParam: BridgeNetworkParam,
+  assetAddress: string
+): Promise<CodecString | null> {
+  try {
+    const data = await api.query.bridgeProxy.lockedAssets(networkParam, assetAddress);
+
+    return data.toString();
+  } catch {
+    return null;
+  }
+}
