@@ -758,6 +758,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       LimitOrderPlaced: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32 }>;
       /**
+       * The limit order is updated
+       **/
+      LimitOrderUpdated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32 }>;
+      /**
        * User executes a deal by the market order
        **/
       MarketOrderExecuted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32>], { orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32> }>;
