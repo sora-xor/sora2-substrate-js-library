@@ -1263,6 +1263,11 @@ export default {
         side: 'CommonPrimitivesPriceVariant',
         amount: 'OrderBookOrderAmount',
       },
+      LimitOrderUpdated: {
+        orderBookId: 'OrderBookOrderBookId',
+        orderId: 'u128',
+        ownerId: 'AccountId32',
+      },
       MarketOrderExecuted: {
         orderBookId: 'OrderBookOrderBookId',
         ownerId: 'AccountId32',
