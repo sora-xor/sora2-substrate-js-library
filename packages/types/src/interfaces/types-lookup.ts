@@ -1420,6 +1420,12 @@ declare module '@polkadot/types/lookup' {
       readonly side: CommonPrimitivesPriceVariant;
       readonly amount: OrderBookOrderAmount;
     } & Struct;
+    readonly isLimitOrderUpdated: boolean;
+    readonly asLimitOrderUpdated: {
+      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderId: u128;
+      readonly ownerId: AccountId32;
+    } & Struct;
     readonly isMarketOrderExecuted: boolean;
     readonly asMarketOrderExecuted: {
       readonly orderBookId: OrderBookOrderBookId;
@@ -1429,7 +1435,7 @@ declare module '@polkadot/types/lookup' {
       readonly averagePrice: u128;
       readonly to: Option<AccountId32>;
     } & Struct;
-    readonly type: 'OrderBookCreated' | 'OrderBookDeleted' | 'OrderBookStatusChanged' | 'OrderBookUpdated' | 'LimitOrderPlaced' | 'LimitOrderConvertedToMarketOrder' | 'LimitOrderIsSplitIntoMarketOrderAndLimitOrder' | 'LimitOrderCanceled' | 'LimitOrderExpired' | 'ExpirationFailure' | 'LimitOrderExecuted' | 'MarketOrderExecuted';
+    readonly type: 'OrderBookCreated' | 'OrderBookDeleted' | 'OrderBookStatusChanged' | 'OrderBookUpdated' | 'LimitOrderPlaced' | 'LimitOrderConvertedToMarketOrder' | 'LimitOrderIsSplitIntoMarketOrderAndLimitOrder' | 'LimitOrderCanceled' | 'LimitOrderExpired' | 'ExpirationFailure' | 'LimitOrderExecuted' | 'LimitOrderUpdated' | 'MarketOrderExecuted';
   }
 
   /** @name OrderBookOrderBookId (140) */
