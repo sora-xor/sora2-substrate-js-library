@@ -8,7 +8,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@polkadot/types": "9.14.2",
+    "@polkadot/types": "10.9.1",
     "bignumber.js": "^9.0.1",
     "lodash": "^4.17.15"
   },
