@@ -3,6 +3,7 @@ import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { Observable, Subscriber } from 'rxjs';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { Keyring } from '@polkadot/api';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import { connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
@@ -21,6 +22,7 @@ import type { BridgeHistory } from './BridgeApi';
 import type { EvmHistory } from './bridgeProxy/evm/types';
 import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
+import type { StakingHistory } from './staking/types';
 import { ReceiverHistoryItem } from './swap/types';
 
 type AccountWithOptions = {
@@ -44,7 +46,7 @@ export type NetworkFeesObject = {
 
 export type IBridgeTransaction = EvmHistory | SubHistory | BridgeHistory;
 
-export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory;
+export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory | StakingHistory;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
@@ -771,6 +773,17 @@ export enum Operation {
   ReferralReserveXor = 'ReferralReserveXor',
   ReferralUnreserveXor = 'ReferralUnreserveXor',
   ReferralSetInvitedUser = 'ReferralSetInvitedUser',
+  /** Staking */
+  StakingBond = 'StakingBond',
+  StakingBondExtra = 'StakingBondExtra',
+  StakingRebond = 'StakingRebond',
+  StakingUnbond = 'StakingUnbond',
+  StakingWithdrawUnbonded = 'StakingWithdrawUnbonded',
+  StakingNominate = 'StakingNominate',
+  StakingChill = 'StakingChill',
+  StakingSetPayee = 'StakingSetPayee',
+  StakingSetController = 'StakingSetController',
+  StakingPayout = 'StakingPayout',
   /** Demeter Farming Platform  */
   DemeterFarmingDepositLiquidity = 'DemeterFarmingDepositLiquidity',
   DemeterFarmingWithdrawLiquidity = 'DemeterFarmingWithdrawLiquidity',
