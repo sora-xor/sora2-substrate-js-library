@@ -1,7 +1,8 @@
 import first from 'lodash/fp/first';
 import { assert } from '@polkadot/util';
 import { map, combineLatest } from 'rxjs';
-import { CodecString, FPNumber } from '@sora-substrate/math';
+import { FPNumber } from '@sora-substrate/math';
+import type { CodecString } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 import type { Vec, Result } from '@polkadot/types';
 import type { OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types';
@@ -9,9 +10,9 @@ import type { EthBridgeRequestsOffchainRequest, CommonPrimitivesAssetId32 } from
 
 import { BaseApi, Operation, isBridgeOperation } from './BaseApi';
 import { Messages } from './logger';
-import { getAssets, isNativeAsset } from './assets';
-import type { AccountAsset, Asset } from './assets/types';
+import type { Asset } from './assets/types';
 import type { History } from './BaseApi';
+import type { BridgeNetworkType } from './bridgeProxy/consts';
 
 function assertRequest(result: Result<any, any>, message: string): void {
   if (!result.isOk) {
@@ -22,31 +23,26 @@ function assertRequest(result: Result<any, any>, message: string): void {
   }
 }
 
-export interface RegisteredAccountAsset extends AccountAsset {
-  externalAddress: string;
-  externalBalance: CodecString;
-}
-
-export interface RegisteredAsset extends Asset {
-  externalAddress: string;
-  externalDecimals: string | number;
-}
+export type EvmLegacyAsset = {
+  address: string;
+  decimals: number | undefined;
+  assetKind: BridgeRequestAssetKind;
+};
 
 export interface BridgeHistory extends History {
   type: Operation.EthBridgeIncoming | Operation.EthBridgeOutgoing;
-  transactionStep?: 1 | 2;
   hash?: string;
-  ethereumHash?: string;
   transactionState?: string;
-  soraNetworkFee?: CodecString;
-  ethereumNetworkFee?: CodecString;
-  signed?: boolean;
-  externalNetwork?: BridgeNetworks;
+  externalBlockId?: string;
+  externalBlockHeight?: number;
+  externalHash?: string;
+  externalNetworkFee?: CodecString;
+  externalNetwork?: number;
+  externalNetworkType?: BridgeNetworkType;
 }
 
 export enum BridgeNetworks {
   ETH_NETWORK_ID = 0,
-  ENERGY_NETWORK_ID = 1,
 }
 
 /**
@@ -54,7 +50,7 @@ export enum BridgeNetworks {
  * Outgoing: SORA -> Eth,
  * Incoming: Eth -> SORA
  */
-export enum BridgeDirection {
+export enum BridgeTxDirection {
   Outgoing = 'Outgoing',
   Incoming = 'Incoming',
   LoadIncoming = 'LoadIncoming',
@@ -79,6 +75,12 @@ export enum BridgeCurrencyType {
   TokenAddress = 'TokenAddress',
 }
 
+export enum BridgeRequestAssetKind {
+  Sidechain = 'Sidechain',
+  SidechainOwned = 'SidechainOwned',
+  Thischain = 'Thischain',
+}
+
 /**
  * Type of request which we will wait
  */
@@ -93,13 +95,8 @@ export enum RequestType {
   MarkAsDone = 'MarkAsDone',
 }
 
-enum IncomingRequestKind {
-  Transaction = 'Transaction',
-  Meta = 'Meta',
-}
-
 export interface BridgeRequest {
-  direction: BridgeDirection;
+  direction: BridgeTxDirection;
   from?: string;
   to?: string;
   soraAssetAddress?: string;
@@ -136,20 +133,19 @@ export interface BridgeApprovedRequest {
  * 6. `markAsDone`. It will be an extrinsic just for history statuses
  */
 export class BridgeApi<T> extends BaseApi<T> {
-  private _externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
+  private externalNetwork: BridgeNetworks = BridgeNetworks.ETH_NETWORK_ID;
 
   constructor() {
-    super('bridgeHistory');
+    super('ethBridgeHistory');
   }
 
-  public get externalNetwork(): BridgeNetworks {
-    return this._externalNetwork;
-  }
-
-  public set externalNetwork(networkId: BridgeNetworks) {
-    const key = 'externalNetwork';
-    this.storage?.set(key, networkId);
-    this._externalNetwork = networkId;
+  public initAccountStorage(): void {
+    super.initAccountStorage();
+    // 1.18 migration
+    // "bridgeHistory" -> "ethBridgeHistory"
+    // "bridgeHistorySyncTimestamp" -> "ethBridgeHistorySyncTimestamp"
+    this.accountStorage?.remove('bridgeHistory');
+    this.accountStorage?.remove('bridgeHistorySyncTimestamp');
   }
 
   public generateHistoryItem(params: BridgeHistory): BridgeHistory | null {
@@ -159,7 +155,6 @@ export class BridgeApi<T> extends BaseApi<T> {
     const historyItem = (params || {}) as BridgeHistory;
     historyItem.startTime = historyItem.startTime || Date.now();
     historyItem.id = this.encrypt(`${historyItem.startTime}`);
-    historyItem.transactionStep = historyItem.transactionStep || 1;
     historyItem.transactionState = historyItem.transactionState || 'INITIAL';
     this.saveHistory(historyItem);
     return historyItem;
@@ -174,20 +169,19 @@ export class BridgeApi<T> extends BaseApi<T> {
 
   /**
    * Transfer through the bridge operation
-   * @param asset RegisteredAsset
+   * @param asset Asset
    * @param to Ethereum account address
    * @param amount
    * @param historyId not required
    */
-  public transferToEth(asset: RegisteredAsset, to: string, amount: string | number, historyId?: string): Promise<T> {
+  public transferToEth(asset: Asset, to: string, amount: string | number, historyId?: string): Promise<T> {
     assert(this.account, Messages.connectWallet);
-    // Trim useless decimals
-    const balance = new FPNumber(new FPNumber(amount, +asset.externalDecimals).toString(), asset.decimals);
 
+    const balance = new FPNumber(amount, asset.decimals).toCodecString();
     const historyItem = this.getHistory(historyId);
 
     return this.submitExtrinsic(
-      this.api.tx.ethBridge.transferToSidechain(asset.address, to, balance.toCodecString(), this.externalNetwork),
+      this.api.tx.ethBridge.transferToSidechain(asset.address, to, balance, this.externalNetwork),
       this.account.pair,
       historyItem || {
         symbol: asset.symbol,
@@ -202,53 +196,36 @@ export class BridgeApi<T> extends BaseApi<T> {
    * Get registered assets for bridge
    * @returns Array with all registered assets
    */
-  public async getRegisteredAssets(): Promise<Array<RegisteredAsset>> {
+  public async getRegisteredAssets(): Promise<Record<string, EvmLegacyAsset>> {
     const data = await this.api.rpc.ethBridge.getRegisteredAssets(this.externalNetwork);
-    const assets = await getAssets(this.api);
+
     if (!data.isOk) {
       // Returns an empty list and logs issue
       console.warn('[api.bridge.getRegisteredAssets]:', data.asErr.toString());
-      return [];
+      return {};
     }
-    return data.asOk
-      .reduce<Array<RegisteredAsset>>((arr, [_, soraAsset, externalAsset]) => {
-        const soraAssetId = soraAsset[0].toString();
-        const asset = assets.find((a) => a.address === soraAssetId) as Asset; // cannot be undefined
-        let externalAddress = '';
-        let externalDecimals = 0;
-        if (externalAsset.isSome) {
-          const [externalAssetId, externalAssetDecimals] = externalAsset.unwrap();
-          externalAddress = externalAssetId.toString();
-          externalDecimals = externalAssetDecimals.toNumber();
-        }
-        const item = {
-          address: soraAssetId,
-          externalAddress,
-          decimals: asset.decimals,
-          symbol: asset.symbol,
-          name: asset.name,
-          externalDecimals,
-        } as RegisteredAsset;
-        arr.push(item);
-        return arr;
-      }, [])
-      .sort((a: RegisteredAsset, b: RegisteredAsset) => {
-        const isNativeA = isNativeAsset(a);
-        const isNativeB = isNativeAsset(b);
-        if (isNativeA && !isNativeB) {
-          return -1;
-        }
-        if (!isNativeA && isNativeB) {
-          return 1;
-        }
-        if (a.symbol < b.symbol) {
-          return -1;
-        }
-        if (a.symbol > b.symbol) {
-          return 1;
-        }
-        return 0;
-      });
+
+    return data.asOk.reduce((buffer, [kind, soraAsset, externalAsset]) => {
+      const assetKind = kind.toString() as BridgeRequestAssetKind;
+      const soraAssetId = soraAsset[0].toString();
+
+      let externalAddress = '';
+      let externalDecimals = undefined;
+
+      if (externalAsset.isSome) {
+        const [externalAssetId, externalAssetDecimals] = externalAsset.unwrap();
+        externalAddress = externalAssetId.toString();
+        externalDecimals = externalAssetDecimals.toNumber();
+      }
+
+      buffer[soraAssetId] = {
+        address: externalAddress,
+        decimals: externalDecimals,
+        assetKind,
+      };
+
+      return buffer;
+    }, {});
   }
 
   private formatRequest(
@@ -257,7 +234,7 @@ export class BridgeApi<T> extends BaseApi<T> {
   ): BridgeRequest {
     const formattedItem = {} as BridgeRequest;
     formattedItem.status = status.toString() as BridgeTxStatus;
-    formattedItem.direction = BridgeDirection.Incoming;
+    formattedItem.direction = BridgeTxDirection.Incoming;
 
     if (request.isIncoming) {
       const transferRequest = request.asIncoming[0].asTransfer;
@@ -276,7 +253,7 @@ export class BridgeApi<T> extends BaseApi<T> {
       formattedItem.kind = txRequest.kind.toString();
       formattedItem.hash = txRequest.hash.toString();
     } else if (request.isOutgoing) {
-      formattedItem.direction = BridgeDirection.Outgoing;
+      formattedItem.direction = BridgeTxDirection.Outgoing;
       const outgoingRequest = request.asOutgoing;
       const transferRequest = outgoingRequest[0].asTransfer;
       const assetId = transferRequest.assetId;
@@ -389,5 +366,15 @@ export class BridgeApi<T> extends BaseApi<T> {
     const soraBlockHash = (await this.api.rpc.chain.getBlockHash(soraBlockNumber)).toString();
 
     return soraBlockHash;
+  }
+
+  public async getAssetKind(assetAddress: string): Promise<BridgeRequestAssetKind | null> {
+    const data = await this.api.query.ethBridge.registeredAsset(this.externalNetwork, assetAddress);
+
+    if (!data.isSome) return null;
+
+    const kind = data.unwrap();
+
+    return kind.toString() as BridgeRequestAssetKind;
   }
 }

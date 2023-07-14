@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, HermesGovernancePlatformVotingOption, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -107,12 +107,19 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * New symbol rates were successfully relayed. [symbols]
        **/
-      SymbolsRelayed: AugmentedEvent<ApiType, [Vec<Bytes>]>;
+      SymbolsRelayed: AugmentedEvent<ApiType, [Vec<ITuple<[Bytes, u128]>>]>;
     };
     beefyLightClient: {
       NewMMRRoot: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u64]>;
       ValidatorRegistryUpdated: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u32, u64]>;
       VerificationSuccessful: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, AccountId32, u32]>;
+    };
+    bridgeDataSigner: {
+      AddedPeer: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic], { networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic }>;
+      ApprovalAccepted: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, data: H256, signature: SpCoreEcdsaSignature], { networkId: BridgeTypesGenericNetworkId, data: H256, signature: SpCoreEcdsaSignature }>;
+      Approved: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, data: H256, signatures: Vec<SpCoreEcdsaSignature>], { networkId: BridgeTypesGenericNetworkId, data: H256, signatures: Vec<SpCoreEcdsaSignature> }>;
+      Initialized: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, peers: Vec<SpCoreEcdsaPublic>], { networkId: BridgeTypesGenericNetworkId, peers: Vec<SpCoreEcdsaPublic> }>;
+      RemovedPeer: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic], { networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic }>;
     };
     bridgeInboundChannel: {
     };
@@ -139,7 +146,11 @@ declare module '@polkadot/api-base/types/events' {
       NewMultisig: AugmentedEvent<ApiType, [AccountId32, AccountId32, U8aFixed]>;
     };
     bridgeOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [U256, u64]>;
+      MessageAccepted: AugmentedEvent<ApiType, [U256, u64, u64]>;
+    };
+    bridgeProxy: {
+      RefundFailed: AugmentedEvent<ApiType, [H256]>;
+      RequestStatusUpdate: AugmentedEvent<ApiType, [H256, BridgeTypesMessageStatus]>;
     };
     ceresGovernancePlatform: {
       /**
@@ -518,10 +529,6 @@ declare module '@polkadot/api-base/types/events' {
     ethereumLightClient: {
       Finalized: AugmentedEvent<ApiType, [U256, BridgeTypesHeaderHeaderId]>;
     };
-    evmBridgeProxy: {
-      RefundFailed: AugmentedEvent<ApiType, [H256]>;
-      RequestStatusUpdate: AugmentedEvent<ApiType, [H256, BridgeTypesMessageStatus]>;
-    };
     faucet: {
       LimitUpdated: AugmentedEvent<ApiType, [u128]>;
       Transferred: AugmentedEvent<ApiType, [AccountId32, u128]>;
@@ -544,7 +551,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Create poll [who, title, start_timestamp, end_timestamp]
        **/
-      Created: AugmentedEvent<ApiType, [AccountId32, Text, u64, u64]>;
+      Created: AugmentedEvent<ApiType, [AccountId32, Bytes, u64, u64]>;
       /**
        * Creator Funds Withdrawn [who, balance]
        **/
@@ -560,7 +567,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Voting [who, poll, option]
        **/
-      Voted: AugmentedEvent<ApiType, [AccountId32, H256, HermesGovernancePlatformVotingOption]>;
+      Voted: AugmentedEvent<ApiType, [AccountId32, H256, Bytes]>;
       /**
        * Voter Funds Withdrawn [who, balance]
        **/
@@ -633,6 +640,11 @@ declare module '@polkadot/api-base/types/events' {
     };
     liquidityProxy: {
       /**
+       * Batch of swap transfers has been performed
+       * [ADAR Fee, Input amount]
+       **/
+      BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128]>;
+      /**
        * Exchange of tokens has been performed
        * [Caller Account, DEX Id, Input Asset Id, Output Asset Id, Input Amount, Output Amount, Fee Amount]
        **/
@@ -691,6 +703,12 @@ declare module '@polkadot/api-base/types/events' {
        **/
       NewMultisig: AugmentedEvent<ApiType, [approving: AccountId32, multisig: AccountId32, callHash: U8aFixed], { approving: AccountId32, multisig: AccountId32, callHash: U8aFixed }>;
     };
+    multisigVerifier: {
+      NetworkInitialized: AugmentedEvent<ApiType, [BridgeTypesGenericNetworkId]>;
+      PeerAdded: AugmentedEvent<ApiType, [SpCoreEcdsaPublic]>;
+      PeerRemoved: AugmentedEvent<ApiType, [SpCoreEcdsaPublic]>;
+      VerificationSuccessful: AugmentedEvent<ApiType, [BridgeTypesGenericNetworkId]>;
+    };
     offences: {
       /**
        * There is an offence reported of the given `kind` happened at the `session_index` and
@@ -711,25 +729,58 @@ declare module '@polkadot/api-base/types/events' {
     };
     orderBook: {
       /**
-       * New order book is created by user
+       * Failed to cancel expired order
        **/
-      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, creator: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, creator: AccountId32 }>;
-      /**
-       * Order book is deleted by Council
-       **/
-      OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32 }>;
-      /**
-       * Order book attributes are updated by Council
-       **/
-      OrderBookUpdated: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32 }>;
+      ExpirationFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError }>;
       /**
        * User canceled their limit order
        **/
-      OrderCanceled: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
+      LimitOrderCanceled: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * User tried to place the limit order out of the spread. The limit order is converted into a market order.
+       **/
+      LimitOrderConvertedToMarketOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount }>;
+      /**
+       * Some amount of the limit order is executed
+       **/
+      LimitOrderExecuted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32, side: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32, side: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount }>;
+      /**
+       * The limit order has reached the end of its lifespan
+       **/
+      LimitOrderExpired: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * User tried to place the limit order out of the spread.
+       * One part of the liquidity of the limit order is converted into a market order, and the other part is placed as a limit order.
+       **/
+      LimitOrderIsSplitIntoMarketOrderAndLimitOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, ownerId: AccountId32, marketOrderDirection: CommonPrimitivesPriceVariant, marketOrderAmount: OrderBookOrderAmount, marketOrderAveragePrice: u128, limitOrderId: u128], { orderBookId: OrderBookOrderBookId, ownerId: AccountId32, marketOrderDirection: CommonPrimitivesPriceVariant, marketOrderAmount: OrderBookOrderAmount, marketOrderAveragePrice: u128, limitOrderId: u128 }>;
       /**
        * User placed new limit order
        **/
-      OrderPlaced: AugmentedEvent<ApiType, [orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32], { orderBookId: CommonPrimitivesTradingPairAssetId32, dexId: u32, orderId: u128, ownerId: AccountId32 }>;
+      LimitOrderPlaced: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * The limit order is updated
+       **/
+      LimitOrderUpdated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32], { orderBookId: OrderBookOrderBookId, orderId: u128, ownerId: AccountId32 }>;
+      /**
+       * User executes a deal by the market order
+       **/
+      MarketOrderExecuted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32>], { orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: u128, to: Option<AccountId32> }>;
+      /**
+       * New order book is created by user
+       **/
+      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, creator: AccountId32], { orderBookId: OrderBookOrderBookId, creator: AccountId32 }>;
+      /**
+       * Order book is deleted
+       **/
+      OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, countOfCanceledOrders: u32], { orderBookId: OrderBookOrderBookId, countOfCanceledOrders: u32 }>;
+      /**
+       * Order book status is changed
+       **/
+      OrderBookStatusChanged: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, newStatus: OrderBookOrderBookStatus], { orderBookId: OrderBookOrderBookId, newStatus: OrderBookOrderBookStatus }>;
+      /**
+       * Order book attributes are updated
+       **/
+      OrderBookUpdated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId], { orderBookId: OrderBookOrderBookId }>;
     };
     permissions: {
       /**
@@ -937,7 +988,7 @@ declare module '@polkadot/api-base/types/events' {
     substrateBridgeInboundChannel: {
     };
     substrateBridgeOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, u64]>;
+      MessageAccepted: AugmentedEvent<ApiType, [networkId: BridgeTypesSubNetworkId, batchNonce: u64, messageNonce: u64], { networkId: BridgeTypesSubNetworkId, batchNonce: u64, messageNonce: u64 }>;
     };
     substrateDispatch: {
       /**

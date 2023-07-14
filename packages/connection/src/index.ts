@@ -1,11 +1,9 @@
-import { assert } from '@polkadot/util';
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
+import type { ApiOptions } from '@polkadot/api/types';
 import type { ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
 import type { ApiInterfaceEvents } from '@polkadot/api/types';
-
-import { Messages } from './logger';
 
 type ConnectionEventListener = [ApiInterfaceEvents, ProviderInterfaceEmitCb];
 
@@ -44,6 +42,8 @@ class Connection {
 
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
 
+  constructor(private readonly apiOptions: ApiOptions) {}
+
   private async withLoading(func: Function): Promise<any> {
     this.loading = true;
     try {
@@ -63,7 +63,7 @@ class Connection {
 
     const provider = new WsProvider(endpoint, providerAutoConnectMs);
 
-    this.api = new ApiPromise(options({ provider, noInitWarn: true }));
+    this.api = new ApiPromise({ ...this.apiOptions, provider, noInitWarn: true });
     this.endpoint = endpoint;
 
     const connectionRequests: Array<Promise<any>> = [this.api[apiConnectionPromise]];
@@ -109,7 +109,7 @@ class Connection {
    * @param options
    */
   public async open(endpoint?: string, options?: ConnectionRunOptions): Promise<void> {
-    assert(endpoint || this.endpoint, Messages.endpointIsUndefined);
+    if (!(endpoint || this.endpoint)) throw new Error('You should set endpoint for connection');
     await this.withLoading(async () => await this.run(endpoint || this.endpoint, options));
   }
 
@@ -122,6 +122,8 @@ class Connection {
 }
 
 /**
- * Base connection object which should be used for any api
+ * Base SORA connection object
  */
-export const connection = new Connection();
+const connection = new Connection(options());
+
+export { connection, Connection };

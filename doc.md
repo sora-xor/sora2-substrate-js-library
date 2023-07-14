@@ -9292,7 +9292,7 @@ returns: `u16`
 
 arguments:
 
-- key: `CommonPrimitivesTradingPairAssetId32`
+- key: `OrderBookOrderBookId`
 
 returns: `OrderBook`
 
@@ -9302,7 +9302,7 @@ returns: `OrderBook`
 
 arguments:
 
-- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+- key: `(OrderBookOrderBookId,u128)`
 
 returns: `OrderBookLimitOrder`
 
@@ -9312,7 +9312,7 @@ returns: `OrderBookLimitOrder`
 
 arguments:
 
-- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+- key: `(OrderBookOrderBookId,u128)`
 
 returns: `Vec<u128>`
 
@@ -9322,7 +9322,7 @@ returns: `Vec<u128>`
 
 arguments:
 
-- key: `(CommonPrimitivesTradingPairAssetId32,u128)`
+- key: `(OrderBookOrderBookId,u128)`
 
 returns: `Vec<u128>`
 
@@ -9332,7 +9332,7 @@ returns: `Vec<u128>`
 
 arguments:
 
-- key: `CommonPrimitivesTradingPairAssetId32`
+- key: `OrderBookOrderBookId`
 
 returns: `BTreeMap<u128, u128>`
 
@@ -9342,7 +9342,7 @@ returns: `BTreeMap<u128, u128>`
 
 arguments:
 
-- key: `CommonPrimitivesTradingPairAssetId32`
+- key: `OrderBookOrderBookId`
 
 returns: `BTreeMap<u128, u128>`
 
@@ -9352,7 +9352,7 @@ returns: `BTreeMap<u128, u128>`
 
 arguments:
 
-- key: `(AccountId32,CommonPrimitivesTradingPairAssetId32)`
+- key: `(AccountId32,OrderBookOrderBookId)`
 
 returns: `Vec<u128>`
 
@@ -9365,21 +9365,21 @@ returns: `Vec<u128>`
 arguments:
 
 - dexId: `u32`
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 <hr>
 
 #### **api.tx.orderBook.deleteOrderbook**
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 <hr>
 
 #### **api.tx.orderBook.updateOrderbook**
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 - tickSize: `u128`
 - stepLotSize: `u128`
 - minLotSize: `u128`
@@ -9390,7 +9390,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 - status: `OrderBookOrderBookStatus`
 <hr>
 
@@ -9398,7 +9398,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 - price: `u128`
 - amount: `u128`
 - side: `CommonPrimitivesPriceVariant`
@@ -9409,7 +9409,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `CommonPrimitivesTradingPairAssetId32`
+- orderBookId: `OrderBookOrderBookId`
 - orderId: `u128`
 <hr>
 
@@ -9661,6 +9661,34 @@ arguments:
 - assetId: `CommonPrimitivesAssetId32`
 - recipient: `BridgeTypesGenericAccount`
 - amount: `u128`
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.evmBridgeProxy.listApps**
+
+>
+
+arguments:
+
+- networkId: `EVMChainId`
+- at: `BlockHash`
+
+returns: `Vec<BridgeAppInfo>`
+
+<hr>
+
+#### **api.rpc.evmBridgeProxy.listAppsWithSupportedAssets**
+
+>
+
+arguments:
+
+- networkId: `EVMChainId`
+- at: `BlockHash`
+
+returns: `AppsWithSupportedAssets<AssetId>`
+
 <hr>
 
 ## EthereumLightClient pallet
@@ -11589,6 +11617,28 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 "Amount"
 ```
 
+### AppKind
+
+```
+{
+    _enum: [
+        "EthApp",
+        "ERC20App",
+        "SidechainApp",
+        "SubstrateApp"
+    ]
+}
+```
+
+### AppsWithSupportedAssets
+
+```
+{
+    apps: "Vec<BridgeAppInfo>",
+    assets: "Vec<BridgeAssetInfo<AssetId>>"
+}
+```
+
 ### AssetId
 
 ```
@@ -11714,6 +11764,25 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 "u16"
+```
+
+### BridgeAppInfo
+
+```
+{
+    evmAddress: "H160",
+    appKind: "AppKind"
+}
+```
+
+### BridgeAssetInfo
+
+```
+{
+    assetId: "AssetId",
+    evmAddress: "Option<H160>",
+    appKind: "AppKind"
+}
 ```
 
 ### BridgeNetworkId
@@ -11921,6 +11990,12 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 "Null"
+```
+
+### EVMChainId
+
+```
+"U256"
 ```
 
 ### EthAddress

@@ -50,8 +50,13 @@ export type QuotePaths = {
   [key: string]: Array<LiquiditySourceTypes>;
 };
 
+export type OracleRate = {
+  value: CodecString;
+  lastUpdated: number;
+};
+
 export type QuotePayload = {
-  rates: Record<string, { value: CodecString; lastUpdated: number }>;
+  rates: Record<string, OracleRate>;
   reserves: {
     xyk: {
       [key: string]: [CodecString, CodecString];
@@ -80,6 +85,10 @@ export type QuotePayload = {
     xst: {
       floorPrice: CodecString;
       referenceAsset: string;
+      syntheticBaseBuySellLimit: CodecString;
+    };
+    band: {
+      rateStalePeriod: number;
     };
   };
   lockedSources: Array<LiquiditySourceTypes>;

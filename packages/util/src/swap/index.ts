@@ -7,6 +7,7 @@ import type {
   QuotePaths,
   QuotePayload,
   SwapResult,
+  OracleRate,
 } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
 import type {
@@ -24,6 +25,7 @@ import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
+import type { ReceiverHistoryItem, SwapTransferBatchData } from './types';
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
 
@@ -63,7 +65,7 @@ const getAssetAveragePrice = <T>(root: Api<T>, assetAddress: string): Observable
   return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
 };
 
-const toBandRate = (o: Observable<Option<BandBandRate>>) =>
+const toBandRate = (o: Observable<Option<BandBandRate>>): Observable<OracleRate> =>
   o.pipe(
     map((codec) => {
       const data = codec.unwrap();
@@ -365,6 +367,10 @@ export class SwapModule<T> {
         ]
       : [];
 
+    // storage consts
+    const bandRateStalePeriod = this.root.api.consts.band.getBandRateStalePeriod.toNumber();
+    const syntheticBaseBuySellLimit = this.root.api.consts.xstPool.getSyntheticBaseBuySellLimit.toString();
+
     return combineLatest([
       ...tickersRates,
       ...assetsIssuances,
@@ -410,6 +416,10 @@ export class SwapModule<T> {
             xst: {
               floorPrice,
               referenceAsset: xstReferenceAsset,
+              syntheticBaseBuySellLimit,
+            },
+            band: {
+              rateStalePeriod: bandRateStalePeriod,
             },
           },
           lockedSources,
@@ -561,6 +571,62 @@ export class SwapModule<T> {
         liquiditySource,
         to: formattedToAddress,
         type: Operation.SwapAndSend,
+      }
+    );
+  }
+
+  private calcTxParamsSwapTransferBatch(
+    asset: Asset | AccountAsset,
+    maxAmount: NumberLike,
+    liquiditySource = LiquiditySourceTypes.Default
+  ) {
+    assert(this.root.account, Messages.connectWallet);
+    const amount = FPNumber.fromCodecValue(maxAmount, asset.decimals).toCodecString();
+    const liquiditySources = liquiditySource ? [liquiditySource] : [];
+    return {
+      args: [
+        asset.address,
+        amount,
+        liquiditySources,
+        liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected',
+      ],
+    };
+  }
+
+  /**
+   * Run swap transfers batch operation
+   * @param receivers the ordered map, which maps the asset id and dexId being bought to the vector of batch receivers
+   * @param inputAsset asset being sold
+   * @param maxInputAmount max amount being sold
+   */
+  public executeSwapTransferBatch(
+    receivers: Array<SwapTransferBatchData>,
+    inputAsset: Asset | AccountAsset,
+    maxInputAmount: NumberLike,
+    liquiditySource = LiquiditySourceTypes.Default
+  ): Promise<T> {
+    const params = this.calcTxParamsSwapTransferBatch(inputAsset, maxInputAmount, liquiditySource);
+
+    const recipients = receivers.reduce((acc, curr) => {
+      const arr = curr.receivers.map((item) => {
+        return {
+          accountId: item.accountId,
+          amount: item.targetAmount,
+          assetId: curr.outcomeAssetId,
+        };
+      });
+      acc.push(...arr);
+      return acc;
+    }, [] as Array<ReceiverHistoryItem>);
+
+    return this.root.submitExtrinsic(
+      (this.root.api.tx.liquidityProxy as any).swapTransferBatch(receivers, ...params.args),
+      this.root.account.pair,
+      {
+        symbol: inputAsset.symbol,
+        assetAddress: inputAsset.address,
+        receivers: recipients,
+        type: Operation.SwapTransferBatch,
       }
     );
   }

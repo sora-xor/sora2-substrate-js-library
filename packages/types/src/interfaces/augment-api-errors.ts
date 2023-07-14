@@ -129,6 +129,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AlreadyATrustedRelayer: AugmentedError<ApiType>;
       /**
+       * Error during dynamic fee calculation
+       **/
+      DynamicFeeCalculationError: AugmentedError<ApiType>;
+      /**
+       * Dynamic fee parameters are invalid,
+       **/
+      InvalidDynamicFeeParameters: AugmentedError<ApiType>;
+      /**
        * A request to remove an account, which is not a trusted relayer, was supplied.
        **/
       NoSuchRelayer: AugmentedError<ApiType>;
@@ -154,6 +162,7 @@ declare module '@polkadot/api-base/types/errors' {
       CommitmentNotFoundInDigest: AugmentedError<ApiType>;
       InvalidDigestHash: AugmentedError<ApiType>;
       InvalidMMRProof: AugmentedError<ApiType>;
+      InvalidNetworkId: AugmentedError<ApiType>;
       InvalidNumberOfPositions: AugmentedError<ApiType>;
       InvalidNumberOfPublicKeys: AugmentedError<ApiType>;
       InvalidNumberOfSignatures: AugmentedError<ApiType>;
@@ -170,6 +179,22 @@ declare module '@polkadot/api-base/types/errors' {
       ValidatorNotOnceInbitfield: AugmentedError<ApiType>;
       ValidatorSetIncorrectPosition: AugmentedError<ApiType>;
     };
+    bridgeDataSigner: {
+      ApprovalsNotFound: AugmentedError<ApiType>;
+      DontHavePendingPeerUpdates: AugmentedError<ApiType>;
+      FailedToVerifySignature: AugmentedError<ApiType>;
+      HasPendingPeerUpdate: AugmentedError<ApiType>;
+      NetworkNotSupported: AugmentedError<ApiType>;
+      PalletInitialized: AugmentedError<ApiType>;
+      PalletNotInitialized: AugmentedError<ApiType>;
+      PeerExists: AugmentedError<ApiType>;
+      PeerNotExists: AugmentedError<ApiType>;
+      PeerNotFound: AugmentedError<ApiType>;
+      SignatureAlreadyExists: AugmentedError<ApiType>;
+      SignaturesNotFound: AugmentedError<ApiType>;
+      TooMuchApprovals: AugmentedError<ApiType>;
+      TooMuchPeers: AugmentedError<ApiType>;
+    };
     bridgeInboundChannel: {
       /**
        * Call encoding failed.
@@ -180,13 +205,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ContractExists: AugmentedError<ApiType>;
       /**
+       * Malformed BatchDispatched event
+       **/
+      InvalidBatchDispatchedEvent: AugmentedError<ApiType>;
+      /**
        * Message has an invalid envelope.
        **/
       InvalidEnvelope: AugmentedError<ApiType>;
-      /**
-       * Malformed MessageDispatched event
-       **/
-      InvalidMessageDispatchedEvent: AugmentedError<ApiType>;
       /**
        * Message came from an invalid network.
        **/
@@ -300,10 +325,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       MaxGasTooBig: AugmentedError<ApiType>;
       /**
-       * Cannot pay the fee to submit a message.
-       **/
-      NoFunds: AugmentedError<ApiType>;
-      /**
        * Cannot increment nonce
        **/
       Overflow: AugmentedError<ApiType>;
@@ -315,6 +336,12 @@ declare module '@polkadot/api-base/types/errors' {
        * No more messages can be queued for the channel during this commit cycle.
        **/
       QueueSizeLimitReached: AugmentedError<ApiType>;
+    };
+    bridgeProxy: {
+      NotEnoughLockedLiquidity: AugmentedError<ApiType>;
+      Overflow: AugmentedError<ApiType>;
+      PathIsNotAvailable: AugmentedError<ApiType>;
+      WrongAccountKind: AugmentedError<ApiType>;
     };
     ceresGovernancePlatform: {
       /**
@@ -1420,10 +1447,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       Unknown: AugmentedError<ApiType>;
     };
-    evmBridgeProxy: {
-      PathIsNotAvailable: AugmentedError<ApiType>;
-      WrongAccountKind: AugmentedError<ApiType>;
-    };
     farming: {
       /**
        * Increment account reference error.
@@ -1482,6 +1505,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AlreadyVoted: AugmentedError<ApiType>;
       /**
+       * Duplicate options
+       **/
+      DuplicateOptions: AugmentedError<ApiType>;
+      /**
        * Funds Already Withdrawn
        **/
       FundsAlreadyWithdrawn: AugmentedError<ApiType>;
@@ -1498,9 +1525,17 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidMinimumDurationOfPoll: AugmentedError<ApiType>;
       /**
+       * Invalid Option
+       **/
+      InvalidOption: AugmentedError<ApiType>;
+      /**
        * Invalid Start Timestamp
        **/
       InvalidStartTimestamp: AugmentedError<ApiType>;
+      /**
+       * Invalid Voting Options
+       **/
+      InvalidVotingOptions: AugmentedError<ApiType>;
       /**
        * Not Enough Hermes For Creating Poll
        **/
@@ -1510,7 +1545,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotEnoughHermesForVoting: AugmentedError<ApiType>;
       /**
-       * NotVoted
+       * Not Voted
        **/
       NotVoted: AugmentedError<ApiType>;
       /**
@@ -1529,6 +1564,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Poll Is Not Started
        **/
       PollIsNotStarted: AugmentedError<ApiType>;
+      /**
+       * Too Many Voting Options
+       **/
+      TooManyVotingOptions: AugmentedError<ApiType>;
       /**
        * Unauthorized
        **/
@@ -1686,6 +1725,7 @@ declare module '@polkadot/api-base/types/errors' {
        * None of the sources has enough reserves to execute a trade
        **/
       InsufficientLiquidity: AugmentedError<ApiType>;
+      InvalidADARCommissionRatio: AugmentedError<ApiType>;
       /**
        * Fee value outside of the basis points range [0..10000]
        **/
@@ -1870,55 +1910,183 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongTimepoint: AugmentedError<ApiType>;
     };
+    multisigVerifier: {
+      CommitmentNotFoundInDigest: AugmentedError<ApiType>;
+      InvalidInitParams: AugmentedError<ApiType>;
+      InvalidNetworkId: AugmentedError<ApiType>;
+      InvalidNumberOfSignatures: AugmentedError<ApiType>;
+      InvalidSignature: AugmentedError<ApiType>;
+      NetworkNotInitialized: AugmentedError<ApiType>;
+      NoSuchPeer: AugmentedError<ApiType>;
+      NotTrustedPeerSignature: AugmentedError<ApiType>;
+      PeerExists: AugmentedError<ApiType>;
+      TooMuchPeers: AugmentedError<ApiType>;
+    };
     oracleProxy: {
       OracleAlreadyDisabled: AugmentedError<ApiType>;
       OracleAlreadyEnabled: AugmentedError<ApiType>;
     };
     orderBook: {
       /**
-       * Cannot delete the limit order
+       * An error occurred while calculating the amount
+       **/
+      AmountCalculationFailed: AugmentedError<ApiType>;
+      /**
+       * Expiration schedule for expiration block is full
+       **/
+      BlockScheduleFull: AugmentedError<ApiType>;
+      /**
+       * At the moment, Users cannot cancel their limit orders in the current order book
+       **/
+      CancellationOfLimitOrdersIsForbidden: AugmentedError<ApiType>;
+      /**
+       * It is impossible to delete the limit order
        **/
       DeleteLimitOrderError: AugmentedError<ApiType>;
+      /**
+       * Could not find expiration in given block schedule
+       **/
+      ExpirationNotFound: AugmentedError<ApiType>;
       /**
        * Cannot create order book with equal base and target assets
        **/
       ForbiddenToCreateOrderBookWithSameAssets: AugmentedError<ApiType>;
       /**
+       * Invalid asset
+       **/
+      InvalidAsset: AugmentedError<ApiType>;
+      /**
        * Lifespan exceeds defined limits
        **/
       InvalidLifespan: AugmentedError<ApiType>;
       /**
-       * Cannot insert the limit order because bounds are reached
+       * The limit order price does not meet the requirements
+       **/
+      InvalidLimitOrderPrice: AugmentedError<ApiType>;
+      /**
+       * Invalid max lot size
+       **/
+      InvalidMaxLotSize: AugmentedError<ApiType>;
+      /**
+       * Invalid min lot size
+       **/
+      InvalidMinLotSize: AugmentedError<ApiType>;
+      /**
+       * The order amount (limit or market) does not meet the requirements
+       **/
+      InvalidOrderAmount: AugmentedError<ApiType>;
+      /**
+       * Invalid order book id
+       **/
+      InvalidOrderBookId: AugmentedError<ApiType>;
+      /**
+       * Invalid step lot size
+       **/
+      InvalidStepLotSize: AugmentedError<ApiType>;
+      /**
+       * Invalid tick size
+       **/
+      InvalidTickSize: AugmentedError<ApiType>;
+      /**
+       * Limit order already exists for this trading pair and order id
+       **/
+      LimitOrderAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * User cannot set the price of limit order too far from actual market price
+       **/
+      LimitOrderPriceIsTooFarFromSpread: AugmentedError<ApiType>;
+      /**
+       * It is impossible to insert the limit order because the bounds have been reached
        **/
       LimitOrderStorageOverflow: AugmentedError<ApiType>;
       /**
-       * The asset is not allowed to be base. Only dex base asset can be a base asset for order book
+       * Max lot size cannot be more that total supply of base asset
+       **/
+      MaxLotSizeIsMoreThanTotalSupply: AugmentedError<ApiType>;
+      /**
+       * NFT order books are temporarily forbidden
+       **/
+      NftOrderBooksAreTemporarilyForbidden: AugmentedError<ApiType>;
+      /**
+       * There are no aggregated bids/asks for the order book
+       **/
+      NoAggregatedData: AugmentedError<ApiType>;
+      /**
+       * There are no bids/asks for the price
+       **/
+      NoDataForPrice: AugmentedError<ApiType>;
+      /**
+       * The asset is not allowed to be base. Only dex base asset can be a quote asset for order book
        **/
       NotAllowedBaseAsset: AugmentedError<ApiType>;
       /**
+       * Orderbooks cannot be created with given dex id.
+       **/
+      NotAllowedDEXId: AugmentedError<ApiType>;
+      /**
        * There is not enough liquidity in the order book to cover the deal
        **/
-      NotEnoughLiquidity: AugmentedError<ApiType>;
+      NotEnoughLiquidityInOrderBook: AugmentedError<ApiType>;
       /**
        * Order book already exists for this trading pair
        **/
       OrderBookAlreadyExists: AugmentedError<ApiType>;
       /**
-       * Trading pair currently reached its capacity
+       * It is impossible to place the limit order because bounds of the max count of prices for the side have been reached
        **/
-      OrderLimitReached: AugmentedError<ApiType>;
+      OrderBookReachedMaxCountOfPricesForSide: AugmentedError<ApiType>;
       /**
-       * Price in given order exceeds allowed limits for the trading pair
+       * At the moment, Users cannot place new limit orders in the current order book
        **/
-      PriceExceedsLimits: AugmentedError<ApiType>;
+      PlacementOfLimitOrdersIsForbidden: AugmentedError<ApiType>;
+      /**
+       * An error occurred while calculating the price
+       **/
+      PriceCalculationFailed: AugmentedError<ApiType>;
+      /**
+       * It is impossible to place the limit order because bounds of the max count of orders at the current price have been reached
+       **/
+      PriceReachedMaxCountOfLimitOrders: AugmentedError<ApiType>;
+      /**
+       * Indicated limit for slippage has not been met during transaction execution.
+       **/
+      SlippageLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Tick size & step lot size are too big and their multiplication overflows Balance
+       **/
+      TickSizeAndStepLotSizeAreTooBig: AugmentedError<ApiType>;
+      /**
+       * Tick size & step lot size are too small and their multiplication goes out of precision
+       **/
+      TickSizeAndStepLotSizeAreTooSmall: AugmentedError<ApiType>;
+      /**
+       * At the moment, Trading is forbidden in the current order book
+       **/
+      TradingIsForbidden: AugmentedError<ApiType>;
+      /**
+       * Unauthorized action
+       **/
+      Unauthorized: AugmentedError<ApiType>;
+      /**
+       * Limit order does not exist for this trading pair and order id
+       **/
+      UnknownLimitOrder: AugmentedError<ApiType>;
       /**
        * Order book does not exist for this trading pair
        **/
       UnknownOrderBook: AugmentedError<ApiType>;
       /**
+       * It is impossible to update the limit order
+       **/
+      UpdateLimitOrderError: AugmentedError<ApiType>;
+      /**
+       * User has the max available count of open limit orders in the current order book
+       **/
+      UserHasMaxCountOfOpenedOrders: AugmentedError<ApiType>;
+      /**
        * User cannot create an order book with NFT if they don't have NFT
        **/
-      UserDoesntHaveNft: AugmentedError<ApiType>;
+      UserHasNoNft: AugmentedError<ApiType>;
     };
     permissions: {
       /**
@@ -2124,6 +2292,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Source base amount is too large.
        **/
       SourceBaseAmountIsTooLarge: AugmentedError<ApiType>;
+      /**
+       * Cannot create a pool with restricted target asset
+       **/
+      TargetAssetIsRestricted: AugmentedError<ApiType>;
       /**
        * Target balance is not large enough.
        **/
@@ -2465,10 +2637,17 @@ declare module '@polkadot/api-base/types/errors' {
        * Call encoding failed.
        **/
       CallEncodeFailed: AugmentedError<ApiType>;
+      InvalidDestinationParachain: AugmentedError<ApiType>;
+      InvalidDestinationParams: AugmentedError<ApiType>;
       InvalidNetwork: AugmentedError<ApiType>;
       NotEnoughFunds: AugmentedError<ApiType>;
+      NotRelayTransferableAsset: AugmentedError<ApiType>;
+      RelaychainAssetNotRegistered: AugmentedError<ApiType>;
+      RelaychainAssetRegistered: AugmentedError<ApiType>;
       TokenAlreadyRegistered: AugmentedError<ApiType>;
       TokenIsNotRegistered: AugmentedError<ApiType>;
+      TransferLimitReached: AugmentedError<ApiType>;
+      UnknownPrecision: AugmentedError<ApiType>;
       /**
        * Amount must be > 0
        **/
@@ -2484,9 +2663,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ContractExists: AugmentedError<ApiType>;
       /**
-       * Message has an invalid envelope.
+       * Submitted invalid commitment type.
        **/
-      InvalidEnvelope: AugmentedError<ApiType>;
+      InvalidCommitment: AugmentedError<ApiType>;
       /**
        * Message came from an invalid network.
        **/
@@ -2834,10 +3013,6 @@ declare module '@polkadot/api-base/types/errors' {
     };
     xstPool: {
       /**
-       * The pool can't perform exchange on itself.
-       **/
-      CannotExchangeWithSelf: AugmentedError<ApiType>;
-      /**
        * Synthetic asset must be divisible
        **/
       CantEnableIndivisibleAsset: AugmentedError<ApiType>;
@@ -2845,18 +3020,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Liquidity source can't exchange assets with the given IDs on the given DEXId.
        **/
       CantExchange: AugmentedError<ApiType>;
-      /**
-       * Failure while calculating price ignoring non-linearity of liquidity source.
-       **/
-      FailedToCalculatePriceWithoutImpact: AugmentedError<ApiType>;
-      /**
-       * Could not calculate fee.
-       **/
-      FeeCalculationFailed: AugmentedError<ApiType>;
-      /**
-       * Increment account reference error.
-       **/
-      IncRefError: AugmentedError<ApiType>;
       /**
        * Reference asset must be divisible
        **/
@@ -2869,14 +3032,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Error quoting price from oracle.
        **/
       OracleQuoteError: AugmentedError<ApiType>;
-      /**
-       * Attempt to initialize pool for pair that already exists.
-       **/
-      PoolAlreadyInitializedForPair: AugmentedError<ApiType>;
-      /**
-       * Attempt to get info for uninitialized pool.
-       **/
-      PoolNotInitialized: AugmentedError<ApiType>;
       /**
        * An error occurred while calculating the price.
        **/
@@ -2895,6 +3050,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       SymbolDoesNotExist: AugmentedError<ApiType>;
       /**
+       * Input/output amount of synthetic base asset exceeds the limit
+       **/
+      SyntheticBaseBuySellLimitExceeded: AugmentedError<ApiType>;
+      /**
        * Synthetic asset does not exist.
        **/
       SyntheticDoesNotExist: AugmentedError<ApiType>;
@@ -2902,10 +3061,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Attempt to disable synthetic asset that is not enabled.
        **/
       SyntheticIsNotEnabled: AugmentedError<ApiType>;
-      /**
-       * Indicated collateral asset is not enabled for pool.
-       **/
-      UnsupportedCollateralAssetId: AugmentedError<ApiType>;
     };
   } // AugmentedErrors
 } // declare module

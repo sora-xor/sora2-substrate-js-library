@@ -68,6 +68,7 @@ import type { VestingInfo } from '@polkadot/types/interfaces/vesting';
 import type { AssetInstance, AssetInstanceV0, AssetInstanceV1, AssetInstanceV2, BodyId, BodyPart, DoubleEncodedCall, Fungibility, FungibilityV0, FungibilityV1, FungibilityV2, InboundStatus, InstructionV2, InteriorMultiLocation, Junction, JunctionV0, JunctionV1, JunctionV2, Junctions, JunctionsV1, JunctionsV2, MultiAsset, MultiAssetFilter, MultiAssetFilterV1, MultiAssetFilterV2, MultiAssetV0, MultiAssetV1, MultiAssetV2, MultiAssets, MultiAssetsV1, MultiAssetsV2, MultiLocation, MultiLocationV0, MultiLocationV1, MultiLocationV2, NetworkId, OriginKindV0, OriginKindV1, OriginKindV2, OutboundStatus, Outcome, QueryId, QueryStatus, QueueConfigData, Response, ResponseV0, ResponseV1, ResponseV2, ResponseV2Error, ResponseV2Result, VersionMigrationStage, VersionedMultiAsset, VersionedMultiAssets, VersionedMultiLocation, VersionedResponse, VersionedXcm, WeightLimitV2, WildFungibility, WildFungibilityV0, WildFungibilityV1, WildFungibilityV2, WildMultiAsset, WildMultiAssetV1, WildMultiAssetV2, Xcm, XcmAssetId, XcmError, XcmErrorV0, XcmErrorV1, XcmErrorV2, XcmOrder, XcmOrderV0, XcmOrderV1, XcmOrderV2, XcmOrigin, XcmOriginKind, XcmV0, XcmV1, XcmV2, XcmVersion, XcmpMessageFormat } from '@polkadot/types/interfaces/xcm';
 import type { AssetInfo, AssetNameStr, AssetRecord, AssetSymbolStr, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { BasicChannelMessage } from '@sora-substrate/types/interfaces/basicChannel';
+import type { BridgeAppInfo, BridgeAssetInfo, EVMAppInfo, EVMAppKind, EVMAssetInfo, EVMChainId, EVMLegacyAssetInfo, GenericNetworkId, MainnetAssetId, SubAssetInfo, SubAssetKind, SubNetworkId } from '@sora-substrate/types/interfaces/bridgeProxy';
 import type { PollInfo, VotingInfo } from '@sora-substrate/types/interfaces/ceresGovernancePlatform';
 import type { ContributionInfo, ContributorsVesting, ILOInfo, TeamVesting } from '@sora-substrate/types/interfaces/ceresLaunchpad';
 import type { LockInfo } from '@sora-substrate/types/interfaces/ceresLiquidityLocker';
@@ -220,6 +221,8 @@ declare module '@polkadot/types/types/registry' {
     BountyStatusActive: BountyStatusActive;
     BountyStatusCuratorProposed: BountyStatusCuratorProposed;
     BountyStatusPendingPayout: BountyStatusPendingPayout;
+    BridgeAppInfo: BridgeAppInfo;
+    BridgeAssetInfo: BridgeAssetInfo;
     BridgedBlockHash: BridgedBlockHash;
     BridgedBlockNumber: BridgedBlockNumber;
     BridgedHeader: BridgedHeader;
@@ -488,8 +491,13 @@ declare module '@polkadot/types/types/registry' {
     EventMetadataV9: EventMetadataV9;
     EventRecord: EventRecord;
     EvmAccount: EvmAccount;
+    EVMAppInfo: EVMAppInfo;
+    EVMAppKind: EVMAppKind;
+    EVMAssetInfo: EVMAssetInfo;
     EvmCallInfo: EvmCallInfo;
+    EVMChainId: EVMChainId;
     EvmCreateInfo: EvmCreateInfo;
+    EVMLegacyAssetInfo: EVMLegacyAssetInfo;
     EvmLog: EvmLog;
     EvmVicinity: EvmVicinity;
     ExecReturnValue: ExecReturnValue;
@@ -560,6 +568,7 @@ declare module '@polkadot/types/types/registry' {
     FungibilityV1: FungibilityV1;
     FungibilityV2: FungibilityV2;
     Gas: Gas;
+    GenericNetworkId: GenericNetworkId;
     GiltBid: GiltBid;
     GlobalValidationData: GlobalValidationData;
     GlobalValidationSchedule: GlobalValidationSchedule;
@@ -703,6 +712,7 @@ declare module '@polkadot/types/types/registry' {
     LotteryConfig: LotteryConfig;
     LPRewardsInfo: LPRewardsInfo;
     LPSwapOutcomeInfo: LPSwapOutcomeInfo;
+    MainnetAssetId: MainnetAssetId;
     MarketMakerInfo: MarketMakerInfo;
     MaybeRandomness: MaybeRandomness;
     MaybeVrf: MaybeVrf;
@@ -1179,8 +1189,11 @@ declare module '@polkadot/types/types/registry' {
     StoredPendingChange: StoredPendingChange;
     StoredState: StoredState;
     StrikeCount: StrikeCount;
+    SubAssetInfo: SubAssetInfo;
+    SubAssetKind: SubAssetKind;
     SubId: SubId;
     SubmissionIndicesOf: SubmissionIndicesOf;
+    SubNetworkId: SubNetworkId;
     Supports: Supports;
     SwapAction: SwapAction;
     SwapAmount: SwapAmount;

@@ -31,6 +31,7 @@ import type { ApplyExtrinsicResult, ChainProperties, ChainType, DispatchError, H
 import type { IExtrinsic, Observable } from '@polkadot/types/types';
 import type { AssetInfo, BalanceInfo } from '@sora-substrate/types/interfaces/assets';
 import type { BasicChannelMessage } from '@sora-substrate/types/interfaces/basicChannel';
+import type { BridgeAppInfo, BridgeAssetInfo, GenericNetworkId } from '@sora-substrate/types/interfaces/bridgeProxy';
 import type { AssetKind, BridgeNetworkId, OffchainRequest, OutgoingRequestEncoded, RequestStatus, SignatureParams } from '@sora-substrate/types/interfaces/ethBridge';
 import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
 import type { AuxiliaryDigest } from '@sora-substrate/types/interfaces/leafProvider';
@@ -129,6 +130,16 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        **/
       subscribeJustifications: AugmentedRpc<() => Observable<BeefySignedCommitment>>;
     };
+    bridgeProxy: {
+      /**
+       * 
+       **/
+      listApps: AugmentedRpc<(at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAppInfo>>>;
+      /**
+       * 
+       **/
+      listAssets: AugmentedRpc<(networkId: GenericNetworkId | { EVMLegacy: any } | { EVM: any } | { Sub: any } | string | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Vec<BridgeAssetInfo>>>;
+    };
     chain: {
       /**
        * Get header and body of a relay chain block
@@ -222,7 +233,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Query capability to exchange particular tokens on DEX.
        **/
-      canExchange: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<bool>>;
+      canExchange: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<bool>>;
       /**
        * List liquidity source types enabled on chain.
        **/
@@ -230,7 +241,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Get price for a given input or output token amount.
        **/
-      quote: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Text | string, swapVariant: SwapVariant | 'WithDesiredInput' | 'WithDesiredOutput' | number | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Option<SwapOutcomeInfo>>>;
+      quote: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Text | string, swapVariant: SwapVariant | 'WithDesiredInput' | 'WithDesiredOutput' | number | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Option<SwapOutcomeInfo>>>;
     };
     dexManager: {
       /**
@@ -498,7 +509,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Get price with indicated Asset amount and direction, filtered by selected_types
        **/
-      quote: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Text | string, swapVariant: SwapVariant | 'WithDesiredInput' | 'WithDesiredOutput' | number | Uint8Array, selectedSourceTypes: Vec<LiquiditySourceType> | (LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array)[], filterMode: FilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Option<LPSwapOutcomeInfo>>>;
+      quote: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, inputAssetId: AssetId | AnyNumber | Uint8Array, outputAssetId: AssetId | AnyNumber | Uint8Array, amount: Text | string, swapVariant: SwapVariant | 'WithDesiredInput' | 'WithDesiredOutput' | number | Uint8Array, selectedSourceTypes: Vec<LiquiditySourceType> | (LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array)[], filterMode: FilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<Option<LPSwapOutcomeInfo>>>;
     };
     mmr: {
       /**
@@ -750,7 +761,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Query if particular liquidity source is enabled for pair.
        **/
-      isSourceEnabledForPair: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, baseAssetId: AssetId | AnyNumber | Uint8Array, targetAssetId: AssetId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | number | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<bool>>;
+      isSourceEnabledForPair: AugmentedRpc<(dexId: DEXId | AnyNumber | Uint8Array, baseAssetId: AssetId | AnyNumber | Uint8Array, targetAssetId: AssetId | AnyNumber | Uint8Array, liquiditySourceType: LiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array, at?: BlockHash | string | Uint8Array) => Observable<bool>>;
       /**
        * List enabled trading pairs for DEX.
        **/

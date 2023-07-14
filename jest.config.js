@@ -9,10 +9,15 @@ module.exports = {
     '<rootDir>/packages/type-definitions/build',
     '<rootDir>/packages/util/build',
     '<rootDir>/packages/liquidity-proxy/build',
+    '<rootDir>/packages/connection/build',
   ],
   verbose: true,
   transform: {
     '^.+\\.js$': 'babel-jest',
   },
   transformIgnorePatterns: ['node_modules/?!(@polkadot/util)'],
+  collectCoverage: true,
+  collectCoverageFrom: ['packages/**/*.{js,jsx,ts,tsx,vue}'],
+  coverageReporters: ['lcov'],
+  coveragePathIgnorePatterns: ['node_modules/', 'coverage/'],
 };

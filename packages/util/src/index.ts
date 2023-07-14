@@ -10,11 +10,16 @@ import './demeterFarming/types';
 import './dex/consts';
 import './dex/types';
 import './ceresLiquidityLocker/types';
+import './bridgeProxy/types';
+import './bridgeProxy/consts';
+import './bridgeProxy/evm/types';
+import './bridgeProxy/evm/consts';
+import './bridgeProxy/sub/types';
+import './bridgeProxy/sub/consts';
 
 export * from './api';
 export * from './BaseApi';
 export * from './BridgeApi';
-export * from './connection';
 export * from './FaucetApi';
 export * from './storage';
 export * from './http';

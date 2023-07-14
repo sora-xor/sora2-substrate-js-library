@@ -1541,7 +1541,7 @@
         {
             "minmax": [
                 47,
-                null
+                49
             ],
             "types": {
                 "LPSwapOutcomeInfo": {
@@ -1549,6 +1549,124 @@
                     "fee": "Balance",
                     "rewards": "Vec<LPRewardsInfo>",
                     "route": "Vec<AssetId>"
+                }
+            }
+        },
+        {
+            "minmax": [
+                50,
+                52
+            ],
+            "types": {
+                "AppKind": {
+                    "_enum": [
+                        "EthApp",
+                        "ERC20App",
+                        "SidechainApp",
+                        "SubstrateApp"
+                    ]
+                },
+                "AppsWithSupportedAssets": {
+                    "apps": "Vec<BridgeAppInfo>",
+                    "assets": "Vec<BridgeAssetInfo<AssetId>>"
+                },
+                "BridgeAppInfo": {
+                    "evmaddress": "H160",
+                    "appkind": "AppKind"
+                },
+                "BridgeAssetInfo": {
+                    "assetid": "AssetId",
+                    "evmaddress": "Option<H160>",
+                    "appkind": "AppKind"
+                },
+                "EVMChainId": "U256"
+            }
+        },
+        {
+            "minmax": [
+                53,
+                null
+            ],
+            "types": {
+                "BridgeAppInfo": {
+                    "_enum": {
+                        "EVM": "(GenericNetworkId, EVMAppInfo)",
+                        "Sub": "(GenericNetworkId)"
+                    }
+                },
+                "BridgeAssetInfo": {
+                    "_enum": {
+                        "EVMLegacy": "EVMLegacyAssetInfo",
+                        "EVM": "EVMAssetInfo",
+                        "Sub": "SubAssetInfo"
+                    }
+                },
+                "EVMAppInfo": {
+                    "evmaddress": "H160",
+                    "appkind": "EVMAppKind"
+                },
+                "EVMAppKind": {
+                    "_enum": [
+                        "EthApp",
+                        "ERC20App",
+                        "SidechainApp",
+                        "HashiBridge",
+                        "XorMaster",
+                        "ValMaster"
+                    ]
+                },
+                "EVMAssetInfo": {
+                    "assetid": "MainnetAssetId",
+                    "evmaddress": "H160",
+                    "appkind": "EVMAppKind",
+                    "precision": "u8"
+                },
+                "EVMLegacyAssetInfo": {
+                    "assetid": "MainnetAssetId",
+                    "evmaddress": "H160",
+                    "appkind": "EVMAppKind",
+                    "precision": "u8"
+                },
+                "GenericNetworkId": {
+                    "_enum": {
+                        "EVMLegacy": "u32",
+                        "EVM": "EVMChainId",
+                        "Sub": "SubNetworkId"
+                    }
+                },
+                "LiquiditySourceType": {
+                    "_enum": [
+                        "XYKPool",
+                        "BondingCurvePool",
+                        "MulticollateralBondingCurvePool",
+                        "MockPool",
+                        "MockPool2",
+                        "MockPool3",
+                        "MockPool4",
+                        "XSTPool",
+                        "OrderBook"
+                    ]
+                },
+                "MainnetAssetId": "H256",
+                "SubAssetInfo": {
+                    "assetid": "MainnetAssetId",
+                    "assetkind": "SubAssetKind",
+                    "precision": "u8"
+                },
+                "SubAssetKind": {
+                    "_enum": [
+                        "Thischain",
+                        "Sidechain"
+                    ]
+                },
+                "SubNetworkId": {
+                    "_enum": {
+                        "Mainnet": null,
+                        "Kusama": null,
+                        "Polkadot": null,
+                        "Rococo": null,
+                        "Custom": "u32"
+                    }
                 }
             }
         }
@@ -1600,6 +1718,19 @@
             "payload": "Vec<u8>"
         },
         "BasisPoints": "u16",
+        "BridgeAppInfo": {
+            "_enum": {
+                "EVM": "(GenericNetworkId, EVMAppInfo)",
+                "Sub": "(GenericNetworkId)"
+            }
+        },
+        "BridgeAssetInfo": {
+            "_enum": {
+                "EVMLegacy": "EVMLegacyAssetInfo",
+                "EVM": "EVMAssetInfo",
+                "Sub": "SubAssetInfo"
+            }
+        },
         "BridgeNetworkId": "u32",
         "BridgeSignatureVersion": {
             "_enum": [
@@ -1687,6 +1818,33 @@
         "DispatchResultWithPostInfo": "Result<PostDispatchInfo, DispatchErrorWithPostInfoTPostDispatchInfo>",
         "DistributionAccounts": "Null",
         "Duration": "Null",
+        "EVMAppInfo": {
+            "evmAddress": "H160",
+            "appKind": "EVMAppKind"
+        },
+        "EVMAppKind": {
+            "_enum": [
+                "EthApp",
+                "ERC20App",
+                "SidechainApp",
+                "HashiBridge",
+                "XorMaster",
+                "ValMaster"
+            ]
+        },
+        "EVMAssetInfo": {
+            "assetId": "MainnetAssetId",
+            "evmAddress": "H160",
+            "appKind": "EVMAppKind",
+            "precision": "u8"
+        },
+        "EVMChainId": "U256",
+        "EVMLegacyAssetInfo": {
+            "assetId": "MainnetAssetId",
+            "evmAddress": "H160",
+            "appKind": "EVMAppKind",
+            "precision": "u8"
+        },
         "EthAddress": "H160",
         "EthBridgeStorageVersion": {
             "_enum": [
@@ -1712,6 +1870,13 @@
         },
         "Fixed": "FixedU128",
         "FixedBytes": "Vec<u8>",
+        "GenericNetworkId": {
+            "_enum": {
+                "EVMLegacy": "u32",
+                "EVM": "EVMChainId",
+                "Sub": "SubNetworkId"
+            }
+        },
         "HermesPollInfo": {
             "creator": "AccountId",
             "hermesLocked": "Balance",
@@ -1900,7 +2065,8 @@
                 "MockPool2",
                 "MockPool3",
                 "MockPool4",
-                "XSTPool"
+                "XSTPool",
+                "OrderBook"
             ]
         },
         "LoadIncomingMetaRequest": {
@@ -1930,6 +2096,7 @@
             "assetB": "AssetId"
         },
         "LookupSource": "AccountId",
+        "MainnetAssetId": "H256",
         "MarketMakerInfo": {
             "count": "u32",
             "volume": "Balance"
@@ -2216,6 +2383,26 @@
             "rewards": "Balance"
         },
         "StorageVersion": "Null",
+        "SubAssetInfo": {
+            "assetId": "MainnetAssetId",
+            "assetKind": "SubAssetKind",
+            "precision": "u8"
+        },
+        "SubAssetKind": {
+            "_enum": [
+                "Thischain",
+                "Sidechain"
+            ]
+        },
+        "SubNetworkId": {
+            "_enum": {
+                "Mainnet": null,
+                "Kusama": null,
+                "Polkadot": null,
+                "Rococo": null,
+                "Custom": "u32"
+            }
+        },
         "SwapAction": "Null",
         "SwapAmount": {
             "_enum": {
