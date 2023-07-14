@@ -50,7 +50,7 @@ export class Api<T = void> extends BaseApi<T> {
   /** This module is used for internal needs */
   public readonly mstTransfers = new MstTransfersModule<T>(this);
   public readonly system = new SystemModule<T>(this);
-  public readonly staking: StakingModule = new StakingModule(this);
+  public readonly staking = new StakingModule<T>(this);
   public readonly demeterFarming = new DemeterFarmingModule<T>(this);
   public readonly dex = new DexModule<T>(this);
   public readonly ceresLiquidityLocker = new CeresLiquidityLockerModule<T>(this);
