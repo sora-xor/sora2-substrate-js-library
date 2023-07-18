@@ -13,6 +13,14 @@ export interface SubHistory extends History {
   /* SORA network bridge transaction hash */
   hash?: string;
   transactionState?: BridgeTxStatus;
+  /* SORA parachain block hash */
+  parachainBlockId?: string;
+  /* SORA parachain block number */
+  parachainBlockHeight?: number;
+  /* SORA parachain transaction hash */
+  parachainHash?: string;
+  /* SORA parachain XCM message fee */
+  parachainNetworkFee?: CodecString;
   /* External network block hash */
   externalBlockId?: string;
   /* External network block number */
