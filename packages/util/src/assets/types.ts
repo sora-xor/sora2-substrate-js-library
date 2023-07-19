@@ -39,15 +39,25 @@ export interface AccountBalance {
   bonded: CodecString;
 }
 
-export interface Asset {
+export type Asset = {
   address: string;
   symbol: string;
   name: string;
   decimals: number;
   content?: string;
   description?: string;
-}
+};
 
-export interface AccountAsset extends Asset {
+export type AccountAsset = Asset & {
   balance: AccountBalance;
-}
+};
+
+export type RegisteredAsset = Asset & {
+  externalAddress: string;
+  externalDecimals: number;
+};
+
+export type RegisteredAccountAsset = RegisteredAsset &
+  AccountAsset & {
+    externalBalance: CodecString;
+  };

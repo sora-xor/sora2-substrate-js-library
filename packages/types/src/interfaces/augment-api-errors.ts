@@ -129,6 +129,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AlreadyATrustedRelayer: AugmentedError<ApiType>;
       /**
+       * Error during dynamic fee calculation
+       **/
+      DynamicFeeCalculationError: AugmentedError<ApiType>;
+      /**
+       * Dynamic fee parameters are invalid,
+       **/
+      InvalidDynamicFeeParameters: AugmentedError<ApiType>;
+      /**
        * A request to remove an account, which is not a trusted relayer, was supplied.
        **/
       NoSuchRelayer: AugmentedError<ApiType>;
@@ -2008,13 +2016,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoDataForPrice: AugmentedError<ApiType>;
       /**
-       * The asset is not allowed to be base. Only dex base asset can be a quote asset for order book
-       **/
-      NotAllowedBaseAsset: AugmentedError<ApiType>;
-      /**
        * Orderbooks cannot be created with given dex id.
        **/
       NotAllowedDEXId: AugmentedError<ApiType>;
+      /**
+       * The asset is not allowed to be quote. Only the dex base asset can be a quote asset for order book
+       **/
+      NotAllowedQuoteAsset: AugmentedError<ApiType>;
       /**
        * There is not enough liquidity in the order book to cover the deal
        **/
@@ -2043,6 +2051,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Indicated limit for slippage has not been met during transaction execution.
        **/
       SlippageLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Synthetic assets are forbidden for order book.
+       **/
+      SyntheticAssetIsForbidden: AugmentedError<ApiType>;
       /**
        * Tick size & step lot size are too big and their multiplication overflows Balance
        **/

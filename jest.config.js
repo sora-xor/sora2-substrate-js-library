@@ -16,4 +16,8 @@ module.exports = {
     '^.+\\.js$': 'babel-jest',
   },
   transformIgnorePatterns: ['node_modules/?!(@polkadot/util)'],
+  collectCoverage: true,
+  collectCoverageFrom: ['packages/**/*.{js,jsx,ts,tsx,vue}'],
+  coverageReporters: ['lcov'],
+  coveragePathIgnorePatterns: ['node_modules/', 'coverage/'],
 };
