@@ -11,6 +11,7 @@ def pipeline = new org.js.LibPipeline(
     sonarProjectKey: 'sora2:sora2-substrate-js-library',
     npmLoginEmail:'admin@soramitsu.co.jp',
     sonarSrcPath: 'packages,scripts',
-    sonarTestsPath: 'tests'
+    sonarTestsPath: 'tests',
+    dojoProductType: 'sora'
     )
 pipeline.runPipeline()
