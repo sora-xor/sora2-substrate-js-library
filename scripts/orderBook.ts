@@ -4,20 +4,16 @@ import { withConnectedAccount } from './examples/util';
 
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {
-    await api.orderBook.getOrderBooks();
-    api.orderBook.orderBooks;
+    // await api.orderBook.getOrderBooks();
 
-    console.log('OrderBooks', api.orderBook.orderBooks);
+    // console.log('orderBooks', api.orderBook.orderBooks);
 
-    // api.orderBook.createOrderBook(
-    //   '0x0200090000000000000000000000000000000000000000000000000000000000',
+    await api.orderBook.getUserLimitOrders('cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm');
+
+    // api.orderBook.getLimitOrders(
+    //   '0x0200050000000000000000000000000000000000000000000000000000000000',
     //   '0x0200000000000000000000000000000000000000000000000000000000000000'
     // );
-
-    api.orderBook.getLimitOrders(
-      '0x0200050000000000000000000000000000000000000000000000000000000000',
-      '0x0200000000000000000000000000000000000000000000000000000000000000'
-    );
   });
 }
 

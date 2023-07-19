@@ -18,14 +18,13 @@ export class OrderBookModule<T> {
 
       const meta = value.unwrap();
 
-      const { dexId, orderBookId, status, lastOrderId, tickSize, stepLotSize, minLotSize, maxLotSize } = meta;
+      const { orderBookId, status, lastOrderId, tickSize, stepLotSize, minLotSize, maxLotSize } = meta;
 
       const base = orderBookId.toJSON().base;
       const quote = orderBookId.toJSON().quote;
 
       buffer[toKey(base) + toKey(quote)] = {
         orderBook,
-        dexId: dexId.toNumber(),
         status: status.toString(),
         lastOrderId: lastOrderId.toNumber(),
         tickSize: tickSize.toNumber(),
@@ -40,43 +39,39 @@ export class OrderBookModule<T> {
     this.orderBooks = orderBooks;
   }
 
+  async getUserLimitOrders(account: string) {
+    const toKey = (address) => address.code.toString();
+
+    const entries = await this.root.api.query.orderBook.userLimitOrders.entries(account);
+
+    const userLimitOrderIds = entries.reduce((buffer, [key, value]) => {
+      const base = key.args[1].toJSON().base;
+      const quote = key.args[1].toJSON().quote;
+
+      const limitOrderIds = value.toJSON();
+
+      buffer[toKey(base) + toKey(quote)] = limitOrderIds;
+
+      return buffer;
+    }, {});
+
+    Object.entries(userLimitOrderIds);
+
+    const entry = await this.root.api.query.orderBook.limitOrders(
+      {
+        base: '0x0200040000000000000000000000000000000000000000000000000000000000',
+        quote: '0x0200000000000000000000000000000000000000000000000000000000000000',
+      },
+      2
+    );
+
+    console.log('entry', entry);
+  }
+
   async getLimitOrders(base: string, quote: string) {
-    console.log(
-      'this.root.api.query.orderBook.limitOrders',
-      await this.root.api.query.orderBook.limitOrders.entries({ base, quote })
-    );
-
-    // DOES NOT EXECUTE
-
     const limitOrders = await this.root.api.query.orderBook.limitOrders.entries({ base, quote });
+
     console.log('limitOrders', limitOrders);
-  }
-
-  createOrderBook(base: string, quote: string, dexId = DexId.XOR) {
-    this.root.submitExtrinsic(
-      this.root.api.tx.orderBook.createOrderbook(dexId, { base, quote }),
-      this.root.account.pair
-    );
-  }
-
-  deleteOrderBook(base: string, quote: string) {
-    this.root.submitExtrinsic(this.root.api.tx.orderBook.deleteOrderbook({ base, quote }), this.root.account.pair);
-  }
-
-  updateOrderBook(base: string, quote: string, options) {
-    const { tickSize, stepLotSize, minLotSize, maxLotSize } = options;
-
-    this.root.submitExtrinsic(
-      this.root.api.tx.orderBook.updateOrderbook({ base, quote }, tickSize, stepLotSize, minLotSize, maxLotSize),
-      this.root.account.pair
-    );
-  }
-
-  changeOrderBookStatus(base: string, quote: string, status: OrderBookOrderBookStatus) {
-    this.root.submitExtrinsic(
-      this.root.api.tx.orderBook.changeOrderbookStatus({ base, quote }, status),
-      this.root.account.pair
-    );
   }
 
   placeLimitOrder(base: string, quote: string) {
