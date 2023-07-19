@@ -69,10 +69,11 @@ const toBandRate = (o: Observable<Option<BandBandRate>>): Observable<OracleRate>
   o.pipe(
     map((codec) => {
       const data = codec.unwrap();
-      const value = new FPNumber(data.value).toCodecString();
+      const value = data.value.toString();
       const lastUpdated = data.lastUpdated.toNumber();
+      const dynamicFee = data.dynamicFee.inner.toString();
 
-      return { value, lastUpdated };
+      return { value, lastUpdated, dynamicFee };
     })
   );
 

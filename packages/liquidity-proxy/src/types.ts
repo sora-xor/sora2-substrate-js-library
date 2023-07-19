@@ -53,6 +53,7 @@ export type QuotePaths = {
 export type OracleRate = {
   value: CodecString;
   lastUpdated: number;
+  dynamicFee: CodecString;
 };
 
 export type QuotePayload = {

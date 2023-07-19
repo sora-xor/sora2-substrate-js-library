@@ -3,7 +3,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { LiquiditySourceTypes, Consts, PriceVariant } from '../consts';
 import { safeDivide, isAssetAddress, safeQuoteResult } from '../utils';
 import { getAveragePrice } from './price';
-import { oracleProxyQuote } from './oracleProxy';
+import { oracleProxyQuote, oracleProxyQuoteUnchecked } from './oracleProxy';
 
 import type { QuotePayload, QuoteResult, PrimaryMarketsEnabledAssets } from '../types';
 
@@ -15,6 +15,22 @@ const ensureBaseAssetAmountWithinLimit = (amount: FPNumber, payload: QuotePayloa
   if (FPNumber.isGreaterThan(amount, limit)) {
     throw new Error('Input/output amount of synthetic base asset exceeds the limit');
   }
+};
+
+const getAggregatedFee = (
+  syntheticAssetId: string,
+  payload: QuotePayload,
+  enabledAssets: PrimaryMarketsEnabledAssets
+): FPNumber => {
+  const asset = enabledAssets.xst[syntheticAssetId];
+
+  if (!asset) throw new Error(`Synthetic asset "${syntheticAssetId}" does not exist`);
+
+  const { feeRatio, referenceSymbol } = asset;
+  const rate = oracleProxyQuoteUnchecked(referenceSymbol, payload);
+  const dynamicFee = FPNumber.fromCodecValue(rate?.dynamicFee ?? '0');
+
+  return feeRatio.add(dynamicFee);
 };
 
 const xstReferencePrice = (
@@ -93,7 +109,7 @@ const xstBuyPriceWithFee = (
   enabledAssets: PrimaryMarketsEnabledAssets,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
-  const feeRatio = enabledAssets.xst[syntheticAsset]?.feeRatio ?? Consts.XST_FEE;
+  const feeRatio = getAggregatedFee(syntheticAsset, payload, enabledAssets);
 
   if (isDesiredInput) {
     const outputAmount = xstBuyPrice(syntheticAsset, amount, isDesiredInput, payload, enabledAssets);
@@ -149,7 +165,7 @@ const xstSellPriceWithFee = (
   enabledAssets: PrimaryMarketsEnabledAssets,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
-  const feeRatio = enabledAssets.xst[syntheticAsset]?.feeRatio ?? Consts.XST_FEE;
+  const feeRatio = getAggregatedFee(syntheticAsset, payload, enabledAssets);
 
   if (isDesiredInput) {
     ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
