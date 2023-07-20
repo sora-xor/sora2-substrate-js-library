@@ -43,6 +43,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public getSoraParachain(subNetwork: SubNetwork): SubNetwork {
+    if (this.isSoraParachain(subNetwork)) return subNetwork;
+
     switch (subNetwork) {
       case SubNetwork.Kusama:
       case SubNetwork.KusamaKarura:
