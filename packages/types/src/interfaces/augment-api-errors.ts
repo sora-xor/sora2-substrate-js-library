@@ -2644,6 +2644,7 @@ declare module '@polkadot/api-base/types/errors' {
       InvalidDestinationParachain: AugmentedError<ApiType>;
       InvalidDestinationParams: AugmentedError<ApiType>;
       InvalidNetwork: AugmentedError<ApiType>;
+      MessageIdNotFound: AugmentedError<ApiType>;
       NotEnoughFunds: AugmentedError<ApiType>;
       NotRelayTransferableAsset: AugmentedError<ApiType>;
       RelaychainAssetNotRegistered: AugmentedError<ApiType>;

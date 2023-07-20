@@ -8,7 +8,7 @@ import '@polkadot/api-base/types/consts';
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
 import type { U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AccountId32, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { CommonPrimitivesAssetId32, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight, SpWeightsWeightV2Weight } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight, SpWeightsWeightV2Weight } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
 
@@ -113,6 +113,12 @@ declare module '@polkadot/api-base/types/consts' {
        * A configuration for base priority of unsigned transactions.
        **/
       unsignedPriority: u64 & AugmentedConst<ApiType>;
+    };
+    bridgeInboundChannel: {
+      thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
+    };
+    bridgeOutboundChannel: {
+      thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
     };
     currencies: {
       getNativeCurrencyId: CommonPrimitivesAssetId32 & AugmentedConst<ApiType>;
@@ -491,6 +497,7 @@ declare module '@polkadot/api-base/types/consts' {
       slashDeferDuration: u32 & AugmentedConst<ApiType>;
     };
     substrateBridgeInboundChannel: {
+      thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
       /**
        * A configuration for longevity of unsigned transactions.
        **/
@@ -499,6 +506,9 @@ declare module '@polkadot/api-base/types/consts' {
        * A configuration for base priority of unsigned transactions.
        **/
       unsignedPriority: u64 & AugmentedConst<ApiType>;
+    };
+    substrateBridgeOutboundChannel: {
+      thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
     };
     system: {
       /**
