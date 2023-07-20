@@ -42,6 +42,20 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     }
   }
 
+  public getSoraParachain(subNetwork: SubNetwork): SubNetwork {
+    if (this.isSoraParachain(subNetwork)) return subNetwork;
+
+    switch (subNetwork) {
+      case SubNetwork.Kusama:
+      case SubNetwork.KusamaKarura:
+        return SubNetwork.KusamaSora;
+      case SubNetwork.Rococo:
+        return SubNetwork.RococoSora;
+      default:
+        throw new Error(`"${subNetwork}" has not SORA parachain`);
+    }
+  }
+
   public getParachainId(subNetwork: SubNetwork): number {
     const parachainId = this.parachainIds[subNetwork];
 
@@ -52,6 +66,10 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   public isRelayChain(subNetwork: SubNetwork): boolean {
     return [SubNetwork.Kusama, SubNetwork.Polkadot, SubNetwork.Rococo].includes(subNetwork);
+  }
+
+  public isSoraParachain(subNetwork: SubNetwork): boolean {
+    return [SubNetwork.RococoSora, SubNetwork.KusamaSora].includes(subNetwork);
   }
 
   private getRecipientArg(subNetwork: SubNetwork, recipient: string) {
