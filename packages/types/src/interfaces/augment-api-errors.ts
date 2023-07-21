@@ -1406,6 +1406,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       HeaderNotFinalized: AugmentedError<ApiType>;
       /**
+       * Header not found for block number
+       **/
+      HeaderNotFound: AugmentedError<ApiType>;
+      /**
        * Header is on a stale fork, i.e. it's not a descendant of the latest finalized block
        **/
       HeaderOnStaleFork: AugmentedError<ApiType>;
