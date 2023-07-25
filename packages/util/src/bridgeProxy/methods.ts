@@ -82,6 +82,9 @@ function getBlock(data: BridgeTypesGenericTimepoint): number {
   if (data.isSora) {
     return data.asSora.toNumber();
   }
+  if (data.isParachain) {
+    return data.asParachain.toNumber();
+  }
 
   return 0;
 }

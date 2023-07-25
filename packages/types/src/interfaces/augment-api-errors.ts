@@ -1406,6 +1406,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       HeaderNotFinalized: AugmentedError<ApiType>;
       /**
+       * Header not found for block number
+       **/
+      HeaderNotFound: AugmentedError<ApiType>;
+      /**
        * Header is on a stale fork, i.e. it's not a descendant of the latest finalized block
        **/
       HeaderOnStaleFork: AugmentedError<ApiType>;
@@ -2644,6 +2648,7 @@ declare module '@polkadot/api-base/types/errors' {
       InvalidDestinationParachain: AugmentedError<ApiType>;
       InvalidDestinationParams: AugmentedError<ApiType>;
       InvalidNetwork: AugmentedError<ApiType>;
+      MessageIdNotFound: AugmentedError<ApiType>;
       NotEnoughFunds: AugmentedError<ApiType>;
       NotRelayTransferableAsset: AugmentedError<ApiType>;
       RelaychainAssetNotRegistered: AugmentedError<ApiType>;
