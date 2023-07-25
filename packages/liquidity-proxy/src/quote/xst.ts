@@ -28,9 +28,12 @@ const getAggregatedFee = (
 
   const { feeRatio, referenceSymbol } = asset;
   const rate = oracleProxyQuoteUnchecked(referenceSymbol, payload);
-  const dynamicFee = FPNumber.fromCodecValue(rate?.dynamicFee ?? '0');
+  const dynamicFeeRatio = FPNumber.fromCodecValue(rate?.dynamicFee ?? '0');
+  const resultingFeeRatio = feeRatio.add(dynamicFeeRatio);
 
-  return feeRatio.add(dynamicFee);
+  if (!FPNumber.isLessThan(resultingFeeRatio, FPNumber.ONE)) throw new Error('Invalid fee ratio value');
+
+  return resultingFeeRatio;
 };
 
 const xstReferencePrice = (
@@ -100,7 +103,7 @@ const xstSellPrice = (
     return safeDivide(amount.mul(syntheticAssetPrice), mainAssetPrice);
   }
 };
-
+// decide_buy_amounts
 const xstBuyPriceWithFee = (
   syntheticAsset: string,
   amount: FPNumber,
@@ -109,13 +112,15 @@ const xstBuyPriceWithFee = (
   enabledAssets: PrimaryMarketsEnabledAssets,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
+  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error('Price calculation failed');
+
   const feeRatio = getAggregatedFee(syntheticAsset, payload, enabledAssets);
 
   if (isDesiredInput) {
     const outputAmount = xstBuyPrice(syntheticAsset, amount, isDesiredInput, payload, enabledAssets);
-    ensureBaseAssetAmountWithinLimit(outputAmount, payload, checkLimits);
     const feeAmount = feeRatio.mul(outputAmount);
     const output = outputAmount.sub(feeAmount);
+    ensureBaseAssetAmountWithinLimit(output, payload, checkLimits);
 
     return {
       amount: output,
@@ -156,7 +161,7 @@ const xstBuyPriceWithFee = (
     };
   }
 };
-
+// decide_sell_amounts
 const xstSellPriceWithFee = (
   syntheticAsset: string,
   amount: FPNumber,
@@ -165,6 +170,8 @@ const xstSellPriceWithFee = (
   enabledAssets: PrimaryMarketsEnabledAssets,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
+  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error('Price calculation failed');
+
   const feeRatio = getAggregatedFee(syntheticAsset, payload, enabledAssets);
 
   if (isDesiredInput) {
@@ -189,9 +196,9 @@ const xstSellPriceWithFee = (
     };
   } else {
     const inputAmount = xstSellPrice(syntheticAsset, amount, isDesiredInput, payload, enabledAssets);
-    ensureBaseAssetAmountWithinLimit(inputAmount, payload, checkLimits);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
     const fee = inputAmountWithFee.sub(inputAmount);
+    ensureBaseAssetAmountWithinLimit(inputAmountWithFee, payload, checkLimits);
 
     return {
       amount: inputAmountWithFee,
