@@ -36,6 +36,23 @@ const getAggregatedFee = (
   return resultingFeeRatio;
 };
 
+// Used for converting XST fee to XOR
+const convertFee = (feeAmount: FPNumber, payload: QuotePayload): FPNumber => {
+  const outputToBase = getAveragePrice(
+    Consts.XST,
+    Consts.XOR,
+    // Since `Buy` is more expensive in case if we are buying XOR
+    // (x XST -> y XOR; y XOR -> x' XST, x' < x),
+    // it seems logical to show this amount in order
+    // to not accidentally lie about the price.
+    PriceVariant.Buy,
+    payload
+  );
+  const fee = feeAmount.mul(outputToBase);
+
+  return fee;
+};
+
 const xstReferencePrice = (
   assetAddress: string,
   priceVariant: PriceVariant,
@@ -276,20 +293,7 @@ export const xstQuote = (
     } = isAssetAddress(inputAsset, Consts.XST)
       ? xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, enabledAssets, checkLimits)
       : xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload, enabledAssets, checkLimits);
-    // `fee_amount` is always computed to be in `main_asset_id`, which is
-    // `SyntheticBaseAssetId` (e.g. XST), but `SwapOutcome` assumes XOR
-    // (`BaseAssetId`), so we convert.
-    const outputToBase = getAveragePrice(
-      Consts.XST,
-      Consts.XOR,
-      // Since `Sell` is more expensive in case if we are selling XST
-      // (x XST -> y XOR; y XOR -> x' XST, x' < x),
-      // it seems logical to show this amount in order
-      // to not accidentally lie about the price.
-      PriceVariant.Sell,
-      payload
-    );
-    const fee = feeAmount.mul(outputToBase);
+    const fee = convertFee(feeAmount, payload);
 
     return { amount: resultAmount, fee, rewards, distribution };
   } catch (error) {

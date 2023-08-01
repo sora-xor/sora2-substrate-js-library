@@ -2064,9 +2064,11 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TickSizeAndStepLotSizeAreTooBig: AugmentedError<ApiType>;
       /**
-       * Tick size & step lot size are too small and their multiplication goes out of precision
+       * Product of tick and step lot sizes goes out of precision. It must be accurately
+       * represented by fixed-precision float to prevent rounding errors. I.e. the product
+       * should not have more than 18 digits after the comma.
        **/
-      TickSizeAndStepLotSizeAreTooSmall: AugmentedError<ApiType>;
+      TickSizeAndStepLotSizeLosePrecision: AugmentedError<ApiType>;
       /**
        * At the moment, Trading is forbidden in the current order book
        **/
@@ -2451,6 +2453,25 @@ declare module '@polkadot/api-base/types/errors' {
        * Can't claim incentives as none is available for account at the moment.
        **/
       ZeroClaimableIncentives: AugmentedError<ApiType>;
+    };
+    qaTools: {
+      /**
+       * The account is already in the whitelist
+       **/
+      AlreadyInWhitelist: AugmentedError<ApiType>;
+      /**
+       * Did not find an order book with given id to fill. Likely an error with
+       * order book creation.
+       **/
+      CannotFillUnknownOrderBook: AugmentedError<ApiType>;
+      /**
+       * The account intended for removal is not in whitelist
+       **/
+      NotInWhitelist: AugmentedError<ApiType>;
+      /**
+       * Cannot add an account to the whitelist: it's full
+       **/
+      WhitelistFull: AugmentedError<ApiType>;
     };
     referrals: {
       /**
