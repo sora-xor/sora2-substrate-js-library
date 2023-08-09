@@ -3,7 +3,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { LiquiditySourceTypes, Consts, PriceVariant } from '../consts';
 import { safeDivide, isAssetAddress, safeQuoteResult } from '../utils';
 import { getAveragePrice } from './price';
-import { oracleProxyQuote, oracleProxyQuoteUnchecked } from './oracleProxy';
+import { oracleProxyQuoteUnchecked } from './oracleProxy';
 
 import type { QuotePayload, QuoteResult, PrimaryMarketsEnabledAssets } from '../types';
 
@@ -72,7 +72,7 @@ const xstReferencePrice = (
     return FPNumber.max(averagePrice, floorPrice) as FPNumber;
   } else {
     const symbol = enabledAssets.xst[assetAddress].referenceSymbol;
-    const rate = oracleProxyQuote(symbol, payload);
+    const rate = oracleProxyQuoteUnchecked(symbol, payload);
     const price = FPNumber.fromCodecValue(rate.value);
 
     return price;
