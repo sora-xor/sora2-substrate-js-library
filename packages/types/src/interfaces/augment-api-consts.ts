@@ -99,6 +99,10 @@ declare module '@polkadot/api-base/types/consts' {
     };
     band: {
       /**
+       * Rate expiration period in blocks
+       **/
+      getBandRateStaleBlockPeriod: u32 & AugmentedConst<ApiType>;
+      /**
        * Rate expiration period in seconds.
        **/
       getBandRateStalePeriod: u64 & AugmentedConst<ApiType>;

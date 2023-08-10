@@ -3052,9 +3052,8 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Disable synthetic asset.
        * 
-       * Just remove synthetic from exchanging.
-       * Will not unregister trading pair because `trading_pair` pallet does not provide this
-       * ability. And will not unregister trading synthetic asset because of that.
+       * Removes synthetic from exchanging
+       * and removes XSTPool liquidity source for corresponding trading pair.
        * 
        * - `origin`: the sudo account on whose behalf the transaction is being executed,
        * - `synthetic_asset`: synthetic asset id to disable.
@@ -3065,6 +3064,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * Register and enable new synthetic asset with `reference_symbol` price binding
        **/
       registerSyntheticAsset: AugmentedSubmittable<(assetSymbol: Bytes | string | Uint8Array, assetName: Bytes | string | Uint8Array, referenceSymbol: Bytes | string | Uint8Array, feeRatio: FixnumFixedPoint | { inner?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Bytes, FixnumFixedPoint]>;
+      /**
+       * Entirely remove synthetic asset (including linked symbol info)
+       **/
+      removeSyntheticAsset: AugmentedSubmittable<(syntheticAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
       /**
        * Change reference asset which is used to determine collateral assets value.
        * Intended to be e.g., stablecoin DAI.

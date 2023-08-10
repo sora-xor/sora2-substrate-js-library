@@ -202,6 +202,7 @@ declare module '@polkadot/api-base/types/storage' {
     };
     band: {
       dynamicFeeParameters: AugmentedQuery<ApiType, () => Observable<BandFeeCalculationParameters>, []>;
+      symbolCheckBlock: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: Bytes | string | Uint8Array) => Observable<bool>, [u32, Bytes]>;
       symbolRates: AugmentedQuery<ApiType, (arg: Bytes | string | Uint8Array) => Observable<Option<BandBandRate>>, [Bytes]>;
       trustedRelayers: AugmentedQuery<ApiType, () => Observable<Option<BTreeSet<AccountId32>>>, []>;
     };
