@@ -1285,6 +1285,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       SyntheticAssetFeeChanged: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, FixnumFixedPoint]>;
       /**
+       * Synthetic asset has been removed. [Synthetic Asset Id, Reference Symbol]
+       **/
+      SyntheticAssetRemoved: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, Bytes]>;
+      /**
        * Floor price of the synthetic base asset has been changed. [New Floor Price]
        **/
       SyntheticBaseAssetFloorPriceChanged: AugmentedEvent<ApiType, [u128]>;
