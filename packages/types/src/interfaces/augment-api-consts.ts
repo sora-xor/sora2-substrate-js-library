@@ -106,6 +106,10 @@ declare module '@polkadot/api-base/types/consts' {
        * Rate expiration period in seconds.
        **/
       getBandRateStalePeriod: u64 & AugmentedConst<ApiType>;
+      /**
+       * Maximum number of symbols that can be relayed within a single call.
+       **/
+      maxRelaySymbols: u32 & AugmentedConst<ApiType>;
     };
     bridgeDataSigner: {
       maxPeers: u32 & AugmentedConst<ApiType>;
