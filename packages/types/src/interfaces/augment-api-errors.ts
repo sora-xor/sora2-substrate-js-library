@@ -2004,13 +2004,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       LimitOrderStorageOverflow: AugmentedError<ApiType>;
       /**
+       * Market orders are allowed only for indivisible assets
+       **/
+      MarketOrdersAllowedOnlyForIndivisibleAssets: AugmentedError<ApiType>;
+      /**
        * Max lot size cannot be more that total supply of base asset
        **/
       MaxLotSizeIsMoreThanTotalSupply: AugmentedError<ApiType>;
-      /**
-       * NFT order books are temporarily forbidden
-       **/
-      NftOrderBooksAreTemporarilyForbidden: AugmentedError<ApiType>;
       /**
        * There are no aggregated bids/asks for the order book
        **/
