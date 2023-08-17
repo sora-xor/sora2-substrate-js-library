@@ -352,7 +352,14 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           } else if (result.status.isFinalized) {
             updated.endTime = Date.now();
 
-            result.events.forEach(({ event: { data, method, section } }: any) => {
+            const txIndex = result.txIndex;
+
+            for (const {
+              phase,
+              event: { data, method, section },
+            } of result.events) {
+              if (!(phase.isApplyExtrinsic && phase.asApplyExtrinsic.toNumber() === txIndex)) continue;
+
               if (method === 'FeeWithdrawn' && section === 'xorFee') {
                 const [_, soraNetworkFee] = data;
                 updated.soraNetworkFee = soraNetworkFee.toString();
@@ -375,12 +382,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 (method === 'RequestRegistered' && isBridgeOperation(type)) ||
                 (method === 'RequestStatusUpdate' && (isEvmOperation(type) || isSubstrateOperation(type)))
               ) {
-                updated.hash = first(data.toJSON());
+                updated.hash = first(data.toJSON() as any);
               } else if (section === 'system' && method === 'ExtrinsicFailed') {
                 updated.status = TransactionStatus.Error;
                 updated.endTime = Date.now();
 
-                const [error] = data;
+                const error = data[0] as any;
                 if (error.isModule) {
                   const decoded = this.api.registry.findMetaError(error.asModule);
                   const { docs, section, name } = decoded;
@@ -390,7 +397,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                   updated.errorMessage = error.toString();
                 }
               }
-            });
+            }
           }
 
           this.saveHistory({ ...requiredParams, ...updated }); // Save history during each status update
