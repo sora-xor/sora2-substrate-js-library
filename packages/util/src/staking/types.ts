@@ -1,4 +1,6 @@
 import type { History } from '../BaseApi';
+import type { PalletIdentityRegistration } from '@polkadot/types/lookup';
+import type { Option } from '@polkadot/types-codec';
 
 export interface StakingHistory extends History {
   validators?: string[];
@@ -15,19 +17,33 @@ export enum StakingRewardsDestination {
   None = 'None',
 }
 
-export type ValidatorInfo = {
+export interface ValidatorInfo {
   address: string;
   commission: string;
-  blocked: boolean;
-};
+  blocked?: boolean;
+}
+
+export interface ValidatorInfoFull extends ValidatorInfo {
+  rewardPoints: number;
+  nominations: Others;
+  identity: PalletIdentityRegistration;
+  apy: number;
+  stake: {
+    stakeReturn: string;
+    total: string;
+    own: string;
+  };
+}
+
+type Others = {
+  who: string;
+  value: string;
+}[];
 
 export interface ValidatorExposure {
   total: string;
   own: string;
-  others: {
-    who: string;
-    value: string;
-  }[];
+  others: Others;
 }
 
 export interface ElectedValidator extends ValidatorExposure {
@@ -47,11 +63,13 @@ export type ActiveEra = {
 
 export type EraElectionStatus = { close: null } | { open: number };
 
+export type RewardPointsIndividual = {
+  [key: string]: number;
+};
+
 export type EraRewardPoints = {
   total: number;
-  individual: {
-    [key: string]: number;
-  };
+  individual: RewardPointsIndividual;
 };
 
 // To calculate redeemable and unbounding tokens, an active era must be fetched that determines whether an account is ready to claim tokens and unlock them for transfers
@@ -65,4 +83,9 @@ export type AccountStakingLedger = {
   total: string; // active + unlocking (XOR)
   active: string; // still bonded (XOR)
   unlocking: AccountStakingLedgerUnlock[]; // redeemable + unbounding
+};
+
+export type StakeReturn = {
+  apy: number;
+  stakeReturn: string;
 };

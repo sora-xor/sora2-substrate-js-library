@@ -1,3 +1,4 @@
+import { u32 } from '@polkadot/types-codec';
 import { assert } from '@polkadot/util';
 import { FPNumber } from '@sora-substrate/math';
 import { map } from 'rxjs';
@@ -7,8 +8,7 @@ import { Operation } from '../BaseApi';
 import { XOR } from '../assets/consts';
 import { StakingRewardsDestination } from './types';
 
-import type { Exposure } from '@polkadot/types/interfaces/staking';
-
+import type { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
 import type { Api } from '../api';
@@ -22,22 +22,19 @@ import type {
   ValidatorExposure,
   ElectedValidator,
   AccountStakingLedger,
+  RewardPointsIndividual,
+  ValidatorInfoFull,
+  StakeReturn,
 } from './types';
-
-// UTILS
-const formatBalance = (value: any) => new FPNumber(value).toCodecString();
-
-const formatValidatorExposure = (codec: Exposure): ValidatorExposure => {
-  return {
-    total: formatBalance(codec.total),
-    own: formatBalance(codec.own),
-    others: codec.others.map((item) => ({ who: item.who.toString(), value: formatBalance(item.value) })),
-  };
-};
-
-const formatPayee = (payee: StakingRewardsDestination | string): string | { Account: string } => {
-  return payee in StakingRewardsDestination ? payee : { Account: payee };
-};
+import {
+  formatEra,
+  formatPayee,
+  formatBalance,
+  formatNominations,
+  formatValidatorExposure,
+  formatIndividualRewardPoints,
+  toCodecString,
+} from './helpers';
 
 export class StakingModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -98,16 +95,21 @@ export class StakingModule<T> {
   }
 
   /**
+   * Get current era
+   * @returns current era index
+   */
+  public async getCurrentEra(): Promise<number> {
+    const data = await this.root.api.query.staking.currentEra();
+
+    return formatEra(data);
+  }
+
+  /**
    * Get observable current era
    * @returns current era index
    */
   public getCurrentEraObservable(): Observable<number> {
-    return this.root.apiRx.query.staking.currentEra().pipe(
-      map((data) => {
-        const era = data.unwrap();
-        return era.toNumber();
-      })
-    );
+    return this.root.apiRx.query.staking.currentEra().pipe(map((data) => formatEra(data)));
   }
 
   /**
@@ -128,12 +130,34 @@ export class StakingModule<T> {
    * @param eraIndex index of era
    * @returns total stake balance in XOR (codec string)
    */
+  public async getEraTotalStake(eraIndex: number): Promise<CodecString> {
+    const erasTotalStake = await this.root.api.query.staking.erasTotalStake(eraIndex);
+
+    return toCodecString(erasTotalStake);
+  }
+
+  /**
+   * Get observable eras total stake
+   * @param eraIndex index of era
+   * @returns total stake balance in XOR (codec string)
+   */
   public getEraTotalStakeObservable(eraIndex: number): Observable<CodecString> {
     return this.root.apiRx.query.staking.erasTotalStake(eraIndex).pipe(
       map((data) => {
-        return new FPNumber(data).toCodecString();
+        return toCodecString(data);
       })
     );
+  }
+
+  /**
+   * Get reward points of validators for era
+   * @param eraIndex index of era
+   * @returns validator points
+   */
+  public async getEraRewardPoints(eraIndex: number): Promise<RewardPointsIndividual> {
+    const data = await this.root.api.query.staking.erasRewardPoints(eraIndex);
+
+    return formatIndividualRewardPoints(data);
   }
 
   /**
@@ -145,11 +169,7 @@ export class StakingModule<T> {
     return this.root.apiRx.query.staking.erasRewardPoints(eraIndex).pipe(
       map((data) => {
         const total = data.total.toNumber();
-        const individual = {};
-
-        for (const [account, points] of data.individual.entries()) {
-          individual[account.toString()] = points.toNumber();
-        }
+        const individual = formatIndividualRewardPoints(data);
 
         return { individual, total };
       })
@@ -231,6 +251,115 @@ export class StakingModule<T> {
   }
 
   /**
+   * Calculating average validator reward
+   * @returns average validator reward
+   */
+  public async getAverageRewards(eraIndex?: number): Promise<FPNumber> {
+    const erasValidatorRewardPallet = this.root.api.query.staking.erasValidatorReward;
+
+    if (eraIndex !== undefined) {
+      const erasValidatorReward = await erasValidatorRewardPallet(eraIndex);
+
+      return new FPNumber(erasValidatorReward.value);
+    }
+
+    const erasValidatorReward = await erasValidatorRewardPallet.entries();
+    const summaryRewards = erasValidatorReward.reduce((sum, [, eraReward]) => {
+      const eraRewardValue = eraReward.value.toString();
+
+      return sum.add(new FPNumber(eraRewardValue));
+    }, FPNumber.ZERO);
+
+    const averageRewards = summaryRewards.div(new FPNumber(erasValidatorReward.length));
+
+    return averageRewards;
+  }
+
+  /**
+   * Calculating validator apy
+   * @returns
+   */
+  public async calculatingStakeReturn(currentEra: number, totalStakeValidator: string): Promise<StakeReturn> {
+    const eraTotalStake = await this.getEraTotalStake(currentEra);
+    const averageRewards = await this.getAverageRewards();
+
+    const totalStake = FPNumber.fromCodecValue(totalStakeValidator);
+    const validatorShare = totalStake.div(new FPNumber(eraTotalStake));
+    const stakeReturn = averageRewards.mul(validatorShare);
+    const apy = stakeReturn.div(totalStake);
+
+    return {
+      stakeReturn: stakeReturn.toString(), // TODO сейчас stakeReturn посчитан в ревард токенах, при необходимости пересчитать в застейканный токен
+      apy: apy.toNumber(), // TODO
+    };
+  }
+
+  /**
+   * Get validator identity
+   * @returns identity
+   */
+  public async getIdentity(address: string): Promise<PalletIdentityRegistration> {
+    return (await this.root.api.query.identity.identityOf(address)).unwrap();
+  }
+
+  /**
+   * Get information about validators
+   * @returns list of validators infos sorted by recommended
+   */
+  public async getValidatorsInfo(): Promise<ValidatorInfoFull[]> {
+    const wannabeValidators = await this.getWannabeValidators();
+    const currentEra = await this.getCurrentEra();
+    const eraRewardPoints = await this.getEraRewardPoints(currentEra);
+    const electedValidators = await this.getElectedValidators(currentEra);
+
+    const validatorsPromises = wannabeValidators.map<Promise<ValidatorInfoFull>>(async ({ address, commission }) => {
+      const electedValidator = electedValidators.find(({ address: _address }) => _address === address);
+      const total = electedValidator?.total ?? '0';
+      const rewardPoints = eraRewardPoints[address];
+
+      const identity = await this.getIdentity(address);
+      const { apy, stakeReturn } = await this.calculatingStakeReturn(currentEra, total);
+
+      return {
+        address,
+        rewardPoints,
+        commission: commission ?? '',
+        nominations: electedValidator?.others ?? [],
+        identity,
+        apy,
+        stake: {
+          stakeReturn,
+          total,
+          own: electedValidator?.own ?? '0',
+        },
+      };
+    });
+
+    const validators = await Promise.all(validatorsPromises);
+
+    const sortedValidators = validators.sort((validator1, validator2) => {
+      const { apy: apy1, commission: commission1, identity: identity1 } = validator1;
+      const { apy: apy2, commission: commission2 } = validator2;
+
+      const subtractionApy = apy2 - apy1;
+
+      if (subtractionApy !== 0) return subtractionApy;
+
+      const subtractionCommission = +commission1 - +commission2;
+
+      if (subtractionCommission !== 0) return subtractionCommission;
+
+      const { judgements: judgements1 } = identity1;
+      const knownGoodValue1 = judgements1.find(([, { type }]) => type === 'KnownGood');
+      const isKnownGood1 = knownGoodValue1[1]?.isKnownGood ?? false;
+
+      return isKnownGood1 ? -1 : 1;
+    });
+
+    return sortedValidators;
+  }
+
+  /**
    * Get a set of validators elected for a given era
    * @param eraIndex index of era
    * @param clipped flag to reduce 'others' list to biggest stakers
@@ -285,21 +414,24 @@ export class StakingModule<T> {
 
   /**
    * **STASH**
+   * Get validators nominated by stash
+   * @param stashAddress address of stash account
+   * @returns The structure with the list of validators, eraIndex
+   */
+  public async getNominations(stashAddress: string): Promise<StashNominatorsInfo | null> {
+    const codec = await this.root.api.query.staking.nominators(stashAddress);
+
+    return formatNominations(codec);
+  }
+
+  /**
+   * **STASH**
    * Get observable validators nominated by stash
    * @param stashAddress address of stash account
    * @returns The structure with the list of validators, eraIndex
    */
   public getNominationsObservable(stashAddress: string): Observable<StashNominatorsInfo | null> {
-    return this.root.apiRx.query.staking.nominators(stashAddress).pipe(
-      map((codec) => {
-        if (codec.isEmpty) return null;
-        const data = codec.unwrap();
-        const targets = data.targets.map((target) => target.toString());
-        const suppressed = data.suppressed.isTrue;
-        const submittedIn = data.submittedIn.toNumber();
-        return { targets, suppressed, submittedIn };
-      })
-    );
+    return this.root.apiRx.query.staking.nominators(stashAddress).pipe(map((codec) => formatNominations(codec)));
   }
 
   /**
@@ -407,6 +539,20 @@ export class StakingModule<T> {
   }
 
   /**
+   * Get slashing spans
+   * slashingSpans parameter is needed to ensure
+   * that the user agrees that staking information will be removed when there is no unlocking items pending
+   * and active value goes below minimum_balance due to slashing.
+   * @param stashAddress address of stash account
+   * @returns slashing spans
+   */
+  public async getSlashingSpans(stashAddress: string): Promise<u32> {
+    const { value } = await this.root.api.query.staking.slashingSpans(stashAddress);
+
+    return value.spanIndex;
+  }
+
+  /**
    * **CONTROLLER**
    * Moves unlocked value to the free balance of the stash account
    * @param args.value amount to withdraw - not used in extrinsic call, but can be passed to save this value in history
@@ -414,12 +560,8 @@ export class StakingModule<T> {
    */
   public async withdrawUndonded(args: { value?: NumberLike }, signerPair?: KeyringPair): Promise<void> {
     const pair = this.getSignerPair(signerPair);
-    /**
-     * slashingSpans parameter is needed to ensure
-     * that the user agrees that staking information will be removed when there is no unlocking items pending
-     * and active value goes below minimum_balance due to slashing.
-     */
-    const slashingSpans = 0;
+    const slashingSpans = await this.getSlashingSpans(pair.address);
+
     await this.root.submitExtrinsic(this.root.api.tx.staking.withdrawUnbonded(slashingSpans), pair, {
       type: Operation.StakingWithdrawUnbonded,
       symbol: XOR.symbol,
