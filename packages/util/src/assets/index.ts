@@ -385,7 +385,7 @@ export class AssetsModule<T> {
     if (!this.accountAssetsAddresses.length) {
       const defaultList = this.accountDefaultAssetsAddresses;
       const accountList = await this.getAccountTokensAddressesList();
-      this.accountAssetsAddresses = [...new Set(...defaultList, ...accountList)];
+      this.accountAssetsAddresses = [...new Set([...defaultList, ...accountList])];
     }
 
     const currentAddresses = this.accountAssetsAddresses;
@@ -451,10 +451,10 @@ export class AssetsModule<T> {
 
     for (const [key, { free, reserved, frozen }] of data) {
       const assetId = key.args[1].code.toString();
-      const hasAssetAnyBalance = [free, reserved, frozen].some((value) => !!value.toNumber());
+      const hasAssetAnyBalance = [free, reserved, frozen].some((value) => !new FPNumber(value).isZero());
 
       if (hasAssetAnyBalance) {
-        list.push[assetId];
+        list.push(assetId);
       }
     }
 
