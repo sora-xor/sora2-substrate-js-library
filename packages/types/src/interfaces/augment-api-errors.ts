@@ -338,10 +338,14 @@ declare module '@polkadot/api-base/types/errors' {
       QueueSizeLimitReached: AugmentedError<ApiType>;
     };
     bridgeProxy: {
+      AssetAlreadyLimited: AugmentedError<ApiType>;
+      AssetNotLimited: AugmentedError<ApiType>;
       NotEnoughLockedLiquidity: AugmentedError<ApiType>;
       Overflow: AugmentedError<ApiType>;
       PathIsNotAvailable: AugmentedError<ApiType>;
+      TransferLimitReached: AugmentedError<ApiType>;
       WrongAccountKind: AugmentedError<ApiType>;
+      WrongLimitSettings: AugmentedError<ApiType>;
     };
     ceresGovernancePlatform: {
       /**
@@ -1916,6 +1920,7 @@ declare module '@polkadot/api-base/types/errors' {
     };
     multisigVerifier: {
       CommitmentNotFoundInDigest: AugmentedError<ApiType>;
+      DuplicatedPeer: AugmentedError<ApiType>;
       InvalidInitParams: AugmentedError<ApiType>;
       InvalidNetworkId: AugmentedError<ApiType>;
       InvalidNumberOfSignatures: AugmentedError<ApiType>;
