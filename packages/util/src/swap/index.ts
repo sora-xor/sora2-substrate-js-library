@@ -644,6 +644,7 @@ export class SwapModule<T> {
    * @param amount Amount value (Asset A if Exchange A, else - Asset B)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param liquiditySource Selected liquidity source
+   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`)
    */
   public async getResultFromBackend(
     assetAAddress: string,
@@ -651,6 +652,7 @@ export class SwapModule<T> {
     amount: NumberLike,
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default,
+    allowSelectedSorce = true,
     dexId = DexId.XOR
   ): Promise<SwapResult> {
     const assetA = await this.root.assets.getAssetInfo(assetAAddress);
@@ -658,6 +660,13 @@ export class SwapModule<T> {
     const toCodecString = (value) => new FPNumber(value, (!isExchangeB ? assetB : assetA).decimals).toCodecString();
 
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
+    const filterMode =
+      liquiditySource !== LiquiditySourceTypes.Default
+        ? allowSelectedSorce
+          ? 'AllowSelected'
+          : 'ForbidSelected'
+        : 'Disabled';
+
     const result = await this.root.api.rpc.liquidityProxy.quote(
       dexId,
       assetAAddress,
@@ -665,7 +674,7 @@ export class SwapModule<T> {
       toCodecString(amount),
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
       liquiditySources as any,
-      liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
+      filterMode
     );
     const value = !result.isNone
       ? result.unwrap()

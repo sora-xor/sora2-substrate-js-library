@@ -1,5 +1,9 @@
-import type { Signer } from '@polkadot/types/types';
+import { map, combineLatest } from 'rxjs';
+import { FPNumber } from '@sora-substrate/math';
+
+import type { Observable, Signer } from '@polkadot/types/types';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
+import type { CodecString } from '@sora-substrate/math';
 
 import { EvmBridgeApi } from './evm';
 import { SubBridgeApi } from './sub';
@@ -82,5 +86,48 @@ export class BridgeProxyModule<T> {
     } catch {
       return apps;
     }
+  }
+
+  public async isAssetTransferLimited(assetAddress: string): Promise<boolean> {
+    const result = await this.root.api.query.bridgeProxy.limitedAssets(assetAddress);
+
+    return result.isTrue;
+  }
+
+  public getTransferLimitObservable(): Observable<CodecString> {
+    return this.root.apiRx.query.bridgeProxy
+      .transferLimit()
+      .pipe(map((limitSettings) => limitSettings.maxAmount.toString()));
+  }
+
+  public getConsumedTransferLimitObservable(): Observable<CodecString> {
+    return this.root.apiRx.query.bridgeProxy.consumedTransferLimit().pipe(map((limit) => limit.toString()));
+  }
+
+  public getCurrentTransferLimitObservable(): Observable<CodecString> {
+    return combineLatest([this.getTransferLimitObservable(), this.getConsumedTransferLimitObservable()]).pipe(
+      map(([maxLimit, consumedLimit]) => {
+        const max = FPNumber.fromCodecValue(maxLimit);
+        const consumed = FPNumber.fromCodecValue(consumedLimit);
+        const current = max.sub(consumed);
+        const checked = FPNumber.isGreaterThan(current, FPNumber.ZERO) ? current : FPNumber.ZERO;
+
+        return checked.toCodecString();
+      })
+    );
+  }
+
+  public async getTransferLimitUnlockSchedule(): Promise<{ blockNumber: number; amount: CodecString }[]> {
+    const data = await this.root.api.query.bridgeProxy.transferLimitUnlockSchedule.entries();
+    const unlocks = data
+      .map(([key, value]) => {
+        const blockNumber = key.args[0].toNumber();
+        const amount = value.toString();
+
+        return { blockNumber, amount };
+      })
+      .sort((a, b) => a.blockNumber - b.blockNumber);
+
+    return unlocks;
   }
 }
