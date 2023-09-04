@@ -1,6 +1,5 @@
 import { map, Subject } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
-import type { EventRecord } from '@polkadot/types/interfaces/system';
 import type { Observable } from '@polkadot/types/types';
 import type { GenericExtrinsic } from '@polkadot/types';
 import type { u32, Vec, u128 } from '@polkadot/types-codec';
@@ -12,7 +11,7 @@ import type { Api } from '../api';
 export class SystemModule<T> {
   constructor(private readonly root: Api<T>) {}
 
-  private subject = new Subject<Vec<EventRecord>>();
+  private subject = new Subject<number>();
   public updated = this.subject.asObservable();
 
   get specVersion(): number {
@@ -28,7 +27,15 @@ export class SystemModule<T> {
   }
 
   public getBlockNumberObservable(apiRx = this.root.apiRx): Observable<number> {
-    return apiRx.query.system.number().pipe(map<u32, number>((codec) => codec.toNumber()));
+    return apiRx.query.system.number().pipe(
+      map<u32, number>((codec) => {
+        const blockNumber = codec.toNumber();
+
+        this.subject.next(blockNumber);
+
+        return blockNumber;
+      })
+    );
   }
 
   public getBlockHashObservable(blockNumber: number, apiRx = this.root.apiRx): Observable<string | null> {
