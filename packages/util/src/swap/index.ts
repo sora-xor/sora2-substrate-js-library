@@ -175,11 +175,13 @@ export class SwapModule<T> {
     enabledAssets: PrimaryMarketsEnabledAssets,
     paths: QuotePaths,
     payload: QuotePayload,
-    dexId = DexId.XOR
+    dexId = DexId.XOR,
+    deduceFee = true
   ): SwapResult {
     const valueDecimals = !isExchangeB ? inputAsset.decimals : outputAsset.decimals;
     const amount = FPNumber.fromCodecValue(new FPNumber(value, valueDecimals).toCodecString());
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
+    const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
 
     return quote(
       inputAsset.address,
@@ -190,7 +192,9 @@ export class SwapModule<T> {
       enabledAssets,
       paths,
       payload,
-      baseAssetId
+      deduceFee,
+      baseAssetId,
+      syntheticBaseAssetId
     );
   }
 

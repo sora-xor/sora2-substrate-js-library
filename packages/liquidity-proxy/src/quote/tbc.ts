@@ -337,21 +337,23 @@ const tbcBuyPrice = (
   }
 };
 
+// decide_sell_amounts
 const tbcSellPriceWithFee = (
   collateralAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
-  payload: QuotePayload
+  payload: QuotePayload,
+  deduceFee = true
 ): QuoteResult => {
-  const newFee = Consts.TBC_FEE.add(sellPenalty(collateralAsset, payload));
+  const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(collateralAsset, payload)) : FPNumber.ZERO;
 
   if (isDesiredInput) {
-    const feeAmount = amount.mul(newFee);
-    const outputAmount = tbcSellPrice(collateralAsset, amount.sub(feeAmount), isDesiredInput, payload);
+    const fee = amount.mul(newFee);
+    const outputAmount = tbcSellPrice(collateralAsset, amount.sub(fee), isDesiredInput, payload);
 
     return {
       amount: outputAmount,
-      fee: feeAmount,
+      fee,
       rewards: [],
       distribution: [
         {
@@ -360,7 +362,7 @@ const tbcSellPriceWithFee = (
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: amount,
           outcome: outputAmount,
-          fee: feeAmount,
+          fee,
         },
       ],
     };
@@ -391,17 +393,20 @@ const tbcBuyPriceWithFee = (
   collateralAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
-  payload: QuotePayload
+  payload: QuotePayload,
+  deduceFee = true
 ): QuoteResult => {
+  const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
+
   if (isDesiredInput) {
     const outputAmount = tbcBuyPrice(collateralAsset, amount, isDesiredInput, payload);
-    const feeAmount = Consts.TBC_FEE.mul(outputAmount);
-    const output = outputAmount.sub(feeAmount);
+    const fee = feeRatio.mul(outputAmount);
+    const output = outputAmount.sub(fee);
     const rewards = checkRewards(collateralAsset, output, payload);
 
     return {
       amount: output,
-      fee: feeAmount,
+      fee,
       rewards,
       distribution: [
         {
@@ -410,12 +415,12 @@ const tbcBuyPriceWithFee = (
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: amount,
           outcome: output,
-          fee: feeAmount,
+          fee,
         },
       ],
     };
   } else {
-    const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(Consts.TBC_FEE));
+    const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
     const inputAmount = tbcBuyPrice(collateralAsset, amountWithFee, isDesiredInput, payload);
     const fee = amountWithFee.sub(amount);
     const rewards = checkRewards(collateralAsset, amount, payload);
@@ -457,13 +462,13 @@ export const tbcQuoteWithoutImpact = (
   outputAsset: string,
   amount: FPNumber,
   isDesiredinput: boolean,
-  payload: QuotePayload
+  payload: QuotePayload,
+  deduceFee = true
 ): FPNumber => {
   try {
     if (isXorAsset(inputAsset)) {
       const xorPrice = tbcSellPriceNoVolume(outputAsset, payload);
-      const penalty = sellPenalty(outputAsset, payload);
-      const newFee = Consts.TBC_FEE.add(penalty);
+      const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(outputAsset, payload)) : FPNumber.ZERO;
 
       if (isDesiredinput) {
         const feeAmount = newFee.mul(amount);
@@ -478,14 +483,15 @@ export const tbcQuoteWithoutImpact = (
       }
     } else {
       const xorPrice = tbcBuyPriceNoVolume(inputAsset, payload);
+      const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
 
       if (isDesiredinput) {
         const xorOut = safeDivide(amount, xorPrice);
-        const feeAmount = xorOut.mul(Consts.TBC_FEE);
+        const feeAmount = xorOut.mul(feeRatio);
 
         return xorOut.sub(feeAmount);
       } else {
-        const outputAmountWithFee = safeDivide(amount, FPNumber.ONE.sub(Consts.TBC_FEE));
+        const outputAmountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
         const collateralIn = outputAmountWithFee.mul(xorPrice);
 
         return collateralIn;
@@ -501,13 +507,14 @@ export const tbcQuote = (
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
-  payload: QuotePayload
+  payload: QuotePayload,
+  deduceFee = true
 ): QuoteResult => {
   try {
     if (isXorAsset(inputAsset)) {
-      return tbcSellPriceWithFee(outputAsset, amount, isDesiredInput, payload);
+      return tbcSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else {
-      return tbcBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload);
+      return tbcBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload, deduceFee);
     }
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.MulticollateralBondingCurvePool);
