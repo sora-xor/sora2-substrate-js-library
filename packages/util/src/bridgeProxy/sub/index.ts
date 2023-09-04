@@ -10,6 +10,7 @@ import {
   getLockedAssets,
 } from '../methods';
 import { SubNetwork, SubAssetKind, XcmVersionedMultiLocation, XcmMultilocationJunction, XcmJunction } from './consts';
+import { SoraParachainApi } from './parachain';
 
 import type { Asset } from '../../assets/types';
 import type { SubHistory, SubAsset, ParachainIds } from './types';
@@ -18,6 +19,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   constructor() {
     super('subHistory');
   }
+
+  public readonly soraParachainApi = new SoraParachainApi();
 
   // override it from frontend config if needed
   public parachainIds: ParachainIds = {
