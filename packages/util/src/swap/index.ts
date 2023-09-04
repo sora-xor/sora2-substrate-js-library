@@ -248,21 +248,21 @@ export class SwapModule<T> {
    * @param firstAssetAddress Asset A address
    * @param secondAssetAddress Asset B address
    * @param enabledAssets Available tbc & syntetics assets
-   * @param selectedLiquiditySource Selected liquidity source
+   * @param selectedSources Selected liquidity sources
    * @returns Observable reserves for all dexes
    */
   public subscribeOnAllDexesReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
     enabledAssets: PrimaryMarketsEnabledAssets,
-    selectedLiquiditySource = LiquiditySourceTypes.Default
+    selectedSources: LiquiditySourceTypes[] = []
   ): Observable<Array<{ dexId: number; payload: QuotePayload }>> {
     const observableDexesReserves = this.root.dex.dexList.map(({ dexId }) => {
       return this.subscribeOnReserves(
         firstAssetAddress,
         secondAssetAddress,
         enabledAssets,
-        selectedLiquiditySource,
+        selectedSources,
         dexId
       ).pipe(
         map((payload) => ({
@@ -280,14 +280,14 @@ export class SwapModule<T> {
    * @param firstAssetAddress Asset A address
    * @param secondAssetAddress Asset B address
    * @param enabledAssets Available tbc & syntetics assets
-   * @param selectedLiquiditySource Selected liquidity source
+   * @param selectedSources Selected liquidity sources
    * @param dexId Selected dex id for swap
    */
   public subscribeOnReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
     enabledAssets: PrimaryMarketsEnabledAssets,
-    selectedLiquiditySource = LiquiditySourceTypes.Default,
+    selectedSources: LiquiditySourceTypes[] = [],
     dexId = DexId.XOR
   ): Observable<QuotePayload> {
     const xor = XOR.address;
@@ -301,8 +301,7 @@ export class SwapModule<T> {
 
     // is TBC or XST sources used (only for XOR Dex)
     const isPrimaryMarketSourceUsed = (source: LiquiditySourceTypes): boolean =>
-      dexId === DexId.XOR &&
-      (selectedLiquiditySource === source || selectedLiquiditySource === LiquiditySourceTypes.Default);
+      dexId === DexId.XOR && (!selectedSources.length || selectedSources.includes(source));
 
     const tbcUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
     const xstUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.XSTPool);
