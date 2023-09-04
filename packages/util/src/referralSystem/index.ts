@@ -120,4 +120,15 @@ export class ReferralSystemModule<T> {
       type: Operation.ReferralSetInvitedUser,
     });
   }
+
+  /**
+   * Checks referrer input. Returns `true` if referrer you set has enough bonded XOR to invite you.
+   * @param accountId Referrer account ID
+   */
+  public async hasEnoughXorForFee(accountId: string): Promise<boolean> {
+    const bondedData = await this.root.api.query.referrals.referrerBalances(accountId);
+    const bonded = new FPNumber(bondedData || 0);
+    const requiredFeeValue = FPNumber.fromCodecValue(this.root.NetworkFee.ReferralSetInvitedUser || 0);
+    return FPNumber.gte(bonded, requiredFeeValue);
+  }
 }
