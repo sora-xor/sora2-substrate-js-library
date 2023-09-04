@@ -231,12 +231,13 @@ const quotePrimaryMarket = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  enabledAssets: PrimaryMarketsEnabledAssets
+  enabledAssets: PrimaryMarketsEnabledAssets,
+  deduceFee = true
 ): QuoteResult => {
   if ([inputAssetAddress, outputAssetAddress].includes(Consts.XSTUSD)) {
-    return xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, enabledAssets);
+    return xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, enabledAssets, deduceFee);
   } else {
-    return tbcQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload);
+    return tbcQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee);
   }
 };
 
@@ -366,7 +367,8 @@ const smartSplit = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
-  baseAssetId = Consts.XOR
+  baseAssetId = Consts.XOR,
+  deduceFee = true
 ): QuoteResult => {
   let bestOutcome: FPNumber = extremum(isDesiredInput);
   let bestFee: FPNumber = FPNumber.ZERO;
@@ -406,12 +408,21 @@ const smartSplit = (
       primaryAmount,
       isDesiredInput,
       payload,
-      enabledAssets
+      enabledAssets,
+      deduceFee
     );
     // check that outcomePrimary is not zero
     if (FPNumber.isLessThan(primaryAmount, amount) && !outcomePrimary.amount.isZero()) {
       const incomeSecondary = amount.sub(primaryAmount);
-      const outcomeSecondary = xykQuote(inputAsset, outputAsset, incomeSecondary, isDesiredInput, payload, baseAssetId);
+      const outcomeSecondary = xykQuote(
+        inputAsset,
+        outputAsset,
+        incomeSecondary,
+        isDesiredInput,
+        payload,
+        baseAssetId,
+        deduceFee
+      );
 
       bestOutcome = outcomePrimary.amount.add(outcomeSecondary.amount);
       bestFee = outcomePrimary.fee.add(outcomeSecondary.fee);
@@ -426,7 +437,7 @@ const smartSplit = (
   }
 
   // check xyk only result regardless of split, because it might be better
-  const outcomeSecondary = xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId);
+  const outcomeSecondary = xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId, deduceFee);
 
   if (isBetter(isDesiredInput, outcomeSecondary.amount, bestOutcome)) {
     bestOutcome = outcomeSecondary.amount;
@@ -462,6 +473,7 @@ const quoteSingle = (
   paths: QuotePaths,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
+  deduceFee: boolean,
   baseAssetId = Consts.XOR
 ): QuoteResult => {
   const allSources = selectedSources.length
@@ -476,13 +488,13 @@ const quoteSingle = (
   if (sources.length === 1) {
     switch (sources[0]) {
       case LiquiditySourceTypes.XYKPool: {
-        return xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId);
+        return xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
       }
       case LiquiditySourceTypes.MulticollateralBondingCurvePool: {
-        return tbcQuote(inputAsset, outputAsset, amount, isDesiredInput, payload);
+        return tbcQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
       }
       case LiquiditySourceTypes.XSTPool: {
-        return xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, enabledAssets);
+        return xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, enabledAssets);
       }
       default: {
         throw new Error(`[liquidityProxy] Unexpected liquidity source: ${sources[0]}`);
@@ -496,7 +508,16 @@ const quoteSingle = (
       // We can't use XST as primary market for smart split, because it use XST asset as base
       sources.includes(LiquiditySourceTypes.MulticollateralBondingCurvePool)
     ) {
-      return smartSplit(inputAsset, outputAsset, amount, isDesiredInput, payload, enabledAssets, baseAssetId);
+      return smartSplit(
+        inputAsset,
+        outputAsset,
+        amount,
+        isDesiredInput,
+        payload,
+        enabledAssets,
+        baseAssetId,
+        deduceFee
+      );
     }
   }
 
@@ -513,7 +534,8 @@ export const quote = (
   paths: QuotePaths,
   payload: QuotePayload,
   baseAssetId = Consts.XOR,
-  syntheticBaseAssetId = Consts.XST
+  syntheticBaseAssetId = Consts.XST,
+  deduceFee = true
 ): SwapResult => {
   let bestQuote: QuoteIntermediate = {
     amount: FPNumber.ZERO,
@@ -558,6 +580,7 @@ export const quote = (
               paths,
               payload,
               enabledAssets,
+              deduceFee,
               baseAssetId
             );
 
@@ -579,7 +602,8 @@ export const quote = (
               distributionAmounts,
               payload,
               enabledAssets,
-              baseAssetId
+              baseAssetId,
+              deduceFee
             );
 
             buffer.amount = result.amount;
@@ -654,17 +678,18 @@ const quoteWithoutImpactSingle = (
   distribution: Array<{ market: LiquiditySourceTypes; amount: FPNumber }>,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
-  baseAssetId = Consts.XOR
+  baseAssetId = Consts.XOR,
+  deduceFee = true
 ): FPNumber => {
   return distribution.reduce((result, { market, amount }) => {
     let value = FPNumber.ZERO;
 
     if (market === LiquiditySourceTypes.XYKPool) {
-      value = xykQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId);
+      value = xykQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
     } else if (market === LiquiditySourceTypes.MulticollateralBondingCurvePool) {
-      value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload);
+      value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else if (market === LiquiditySourceTypes.XSTPool) {
-      value = xstQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, enabledAssets);
+      value = xstQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, enabledAssets);
     }
 
     return result.add(value);

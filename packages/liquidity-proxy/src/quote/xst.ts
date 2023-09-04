@@ -127,21 +127,22 @@ const xstBuyPriceWithFee = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
+  deduceFee: boolean,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
   if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error('Price calculation failed');
 
-  const feeRatio = getAggregatedFee(syntheticAsset, payload, enabledAssets);
+  const feeRatio = deduceFee ? getAggregatedFee(syntheticAsset, payload, enabledAssets) : FPNumber.ZERO;
 
   if (isDesiredInput) {
     const outputAmount = xstBuyPrice(syntheticAsset, amount, isDesiredInput, payload, enabledAssets);
-    const feeAmount = feeRatio.mul(outputAmount);
-    const output = outputAmount.sub(feeAmount);
+    const fee = feeRatio.mul(outputAmount);
+    const output = outputAmount.sub(fee);
     ensureBaseAssetAmountWithinLimit(output, payload, checkLimits);
 
     return {
       amount: output,
-      fee: feeAmount,
+      fee,
       rewards: [],
       distribution: [
         {
@@ -150,14 +151,13 @@ const xstBuyPriceWithFee = (
           market: LiquiditySourceTypes.XSTPool,
           income: amount,
           outcome: output,
-          fee: feeAmount,
+          fee,
         },
       ],
     };
   } else {
     ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
-    const fpFee = FPNumber.ONE.sub(feeRatio);
-    const amountWithFee = safeDivide(amount, fpFee);
+    const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
     const fee = amountWithFee.sub(amount);
     const input = xstBuyPrice(syntheticAsset, amountWithFee, isDesiredInput, payload, enabledAssets);
 
@@ -185,11 +185,12 @@ const xstSellPriceWithFee = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
+  deduceFee: boolean,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
   if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error('Price calculation failed');
 
-  const feeRatio = getAggregatedFee(syntheticAsset, payload, enabledAssets);
+  const feeRatio = deduceFee ? getAggregatedFee(syntheticAsset, payload, enabledAssets) : FPNumber.ZERO;
 
   if (isDesiredInput) {
     ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
@@ -263,11 +264,21 @@ export const xstQuoteWithoutImpact = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
+  deduceFee: boolean,
   enabledAssets: PrimaryMarketsEnabledAssets
 ): FPNumber => {
   try {
     // no impact already
-    const quoteResult = xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, enabledAssets, false);
+    const quoteResult = xstQuote(
+      inputAsset,
+      outputAsset,
+      amount,
+      isDesiredInput,
+      payload,
+      deduceFee,
+      enabledAssets,
+      false
+    );
 
     return quoteResult.amount;
   } catch (error) {
@@ -281,6 +292,7 @@ export const xstQuote = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
+  deduceFee: boolean,
   enabledAssets: PrimaryMarketsEnabledAssets,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
@@ -291,8 +303,8 @@ export const xstQuote = (
       rewards,
       distribution,
     } = isAssetAddress(inputAsset, Consts.XST)
-      ? xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, enabledAssets, checkLimits)
-      : xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload, enabledAssets, checkLimits);
+      ? xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, enabledAssets, deduceFee, checkLimits)
+      : xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload, enabledAssets, deduceFee, checkLimits);
     const fee = convertFee(feeAmount, payload);
 
     return { amount: resultAmount, fee, rewards, distribution };
