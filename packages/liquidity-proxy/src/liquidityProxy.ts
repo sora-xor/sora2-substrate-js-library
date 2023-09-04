@@ -232,10 +232,10 @@ const quotePrimaryMarket = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
-  deduceFee = true
+  deduceFee: boolean
 ): QuoteResult => {
   if ([inputAssetAddress, outputAssetAddress].includes(Consts.XSTUSD)) {
-    return xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, enabledAssets, deduceFee);
+    return xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee, enabledAssets);
   } else {
     return tbcQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee);
   }
@@ -367,8 +367,8 @@ const smartSplit = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
-  baseAssetId = Consts.XOR,
-  deduceFee = true
+  deduceFee: boolean,
+  baseAssetId = Consts.XOR
 ): QuoteResult => {
   let bestOutcome: FPNumber = extremum(isDesiredInput);
   let bestFee: FPNumber = FPNumber.ZERO;
@@ -420,8 +420,8 @@ const smartSplit = (
         incomeSecondary,
         isDesiredInput,
         payload,
-        baseAssetId,
-        deduceFee
+        deduceFee,
+        baseAssetId
       );
 
       bestOutcome = outcomePrimary.amount.add(outcomeSecondary.amount);
@@ -437,7 +437,7 @@ const smartSplit = (
   }
 
   // check xyk only result regardless of split, because it might be better
-  const outcomeSecondary = xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, baseAssetId, deduceFee);
+  const outcomeSecondary = xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
 
   if (isBetter(isDesiredInput, outcomeSecondary.amount, bestOutcome)) {
     bestOutcome = outcomeSecondary.amount;
@@ -515,8 +515,8 @@ const quoteSingle = (
         isDesiredInput,
         payload,
         enabledAssets,
-        baseAssetId,
-        deduceFee
+        deduceFee,
+        baseAssetId
       );
     }
   }
@@ -533,9 +533,9 @@ export const quote = (
   enabledAssets: PrimaryMarketsEnabledAssets,
   paths: QuotePaths,
   payload: QuotePayload,
+  deduceFee: boolean,
   baseAssetId = Consts.XOR,
-  syntheticBaseAssetId = Consts.XST,
-  deduceFee = true
+  syntheticBaseAssetId = Consts.XST
 ): SwapResult => {
   let bestQuote: QuoteIntermediate = {
     amount: FPNumber.ZERO,
@@ -602,8 +602,8 @@ export const quote = (
               distributionAmounts,
               payload,
               enabledAssets,
-              baseAssetId,
-              deduceFee
+              deduceFee,
+              baseAssetId
             );
 
             buffer.amount = result.amount;
@@ -678,8 +678,8 @@ const quoteWithoutImpactSingle = (
   distribution: Array<{ market: LiquiditySourceTypes; amount: FPNumber }>,
   payload: QuotePayload,
   enabledAssets: PrimaryMarketsEnabledAssets,
-  baseAssetId = Consts.XOR,
-  deduceFee = true
+  deduceFee: boolean,
+  baseAssetId = Consts.XOR
 ): FPNumber => {
   return distribution.reduce((result, { market, amount }) => {
     let value = FPNumber.ZERO;

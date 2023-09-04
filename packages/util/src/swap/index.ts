@@ -19,7 +19,7 @@ import type {
 import type { Option, BTreeSet } from '@polkadot/types-codec';
 
 import { Consts as SwapConsts } from './consts';
-import { XOR, DAI, XSTUSD, XST } from '../assets/consts';
+import { XOR, DAI, XSTUSD } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
@@ -192,9 +192,9 @@ export class SwapModule<T> {
       enabledAssets,
       paths,
       payload,
+      deduceFee,
       baseAssetId,
-      syntheticBaseAssetId,
-      deduceFee
+      syntheticBaseAssetId
     );
   }
 
