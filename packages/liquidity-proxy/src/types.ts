@@ -1,4 +1,4 @@
-import type { FPNumber, CodecString } from '@sora-substrate/math';
+import type { FPNumber, CodecString, NumberLike } from '@sora-substrate/math';
 import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
 
 export type PrimaryMarketsEnabledAssets = {
@@ -46,6 +46,14 @@ export interface SwapResult {
   distribution?: Distribution[][];
 }
 
+export type SwapQuote = (
+  inputAssetAddress: string,
+  outputAssetAddress: string,
+  value: NumberLike,
+  isExchangeB: boolean,
+  deduceFee: boolean
+) => SwapResult;
+
 export type QuotePaths = {
   [key: string]: Array<LiquiditySourceTypes>;
 };
@@ -57,6 +65,8 @@ export type OracleRate = {
 };
 
 export type QuotePayload = {
+  enabledAssets: PrimaryMarketsEnabledAssets;
+  sources: PathsAndPairLiquiditySources;
   rates: Record<string, OracleRate>;
   reserves: {
     xyk: {
@@ -92,7 +102,6 @@ export type QuotePayload = {
       rateStalePeriod: number;
     };
   };
-  lockedSources: Array<LiquiditySourceTypes>;
 };
 
 export type QuoteResult = {
@@ -103,6 +112,6 @@ export type QuoteResult = {
 };
 
 export type PathsAndPairLiquiditySources = {
-  paths: QuotePaths;
+  assetPaths: QuotePaths;
   liquiditySources: Array<LiquiditySourceTypes>;
 };
