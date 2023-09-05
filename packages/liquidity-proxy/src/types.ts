@@ -57,6 +57,8 @@ export type OracleRate = {
 };
 
 export type QuotePayload = {
+  enabledAssets: PrimaryMarketsEnabledAssets;
+  sources: PathsAndPairLiquiditySources;
   rates: Record<string, OracleRate>;
   reserves: {
     xyk: {
@@ -92,7 +94,6 @@ export type QuotePayload = {
       rateStalePeriod: number;
     };
   };
-  lockedSources: Array<LiquiditySourceTypes>;
 };
 
 export type QuoteResult = {
@@ -103,6 +104,6 @@ export type QuoteResult = {
 };
 
 export type PathsAndPairLiquiditySources = {
-  paths: QuotePaths;
+  assetPaths: QuotePaths;
   liquiditySources: Array<LiquiditySourceTypes>;
 };
