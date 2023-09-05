@@ -12,6 +12,7 @@ import type {
   PrimaryMarketsEnabledAssets,
   QuotePayload,
   SwapResult,
+  SwapQuote,
   OracleRate,
 } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
@@ -163,31 +164,30 @@ export class SwapModule<T> {
 
   /**
    * Get swap result
-   * @param inputAsset Asset A
-   * @param outputAsset Asset B
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
    * @param value value (Asset A if Exchange A, else - Asset B)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B
    * @param selectedSources Selected liquidity sources
    * @param payload Quote payload
    */
   public getResult(
-    inputAsset: Asset | AccountAsset,
-    outputAsset: Asset | AccountAsset,
-    value: string,
+    assetAAddress: string,
+    assetBAddress: string,
+    value: NumberLike,
     isExchangeB: boolean,
-    selectedSources: Array<LiquiditySourceTypes>,
     payload: QuotePayload,
+    selectedSources: Array<LiquiditySourceTypes> = [],
     dexId = DexId.XOR,
     deduceFee = true
   ): SwapResult {
-    const valueDecimals = !isExchangeB ? inputAsset.decimals : outputAsset.decimals;
-    const amount = FPNumber.fromCodecValue(new FPNumber(value, valueDecimals).toCodecString());
+    const amount = new FPNumber(value);
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
 
     return quote(
-      inputAsset.address,
-      outputAsset.address,
+      assetAAddress,
+      assetBAddress,
       amount,
       !isExchangeB,
       selectedSources,
@@ -447,6 +447,51 @@ export class SwapModule<T> {
         return payload;
       })
     );
+  }
+
+  /**
+   * Get observable liquidity proxy quote function for two assets
+   * @param firstAssetAddress First swap token address
+   * @param secondAssetAddress Second swap token address
+   * @param selectedSources Selected liquidity sources for swap (not selected by default)
+   * @param dexId Selected Dex Id
+   */
+  public async getSwapQuoteObservable(
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    selectedSources: LiquiditySourceTypes[] = [],
+    dexId = DexId.XOR
+  ): Promise<Observable<SwapQuote>> {
+    const dexReservesObservable = await this.subscribeOnReserves(
+      firstAssetAddress,
+      secondAssetAddress,
+      selectedSources,
+      dexId
+    );
+
+    const quoteFnObservable = dexReservesObservable.pipe(
+      map((payload) => {
+        return (
+          inputAssetAddress: string,
+          outputAssetAddress: string,
+          value: NumberLike,
+          isExchangeB: boolean,
+          deduceFee = true
+        ) =>
+          this.getResult(
+            inputAssetAddress,
+            outputAssetAddress,
+            value,
+            isExchangeB,
+            payload,
+            selectedSources,
+            dexId,
+            deduceFee
+          );
+      })
+    );
+
+    return quoteFnObservable;
   }
 
   private calcTxParams(

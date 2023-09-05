@@ -1,4 +1,4 @@
-import type { FPNumber, CodecString } from '@sora-substrate/math';
+import type { FPNumber, CodecString, NumberLike } from '@sora-substrate/math';
 import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
 
 export type PrimaryMarketsEnabledAssets = {
@@ -45,6 +45,14 @@ export interface SwapResult {
   amountWithoutImpact?: CodecString;
   distribution?: Distribution[][];
 }
+
+export type SwapQuote = (
+  inputAssetAddress: string,
+  outputAssetAddress: string,
+  value: NumberLike,
+  isExchangeB: boolean,
+  deduceFee: boolean
+) => SwapResult;
 
 export type QuotePaths = {
   [key: string]: Array<LiquiditySourceTypes>;
