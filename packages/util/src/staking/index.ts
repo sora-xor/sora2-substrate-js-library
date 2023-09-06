@@ -10,7 +10,6 @@ import { StakingRewardsDestination } from './types';
 import { DexId } from '../dex/consts';
 import { LiquiditySourceTypes } from '../../../liquidity-proxy/src/consts';
 
-import type { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
 import type { Api } from '../api';
@@ -19,7 +18,6 @@ import type {
   ValidatorInfo,
   StashNominatorsInfo,
   ActiveEra,
-  EraElectionStatus,
   EraRewardPoints,
   ValidatorExposure,
   ElectedValidator,
@@ -28,6 +26,8 @@ import type {
   ValidatorInfoFull,
   StakeReturn,
   NominatorReward,
+  Identity,
+  // EraElectionStatus,
 } from './types';
 import {
   formatEra,
@@ -326,8 +326,8 @@ export class StakingModule<T> {
     const apy = ratioReturnStakeToTotalStake.sub(FPNumber.ONE).mul(FPNumber.HUNDRED).mul(nominatorShare);
 
     return {
-      stakeReturnReward: stakeReturnReward.toString(),
-      stakeReturn: stakeReturn.toString(),
+      stakeReturnReward: stakeReturnReward.toCodecString(),
+      stakeReturn: stakeReturn.toCodecString(),
       apy: apy.toFixed(2),
     };
   }
@@ -336,8 +336,12 @@ export class StakingModule<T> {
    * Get validator identity
    * @returns identity
    */
-  public async getIdentity(address: string): Promise<PalletIdentityRegistration> {
-    return (await this.root.api.query.identity.identityOf(address)).unwrap();
+  public async getIdentity(address: string): Promise<Identity | null> {
+    const identity = await this.root.api.query.identity.identityOf(address);
+
+    if (identity.isNone) return null;
+
+    return identity.toHuman() as unknown as Identity;
   }
 
   /**
@@ -392,6 +396,7 @@ export class StakingModule<T> {
       1,
       false,
       LiquiditySourceTypes.Default,
+      true,
       DexId.XOR
     );
 
@@ -401,7 +406,7 @@ export class StakingModule<T> {
       const rewardPoints = eraRewardPoints[address];
 
       const identity = await this.getIdentity(address);
-      const { apy, stakeReturn } = await this.calculatingStakeReturn(
+      const { apy, stakeReturn, stakeReturnReward } = await this.calculatingStakeReturn(
         total,
         rewardToStakeRatio,
         eraTotalStake,
@@ -414,10 +419,25 @@ export class StakingModule<T> {
         rewardPoints,
         commission: commission ?? '',
         nominators: electedValidator?.others ?? [],
-        identity,
+        identity:
+          identity !== null
+            ? {
+                ...identity,
+                info: Object.fromEntries(
+                  Object.entries(identity.info).map(([key, value]) => {
+                    if (value === 'None') return [key, ''];
+
+                    if (!Array.isArray(value) && value?.Raw !== undefined) return [key, value?.Raw];
+
+                    return [key, value];
+                  })
+                ),
+              }
+            : null,
         apy,
         stake: {
           stakeReturn,
+          stakeReturnReward,
           total,
           own: electedValidator?.own ?? '0',
         },
@@ -430,17 +450,19 @@ export class StakingModule<T> {
       const { apy: apy1, commission: commission1, identity: identity1 } = validator1;
       const { apy: apy2, commission: commission2 } = validator2;
 
-      const subtractionApy = new FPNumber(apy2).div(new FPNumber(apy1));
+      const subtractionApy = new FPNumber(apy2).sub(new FPNumber(apy1));
 
       if (!subtractionApy.isZero()) return subtractionApy.toNumber();
 
-      const subtractionCommission = new FPNumber(commission1).div(new FPNumber(commission2));
+      const subtractionCommission = new FPNumber(commission1).sub(new FPNumber(commission2));
 
       if (!subtractionCommission.isZero()) return subtractionCommission.toNumber();
 
+      if (identity1 === null) return 1;
+
       const { judgements: judgements1 } = identity1;
-      const knownGoodValue1 = judgements1.find(([, { type }]) => type === 'KnownGood');
-      const isKnownGood1 = knownGoodValue1?.[1]?.isKnownGood ?? false;
+      const knownGoodValue1 = judgements1.find(([, type]) => type === 'KnownGood');
+      const isKnownGood1 = knownGoodValue1?.[0] === 1;
 
       return isKnownGood1 ? -1 : 1;
     });

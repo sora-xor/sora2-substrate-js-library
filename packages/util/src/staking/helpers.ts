@@ -1,10 +1,8 @@
-import { u128 } from '@polkadot/types-codec';
 import { Option, u32 } from '@polkadot/types';
 import { StakingRewardsDestination, RewardPointsIndividual, StashNominatorsInfo, ValidatorExposure } from './types';
 import { PalletStakingEraRewardPoints, PalletStakingNominations } from '@polkadot/types/lookup';
 import { FPNumber } from '@sora-substrate/math';
 import type { Exposure } from '@polkadot/types/interfaces/staking';
-import type { CodecString } from '@sora-substrate/math';
 
 const formatEra = (data: Option<u32>): number => {
   const era = data.unwrap();

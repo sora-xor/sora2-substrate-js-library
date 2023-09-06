@@ -1,6 +1,4 @@
 import type { History } from '../BaseApi';
-import type { PalletIdentityRegistration } from '@polkadot/types/lookup';
-import type { Option } from '@polkadot/types-codec';
 
 export interface StakingHistory extends History {
   validators?: string[];
@@ -26,7 +24,7 @@ export interface ValidatorInfo {
 export interface ValidatorInfoFull extends ValidatorInfo {
   rewardPoints: number;
   nominators: Others;
-  identity: PalletIdentityRegistration;
+  identity: Identity | null;
   apy: string;
   stake: {
     stakeReturn: string;
@@ -96,3 +94,29 @@ export type NominatorReward = {
   rewardPerDay: string;
   rewardPerYear: string;
 };
+
+type JudgementsType = 'Unknown' | 'FeePaid' | 'Reasonable' | 'KnownGood' | 'OutOfDate' | 'LowQuality' | 'Erroneous';
+
+type InfoItem =
+  | 'None'
+  | {
+      Raw: string;
+    };
+
+export type Info = {
+  legal: InfoItem;
+  web: InfoItem;
+  riot: InfoItem;
+  additional: [];
+  pgpFingerprint: null;
+  image: InfoItem;
+  display: InfoItem;
+  email: InfoItem;
+  twitter: InfoItem;
+};
+
+export interface Identity {
+  judgements: [1 | 0, JudgementsType][];
+  deposit: string;
+  info: Info;
+}
