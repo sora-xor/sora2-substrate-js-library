@@ -383,7 +383,9 @@ export class AssetsModule<T> {
     assert(this.root.account, Messages.connectWallet);
 
     if (!this.accountAssetsAddresses.length) {
-      this.accountAssetsAddresses = this.accountDefaultAssetsAddresses;
+      const defaultList = this.accountDefaultAssetsAddresses;
+      const accountList = await this.getAccountTokensAddressesList();
+      this.accountAssetsAddresses = [...new Set([...defaultList, ...accountList])];
     }
 
     const currentAddresses = this.accountAssetsAddresses;
@@ -438,6 +440,25 @@ export class AssetsModule<T> {
     asset.balance = result;
 
     return asset;
+  }
+
+  /**
+   * Get account ORML tokens list with any non zero balance
+   */
+  public async getAccountTokensAddressesList(): Promise<string[]> {
+    const data = await this.root.api.query.tokens.accounts.entries(this.root.account.pair.address);
+    const list = [];
+
+    for (const [key, { free, reserved, frozen }] of data) {
+      const assetId = key.args[1].code.toString();
+      const hasAssetAnyBalance = [free, reserved, frozen].some((value) => !new FPNumber(value).isZero());
+
+      if (hasAssetAnyBalance) {
+        list.push(assetId);
+      }
+    }
+
+    return list;
   }
 
   // # Account assets addresses

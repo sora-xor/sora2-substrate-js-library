@@ -10,6 +10,7 @@ import {
   getLockedAssets,
 } from '../methods';
 import { SubNetwork, SubAssetKind, XcmVersionedMultiLocation, XcmMultilocationJunction, XcmJunction } from './consts';
+import { SoraParachainApi } from './parachain';
 
 import type { Asset } from '../../assets/types';
 import type { SubHistory, SubAsset, ParachainIds } from './types';
@@ -18,6 +19,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   constructor() {
     super('subHistory');
   }
+
+  public readonly soraParachainApi = new SoraParachainApi();
 
   // override it from frontend config if needed
   public parachainIds: ParachainIds = {
@@ -130,16 +133,25 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     super.saveHistory(history);
   }
 
+  public async getSubAssetDecimals(subNetwork: SubNetwork, soraAssetId: string): Promise<number> {
+    const precision = await this.api.query.substrateBridgeApp.sidechainPrecision(subNetwork, soraAssetId);
+
+    return precision.unwrap().toNumber();
+  }
+
+  public async getSubAssetKind(subNetwork: SubNetwork, soraAssetId: string): Promise<SubAssetKind> {
+    const kind = await this.api.query.substrateBridgeApp.assetKinds(subNetwork, soraAssetId);
+
+    return kind.unwrap().isSidechain ? SubAssetKind.Sidechain : SubAssetKind.Thischain;
+  }
+
   private async getSubAssetData(relaychain: SubNetwork, soraAssetId: string): Promise<SubAsset> {
-    const [precision, kind] = await Promise.all([
-      this.api.query.substrateBridgeApp.sidechainPrecision(relaychain, soraAssetId),
-      this.api.query.substrateBridgeApp.assetKinds(relaychain, soraAssetId),
+    const [decimals, assetKind] = await Promise.all([
+      this.getSubAssetDecimals(relaychain, soraAssetId),
+      this.getSubAssetKind(relaychain, soraAssetId),
     ]);
 
-    return {
-      decimals: precision.unwrap().toNumber(),
-      assetKind: kind.unwrap().isSidechain ? SubAssetKind.Sidechain : SubAssetKind.Thischain,
-    };
+    return { decimals, assetKind };
   }
 
   private async getRelayChainAssets(relaychain: SubNetwork): Promise<Record<string, SubAsset>> {

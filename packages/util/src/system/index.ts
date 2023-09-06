@@ -1,7 +1,5 @@
 import { map, Subject } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
-import type { Subscription } from 'rxjs';
-import type { EventRecord } from '@polkadot/types/interfaces/system';
 import type { Observable } from '@polkadot/types/types';
 import type { GenericExtrinsic } from '@polkadot/types';
 import type { u32, Vec, u128 } from '@polkadot/types-codec';
@@ -13,54 +11,73 @@ import type { Api } from '../api';
 export class SystemModule<T> {
   constructor(private readonly root: Api<T>) {}
 
-  private subject = new Subject<Vec<EventRecord>>();
+  private subject = new Subject<number>();
   public updated = this.subject.asObservable();
 
   get specVersion(): number {
     return this.root.api.consts.system.version.specVersion.toNumber();
   }
 
-  public getNetworkFeeMultiplierObservable(): Observable<number> {
-    return this.root.apiRx.query.xorFee.multiplier().pipe(map<u128, number>((codec) => new FPNumber(codec).toNumber()));
+  public getChainDecimals(api = this.root.api): number {
+    return api.registry.chainDecimals[0];
   }
 
-  public getBlockNumberObservable(): Observable<number> {
-    return this.root.apiRx.query.system.number().pipe(map<u32, number>((codec) => codec.toNumber()));
+  public getNetworkFeeMultiplierObservable(apiRx = this.root.apiRx): Observable<number> {
+    return apiRx.query.xorFee.multiplier().pipe(map<u128, number>((codec) => new FPNumber(codec).toNumber()));
   }
 
-  public getRuntimeVersionObservable(): Observable<number> {
-    return this.root.apiRx.query.system
-      .lastRuntimeUpgrade()
-      .pipe<number>(map((data) => data.value.specVersion.toNumber()));
+  public getBlockNumberObservable(apiRx = this.root.apiRx): Observable<number> {
+    return apiRx.query.system.number().pipe(
+      map<u32, number>((codec) => {
+        const blockNumber = codec.toNumber();
+
+        this.subject.next(blockNumber);
+
+        return blockNumber;
+      })
+    );
   }
 
-  public getEventsSubscription(): Subscription {
-    return this.root.apiRx.query.system.events().subscribe((events) => {
-      this.subject.next(events);
-    });
+  public getBlockHashObservable(blockNumber: number, apiRx = this.root.apiRx): Observable<string | null> {
+    return apiRx.query.system.blockHash(blockNumber).pipe(
+      map((hash) => {
+        return hash.isEmpty ? null : hash.toString();
+      })
+    );
   }
 
-  public async getBlockHash(blockNumber: number): Promise<string> {
-    return (await this.root.api.rpc.chain.getBlockHash(blockNumber)).toString();
+  public getRuntimeVersionObservable(apiRx = this.root.apiRx): Observable<number> {
+    return apiRx.query.system.lastRuntimeUpgrade().pipe<number>(map((data) => data.value.specVersion.toNumber()));
   }
 
-  public async getBlockNumber(blockHash: string): Promise<number> {
-    const apiInstanceAtBlock = await this.root.api.at(blockHash);
+  public getEventsObservable(apiRx = this.root.apiRx): Observable<Vec<FrameSystemEventRecord>> {
+    return apiRx.query.system.events();
+  }
+
+  public async getBlockHash(blockNumber: number, api = this.root.api): Promise<string> {
+    return (await api.rpc.chain.getBlockHash(blockNumber)).toString();
+  }
+
+  public async getBlockNumber(blockHash: string, api = this.root.api): Promise<number> {
+    const apiInstanceAtBlock = await api.at(blockHash);
     return (await apiInstanceAtBlock.query.system.number()).toNumber();
   }
 
-  public async getBlockTimestamp(blockHash: string): Promise<number> {
-    const apiInstanceAtBlock = await this.root.api.at(blockHash);
+  public async getBlockTimestamp(blockHash: string, api = this.root.api): Promise<number> {
+    const apiInstanceAtBlock = await api.at(blockHash);
     return (await apiInstanceAtBlock.query.timestamp.now()).toNumber();
   }
 
-  public async getExtrinsicsFromBlock(blockId: string): Promise<Array<GenericExtrinsic<AnyTuple>>> {
-    const signedBlock = await this.root.api.rpc.chain.getBlock(blockId);
+  public async getExtrinsicsFromBlock(
+    blockId: string,
+    api = this.root.api
+  ): Promise<Array<GenericExtrinsic<AnyTuple>>> {
+    const signedBlock = await api.rpc.chain.getBlock(blockId);
     return signedBlock.block?.extrinsics.toArray() ?? [];
   }
 
-  public async getBlockEvents(blockId: string): Promise<Array<FrameSystemEventRecord>> {
-    const apiInstanceAtBlock = await this.root.api.at(blockId);
+  public async getBlockEvents(blockId: string, api = this.root.api): Promise<Array<FrameSystemEventRecord>> {
+    const apiInstanceAtBlock = await api.at(blockId);
     return (await apiInstanceAtBlock.query.system.events()).toArray();
   }
 }

@@ -338,10 +338,14 @@ declare module '@polkadot/api-base/types/errors' {
       QueueSizeLimitReached: AugmentedError<ApiType>;
     };
     bridgeProxy: {
+      AssetAlreadyLimited: AugmentedError<ApiType>;
+      AssetNotLimited: AugmentedError<ApiType>;
       NotEnoughLockedLiquidity: AugmentedError<ApiType>;
       Overflow: AugmentedError<ApiType>;
       PathIsNotAvailable: AugmentedError<ApiType>;
+      TransferLimitReached: AugmentedError<ApiType>;
       WrongAccountKind: AugmentedError<ApiType>;
+      WrongLimitSettings: AugmentedError<ApiType>;
     };
     ceresGovernancePlatform: {
       /**
@@ -1916,6 +1920,7 @@ declare module '@polkadot/api-base/types/errors' {
     };
     multisigVerifier: {
       CommitmentNotFoundInDigest: AugmentedError<ApiType>;
+      DuplicatedPeer: AugmentedError<ApiType>;
       InvalidInitParams: AugmentedError<ApiType>;
       InvalidNetworkId: AugmentedError<ApiType>;
       InvalidNumberOfSignatures: AugmentedError<ApiType>;
@@ -2004,13 +2009,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       LimitOrderStorageOverflow: AugmentedError<ApiType>;
       /**
+       * Market orders are allowed only for indivisible assets
+       **/
+      MarketOrdersAllowedOnlyForIndivisibleAssets: AugmentedError<ApiType>;
+      /**
        * Max lot size cannot be more that total supply of base asset
        **/
       MaxLotSizeIsMoreThanTotalSupply: AugmentedError<ApiType>;
-      /**
-       * NFT order books are temporarily forbidden
-       **/
-      NftOrderBooksAreTemporarilyForbidden: AugmentedError<ApiType>;
       /**
        * There are no aggregated bids/asks for the order book
        **/

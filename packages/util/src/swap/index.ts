@@ -1,12 +1,18 @@
 import { assert } from '@polkadot/util';
 import { combineLatest, map, distinctUntilChanged } from 'rxjs';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
-import { quote, LiquiditySourceTypes, PriceVariant, newTrivial } from '@sora-substrate/liquidity-proxy';
+import {
+  quote,
+  LiquiditySourceTypes,
+  PriceVariant,
+  newTrivial,
+  getAssetsLiquiditySources,
+} from '@sora-substrate/liquidity-proxy';
 import type {
   PrimaryMarketsEnabledAssets,
-  QuotePaths,
   QuotePayload,
   SwapResult,
+  SwapQuote,
   OracleRate,
 } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
@@ -158,39 +164,37 @@ export class SwapModule<T> {
 
   /**
    * Get swap result
-   * @param inputAsset Asset A
-   * @param outputAsset Asset B
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
    * @param value value (Asset A if Exchange A, else - Asset B)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B
    * @param selectedSources Selected liquidity sources
-   * @param paths Available paths
    * @param payload Quote payload
    */
   public getResult(
-    inputAsset: Asset | AccountAsset,
-    outputAsset: Asset | AccountAsset,
-    value: string,
+    assetAAddress: string,
+    assetBAddress: string,
+    value: NumberLike,
     isExchangeB: boolean,
-    selectedSources: Array<LiquiditySourceTypes>,
-    enabledAssets: PrimaryMarketsEnabledAssets,
-    paths: QuotePaths,
     payload: QuotePayload,
-    dexId = DexId.XOR
+    selectedSources: Array<LiquiditySourceTypes> = [],
+    dexId = DexId.XOR,
+    deduceFee = true
   ): SwapResult {
-    const valueDecimals = !isExchangeB ? inputAsset.decimals : outputAsset.decimals;
-    const amount = FPNumber.fromCodecValue(new FPNumber(value, valueDecimals).toCodecString());
+    const amount = new FPNumber(value);
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
+    const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
 
     return quote(
-      inputAsset.address,
-      outputAsset.address,
+      assetAAddress,
+      assetBAddress,
       amount,
       !isExchangeB,
       selectedSources,
-      enabledAssets,
-      paths,
       payload,
-      baseAssetId
+      deduceFee,
+      baseAssetId,
+      syntheticBaseAssetId
     );
   }
 
@@ -243,67 +247,71 @@ export class SwapModule<T> {
    * Get observable reserves throught all dexes for swapped tokens
    * @param firstAssetAddress Asset A address
    * @param secondAssetAddress Asset B address
-   * @param enabledAssets Available tbc & syntetics assets
-   * @param selectedLiquiditySource Selected liquidity source
+   * @param selectedSources Selected liquidity sources
    * @returns Observable reserves for all dexes
    */
-  public subscribeOnAllDexesReserves(
+  public async subscribeOnAllDexesReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
-    enabledAssets: PrimaryMarketsEnabledAssets,
-    selectedLiquiditySource = LiquiditySourceTypes.Default
-  ): Observable<Array<{ dexId: number; payload: QuotePayload }>> {
-    const observableDexesReserves = this.root.dex.dexList.map(({ dexId }) => {
-      return this.subscribeOnReserves(
+    selectedSources: LiquiditySourceTypes[] = []
+  ): Promise<Observable<Array<{ dexId: number; payload: QuotePayload }>>> {
+    const observables: Observable<{ dexId: number; payload: QuotePayload }>[] = [];
+
+    for (const { dexId } of this.root.dex.dexList) {
+      const observableReserves = await this.subscribeOnReserves(
         firstAssetAddress,
         secondAssetAddress,
-        enabledAssets,
-        selectedLiquiditySource,
+        selectedSources,
         dexId
-      ).pipe(
+      );
+      const observableDexReserves = observableReserves.pipe(
         map((payload) => ({
           dexId,
           payload,
         }))
       );
-    });
 
-    return combineLatest(observableDexesReserves);
+      observables.push(observableDexReserves);
+    }
+
+    return combineLatest(observables);
   }
 
   /**
    * Get observable reserves for swapped tokens
    * @param firstAssetAddress Asset A address
    * @param secondAssetAddress Asset B address
-   * @param enabledAssets Available tbc & syntetics assets
-   * @param selectedLiquiditySource Selected liquidity source
+   * @param selectedSources Selected liquidity sources
    * @param dexId Selected dex id for swap
    */
-  public subscribeOnReserves(
+  public async subscribeOnReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
-    enabledAssets: PrimaryMarketsEnabledAssets,
-    selectedLiquiditySource = LiquiditySourceTypes.Default,
+    selectedSources: LiquiditySourceTypes[] = [],
     dexId = DexId.XOR
-  ): Observable<QuotePayload> {
+  ): Promise<Observable<QuotePayload>> {
+    const isXorDex = dexId === DexId.XOR;
     const xor = XOR.address;
     const dai = DAI.address;
     const xstusd = XSTUSD.address;
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
+
+    const enabledAssets = isXorDex
+      ? await this.getPrimaryMarketsEnabledAssets()
+      : { tbc: [], xst: {}, lockedSources: [] };
+
     const tbcAssets = enabledAssets?.tbc ?? [];
     const xstAssets = enabledAssets?.xst ?? {};
-    const lockedSources = enabledAssets?.lockedSources ?? [];
 
     // is TBC or XST sources used (only for XOR Dex)
     const isPrimaryMarketSourceUsed = (source: LiquiditySourceTypes): boolean =>
-      dexId === DexId.XOR &&
-      (selectedLiquiditySource === source || selectedLiquiditySource === LiquiditySourceTypes.Default);
+      isXorDex && (!selectedSources.length || selectedSources.includes(source));
 
     const tbcUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
     const xstUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.XSTPool);
 
-    // possible paths for swap
+    // possible paths for swap (we need to find all possible assets)
     const exchangePaths = newTrivial(
       baseAssetId,
       syntheticBaseAssetId,
@@ -398,10 +406,21 @@ export class SwapModule<T> {
         );
         const [floorPrice, xstReferenceAsset] = data.slice(position, (position += xstConsts.length));
 
+        const xykData = combineValuesWithKeys(xyk, assetsWithXykReserves);
+        const sources = getAssetsLiquiditySources(
+          exchangePaths,
+          enabledAssets,
+          xykData,
+          baseAssetId,
+          syntheticBaseAssetId
+        );
+
         const payload: QuotePayload = {
+          enabledAssets,
+          sources,
           rates: combineValuesWithKeys(rates, tickersWithOracleRates),
           reserves: {
-            xyk: combineValuesWithKeys(xyk, assetsWithXykReserves),
+            xyk: xykData,
             tbc: combineValuesWithKeys(tbc, assetsWithTbcReserves),
           },
           prices: combineValuesWithKeys(prices, assetsWithAveragePrices),
@@ -423,12 +442,56 @@ export class SwapModule<T> {
               rateStalePeriod: bandRateStalePeriod,
             },
           },
-          lockedSources,
         };
 
         return payload;
       })
     );
+  }
+
+  /**
+   * Get observable liquidity proxy quote function for two assets
+   * @param firstAssetAddress First swap token address
+   * @param secondAssetAddress Second swap token address
+   * @param selectedSources Selected liquidity sources for swap (not selected by default)
+   * @param dexId Selected Dex Id
+   */
+  public async getSwapQuoteObservable(
+    firstAssetAddress: string,
+    secondAssetAddress: string,
+    selectedSources: LiquiditySourceTypes[] = [],
+    dexId = DexId.XOR
+  ): Promise<Observable<SwapQuote>> {
+    const dexReservesObservable = await this.subscribeOnReserves(
+      firstAssetAddress,
+      secondAssetAddress,
+      selectedSources,
+      dexId
+    );
+
+    const quoteFnObservable = dexReservesObservable.pipe(
+      map((payload) => {
+        return (
+          inputAssetAddress: string,
+          outputAssetAddress: string,
+          value: NumberLike,
+          isExchangeB: boolean,
+          deduceFee = true
+        ) =>
+          this.getResult(
+            inputAssetAddress,
+            outputAssetAddress,
+            value,
+            isExchangeB,
+            payload,
+            selectedSources,
+            dexId,
+            deduceFee
+          );
+      })
+    );
+
+    return quoteFnObservable;
   }
 
   private calcTxParams(
@@ -644,6 +707,7 @@ export class SwapModule<T> {
    * @param amount Amount value (Asset A if Exchange A, else - Asset B)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param liquiditySource Selected liquidity source
+   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`)
    */
   public async getResultFromBackend(
     assetAAddress: string,
@@ -651,6 +715,7 @@ export class SwapModule<T> {
     amount: NumberLike,
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default,
+    allowSelectedSorce = true,
     dexId = DexId.XOR
   ): Promise<SwapResult> {
     const assetA = await this.root.assets.getAssetInfo(assetAAddress);
@@ -658,6 +723,13 @@ export class SwapModule<T> {
     const toCodecString = (value) => new FPNumber(value, (!isExchangeB ? assetB : assetA).decimals).toCodecString();
 
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
+    const filterMode =
+      liquiditySource !== LiquiditySourceTypes.Default
+        ? allowSelectedSorce
+          ? 'AllowSelected'
+          : 'ForbidSelected'
+        : 'Disabled';
+
     const result = await this.root.api.rpc.liquidityProxy.quote(
       dexId,
       assetAAddress,
@@ -665,7 +737,7 @@ export class SwapModule<T> {
       toCodecString(amount),
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
       liquiditySources as any,
-      liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected'
+      filterMode
     );
     const value = !result.isNone
       ? result.unwrap()
