@@ -25,9 +25,9 @@ export interface ValidatorInfo {
 
 export interface ValidatorInfoFull extends ValidatorInfo {
   rewardPoints: number;
-  nominations: Others;
+  nominators: Others;
   identity: PalletIdentityRegistration;
-  apy: number;
+  apy: string;
   stake: {
     stakeReturn: string;
     total: string;
@@ -86,6 +86,13 @@ export type AccountStakingLedger = {
 };
 
 export type StakeReturn = {
-  apy: number;
-  stakeReturn: string;
+  apy: string; // per year
+  stakeReturn: string; // per era
+  stakeReturnReward: string; // per era
+};
+
+export type NominatorReward = {
+  rewardPerEra: string;
+  rewardPerDay: string;
+  rewardPerYear: string;
 };

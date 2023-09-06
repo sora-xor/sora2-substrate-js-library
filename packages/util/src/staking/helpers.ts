@@ -37,25 +37,20 @@ const formatPayee = (payee: StakingRewardsDestination | string): string | { Acco
   return payee in StakingRewardsDestination ? payee : { Account: payee };
 };
 
-const formatBalance = (value: any) => new FPNumber(value).toCodecString();
-
 const formatValidatorExposure = (codec: Exposure): ValidatorExposure => {
   return {
-    total: formatBalance(codec.total),
-    own: formatBalance(codec.own),
-    others: codec.others.map((item) => ({ who: item.who.toString(), value: formatBalance(item.value) })),
+    total: toCodecString(codec.total),
+    own: toCodecString(codec.own),
+    others: codec.others.map((item) => ({ who: item.who.toString(), value: toCodecString(item.value) })),
   };
 };
 
-const toCodecString = (erasTotalStake: u128): CodecString => {
-  return new FPNumber(erasTotalStake).toCodecString();
-};
+const toCodecString = (value: any) => new FPNumber(value).toCodecString();
 
 export {
   formatEra,
   formatPayee,
   toCodecString,
-  formatBalance,
   formatNominations,
   formatValidatorExposure,
   formatIndividualRewardPoints,

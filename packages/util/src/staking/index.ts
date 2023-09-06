@@ -5,8 +5,10 @@ import { map } from 'rxjs';
 
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import { XOR } from '../assets/consts';
+import { XOR, VAL } from '../assets/consts';
 import { StakingRewardsDestination } from './types';
+import { DexId } from '../dex/consts';
+import { LiquiditySourceTypes } from '../../../liquidity-proxy/src/consts';
 
 import type { PalletIdentityRegistration } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
@@ -25,19 +27,26 @@ import type {
   RewardPointsIndividual,
   ValidatorInfoFull,
   StakeReturn,
+  NominatorReward,
 } from './types';
 import {
   formatEra,
   formatPayee,
-  formatBalance,
   formatNominations,
   formatValidatorExposure,
   formatIndividualRewardPoints,
   toCodecString,
 } from './helpers';
 
+const COUNT_DAYS_IN_YEAR = 365;
+const COMMISSION_DECIMALS = 9;
+
 export class StakingModule<T> {
-  constructor(private readonly root: Api<T>) {}
+  countErasInDaily: number;
+
+  constructor(private readonly root: Api<T>) {
+    this.countErasInDaily = 4;
+  }
 
   public getSignerPair(signerPair?: KeyringPair) {
     const pair = signerPair || this.root.account.pair;
@@ -92,6 +101,16 @@ export class StakingModule<T> {
         return { index, start };
       })
     );
+  }
+
+  /**
+   * Get history depth
+   * @returns history depth
+   */
+  public getHistoryDepth(): number {
+    const historyDepth = this.root.api.consts.staking.historyDepth;
+
+    return historyDepth.toNumber();
   }
 
   /**
@@ -191,9 +210,9 @@ export class StakingModule<T> {
 
         return {
           stash: data.stash.toString(),
-          total: formatBalance(data.total),
-          active: formatBalance(data.active),
-          unlocking: data.unlocking.map((item) => ({ value: formatBalance(item.value), era: item.era.toNumber() })),
+          total: toCodecString(data.total),
+          active: toCodecString(data.active),
+          unlocking: data.unlocking.map((item) => ({ value: toCodecString(item.value), era: item.era.toNumber() })),
         };
       })
     );
@@ -267,7 +286,7 @@ export class StakingModule<T> {
     const summaryRewards = erasValidatorReward.reduce((sum, [, eraReward]) => {
       const eraRewardValue = eraReward.value.toString();
 
-      return sum.add(new FPNumber(eraRewardValue));
+      return sum.add(FPNumber.fromCodecValue(eraRewardValue));
     }, FPNumber.ZERO);
 
     const averageRewards = summaryRewards.div(new FPNumber(erasValidatorReward.length));
@@ -277,20 +296,39 @@ export class StakingModule<T> {
 
   /**
    * Calculating validator apy
-   * @returns
+   * @returns apy
    */
-  public async calculatingStakeReturn(currentEra: number, totalStakeValidator: string): Promise<StakeReturn> {
-    const eraTotalStake = await this.getEraTotalStake(currentEra);
-    const averageRewards = await this.getAverageRewards();
+  public async calculatingStakeReturn(
+    totalStakeValidator: string,
+    rewardToStakeRatio: string,
+    eraTotalStake: string,
+    eraAverageRewards: FPNumber,
+    commission: string
+  ): Promise<StakeReturn> {
+    const validatorTotalStake = FPNumber.fromCodecValue(totalStakeValidator);
 
-    const totalStake = FPNumber.fromCodecValue(totalStakeValidator);
-    const validatorShare = totalStake.div(new FPNumber(eraTotalStake));
-    const stakeReturn = averageRewards.mul(validatorShare);
-    const apy = stakeReturn.div(totalStake);
+    if (validatorTotalStake.isZero())
+      return {
+        stakeReturnReward: '0',
+        stakeReturn: '0',
+        apy: '0',
+      };
+
+    const validatorShareStake = validatorTotalStake.div(FPNumber.fromCodecValue(eraTotalStake));
+    const stakeReturnReward = eraAverageRewards.mul(validatorShareStake);
+
+    const stakeReturn = stakeReturnReward.mul(FPNumber.fromCodecValue(rewardToStakeRatio));
+    const ratioReturnStakeToTotalStake = stakeReturn
+      .div(validatorTotalStake)
+      .mul(new FPNumber(this.countErasInDaily))
+      .mul(new FPNumber(COUNT_DAYS_IN_YEAR));
+    const nominatorShare = FPNumber.ONE.sub(FPNumber.fromCodecValue(commission, COMMISSION_DECIMALS));
+    const apy = ratioReturnStakeToTotalStake.sub(FPNumber.ONE).mul(FPNumber.HUNDRED).mul(nominatorShare);
 
     return {
-      stakeReturn: stakeReturn.toString(), // TODO сейчас stakeReturn посчитан в ревард токенах, при необходимости пересчитать в застейканный токен
-      apy: apy.toNumber(), // TODO
+      stakeReturnReward: stakeReturnReward.toString(),
+      stakeReturn: stakeReturn.toString(),
+      apy: apy.toFixed(2),
     };
   }
 
@@ -303,6 +341,40 @@ export class StakingModule<T> {
   }
 
   /**
+   * Get nominators reward
+   * @returns nominators reward
+   */
+  public async getNominatorsReward(address: string): Promise<NominatorReward> {
+    const currentEra = await this.getCurrentEra();
+    const eraTotalStake = await this.getEraTotalStake(currentEra);
+    const electedValidators = await this.getElectedValidators(currentEra);
+    const eraAverageRewards = await this.getAverageRewards();
+
+    const nominatorReward = electedValidators.reduce((sum, validator) => {
+      const nominatorInfo = validator.others.find(({ who }) => who === address);
+
+      if (!nominatorInfo) return sum;
+
+      const validatorTotalStake = FPNumber.fromCodecValue(validator?.total ?? '0');
+      const validatorShareStake = validatorTotalStake.div(FPNumber.fromCodecValue(eraTotalStake));
+      const stakeReturnReward = eraAverageRewards.mul(validatorShareStake);
+
+      const nominatorShare = FPNumber.fromCodecValue(nominatorInfo.value).div(validatorTotalStake);
+      const nominatorRewardByValidator = nominatorShare.mul(stakeReturnReward);
+
+      return sum.add(nominatorRewardByValidator);
+    }, FPNumber.ZERO);
+
+    const rewardPerDay = nominatorReward.mul(new FPNumber(this.countErasInDaily));
+
+    return {
+      rewardPerEra: nominatorReward.toString(),
+      rewardPerDay: rewardPerDay.toString(),
+      rewardPerYear: rewardPerDay.mul(new FPNumber(COUNT_DAYS_IN_YEAR)).toString(),
+    };
+  }
+
+  /**
    * Get information about validators
    * @returns list of validators infos sorted by recommended
    */
@@ -311,6 +383,17 @@ export class StakingModule<T> {
     const currentEra = await this.getCurrentEra();
     const eraRewardPoints = await this.getEraRewardPoints(currentEra);
     const electedValidators = await this.getElectedValidators(currentEra);
+    const eraTotalStake = await this.getEraTotalStake(currentEra);
+    const eraAverageRewards = await this.getAverageRewards();
+
+    const { amount: rewardToStakeRatio } = await this.root.swap.getResultFromBackend(
+      VAL.address,
+      XOR.address,
+      1,
+      false,
+      LiquiditySourceTypes.Default,
+      DexId.XOR
+    );
 
     const validatorsPromises = wannabeValidators.map<Promise<ValidatorInfoFull>>(async ({ address, commission }) => {
       const electedValidator = electedValidators.find(({ address: _address }) => _address === address);
@@ -318,13 +401,19 @@ export class StakingModule<T> {
       const rewardPoints = eraRewardPoints[address];
 
       const identity = await this.getIdentity(address);
-      const { apy, stakeReturn } = await this.calculatingStakeReturn(currentEra, total);
+      const { apy, stakeReturn } = await this.calculatingStakeReturn(
+        total,
+        rewardToStakeRatio,
+        eraTotalStake,
+        eraAverageRewards,
+        commission
+      );
 
       return {
         address,
         rewardPoints,
         commission: commission ?? '',
-        nominations: electedValidator?.others ?? [],
+        nominators: electedValidator?.others ?? [],
         identity,
         apy,
         stake: {
@@ -341,17 +430,17 @@ export class StakingModule<T> {
       const { apy: apy1, commission: commission1, identity: identity1 } = validator1;
       const { apy: apy2, commission: commission2 } = validator2;
 
-      const subtractionApy = apy2 - apy1;
+      const subtractionApy = new FPNumber(apy2).div(new FPNumber(apy1));
 
-      if (subtractionApy !== 0) return subtractionApy;
+      if (!subtractionApy.isZero()) return subtractionApy.toNumber();
 
-      const subtractionCommission = +commission1 - +commission2;
+      const subtractionCommission = new FPNumber(commission1).div(new FPNumber(commission2));
 
-      if (subtractionCommission !== 0) return subtractionCommission;
+      if (!subtractionCommission.isZero()) return subtractionCommission.toNumber();
 
       const { judgements: judgements1 } = identity1;
       const knownGoodValue1 = judgements1.find(([, { type }]) => type === 'KnownGood');
-      const isKnownGood1 = knownGoodValue1[1]?.isKnownGood ?? false;
+      const isKnownGood1 = knownGoodValue1?.[1]?.isKnownGood ?? false;
 
       return isKnownGood1 ? -1 : 1;
     });
