@@ -35,7 +35,6 @@ import {
   formatNominations,
   formatValidatorExposure,
   formatIndividualRewardPoints,
-  toCodecString,
 } from './helpers';
 
 const COUNT_DAYS_IN_YEAR = 365;
@@ -152,7 +151,7 @@ export class StakingModule<T> {
   public async getEraTotalStake(eraIndex: number): Promise<CodecString> {
     const erasTotalStake = await this.root.api.query.staking.erasTotalStake(eraIndex);
 
-    return toCodecString(erasTotalStake);
+    return erasTotalStake.toString();
   }
 
   /**
@@ -163,7 +162,7 @@ export class StakingModule<T> {
   public getEraTotalStakeObservable(eraIndex: number): Observable<CodecString> {
     return this.root.apiRx.query.staking.erasTotalStake(eraIndex).pipe(
       map((data) => {
-        return toCodecString(data);
+        return data.toString();
       })
     );
   }
@@ -210,9 +209,9 @@ export class StakingModule<T> {
 
         return {
           stash: data.stash.toString(),
-          total: toCodecString(data.total),
-          active: toCodecString(data.active),
-          unlocking: data.unlocking.map((item) => ({ value: toCodecString(item.value), era: item.era.toNumber() })),
+          total: data.total.toString(),
+          active: data.active.toString(),
+          unlocking: data.unlocking.map((item) => ({ value: item.value.toString(), era: item.era.toNumber() })),
         };
       })
     );

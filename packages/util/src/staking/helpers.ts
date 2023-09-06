@@ -37,19 +37,10 @@ const formatPayee = (payee: StakingRewardsDestination | string): string | { Acco
 
 const formatValidatorExposure = (codec: Exposure): ValidatorExposure => {
   return {
-    total: toCodecString(codec.total),
-    own: toCodecString(codec.own),
-    others: codec.others.map((item) => ({ who: item.who.toString(), value: toCodecString(item.value) })),
+    total: codec.total.toString(),
+    own: codec.own.toString(),
+    others: codec.others.map((item) => ({ who: item.who.toString(), value: item.value.toString() })),
   };
 };
 
-const toCodecString = (value: any) => new FPNumber(value).toCodecString();
-
-export {
-  formatEra,
-  formatPayee,
-  toCodecString,
-  formatNominations,
-  formatValidatorExposure,
-  formatIndividualRewardPoints,
-};
+export { formatEra, formatPayee, formatNominations, formatValidatorExposure, formatIndividualRewardPoints };
