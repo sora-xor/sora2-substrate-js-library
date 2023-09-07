@@ -26,7 +26,7 @@ import type {
   ValidatorInfoFull,
   StakeReturn,
   NominatorReward,
-  Identity,
+  OriginalIdentity,
   // EraElectionStatus,
 } from './types';
 import {
@@ -335,12 +335,12 @@ export class StakingModule<T> {
    * Get validator identity
    * @returns identity
    */
-  public async getIdentity(address: string): Promise<Identity | null> {
+  public async getIdentity(address: string): Promise<OriginalIdentity | null> {
     const identity = await this.root.api.query.identity.identityOf(address);
 
     if (identity.isNone) return null;
 
-    return identity.toHuman() as unknown as Identity;
+    return identity.toHuman() as unknown as OriginalIdentity;
   }
 
   /**

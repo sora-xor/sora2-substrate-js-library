@@ -97,11 +97,25 @@ export type NominatorReward = {
 
 type JudgementsType = 'Unknown' | 'FeePaid' | 'Reasonable' | 'KnownGood' | 'OutOfDate' | 'LowQuality' | 'Erroneous';
 
-type InfoItem =
+type OriginalInfoItem =
   | 'None'
   | {
       Raw: string;
     };
+
+type InfoItem = 'None' | string;
+
+export type OriginalInfo = {
+  legal: OriginalInfoItem;
+  web: OriginalInfoItem;
+  riot: OriginalInfoItem;
+  additional: [];
+  pgpFingerprint: null;
+  image: OriginalInfoItem;
+  display: OriginalInfoItem;
+  email: OriginalInfoItem;
+  twitter: OriginalInfoItem;
+};
 
 export type Info = {
   legal: InfoItem;
@@ -114,6 +128,15 @@ export type Info = {
   email: InfoItem;
   twitter: InfoItem;
 };
+
+interface CommonIdentity {
+  deposit: string;
+  judgements: [1 | 0, JudgementsType][];
+}
+
+export interface OriginalIdentity extends CommonIdentity {
+  info: OriginalInfo;
+}
 
 export interface Identity {
   judgements: [1 | 0, JudgementsType][];
