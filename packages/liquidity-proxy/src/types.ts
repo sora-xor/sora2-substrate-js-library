@@ -51,8 +51,8 @@ export type SwapQuote = (
   outputAssetAddress: string,
   value: NumberLike,
   isExchangeB: boolean,
-  selectedSources: LiquiditySourceTypes[],
-  deduceFee: boolean
+  selectedSources?: LiquiditySourceTypes[],
+  deduceFee?: boolean
 ) => {
   result: SwapResult;
   dexId: number;

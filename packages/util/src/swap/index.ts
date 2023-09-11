@@ -32,13 +32,7 @@ import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
-import type { ReceiverHistoryItem, SwapTransferBatchData } from './types';
-
-type SwapQuoteData = {
-  quote: SwapQuote;
-  isAvailable: boolean;
-  liquiditySources: LiquiditySourceTypes[];
-};
+import type { ReceiverHistoryItem, SwapTransferBatchData, SwapQuoteData } from './types';
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
 
@@ -47,9 +41,6 @@ const toAssetId = (o: Observable<CommonPrimitivesAssetId32>): Observable<string>
     map((asset) => asset.code.toString()),
     distinctUntilChanged(comparator)
   );
-
-const toAssetIds = (data: BTreeSet<CommonPrimitivesAssetId32>): string[] =>
-  [...data.values()].map((asset) => asset.code.toString());
 
 const toCodec = (o: Observable<any>) =>
   o.pipe(
@@ -74,10 +65,6 @@ const toAveragePrice = (o: Observable<Option<PriceToolsAggregatedPriceInfo>>) =>
     distinctUntilChanged(comparator)
   );
 
-const getAssetAveragePrice = <T>(root: Api<T>, assetAddress: string): Observable<{ buy: string; sell: string }> => {
-  return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
-};
-
 const toBandRate = (o: Observable<Option<BandBandRate>>): Observable<OracleRate> =>
   o.pipe(
     map((codec) => {
@@ -87,8 +74,16 @@ const toBandRate = (o: Observable<Option<BandBandRate>>): Observable<OracleRate>
       const dynamicFee = data.dynamicFee.inner.toString();
 
       return { value, lastUpdated, dynamicFee };
-    })
+    }),
+    distinctUntilChanged(comparator)
   );
+
+const toAssetIds = (data: BTreeSet<CommonPrimitivesAssetId32>): string[] =>
+  [...data.values()].map((asset) => asset.code.toString());
+
+const getAssetAveragePrice = <T>(root: Api<T>, assetAddress: string): Observable<{ buy: string; sell: string }> => {
+  return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
+};
 
 const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key: string]: T } =>
   values.reduce(
@@ -248,40 +243,6 @@ export class SwapModule<T> {
       xst,
       lockedSources,
     };
-  }
-
-  /**
-   * Get observable reserves throught all dexes for swapped tokens
-   * @param firstAssetAddress Asset A address
-   * @param secondAssetAddress Asset B address
-   * @param selectedSources Selected liquidity sources
-   * @returns Observable reserves for all dexes
-   */
-  public async subscribeOnAllDexesReserves(
-    firstAssetAddress: string,
-    secondAssetAddress: string,
-    selectedSources: LiquiditySourceTypes[] = []
-  ): Promise<Observable<Array<{ dexId: number; payload: QuotePayload }>>> {
-    const observables: Observable<{ dexId: number; payload: QuotePayload }>[] = [];
-
-    for (const { dexId } of this.root.dex.dexList) {
-      const observableReserves = await this.subscribeOnReserves(
-        firstAssetAddress,
-        secondAssetAddress,
-        selectedSources,
-        dexId
-      );
-      const observableDexReserves = observableReserves.pipe(
-        map((payload) => ({
-          dexId,
-          payload,
-        }))
-      );
-
-      observables.push(observableDexReserves);
-    }
-
-    return combineLatest(observables);
   }
 
   /**
