@@ -340,18 +340,6 @@ export class StakingModule<T> {
   }
 
   /**
-   * Get validator identity
-   * @returns identity
-   */
-  public async getIdentity(address: string): Promise<OriginalIdentity | null> {
-    const identity = await this.root.api.query.identity.identityOf(address);
-
-    if (identity.isNone) return null;
-
-    return identity.toHuman() as unknown as OriginalIdentity;
-  }
-
-  /**
    * Get nominators reward
    * @returns nominators reward
    */
@@ -413,7 +401,7 @@ export class StakingModule<T> {
       const total = electedValidator?.total ?? '0';
       const rewardPoints = eraRewardPoints[address];
 
-      const identity = await this.getIdentity(address);
+      const { identity } = await this.root.getAccountOnChainIdentity(address);
       const { apy, stakeReturn, stakeReturnReward } = await this.calculatingStakeReturn(
         total,
         rewardToStakeRatio,
@@ -454,6 +442,9 @@ export class StakingModule<T> {
 
     const validators = await Promise.all(validatorsPromises);
 
+    // step 1 - apy DESC
+    // step 2 - commission ASC
+    // step 3 - identity, array of judgements have KnownGood element
     const sortedValidators = validators.sort((validator1, validator2) => {
       const { apy: apy1, commission: commission1, identity: identity1 } = validator1;
       const { apy: apy2, commission: commission2 } = validator2;
@@ -550,7 +541,7 @@ export class StakingModule<T> {
    * @returns The structure with the list of validators, eraIndex
    */
   public getNominationsObservable(stashAddress: string): Observable<StashNominatorsInfo | null> {
-    return this.root.apiRx.query.staking.nominators(stashAddress).pipe(map((codec) => formatNominations(codec)));
+    return this.root.apiRx.query.staking.nominators(stashAddress).pipe(map(formatNominations));
   }
 
   /**

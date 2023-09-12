@@ -27,6 +27,7 @@ import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
 import type { HistoryItem } from './BaseApi';
+import { OriginalIdentity } from './staking/types';
 
 let keyring!: Keyring;
 
@@ -178,12 +179,15 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public async getAccountOnChainIdentity(address: string): Promise<OnChainIdentity | null> {
     const data = await this.api.query.identity.identityOf(address);
+
     if (data.isEmpty) return null;
+
     const result = data.unwrap();
 
     return {
       legalName: result.info.legal.value.toHuman() as string,
       approved: Boolean(result.judgements.length),
+      identity: result.toHuman() as unknown as OriginalIdentity,
     };
   }
 

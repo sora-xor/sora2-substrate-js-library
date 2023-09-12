@@ -21,7 +21,7 @@ import type { BridgeHistory } from './BridgeApi';
 import type { EvmHistory } from './bridgeProxy/evm/types';
 import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
-import type { StakingHistory } from './staking/types';
+import type { OriginalIdentity, StakingHistory } from './staking/types';
 import { ReceiverHistoryItem } from './swap/types';
 
 type AccountWithOptions = {
@@ -642,13 +642,13 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
 
         case Operation.StakingBondExtra:
-          return this.api.tx.staking.bondExtra(0);
+          return this.api.tx.staking.bondExtra('0');
 
         case Operation.StakingRebond:
-          return this.api.tx.staking.rebond(0);
+          return this.api.tx.staking.rebond('0');
 
         case Operation.StakingUnbond:
-          return this.api.tx.staking.unbond(0);
+          return this.api.tx.staking.unbond('0');
 
         case Operation.StakingNominate:
           return this.api.tx.staking.nominate([mockAccountAddress]);
@@ -872,4 +872,5 @@ export interface History {
 export interface OnChainIdentity {
   legalName: string;
   approved: boolean;
+  identity: OriginalIdentity;
 }
