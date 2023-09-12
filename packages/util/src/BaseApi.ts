@@ -721,17 +721,22 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.StakingSetController,
       Operation.StakingPayout,
     ];
-    for (const operation of operations) {
+
+    const operationsPromises = operations.map(async (operation) => {
       const extrinsic = this.getEmptyExtrinsic(operation);
+
       if (extrinsic) {
         try {
           const res = await extrinsic.paymentInfo(mockAccountAddress);
+
           this.NetworkFee[operation] = new FPNumber(res.partialFee, XOR.decimals).toCodecString();
         } catch (error) {
           // extrinsic is not supported in chain
         }
       }
-    }
+    });
+
+    await Promise.allSettled(operationsPromises);
   }
 
   /**
