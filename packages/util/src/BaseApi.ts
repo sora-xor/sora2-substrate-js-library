@@ -23,7 +23,6 @@ import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 import type { StakingHistory } from './staking/types';
 import { ReceiverHistoryItem } from './swap/types';
-import { api } from './api';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -643,13 +642,13 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
 
         case Operation.StakingBondExtra:
-          return this.api.tx.staking.bondExtra(new FPNumber(0, XOR.decimals).toCodecString());
+          return this.api.tx.staking.bondExtra(0);
 
         case Operation.StakingRebond:
-          return this.api.tx.staking.rebond(new FPNumber(0, XOR.decimals).toCodecString());
+          return this.api.tx.staking.rebond(0);
 
         case Operation.StakingUnbond:
-          return this.api.tx.staking.unbond(new FPNumber(0, XOR.decimals).toCodecString());
+          return this.api.tx.staking.unbond(0);
 
         case Operation.StakingNominate:
           return this.api.tx.staking.nominate([mockAccountAddress]);
@@ -711,7 +710,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.DemeterFarmingUnstakeToken,
       Operation.DemeterFarmingGetRewards,
       Operation.CeresLiquidityLockerLockLiquidity,
-
       Operation.StakingBond,
       Operation.StakingBondExtra,
       Operation.StakingRebond,

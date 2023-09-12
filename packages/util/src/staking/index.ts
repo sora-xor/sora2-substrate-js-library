@@ -108,7 +108,8 @@ export class StakingModule<T> {
   }
 
   /**
-   * Get history depth
+   * Get history depth.
+   * History depth - number of eras to keep in history.
    * @returns history depth
    */
   public getHistoryDepth(): number {
@@ -118,7 +119,9 @@ export class StakingModule<T> {
   }
 
   /**
-   * Get current era
+   * Get the current era index.
+   * This is the latest planned era, depending on how the Session pallet queues the validator
+   * set, it might be active or not.
    * @returns current era index
    */
   public async getCurrentEra(): Promise<number> {
@@ -280,7 +283,7 @@ export class StakingModule<T> {
   public async getAverageRewards(eraIndex?: number): Promise<FPNumber> {
     const erasValidatorRewardPallet = this.root.api.query.staking.erasValidatorReward;
 
-    if (eraIndex !== undefined) {
+    if (Number.isInteger(eraIndex)) {
       const erasValidatorReward = await erasValidatorRewardPallet(eraIndex);
 
       return new FPNumber(erasValidatorReward.value);
