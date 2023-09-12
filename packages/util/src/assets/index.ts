@@ -81,8 +81,10 @@ export async function getAssetBalance(
   assetDecimals = 18
 ): Promise<AccountBalance> {
   if (assetAddress === XOR.address) {
-    const accountInfo = await api.query.system.account(accountAddress);
-    const bondedBalance = await api.query.referrals.referrerBalances(accountAddress);
+    const [accountInfo, bondedBalance] = await Promise.all([
+      api.query.system.account(accountAddress),
+      api.query.referrals.referrerBalances(accountAddress),
+    ]);
     return formatBalance(accountInfo.data, assetDecimals, bondedBalance);
   }
   const accountData = await api.query.tokens.accounts(accountAddress, assetAddress);
@@ -398,9 +400,10 @@ export class AssetsModule<T> {
       this.removeFromAccountAssetsList(assetAddress);
     }
 
-    for (const assetAddress of currentAddresses) {
-      await this.addToAccountAssetsList(assetAddress);
-    }
+    if (!currentAddresses.length) return;
+
+    const addToAccountAssetsListPromises = currentAddresses.map((assetId) => this.addToAccountAssetsList(assetId));
+    await Promise.allSettled(addToAccountAssetsListPromises);
   }
 
   /**
