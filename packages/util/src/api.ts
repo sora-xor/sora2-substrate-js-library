@@ -223,7 +223,7 @@ export class Api<T = void> extends BaseApi<T> {
       if (isExternal) {
         account = keyring.addExternal(address, meta);
       } else {
-        const accounts = await this.getAccounts();
+        const accounts = this.getAccounts();
 
         if (!accounts.find((acc) => acc.address === address)) {
           // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
@@ -308,9 +308,8 @@ export class Api<T = void> extends BaseApi<T> {
    * Get all imported accounts.
    * It returns list of imported accounts
    * added via api.importAccount()
-   *
    */
-  public async getAccounts(): Promise<KeyringAddress[]> {
+  public getAccounts() {
     return keyring.getAccounts();
   }
 
