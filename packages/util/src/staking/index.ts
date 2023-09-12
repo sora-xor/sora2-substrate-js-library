@@ -1,13 +1,14 @@
+import { u32 } from '@polkadot/types-codec';
 import { assert } from '@polkadot/util';
 import { FPNumber } from '@sora-substrate/math';
 import { map } from 'rxjs';
 
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import { XOR } from '../assets/consts';
+import { XOR, VAL } from '../assets/consts';
 import { StakingRewardsDestination } from './types';
-
-import type { Exposure } from '@polkadot/types/interfaces/staking';
+import { DexId } from '../dex/consts';
+import { LiquiditySourceTypes } from '../../../liquidity-proxy/src/consts';
 
 import type { Observable } from '@polkadot/types/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
@@ -17,27 +18,36 @@ import type {
   ValidatorInfo,
   StashNominatorsInfo,
   ActiveEra,
-  EraElectionStatus,
   EraRewardPoints,
   ValidatorExposure,
   ElectedValidator,
   AccountStakingLedger,
+  RewardPointsIndividual,
+  ValidatorInfoFull,
+  StakeReturn,
+  NominatorReward,
+  OriginalIdentity,
+  // EraElectionStatus,
 } from './types';
+import {
+  formatEra,
+  formatPayee,
+  formatNominations,
+  formatValidatorExposure,
+  formatIndividualRewardPoints,
+} from './helpers';
 
-// UTILS
-const formatBalance = (value: any) => new FPNumber(value).toCodecString();
+/**
+ * A value to convert the validator commission into a fractional number
+ */
+const COMMISSION_DECIMALS = 9;
 
-const formatValidatorExposure = (codec: Exposure): ValidatorExposure => {
-  return {
-    total: formatBalance(codec.total),
-    own: formatBalance(codec.own),
-    others: codec.others.map((item) => ({ who: item.who.toString(), value: formatBalance(item.value) })),
-  };
-};
+/**
+ * Check on other networks
+ */
+const COUNT_ERAS_IN_DAILY = 4;
 
-const formatPayee = (payee: StakingRewardsDestination | string): string | { Account: string } => {
-  return payee in StakingRewardsDestination ? payee : { Account: payee };
-};
+const COUNT_DAYS_IN_YEAR = 365;
 
 export class StakingModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -98,16 +108,34 @@ export class StakingModule<T> {
   }
 
   /**
+   * Get history depth.
+   * History depth - number of eras to keep in history.
+   * @returns history depth
+   */
+  public getHistoryDepth(): number {
+    const historyDepth = this.root.api.consts.staking.historyDepth;
+
+    return historyDepth.toNumber();
+  }
+
+  /**
+   * Get the current era index.
+   * This is the latest planned era, depending on how the Session pallet queues the validator
+   * set, it might be active or not.
+   * @returns current era index
+   */
+  public async getCurrentEra(): Promise<number> {
+    const data = await this.root.api.query.staking.currentEra();
+
+    return formatEra(data);
+  }
+
+  /**
    * Get observable current era
    * @returns current era index
    */
   public getCurrentEraObservable(): Observable<number> {
-    return this.root.apiRx.query.staking.currentEra().pipe(
-      map((data) => {
-        const era = data.unwrap();
-        return era.toNumber();
-      })
-    );
+    return this.root.apiRx.query.staking.currentEra().pipe(map(formatEra));
   }
 
   /**
@@ -128,12 +156,34 @@ export class StakingModule<T> {
    * @param eraIndex index of era
    * @returns total stake balance in XOR (codec string)
    */
+  public async getEraTotalStake(eraIndex: number): Promise<CodecString> {
+    const erasTotalStake = await this.root.api.query.staking.erasTotalStake(eraIndex);
+
+    return erasTotalStake.toString();
+  }
+
+  /**
+   * Get observable eras total stake
+   * @param eraIndex index of era
+   * @returns total stake balance in XOR (codec string)
+   */
   public getEraTotalStakeObservable(eraIndex: number): Observable<CodecString> {
     return this.root.apiRx.query.staking.erasTotalStake(eraIndex).pipe(
       map((data) => {
-        return new FPNumber(data).toCodecString();
+        return data.toString();
       })
     );
+  }
+
+  /**
+   * Get reward points of validators for era
+   * @param eraIndex index of era
+   * @returns validator points
+   */
+  public async getEraRewardPoints(eraIndex: number): Promise<RewardPointsIndividual> {
+    const data = await this.root.api.query.staking.erasRewardPoints(eraIndex);
+
+    return formatIndividualRewardPoints(data);
   }
 
   /**
@@ -145,11 +195,7 @@ export class StakingModule<T> {
     return this.root.apiRx.query.staking.erasRewardPoints(eraIndex).pipe(
       map((data) => {
         const total = data.total.toNumber();
-        const individual = {};
-
-        for (const [account, points] of data.individual.entries()) {
-          individual[account.toString()] = points.toNumber();
-        }
+        const individual = formatIndividualRewardPoints(data);
 
         return { individual, total };
       })
@@ -171,9 +217,9 @@ export class StakingModule<T> {
 
         return {
           stash: data.stash.toString(),
-          total: formatBalance(data.total),
-          active: formatBalance(data.active),
-          unlocking: data.unlocking.map((item) => ({ value: formatBalance(item.value), era: item.era.toNumber() })),
+          total: data.total.toString(),
+          active: data.active.toString(),
+          unlocking: data.unlocking.map((item) => ({ value: item.value.toString(), era: item.era.toNumber() })),
         };
       })
     );
@@ -231,6 +277,199 @@ export class StakingModule<T> {
   }
 
   /**
+   * Calculating average validator reward
+   * @returns average validator reward
+   */
+  public async getAverageRewards(eraIndex?: number): Promise<FPNumber> {
+    const erasValidatorRewardPallet = this.root.api.query.staking.erasValidatorReward;
+
+    if (Number.isInteger(eraIndex)) {
+      const erasValidatorReward = await erasValidatorRewardPallet(eraIndex);
+
+      return new FPNumber(erasValidatorReward.value);
+    }
+
+    const erasValidatorReward = await erasValidatorRewardPallet.entries();
+    const summaryRewards = erasValidatorReward.reduce((sum, [, eraReward]) => {
+      const eraRewardValue = eraReward.value.toString();
+
+      return sum.add(FPNumber.fromCodecValue(eraRewardValue));
+    }, FPNumber.ZERO);
+
+    const averageRewards = summaryRewards.div(new FPNumber(erasValidatorReward.length));
+
+    return averageRewards;
+  }
+
+  /**
+   * Calculating validator apy
+   * @returns apy
+   */
+  public async calculatingStakeReturn(
+    totalStakeValidator: string,
+    rewardToStakeRatio: string,
+    eraTotalStake: string,
+    eraAverageRewards: FPNumber,
+    commission: string
+  ): Promise<StakeReturn> {
+    const validatorTotalStake = FPNumber.fromCodecValue(totalStakeValidator);
+
+    if (validatorTotalStake.isZero())
+      return {
+        stakeReturnReward: '0',
+        stakeReturn: '0',
+        apy: '0',
+      };
+
+    const validatorShareStake = validatorTotalStake.div(FPNumber.fromCodecValue(eraTotalStake));
+    const stakeReturnReward = eraAverageRewards.mul(validatorShareStake);
+
+    const stakeReturn = stakeReturnReward.mul(FPNumber.fromCodecValue(rewardToStakeRatio));
+    const ratioReturnStakeToTotalStake = stakeReturn
+      .div(validatorTotalStake)
+      .mul(new FPNumber(COUNT_ERAS_IN_DAILY))
+      .mul(new FPNumber(COUNT_DAYS_IN_YEAR));
+    const nominatorShare = FPNumber.ONE.sub(FPNumber.fromCodecValue(commission, COMMISSION_DECIMALS));
+    const apy = ratioReturnStakeToTotalStake.sub(FPNumber.ONE).mul(FPNumber.HUNDRED).mul(nominatorShare);
+
+    return {
+      stakeReturnReward: stakeReturnReward.toCodecString(),
+      stakeReturn: stakeReturn.toCodecString(),
+      apy: apy.toFixed(2),
+    };
+  }
+
+  /**
+   * Get nominators reward
+   * @returns nominators reward
+   */
+  public async getNominatorsReward(address: string): Promise<NominatorReward> {
+    const currentEra = await this.getCurrentEra();
+    const eraTotalStake = await this.getEraTotalStake(currentEra);
+    const electedValidators = await this.getElectedValidators(currentEra);
+    const eraAverageRewards = await this.getAverageRewards();
+
+    const nominatorReward = electedValidators.reduce((sum, validator) => {
+      const nominatorInfo = validator.others.find(({ who }) => who === address);
+
+      if (!nominatorInfo) return sum;
+
+      const validatorTotalStake = FPNumber.fromCodecValue(validator?.total ?? '0');
+      const validatorShareStake = validatorTotalStake.div(FPNumber.fromCodecValue(eraTotalStake));
+      const stakeReturnReward = eraAverageRewards.mul(validatorShareStake);
+
+      const nominatorShare = FPNumber.fromCodecValue(nominatorInfo.value).div(validatorTotalStake);
+      const nominatorRewardByValidator = nominatorShare.mul(stakeReturnReward);
+
+      return sum.add(nominatorRewardByValidator);
+    }, FPNumber.ZERO);
+
+    const rewardPerDay = nominatorReward.mul(new FPNumber(COUNT_ERAS_IN_DAILY));
+
+    return {
+      rewardPerEra: nominatorReward.toString(),
+      rewardPerDay: rewardPerDay.toString(),
+      rewardPerYear: rewardPerDay.mul(new FPNumber(COUNT_DAYS_IN_YEAR)).toString(),
+    };
+  }
+
+  /**
+   * Get information about validators
+   * @returns list of validators infos sorted by recommended
+   */
+  public async getValidatorsInfo(): Promise<ValidatorInfoFull[]> {
+    const wannabeValidators = await this.getWannabeValidators();
+    const currentEra = await this.getCurrentEra();
+    const eraRewardPoints = await this.getEraRewardPoints(currentEra);
+    const electedValidators = await this.getElectedValidators(currentEra);
+    const eraTotalStake = await this.getEraTotalStake(currentEra);
+    const eraAverageRewards = await this.getAverageRewards();
+
+    // TODO use liquidity proxy quote
+    const { amount: rewardToStakeRatio } = await this.root.swap.getResultFromBackend(
+      VAL.address,
+      XOR.address,
+      1,
+      false,
+      LiquiditySourceTypes.Default,
+      true,
+      DexId.XOR
+    );
+
+    const validatorsPromises = wannabeValidators.map<Promise<ValidatorInfoFull>>(async ({ address, commission }) => {
+      const electedValidator = electedValidators.find(({ address: _address }) => _address === address);
+      const total = electedValidator?.total ?? '0';
+      const rewardPoints = eraRewardPoints[address];
+
+      const { identity } = await this.root.getAccountOnChainIdentity(address);
+      const { apy, stakeReturn, stakeReturnReward } = await this.calculatingStakeReturn(
+        total,
+        rewardToStakeRatio,
+        eraTotalStake,
+        eraAverageRewards,
+        commission
+      );
+
+      return {
+        address,
+        rewardPoints,
+        commission: commission ?? '',
+        nominators: electedValidator?.others ?? [],
+        identity:
+          identity !== null
+            ? {
+                ...identity,
+                info: Object.fromEntries(
+                  Object.entries(identity.info).map(([key, value]) => {
+                    if (value === 'None') return [key, ''];
+
+                    if (!Array.isArray(value) && value?.Raw !== undefined) return [key, value?.Raw];
+
+                    return [key, value];
+                  })
+                ),
+              }
+            : null,
+        apy,
+        stake: {
+          stakeReturn,
+          stakeReturnReward,
+          total,
+          own: electedValidator?.own ?? '0',
+        },
+      };
+    });
+
+    const validators = await Promise.all(validatorsPromises);
+
+    // step 1 - apy DESC
+    // step 2 - commission ASC
+    // step 3 - identity, array of judgements have KnownGood element
+    const sortedValidators = validators.sort((validator1, validator2) => {
+      const { apy: apy1, commission: commission1, identity: identity1 } = validator1;
+      const { apy: apy2, commission: commission2 } = validator2;
+
+      const subtractionApy = new FPNumber(apy2).sub(new FPNumber(apy1));
+
+      if (!subtractionApy.isZero()) return subtractionApy.toNumber();
+
+      const subtractionCommission = new FPNumber(commission1).sub(new FPNumber(commission2));
+
+      if (!subtractionCommission.isZero()) return subtractionCommission.toNumber();
+
+      if (identity1 === null) return 1;
+
+      const { judgements: judgements1 } = identity1;
+      const knownGoodValue1 = judgements1.find(([, type]) => type === 'KnownGood');
+      const isKnownGood1 = knownGoodValue1?.[0] === 1;
+
+      return isKnownGood1 ? -1 : 1;
+    });
+
+    return sortedValidators;
+  }
+
+  /**
    * Get a set of validators elected for a given era
    * @param eraIndex index of era
    * @param clipped flag to reduce 'others' list to biggest stakers
@@ -285,21 +524,24 @@ export class StakingModule<T> {
 
   /**
    * **STASH**
+   * Get validators nominated by stash
+   * @param stashAddress address of stash account
+   * @returns The structure with the list of validators, eraIndex
+   */
+  public async getNominations(stashAddress: string): Promise<StashNominatorsInfo | null> {
+    const codec = await this.root.api.query.staking.nominators(stashAddress);
+
+    return formatNominations(codec);
+  }
+
+  /**
+   * **STASH**
    * Get observable validators nominated by stash
    * @param stashAddress address of stash account
    * @returns The structure with the list of validators, eraIndex
    */
   public getNominationsObservable(stashAddress: string): Observable<StashNominatorsInfo | null> {
-    return this.root.apiRx.query.staking.nominators(stashAddress).pipe(
-      map((codec) => {
-        if (codec.isEmpty) return null;
-        const data = codec.unwrap();
-        const targets = data.targets.map((target) => target.toString());
-        const suppressed = data.suppressed.isTrue;
-        const submittedIn = data.submittedIn.toNumber();
-        return { targets, suppressed, submittedIn };
-      })
-    );
+    return this.root.apiRx.query.staking.nominators(stashAddress).pipe(map(formatNominations));
   }
 
   /**
@@ -407,6 +649,20 @@ export class StakingModule<T> {
   }
 
   /**
+   * Get slashing spans
+   * slashingSpans parameter is needed to ensure
+   * that the user agrees that staking information will be removed when there is no unlocking items pending
+   * and active value goes below minimum_balance due to slashing.
+   * @param stashAddress address of stash account
+   * @returns slashing spans
+   */
+  private async getSlashingSpans(stashAddress: string): Promise<u32> {
+    const { value } = await this.root.api.query.staking.slashingSpans(stashAddress);
+
+    return value.spanIndex;
+  }
+
+  /**
    * **CONTROLLER**
    * Moves unlocked value to the free balance of the stash account
    * @param args.value amount to withdraw - not used in extrinsic call, but can be passed to save this value in history
@@ -414,12 +670,8 @@ export class StakingModule<T> {
    */
   public async withdrawUndonded(args: { value?: NumberLike }, signerPair?: KeyringPair): Promise<void> {
     const pair = this.getSignerPair(signerPair);
-    /**
-     * slashingSpans parameter is needed to ensure
-     * that the user agrees that staking information will be removed when there is no unlocking items pending
-     * and active value goes below minimum_balance due to slashing.
-     */
-    const slashingSpans = 0;
+    const slashingSpans = await this.getSlashingSpans(pair.address);
+
     await this.root.submitExtrinsic(this.root.api.tx.staking.withdrawUnbonded(slashingSpans), pair, {
       type: Operation.StakingWithdrawUnbonded,
       symbol: XOR.symbol,
@@ -482,7 +734,7 @@ export class StakingModule<T> {
     const pair = this.getSignerPair(signerPair);
 
     await this.root.submitExtrinsic(this.root.api.tx.staking.setController(args.address), pair, {
-      type: Operation.StakingSetPayee,
+      type: Operation.StakingSetController,
       controller: args.address,
     });
   }
