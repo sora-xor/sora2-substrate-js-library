@@ -1,4 +1,3 @@
-import { u32 } from '@polkadot/types-codec';
 import { assert } from '@polkadot/util';
 import { FPNumber } from '@sora-substrate/math';
 import { map } from 'rxjs';
@@ -6,14 +5,20 @@ import { map } from 'rxjs';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { XOR, VAL } from '../assets/consts';
+import {
+  formatEra,
+  formatPayee,
+  formatNominations,
+  formatValidatorExposure,
+  formatIndividualRewardPoints,
+} from './helpers';
 import { StakingRewardsDestination } from './types';
-import { DexId } from '../dex/consts';
-import { LiquiditySourceTypes } from '../../../liquidity-proxy/src/consts';
 
+import type { u32 } from '@polkadot/types-codec';
 import type { Observable } from '@polkadot/types/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
-import type { Api } from '../api';
 import type { CodecString, NumberLike } from '@sora-substrate/math';
+import type { Api } from '../api';
 import type {
   ValidatorInfo,
   StashNominatorsInfo,
@@ -26,16 +31,8 @@ import type {
   ValidatorInfoFull,
   StakeReturn,
   NominatorReward,
-  OriginalIdentity,
   // EraElectionStatus,
 } from './types';
-import {
-  formatEra,
-  formatPayee,
-  formatNominations,
-  formatValidatorExposure,
-  formatIndividualRewardPoints,
-} from './helpers';
 
 /**
  * A value to convert the validator commission into a fractional number
@@ -344,10 +341,11 @@ export class StakingModule<T> {
    * @returns nominators reward
    */
   public async getNominatorsReward(address: string): Promise<NominatorReward> {
-    const currentEra = await this.getCurrentEra();
-    const eraTotalStake = await this.getEraTotalStake(currentEra);
-    const electedValidators = await this.getElectedValidators(currentEra);
-    const eraAverageRewards = await this.getAverageRewards();
+    const [currentEra, eraAverageRewards] = await Promise.all([this.getCurrentEra(), this.getAverageRewards()]);
+    const [eraTotalStake, electedValidators] = await Promise.all([
+      this.getEraTotalStake(currentEra),
+      this.getElectedValidators(currentEra),
+    ]);
 
     const nominatorReward = electedValidators.reduce((sum, validator) => {
       const nominatorInfo = validator.others.find(({ who }) => who === address);
@@ -378,23 +376,19 @@ export class StakingModule<T> {
    * @returns list of validators infos sorted by recommended
    */
   public async getValidatorsInfo(): Promise<ValidatorInfoFull[]> {
-    const wannabeValidators = await this.getWannabeValidators();
-    const currentEra = await this.getCurrentEra();
-    const eraRewardPoints = await this.getEraRewardPoints(currentEra);
-    const electedValidators = await this.getElectedValidators(currentEra);
-    const eraTotalStake = await this.getEraTotalStake(currentEra);
-    const eraAverageRewards = await this.getAverageRewards();
+    const [wannabeValidators, currentEra, eraAverageRewards] = await Promise.all([
+      this.getWannabeValidators(),
+      this.getCurrentEra(),
+      this.getAverageRewards(),
+    ]);
+    const [eraRewardPoints, electedValidators, eraTotalStake] = await Promise.all([
+      this.getEraRewardPoints(currentEra),
+      this.getElectedValidators(currentEra),
+      this.getEraTotalStake(currentEra),
+    ]);
 
-    // TODO use liquidity proxy quote
-    const { amount: rewardToStakeRatio } = await this.root.swap.getResultFromBackend(
-      VAL.address,
-      XOR.address,
-      1,
-      false,
-      LiquiditySourceTypes.Default,
-      true,
-      DexId.XOR
-    );
+    // TODO: use liquidity proxy quote; XOR based quote is used just for now
+    const { amount: rewardToStakeRatio } = await this.root.swap.getResultFromDexRpc(VAL.address, XOR.address, 1);
 
     const validatorsPromises = wannabeValidators.map<Promise<ValidatorInfoFull>>(async ({ address, commission }) => {
       const electedValidator = electedValidators.find(({ address: _address }) => _address === address);
@@ -573,11 +567,11 @@ export class StakingModule<T> {
   public async bond(
     args: { value: NumberLike; controller: string; payee: StakingRewardsDestination | string },
     signerPair?: KeyringPair
-  ): Promise<void> {
+  ): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const params = this.calcBondParams(args.value, args.controller, args.payee);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.bond(...params), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.bond(...params), pair, {
       type: Operation.StakingBond,
       symbol: XOR.symbol,
       assetAddress: XOR.address,
@@ -591,10 +585,10 @@ export class StakingModule<T> {
    * @param args.value amount add to stake
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async bondExtra(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<void> {
+  public async bondExtra(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.staking.bondExtra(new FPNumber(args.value, XOR.decimals).toCodecString()),
       pair,
       {
@@ -612,10 +606,10 @@ export class StakingModule<T> {
    * @param args.value amount to lock in stake
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async rebond(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<void> {
+  public async rebond(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.staking.rebond(new FPNumber(args.value, XOR.decimals).toCodecString()),
       pair,
       {
@@ -633,10 +627,10 @@ export class StakingModule<T> {
    * @param args.value amount to unbond from stake
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async unbond(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<void> {
+  public async unbond(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.staking.unbond(new FPNumber(args.value, XOR.decimals).toCodecString()),
       pair,
       {
@@ -668,11 +662,11 @@ export class StakingModule<T> {
    * @param args.value amount to withdraw - not used in extrinsic call, but can be passed to save this value in history
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async withdrawUndonded(args: { value?: NumberLike }, signerPair?: KeyringPair): Promise<void> {
+  public async withdrawUndonded(args: { value?: NumberLike }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const slashingSpans = await this.getSlashingSpans(pair.address);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.withdrawUnbonded(slashingSpans), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.withdrawUnbonded(slashingSpans), pair, {
       type: Operation.StakingWithdrawUnbonded,
       symbol: XOR.symbol,
       assetAddress: XOR.address,
@@ -686,10 +680,10 @@ export class StakingModule<T> {
    * @param args.validators list of validators addresses to nominate
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async nominate(args: { validators: string[] }, signerPair?: KeyringPair): Promise<void> {
+  public async nominate(args: { validators: string[] }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.nominate(args.validators), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.nominate(args.validators), pair, {
       type: Operation.StakingNominate,
       validators: args.validators,
     });
@@ -700,10 +694,10 @@ export class StakingModule<T> {
    * Stop nominating or validating from the next era.
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async chill(signerPair?: KeyringPair): Promise<void> {
+  public async chill(signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.chill(), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.chill(), pair, {
       type: Operation.StakingChill,
     });
   }
@@ -714,11 +708,11 @@ export class StakingModule<T> {
    * @param args.payee rewards destination
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async setPayee(args: { payee: StakingRewardsDestination }, signerPair?: KeyringPair): Promise<void> {
+  public async setPayee(args: { payee: StakingRewardsDestination }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const destination = formatPayee(args.payee);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.setPayee(destination), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.setPayee(destination), pair, {
       type: Operation.StakingSetPayee,
       payee: args.payee,
     });
@@ -730,10 +724,10 @@ export class StakingModule<T> {
    * @param args.address address of controller account
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async setController(args: { address: string }, signerPair?: KeyringPair): Promise<void> {
+  public async setController(args: { address: string }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.setController(args.address), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.setController(args.address), pair, {
       type: Operation.StakingSetController,
       controller: args.address,
     });
@@ -745,14 +739,14 @@ export class StakingModule<T> {
    * @param args.eraIndex era index
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async payout(args: { validators: string[]; eraIndex: number }, signerPair?: KeyringPair): Promise<void> {
+  public async payout(args: { validators: string[]; eraIndex: number }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const transactions = args.validators.map((validator) =>
       this.root.api.tx.staking.payoutStakers(validator, args.eraIndex)
     );
     const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
 
-    await this.root.submitExtrinsic(call, pair, {
+    return this.root.submitExtrinsic(call, pair, {
       type: Operation.StakingPayout,
       validators: args.validators,
     });
