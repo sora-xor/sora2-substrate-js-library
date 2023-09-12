@@ -3,7 +3,6 @@ import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { Observable, Subscriber } from 'rxjs';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
-import { Keyring } from '@polkadot/api';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import { connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
@@ -24,6 +23,7 @@ import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 import type { StakingHistory } from './staking/types';
 import { ReceiverHistoryItem } from './swap/types';
+import { api } from './api';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -78,6 +78,9 @@ const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
 
 export const KeyringType = 'sr25519';
+
+// We don't need to know real account address for checking network fees
+const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
 
 export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   /**
@@ -635,6 +638,37 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, XOR.address, true);
         case Operation.CeresLiquidityLockerLockLiquidity:
           return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
+
+        case Operation.StakingBond:
+          return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
+
+        case Operation.StakingBondExtra:
+          return this.api.tx.staking.bondExtra(new FPNumber(0, XOR.decimals).toCodecString());
+
+        case Operation.StakingRebond:
+          return this.api.tx.staking.rebond(new FPNumber(0, XOR.decimals).toCodecString());
+
+        case Operation.StakingUnbond:
+          return this.api.tx.staking.unbond(new FPNumber(0, XOR.decimals).toCodecString());
+
+        case Operation.StakingNominate:
+          return this.api.tx.staking.nominate([mockAccountAddress]);
+
+        case Operation.StakingWithdrawUnbonded:
+          return this.api.tx.staking.withdrawUnbonded(0);
+
+        case Operation.StakingChill:
+          return this.api.tx.staking.chill();
+
+        case Operation.StakingSetController:
+          return this.api.tx.staking.setController(mockAccountAddress);
+
+        case Operation.StakingSetPayee:
+          return this.api.tx.staking.setPayee({ Account: mockAccountAddress });
+
+        case Operation.StakingPayout:
+          return this.api.tx.staking.payoutStakers(mockAccountAddress, 3449);
+
         default:
           return null;
       }
@@ -677,9 +711,18 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.DemeterFarmingUnstakeToken,
       Operation.DemeterFarmingGetRewards,
       Operation.CeresLiquidityLockerLockLiquidity,
+
+      Operation.StakingBond,
+      Operation.StakingBondExtra,
+      Operation.StakingRebond,
+      Operation.StakingUnbond,
+      Operation.StakingWithdrawUnbonded,
+      Operation.StakingNominate,
+      Operation.StakingChill,
+      Operation.StakingSetPayee,
+      Operation.StakingSetController,
+      Operation.StakingPayout,
     ];
-    // We don't need to know real account address for checking network fees
-    const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
     for (const operation of operations) {
       const extrinsic = this.getEmptyExtrinsic(operation);
       if (extrinsic) {

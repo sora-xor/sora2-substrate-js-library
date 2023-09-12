@@ -37,15 +37,20 @@ import {
   formatIndividualRewardPoints,
 } from './helpers';
 
-const COUNT_DAYS_IN_YEAR = 365;
+/**
+ * A value to convert the validator commission into a fractional number
+ */
 const COMMISSION_DECIMALS = 9;
 
-export class StakingModule<T> {
-  countErasInDaily: number;
+/**
+ * Check on other networks
+ */
+const COUNT_ERAS_IN_DAILY = 4;
 
-  constructor(private readonly root: Api<T>) {
-    this.countErasInDaily = 4;
-  }
+const COUNT_DAYS_IN_YEAR = 365;
+
+export class StakingModule<T> {
+  constructor(private readonly root: Api<T>) {}
 
   public getSignerPair(signerPair?: KeyringPair) {
     const pair = signerPair || this.root.account.pair;
@@ -127,7 +132,7 @@ export class StakingModule<T> {
    * @returns current era index
    */
   public getCurrentEraObservable(): Observable<number> {
-    return this.root.apiRx.query.staking.currentEra().pipe(map((data) => formatEra(data)));
+    return this.root.apiRx.query.staking.currentEra().pipe(map(formatEra));
   }
 
   /**
@@ -319,7 +324,7 @@ export class StakingModule<T> {
     const stakeReturn = stakeReturnReward.mul(FPNumber.fromCodecValue(rewardToStakeRatio));
     const ratioReturnStakeToTotalStake = stakeReturn
       .div(validatorTotalStake)
-      .mul(new FPNumber(this.countErasInDaily))
+      .mul(new FPNumber(COUNT_ERAS_IN_DAILY))
       .mul(new FPNumber(COUNT_DAYS_IN_YEAR));
     const nominatorShare = FPNumber.ONE.sub(FPNumber.fromCodecValue(commission, COMMISSION_DECIMALS));
     const apy = ratioReturnStakeToTotalStake.sub(FPNumber.ONE).mul(FPNumber.HUNDRED).mul(nominatorShare);
@@ -368,7 +373,7 @@ export class StakingModule<T> {
       return sum.add(nominatorRewardByValidator);
     }, FPNumber.ZERO);
 
-    const rewardPerDay = nominatorReward.mul(new FPNumber(this.countErasInDaily));
+    const rewardPerDay = nominatorReward.mul(new FPNumber(COUNT_ERAS_IN_DAILY));
 
     return {
       rewardPerEra: nominatorReward.toString(),
@@ -389,6 +394,7 @@ export class StakingModule<T> {
     const eraTotalStake = await this.getEraTotalStake(currentEra);
     const eraAverageRewards = await this.getAverageRewards();
 
+    // TODO use liquidity proxy quote
     const { amount: rewardToStakeRatio } = await this.root.swap.getResultFromBackend(
       VAL.address,
       XOR.address,
@@ -656,7 +662,7 @@ export class StakingModule<T> {
    * @param stashAddress address of stash account
    * @returns slashing spans
    */
-  public async getSlashingSpans(stashAddress: string): Promise<u32> {
+  private async getSlashingSpans(stashAddress: string): Promise<u32> {
     const { value } = await this.root.api.query.staking.slashingSpans(stashAddress);
 
     return value.spanIndex;
@@ -734,7 +740,7 @@ export class StakingModule<T> {
     const pair = this.getSignerPair(signerPair);
 
     await this.root.submitExtrinsic(this.root.api.tx.staking.setController(args.address), pair, {
-      type: Operation.StakingSetPayee,
+      type: Operation.StakingSetController,
       controller: args.address,
     });
   }

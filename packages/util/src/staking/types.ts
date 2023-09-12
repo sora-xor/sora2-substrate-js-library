@@ -127,6 +127,8 @@ export type Info = {
   display: InfoItem;
   email: InfoItem;
   twitter: InfoItem;
+  name: string;
+  description: string;
 };
 
 interface CommonIdentity {
