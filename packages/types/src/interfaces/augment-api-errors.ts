@@ -1729,6 +1729,7 @@ declare module '@polkadot/api-base/types/errors' {
        * Selected filtering request is not allowed.
        **/
       ForbiddenFilter: AugmentedError<ApiType>;
+      InsufficientBalance: AugmentedError<ApiType>;
       /**
        * None of the sources has enough reserves to execute a trade
        **/

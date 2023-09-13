@@ -48,7 +48,7 @@ export class PoolXykModule<T> {
   private subject = new Subject<void>();
   public updated = this.subject.asObservable();
   public accountLiquidity: Array<AccountLiquidity> = [];
-  public accountLiquidityLoaded!: Subject<void>;
+  public accountLiquidityLoaded: Subject<void> | null = null;
 
   private addToLiquidityList(asset: AccountLiquidity): void {
     const liquidityCopy = [...this.accountLiquidity];
@@ -445,9 +445,10 @@ export class PoolXykModule<T> {
       this.removeAccountLiquidity(liquidity);
     }
 
-    for (const liquidity of includedLiquidityList) {
-      await this.subscribeOnAccountLiquidity(liquidity);
-    }
+    const subscribeOnAccountLiquidityPromises = includedLiquidityList.map((liquidity) => {
+      return this.subscribeOnAccountLiquidity(liquidity);
+    });
+    await Promise.all(subscribeOnAccountLiquidityPromises);
 
     this.subject.next();
   }
@@ -481,6 +482,7 @@ export class PoolXykModule<T> {
 
       await this.updateAccountLiquiditySubscriptions(assetIdPairs);
 
+      this.accountLiquidityLoaded.next(); // Do not remove it to avoid 'no elements in sequence' error
       this.accountLiquidityLoaded.complete();
     });
   }

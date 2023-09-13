@@ -66,11 +66,7 @@ export class StakingModule<T> {
    * @returns session index
    */
   public getCurrentSessionObservable(): Observable<number> {
-    return this.root.apiRx.query.session.currentIndex().pipe(
-      map((data) => {
-        return data.toNumber();
-      })
-    );
+    return this.root.apiRx.query.session.currentIndex().pipe(map((data) => data.toNumber()));
   }
 
   /**
@@ -79,11 +75,7 @@ export class StakingModule<T> {
    * @returns validator count (69)
    */
   public getPreferredValidatorCountObservable(): Observable<number> {
-    return this.root.apiRx.query.staking.validatorCount().pipe(
-      map((data) => {
-        return data.toNumber();
-      })
-    );
+    return this.root.apiRx.query.staking.validatorCount().pipe(map((data) => data.toNumber()));
   }
 
   /**
@@ -97,7 +89,7 @@ export class StakingModule<T> {
 
         const era = data.unwrap();
         const index = era.index.toNumber();
-        const start = era.start.unwrap().toNumber();
+        const start = era.start.unwrapOrDefault().toNumber();
 
         return { index, start };
       })
@@ -165,11 +157,7 @@ export class StakingModule<T> {
    * @returns total stake balance in XOR (codec string)
    */
   public getEraTotalStakeObservable(eraIndex: number): Observable<CodecString> {
-    return this.root.apiRx.query.staking.erasTotalStake(eraIndex).pipe(
-      map((data) => {
-        return data.toString();
-      })
-    );
+    return this.root.apiRx.query.staking.erasTotalStake(eraIndex).pipe(map((data) => data.toString()));
   }
 
   /**
@@ -498,11 +486,7 @@ export class StakingModule<T> {
       ? this.root.apiRx.query.staking.erasStakersClipped
       : this.root.apiRx.query.staking.erasStakers;
 
-    return observable(eraIndex, validatorAddress).pipe(
-      map((codec) => {
-        return formatValidatorExposure(codec);
-      })
-    );
+    return observable(eraIndex, validatorAddress).pipe(map(formatValidatorExposure));
   }
 
   /**
