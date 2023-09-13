@@ -1,6 +1,6 @@
-import { Option, u32 } from '@polkadot/types';
 import { StakingRewardsDestination, RewardPointsIndividual, StashNominatorsInfo, ValidatorExposure } from './types';
-import { PalletStakingEraRewardPoints, PalletStakingNominations } from '@polkadot/types/lookup';
+import type { Option, u32 } from '@polkadot/types';
+import type { PalletStakingEraRewardPoints, PalletStakingNominations } from '@polkadot/types/lookup';
 import type { Exposure } from '@polkadot/types/interfaces/staking';
 
 const formatEra = (data: Option<u32>): number => {

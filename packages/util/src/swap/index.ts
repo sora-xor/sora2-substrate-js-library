@@ -34,6 +34,10 @@ import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 import type { ReceiverHistoryItem, SwapTransferBatchData, SwapQuoteData } from './types';
 
+interface SwapResultWithDexId extends SwapResult {
+  dexId: DexId;
+}
+
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
 
 const toAssetId = (o: Observable<CommonPrimitivesAssetId32>): Observable<string> =>
@@ -93,6 +97,8 @@ const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key
     }),
     {}
   );
+
+const emptySwapResult = { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0, route: [] };
 
 export class SwapModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -756,7 +762,7 @@ export class SwapModule<T> {
   /**
    * **RPC**
    *
-   * Get swap result using `liquidityProxy.quote` rpc call.
+   * Get swap result using `liquidityProxy.quote` rpc call using predefined DEX ID.
    *
    * It's better to use `getResult` function because of the blockchain performance
    *
@@ -764,10 +770,11 @@ export class SwapModule<T> {
    * @param assetBAddress Asset B address
    * @param amount Amount value (Asset A if Exchange A, else - Asset B)
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
-   * @param liquiditySource Selected liquidity source
-   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`)
+   * @param liquiditySource Selected liquidity source; `''` by default
+   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`); `true` by default
+   * @param dexId DEX ID: might be `0` - XOR based or `1` - XSTUSD based; `0` by default
    */
-  public async getResultFromBackend(
+  public async getResultFromDexRpc(
     assetAAddress: string,
     assetBAddress: string,
     amount: NumberLike,
@@ -776,8 +783,10 @@ export class SwapModule<T> {
     allowSelectedSorce = true,
     dexId = DexId.XOR
   ): Promise<SwapResult> {
-    const assetA = await this.root.assets.getAssetInfo(assetAAddress);
-    const assetB = await this.root.assets.getAssetInfo(assetBAddress);
+    const [assetA, assetB] = await Promise.all([
+      this.root.assets.getAssetInfo(assetAAddress),
+      this.root.assets.getAssetInfo(assetBAddress),
+    ]);
     const toCodecString = (value) => new FPNumber(value, (!isExchangeB ? assetB : assetA).decimals).toCodecString();
 
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
@@ -797,15 +806,98 @@ export class SwapModule<T> {
       liquiditySources as any,
       filterMode
     );
-    const value = !result.isNone
-      ? result.unwrap()
-      : { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0, route: [] };
+    const value = result.unwrapOr(emptySwapResult);
     return {
       amount: toCodecString(value.amount),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
       route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
     } as SwapResult;
+  }
+
+  /**
+   * **RPC**
+   *
+   * Get swap result using `liquidityProxy.quote` rpc call for all DEX IDs (XOR & XSTUSD based).
+   *
+   * It's better to use `getResult` function because of the blockchain performance
+   *
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
+   * @param amount Amount value (Asset A if Exchange A, else - Asset B)
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
+   * @param liquiditySource Selected liquidity source; `''` by default
+   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`); `true` by default
+   */
+  public async getResultRpc(
+    assetAAddress: string,
+    assetBAddress: string,
+    amount: NumberLike,
+    isExchangeB = false,
+    liquiditySource = LiquiditySourceTypes.Default,
+    allowSelectedSorce = true
+  ): Promise<SwapResultWithDexId> {
+    const [assetA, assetB] = await Promise.all([
+      this.root.assets.getAssetInfo(assetAAddress),
+      this.root.assets.getAssetInfo(assetBAddress),
+    ]);
+    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals;
+    const toCodecString = (value) => new FPNumber(value, resultDecimals).toCodecString();
+    const toFP = (value) => new FPNumber(value, resultDecimals);
+
+    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource) as any;
+    const filterMode =
+      liquiditySource !== LiquiditySourceTypes.Default
+        ? allowSelectedSorce
+          ? 'AllowSelected'
+          : 'ForbidSelected'
+        : 'Disabled';
+    const codecAmount = toCodecString(amount);
+    const swapVariant = !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput';
+    const quote = this.root.api.rpc.liquidityProxy.quote;
+
+    const [resDex0, resDex1] = await Promise.all([
+      quote(DexId.XOR, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
+      quote(DexId.XSTUSD, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
+    ]);
+    const valueDex0 = resDex0.unwrapOr(emptySwapResult);
+    const valueDex1 = resDex1.unwrapOr(emptySwapResult);
+    const isDex0Better = FPNumber.gte(toFP(valueDex0.amount), toFP(valueDex1.amount));
+    const value = isDex0Better ? valueDex0 : valueDex1;
+    return {
+      amount: toCodecString(value.amount),
+      fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
+      rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
+      route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
+      dexId: isDex0Better ? DexId.XOR : DexId.XSTUSD,
+    } as SwapResultWithDexId;
+  }
+
+  /**
+   * **RPC**
+   *
+   * Subscribe on swap result using `liquidityProxy.quote` rpc call for all DEX IDs (XOR & XSTUSD based).
+   *
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
+   * @param amount Amount value (Asset A if Exchange A, else - Asset B)
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
+   * @param liquiditySource Selected liquidity source; `''` by default
+   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`); `true` by default
+   */
+  public subscribeOnResultRpc(
+    assetAAddress: string,
+    assetBAddress: string,
+    amount: NumberLike,
+    isExchangeB = false,
+    liquiditySource = LiquiditySourceTypes.Default,
+    allowSelectedSorce = true
+  ): Observable<Promise<SwapResultWithDexId>> {
+    return this.root.system.updated.pipe(
+      map(() =>
+        this.getResultRpc(assetAAddress, assetBAddress, amount, isExchangeB, liquiditySource, allowSelectedSorce)
+      )
+    );
   }
 
   /**
