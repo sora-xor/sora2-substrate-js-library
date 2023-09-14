@@ -893,7 +893,7 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
   ): Observable<Promise<SwapResultWithDexId>> {
-    return this.root.system.updated.pipe(
+    return this.root.system.getBlockNumberObservable().pipe(
       map(() =>
         this.getResultRpc(assetAAddress, assetBAddress, amount, isExchangeB, liquiditySource, allowSelectedSorce)
       )
