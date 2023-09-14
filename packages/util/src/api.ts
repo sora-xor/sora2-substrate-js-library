@@ -180,7 +180,7 @@ export class Api<T = void> extends BaseApi<T> {
   public async getAccountOnChainIdentity(address: string): Promise<OnChainIdentity | null> {
     const data = await this.api.query.identity.identityOf(address);
 
-    if (data.isEmpty) return null;
+    if (data.isEmpty || data.isNone) return null;
 
     const result = data.unwrap();
 
