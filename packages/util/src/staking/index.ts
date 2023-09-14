@@ -401,7 +401,7 @@ export class StakingModule<T> {
       const total = electedValidator?.total ?? '0';
       const rewardPoints = eraRewardPoints[address];
 
-      const { identity } = await this.root.getAccountOnChainIdentity(address);
+      const identity = (await this.root.getAccountOnChainIdentity(address))?.identity;
       const { apy, stakeReturn, stakeReturnReward } = await this.calculatingStakeReturn(
         total,
         rewardToStakeRatio,
