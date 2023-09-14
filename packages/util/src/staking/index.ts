@@ -402,7 +402,7 @@ export class StakingModule<T> {
             ? {
                 ...identity,
                 info: Object.fromEntries(
-                  Object.entries(identity.info).map(([key, value]) => {
+                  Object.entries(identity?.info ?? {}).map(([key, value]) => {
                     if (value === 'None') return [key, ''];
 
                     if (!Array.isArray(value) && value?.Raw !== undefined) return [key, value?.Raw];
@@ -442,7 +442,7 @@ export class StakingModule<T> {
       if (identity1 === null) return 1;
 
       const { judgements: judgements1 } = identity1;
-      const knownGoodValue1 = judgements1.find(([, type]) => type === 'KnownGood');
+      const knownGoodValue1 = judgements1?.find(([, type]) => type === 'KnownGood');
       const isKnownGood1 = knownGoodValue1?.[0] === 1;
 
       return isKnownGood1 ? -1 : 1;
