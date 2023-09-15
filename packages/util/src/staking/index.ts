@@ -56,6 +56,22 @@ export class StakingModule<T> {
     return pair;
   }
 
+    /**
+   * Number of eras that staked funds must remain bonded for.
+   * @returns bonding duration
+   */
+    public getBondingDuration(): number {
+      return this.root.api.consts.staking.bondingDuration.toNumber()
+    }
+
+    /**
+     * Maximum number of nominations per nominator.
+     * @returns max nominations
+     */
+    public getMaxNominations(): number {
+      return this.root.api.consts.staking.maxNominations.toNumber()
+    }
+
   /**
    * Get observable session index
    *
