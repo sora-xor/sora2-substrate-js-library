@@ -646,7 +646,7 @@ export class StakingModule<T> {
    * @param args.value amount to withdraw - not used in extrinsic call, but can be passed to save this value in history
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async withdrawUndonded(args: { value?: NumberLike }, signerPair?: KeyringPair): Promise<T> {
+  public async withdrawUnbonded(args: { value?: NumberLike }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const slashingSpans = await this.getSlashingSpans(pair.address);
 
