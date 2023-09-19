@@ -61,7 +61,7 @@ export class StakingModule<T> {
    * @returns bonding duration
    */
   public getBondingDuration(): number {
-    return this.root.api.consts.staking.bondingDuration.toNumber()
+    return this.root.api.consts.staking.bondingDuration.toNumber();
   }
 
   /**
@@ -69,7 +69,15 @@ export class StakingModule<T> {
    * @returns max nominations
    */
   public getMaxNominations(): number {
-    return this.root.api.consts.staking.maxNominations.toNumber()
+    return this.root.api.consts.staking.maxNominations.toNumber();
+  }
+
+  /**
+   * The minimum active bond to become and maintain the role of a nominator.
+   * @returns min bond
+   */
+  public async getMinNominatorBond(): Promise<number> {
+    return (await this.root.api.query.staking.minNominatorBond()).toNumber();
   }
 
   /**
