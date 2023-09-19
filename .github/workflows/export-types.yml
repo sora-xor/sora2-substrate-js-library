@@ -29,21 +29,6 @@ jobs:
         if: ${{ env.types-diff > 0 }}
         run: yarn bump-version
 
-      - name: commit and pr # if types changed
-        id: pr
-        if: ${{ env.types-diff > 0 }}
-        uses: peter-evans/create-pull-request@v3
-        with:
-          branch: types-autoupdate
-          title: 'Types autoupdate'
-          body: 'Types checked and update is required'
-          reviewers: |
-            stefashkaa
-            Nikita-Polyakov
-            alexnatalia
-            RustemYuzlibaev
-            Tieumsan
-
       - name: send message to telegram # if types changed
         if: ${{ env.types-diff > 0 }}
         uses: appleboy/telegram-action@master
@@ -51,6 +36,4 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            New pull request created to update types in sora2-substrate-js-library
-            Repository: ${{ github.repository }}
-            See changes: ${{ steps.pr.outputs.pull-request-url }}
+            Types are waiting for updates. I can't create a PR, but I can warn.
