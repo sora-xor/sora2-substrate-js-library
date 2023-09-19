@@ -77,7 +77,7 @@ export class StakingModule<T> {
    * @returns min bond
    */
   public async getMinNominatorBond(): Promise<number> {
-    return await this.root.api.query.staking.minNominatorBond().toNumber();
+    return (await this.root.api.query.staking.minNominatorBond()).toNumber();
   }
 
   /**
