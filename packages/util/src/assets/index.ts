@@ -404,6 +404,10 @@ export class AssetsModule<T> {
 
     const addToAccountAssetsListPromises = currentAddresses.map((assetId) => this.addToAccountAssetsList(assetId));
     await Promise.allSettled(addToAccountAssetsListPromises);
+    // sort assets by currentAddresses list
+    this.accountAssets.sort((a, b) => {
+      return currentAddresses.indexOf(a.address) - currentAddresses.indexOf(b.address);
+    });
   }
 
   /**
