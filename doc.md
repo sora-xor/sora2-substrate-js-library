@@ -60,7 +60,7 @@
 - [beefy](#beefy-pallet)
 - [mmrLeaf](#mmrleaf-pallet)
 - [leafProvider](#leafprovider-pallet)
-- [evmBridgeProxy](#evmbridgeproxy-pallet)
+- [bridgeProxy](#bridgeproxy-pallet)
 - [ethereumLightClient](#ethereumlightclient-pallet)
 - [bridgeInboundChannel](#bridgeinboundchannel-pallet)
 - [bridgeOutboundChannel](#bridgeoutboundchannel-pallet)
@@ -73,10 +73,13 @@
 - [substrateBridgeOutboundChannel](#substratebridgeoutboundchannel-pallet)
 - [substrateDispatch](#substratedispatch-pallet)
 - [substrateBridgeApp](#substratebridgeapp-pallet)
+- [bridgeDataSigner](#bridgedatasigner-pallet)
+- [multisigVerifier](#multisigverifier-pallet)
 - [sudo](#sudo-pallet)
 - [utility](#utility-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
 - [faucet](#faucet-pallet)
+- [qaTools](#qatools-pallet)
 - [author](#author-pallet)
 - [chain](#chain-pallet)
 - [childstate](#childstate-pallet)
@@ -85,7 +88,6 @@
 - [rpc](#rpc-pallet)
 - [state](#state-pallet)
 - [dexApi](#dexapi-pallet)
-- [intentivizedChannel](#intentivizedchannel-pallet)
 
 ## Substrate pallet
 
@@ -7686,12 +7688,20 @@ arguments:
 
 > Disable synthetic asset.
 >
-> Just remove synthetic from exchanging.
-> Will not unregister trading pair because `trading_pair` pallet does not provide this
-> ability. And will not unregister trading synthetic asset because of that.
+> Removes synthetic from exchanging
+> and removes XSTPool liquidity source for corresponding trading pair.
 >
 > - `origin`: the sudo account on whose behalf the transaction is being executed,
 > - `synthetic_asset`: synthetic asset id to disable.
+
+arguments:
+
+- syntheticAsset: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.xstPool.removeSyntheticAsset**
+
+> Entirely remove synthetic asset (including linked symbol info)
 
 arguments:
 
@@ -8927,6 +8937,24 @@ returns: `Option<BandBandRate>`
 
 <hr>
 
+#### **api.query.band.symbolCheckBlock**
+
+arguments:
+
+- key: `(u32,Bytes)`
+
+returns: `bool`
+
+<hr>
+
+#### **api.query.band.dynamicFeeParameters**
+
+arguments: -
+
+returns: `BandFeeCalculationParameters`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.band.relay**
@@ -9001,6 +9029,13 @@ arguments:
 arguments:
 
 - accountIds: `Vec<AccountId32>`
+<hr>
+
+#### **api.tx.band.setDynamicFeeParameters**
+
+arguments:
+
+- feeParameters: `BandFeeCalculationParameters`
 <hr>
 
 ## OracleProxy pallet
@@ -9127,6 +9162,16 @@ returns: `AccountId32`
 
 <hr>
 
+#### **api.query.hermesGovernancePlatform.palletStorageVersion**
+
+> Pallet storage version
+
+arguments: -
+
+returns: `HermesGovernancePlatformStorageVersion`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.hermesGovernancePlatform.vote**
@@ -9136,7 +9181,7 @@ returns: `AccountId32`
 arguments:
 
 - pollId: `H256`
-- votingOption: `HermesGovernancePlatformVotingOption`
+- votingOption: `Bytes`
 <hr>
 
 #### **api.tx.hermesGovernancePlatform.createPoll**
@@ -9147,8 +9192,9 @@ arguments:
 
 - pollStartTimestamp: `u64`
 - pollEndTimestamp: `u64`
-- title: `Text`
-- description: `Text`
+- title: `Bytes`
+- description: `Bytes`
+- options: `Vec<Bytes>`
 <hr>
 
 #### **api.tx.hermesGovernancePlatform.withdrawFundsVoter**
@@ -9312,7 +9358,7 @@ returns: `OrderBookLimitOrder`
 
 arguments:
 
-- key: `(OrderBookOrderBookId,u128)`
+- key: `(OrderBookOrderBookId,CommonBalanceUnit)`
 
 returns: `Vec<u128>`
 
@@ -9322,7 +9368,7 @@ returns: `Vec<u128>`
 
 arguments:
 
-- key: `(OrderBookOrderBookId,u128)`
+- key: `(OrderBookOrderBookId,CommonBalanceUnit)`
 
 returns: `Vec<u128>`
 
@@ -9334,7 +9380,7 @@ arguments:
 
 - key: `OrderBookOrderBookId`
 
-returns: `BTreeMap<u128, u128>`
+returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 
 <hr>
 
@@ -9344,7 +9390,7 @@ arguments:
 
 - key: `OrderBookOrderBookId`
 
-returns: `BTreeMap<u128, u128>`
+returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 
 <hr>
 
@@ -9358,13 +9404,34 @@ returns: `Vec<u128>`
 
 <hr>
 
+#### **api.query.orderBook.expirationsAgenda**
+
+arguments:
+
+- key: `u32`
+
+returns: `Vec<(OrderBookOrderBookId,u128)>`
+
+<hr>
+
+#### **api.query.orderBook.incompleteExpirationsSince**
+
+> Earliest block with incomplete expirations;
+> Weight limit might not allow to finish all expirations for a block, so
+> they might be operated later.
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.orderBook.createOrderbook**
 
 arguments:
 
-- dexId: `u32`
 - orderBookId: `OrderBookOrderBookId`
 <hr>
 
@@ -9402,7 +9469,7 @@ arguments:
 - price: `u128`
 - amount: `u128`
 - side: `CommonPrimitivesPriceVariant`
-- lifespan: `u64`
+- lifespan: `Option<u64>`
 <hr>
 
 #### **api.tx.orderBook.cancelLimitOrder**
@@ -9411,6 +9478,22 @@ arguments:
 
 - orderBookId: `OrderBookOrderBookId`
 - orderId: `u128`
+<hr>
+
+#### **api.tx.orderBook.cancelLimitOrdersBatch**
+
+arguments:
+
+- limitOrdersToCancel: `Vec<(OrderBookOrderBookId,Vec<u128>)>`
+<hr>
+
+#### **api.tx.orderBook.executeMarketOrder**
+
+arguments:
+
+- orderBookId: `OrderBookOrderBookId`
+- direction: `CommonPrimitivesPriceVariant`
+- amount: `u128`
 <hr>
 
 ## Mmr pallet
@@ -9617,11 +9700,11 @@ returns: `AuxiliaryDigest`
 
 <hr>
 
-## EvmBridgeProxy pallet
+## BridgeProxy pallet
 
 ### _State Queries_
 
-#### **api.query.evmBridgeProxy.palletVersion**
+#### **api.query.bridgeProxy.palletVersion**
 
 > Returns the current pallet version from storage
 
@@ -9631,17 +9714,17 @@ returns: `u16`
 
 <hr>
 
-#### **api.query.evmBridgeProxy.transactions**
+#### **api.query.bridgeProxy.transactions**
 
 arguments:
 
-- key: `(AccountId32,(BridgeTypesGenericNetworkId,H256))`
+- key: `((BridgeTypesGenericNetworkId,AccountId32),H256)`
 
-returns: `EvmBridgeProxyBridgeRequest`
+returns: `BridgeProxyBridgeRequest`
 
 <hr>
 
-#### **api.query.evmBridgeProxy.senders**
+#### **api.query.bridgeProxy.senders**
 
 arguments:
 
@@ -9651,9 +9734,77 @@ returns: `AccountId32`
 
 <hr>
 
+#### **api.query.bridgeProxy.sidechainFeePaid**
+
+> Fee paid for relayed tx on sidechain. Map ((Network ID, Address) => Cumulative Fee Paid).
+
+arguments:
+
+- key: `(BridgeTypesGenericNetworkId,H160)`
+
+returns: `U256`
+
+<hr>
+
+#### **api.query.bridgeProxy.lockedAssets**
+
+> Amount of assets locked by bridge for specific network. Map ((Network ID, Asset ID) => Locked amount).
+
+arguments:
+
+- key: `(BridgeTypesGenericNetworkId,CommonPrimitivesAssetId32)`
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.bridgeProxy.transferLimit**
+
+> Maximum amount of assets that can be withdrawn during period of time.
+
+arguments: -
+
+returns: `BridgeProxyTransferLimitSettings`
+
+<hr>
+
+#### **api.query.bridgeProxy.consumedTransferLimit**
+
+> Consumed transfer limit.
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.bridgeProxy.transferLimitUnlockSchedule**
+
+> Schedule for consumed transfer limit reduce.
+
+arguments:
+
+- key: `u32`
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.bridgeProxy.limitedAssets**
+
+> Assets with transfer limitation.
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `bool`
+
+<hr>
+
 ### _Extrinsics_
 
-#### **api.tx.evmBridgeProxy.burn**
+#### **api.tx.bridgeProxy.burn**
 
 arguments:
 
@@ -9663,31 +9814,51 @@ arguments:
 - amount: `u128`
 <hr>
 
+#### **api.tx.bridgeProxy.addLimitedAsset**
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.bridgeProxy.removeLimitedAsset**
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.bridgeProxy.updateTransferLimit**
+
+arguments:
+
+- settings: `BridgeProxyTransferLimitSettings`
+<hr>
+
 ### _Custom RPCs_
 
-#### **api.rpc.evmBridgeProxy.listApps**
+#### **api.rpc.bridgeProxy.listApps**
 
 >
 
 arguments:
 
-- networkId: `EVMChainId`
 - at: `BlockHash`
 
 returns: `Vec<BridgeAppInfo>`
 
 <hr>
 
-#### **api.rpc.evmBridgeProxy.listAppsWithSupportedAssets**
+#### **api.rpc.bridgeProxy.listAssets**
 
 >
 
 arguments:
 
-- networkId: `EVMChainId`
+- networkId: `GenericNetworkId`
 - at: `BlockHash`
 
-returns: `AppsWithSupportedAssets<AssetId>`
+returns: `Vec<BridgeAssetInfo>`
 
 <hr>
 
@@ -9894,15 +10065,20 @@ returns: `Perbill`
 arguments:
 
 - networkId: `U256`
-- message: `BridgeTypesMessage`
+- log: `BridgeTypesLog`
+- proof: `BridgeTypesEvmProof`
 <hr>
 
-#### **api.tx.bridgeInboundChannel.messageDispatched**
+#### **api.tx.bridgeInboundChannel.batchDispatched**
+
+> BatchDispatched event from InboundChannel on Ethereum found, the function verifies tx
+> and changes all the batch messages statuses.
 
 arguments:
 
 - networkId: `U256`
-- message: `BridgeTypesMessage`
+- log: `BridgeTypesLog`
+- proof: `BridgeTypesEvmProof`
 <hr>
 
 #### **api.tx.bridgeInboundChannel.registerChannel**
@@ -9954,7 +10130,7 @@ arguments:
 
 - key: `U256`
 
-returns: `Vec<BridgeOutboundChannelMessage>`
+returns: `Vec<BridgeTypesEvmMessage>`
 
 <hr>
 
@@ -10022,7 +10198,7 @@ arguments:
 
 - key: `U256`
 
-returns: `(H160,CommonPrimitivesAssetId32)`
+returns: `(H160,CommonPrimitivesAssetId32,u8)`
 
 <hr>
 
@@ -10053,7 +10229,7 @@ arguments:
 - networkId: `U256`
 - name: `Bytes`
 - symbol: `Bytes`
-- decimals: `u8`
+- sidechainPrecision: `u8`
 - contract: `H160`
 <hr>
 
@@ -10064,6 +10240,7 @@ arguments:
 - networkId: `U256`
 - assetId: `CommonPrimitivesAssetId32`
 - contract: `H160`
+- sidechainPrecision: `u8`
 <hr>
 
 ## Erc20App pallet
@@ -10120,6 +10297,16 @@ returns: `CommonPrimitivesAssetId32`
 
 <hr>
 
+#### **api.query.erc20App.sidechainPrecision**
+
+arguments:
+
+- key: `(U256,CommonPrimitivesAssetId32)`
+
+returns: `u8`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.erc20App.mint**
@@ -10168,6 +10355,7 @@ arguments:
 - networkId: `U256`
 - address: `H160`
 - assetId: `CommonPrimitivesAssetId32`
+- decimals: `u8`
 <hr>
 
 #### **api.tx.erc20App.registerNativeAsset**
@@ -10225,7 +10413,7 @@ returns: `H160`
 arguments:
 
 - networkId: `U256`
-- erc20Assets: `Vec<(CommonPrimitivesAssetId32,H160)>`
+- erc20Assets: `Vec<(CommonPrimitivesAssetId32,H160,u8)>`
 <hr>
 
 #### **api.tx.migrationApp.migrateSidechain**
@@ -10233,7 +10421,7 @@ arguments:
 arguments:
 
 - networkId: `U256`
-- sidechainAssets: `Vec<(CommonPrimitivesAssetId32,H160)>`
+- sidechainAssets: `Vec<(CommonPrimitivesAssetId32,H160,u8)>`
 <hr>
 
 #### **api.tx.migrationApp.migrateEth**
@@ -10370,14 +10558,6 @@ returns: `u64`
 
 <hr>
 
-#### **api.query.substrateBridgeInboundChannel.rewardFraction**
-
-arguments: -
-
-returns: `Perbill`
-
-<hr>
-
 ### _Extrinsics_
 
 #### **api.tx.substrateBridgeInboundChannel.submit**
@@ -10385,14 +10565,8 @@ returns: `Perbill`
 arguments:
 
 - networkId: `BridgeTypesSubNetworkId`
-- message: `BeefyLightClientProvedSubstrateBridgeMessage`
-<hr>
-
-#### **api.tx.substrateBridgeInboundChannel.setRewardFraction**
-
-arguments:
-
-- fraction: `Perbill`
+- commitment: `BridgeTypesGenericCommitment`
+- proof: `FramenodeRuntimeMultiProof`
 <hr>
 
 ## SubstrateBridgeOutboundChannel pallet
@@ -10428,7 +10602,7 @@ arguments:
 
 - key: `BridgeTypesSubNetworkId`
 
-returns: `Vec<BridgeTypesParachainMessage>`
+returns: `Vec<BridgeTypesSubstrateBridgeMessage>`
 
 <hr>
 
@@ -10439,14 +10613,6 @@ arguments:
 - key: `BridgeTypesSubNetworkId`
 
 returns: `u64`
-
-<hr>
-
-#### **api.query.substrateBridgeOutboundChannel.fee**
-
-arguments: -
-
-returns: `u128`
 
 <hr>
 
@@ -10488,6 +10654,44 @@ returns: `BridgeTypesAssetKind`
 
 <hr>
 
+#### **api.query.substrateBridgeApp.bridgeTransferLimit**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.sidechainPrecision**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,CommonPrimitivesAssetId32)`
+
+returns: `u8`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.allowedParachainAssets**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,u32)`
+
+returns: `Vec<CommonPrimitivesAssetId32>`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.relaychainAsset**
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `CommonPrimitivesAssetId32`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.substrateBridgeApp.mint**
@@ -10525,6 +10729,8 @@ arguments:
 - networkId: `BridgeTypesSubNetworkId`
 - assetId: `CommonPrimitivesAssetId32`
 - sidechainAsset: `XcmV3MultiassetAssetId`
+- allowedParachains: `Vec<u32>`
+- minimalXcmAmount: `u128`
 <hr>
 
 #### **api.tx.substrateBridgeApp.registerSidechainAsset**
@@ -10536,6 +10742,207 @@ arguments:
 - symbol: `Bytes`
 - name: `Bytes`
 - decimals: `u8`
+- allowedParachains: `Vec<u32>`
+- minimalXcmAmount: `u128`
+<hr>
+
+#### **api.tx.substrateBridgeApp.setTransferLimit**
+
+> Limits amount of tokens to transfer with limit precision
+
+arguments:
+
+- limitCount: `Option<u128>`
+<hr>
+
+#### **api.tx.substrateBridgeApp.addAssetidParaid**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- paraId: `u32`
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.substrateBridgeApp.removeAssetidParaid**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- paraId: `u32`
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.substrateBridgeApp.updateTransactionStatus**
+
+arguments:
+
+- messageId: `H256`
+- transferStatus: `BridgeTypesSubstrateXcmAppTransferStatus`
+<hr>
+
+#### **api.tx.substrateBridgeApp.setMinimumXcmIncomingAssetCount**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- minimalXcmAmount: `u128`
+<hr>
+
+## BridgeDataSigner pallet
+
+### _State Queries_
+
+#### **api.query.bridgeDataSigner.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.bridgeDataSigner.peers**
+
+> Peers
+
+arguments:
+
+- key: `BridgeTypesGenericNetworkId`
+
+returns: `BTreeSet<SpCoreEcdsaPublic>`
+
+<hr>
+
+#### **api.query.bridgeDataSigner.pendingPeerUpdate**
+
+> Pending peers
+
+arguments:
+
+- key: `BridgeTypesGenericNetworkId`
+
+returns: `bool`
+
+<hr>
+
+#### **api.query.bridgeDataSigner.approvals**
+
+> Approvals
+
+arguments:
+
+- key: `(BridgeTypesGenericNetworkId,H256)`
+
+returns: `BTreeMap<SpCoreEcdsaPublic, SpCoreEcdsaSignature>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.bridgeDataSigner.registerNetwork**
+
+arguments:
+
+- networkId: `BridgeTypesGenericNetworkId`
+- peers: `Vec<SpCoreEcdsaPublic>`
+<hr>
+
+#### **api.tx.bridgeDataSigner.approve**
+
+arguments:
+
+- networkId: `BridgeTypesGenericNetworkId`
+- data: `H256`
+- signature: `SpCoreEcdsaSignature`
+<hr>
+
+#### **api.tx.bridgeDataSigner.addPeer**
+
+arguments:
+
+- networkId: `BridgeTypesGenericNetworkId`
+- peer: `SpCoreEcdsaPublic`
+<hr>
+
+#### **api.tx.bridgeDataSigner.removePeer**
+
+arguments:
+
+- networkId: `BridgeTypesGenericNetworkId`
+- peer: `SpCoreEcdsaPublic`
+<hr>
+
+#### **api.tx.bridgeDataSigner.finishRemovePeer**
+
+arguments:
+
+- peer: `SpCoreEcdsaPublic`
+<hr>
+
+#### **api.tx.bridgeDataSigner.finishAddPeer**
+
+arguments:
+
+- peer: `SpCoreEcdsaPublic`
+<hr>
+
+## MultisigVerifier pallet
+
+### _State Queries_
+
+#### **api.query.multisigVerifier.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.multisigVerifier.peerKeys**
+
+arguments:
+
+- key: `BridgeTypesGenericNetworkId`
+
+returns: `BTreeSet<SpCoreEcdsaPublic>`
+
+<hr>
+
+#### **api.query.multisigVerifier.thisNetworkId**
+
+arguments: -
+
+returns: `BridgeTypesGenericNetworkId`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.multisigVerifier.initialize**
+
+arguments:
+
+- networkId: `BridgeTypesGenericNetworkId`
+- peers: `Vec<SpCoreEcdsaPublic>`
+<hr>
+
+#### **api.tx.multisigVerifier.addPeer**
+
+arguments:
+
+- peer: `SpCoreEcdsaPublic`
+<hr>
+
+#### **api.tx.multisigVerifier.removePeer**
+
+arguments:
+
+- peer: `SpCoreEcdsaPublic`
 <hr>
 
 ## Sudo pallet
@@ -10882,6 +11289,13 @@ arguments:
 - liquiditySource: `CommonPrimitivesLiquiditySourceType`
 <hr>
 
+#### **api.tx.liquidityProxy.setAdarCommissionRatio**
+
+arguments:
+
+- commissionRatio: `u128`
+<hr>
+
 ### _Custom RPCs_
 
 #### **api.rpc.liquidityProxy.quote**
@@ -10966,6 +11380,68 @@ arguments: -
 arguments:
 
 - newLimit: `u128`
+<hr>
+
+## QaTools pallet
+
+### _Extrinsics_
+
+#### **api.tx.qaTools.addToWhitelist**
+
+> Add the account to the list of allowed callers.
+
+arguments:
+
+- account: `AccountId32`
+<hr>
+
+#### **api.tx.qaTools.removeFromWhitelist**
+
+> Remove the account from the list of allowed callers.
+
+arguments:
+
+- account: `AccountId32`
+<hr>
+
+#### **api.tx.qaTools.orderBookCreateEmptyBatch**
+
+> Create multiple order books with default parameters (if do not exist yet).
+>
+> Parameters:
+>
+> - `origin`: caller, should be account because error messages for unsigned txs are unclear,
+> - `order_book_ids`: ids of the created order books; trading pairs are created
+>   if necessary,
+
+arguments:
+
+- orderBookIds: `Vec<OrderBookOrderBookId>`
+<hr>
+
+#### **api.tx.qaTools.orderBookCreateAndFillBatch**
+
+> Create multiple many order books with default parameters if do not exist and
+> fill them according to given parameters.
+>
+> Balance for placing the orders is minted automatically, trading pairs are
+> created if needed.
+>
+> Parameters:
+>
+> - `origin`: caller, should be account because unsigned error messages are unclear,
+> - `dex_id`: DEXId for all created order books,
+> - `bids_owner`: Creator of the buy orders placed on the order books,
+> - `asks_owner`: Creator of the sell orders placed on the order books,
+> - `fill_settings`: Parameters for placing the orders in each order book.
+>   `best_bid_price` should be at least 3 price steps from the lowest accepted price,
+>   and `best_ask_price` - at least 3 steps below maximum price,
+
+arguments:
+
+- bidsOwner: `AccountId32`
+- asksOwner: `AccountId32`
+- fillSettings: `Vec<(OrderBookOrderBookId,QaToolsPalletsOrderBookToolsOrderBookFillSettings)>`
 <hr>
 
 ## Author pallet
@@ -11575,22 +12051,6 @@ returns: `Option<SwapOutcomeInfo>`
 
 <hr>
 
-## IntentivizedChannel pallet
-
-### _Custom RPCs_
-
-#### **api.rpc.intentivizedChannel.commitment**
-
-> Get intentivized channel messages.
-
-arguments:
-
-- commitmentHash: `H256`
-
-returns: `Option<Vec<IntentivizedChannelMessage>>`
-
-<hr>
-
 # Types
 
 ### AccountInfo
@@ -11615,28 +12075,6 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 "Amount"
-```
-
-### AppKind
-
-```
-{
-    _enum: [
-        "EthApp",
-        "ERC20App",
-        "SidechainApp",
-        "SubstrateApp"
-    ]
-}
-```
-
-### AppsWithSupportedAssets
-
-```
-{
-    apps: "Vec<BridgeAppInfo>",
-    assets: "Vec<BridgeAssetInfo<AssetId>>"
-}
 ```
 
 ### AssetId
@@ -11770,8 +12208,10 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 {
-    evmAddress: "H160",
-    appKind: "AppKind"
+    _enum: {
+        EVM: "(GenericNetworkId, EVMAppInfo)",
+        Sub: "(GenericNetworkId)"
+    }
 }
 ```
 
@@ -11779,9 +12219,11 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 {
-    assetId: "AssetId",
-    evmAddress: "Option<H160>",
-    appKind: "AppKind"
+    _enum: {
+        EVMLegacy: "EVMLegacyAssetInfo",
+        EVM: "EVMAssetInfo",
+        Sub: "SubAssetInfo"
+    }
 }
 ```
 
@@ -11992,10 +12434,56 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 "Null"
 ```
 
+### EVMAppInfo
+
+```
+{
+    evmAddress: "H160",
+    appKind: "EVMAppKind"
+}
+```
+
+### EVMAppKind
+
+```
+{
+    _enum: [
+        "EthApp",
+        "ERC20App",
+        "SidechainApp",
+        "HashiBridge",
+        "XorMaster",
+        "ValMaster"
+    ]
+}
+```
+
+### EVMAssetInfo
+
+```
+{
+    assetId: "MainnetAssetId",
+    evmAddress: "H160",
+    appKind: "EVMAppKind",
+    precision: "u8"
+}
+```
+
 ### EVMChainId
 
 ```
 "U256"
+```
+
+### EVMLegacyAssetInfo
+
+```
+{
+    assetId: "MainnetAssetId",
+    evmAddress: "H160",
+    appKind: "EVMAppKind",
+    precision: "u8"
+}
 ```
 
 ### EthAddress
@@ -12071,6 +12559,18 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 "Vec<u8>"
+```
+
+### GenericNetworkId
+
+```
+{
+    _enum: {
+        EVMLegacy: "u32",
+        EVM: "EVMChainId",
+        Sub: "SubNetworkId"
+    }
+}
 ```
 
 ### HermesPollInfo
@@ -12369,7 +12869,8 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
         "MockPool2",
         "MockPool3",
         "MockPool4",
-        "XSTPool"
+        "XSTPool",
+        "OrderBook"
     ]
 }
 ```
@@ -12424,6 +12925,12 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 "AccountId"
+```
+
+### MainnetAssetId
+
+```
+"H256"
 ```
 
 ### MarketMakerInfo
@@ -12955,6 +13462,41 @@ returns: `Option<Vec<IntentivizedChannelMessage>>`
 
 ```
 "Null"
+```
+
+### SubAssetInfo
+
+```
+{
+    assetId: "MainnetAssetId",
+    assetKind: "SubAssetKind",
+    precision: "u8"
+}
+```
+
+### SubAssetKind
+
+```
+{
+    _enum: [
+        "Thischain",
+        "Sidechain"
+    ]
+}
+```
+
+### SubNetworkId
+
+```
+{
+    _enum: {
+        Mainnet: null,
+        Kusama: null,
+        Polkadot: null,
+        Rococo: null,
+        Custom: "u32"
+    }
+}
 ```
 
 ### SwapAction
