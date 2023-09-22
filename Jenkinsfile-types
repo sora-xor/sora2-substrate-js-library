@@ -15,6 +15,6 @@ def pipeline = new org.js.LibPipeline(
     dojoProductType: 'sora',
     prStatusNotif: true,
     typesCheck: true,
-    jobCron: '0 5,15 * * 1-5'
+    jobCron: '10 5,12 * * 1-5'
 )
 pipeline.runPipeline()
