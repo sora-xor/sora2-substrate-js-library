@@ -14,10 +14,6 @@ def pipeline = new org.js.LibPipeline(
     sonarTestsPath: 'tests',
     dojoProductType: 'sora',
     prStatusNotif: true,
-    typesCheck: true
+    typesCheck: true,
+    jobCron: '0 0 5,15 * * 1-5'
 )
-pipeline.runPipeline()
-
-pipeline.triggers {
-    cron('0 0 5,15 * * 1-5')
-}
