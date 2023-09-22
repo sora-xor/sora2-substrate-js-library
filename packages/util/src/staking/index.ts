@@ -46,7 +46,6 @@ const COUNT_ERAS_IN_DAILY = 4;
 
 const COUNT_DAYS_IN_YEAR = 365;
 
-
 export class StakingModule<T> {
   constructor(private readonly root: Api<T>) {}
 
