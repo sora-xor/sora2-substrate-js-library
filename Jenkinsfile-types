@@ -14,5 +14,5 @@ def pipeline = new org.js.LibPipeline(
     sonarTestsPath: 'tests',
     dojoProductType: 'sora',
     prStatusNotif: true
-    )
+)
 pipeline.runPipeline()
