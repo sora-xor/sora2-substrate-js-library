@@ -65,6 +65,16 @@ export class StakingModule<T> {
   }
 
   /**
+   * Number of days that staked funds must remain bonded for.
+   * @returns unbond period
+   */
+  public getUnbondPeriod(): number {
+    const bondingDuration = this.getBondingDuration();
+
+    return bondingDuration / COUNT_ERAS_IN_DAILY;
+  }
+
+  /**
    * Maximum number of nominations per nominator.
    * @returns max nominations
    */
