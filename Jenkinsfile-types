@@ -17,3 +17,7 @@ def pipeline = new org.js.LibPipeline(
     typesCheck: true
 )
 pipeline.runPipeline()
+
+pipeline.triggers {
+    cron('0 0 5,15 * * 1-5')
+}
