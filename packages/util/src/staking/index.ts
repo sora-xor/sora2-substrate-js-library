@@ -65,6 +65,16 @@ export class StakingModule<T> {
   }
 
   /**
+   * Number of days that staked funds must remain bonded for.
+   * @returns unbond period
+   */
+  public getUnbondPeriod(): number {
+    const bondingDuration = this.getBondingDuration();
+
+    return bondingDuration / COUNT_ERAS_IN_DAILY;
+  }
+
+  /**
    * Maximum number of nominations per nominator.
    * @returns max nominations
    */
@@ -258,12 +268,26 @@ export class StakingModule<T> {
   public getPayeeObservable(stashAddress: string): Observable<StakingRewardsDestination | string> {
     return this.root.apiRx.query.staking.payee(stashAddress).pipe(
       map((data) => {
+        if (data.isStaked) return StakingRewardsDestination.Staked;
         if (data.isController) return StakingRewardsDestination.Controller;
         if (data.isStash) return StakingRewardsDestination.Stash;
         if (data.isAccount) return data.value.toString();
         return StakingRewardsDestination.None;
       })
     );
+  }
+
+  /**
+   * **STASH**
+   * Get rewards destination of stash account
+   * @param stashAddress address of stash account
+   * @returns rewards destination
+   */
+  public async getPayee(stashAddress: string): Promise<StakingRewardsDestination | string> {
+    const payee = await this.root.api.query.staking.payee(stashAddress);
+    const payeeHuman = payee.toHuman();
+
+    return typeof payeeHuman === 'string' ? payeeHuman : (payeeHuman as any).Account;
   }
 
   /**
@@ -716,7 +740,7 @@ export class StakingModule<T> {
    * @param args.payee rewards destination
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async setPayee(args: { payee: StakingRewardsDestination }, signerPair?: KeyringPair): Promise<T> {
+  public async setPayee(args: { payee: StakingRewardsDestination | string }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const destination = formatPayee(args.payee);
 
