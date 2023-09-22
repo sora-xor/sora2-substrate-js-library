@@ -31,7 +31,7 @@ const formatNominations = (codec: Option<PalletStakingNominations>): StashNomina
 };
 
 const formatPayee = (payee: StakingRewardsDestination | string): string | { Account: string } => {
-  return payee in StakingRewardsDestination ? payee : { Account: payee };
+  return payee in StakingRewardsDestination && payee !== 'Account' ? payee : { Account: payee };
 };
 
 const formatValidatorExposure = (codec: Exposure): ValidatorExposure => {
