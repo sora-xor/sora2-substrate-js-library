@@ -17,3 +17,4 @@ def pipeline = new org.js.LibPipeline(
     typesCheck: true,
     jobCron: '0 0 5,15 * * 1-5'
 )
+pipeline.runPipeline()
