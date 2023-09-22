@@ -46,6 +46,7 @@ const COUNT_ERAS_IN_DAILY = 4;
 
 const COUNT_DAYS_IN_YEAR = 365;
 
+
 export class StakingModule<T> {
   constructor(private readonly root: Api<T>) {}
 
@@ -275,6 +276,19 @@ export class StakingModule<T> {
         return StakingRewardsDestination.None;
       })
     );
+  }
+
+  /**
+   * **STASH**
+   * Get rewards destination of stash account
+   * @param stashAddress address of stash account
+   * @returns rewards destination
+   */
+  public async getPayee(stashAddress: string): Promise<StakingRewardsDestination | string> {
+    const payee = await this.root.api.query.staking.payee(stashAddress);
+    const payeeHuman = payee.toHuman();
+
+    return typeof payeeHuman === 'string' ? payeeHuman : (payeeHuman as any).Account;
   }
 
   /**
