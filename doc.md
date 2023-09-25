@@ -72,7 +72,7 @@
 - [substrateBridgeInboundChannel](#substratebridgeinboundchannel-pallet)
 - [substrateBridgeOutboundChannel](#substratebridgeoutboundchannel-pallet)
 - [substrateDispatch](#substratedispatch-pallet)
-- [substrateBridgeApp](#substratebridgeapp-pallet)
+- [parachainBridgeApp](#parachainBridgeApp-pallet)
 - [bridgeDataSigner](#bridgedatasigner-pallet)
 - [multisigVerifier](#multisigverifier-pallet)
 - [sudo](#sudo-pallet)
@@ -10630,11 +10630,11 @@ returns: `u16`
 
 <hr>
 
-## SubstrateBridgeApp pallet
+## parachainBridgeApp pallet
 
 ### _State Queries_
 
-#### **api.query.substrateBridgeApp.palletVersion**
+#### **api.query.parachainBridgeApp.palletVersion**
 
 > Returns the current pallet version from storage
 
@@ -10644,7 +10644,7 @@ returns: `u16`
 
 <hr>
 
-#### **api.query.substrateBridgeApp.assetKinds**
+#### **api.query.parachainBridgeApp.assetKinds**
 
 arguments:
 
@@ -10654,7 +10654,7 @@ returns: `BridgeTypesAssetKind`
 
 <hr>
 
-#### **api.query.substrateBridgeApp.bridgeTransferLimit**
+#### **api.query.parachainBridgeApp.bridgeTransferLimit**
 
 arguments: -
 
@@ -10662,7 +10662,7 @@ returns: `u128`
 
 <hr>
 
-#### **api.query.substrateBridgeApp.sidechainPrecision**
+#### **api.query.parachainBridgeApp.sidechainPrecision**
 
 arguments:
 
@@ -10672,7 +10672,7 @@ returns: `u8`
 
 <hr>
 
-#### **api.query.substrateBridgeApp.allowedParachainAssets**
+#### **api.query.parachainBridgeApp.allowedParachainAssets**
 
 arguments:
 
@@ -10682,7 +10682,7 @@ returns: `Vec<CommonPrimitivesAssetId32>`
 
 <hr>
 
-#### **api.query.substrateBridgeApp.relaychainAsset**
+#### **api.query.parachainBridgeApp.relaychainAsset**
 
 arguments:
 
@@ -10694,7 +10694,7 @@ returns: `CommonPrimitivesAssetId32`
 
 ### _Extrinsics_
 
-#### **api.tx.substrateBridgeApp.mint**
+#### **api.tx.parachainBridgeApp.mint**
 
 arguments:
 
@@ -10704,7 +10704,7 @@ arguments:
 - amount: `u128`
 <hr>
 
-#### **api.tx.substrateBridgeApp.finalizeAssetRegistration**
+#### **api.tx.parachainBridgeApp.finalizeAssetRegistration**
 
 arguments:
 
@@ -10712,7 +10712,7 @@ arguments:
 - assetKind: `BridgeTypesAssetKind`
 <hr>
 
-#### **api.tx.substrateBridgeApp.burn**
+#### **api.tx.parachainBridgeApp.burn**
 
 arguments:
 
@@ -10722,7 +10722,7 @@ arguments:
 - amount: `u128`
 <hr>
 
-#### **api.tx.substrateBridgeApp.registerThischainAsset**
+#### **api.tx.parachainBridgeApp.registerThischainAsset**
 
 arguments:
 
@@ -10733,7 +10733,7 @@ arguments:
 - minimalXcmAmount: `u128`
 <hr>
 
-#### **api.tx.substrateBridgeApp.registerSidechainAsset**
+#### **api.tx.parachainBridgeApp.registerSidechainAsset**
 
 arguments:
 
@@ -10746,7 +10746,7 @@ arguments:
 - minimalXcmAmount: `u128`
 <hr>
 
-#### **api.tx.substrateBridgeApp.setTransferLimit**
+#### **api.tx.parachainBridgeApp.setTransferLimit**
 
 > Limits amount of tokens to transfer with limit precision
 
@@ -10755,7 +10755,7 @@ arguments:
 - limitCount: `Option<u128>`
 <hr>
 
-#### **api.tx.substrateBridgeApp.addAssetidParaid**
+#### **api.tx.parachainBridgeApp.addAssetidParaid**
 
 arguments:
 
@@ -10764,7 +10764,7 @@ arguments:
 - assetId: `CommonPrimitivesAssetId32`
 <hr>
 
-#### **api.tx.substrateBridgeApp.removeAssetidParaid**
+#### **api.tx.parachainBridgeApp.removeAssetidParaid**
 
 arguments:
 
@@ -10773,7 +10773,7 @@ arguments:
 - assetId: `CommonPrimitivesAssetId32`
 <hr>
 
-#### **api.tx.substrateBridgeApp.updateTransactionStatus**
+#### **api.tx.parachainBridgeApp.updateTransactionStatus**
 
 arguments:
 
@@ -10781,7 +10781,7 @@ arguments:
 - transferStatus: `BridgeTypesSubstrateXcmAppTransferStatus`
 <hr>
 
-#### **api.tx.substrateBridgeApp.setMinimumXcmIncomingAssetCount**
+#### **api.tx.parachainBridgeApp.setMinimumXcmIncomingAssetCount**
 
 arguments:
 
