@@ -72,7 +72,7 @@
 - [substrateBridgeInboundChannel](#substratebridgeinboundchannel-pallet)
 - [substrateBridgeOutboundChannel](#substratebridgeoutboundchannel-pallet)
 - [substrateDispatch](#substratedispatch-pallet)
-- [parachainBridgeApp](#parachainBridgeApp-pallet)
+- [parachainBridgeApp](#parachainbridgeapp-pallet)
 - [bridgeDataSigner](#bridgedatasigner-pallet)
 - [multisigVerifier](#multisigverifier-pallet)
 - [sudo](#sudo-pallet)
@@ -10630,7 +10630,7 @@ returns: `u16`
 
 <hr>
 
-## parachainBridgeApp pallet
+## ParachainBridgeApp pallet
 
 ### _State Queries_
 
@@ -10651,14 +10651,6 @@ arguments:
 - key: `(BridgeTypesSubNetworkId,CommonPrimitivesAssetId32)`
 
 returns: `BridgeTypesAssetKind`
-
-<hr>
-
-#### **api.query.parachainBridgeApp.bridgeTransferLimit**
-
-arguments: -
-
-returns: `u128`
 
 <hr>
 
@@ -10744,15 +10736,6 @@ arguments:
 - decimals: `u8`
 - allowedParachains: `Vec<u32>`
 - minimalXcmAmount: `u128`
-<hr>
-
-#### **api.tx.parachainBridgeApp.setTransferLimit**
-
-> Limits amount of tokens to transfer with limit precision
-
-arguments:
-
-- limitCount: `Option<u128>`
 <hr>
 
 #### **api.tx.parachainBridgeApp.addAssetidParaid**
