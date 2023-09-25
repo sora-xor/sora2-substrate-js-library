@@ -542,9 +542,9 @@ export class PoolXykModule<T> {
       slippageTolerance,
       DEXId
     );
-    if (!this.root.assets.getAsset(secondAsset.address)) {
-      this.root.assets.addAccountAsset(secondAsset.address);
-    }
+
+    this.root.assets.addAccountAsset(secondAsset.address);
+
     return this.root.submitExtrinsic(
       (this.root.api.tx.poolXYK as any).depositLiquidity(...params.args),
       this.root.account.pair,
@@ -631,9 +631,9 @@ export class PoolXykModule<T> {
         (this.root.api.tx.poolXYK as any).depositLiquidity(...params.addLiquidityArgs),
       ]
     );
-    if (!this.root.assets.getAsset(secondAsset.address)) {
-      this.root.assets.addAccountAsset(secondAsset.address);
-    }
+
+    this.root.assets.addAccountAsset(secondAsset.address);
+
     return this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
       type: Operation.CreatePair,
       symbol: firstAsset.symbol,
