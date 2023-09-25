@@ -5,6 +5,7 @@ import type { Observable, Signer } from '@polkadot/types/types';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { CodecString } from '@sora-substrate/math';
 
+import { EthBridgeApi } from './eth';
 import { EvmBridgeApi } from './evm';
 import { SubBridgeApi } from './sub';
 
@@ -17,37 +18,43 @@ import type { SupportedApps } from './types';
 export class BridgeProxyModule<T> {
   constructor(private readonly root: Api<T>) {}
 
+  public readonly eth = new EthBridgeApi<T>();
   public readonly evm = new EvmBridgeApi<T>();
   public readonly sub = new SubBridgeApi<T>();
 
   public initAccountStorage() {
+    this.eth.initAccountStorage();
     this.evm.initAccountStorage();
     this.sub.initAccountStorage();
   }
 
   public setStorage(storage: Storage): void {
+    this.eth.setStorage(storage);
     this.evm.setStorage(storage);
     this.sub.setStorage(storage);
   }
 
   public setSigner(signer: Signer): void {
+    this.eth.setSigner(signer);
     this.evm.setSigner(signer);
     this.sub.setSigner(signer);
   }
 
   public setAccount(account: CreateResult): void {
+    this.eth.setAccount(account);
     this.evm.setAccount(account);
     this.sub.setAccount(account);
   }
 
   public logout(): void {
+    this.eth.logout();
     this.evm.logout();
     this.sub.logout();
   }
 
   public async getListApps(): Promise<SupportedApps> {
     const apps: SupportedApps = {
-      [BridgeNetworkType.EvmLegacy]: {},
+      [BridgeNetworkType.Eth]: {},
       [BridgeNetworkType.Evm]: {},
       [BridgeNetworkType.Sub]: [],
     };
@@ -58,10 +65,10 @@ export class BridgeProxyModule<T> {
       data.forEach((appInfo) => {
         if (appInfo.isEvm) {
           const [genericNetworkId, evmAppInfo] = appInfo.asEvm;
-          const id = genericNetworkId.isEvmLegacy
-            ? genericNetworkId.asEvmLegacy.toNumber()
-            : genericNetworkId.asEvm.toNumber();
-          const type = genericNetworkId.isEvmLegacy ? BridgeNetworkType.EvmLegacy : BridgeNetworkType.Evm;
+          const id = genericNetworkId.isEvm
+            ? genericNetworkId.asEvm.toNumber()
+            : genericNetworkId.asEvmLegacy.toNumber();
+          const type = genericNetworkId.isEvm ? BridgeNetworkType.Evm : BridgeNetworkType.Eth;
           const kind = evmAppInfo.appKind.toString();
           const address = evmAppInfo.evmAddress.toString();
 
