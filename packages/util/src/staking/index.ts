@@ -450,6 +450,8 @@ export class StakingModule<T> {
       const nominators = electedValidator?.others ?? [];
       const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
       const isOversubscribed = nominators.length > maxNominatorRewardedPerValidator;
+      const knownGoodIndex = identity?.judgements?.findIndex(([, type]) => type === 'KnownGood');
+      const isKnownGood = knownGoodIndex !== -1;
 
       return {
         address,
@@ -458,6 +460,7 @@ export class StakingModule<T> {
         commission: commission ?? '',
         nominators: electedValidator?.others ?? [],
         isOversubscribed,
+        isKnownGood,
         stake: {
           stakeReturn,
           total,
