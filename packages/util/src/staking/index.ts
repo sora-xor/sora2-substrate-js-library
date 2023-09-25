@@ -451,7 +451,7 @@ export class StakingModule<T> {
       const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
       const isOversubscribed = nominators.length > maxNominatorRewardedPerValidator;
       const knownGoodIndex = identity?.judgements?.findIndex(([, type]) => type === 'KnownGood');
-      const isKnownGood = knownGoodIndex !== -1;
+      const isKnownGood = knownGoodIndex && knownGoodIndex !== -1;
 
       return {
         address,
