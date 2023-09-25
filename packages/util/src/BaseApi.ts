@@ -18,7 +18,7 @@ import { DexId } from './dex/consts';
 import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { ReceiverHistoryItem } from './swap/types';
-import type { BridgeHistory } from './BridgeApi';
+import type { EthHistory } from './bridgeProxy/eth/types';
 import type { EvmHistory } from './bridgeProxy/evm/types';
 import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
@@ -43,7 +43,7 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
-export type IBridgeTransaction = EvmHistory | SubHistory | BridgeHistory;
+export type IBridgeTransaction = EvmHistory | SubHistory | EthHistory;
 
 export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory | StakingHistory;
 
@@ -64,7 +64,7 @@ export type AccountHistory<T> = {
   [key: string]: T;
 };
 
-export const isBridgeOperation = (operation: Operation) =>
+export const isEthOperation = (operation: Operation) =>
   [Operation.EthBridgeIncoming, Operation.EthBridgeOutgoing].includes(operation);
 
 export const isEvmOperation = (operation: Operation) =>
@@ -391,7 +391,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 const amountKey = !history.amount ? 'amount' : 'amount2';
                 updated[amountKey] = amountFormatted;
               } else if (
-                (method === 'RequestRegistered' && isBridgeOperation(type)) ||
+                (method === 'RequestRegistered' && isEthOperation(type)) ||
                 (method === 'RequestStatusUpdate' && (isEvmOperation(type) || isSubstrateOperation(type)))
               ) {
                 updated.hash = first(data.toJSON() as any);

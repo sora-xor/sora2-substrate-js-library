@@ -2,13 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { BaseApi, isSubstrateOperation, Operation } from '../../BaseApi';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
-import {
-  getTransactionDetails,
-  getUserTransactions,
-  subscribeOnTransactionDetails,
-  subscribeOnLockedAsset,
-  getLockedAssets,
-} from '../methods';
+import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails, getLockedAssets } from '../methods';
 import { SubNetwork, SubAssetKind, XcmVersionedMultiLocation, XcmMultilocationJunction, XcmJunction } from './consts';
 import { SoraParachainApi } from './parachain';
 
@@ -238,10 +232,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   public async getLockedAssets(subNetwork: SubNetwork, assetAddress: string) {
     return await getLockedAssets(this.api, { [BridgeNetworkType.Sub]: subNetwork }, assetAddress);
-  }
-
-  public subscribeOnLockedAsset(subNetwork: SubNetwork, assetAddress: string) {
-    return subscribeOnLockedAsset(this.apiRx, { [BridgeNetworkType.Sub]: subNetwork }, assetAddress);
   }
 
   public async transfer(
