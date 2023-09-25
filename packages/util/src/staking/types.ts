@@ -86,7 +86,6 @@ export type AccountStakingLedger = {
 export type StakeReturn = {
   apy: string; // per year
   stakeReturn: string; // per era
-  stakeReturnReward: string; // per era
 };
 
 export type NominatorReward = {
