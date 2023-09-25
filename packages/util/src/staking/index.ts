@@ -66,7 +66,7 @@ export class StakingModule<T> {
 
   /**
    * The maximum number of nominators rewarded for each validator.
-   * @returns bonding duration
+   * @returns max nominators
    */
   public getMaxNominatorRewardedPerValidator(): number {
     return this.root.api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
@@ -448,7 +448,7 @@ export class StakingModule<T> {
 
 
       const nominators = electedValidator?.others ?? [];
-      const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator()
+      const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
       const isOversubscribed = nominators.length > maxNominatorRewardedPerValidator;
 
       return {
