@@ -65,6 +65,14 @@ export class StakingModule<T> {
   }
 
   /**
+   * The maximum number of nominators rewarded for each validator.
+   * @returns max nominators
+   */
+  public getMaxNominatorRewardedPerValidator(): number {
+    return this.root.api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
+  }
+
+  /**
    * Number of days that staked funds must remain bonded for.
    * @returns unbond period
    */
@@ -349,7 +357,6 @@ export class StakingModule<T> {
 
     if (validatorTotalStake.isZero())
       return {
-        stakeReturnReward: '0',
         stakeReturn: '0',
         apy: '0',
       };
@@ -366,7 +373,6 @@ export class StakingModule<T> {
     const apy = ratioReturnStakeToTotalStake.sub(FPNumber.ONE).mul(FPNumber.HUNDRED).mul(nominatorShare);
 
     return {
-      stakeReturnReward: stakeReturnReward.toCodecString(),
       stakeReturn: stakeReturn.toCodecString(),
       apy: apy.toFixed(2),
     };
@@ -432,7 +438,7 @@ export class StakingModule<T> {
       const rewardPoints = eraRewardPoints[address];
 
       const identity = (await this.root.getAccountOnChainIdentity(address))?.identity;
-      const { apy, stakeReturn, stakeReturnReward } = await this.calculatingStakeReturn(
+      const { apy, stakeReturn } = await this.calculatingStakeReturn(
         total,
         rewardToStakeRatio,
         eraTotalStake,
@@ -440,11 +446,23 @@ export class StakingModule<T> {
         commission
       );
 
+
+      const nominators = electedValidator?.others ?? [];
+      const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
+      const isOversubscribed = nominators.length > maxNominatorRewardedPerValidator;
+
       return {
         address,
+        apy,
         rewardPoints,
         commission: commission ?? '',
         nominators: electedValidator?.others ?? [],
+        isOversubscribed,
+        stake: {
+          stakeReturn,
+          total,
+          own: electedValidator?.own ?? '0',
+        },
         identity:
           identity !== null
             ? {
@@ -460,13 +478,6 @@ export class StakingModule<T> {
                 ),
               }
             : null,
-        apy,
-        stake: {
-          stakeReturn,
-          stakeReturnReward,
-          total,
-          own: electedValidator?.own ?? '0',
-        },
       };
     });
 
