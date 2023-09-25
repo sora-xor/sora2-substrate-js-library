@@ -134,13 +134,13 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public async getSubAssetDecimals(subNetwork: SubNetwork, soraAssetId: string): Promise<number> {
-    const precision = await this.api.query.substrateBridgeApp.sidechainPrecision(subNetwork, soraAssetId);
+    const precision = await this.api.query.parachainBridgeApp.sidechainPrecision(subNetwork, soraAssetId);
 
     return precision.unwrap().toNumber();
   }
 
   public async getSubAssetKind(subNetwork: SubNetwork, soraAssetId: string): Promise<SubAssetKind> {
-    const kind = await this.api.query.substrateBridgeApp.assetKinds(subNetwork, soraAssetId);
+    const kind = await this.api.query.parachainBridgeApp.assetKinds(subNetwork, soraAssetId);
 
     return kind.unwrap().isSidechain ? SubAssetKind.Sidechain : SubAssetKind.Thischain;
   }
@@ -158,7 +158,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     const assets: Record<string, SubAsset> = {};
 
     try {
-      const assetCodec = await this.api.query.substrateBridgeApp.relaychainAsset(relaychain);
+      const assetCodec = await this.api.query.parachainBridgeApp.relaychainAsset(relaychain);
       const soraAssetId = assetCodec.unwrap().code.toString();
       const data = await this.getSubAssetData(relaychain, soraAssetId);
 
@@ -176,7 +176,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     const parachainId = this.getParachainId(parachain);
 
     try {
-      const assetsCodecs = await this.api.query.substrateBridgeApp.allowedParachainAssets(relaychain, parachainId);
+      const assetsCodecs = await this.api.query.parachainBridgeApp.allowedParachainAssets(relaychain, parachainId);
       const soraAssetIds = assetsCodecs.map((item) => item.code.toString());
 
       await Promise.all(

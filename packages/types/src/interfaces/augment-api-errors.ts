@@ -2104,6 +2104,30 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UserHasNoNft: AugmentedError<ApiType>;
     };
+    parachainBridgeApp: {
+      AppAlreadyRegistered: AugmentedError<ApiType>;
+      AppIsNotRegistered: AugmentedError<ApiType>;
+      /**
+       * Call encoding failed.
+       **/
+      CallEncodeFailed: AugmentedError<ApiType>;
+      InvalidDestinationParachain: AugmentedError<ApiType>;
+      InvalidDestinationParams: AugmentedError<ApiType>;
+      InvalidNetwork: AugmentedError<ApiType>;
+      MessageIdNotFound: AugmentedError<ApiType>;
+      NotEnoughFunds: AugmentedError<ApiType>;
+      NotRelayTransferableAsset: AugmentedError<ApiType>;
+      RelaychainAssetNotRegistered: AugmentedError<ApiType>;
+      RelaychainAssetRegistered: AugmentedError<ApiType>;
+      TokenAlreadyRegistered: AugmentedError<ApiType>;
+      TokenIsNotRegistered: AugmentedError<ApiType>;
+      TransferLimitReached: AugmentedError<ApiType>;
+      UnknownPrecision: AugmentedError<ApiType>;
+      /**
+       * Amount must be > 0
+       **/
+      WrongAmount: AugmentedError<ApiType>;
+    };
     permissions: {
       /**
        * The account either doesn't have the permission.
@@ -2664,30 +2688,6 @@ declare module '@polkadot/api-base/types/errors' {
        * staking settings to keep things safe for the runtime.
        **/
       TooManyValidators: AugmentedError<ApiType>;
-    };
-    substrateBridgeApp: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidDestinationParachain: AugmentedError<ApiType>;
-      InvalidDestinationParams: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      MessageIdNotFound: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      NotRelayTransferableAsset: AugmentedError<ApiType>;
-      RelaychainAssetNotRegistered: AugmentedError<ApiType>;
-      RelaychainAssetRegistered: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-      TransferLimitReached: AugmentedError<ApiType>;
-      UnknownPrecision: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
     };
     substrateBridgeInboundChannel: {
       /**

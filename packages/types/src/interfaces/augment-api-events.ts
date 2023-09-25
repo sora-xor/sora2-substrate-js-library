@@ -782,6 +782,16 @@ declare module '@polkadot/api-base/types/events' {
        **/
       OrderBookUpdated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId], { orderBookId: OrderBookOrderBookId }>;
     };
+    parachainBridgeApp: {
+      /**
+       * [network_id, asset_id, sender, recepient, amount]
+       **/
+      Burned: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, AccountId32, XcmVersionedMultiLocation, u128]>;
+      /**
+       * [network_id, asset_id, sender, recepient, amount]
+       **/
+      Minted: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, Option<XcmVersionedMultiLocation>, AccountId32, u128]>;
+    };
     permissions: {
       /**
        * Permission was assigned to the account in the scope. [permission, who]
@@ -974,16 +984,6 @@ declare module '@polkadot/api-base/types/events' {
        * from the unlocking queue.
        **/
       Withdrawn: AugmentedEvent<ApiType, [stash: AccountId32, amount: u128], { stash: AccountId32, amount: u128 }>;
-    };
-    substrateBridgeApp: {
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Burned: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, AccountId32, XcmVersionedMultiLocation, u128]>;
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Minted: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, Option<XcmVersionedMultiLocation>, AccountId32, u128]>;
     };
     substrateBridgeInboundChannel: {
     };
