@@ -4,15 +4,20 @@ export enum BridgeTxDirection {
 }
 
 export enum BridgeTxStatus {
+  // Common statuses
   Done = 'Done',
   Failed = 'Failed',
   Pending = 'Pending',
+  // Eth bridge statuses
+  Ready = 'ApprovalsReady',
+  Frozen = 'Frozen',
+  Broken = 'Broken',
 }
 
 export enum BridgeNetworkType {
+  Eth = 'EVMLegacy',
   Evm = 'EVM',
   Sub = 'Sub',
-  EvmLegacy = 'EVMLegacy',
 }
 
 export enum BridgeAccountType {
