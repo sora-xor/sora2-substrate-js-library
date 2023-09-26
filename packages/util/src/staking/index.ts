@@ -45,6 +45,11 @@ const COMMISSION_DECIMALS = 9;
  */
 const COUNT_ERAS_IN_DAILY = 4;
 
+/**
+ * Check on other networks
+ */
+const COUNT_HOURS_IN_ERA = 6;
+
 const COUNT_DAYS_IN_YEAR = 365;
 
 export class StakingModule<T> {
@@ -520,8 +525,8 @@ export class StakingModule<T> {
     const unlocking =
       stakingDerive.unlocking?.map(({ value, remainingEras: _remainingEras }) => {
         const remainingEras = new FPNumber(_remainingEras.toString());
-        const remainingHours = remainingEras.mul(new FPNumber(6)).toString(); // todo
-        const remainingDays = remainingEras.div(new FPNumber(4)).toString();
+        const remainingHours = remainingEras.mul(new FPNumber(COUNT_HOURS_IN_ERA)).toString();
+        const remainingDays = remainingEras.div(new FPNumber(COUNT_ERAS_IN_DAILY)).toString();
 
         return {
           value: FPNumber.fromCodecValue(value.toString(), XOR.decimals).toString(),
@@ -541,7 +546,7 @@ export class StakingModule<T> {
     const redeemAmount = stakingDerive.redeemable?.toString() ?? '0';
     const controller = stakingDerive.controllerId?.toString() ?? '';
 
-    const rewardDestination = stakingDerive.rewardDestination?.toHuman() ?? '';
+    const rewardDestination = (stakingDerive.rewardDestination?.toHuman() as string | { Account:string } ) ?? '';
     const payee = typeof rewardDestination === 'string' ? rewardDestination : rewardDestination.Account;
 
     return {
