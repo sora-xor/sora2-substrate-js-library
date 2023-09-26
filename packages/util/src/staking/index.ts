@@ -489,7 +489,7 @@ export class StakingModule<T> {
     // step 1 - apy DESC
     // step 2 - commission ASC
     // step 3 - identity, array of judgements have KnownGood element
-    const sortedValidators = validators.sort((validator1, validator2) => {
+    return validators.sort((validator1, validator2) => {
       const { apy: apy1, commission: commission1, isKnownGood: isKnownGood1 } = validator1;
       const { apy: apy2, commission: commission2, isKnownGood: isKnownGood2 } = validator2;
 
@@ -507,8 +507,6 @@ export class StakingModule<T> {
 
       return 0;
     });
-
-    return sortedValidators;
   }
 
   /**
