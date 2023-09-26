@@ -25,6 +25,8 @@ export interface ValidatorInfoFull extends ValidatorInfo {
   nominators: Others;
   identity: Identity | null;
   apy: string;
+  isOversubscribed: boolean;
+  isKnownGood: boolean;
   stake: {
     stakeReturn: string;
     total: string;
@@ -85,7 +87,6 @@ export type AccountStakingLedger = {
 export type StakeReturn = {
   apy: string; // per year
   stakeReturn: string; // per era
-  stakeReturnReward: string; // per era
 };
 
 export type NominatorReward = {

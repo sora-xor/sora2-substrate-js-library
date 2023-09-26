@@ -2,13 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { BaseApi, isEvmOperation, Operation } from '../../BaseApi';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
-import {
-  getTransactionDetails,
-  getUserTransactions,
-  subscribeOnTransactionDetails,
-  subscribeOnLockedAsset,
-  getLockedAssets,
-} from '../methods';
+import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails, getLockedAssets } from '../methods';
 
 import type { Asset } from '../../assets/types';
 import type { EvmHistory, EvmNetwork, EvmAsset } from './types';
@@ -95,10 +89,6 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
 
   public async getLockedAssets(evmNetwork: EvmNetwork, assetAddress: string) {
     return await getLockedAssets(this.api, { [BridgeNetworkType.Evm]: evmNetwork }, assetAddress);
-  }
-
-  public subscribeOnLockedAsset(evmNetwork: EvmNetwork, assetAddress: string) {
-    return subscribeOnLockedAsset(this.apiRx, { [BridgeNetworkType.Evm]: evmNetwork }, assetAddress);
   }
 
   public async transfer(
