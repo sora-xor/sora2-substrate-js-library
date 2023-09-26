@@ -204,19 +204,6 @@ export function subscribeOnTransactionDetails(
   }
 }
 
-/** Subscribe to the amount of the asset locked on the bridge on the SORA side */
-export function subscribeOnLockedAsset(
-  apiRx: ApiRx,
-  networkParam: BridgeNetworkParam,
-  assetAddress: string
-): Observable<CodecString> | null {
-  try {
-    return apiRx.query.bridgeProxy.lockedAssets(networkParam, assetAddress).pipe(map((value) => value.toString()));
-  } catch {
-    return null;
-  }
-}
-
 /** Get the amount of the asset locked on the bridge on the SORA side */
 export async function getLockedAssets(
   api: ApiPromise,
