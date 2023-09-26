@@ -34,6 +34,25 @@ export interface ValidatorInfoFull extends ValidatorInfo {
   };
 }
 
+type Unlocking = {
+  value: string;
+  remainingEras: string;
+  remainingDays: string;
+};
+
+export type MyStakingInfo = {
+  myValidators: string[];
+  payee: string;
+  controller: string;
+  redeemAmount: string;
+  activeStake: string;
+  totalStake: string;
+  unbond: {
+    unlocking: Unlocking[];
+    sum: string;
+  };
+};
+
 type Others = {
   who: string;
   value: string;

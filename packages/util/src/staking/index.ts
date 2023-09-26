@@ -29,6 +29,7 @@ import type {
   AccountStakingLedger,
   RewardPointsIndividual,
   ValidatorInfoFull,
+  MyStakingInfo,
   StakeReturn,
   NominatorReward,
   // EraElectionStatus,
@@ -507,6 +508,51 @@ export class StakingModule<T> {
 
       return 0;
     });
+  }
+
+  /**
+   * Get my staking info
+   * @returns staking info
+   */
+  public async getMyStakingInfo(address: string): Promise<MyStakingInfo> {
+    const stakingDerive = await this.root.api?.derive.staking.account(address);
+
+    const unlocking =
+      stakingDerive.unlocking?.map(({ value, remainingEras: _remainingEras }) => {
+        const remainingEras = new FPNumber(_remainingEras.toString());
+        const remainingHours = remainingEras.mul(new FPNumber(6)).toString(); // todo
+        const remainingDays = remainingEras.div(new FPNumber(4)).toString();
+
+        return {
+          value: FPNumber.fromCodecValue(value.toString(), XOR.decimals).toString(),
+          remainingEras: remainingEras.toString(),
+          remainingHours,
+          remainingDays,
+        };
+      }) ?? [];
+
+    const sum = unlocking.reduce((sum, { value }) => sum.add(new FPNumber(value)), FPNumber.ZERO).toString();
+
+    const stakingLedger = stakingDerive.stakingLedger;
+    const activeStake = FPNumber.fromCodecValue(stakingLedger.active.toString(), XOR.decimals).toString();
+    const totalStake = FPNumber.fromCodecValue(stakingLedger.total.toString(), XOR.decimals).toString();
+
+    const myValidators = stakingDerive.nominators.map((item) => item.toHuman());
+    const redeemAmount = stakingDerive.redeemable?.toString() ?? '0';
+    const controller = stakingDerive.controllerId?.toString() ?? '';
+
+    const rewardDestination = stakingDerive.rewardDestination?.toHuman() ?? '';
+    const payee = typeof rewardDestination === 'string' ? rewardDestination : rewardDestination.Account;
+
+    return {
+      payee,
+      controller,
+      myValidators,
+      redeemAmount,
+      activeStake,
+      totalStake,
+      unbond: { unlocking, sum },
+    };
   }
 
   /**
