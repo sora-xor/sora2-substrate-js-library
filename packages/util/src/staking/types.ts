@@ -26,6 +26,7 @@ export interface ValidatorInfoFull extends ValidatorInfo {
   identity: Identity | null;
   apy: string;
   isOversubscribed: boolean;
+  isKnownGood: boolean;
   stake: {
     stakeReturn: string;
     total: string;

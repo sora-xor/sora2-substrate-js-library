@@ -450,6 +450,8 @@ export class StakingModule<T> {
       const nominators = electedValidator?.others ?? [];
       const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
       const isOversubscribed = nominators.length > maxNominatorRewardedPerValidator;
+      const knownGoodIndex = identity?.judgements?.findIndex(([, type]) => type === 'KnownGood');
+      const isKnownGood = knownGoodIndex && knownGoodIndex !== -1;
 
       return {
         address,
@@ -458,6 +460,7 @@ export class StakingModule<T> {
         commission: commission ?? '',
         nominators: electedValidator?.others ?? [],
         isOversubscribed,
+        isKnownGood,
         stake: {
           stakeReturn,
           total,
@@ -486,9 +489,9 @@ export class StakingModule<T> {
     // step 1 - apy DESC
     // step 2 - commission ASC
     // step 3 - identity, array of judgements have KnownGood element
-    const sortedValidators = validators.sort((validator1, validator2) => {
-      const { apy: apy1, commission: commission1, identity: identity1 } = validator1;
-      const { apy: apy2, commission: commission2 } = validator2;
+    return validators.sort((validator1, validator2) => {
+      const { apy: apy1, commission: commission1, isKnownGood: isKnownGood1 } = validator1;
+      const { apy: apy2, commission: commission2, isKnownGood: isKnownGood2 } = validator2;
 
       const subtractionApy = new FPNumber(apy2).sub(new FPNumber(apy1));
 
@@ -498,16 +501,12 @@ export class StakingModule<T> {
 
       if (!subtractionCommission.isZero()) return subtractionCommission.toNumber();
 
-      if (identity1 === null) return 1;
+      if (isKnownGood1 && !isKnownGood2) return -1;
 
-      const { judgements: judgements1 } = identity1;
-      const knownGoodValue1 = judgements1?.find(([, type]) => type === 'KnownGood');
-      const isKnownGood1 = knownGoodValue1?.[0] === 1;
+      if (!isKnownGood1 && isKnownGood2) return 1;
 
-      return isKnownGood1 ? -1 : 1;
+      return 0;
     });
-
-    return sortedValidators;
   }
 
   /**
