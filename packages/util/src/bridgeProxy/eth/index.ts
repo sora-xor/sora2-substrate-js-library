@@ -51,29 +51,31 @@ export class EthBridgeApi<T> extends BaseApi<T> {
     super.saveHistory(history);
   }
 
+  protected getTransferExtrinsic(asset: Asset, recipient: string, amount: string | number) {
+    const value = new FPNumber(amount, asset.decimals).toCodecString();
+
+    return this.api.tx.ethBridge.transferToSidechain(asset.address, recipient, value, this.externalNetwork);
+  }
+
   /**
    * Transfer through the bridge operation
    * @param asset Asset
-   * @param to Ethereum account address
+   * @param recipient Ethereum account address
    * @param amount
    * @param historyId not required
    */
-  public transferToEth(asset: Asset, to: string, amount: string | number, historyId?: string): Promise<T> {
+  public transfer(asset: Asset, recipient: string, amount: string | number, historyId?: string): Promise<T> {
     assert(this.account, Messages.connectWallet);
 
-    const balance = new FPNumber(amount, asset.decimals).toCodecString();
-    const historyItem = this.getHistory(historyId);
+    const extrinsic = this.getTransferExtrinsic(asset, recipient, amount);
+    const historyItem = this.getHistory(historyId) || {
+      symbol: asset.symbol,
+      assetAddress: asset.address,
+      amount: `${amount}`,
+      type: Operation.EthBridgeOutgoing,
+    };
 
-    return this.submitExtrinsic(
-      this.api.tx.ethBridge.transferToSidechain(asset.address, to, balance, this.externalNetwork),
-      this.account.pair,
-      historyItem || {
-        symbol: asset.symbol,
-        assetAddress: asset.address,
-        amount: `${amount}`,
-        type: Operation.EthBridgeOutgoing,
-      }
-    );
+    return this.submitExtrinsic(extrinsic, this.account.pair, historyItem);
   }
 
   /**

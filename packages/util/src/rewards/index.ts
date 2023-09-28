@@ -7,7 +7,7 @@ import type { ITuple } from '@polkadot/types-codec/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { RewardingEvents, RewardType } from './consts';
-import { VAL, PSWAP } from '../assets/consts';
+import { XOR, VAL, PSWAP } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
@@ -336,9 +336,9 @@ export class RewardsModule<T> {
    * Get network fee for claim rewards operation
    */
   public async getNetworkFee(rewards: Array<RewardInfo>, signature = ''): Promise<CodecString> {
-    const params = this.calcTxParams(rewards, signature);
+    const { extrinsic, args } = this.calcTxParams(rewards, signature);
 
-    switch (params.extrinsic) {
+    switch (extrinsic) {
       case this.root.api.tx.pswapDistribution.claimIncentive:
         return this.root.NetworkFee[Operation.ClaimLiquidityProvisionRewards];
       case this.root.api.tx.vestedRewards.claimRewards:
@@ -347,8 +347,10 @@ export class RewardsModule<T> {
         return this.root.NetworkFee[Operation.ClaimCrowdloanRewards];
       case this.root.api.tx.rewards.claim:
         return this.root.NetworkFee[Operation.ClaimExternalRewards];
-      default:
-        return this.root.getNetworkFee(Operation.ClaimRewards, params);
+      default: {
+        const tx = extrinsic(...args);
+        return await this.root.getTransactionFee(tx);
+      }
     }
   }
 
