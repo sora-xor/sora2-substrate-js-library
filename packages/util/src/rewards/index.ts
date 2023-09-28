@@ -7,7 +7,7 @@ import type { ITuple } from '@polkadot/types-codec/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { RewardingEvents, RewardType } from './consts';
-import { XOR, VAL, PSWAP } from '../assets/consts';
+import { VAL, PSWAP } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
@@ -365,12 +365,14 @@ export class RewardsModule<T> {
     externalAddress?: string
   ): Promise<T> {
     const { extrinsic, args } = this.calcTxParams(rewards, signature);
-
-    return this.root.submitExtrinsic(extrinsic(...args), this.root.account.pair, {
+    const tx = extrinsic(...args);
+    const historyItem = {
       type: Operation.ClaimRewards,
       externalAddress,
       soraNetworkFee: fee,
       rewards,
-    });
+    };
+
+    return this.root.submitExtrinsic(tx, this.root.account.pair, historyItem);
   }
 }

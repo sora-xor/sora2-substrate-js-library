@@ -619,11 +619,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       const extrinsic = this.getEmptyExtrinsic(operation);
 
       if (extrinsic) {
-        try {
-          this.NetworkFee[operation] = await this.getTransactionFee(extrinsic);
-        } catch {
-          // extrinsic is not supported in chain
-        }
+        this.NetworkFee[operation] = await this.getTransactionFee(extrinsic);
       }
     });
 
@@ -631,9 +627,14 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   }
 
   public async getTransactionFee(extrinsic: SubmittableExtrinsic<'promise'>): Promise<CodecString> {
-    const res = await extrinsic.paymentInfo(mockAccountAddress);
+    try {
+      const res = await extrinsic.paymentInfo(mockAccountAddress);
 
-    return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
+      return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
+    } catch {
+      // extrinsic is not supported in chain
+      return '0';
+    }
   }
 
   /**
