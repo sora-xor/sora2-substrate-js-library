@@ -29,6 +29,7 @@ import type {
   AccountStakingLedger,
   RewardPointsIndividual,
   ValidatorInfoFull,
+  MyStakingInfo,
   StakeReturn,
   NominatorReward,
   // EraElectionStatus,
@@ -43,6 +44,11 @@ const COMMISSION_DECIMALS = 9;
  * Check on other networks
  */
 const COUNT_ERAS_IN_DAILY = 4;
+
+/**
+ * Check on other networks
+ */
+const COUNT_HOURS_IN_ERA = 6;
 
 const COUNT_DAYS_IN_YEAR = 365;
 
@@ -62,6 +68,14 @@ export class StakingModule<T> {
    */
   public getBondingDuration(): number {
     return this.root.api.consts.staking.bondingDuration.toNumber();
+  }
+
+  /**
+   * The maximum number of nominators rewarded for each validator.
+   * @returns max nominators
+   */
+  public getMaxNominatorRewardedPerValidator(): number {
+    return this.root.api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
   }
 
   /**
@@ -349,7 +363,6 @@ export class StakingModule<T> {
 
     if (validatorTotalStake.isZero())
       return {
-        stakeReturnReward: '0',
         stakeReturn: '0',
         apy: '0',
       };
@@ -366,7 +379,6 @@ export class StakingModule<T> {
     const apy = ratioReturnStakeToTotalStake.sub(FPNumber.ONE).mul(FPNumber.HUNDRED).mul(nominatorShare);
 
     return {
-      stakeReturnReward: stakeReturnReward.toCodecString(),
       stakeReturn: stakeReturn.toCodecString(),
       apy: apy.toFixed(2),
     };
@@ -432,7 +444,7 @@ export class StakingModule<T> {
       const rewardPoints = eraRewardPoints[address];
 
       const identity = (await this.root.getAccountOnChainIdentity(address))?.identity;
-      const { apy, stakeReturn, stakeReturnReward } = await this.calculatingStakeReturn(
+      const { apy, stakeReturn } = await this.calculatingStakeReturn(
         total,
         rewardToStakeRatio,
         eraTotalStake,
@@ -440,11 +452,25 @@ export class StakingModule<T> {
         commission
       );
 
+      const nominators = electedValidator?.others ?? [];
+      const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
+      const isOversubscribed = nominators.length > maxNominatorRewardedPerValidator;
+      const knownGoodIndex = identity?.judgements?.findIndex(([, type]) => type === 'KnownGood');
+      const isKnownGood = knownGoodIndex && knownGoodIndex !== -1;
+
       return {
         address,
+        apy,
         rewardPoints,
         commission: commission ?? '',
         nominators: electedValidator?.others ?? [],
+        isOversubscribed,
+        isKnownGood,
+        stake: {
+          stakeReturn,
+          total,
+          own: electedValidator?.own ?? '0',
+        },
         identity:
           identity !== null
             ? {
@@ -460,13 +486,6 @@ export class StakingModule<T> {
                 ),
               }
             : null,
-        apy,
-        stake: {
-          stakeReturn,
-          stakeReturnReward,
-          total,
-          own: electedValidator?.own ?? '0',
-        },
       };
     });
 
@@ -475,9 +494,9 @@ export class StakingModule<T> {
     // step 1 - apy DESC
     // step 2 - commission ASC
     // step 3 - identity, array of judgements have KnownGood element
-    const sortedValidators = validators.sort((validator1, validator2) => {
-      const { apy: apy1, commission: commission1, identity: identity1 } = validator1;
-      const { apy: apy2, commission: commission2 } = validator2;
+    return validators.sort((validator1, validator2) => {
+      const { apy: apy1, commission: commission1, isKnownGood: isKnownGood1 } = validator1;
+      const { apy: apy2, commission: commission2, isKnownGood: isKnownGood2 } = validator2;
 
       const subtractionApy = new FPNumber(apy2).sub(new FPNumber(apy1));
 
@@ -487,16 +506,57 @@ export class StakingModule<T> {
 
       if (!subtractionCommission.isZero()) return subtractionCommission.toNumber();
 
-      if (identity1 === null) return 1;
+      if (isKnownGood1 && !isKnownGood2) return -1;
 
-      const { judgements: judgements1 } = identity1;
-      const knownGoodValue1 = judgements1?.find(([, type]) => type === 'KnownGood');
-      const isKnownGood1 = knownGoodValue1?.[0] === 1;
+      if (!isKnownGood1 && isKnownGood2) return 1;
 
-      return isKnownGood1 ? -1 : 1;
+      return 0;
     });
+  }
 
-    return sortedValidators;
+  /**
+   * Get my staking info
+   * @returns staking info
+   */
+  public async getMyStakingInfo(address: string): Promise<MyStakingInfo> {
+    const stakingDerive = await this.root.api?.derive.staking.account(address);
+
+    const unlocking =
+      stakingDerive.unlocking?.map(({ value, remainingEras: _remainingEras }) => {
+        const remainingEras = new FPNumber(_remainingEras.toString());
+        const remainingHours = remainingEras.mul(new FPNumber(COUNT_HOURS_IN_ERA)).toString();
+        const remainingDays = remainingEras.div(new FPNumber(COUNT_ERAS_IN_DAILY)).toString();
+
+        return {
+          value: FPNumber.fromCodecValue(value.toString(), XOR.decimals).toString(),
+          remainingEras: remainingEras.toString(),
+          remainingHours,
+          remainingDays,
+        };
+      }) ?? [];
+
+    const sum = unlocking.reduce((sum, { value }) => sum.add(new FPNumber(value)), FPNumber.ZERO).toString();
+
+    const stakingLedger = stakingDerive.stakingLedger;
+    const activeStake = FPNumber.fromCodecValue(stakingLedger.active.toString(), XOR.decimals).toString();
+    const totalStake = FPNumber.fromCodecValue(stakingLedger.total.toString(), XOR.decimals).toString();
+
+    const myValidators = stakingDerive.nominators.map((item) => item.toHuman());
+    const redeemAmount = FPNumber.fromCodecValue(stakingDerive.redeemable?.toString(), XOR.decimals).toString();
+    const controller = stakingDerive.controllerId?.toString() ?? '';
+
+    const rewardDestination = (stakingDerive.rewardDestination?.toHuman() as string | { Account: string }) ?? '';
+    const payee = typeof rewardDestination === 'string' ? rewardDestination : rewardDestination.Account;
+
+    return {
+      payee,
+      controller,
+      myValidators,
+      redeemAmount,
+      activeStake,
+      totalStake,
+      unbond: { unlocking, sum },
+    };
   }
 
   /**

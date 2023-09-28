@@ -25,12 +25,33 @@ export interface ValidatorInfoFull extends ValidatorInfo {
   nominators: Others;
   identity: Identity | null;
   apy: string;
+  isOversubscribed: boolean;
+  isKnownGood: boolean;
   stake: {
     stakeReturn: string;
     total: string;
     own: string;
   };
 }
+
+type Unlocking = {
+  value: string;
+  remainingEras: string;
+  remainingDays: string;
+};
+
+export type MyStakingInfo = {
+  myValidators: string[];
+  payee: string;
+  controller: string;
+  redeemAmount: string;
+  activeStake: string;
+  totalStake: string;
+  unbond: {
+    unlocking: Unlocking[];
+    sum: string;
+  };
+};
 
 type Others = {
   who: string;
@@ -85,7 +106,6 @@ export type AccountStakingLedger = {
 export type StakeReturn = {
   apy: string; // per year
   stakeReturn: string; // per era
-  stakeReturnReward: string; // per era
 };
 
 export type NominatorReward = {
