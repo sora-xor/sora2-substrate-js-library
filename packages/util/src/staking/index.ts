@@ -32,6 +32,7 @@ import type {
   MyStakingInfo,
   StakeReturn,
   NominatorReward,
+  Payouts,
   // EraElectionStatus,
 } from './types';
 
@@ -813,20 +814,15 @@ export class StakingModule<T> {
 
   /**
    * Distribute payout for staking in a given era for given validators
-   * @param args.validators array of validators addresses
-   * @param args.eraIndex era index
+   * @param args.payouts
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async payout(args: { validators: string[]; eraIndex: string | number }, signerPair?: KeyringPair): Promise<T> {
+  public async payout(args: { payouts: Payouts }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
-    const transactions = args.validators.map((validator) =>
-      this.root.api.tx.staking.payoutStakers(validator, args.eraIndex)
-    );
+    const transactions = args.payouts.map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era))).flat();
     const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
 
-    return this.root.submitExtrinsic(call, pair, {
-      type: Operation.StakingPayout,
-      validators: args.validators,
-    });
+    // TODO: if necessary add historyItem
+    return this.root.submitExtrinsic(call, pair);
   }
 }
