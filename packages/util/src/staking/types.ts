@@ -109,10 +109,18 @@ export type StakeReturn = {
 };
 
 export type NominatorReward = {
-  rewardPerEra: string;
-  rewardPerDay: string;
-  rewardPerYear: string;
-};
+  era: string;
+  sumRewards: string; // per era for stash address
+  validators: {
+      address: string;
+      value: string;
+  }[];
+}[];
+
+export type Payouts = {
+  era: string;
+  validators: string[];
+}[];
 
 type JudgementsType = 'Unknown' | 'FeePaid' | 'Reasonable' | 'KnownGood' | 'OutOfDate' | 'LowQuality' | 'Erroneous';
 
