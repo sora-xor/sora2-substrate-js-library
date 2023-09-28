@@ -4,6 +4,7 @@ export interface StakingHistory extends History {
   validators?: string[];
   payee?: string;
   controller?: string;
+  payouts: Payouts;
 }
 
 export enum StakingRewardsDestination {
