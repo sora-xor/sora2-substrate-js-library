@@ -1,3 +1,4 @@
+import { FPNumber } from '@sora-substrate/math';
 import type { History } from '../BaseApi';
 
 export interface StakingHistory extends History {
@@ -109,10 +110,14 @@ export type StakeReturn = {
 };
 
 export type NominatorReward = {
-  rewardPerEra: string;
-  rewardPerDay: string;
-  rewardPerYear: string;
-};
+  era: string;
+  sumRewards: string; // per era for stash address
+  validators: {
+      address: string;
+      total: string;
+      value: string;
+  }[];
+}[];
 
 type JudgementsType = 'Unknown' | 'FeePaid' | 'Reasonable' | 'KnownGood' | 'OutOfDate' | 'LowQuality' | 'Erroneous';
 
