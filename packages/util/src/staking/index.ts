@@ -543,7 +543,7 @@ export class StakingModule<T> {
     const totalStake = FPNumber.fromCodecValue(stakingLedger.total.toString(), XOR.decimals).toString();
 
     const myValidators = stakingDerive.nominators.map((item) => item.toHuman());
-    const redeemAmount = stakingDerive.redeemable?.toString() ?? '0';
+    const redeemAmount = FPNumber.fromCodecValue(stakingDerive.redeemable?.toString(), XOR.decimals).toString();
     const controller = stakingDerive.controllerId?.toString() ?? '';
 
     const rewardDestination = (stakingDerive.rewardDestination?.toHuman() as string | { Account:string } ) ?? '';
