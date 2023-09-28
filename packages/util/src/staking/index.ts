@@ -822,7 +822,9 @@ export class StakingModule<T> {
     const transactions = args.payouts.map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era))).flat();
     const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
 
-    // TODO: if necessary add historyItem
-    return this.root.submitExtrinsic(call, pair);
+    return this.root.submitExtrinsic(call, pair, {
+      type: Operation.StakingPayout,
+      payouts: args.payouts,
+    });
   }
 }
