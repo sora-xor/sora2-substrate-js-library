@@ -452,7 +452,6 @@ export class StakingModule<T> {
         commission
       );
 
-
       const nominators = electedValidator?.others ?? [];
       const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
       const isOversubscribed = nominators.length > maxNominatorRewardedPerValidator;
@@ -546,7 +545,7 @@ export class StakingModule<T> {
     const redeemAmount = FPNumber.fromCodecValue(stakingDerive.redeemable?.toString(), XOR.decimals).toString();
     const controller = stakingDerive.controllerId?.toString() ?? '';
 
-    const rewardDestination = (stakingDerive.rewardDestination?.toHuman() as string | { Account:string } ) ?? '';
+    const rewardDestination = (stakingDerive.rewardDestination?.toHuman() as string | { Account: string }) ?? '';
     const payee = typeof rewardDestination === 'string' ? rewardDestination : rewardDestination.Account;
 
     return {
