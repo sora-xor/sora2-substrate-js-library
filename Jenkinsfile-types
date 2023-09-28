@@ -1,4 +1,4 @@
-@Library('jenkins-library') _
+@Library('jenkins-library@duty/fix_types_pipeline') _
 
 def pipeline = new org.js.LibPipeline(
     steps: this,
