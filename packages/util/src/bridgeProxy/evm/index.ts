@@ -1,15 +1,12 @@
 import { FPNumber } from '@sora-substrate/math';
+import { assert } from '@polkadot/util';
 
 import { BaseApi, isEvmOperation, Operation } from '../../BaseApi';
+import { Messages } from '../../logger';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
-import {
-  getTransactionDetails,
-  getUserTransactions,
-  subscribeOnTransactionDetails,
-  subscribeOnLockedAsset,
-  getLockedAssets,
-} from '../methods';
+import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails, getLockedAssets } from '../methods';
 
+import type { CodecString } from '@sora-substrate/math';
 import type { Asset } from '../../assets/types';
 import type { EvmHistory, EvmNetwork, EvmAsset } from './types';
 
@@ -97,19 +94,28 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     return await getLockedAssets(this.api, { [BridgeNetworkType.Evm]: evmNetwork }, assetAddress);
   }
 
-  public subscribeOnLockedAsset(evmNetwork: EvmNetwork, assetAddress: string) {
-    return subscribeOnLockedAsset(this.apiRx, { [BridgeNetworkType.Evm]: evmNetwork }, assetAddress);
+  /** UNCHECKED */
+  protected getTransferExtrinsic(asset: Asset, recipient: string, amount: string | number, evmNetwork: EvmNetwork) {
+    const value = new FPNumber(amount, asset.decimals).toCodecString();
+
+    return this.api.tx.bridgeProxy.burn(
+      { [BridgeNetworkType.Evm]: evmNetwork },
+      asset.address,
+      { [BridgeAccountType.Evm]: recipient },
+      value
+    );
   }
 
   public async transfer(
     asset: Asset,
     recipient: string,
     amount: string | number,
-    externalNetwork: EvmNetwork,
+    evmNetwork: EvmNetwork,
     historyId?: string
   ): Promise<void> {
-    // asset should be checked as registered on bridge or not
-    const value = new FPNumber(amount, asset.decimals).toCodecString();
+    assert(this.account, Messages.connectWallet);
+
+    const extrinsic = this.getTransferExtrinsic(asset, recipient, amount, evmNetwork);
     const historyItem = this.getHistory(historyId) || {
       type: Operation.EvmOutgoing,
       symbol: asset.symbol,
@@ -117,15 +123,12 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       amount: `${amount}`,
     };
 
-    await this.submitExtrinsic(
-      this.api.tx.bridgeProxy.burn(
-        { [BridgeNetworkType.Evm]: externalNetwork },
-        asset.address,
-        { [BridgeAccountType.Evm]: recipient },
-        value
-      ),
-      this.account.pair,
-      historyItem
-    );
+    await this.submitExtrinsic(extrinsic, this.account.pair, historyItem);
+  }
+
+  public async getNetworkFee(asset: Asset, evmNetwork: EvmNetwork): Promise<CodecString> {
+    const tx = this.getTransferExtrinsic(asset, '', '0', evmNetwork);
+
+    return await this.getTransactionFee(tx);
   }
 }

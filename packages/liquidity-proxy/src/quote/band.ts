@@ -22,3 +22,7 @@ export const bandQuote = (symbol: string, payload: QuotePayload): OracleRate => 
 
   return rate;
 };
+
+export const bandQuoteUnchecked = (symbol: string, payload: QuotePayload): OracleRate => {
+  return payload.rates[symbol];
+};

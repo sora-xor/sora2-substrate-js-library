@@ -338,10 +338,14 @@ declare module '@polkadot/api-base/types/errors' {
       QueueSizeLimitReached: AugmentedError<ApiType>;
     };
     bridgeProxy: {
+      AssetAlreadyLimited: AugmentedError<ApiType>;
+      AssetNotLimited: AugmentedError<ApiType>;
       NotEnoughLockedLiquidity: AugmentedError<ApiType>;
       Overflow: AugmentedError<ApiType>;
       PathIsNotAvailable: AugmentedError<ApiType>;
+      TransferLimitReached: AugmentedError<ApiType>;
       WrongAccountKind: AugmentedError<ApiType>;
+      WrongLimitSettings: AugmentedError<ApiType>;
     };
     ceresGovernancePlatform: {
       /**
@@ -1406,6 +1410,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       HeaderNotFinalized: AugmentedError<ApiType>;
       /**
+       * Header not found for block number
+       **/
+      HeaderNotFound: AugmentedError<ApiType>;
+      /**
        * Header is on a stale fork, i.e. it's not a descendant of the latest finalized block
        **/
       HeaderOnStaleFork: AugmentedError<ApiType>;
@@ -1721,6 +1729,7 @@ declare module '@polkadot/api-base/types/errors' {
        * Selected filtering request is not allowed.
        **/
       ForbiddenFilter: AugmentedError<ApiType>;
+      InsufficientBalance: AugmentedError<ApiType>;
       /**
        * None of the sources has enough reserves to execute a trade
        **/
@@ -1912,6 +1921,7 @@ declare module '@polkadot/api-base/types/errors' {
     };
     multisigVerifier: {
       CommitmentNotFoundInDigest: AugmentedError<ApiType>;
+      DuplicatedPeer: AugmentedError<ApiType>;
       InvalidInitParams: AugmentedError<ApiType>;
       InvalidNetworkId: AugmentedError<ApiType>;
       InvalidNumberOfSignatures: AugmentedError<ApiType>;
@@ -2000,13 +2010,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       LimitOrderStorageOverflow: AugmentedError<ApiType>;
       /**
+       * Market orders are allowed only for indivisible assets
+       **/
+      MarketOrdersAllowedOnlyForIndivisibleAssets: AugmentedError<ApiType>;
+      /**
        * Max lot size cannot be more that total supply of base asset
        **/
       MaxLotSizeIsMoreThanTotalSupply: AugmentedError<ApiType>;
-      /**
-       * NFT order books are temporarily forbidden
-       **/
-      NftOrderBooksAreTemporarilyForbidden: AugmentedError<ApiType>;
       /**
        * There are no aggregated bids/asks for the order book
        **/
@@ -2060,9 +2070,11 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TickSizeAndStepLotSizeAreTooBig: AugmentedError<ApiType>;
       /**
-       * Tick size & step lot size are too small and their multiplication goes out of precision
+       * Product of tick and step lot sizes goes out of precision. It must be accurately
+       * represented by fixed-precision float to prevent rounding errors. I.e. the product
+       * should not have more than 18 digits after the comma.
        **/
-      TickSizeAndStepLotSizeAreTooSmall: AugmentedError<ApiType>;
+      TickSizeAndStepLotSizeLosePrecision: AugmentedError<ApiType>;
       /**
        * At the moment, Trading is forbidden in the current order book
        **/
@@ -2091,6 +2103,30 @@ declare module '@polkadot/api-base/types/errors' {
        * User cannot create an order book with NFT if they don't have NFT
        **/
       UserHasNoNft: AugmentedError<ApiType>;
+    };
+    parachainBridgeApp: {
+      AppAlreadyRegistered: AugmentedError<ApiType>;
+      AppIsNotRegistered: AugmentedError<ApiType>;
+      /**
+       * Call encoding failed.
+       **/
+      CallEncodeFailed: AugmentedError<ApiType>;
+      InvalidDestinationParachain: AugmentedError<ApiType>;
+      InvalidDestinationParams: AugmentedError<ApiType>;
+      InvalidNetwork: AugmentedError<ApiType>;
+      MessageIdNotFound: AugmentedError<ApiType>;
+      NotEnoughFunds: AugmentedError<ApiType>;
+      NotRelayTransferableAsset: AugmentedError<ApiType>;
+      RelaychainAssetNotRegistered: AugmentedError<ApiType>;
+      RelaychainAssetRegistered: AugmentedError<ApiType>;
+      TokenAlreadyRegistered: AugmentedError<ApiType>;
+      TokenIsNotRegistered: AugmentedError<ApiType>;
+      TransferLimitReached: AugmentedError<ApiType>;
+      UnknownPrecision: AugmentedError<ApiType>;
+      /**
+       * Amount must be > 0
+       **/
+      WrongAmount: AugmentedError<ApiType>;
     };
     permissions: {
       /**
@@ -2448,6 +2484,25 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ZeroClaimableIncentives: AugmentedError<ApiType>;
     };
+    qaTools: {
+      /**
+       * The account is already in the whitelist
+       **/
+      AlreadyInWhitelist: AugmentedError<ApiType>;
+      /**
+       * Did not find an order book with given id to fill. Likely an error with
+       * order book creation.
+       **/
+      CannotFillUnknownOrderBook: AugmentedError<ApiType>;
+      /**
+       * The account intended for removal is not in whitelist
+       **/
+      NotInWhitelist: AugmentedError<ApiType>;
+      /**
+       * Cannot add an account to the whitelist: it's full
+       **/
+      WhitelistFull: AugmentedError<ApiType>;
+    };
     referrals: {
       /**
        * Account already has a referrer.
@@ -2633,29 +2688,6 @@ declare module '@polkadot/api-base/types/errors' {
        * staking settings to keep things safe for the runtime.
        **/
       TooManyValidators: AugmentedError<ApiType>;
-    };
-    substrateBridgeApp: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidDestinationParachain: AugmentedError<ApiType>;
-      InvalidDestinationParams: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      NotRelayTransferableAsset: AugmentedError<ApiType>;
-      RelaychainAssetNotRegistered: AugmentedError<ApiType>;
-      RelaychainAssetRegistered: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-      TransferLimitReached: AugmentedError<ApiType>;
-      UnknownPrecision: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
     };
     substrateBridgeInboundChannel: {
       /**

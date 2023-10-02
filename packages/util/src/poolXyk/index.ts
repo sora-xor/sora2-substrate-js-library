@@ -48,7 +48,7 @@ export class PoolXykModule<T> {
   private subject = new Subject<void>();
   public updated = this.subject.asObservable();
   public accountLiquidity: Array<AccountLiquidity> = [];
-  public accountLiquidityLoaded!: Subject<void>;
+  public accountLiquidityLoaded: Subject<void> | null = null;
 
   private addToLiquidityList(asset: AccountLiquidity): void {
     const liquidityCopy = [...this.accountLiquidity];
@@ -67,7 +67,7 @@ export class PoolXykModule<T> {
   public getInfoByPoolAccount(poolTokenAccount: string): Asset {
     return {
       address: poolTokenAccount,
-      decimals: 18,
+      decimals: FPNumber.DEFAULT_PRECISION, // [DECIMALS]
       name: 'Pool XYK Token',
       symbol: 'POOLXYK',
     };
@@ -179,7 +179,7 @@ export class PoolXykModule<T> {
     ).flat(1);
 
     allReserves.forEach((item) => {
-      // Decimals = 18 here
+      // [DECIMALS] Decimals = 18 here
       const [key1, key2] = item[0].args;
       if (item[1]?.length == 2) {
         const [value1, value2] = item[1];
@@ -212,7 +212,7 @@ export class PoolXykModule<T> {
     firstAssetDecimals?: number,
     secondAssetDecimals?: number
   ): Array<CodecString> {
-    // actually, we don't need to use decimals here, so, we don't need to send these requests
+    // [DECIMALS] actually, we don't need to use decimals here, so, we don't need to send these requests
     // firstAssetDecimals = firstAssetDecimals ?? (await this.getAssetInfo(firstAssetAddress)).decimals
     // secondAssetDecimals = secondAssetDecimals ?? (await this.getAssetInfo(secondAssetAddress)).decimals
     const a = FPNumber.fromCodecValue(firstTotal, firstAssetDecimals);
@@ -283,8 +283,8 @@ export class PoolXykModule<T> {
         poolReservesObservable,
         accountPoolBalanceObservable,
         poolTotalSupplyObservable,
-      ]).subscribe(async ([reserves, balance, supply]) => {
-        const updatedLiquidity = await this.getAccountLiquidityItem(
+      ]).subscribe(([reserves, balance, supply]) => {
+        const updatedLiquidity = this.getAccountLiquidityItem(
           poolAccount,
           firstAddress,
           secondAddress,
@@ -343,19 +343,24 @@ export class PoolXykModule<T> {
     return [baseAsset, targetAsset, baseAssetAmount, targetAssetAmount, DEXId];
   }
 
-  private async getAccountLiquidityItem(
+  private getAccountLiquidityItem(
     poolAccount: string,
     firstAddress: string,
     secondAddress: string,
     reserves: [CodecString, CodecString],
     balance: CodecString | null,
     totalSupply: CodecString | null
-  ): Promise<AccountLiquidity | null> {
+  ): AccountLiquidity | null {
     if (!(balance && Number(balance) && totalSupply)) return null;
 
     const { decimals, symbol, name } = this.getInfoByPoolAccount(poolAccount);
-    const firstAsset = await this.root.assets.getAssetInfo(firstAddress);
-    const secondAsset = await this.root.assets.getAssetInfo(secondAddress);
+    // [DECIMALS] actually, we don't need to use decimals here, so, we don't need to send these requests
+    // const [{ decimals: decimals1 }, { decimals: decimals2 }] = await Promise.all([
+    //   this.root.assets.getAssetInfo(firstAddress),
+    //   this.root.assets.getAssetInfo(secondAddress)
+    // ]);
+    const decimals1 = decimals;
+    const decimals2 = decimals;
     const [reserveA, reserveB] = reserves;
     const [balanceA, balanceB] = this.estimateTokensRetrieved(
       firstAddress,
@@ -364,8 +369,8 @@ export class PoolXykModule<T> {
       reserveA,
       reserveB,
       totalSupply,
-      firstAsset.decimals,
-      secondAsset.decimals
+      decimals1,
+      decimals2
     );
 
     const fpBalance = FPNumber.fromCodecValue(balance, decimals);
@@ -379,8 +384,8 @@ export class PoolXykModule<T> {
       firstBalance: balanceA,
       secondBalance: balanceB,
       symbol,
-      decimals: firstAsset.decimals,
-      decimals2: secondAsset.decimals,
+      decimals: decimals1,
+      decimals2,
       balance,
       name,
       poolShare,
@@ -440,9 +445,10 @@ export class PoolXykModule<T> {
       this.removeAccountLiquidity(liquidity);
     }
 
-    for (const liquidity of includedLiquidityList) {
-      await this.subscribeOnAccountLiquidity(liquidity);
-    }
+    const subscribeOnAccountLiquidityPromises = includedLiquidityList.map((liquidity) => {
+      return this.subscribeOnAccountLiquidity(liquidity);
+    });
+    await Promise.all(subscribeOnAccountLiquidityPromises);
 
     this.subject.next();
   }
@@ -476,6 +482,7 @@ export class PoolXykModule<T> {
 
       await this.updateAccountLiquiditySubscriptions(assetIdPairs);
 
+      this.accountLiquidityLoaded.next(); // Do not remove it to avoid 'no elements in sequence' error
       this.accountLiquidityLoaded.complete();
     });
   }

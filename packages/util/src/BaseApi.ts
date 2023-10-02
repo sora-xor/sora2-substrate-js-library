@@ -3,7 +3,6 @@ import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { Observable, Subscriber } from 'rxjs';
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
-import { Keyring } from '@polkadot/api';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import { connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
@@ -18,12 +17,12 @@ import { AccountStorage, Storage } from './storage';
 import { DexId } from './dex/consts';
 import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
-import type { BridgeHistory } from './BridgeApi';
+import { ReceiverHistoryItem } from './swap/types';
+import type { EthHistory } from './bridgeProxy/eth/types';
 import type { EvmHistory } from './bridgeProxy/evm/types';
 import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
-import type { StakingHistory } from './staking/types';
-import { ReceiverHistoryItem } from './swap/types';
+import type { OriginalIdentity, StakingHistory } from './staking/types';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -44,7 +43,7 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
-export type IBridgeTransaction = EvmHistory | SubHistory | BridgeHistory;
+export type IBridgeTransaction = EvmHistory | SubHistory | EthHistory;
 
 export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory | StakingHistory;
 
@@ -65,7 +64,7 @@ export type AccountHistory<T> = {
   [key: string]: T;
 };
 
-export const isBridgeOperation = (operation: Operation) =>
+export const isEthOperation = (operation: Operation) =>
   [Operation.EthBridgeIncoming, Operation.EthBridgeOutgoing].includes(operation);
 
 export const isEvmOperation = (operation: Operation) =>
@@ -78,6 +77,9 @@ const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
 
 export const KeyringType = 'sr25519';
+
+// We don't need to know real account address for checking network fees
+const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
 
 export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   /**
@@ -113,9 +115,19 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.DemeterFarmingUnstakeToken]: '0',
     [Operation.DemeterFarmingGetRewards]: '0',
     [Operation.CeresLiquidityLockerLockLiquidity]: '0',
+    [Operation.StakingBond]: '0',
+    [Operation.StakingBondExtra]: '0',
+    [Operation.StakingRebond]: '0',
+    [Operation.StakingUnbond]: '0',
+    [Operation.StakingWithdrawUnbonded]: '0',
+    [Operation.StakingNominate]: '0',
+    [Operation.StakingChill]: '0',
+    [Operation.StakingSetPayee]: '0',
+    [Operation.StakingSetController]: '0',
+    [Operation.StakingPayout]: '0',
   } as NetworkFeesObject;
 
-  protected readonly prefix = 69;
+  public readonly prefix = 69;
 
   private _history: AccountHistory<HistoryItem> = {};
 
@@ -352,7 +364,14 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           } else if (result.status.isFinalized) {
             updated.endTime = Date.now();
 
-            result.events.forEach(({ event: { data, method, section } }: any) => {
+            const txIndex = result.txIndex;
+
+            for (const {
+              phase,
+              event: { data, method, section },
+            } of result.events) {
+              if (!(phase.isApplyExtrinsic && phase.asApplyExtrinsic.toNumber() === txIndex)) continue;
+
               if (method === 'FeeWithdrawn' && section === 'xorFee') {
                 const [_, soraNetworkFee] = data;
                 updated.soraNetworkFee = soraNetworkFee.toString();
@@ -372,15 +391,15 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 const amountKey = !history.amount ? 'amount' : 'amount2';
                 updated[amountKey] = amountFormatted;
               } else if (
-                (method === 'RequestRegistered' && isBridgeOperation(type)) ||
+                (method === 'RequestRegistered' && isEthOperation(type)) ||
                 (method === 'RequestStatusUpdate' && (isEvmOperation(type) || isSubstrateOperation(type)))
               ) {
-                updated.hash = first(data.toJSON());
+                updated.hash = first(data.toJSON() as any);
               } else if (section === 'system' && method === 'ExtrinsicFailed') {
                 updated.status = TransactionStatus.Error;
                 updated.endTime = Date.now();
 
-                const [error] = data;
+                const error = data[0] as any;
                 if (error.isModule) {
                   const decoded = this.api.registry.findMetaError(error.asModule);
                   const { docs, section, name } = decoded;
@@ -390,7 +409,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                   updated.errorMessage = error.toString();
                 }
               }
-            });
+            }
           }
 
           this.saveHistory({ ...requiredParams, ...updated }); // Save history during each status update
@@ -443,105 +462,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   }
 
   /**
-   * TODO: make it possible to remove this method
-   * @param type
-   * @param params
-   * @returns value * 10 ^ decimals
-   */
-  public async getNetworkFee(type: Operation, ...params: Array<any>): Promise<CodecString> {
-    let extrinsicParams: any = params;
-    let extrinsic: any = null;
-    switch (type) {
-      case Operation.Transfer:
-        extrinsic = this.api.tx.assets.transfer;
-        break;
-      case Operation.Swap:
-        extrinsic = this.api.tx.liquidityProxy.swap;
-        break;
-      case Operation.AddLiquidity:
-        extrinsic = this.api.tx.poolXYK.depositLiquidity;
-        break;
-      case Operation.RemoveLiquidity:
-        extrinsic = this.api.tx.poolXYK.withdrawLiquidity;
-        break;
-      case Operation.CreatePair:
-        extrinsic = this.api.tx.utility.batchAll;
-        extrinsicParams = [
-          [
-            (this.api.tx.tradingPair as any).register(...params[0].pairCreationArgs),
-            (this.api.tx.poolXYK as any).initializePool(...params[0].pairCreationArgs),
-            (this.api.tx.poolXYK as any).depositLiquidity(...params[0].addLiquidityArgs),
-          ],
-        ];
-        break;
-      case Operation.EthBridgeOutgoing:
-        extrinsic = this.api.tx.ethBridge.transferToSidechain;
-        break;
-      case Operation.EvmOutgoing:
-        extrinsic = this.api.tx.bridgeProxy.burn;
-        break;
-      case Operation.SubstrateOutgoing:
-        extrinsic = this.api.tx.bridgeProxy.burn;
-        break;
-      case Operation.EthBridgeIncoming:
-      case Operation.EvmIncoming:
-      case Operation.SubstrateIncoming:
-        break;
-      case Operation.RegisterAsset:
-        extrinsic = this.api.tx.assets.register;
-        break;
-      case Operation.ClaimRewards:
-        extrinsic = params[0].extrinsic;
-        extrinsicParams = params[0].args;
-        break;
-      case Operation.TransferAll:
-        extrinsic = params[0];
-        extrinsicParams = null;
-        break;
-      case Operation.SwapAndSend:
-        extrinsic = this.api.tx.liquidityProxy.swapTransfer;
-        break;
-      case Operation.SwapTransferBatch:
-        extrinsic = this.api.tx.liquidityProxy.swapTransferBatch;
-        break;
-      case Operation.ReferralReserveXor:
-        extrinsic = this.api.tx.referrals.reserve;
-        break;
-      case Operation.ReferralUnreserveXor:
-        extrinsic = this.api.tx.referrals.unreserve;
-        break;
-      case Operation.ReferralSetInvitedUser:
-        extrinsic = this.api.tx.referrals.setReferrer;
-        break;
-      case Operation.DemeterFarmingDepositLiquidity:
-      case Operation.DemeterFarmingStakeToken:
-        extrinsic = this.api.tx.demeterFarmingPlatform.deposit;
-        break;
-      case Operation.DemeterFarmingWithdrawLiquidity:
-      case Operation.DemeterFarmingUnstakeToken:
-        extrinsic = this.api.tx.demeterFarmingPlatform.withdraw;
-        break;
-      case Operation.DemeterFarmingGetRewards:
-        extrinsic = this.api.tx.demeterFarmingPlatform.getRewards;
-        break;
-      case Operation.CeresLiquidityLockerLockLiquidity:
-        extrinsic = this.api.tx.ceresLiquidityLocker.lockLiquidity;
-        break;
-      default:
-        throw new Error('Unknown function');
-    }
-    if (extrinsic) {
-      const { account, options } = this.getAccountWithOptions();
-      const tx =
-        type === Operation.TransferAll ? extrinsic : (extrinsic(...extrinsicParams) as SubmittableExtrinsic<'promise'>);
-      const res = await tx.paymentInfo(account, options);
-      return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
-    } else {
-      return '0';
-    }
-  }
-
-  /**
    * Returns an extrinsic with the default or empty params.
    *
    * Actually, network fee value doesn't depend on extrinsic params, so, we can use empty/default values
@@ -551,32 +471,25 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     try {
       switch (operation) {
         case Operation.AddLiquidity:
-          return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0');
+          return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', 0, 0, 0, 0);
         case Operation.CreatePair:
           return this.api.tx.utility.batchAll([
             this.api.tx.tradingPair.register(DexId.XOR, '', ''),
             this.api.tx.poolXYK.initializePool(DexId.XOR, '', ''),
-            this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', '0', '0', '0', '0'),
+            this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', 0, 0, 0, 0),
           ]);
         case Operation.EthBridgeIncoming:
         case Operation.EvmIncoming:
         case Operation.SubstrateIncoming:
+        case Operation.EvmOutgoing:
+        case Operation.SubstrateOutgoing:
           return null;
         case Operation.EthBridgeOutgoing:
-          return this.api.tx.ethBridge.transferToSidechain('', '', '0', 0);
-        case Operation.EvmOutgoing:
-          return this.api.tx.bridgeProxy.burn({ EVM: 1 }, '', { EVM: '' }, '0');
-        case Operation.SubstrateOutgoing:
-          return this.api.tx.bridgeProxy.burn(
-            { Sub: 'Rococo' },
-            '',
-            { Parachain: { V3: { parents: 1, interior: 'Here' } } },
-            '0'
-          );
+          return this.api.tx.ethBridge.transferToSidechain('', '', 0, 0);
         case Operation.RegisterAsset:
-          return this.api.tx.assets.register('', '', '0', false, false, null, null);
+          return this.api.tx.assets.register('', '', 0, false, false, null, null);
         case Operation.RemoveLiquidity:
-          return this.api.tx.poolXYK.withdrawLiquidity(DexId.XOR, '', '', '0', '0', '0');
+          return this.api.tx.poolXYK.withdrawLiquidity(DexId.XOR, '', '', 0, 0, 0);
         case Operation.Swap:
           return this.api.tx.liquidityProxy.swap(
             DexId.XOR,
@@ -599,7 +512,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         case Operation.SwapTransferBatch:
           return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled');
         case Operation.Transfer:
-          return this.api.tx.assets.transfer('', '', '0');
+          return this.api.tx.assets.transfer('', '', 0);
         case Operation.ClaimVestedRewards:
           return this.api.tx.vestedRewards.claimRewards();
         case Operation.ClaimCrowdloanRewards:
@@ -611,9 +524,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             '0xa8811ca9a2f65a4e21bd82a1e121f2a7f0f94006d0d4bcacf50016aef0b67765692bb7a06367365f13a521ec129c260451a682e658048729ff514e77e4cdffab1b'
           ); // signature mock
         case Operation.ReferralReserveXor:
-          return this.api.tx.referrals.reserve('0');
+          return this.api.tx.referrals.reserve(0);
         case Operation.ReferralUnreserveXor:
-          return this.api.tx.referrals.unreserve('0');
+          return this.api.tx.referrals.unreserve(0);
         case Operation.ReferralSetInvitedUser:
           return this.api.tx.referrals.setReferrer('');
         case Operation.DemeterFarmingDepositLiquidity:
@@ -628,6 +541,26 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.demeterFarmingPlatform.getRewards(XOR.address, XOR.address, XOR.address, true);
         case Operation.CeresLiquidityLockerLockLiquidity:
           return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
+        case Operation.StakingBond:
+          return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
+        case Operation.StakingBondExtra:
+          return this.api.tx.staking.bondExtra(0);
+        case Operation.StakingRebond:
+          return this.api.tx.staking.rebond(0);
+        case Operation.StakingUnbond:
+          return this.api.tx.staking.unbond(0);
+        case Operation.StakingWithdrawUnbonded:
+          return this.api.tx.staking.withdrawUnbonded(0);
+        case Operation.StakingNominate:
+          return this.api.tx.staking.nominate([mockAccountAddress]);
+        case Operation.StakingChill:
+          return this.api.tx.staking.chill();
+        case Operation.StakingSetPayee:
+          return this.api.tx.staking.setPayee({ Account: mockAccountAddress });
+        case Operation.StakingSetController:
+          return this.api.tx.staking.setController(mockAccountAddress);
+        case Operation.StakingPayout:
+          return this.api.tx.staking.payoutStakers(mockAccountAddress, 3449);
         default:
           return null;
       }
@@ -670,19 +603,37 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.DemeterFarmingUnstakeToken,
       Operation.DemeterFarmingGetRewards,
       Operation.CeresLiquidityLockerLockLiquidity,
+      Operation.StakingBond,
+      Operation.StakingBondExtra,
+      Operation.StakingRebond,
+      Operation.StakingUnbond,
+      Operation.StakingWithdrawUnbonded,
+      Operation.StakingNominate,
+      Operation.StakingChill,
+      Operation.StakingSetPayee,
+      Operation.StakingSetController,
+      Operation.StakingPayout,
     ];
-    // We don't need to know real account address for checking network fees
-    const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
-    for (const operation of operations) {
+
+    const operationsPromises = operations.map(async (operation) => {
       const extrinsic = this.getEmptyExtrinsic(operation);
+
       if (extrinsic) {
-        try {
-          const res = await extrinsic.paymentInfo(mockAccountAddress);
-          this.NetworkFee[operation] = new FPNumber(res.partialFee, XOR.decimals).toCodecString();
-        } catch (error) {
-          // extrinsic is not supported in chain
-        }
+        this.NetworkFee[operation] = await this.getTransactionFee(extrinsic);
       }
+    });
+
+    await Promise.allSettled(operationsPromises);
+  }
+
+  public async getTransactionFee(extrinsic: SubmittableExtrinsic<'promise'>): Promise<CodecString> {
+    try {
+      const res = await extrinsic.paymentInfo(mockAccountAddress);
+
+      return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
+    } catch {
+      // extrinsic is not supported in chain
+      return '0';
     }
   }
 
@@ -768,8 +719,10 @@ export enum Operation {
   ClaimExternalRewards = 'ClaimExternalRewards',
   /** it's used for internal needs as the MST batch with transfers  */
   TransferAll = 'TransferAll',
+  /** Complex Swap */
   SwapAndSend = 'SwapAndSend',
   SwapTransferBatch = 'SwapTransferBatch',
+  /** Referral System */
   ReferralReserveXor = 'ReferralReserveXor',
   ReferralUnreserveXor = 'ReferralUnreserveXor',
   ReferralSetInvitedUser = 'ReferralSetInvitedUser',
@@ -824,4 +777,5 @@ export interface History {
 export interface OnChainIdentity {
   legalName: string;
   approved: boolean;
+  identity: OriginalIdentity;
 }

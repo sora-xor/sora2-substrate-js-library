@@ -4,40 +4,54 @@ import { map } from 'rxjs';
 
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
-import { XOR } from '../assets/consts';
+import { XOR, VAL } from '../assets/consts';
+import {
+  formatEra,
+  formatPayee,
+  formatNominations,
+  formatValidatorExposure,
+  formatIndividualRewardPoints,
+} from './helpers';
 import { StakingRewardsDestination } from './types';
 
-import type { Exposure } from '@polkadot/types/interfaces/staking';
-
+import type { u32 } from '@polkadot/types-codec';
 import type { Observable } from '@polkadot/types/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
-import type { Api } from '../api';
 import type { CodecString, NumberLike } from '@sora-substrate/math';
+import type { Api } from '../api';
 import type {
   ValidatorInfo,
   StashNominatorsInfo,
   ActiveEra,
-  EraElectionStatus,
   EraRewardPoints,
   ValidatorExposure,
   ElectedValidator,
   AccountStakingLedger,
+  RewardPointsIndividual,
+  ValidatorInfoFull,
+  MyStakingInfo,
+  StakeReturn,
+  NominatorReward,
+  Payouts,
+  // EraElectionStatus,
 } from './types';
 
-// UTILS
-const formatBalance = (value: any) => new FPNumber(value).toCodecString();
+/**
+ * A value to convert the validator commission into a fractional number
+ */
+const COMMISSION_DECIMALS = 9;
 
-const formatValidatorExposure = (codec: Exposure): ValidatorExposure => {
-  return {
-    total: formatBalance(codec.total),
-    own: formatBalance(codec.own),
-    others: codec.others.map((item) => ({ who: item.who.toString(), value: formatBalance(item.value) })),
-  };
-};
+/**
+ * Check on other networks
+ */
+const COUNT_ERAS_IN_DAILY = 4;
 
-const formatPayee = (payee: StakingRewardsDestination | string): string | { Account: string } => {
-  return payee in StakingRewardsDestination ? payee : { Account: payee };
-};
+/**
+ * Check on other networks
+ */
+const COUNT_HOURS_IN_ERA = 6;
+
+const COUNT_DAYS_IN_YEAR = 365;
 
 export class StakingModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -50,6 +64,48 @@ export class StakingModule<T> {
   }
 
   /**
+   * Number of eras that staked funds must remain bonded for.
+   * @returns bonding duration
+   */
+  public getBondingDuration(): number {
+    return this.root.api.consts.staking.bondingDuration.toNumber();
+  }
+
+  /**
+   * The maximum number of nominators rewarded for each validator.
+   * @returns max nominators
+   */
+  public getMaxNominatorRewardedPerValidator(): number {
+    return this.root.api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
+  }
+
+  /**
+   * Number of days that staked funds must remain bonded for.
+   * @returns unbond period
+   */
+  public getUnbondPeriod(): number {
+    const bondingDuration = this.getBondingDuration();
+
+    return bondingDuration / COUNT_ERAS_IN_DAILY;
+  }
+
+  /**
+   * Maximum number of nominations per nominator.
+   * @returns max nominations
+   */
+  public getMaxNominations(): number {
+    return this.root.api.consts.staking.maxNominations.toNumber();
+  }
+
+  /**
+   * The minimum active bond to become and maintain the role of a nominator.
+   * @returns min bond
+   */
+  public async getMinNominatorBond(): Promise<number> {
+    return (await this.root.api.query.staking.minNominatorBond()).toNumber();
+  }
+
+  /**
    * Get observable session index
    *
    * Each era is divided into sessions.
@@ -59,11 +115,7 @@ export class StakingModule<T> {
    * @returns session index
    */
   public getCurrentSessionObservable(): Observable<number> {
-    return this.root.apiRx.query.session.currentIndex().pipe(
-      map((data) => {
-        return data.toNumber();
-      })
-    );
+    return this.root.apiRx.query.session.currentIndex().pipe(map((data) => data.toNumber()));
   }
 
   /**
@@ -72,11 +124,7 @@ export class StakingModule<T> {
    * @returns validator count (69)
    */
   public getPreferredValidatorCountObservable(): Observable<number> {
-    return this.root.apiRx.query.staking.validatorCount().pipe(
-      map((data) => {
-        return data.toNumber();
-      })
-    );
+    return this.root.apiRx.query.staking.validatorCount().pipe(map((data) => data.toNumber()));
   }
 
   /**
@@ -90,7 +138,7 @@ export class StakingModule<T> {
 
         const era = data.unwrap();
         const index = era.index.toNumber();
-        const start = era.start.unwrap().toNumber();
+        const start = era.start.unwrapOrDefault().toNumber();
 
         return { index, start };
       })
@@ -98,16 +146,34 @@ export class StakingModule<T> {
   }
 
   /**
+   * Get history depth.
+   * History depth - number of eras to keep in history.
+   * @returns history depth
+   */
+  public getHistoryDepth(): number {
+    const historyDepth = this.root.api.consts.staking.historyDepth;
+
+    return historyDepth.toNumber();
+  }
+
+  /**
+   * Get the current era index.
+   * This is the latest planned era, depending on how the Session pallet queues the validator
+   * set, it might be active or not.
+   * @returns current era index
+   */
+  public async getCurrentEra(): Promise<number> {
+    const data = await this.root.api.query.staking.currentEra();
+
+    return formatEra(data);
+  }
+
+  /**
    * Get observable current era
    * @returns current era index
    */
   public getCurrentEraObservable(): Observable<number> {
-    return this.root.apiRx.query.staking.currentEra().pipe(
-      map((data) => {
-        const era = data.unwrap();
-        return era.toNumber();
-      })
-    );
+    return this.root.apiRx.query.staking.currentEra().pipe(map(formatEra));
   }
 
   /**
@@ -128,12 +194,30 @@ export class StakingModule<T> {
    * @param eraIndex index of era
    * @returns total stake balance in XOR (codec string)
    */
+  public async getEraTotalStake(eraIndex: number): Promise<CodecString> {
+    const erasTotalStake = await this.root.api.query.staking.erasTotalStake(eraIndex);
+
+    return erasTotalStake.toString();
+  }
+
+  /**
+   * Get observable eras total stake
+   * @param eraIndex index of era
+   * @returns total stake balance in XOR (codec string)
+   */
   public getEraTotalStakeObservable(eraIndex: number): Observable<CodecString> {
-    return this.root.apiRx.query.staking.erasTotalStake(eraIndex).pipe(
-      map((data) => {
-        return new FPNumber(data).toCodecString();
-      })
-    );
+    return this.root.apiRx.query.staking.erasTotalStake(eraIndex).pipe(map((data) => data.toString()));
+  }
+
+  /**
+   * Get reward points of validators for era
+   * @param eraIndex index of era
+   * @returns validator points
+   */
+  public async getEraRewardPoints(eraIndex: number): Promise<RewardPointsIndividual> {
+    const data = await this.root.api.query.staking.erasRewardPoints(eraIndex);
+
+    return formatIndividualRewardPoints(data);
   }
 
   /**
@@ -145,11 +229,7 @@ export class StakingModule<T> {
     return this.root.apiRx.query.staking.erasRewardPoints(eraIndex).pipe(
       map((data) => {
         const total = data.total.toNumber();
-        const individual = {};
-
-        for (const [account, points] of data.individual.entries()) {
-          individual[account.toString()] = points.toNumber();
-        }
+        const individual = formatIndividualRewardPoints(data);
 
         return { individual, total };
       })
@@ -171,9 +251,9 @@ export class StakingModule<T> {
 
         return {
           stash: data.stash.toString(),
-          total: formatBalance(data.total),
-          active: formatBalance(data.active),
-          unlocking: data.unlocking.map((item) => ({ value: formatBalance(item.value), era: item.era.toNumber() })),
+          total: data.total.toString(),
+          active: data.active.toString(),
+          unlocking: data.unlocking.map((item) => ({ value: item.value.toString(), era: item.era.toNumber() })),
         };
       })
     );
@@ -203,12 +283,26 @@ export class StakingModule<T> {
   public getPayeeObservable(stashAddress: string): Observable<StakingRewardsDestination | string> {
     return this.root.apiRx.query.staking.payee(stashAddress).pipe(
       map((data) => {
+        if (data.isStaked) return StakingRewardsDestination.Staked;
         if (data.isController) return StakingRewardsDestination.Controller;
         if (data.isStash) return StakingRewardsDestination.Stash;
         if (data.isAccount) return data.value.toString();
         return StakingRewardsDestination.None;
       })
     );
+  }
+
+  /**
+   * **STASH**
+   * Get rewards destination of stash account
+   * @param stashAddress address of stash account
+   * @returns rewards destination
+   */
+  public async getPayee(stashAddress: string): Promise<StakingRewardsDestination | string> {
+    const payee = await this.root.api.query.staking.payee(stashAddress);
+    const payeeHuman = payee.toHuman();
+
+    return typeof payeeHuman === 'string' ? payeeHuman : (payeeHuman as any).Account;
   }
 
   /**
@@ -229,6 +323,228 @@ export class StakingModule<T> {
 
     return validators;
   }
+
+  /**
+   * Calculating average validator reward
+   * @returns average validator reward
+   */
+  public async getAverageRewards(eraIndex?: number): Promise<FPNumber> {
+    const erasValidatorRewardPallet = this.root.api.query.staking.erasValidatorReward;
+
+    if (Number.isInteger(eraIndex)) {
+      const erasValidatorReward = await erasValidatorRewardPallet(eraIndex);
+
+      return new FPNumber(erasValidatorReward.value);
+    }
+
+    const erasValidatorReward = await erasValidatorRewardPallet.entries();
+    const summaryRewards = erasValidatorReward.reduce((sum, [, eraReward]) => {
+      const eraRewardValue = eraReward.value.toString();
+
+      return sum.add(FPNumber.fromCodecValue(eraRewardValue));
+    }, FPNumber.ZERO);
+
+    const averageRewards = summaryRewards.div(new FPNumber(erasValidatorReward.length));
+
+    return averageRewards;
+  }
+
+  /**
+   * Calculating validator apy
+   * @returns apy
+   */
+  public async calculatingStakeReturn(
+    totalStakeValidator: string,
+    rewardToStakeRatio: string,
+    eraTotalStake: string,
+    eraAverageRewards: FPNumber,
+    commission: string
+  ): Promise<StakeReturn> {
+    const validatorTotalStake = FPNumber.fromCodecValue(totalStakeValidator);
+
+    if (validatorTotalStake.isZero())
+      return {
+        stakeReturn: '0',
+        apy: '0',
+      };
+
+    const validatorShareStake = validatorTotalStake.div(FPNumber.fromCodecValue(eraTotalStake));
+    const stakeReturnReward = eraAverageRewards.mul(validatorShareStake);
+
+    const stakeReturn = stakeReturnReward.mul(FPNumber.fromCodecValue(rewardToStakeRatio));
+    const ratioReturnStakeToTotalStake = stakeReturn
+      .div(validatorTotalStake)
+      .mul(new FPNumber(COUNT_ERAS_IN_DAILY))
+      .mul(new FPNumber(COUNT_DAYS_IN_YEAR));
+    const nominatorShare = FPNumber.ONE.sub(FPNumber.fromCodecValue(commission, COMMISSION_DECIMALS));
+    const apy = ratioReturnStakeToTotalStake.sub(FPNumber.ONE).mul(FPNumber.HUNDRED).mul(nominatorShare);
+
+    return {
+      stakeReturn: stakeReturn.toCodecString(),
+      apy: apy.toFixed(2),
+    };
+  }
+
+  /**
+   * Get information about validators
+   * @returns list of validators infos sorted by recommended
+   */
+  public async getValidatorsInfo(): Promise<ValidatorInfoFull[]> {
+    const [wannabeValidators, currentEra, eraAverageRewards] = await Promise.all([
+      this.getWannabeValidators(),
+      this.getCurrentEra(),
+      this.getAverageRewards(),
+    ]);
+    const [eraRewardPoints, electedValidators, eraTotalStake] = await Promise.all([
+      this.getEraRewardPoints(currentEra),
+      this.getElectedValidators(currentEra),
+      this.getEraTotalStake(currentEra),
+    ]);
+
+    // TODO: use liquidity proxy quote; XOR based quote is used just for now
+    const { amount: rewardToStakeRatio } = await this.root.swap.getResultFromDexRpc(VAL.address, XOR.address, 1);
+
+    const validatorsPromises = wannabeValidators.map<Promise<ValidatorInfoFull>>(async ({ address, commission }) => {
+      const electedValidator = electedValidators.find(({ address: _address }) => _address === address);
+      const total = electedValidator?.total ?? '0';
+      const rewardPoints = eraRewardPoints[address];
+
+      const identity = (await this.root.getAccountOnChainIdentity(address))?.identity;
+      const { apy, stakeReturn } = await this.calculatingStakeReturn(
+        total,
+        rewardToStakeRatio,
+        eraTotalStake,
+        eraAverageRewards,
+        commission
+      );
+
+      const nominators = electedValidator?.others ?? [];
+      const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
+      const isOversubscribed = nominators.length > maxNominatorRewardedPerValidator;
+      const knownGoodIndex = identity?.judgements?.findIndex(([, type]) => type === 'KnownGood');
+      const isKnownGood = knownGoodIndex && knownGoodIndex !== -1;
+
+      return {
+        address,
+        apy,
+        rewardPoints,
+        commission: commission ?? '',
+        nominators: electedValidator?.others ?? [],
+        isOversubscribed,
+        isKnownGood,
+        stake: {
+          stakeReturn,
+          total,
+          own: electedValidator?.own ?? '0',
+        },
+        identity:
+          identity !== null
+            ? {
+                ...identity,
+                info: Object.fromEntries(
+                  Object.entries(identity?.info ?? {}).map(([key, value]) => {
+                    if (value === 'None') return [key, ''];
+
+                    if (!Array.isArray(value) && value?.Raw !== undefined) return [key, value?.Raw];
+
+                    return [key, value];
+                  })
+                ),
+              }
+            : null,
+      };
+    });
+
+    const validators = await Promise.all(validatorsPromises);
+
+    // step 1 - apy DESC
+    // step 2 - commission ASC
+    // step 3 - identity, array of judgements have KnownGood element
+    return validators.sort((validator1, validator2) => {
+      const { apy: apy1, commission: commission1, isKnownGood: isKnownGood1 } = validator1;
+      const { apy: apy2, commission: commission2, isKnownGood: isKnownGood2 } = validator2;
+
+      const subtractionApy = new FPNumber(apy2).sub(new FPNumber(apy1));
+
+      if (!subtractionApy.isZero()) return subtractionApy.toNumber();
+
+      const subtractionCommission = new FPNumber(commission1).sub(new FPNumber(commission2));
+
+      if (!subtractionCommission.isZero()) return subtractionCommission.toNumber();
+
+      if (isKnownGood1 && !isKnownGood2) return -1;
+
+      if (!isKnownGood1 && isKnownGood2) return 1;
+
+      return 0;
+    });
+  }
+
+  /**
+   * Get my staking info
+   * @returns staking info
+   */
+  public async getMyStakingInfo(address: string): Promise<MyStakingInfo> {
+    const stakingDerive = await this.root.api?.derive.staking.account(address);
+
+    const unlocking =
+      stakingDerive.unlocking?.map(({ value, remainingEras: _remainingEras }) => {
+        const remainingEras = new FPNumber(_remainingEras.toString());
+        const remainingHours = remainingEras.mul(new FPNumber(COUNT_HOURS_IN_ERA)).toString();
+        const remainingDays = remainingEras.div(new FPNumber(COUNT_ERAS_IN_DAILY)).toString();
+
+        return {
+          value: FPNumber.fromCodecValue(value.toString(), XOR.decimals).toString(),
+          remainingEras: remainingEras.toString(),
+          remainingHours,
+          remainingDays,
+        };
+      }) ?? [];
+
+    const sum = unlocking.reduce((sum, { value }) => sum.add(new FPNumber(value)), FPNumber.ZERO).toString();
+
+    const stakingLedger = stakingDerive.stakingLedger;
+    const activeStake = FPNumber.fromCodecValue(stakingLedger.active.toString(), XOR.decimals).toString();
+    const totalStake = FPNumber.fromCodecValue(stakingLedger.total.toString(), XOR.decimals).toString();
+
+    const myValidators = stakingDerive.nominators.map((item) => item.toHuman());
+    const redeemAmount = FPNumber.fromCodecValue(stakingDerive.redeemable?.toString(), XOR.decimals).toString();
+    const controller = stakingDerive.controllerId?.toString() ?? '';
+
+    const rewardDestination = (stakingDerive.rewardDestination?.toHuman() as string | { Account: string }) ?? '';
+    const payee = typeof rewardDestination === 'string' ? rewardDestination : rewardDestination.Account;
+
+    return {
+      payee,
+      controller,
+      myValidators,
+      redeemAmount,
+      activeStake,
+      totalStake,
+      unbond: { unlocking, sum },
+    };
+  }
+
+    /**
+   * Get nominators reward
+   * @returns nominators reward
+   */
+    public async getNominatorsReward(address: string): Promise<NominatorReward> {
+      const stakerRewards = await this.root.api.derive.staking.stakerRewards(address);
+
+      return stakerRewards.map(({ era, validators: _validators }) => {
+        const validators = Object.entries(_validators).map(([address, { value }]) => ({
+          address,
+          value: FPNumber.fromCodecValue(value.toString(), VAL.decimals).toString(),
+        }));
+
+        return {
+          era: era.toString(),
+          sumRewards: validators.reduce((sum, { value }) => sum.add(new FPNumber(value)), FPNumber.ZERO).toString(),
+          validators,
+        };
+      });
+    }
 
   /**
    * Get a set of validators elected for a given era
@@ -265,11 +581,7 @@ export class StakingModule<T> {
       ? this.root.apiRx.query.staking.erasStakersClipped
       : this.root.apiRx.query.staking.erasStakers;
 
-    return observable(eraIndex, validatorAddress).pipe(
-      map((codec) => {
-        return formatValidatorExposure(codec);
-      })
-    );
+    return observable(eraIndex, validatorAddress).pipe(map(formatValidatorExposure));
   }
 
   /**
@@ -285,21 +597,24 @@ export class StakingModule<T> {
 
   /**
    * **STASH**
+   * Get validators nominated by stash
+   * @param stashAddress address of stash account
+   * @returns The structure with the list of validators, eraIndex
+   */
+  public async getNominations(stashAddress: string): Promise<StashNominatorsInfo | null> {
+    const codec = await this.root.api.query.staking.nominators(stashAddress);
+
+    return formatNominations(codec);
+  }
+
+  /**
+   * **STASH**
    * Get observable validators nominated by stash
    * @param stashAddress address of stash account
    * @returns The structure with the list of validators, eraIndex
    */
   public getNominationsObservable(stashAddress: string): Observable<StashNominatorsInfo | null> {
-    return this.root.apiRx.query.staking.nominators(stashAddress).pipe(
-      map((codec) => {
-        if (codec.isEmpty) return null;
-        const data = codec.unwrap();
-        const targets = data.targets.map((target) => target.toString());
-        const suppressed = data.suppressed.isTrue;
-        const submittedIn = data.submittedIn.toNumber();
-        return { targets, suppressed, submittedIn };
-      })
-    );
+    return this.root.apiRx.query.staking.nominators(stashAddress).pipe(map(formatNominations));
   }
 
   /**
@@ -331,11 +646,11 @@ export class StakingModule<T> {
   public async bond(
     args: { value: NumberLike; controller: string; payee: StakingRewardsDestination | string },
     signerPair?: KeyringPair
-  ): Promise<void> {
+  ): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const params = this.calcBondParams(args.value, args.controller, args.payee);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.bond(...params), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.bond(...params), pair, {
       type: Operation.StakingBond,
       symbol: XOR.symbol,
       assetAddress: XOR.address,
@@ -349,10 +664,10 @@ export class StakingModule<T> {
    * @param args.value amount add to stake
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async bondExtra(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<void> {
+  public async bondExtra(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.staking.bondExtra(new FPNumber(args.value, XOR.decimals).toCodecString()),
       pair,
       {
@@ -370,10 +685,10 @@ export class StakingModule<T> {
    * @param args.value amount to lock in stake
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async rebond(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<void> {
+  public async rebond(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.staking.rebond(new FPNumber(args.value, XOR.decimals).toCodecString()),
       pair,
       {
@@ -391,10 +706,10 @@ export class StakingModule<T> {
    * @param args.value amount to unbond from stake
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async unbond(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<void> {
+  public async unbond(args: { value: NumberLike }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(
+    return this.root.submitExtrinsic(
       this.root.api.tx.staking.unbond(new FPNumber(args.value, XOR.decimals).toCodecString()),
       pair,
       {
@@ -407,20 +722,30 @@ export class StakingModule<T> {
   }
 
   /**
+   * Get slashing spans
+   * slashingSpans parameter is needed to ensure
+   * that the user agrees that staking information will be removed when there is no unlocking items pending
+   * and active value goes below minimum_balance due to slashing.
+   * @param stashAddress address of stash account
+   * @returns slashing spans
+   */
+  private async getSlashingSpans(stashAddress: string): Promise<u32> {
+    const { value } = await this.root.api.query.staking.slashingSpans(stashAddress);
+
+    return value.spanIndex;
+  }
+
+  /**
    * **CONTROLLER**
    * Moves unlocked value to the free balance of the stash account
    * @param args.value amount to withdraw - not used in extrinsic call, but can be passed to save this value in history
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async withdrawUndonded(args: { value?: NumberLike }, signerPair?: KeyringPair): Promise<void> {
+  public async withdrawUnbonded(args: { value?: NumberLike }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
-    /**
-     * slashingSpans parameter is needed to ensure
-     * that the user agrees that staking information will be removed when there is no unlocking items pending
-     * and active value goes below minimum_balance due to slashing.
-     */
-    const slashingSpans = 0;
-    await this.root.submitExtrinsic(this.root.api.tx.staking.withdrawUnbonded(slashingSpans), pair, {
+    const slashingSpans = await this.getSlashingSpans(pair.address);
+
+    return this.root.submitExtrinsic(this.root.api.tx.staking.withdrawUnbonded(slashingSpans), pair, {
       type: Operation.StakingWithdrawUnbonded,
       symbol: XOR.symbol,
       assetAddress: XOR.address,
@@ -434,10 +759,10 @@ export class StakingModule<T> {
    * @param args.validators list of validators addresses to nominate
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async nominate(args: { validators: string[] }, signerPair?: KeyringPair): Promise<void> {
+  public async nominate(args: { validators: string[] }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.nominate(args.validators), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.nominate(args.validators), pair, {
       type: Operation.StakingNominate,
       validators: args.validators,
     });
@@ -448,10 +773,10 @@ export class StakingModule<T> {
    * Stop nominating or validating from the next era.
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async chill(signerPair?: KeyringPair): Promise<void> {
+  public async chill(signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.chill(), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.chill(), pair, {
       type: Operation.StakingChill,
     });
   }
@@ -462,11 +787,11 @@ export class StakingModule<T> {
    * @param args.payee rewards destination
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async setPayee(args: { payee: StakingRewardsDestination }, signerPair?: KeyringPair): Promise<void> {
+  public async setPayee(args: { payee: StakingRewardsDestination | string }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const destination = formatPayee(args.payee);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.setPayee(destination), pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.staking.setPayee(destination), pair, {
       type: Operation.StakingSetPayee,
       payee: args.payee,
     });
@@ -478,31 +803,28 @@ export class StakingModule<T> {
    * @param args.address address of controller account
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async setController(args: { address: string }, signerPair?: KeyringPair): Promise<void> {
+  public async setController(args: { address: string }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
 
-    await this.root.submitExtrinsic(this.root.api.tx.staking.setController(args.address), pair, {
-      type: Operation.StakingSetPayee,
+    return this.root.submitExtrinsic(this.root.api.tx.staking.setController(args.address), pair, {
+      type: Operation.StakingSetController,
       controller: args.address,
     });
   }
 
   /**
    * Distribute payout for staking in a given era for given validators
-   * @param args.validators array of validators addresses
-   * @param args.eraIndex era index
+   * @param args.payouts
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async payout(args: { validators: string[]; eraIndex: number }, signerPair?: KeyringPair): Promise<void> {
+  public async payout(args: { payouts: Payouts }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
-    const transactions = args.validators.map((validator) =>
-      this.root.api.tx.staking.payoutStakers(validator, args.eraIndex)
-    );
+    const transactions = args.payouts.map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era))).flat();
     const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
 
-    await this.root.submitExtrinsic(call, pair, {
+    return this.root.submitExtrinsic(call, pair, {
       type: Operation.StakingPayout,
-      validators: args.validators,
+      payouts: args.payouts,
     });
   }
 }

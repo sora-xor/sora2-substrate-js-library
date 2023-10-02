@@ -30,6 +30,8 @@ yarn-error.log*
 *.sln
 *.sw*
 
-# CSV files
+# example files
 *.csv
 !scripts/example.csv
+scripts/examples/local.ts
+scripts/examples/local.*.ts

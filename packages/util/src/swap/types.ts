@@ -1,4 +1,5 @@
-import { DexId } from '../dex/consts';
+import type { DexId } from '../dex/consts';
+import type { SwapQuote, LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
 
 export interface SwapTransferBatchData {
   outcomeAssetId: string;
@@ -16,3 +17,9 @@ export interface ReceiverHistoryItem {
   amount: string;
   assetId: string;
 }
+
+export type SwapQuoteData = {
+  quote: SwapQuote;
+  isAvailable: boolean;
+  liquiditySources: LiquiditySourceTypes[];
+};

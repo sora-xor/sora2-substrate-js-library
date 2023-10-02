@@ -81,8 +81,10 @@ export async function getAssetBalance(
   assetDecimals = 18
 ): Promise<AccountBalance> {
   if (assetAddress === XOR.address) {
-    const accountInfo = await api.query.system.account(accountAddress);
-    const bondedBalance = await api.query.referrals.referrerBalances(accountAddress);
+    const [accountInfo, bondedBalance] = await Promise.all([
+      api.query.system.account(accountAddress),
+      api.query.referrals.referrerBalances(accountAddress),
+    ]);
     return formatBalance(accountInfo.data, assetDecimals, bondedBalance);
   }
   const accountData = await api.query.tokens.accounts(accountAddress, assetAddress);
@@ -383,7 +385,9 @@ export class AssetsModule<T> {
     assert(this.root.account, Messages.connectWallet);
 
     if (!this.accountAssetsAddresses.length) {
-      this.accountAssetsAddresses = this.accountDefaultAssetsAddresses;
+      const defaultList = this.accountDefaultAssetsAddresses;
+      const accountList = await this.getAccountTokensAddressesList();
+      this.accountAssetsAddresses = [...new Set([...defaultList, ...accountList])];
     }
 
     const currentAddresses = this.accountAssetsAddresses;
@@ -396,9 +400,14 @@ export class AssetsModule<T> {
       this.removeFromAccountAssetsList(assetAddress);
     }
 
-    for (const assetAddress of currentAddresses) {
-      await this.addToAccountAssetsList(assetAddress);
-    }
+    if (!currentAddresses.length) return;
+
+    const addToAccountAssetsListPromises = currentAddresses.map((assetId) => this.addToAccountAssetsList(assetId));
+    await Promise.allSettled(addToAccountAssetsListPromises);
+    // sort assets by currentAddresses list
+    this.accountAssets.sort((a, b) => {
+      return currentAddresses.indexOf(a.address) - currentAddresses.indexOf(b.address);
+    });
   }
 
   /**
@@ -438,6 +447,25 @@ export class AssetsModule<T> {
     asset.balance = result;
 
     return asset;
+  }
+
+  /**
+   * Get account ORML tokens list with any non zero balance
+   */
+  public async getAccountTokensAddressesList(): Promise<string[]> {
+    const data = await this.root.api.query.tokens.accounts.entries(this.root.account.pair.address);
+    const list = [];
+
+    for (const [key, { free, reserved, frozen }] of data) {
+      const assetId = key.args[1].code.toString();
+      const hasAssetAnyBalance = [free, reserved, frozen].some((value) => !new FPNumber(value).isZero());
+
+      if (hasAssetAnyBalance) {
+        list.push(assetId);
+      }
+    }
+
+    return list;
   }
 
   // # Account assets addresses
