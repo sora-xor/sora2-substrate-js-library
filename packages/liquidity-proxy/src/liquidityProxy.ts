@@ -226,12 +226,13 @@ const quotePrimaryMarket = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee: boolean
+  deduceFee: boolean,
+  baseAssetId: string
 ): QuoteResult => {
   if ([inputAssetAddress, outputAssetAddress].includes(Consts.XSTUSD)) {
-    return xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee);
+    return xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee, baseAssetId);
   } else {
-    return tbcQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee);
+    return tbcQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee, baseAssetId);
   }
 };
 
@@ -383,7 +384,8 @@ const smartSplit = (
       primaryAmount,
       isDesiredInput,
       payload,
-      deduceFee
+      deduceFee,
+      baseAssetId
     );
     // check that outcomePrimary is not zero
     if (FPNumber.isLessThan(primaryAmount, amount) && !outcomePrimary.amount.isZero()) {
@@ -467,10 +469,10 @@ const quoteSingle = (
         return xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
       }
       case LiquiditySourceTypes.MulticollateralBondingCurvePool: {
-        return tbcQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+        return tbcQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
       }
       case LiquiditySourceTypes.XSTPool: {
-        return xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+        return xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
       }
       default: {
         throw new Error(`[liquidityProxy] Unexpected liquidity source: ${sources[0]}`);
@@ -649,9 +651,9 @@ const quoteWithoutImpactSingle = (
     if (market === LiquiditySourceTypes.XYKPool) {
       value = xykQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
     } else if (market === LiquiditySourceTypes.MulticollateralBondingCurvePool) {
-      value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+      value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
     } else if (market === LiquiditySourceTypes.XSTPool) {
-      value = xstQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+      value = xstQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
     }
 
     return result.add(value);

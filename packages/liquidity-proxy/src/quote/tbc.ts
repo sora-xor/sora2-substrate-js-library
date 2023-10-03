@@ -6,6 +6,23 @@ import { getAveragePrice } from './price';
 
 import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
 
+const canExchange = (
+  baseAssetId: string,
+  inputAssetId: string,
+  outputAssetId: string,
+  payload: QuotePayload
+): boolean => {
+  if (baseAssetId !== Consts.XOR) return false;
+
+  if (inputAssetId === baseAssetId) {
+    return payload.enabledAssets.tbc.includes(outputAssetId);
+  } else if (outputAssetId === baseAssetId) {
+    return payload.enabledAssets.tbc.includes(inputAssetId);
+  } else {
+    return false;
+  }
+};
+
 /**
  * This function is used to determine particular asset price in terms of a reference asset, which is set for
  * bonding curve (there could be only single token chosen as reference for all comparisons). Basically, the
@@ -463,9 +480,14 @@ export const tbcQuoteWithoutImpact = (
   amount: FPNumber,
   isDesiredinput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean,
+  baseAssetId: string
 ): FPNumber => {
   try {
+    if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+      throw new Error("Liquidity source can't exchange assets with the given IDs on the given DEXId.");
+    }
+
     if (isXorAsset(inputAsset)) {
       const xorPrice = tbcSellPriceNoVolume(outputAsset, payload);
       const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(outputAsset, payload)) : FPNumber.ZERO;
@@ -508,9 +530,14 @@ export const tbcQuote = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean,
+  baseAssetId: string
 ): QuoteResult => {
   try {
+    if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+      throw new Error("Liquidity source can't exchange assets with the given IDs on the given DEXId.");
+    }
+
     if (isXorAsset(inputAsset)) {
       return tbcSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else {

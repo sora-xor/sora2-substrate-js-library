@@ -7,6 +7,23 @@ import { oracleProxyQuoteUnchecked } from './oracleProxy';
 
 import type { QuotePayload, QuoteResult } from '../types';
 
+const canExchange = (
+  baseAssetId: string,
+  inputAssetId: string,
+  outputAssetId: string,
+  payload: QuotePayload
+): boolean => {
+  if (baseAssetId !== Consts.XOR) return false;
+
+  if (inputAssetId === Consts.XST) {
+    return outputAssetId in payload.enabledAssets.xst;
+  } else if (outputAssetId === Consts.XST) {
+    return inputAssetId in payload.enabledAssets.xst;
+  } else {
+    return false;
+  }
+};
+
 const ensureBaseAssetAmountWithinLimit = (amount: FPNumber, payload: QuotePayload, checkLimits = true) => {
   if (!checkLimits) return;
 
@@ -243,11 +260,21 @@ export const xstQuoteWithoutImpact = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee: boolean
+  deduceFee: boolean,
+  baseAssetId: string
 ): FPNumber => {
   try {
     // no impact already
-    const quoteResult = xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, false);
+    const quoteResult = xstQuote(
+      inputAsset,
+      outputAsset,
+      amount,
+      isDesiredInput,
+      payload,
+      deduceFee,
+      baseAssetId,
+      false
+    );
 
     return quoteResult.amount;
   } catch (error) {
@@ -262,9 +289,14 @@ export const xstQuote = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   deduceFee: boolean,
+  baseAssetId: string,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
   try {
+    if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+      throw new Error("Liquidity source can't exchange assets with the given IDs on the given DEXId");
+    }
+
     const {
       amount: resultAmount,
       fee: feeAmount,

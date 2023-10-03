@@ -53,3 +53,8 @@ export enum AssetType {
   Basic = 'Basic',
   Synthetic = 'Synthetic',
 }
+
+export enum SwapVariant {
+  WithDesiredInput = 'WithDesiredInput',
+  WithDesiredOutput = 'WithDesiredOutput',
+}
