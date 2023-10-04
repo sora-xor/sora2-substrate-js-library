@@ -8,6 +8,7 @@ import type { QuotePayload, QuoteResult } from '../types';
 
 export const xykStepQuote = (
   baseAssetId: string,
+  syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -284,6 +285,7 @@ const calcInputForExactOutput = (
 
 export const xykQuote = (
   baseAssetId: string,
+  syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -303,6 +305,7 @@ export const xykQuote = (
 
 export const xykQuoteWithoutImpact = (
   baseAssetId: string,
+  syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -339,4 +342,18 @@ export const xykQuoteWithoutImpact = (
   } catch (error) {
     return FPNumber.ZERO;
   }
+};
+
+// check_rewards
+export const xykCheckRewards = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  inputAmount: FPNumber,
+  outputAmount: FPNumber,
+  payload: QuotePayload
+) => {
+  // XYK Pool has no rewards currently
+  return [];
 };

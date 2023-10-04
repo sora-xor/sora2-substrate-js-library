@@ -28,6 +28,7 @@ const canExchange = (
 // step_quote
 export const tbcStepQuote = (
   baseAssetId: string,
+  syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -158,15 +159,20 @@ const sellPenalty = (mainAssetId: string, collateralAssetId: string, payload: Qu
   return penalty;
 };
 
-// check_rewards
-const checkRewards = (
+// collateral_is_incentivised
+const collateralIsIncentivised = (collateralAssetId: string) => {
+  return ![Consts.PSWAP, Consts.VAL, Consts.XST, Consts.TBCD].includes(collateralAssetId);
+};
+
+const calculateBuyReward = (
   mainAssetId: string,
   collateralAssetId: string,
-  xorAmount: FPNumber,
+  mainAssetAmount: FPNumber,
+  collateralAssetAmount: FPNumber,
   payload: QuotePayload
-): Array<LPRewardsInfo> => {
-  if ([Consts.PSWAP, Consts.VAL, Consts.XST, Consts.TBCD].includes(collateralAssetId)) {
-    return [];
+): FPNumber => {
+  if (!collateralIsIncentivised(collateralAssetId)) {
+    return FPNumber.ZERO;
   }
 
   const idealBefore = idealReservesReferencePrice(
@@ -176,7 +182,14 @@ const checkRewards = (
     FPNumber.ZERO,
     payload
   );
-  const idealAfter = idealReservesReferencePrice(mainAssetId, collateralAssetId, PriceVariant.Buy, xorAmount, payload);
+
+  const idealAfter = idealReservesReferencePrice(
+    mainAssetId,
+    collateralAssetId,
+    PriceVariant.Buy,
+    mainAssetAmount,
+    payload
+  );
 
   const actualBefore = actualReservesReferencePrice(collateralAssetId, payload, PriceVariant.Buy);
   const unfundedLiabilities = idealBefore.sub(actualBefore);
@@ -190,17 +203,42 @@ const checkRewards = (
     Consts.incentivizedCurrenciesNum
   );
 
-  if (amount.isZero()) {
-    return [];
+  return amount;
+};
+
+// check_rewards
+export const tbcCheckRewards = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  inputAmount: FPNumber,
+  outputAmount: FPNumber,
+  payload: QuotePayload
+): Array<LPRewardsInfo> => {
+  if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+    throw new Error(Errors.CantExchange);
   }
 
-  return [
-    {
-      amount: amount.toCodecString(),
-      currency: Consts.PSWAP,
-      reason: RewardReason.BuyOnBondingCurve,
-    },
-  ];
+  if (isAssetAddress(outputAsset, baseAssetId)) {
+    const pswapAmount = calculateBuyReward(outputAsset, inputAsset, outputAmount, inputAmount, payload);
+
+    // no multiplier
+
+    if (pswapAmount.isZero()) {
+      return [];
+    }
+
+    return [
+      {
+        amount: pswapAmount.toCodecString(),
+        currency: Consts.PSWAP,
+        reason: RewardReason.BuyOnBondingCurve,
+      },
+    ];
+  } else {
+    return []; // no rewards on sell
+  }
 };
 
 // buy_function
@@ -382,7 +420,7 @@ const tbcDecideBuyAmounts = (
     const outputAmount = tbcBuyPrice(mainAssetId, collateralAsset, amount, isDesiredInput, payload);
     const fee = feeRatio.mul(outputAmount);
     const output = outputAmount.sub(fee);
-    const rewards = checkRewards(mainAssetId, collateralAsset, output, payload);
+    const rewards = tbcCheckRewards(mainAssetId, collateralAsset, output, payload);
 
     return {
       amount: output,
@@ -403,7 +441,7 @@ const tbcDecideBuyAmounts = (
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
     const inputAmount = tbcBuyPrice(mainAssetId, collateralAsset, amountWithFee, isDesiredInput, payload);
     const fee = amountWithFee.sub(amount);
-    const rewards = checkRewards(mainAssetId, collateralAsset, amount, payload);
+    const rewards = tbcCheckRewards(mainAssetId, collateralAsset, amount, payload);
 
     return {
       amount: inputAmount,
@@ -439,6 +477,7 @@ export const tbcSellPriceNoVolume = (mainAssetId: string, collateralAsset: strin
 
 export const tbcQuoteWithoutImpact = (
   baseAssetId: string,
+  syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -489,6 +528,7 @@ export const tbcQuoteWithoutImpact = (
 
 export const tbcQuote = (
   baseAssetId: string,
+  syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,

@@ -28,6 +28,8 @@ export class Consts {
   static readonly incentivizedCurrenciesNum = new FPNumber(2);
   /** 2.5 billion pswap reserved for tbc rewards */
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
+
+  static readonly NUM_SAMPLES = 40;
 }
 
 export enum Errors {
@@ -38,6 +40,9 @@ export enum Errors {
   NotEnoughReserves = "It's not enough reserves in the pool to perform the operation.",
   SyntheticDoesNotExist = 'Synthetic asset does not exist.',
   SyntheticBaseBuySellLimitExceeded = 'Input/output amount of synthetic base asset exceeds the limit',
+  UnavailableExchangePath = 'No route exists in a given DEX for given parameters to carry out the swap',
+  // own
+  UnsupportedLiquiditySource = 'Unsupported liquidity source',
 }
 
 export enum LiquiditySourceTypes {

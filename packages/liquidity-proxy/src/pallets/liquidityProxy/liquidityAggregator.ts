@@ -4,12 +4,11 @@ import { SwapVariant, LiquiditySourceTypes } from '../../consts';
 import { isGreaterThanZero } from '../../utils';
 import { SwapChunk } from '../../common/primitives';
 
-/** Info with input & output amounts for liquidity source */
-type SwapInfo = Partial<Record<LiquiditySourceTypes, [FPNumber, FPNumber]>>;
+import type { DistributionChunk } from '../../types';
 
 type AggregatedSwapOutcome = {
   /** A distribution of amounts each liquidity sources gets to swap in the entire trade */
-  distribution: Array<[LiquiditySourceTypes, FPNumber]>;
+  distribution: Array<DistributionChunk>;
   /** The best possible output/input amount for a given trade and a set of liquidity sources */
   amount: FPNumber;
   /** Total fee amount, nominated in XOR */
@@ -29,15 +28,14 @@ export class LiquidityAggregator {
     this.liquidityChunks[source] = sortedChunks;
   }
 
-  public aggregateSwapOutcome(amount: FPNumber): [SwapInfo, AggregatedSwapOutcome] | null {
+  public aggregateSwapOutcome(amount: FPNumber): AggregatedSwapOutcome | null {
     if (!Object.keys(this.liquidityChunks).length) return null;
 
     let remainingAmount = amount;
     let resultAmount = FPNumber.ZERO;
     let fee = FPNumber.ZERO;
 
-    let distribution: Partial<Record<LiquiditySourceTypes, FPNumber>> = {};
-    let swapInfo: SwapInfo = {};
+    let distribution: Partial<Record<LiquiditySourceTypes, DistributionChunk>> = {};
 
     while (isGreaterThanZero(remainingAmount)) {
       let candidates = this.findBestPriceCandidates();
@@ -64,30 +62,33 @@ export class LiquidityAggregator {
         }
       }
 
-      let remainingDelta = chunk.input;
-      let resultDelta = chunk.output;
-      let feeDelta = chunk.fee;
+      const remainingDelta = chunk.input;
+      const resultDelta = chunk.output;
+      const feeDelta = chunk.fee;
 
-      swapInfo[source] = [
-        (swapInfo[source][0] ?? FPNumber.ZERO).add(chunk.input),
-        (swapInfo[source][1] ?? FPNumber.ZERO).add(chunk.output),
-      ];
+      if (!distribution[source]) {
+        distribution[source] = {
+          source,
+          income: FPNumber.ZERO,
+          outcome: FPNumber.ZERO,
+          fee: FPNumber.ZERO,
+        };
+      }
 
-      distribution[source] = (distribution[source] ?? FPNumber.ZERO).add(remainingDelta);
+      distribution[source].income.add(remainingDelta);
+      distribution[source].outcome.add(resultDelta);
+      distribution[source].fee.add(feeDelta);
 
       resultAmount = resultAmount.add(resultDelta);
       remainingAmount = remainingAmount.sub(remainingDelta);
       fee = fee.add(feeDelta);
     }
 
-    return [
-      swapInfo,
-      {
-        distribution: Object.entries(distribution).map(([source, amount]) => [source as LiquiditySourceTypes, amount]),
-        amount: resultAmount,
-        fee,
-      },
-    ];
+    return {
+      distribution: Object.values(distribution),
+      amount: resultAmount,
+      fee,
+    };
   }
 
   public findBestPriceCandidates(): Array<LiquiditySourceTypes> {

@@ -19,13 +19,16 @@ export interface LPRewardsInfo {
   reason: RewardReason;
 }
 
-export type Distribution = {
-  input: string;
-  output: string;
-  market: LiquiditySourceTypes;
+export type DistributionChunk = {
+  source: LiquiditySourceTypes;
   income: FPNumber;
   outcome: FPNumber;
   fee: FPNumber;
+};
+
+export type Distribution = DistributionChunk & {
+  input: string;
+  output: string;
 };
 
 export type QuoteIntermediate = {

@@ -16,20 +16,7 @@ export const matchType =
   (a: AssetType, b: AssetType, bidirect = false) => {
     return (iType === a && oType === b) || (bidirect && iType === b && oType === a);
   };
-export const isBetter = (isDesiredInput: boolean, amountA: FPNumber, amountB: FPNumber): boolean => {
-  if (isDesiredInput) {
-    return FPNumber.isGreaterThan(amountA, amountB);
-  } else {
-    return isGreaterThanZero(amountA) && (amountB.isZero() || FPNumber.isLessThan(amountA, amountB));
-  }
-};
-export const extremum = (isDesiredInput: boolean): FPNumber => {
-  if (isDesiredInput) {
-    return FPNumber.ZERO;
-  } else {
-    return Consts.MAX;
-  }
-};
+
 export const intersection = <T>(a: T[], b: T[]): T[] => {
   return a.filter((item) => b.includes(item));
 };

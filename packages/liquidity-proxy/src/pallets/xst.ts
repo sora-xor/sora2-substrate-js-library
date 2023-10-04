@@ -304,38 +304,6 @@ const xstDecideSellAmounts = (
   }
 };
 
-export const xstBuyPriceNoVolume = (
-  syntheticBaseAssetId: string,
-  syntheticAsset: string,
-  payload: QuotePayload
-): FPNumber => {
-  const basePriceWrtRef = xstReferencePrice(syntheticBaseAssetId, syntheticBaseAssetId, PriceVariant.Buy, payload);
-  const syntheticPricePerReferenceUnit = xstReferencePrice(
-    syntheticBaseAssetId,
-    syntheticAsset,
-    PriceVariant.Sell,
-    payload
-  );
-
-  return safeDivide(basePriceWrtRef, syntheticPricePerReferenceUnit);
-};
-
-export const xstSellPriceNoVolume = (
-  syntheticBaseAssetId: string,
-  syntheticAsset: string,
-  payload: QuotePayload
-): FPNumber => {
-  const basePriceWrtRef = xstReferencePrice(syntheticBaseAssetId, syntheticBaseAssetId, PriceVariant.Sell, payload);
-  const syntheticPricePerReferenceUnit = xstReferencePrice(
-    syntheticBaseAssetId,
-    syntheticAsset,
-    PriceVariant.Buy,
-    payload
-  );
-
-  return safeDivide(basePriceWrtRef, syntheticPricePerReferenceUnit);
-};
-
 export const xstQuoteWithoutImpact = (
   baseAssetId: string,
   syntheticBaseAssetId: string,
@@ -396,4 +364,17 @@ export const xstQuote = (
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XSTPool);
   }
+};
+
+export const xstCheckRewards = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  inputAmount: FPNumber,
+  outputAmount: FPNumber,
+  payload: QuotePayload
+) => {
+  // XST Pool has no rewards currently
+  return [];
 };
