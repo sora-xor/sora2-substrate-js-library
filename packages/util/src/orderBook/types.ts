@@ -12,3 +12,5 @@ export enum OrderBookStatus {
   // and users cannot cancel them
   Stop,
 }
+
+export type Side = 'Buy' | 'Sell';
