@@ -2,7 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, Errors, PriceVariant } from '../consts';
 import { safeDivide, isAssetAddress, safeQuoteResult, isGreaterThanZero, toFp } from '../utils';
-import { getAveragePrice } from './price';
+import { getAveragePrice } from './priceTools';
 import { oracleProxyQuoteUnchecked } from './oracleProxy';
 import { SwapChunk } from '../common/primitives';
 

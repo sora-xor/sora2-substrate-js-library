@@ -1,3 +1,3 @@
 export * from './consts';
 export * from './types';
-export * from './liquidityProxy';
+export * from './pallets/liquidityProxy';

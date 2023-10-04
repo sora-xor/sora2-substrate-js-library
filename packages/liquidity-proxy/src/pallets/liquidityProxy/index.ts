@@ -1,8 +1,13 @@
 import { FPNumber } from '@sora-substrate/math';
-import { LiquiditySourceTypes, Consts, AssetType } from './consts';
-import { xykQuote, xykQuoteWithoutImpact, getXykReserves } from './quote/xyk';
-import { tbcQuote, tbcQuoteWithoutImpact, tbcSellPriceNoVolume, tbcBuyPriceNoVolume } from './quote/tbc';
-import { xstQuote, xstQuoteWithoutImpact, xstSellPriceNoVolume, xstBuyPriceNoVolume } from './quote/xst';
+import { LiquiditySourceTypes, Consts, AssetType } from '../../consts';
+import { xykQuote, xykQuoteWithoutImpact, getXykReserves } from '../poolXyk';
+import {
+  tbcQuote,
+  tbcQuoteWithoutImpact,
+  tbcSellPriceNoVolume,
+  tbcBuyPriceNoVolume,
+} from '../multicollateralBoundingCurvePool';
+import { xstQuote, xstQuoteWithoutImpact, xstSellPriceNoVolume, xstBuyPriceNoVolume } from '../xst';
 import {
   isGreaterThanZero,
   isLessThanOrEqualToZero,
@@ -12,7 +17,7 @@ import {
   intersection,
   matchType,
   safeDivide,
-} from './utils';
+} from '../../utils';
 
 import type {
   QuotePayload,
@@ -24,7 +29,7 @@ import type {
   LPRewardsInfo,
   PrimaryMarketsEnabledAssets,
   PathsAndPairLiquiditySources,
-} from './types';
+} from '../../types';
 
 /**
  * Get asset type in terms of exchange nature
@@ -184,13 +189,7 @@ const listLiquiditySources = (
 };
 
 /**
- * Get available liquidity sources for the tokens & exchange pair\
- * @param inputAssetId Input asset address
- * @param outputAssetId Output asset address
- * @param enabledAssets List of enabled assets
- * @param xykReserves Xyk reserves of assets in exchange paths
- * @param baseAssetId Dex base asset id
- * @param syntheticBaseAssetId Dex synthetic base asset id
+ * Get available liquidity sources for the tokens & exchange pair
  */
 export const getAssetsLiquiditySources = (
   exchangePaths: string[][],

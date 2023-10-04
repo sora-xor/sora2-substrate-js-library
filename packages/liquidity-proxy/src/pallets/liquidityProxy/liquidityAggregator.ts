@@ -1,8 +1,8 @@
 import { FPNumber } from '@sora-substrate/math';
-import { SwapVariant, LiquiditySourceTypes } from '../consts';
-import { isGreaterThanZero } from '../utils';
 
-import { SwapChunk } from '../common/primitives';
+import { SwapVariant, LiquiditySourceTypes } from '../../consts';
+import { isGreaterThanZero } from '../../utils';
+import { SwapChunk } from '../../common/primitives';
 
 /** Info with input & output amounts for liquidity source */
 type SwapInfo = Partial<Record<LiquiditySourceTypes, [FPNumber, FPNumber]>>;
@@ -16,7 +16,7 @@ type AggregatedSwapOutcome = {
   fee: FPNumber;
 };
 
-class LiquidityAggregator {
+export class LiquidityAggregator {
   public liquidityChunks!: Partial<Record<LiquiditySourceTypes, Array<SwapChunk>>>;
   public variant!: SwapVariant;
 
