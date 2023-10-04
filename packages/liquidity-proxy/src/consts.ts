@@ -41,7 +41,6 @@ export enum Errors {
 }
 
 export enum LiquiditySourceTypes {
-  Default = '',
   XYKPool = 'XYKPool',
   XSTPool = 'XSTPool',
   MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool',

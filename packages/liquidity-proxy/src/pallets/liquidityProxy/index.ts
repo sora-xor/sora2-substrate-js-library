@@ -353,6 +353,18 @@ const decidePrimaryMarketAmountSellingBaseAsset = (
   }
 };
 
+const newSmartSplit = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
+  sources: LiquiditySourceTypes[],
+  inputAsset: string,
+  outputAsset: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload,
+  deduceFee: boolean
+) => {};
+
 // smart_split
 const smartSplit = (
   baseAssetId: string,
