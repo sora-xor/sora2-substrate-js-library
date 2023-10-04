@@ -230,9 +230,9 @@ const quotePrimaryMarket = (
   baseAssetId: string
 ): QuoteResult => {
   if ([inputAssetAddress, outputAssetAddress].includes(Consts.XSTUSD)) {
-    return xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+    return xstQuote(baseAssetId, inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee);
   } else {
-    return tbcQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+    return tbcQuote(baseAssetId, inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee);
   }
 };
 
@@ -391,13 +391,13 @@ const smartSplit = (
     if (FPNumber.isLessThan(primaryAmount, amount) && !outcomePrimary.amount.isZero()) {
       const incomeSecondary = amount.sub(primaryAmount);
       const outcomeSecondary = xykQuote(
+        baseAssetId,
         inputAsset,
         outputAsset,
         incomeSecondary,
         isDesiredInput,
         payload,
-        deduceFee,
-        baseAssetId
+        deduceFee
       );
 
       bestOutcome = outcomePrimary.amount.add(outcomeSecondary.amount);
@@ -413,7 +413,7 @@ const smartSplit = (
   }
 
   // check xyk only result regardless of split, because it might be better
-  const outcomeSecondary = xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+  const outcomeSecondary = xykQuote(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
 
   if (isBetter(isDesiredInput, outcomeSecondary.amount, bestOutcome)) {
     bestOutcome = outcomeSecondary.amount;
@@ -466,13 +466,13 @@ const quoteSingle = (
   if (sources.length === 1) {
     switch (sources[0]) {
       case LiquiditySourceTypes.XYKPool: {
-        return xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+        return xykQuote(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
       }
       case LiquiditySourceTypes.MulticollateralBondingCurvePool: {
-        return tbcQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+        return tbcQuote(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
       }
       case LiquiditySourceTypes.XSTPool: {
-        return xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+        return xstQuote(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
       }
       default: {
         throw new Error(`[liquidityProxy] Unexpected liquidity source: ${sources[0]}`);
@@ -649,11 +649,11 @@ const quoteWithoutImpactSingle = (
     let value = FPNumber.ZERO;
 
     if (market === LiquiditySourceTypes.XYKPool) {
-      value = xykQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+      value = xykQuoteWithoutImpact(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else if (market === LiquiditySourceTypes.MulticollateralBondingCurvePool) {
-      value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+      value = tbcQuoteWithoutImpact(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else if (market === LiquiditySourceTypes.XSTPool) {
-      value = xstQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+      value = xstQuoteWithoutImpact(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     }
 
     return result.add(value);

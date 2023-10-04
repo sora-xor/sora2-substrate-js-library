@@ -30,6 +30,16 @@ export class Consts {
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
 }
 
+export enum Errors {
+  PriceCalculationFailed = 'An error occurred while calculating the price.',
+  CantExchange = "Liquidity source can't exchange assets with the given IDs on the given DEXId.",
+  PoolIsEmpty = 'The pool has empty liquidity.',
+  InvalidFeeRatio = 'Invalid fee ratio value.',
+  NotEnoughReserves = "It's not enough reserves in the pool to perform the operation.",
+  SyntheticDoesNotExist = 'Synthetic asset does not exist.',
+  SyntheticBaseBuySellLimitExceeded = 'Input/output amount of synthetic base asset exceeds the limit',
+}
+
 export enum LiquiditySourceTypes {
   Default = '',
   XYKPool = 'XYKPool',

@@ -1,9 +1,10 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { LiquiditySourceTypes, Consts, PriceVariant } from '../consts';
+import { LiquiditySourceTypes, Consts, Errors, PriceVariant } from '../consts';
 import { safeDivide, isAssetAddress, safeQuoteResult } from '../utils';
 import { getAveragePrice } from './price';
 import { oracleProxyQuoteUnchecked } from './oracleProxy';
+import { SwapChunk } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult } from '../types';
 
@@ -24,27 +25,77 @@ const canExchange = (
   }
 };
 
+export const xstStepQuote = (
+  baseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload,
+  deduceFee: boolean,
+  recommendedSamplesCount: number
+): Array<SwapChunk> => {
+  if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+    throw new Error(Errors.CantExchange);
+  }
+
+  if (amount.isZero) {
+    return [];
+  }
+
+  const syntheticBaseAssetId = Consts.XST;
+  const limit = FPNumber.fromCodecValue(payload.consts.xst.syntheticBaseBuySellLimit);
+
+  // Get the price without checking the limit, because even if it exceeds the limit it will be rounded below.
+  // It is necessary to use as much liquidity from the source as we can.
+  const { amount: resultAmount, fee } =
+    inputAsset === syntheticBaseAssetId
+      ? xstDecideSellAmounts(outputAsset, amount, isDesiredInput, payload, deduceFee)
+      : xstDecideBuyAmounts(inputAsset, amount, isDesiredInput, payload, deduceFee);
+
+  const [inputAmount, outputAmount] = isDesiredInput ? [amount, resultAmount] : [resultAmount, amount];
+  const feeAmount = deduceFee ? convertFee(fee, payload) : fee;
+
+  let monolith = new SwapChunk(inputAmount, outputAmount, feeAmount);
+
+  // If amount exceeds the limit, it is necessary to round the amount to the limit.
+  if (inputAsset === syntheticBaseAssetId) {
+    if (FPNumber.isGreaterThan(inputAmount, limit)) {
+      monolith = monolith.rescaleByInput(limit);
+    }
+  } else {
+    if (FPNumber.isGreaterThan(outputAmount, limit)) {
+      monolith = monolith.rescaleByOutput(limit);
+    }
+  }
+
+  const ratio = safeDivide(FPNumber.ONE, new FPNumber(recommendedSamplesCount));
+  const chunk = monolith.rescaleByRatio(ratio);
+
+  return new Array(recommendedSamplesCount).fill(chunk);
+};
+
 const ensureBaseAssetAmountWithinLimit = (amount: FPNumber, payload: QuotePayload, checkLimits = true) => {
   if (!checkLimits) return;
 
   const limit = FPNumber.fromCodecValue(payload.consts.xst.syntheticBaseBuySellLimit);
 
   if (FPNumber.isGreaterThan(amount, limit)) {
-    throw new Error('Input/output amount of synthetic base asset exceeds the limit');
+    throw new Error(Errors.SyntheticBaseBuySellLimitExceeded);
   }
 };
 
 const getAggregatedFee = (syntheticAssetId: string, payload: QuotePayload): FPNumber => {
   const asset = payload.enabledAssets.xst[syntheticAssetId];
 
-  if (!asset) throw new Error(`Synthetic asset "${syntheticAssetId}" does not exist`);
+  if (!asset) throw new Error(Errors.SyntheticDoesNotExist);
 
   const { feeRatio, referenceSymbol } = asset;
   const rate = oracleProxyQuoteUnchecked(referenceSymbol, payload);
   const dynamicFeeRatio = FPNumber.fromCodecValue(rate?.dynamicFee ?? '0');
   const resultingFeeRatio = feeRatio.add(dynamicFeeRatio);
 
-  if (!FPNumber.isLessThan(resultingFeeRatio, FPNumber.ONE)) throw new Error('Invalid fee ratio value');
+  if (!FPNumber.isLessThan(resultingFeeRatio, FPNumber.ONE)) throw new Error(Errors.InvalidFeeRatio);
 
   return resultingFeeRatio;
 };
@@ -126,8 +177,8 @@ const xstSellPrice = (
     return safeDivide(amount.mul(syntheticAssetPrice), mainAssetPrice);
   }
 };
-// decide_buy_amounts
-const xstBuyPriceWithFee = (
+
+const xstDecideBuyAmounts = (
   syntheticAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
@@ -135,7 +186,7 @@ const xstBuyPriceWithFee = (
   deduceFee: boolean,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
-  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error('Price calculation failed');
+  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error(Errors.PriceCalculationFailed);
 
   const feeRatio = deduceFee ? getAggregatedFee(syntheticAsset, payload) : FPNumber.ZERO;
 
@@ -183,8 +234,8 @@ const xstBuyPriceWithFee = (
     };
   }
 };
-// decide_sell_amounts
-const xstSellPriceWithFee = (
+
+const xstDecideSellAmounts = (
   syntheticAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
@@ -192,7 +243,7 @@ const xstSellPriceWithFee = (
   deduceFee: boolean,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
-  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error('Price calculation failed');
+  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error(Errors.PriceCalculationFailed);
 
   const feeRatio = deduceFee ? getAggregatedFee(syntheticAsset, payload) : FPNumber.ZERO;
 
@@ -255,24 +306,24 @@ export const xstSellPriceNoVolume = (syntheticAsset: string, payload: QuotePaylo
 };
 
 export const xstQuoteWithoutImpact = (
+  baseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee: boolean,
-  baseAssetId: string
+  deduceFee: boolean
 ): FPNumber => {
   try {
     // no impact already
     const quoteResult = xstQuote(
+      baseAssetId,
       inputAsset,
       outputAsset,
       amount,
       isDesiredInput,
       payload,
       deduceFee,
-      baseAssetId,
       false
     );
 
@@ -283,18 +334,18 @@ export const xstQuoteWithoutImpact = (
 };
 
 export const xstQuote = (
+  baseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
   deduceFee: boolean,
-  baseAssetId: string,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
   try {
     if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
-      throw new Error("Liquidity source can't exchange assets with the given IDs on the given DEXId");
+      throw new Error(Errors.CantExchange);
     }
 
     const {
@@ -303,8 +354,8 @@ export const xstQuote = (
       rewards,
       distribution,
     } = isAssetAddress(inputAsset, Consts.XST)
-      ? xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits)
-      : xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits);
+      ? xstDecideSellAmounts(outputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits)
+      : xstDecideBuyAmounts(inputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits);
     const fee = convertFee(feeAmount, payload);
 
     return { amount: resultAmount, fee, rewards, distribution };

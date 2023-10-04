@@ -1,8 +1,9 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { LiquiditySourceTypes, Consts, PriceVariant, RewardReason } from '../consts';
+import { LiquiditySourceTypes, Consts, Errors, PriceVariant, RewardReason } from '../consts';
 import { safeDivide, isXorAsset, getMaxPositive, safeQuoteResult } from '../utils';
 import { getAveragePrice } from './price';
+import { SwapChunk } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
 
@@ -21,6 +22,56 @@ const canExchange = (
   } else {
     return false;
   }
+};
+
+export const tbcStepQuote = (
+  baseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload,
+  deduceFee: boolean,
+  recommendedSamplesCount: number
+): Array<SwapChunk> => {
+  if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+    throw new Error(Errors.CantExchange);
+  }
+
+  const chunks = [];
+
+  if (amount.isZero()) {
+    return chunks;
+  }
+
+  let step = safeDivide(amount, new FPNumber(recommendedSamplesCount));
+  let subIn = FPNumber.ZERO;
+  let subOut = FPNumber.ZERO;
+  let subFee = FPNumber.ZERO;
+
+  for (let i = 1; i <= recommendedSamplesCount; i++) {
+    let volume = step.mul(new FPNumber(i));
+
+    const { amount, fee } =
+      inputAsset === baseAssetId
+        ? tbcDecideSellAmounts(outputAsset, volume, isDesiredInput, payload, deduceFee)
+        : tbcDecideBuyAmounts(inputAsset, volume, isDesiredInput, payload, deduceFee);
+
+    const [inputAmount, outputAmount] = isDesiredInput ? [volume, amount] : [amount, volume];
+    const feeAmount = fee;
+
+    const inputChunk = inputAmount.sub(subIn);
+    const outputChunk = outputAmount.sub(subOut);
+    const feeChunk = feeAmount.sub(subFee);
+
+    subIn = inputAmount;
+    subOut = outputAmount;
+    subFee = feeAmount;
+
+    chunks.push(new SwapChunk(inputChunk, outputChunk, feeChunk));
+  }
+
+  return chunks;
 };
 
 /**
@@ -110,7 +161,7 @@ const sellPenalty = (collateralAsset: string, payload: QuotePayload): FPNumber =
   const collateralReservesPrice = actualReservesReferencePrice(collateralAsset, payload, PriceVariant.Sell);
 
   if (collateralReservesPrice.isZero()) {
-    throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAsset}`);
+    throw new Error(Errors.NotEnoughReserves);
   }
 
   const collateralizedFraction = safeDivide(collateralReservesPrice, idealReservesPrice);
@@ -252,13 +303,13 @@ const tbcSellPrice = (
     const outputCollateral = safeDivide(amount.mul(collateralSupply), mainSupply.add(amount));
 
     if (FPNumber.isGreaterThan(outputCollateral, collateralSupply)) {
-      throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAsset}`);
+      throw new Error(Errors.NotEnoughReserves);
     }
 
     return outputCollateral;
   } else {
     if (FPNumber.isGreaterThan(amount, collateralSupply)) {
-      throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAsset}`);
+      throw new Error(Errors.NotEnoughReserves);
     }
 
     const outputXor = safeDivide(mainSupply.mul(amount), collateralSupply.sub(amount));
@@ -354,8 +405,7 @@ const tbcBuyPrice = (
   }
 };
 
-// decide_sell_amounts
-const tbcSellPriceWithFee = (
+const tbcDecideSellAmounts = (
   collateralAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
@@ -406,7 +456,7 @@ const tbcSellPriceWithFee = (
   }
 };
 
-const tbcBuyPriceWithFee = (
+const tbcDecideBuyAmounts = (
   collateralAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
@@ -475,17 +525,17 @@ export const tbcSellPriceNoVolume = (collateralAsset: string, payload: QuotePayl
 };
 
 export const tbcQuoteWithoutImpact = (
+  baseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredinput: boolean,
   payload: QuotePayload,
-  deduceFee: boolean,
-  baseAssetId: string
+  deduceFee: boolean
 ): FPNumber => {
   try {
     if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
-      throw new Error("Liquidity source can't exchange assets with the given IDs on the given DEXId.");
+      throw new Error(Errors.CantExchange);
     }
 
     if (isXorAsset(inputAsset)) {
@@ -525,23 +575,23 @@ export const tbcQuoteWithoutImpact = (
 };
 
 export const tbcQuote = (
+  baseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee: boolean,
-  baseAssetId: string
+  deduceFee: boolean
 ): QuoteResult => {
   try {
     if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
-      throw new Error("Liquidity source can't exchange assets with the given IDs on the given DEXId.");
+      throw new Error(Errors.CantExchange);
     }
 
     if (isXorAsset(inputAsset)) {
-      return tbcSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, deduceFee);
+      return tbcDecideSellAmounts(outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else {
-      return tbcBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload, deduceFee);
+      return tbcDecideBuyAmounts(inputAsset, amount, isDesiredInput, payload, deduceFee);
     }
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.MulticollateralBondingCurvePool);
