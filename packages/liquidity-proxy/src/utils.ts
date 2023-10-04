@@ -1,8 +1,8 @@
 import { FPNumber, CodecString } from '@sora-substrate/math';
 
-import { LiquiditySourceTypes, AssetType, Consts } from './consts';
+import { LiquiditySourceTypes, AssetType } from './consts';
 
-import type { QuoteResult } from './types';
+import type { QuoteSingleResult } from './types';
 
 // UTILS
 export const toFp = (item: CodecString): FPNumber => FPNumber.fromCodecValue(item);
@@ -31,17 +31,16 @@ export const safeQuoteResult = (
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
-  market: LiquiditySourceTypes
-): QuoteResult => {
+  source: LiquiditySourceTypes
+): QuoteSingleResult => {
   return {
     amount: FPNumber.ZERO,
     fee: FPNumber.ZERO,
-    rewards: [],
     distribution: [
       {
         input: inputAsset,
         output: outputAsset,
-        market,
+        source,
         income: amount,
         outcome: FPNumber.ZERO,
         fee: FPNumber.ZERO,

@@ -111,10 +111,13 @@ export type QuotePayload = {
   };
 };
 
-export type QuoteResult = {
+export type QuoteSingleResult = {
   amount: FPNumber;
   fee: FPNumber;
   distribution: Array<Distribution>;
+};
+
+export type QuoteResult = QuoteSingleResult & {
   rewards: Array<LPRewardsInfo>;
 };
 

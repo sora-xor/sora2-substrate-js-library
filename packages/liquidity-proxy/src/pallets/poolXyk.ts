@@ -4,11 +4,11 @@ import { LiquiditySourceTypes, Consts, Errors } from '../consts';
 import { safeDivide, toFp, isAssetAddress, safeQuoteResult, isLessThanOrEqualToZero } from '../utils';
 import { SwapChunk } from '../common/primitives';
 
-import type { QuotePayload, QuoteResult } from '../types';
+import type { QuotePayload, QuoteSingleResult } from '../types';
 
 export const xykStepQuote = (
   baseAssetId: string,
-  syntheticBaseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -108,7 +108,7 @@ const xykQuoteA = (
   y: FPNumber,
   xIn: FPNumber,
   deduceFee: boolean
-): QuoteResult => {
+): QuoteSingleResult => {
   const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
   const fee = xIn.mul(feeRatio);
   const x1 = xIn.sub(fee);
@@ -117,12 +117,11 @@ const xykQuoteA = (
   return {
     amount: yOut,
     fee,
-    rewards: [],
     distribution: [
       {
+        source: LiquiditySourceTypes.XYKPool,
         input,
         output,
-        market: LiquiditySourceTypes.XYKPool,
         income: xIn,
         outcome: yOut,
         fee,
@@ -136,7 +135,7 @@ const xykQuoteA = (
  * @param x - other token reserve
  * @param y - base asset reserve
  * @param xIn - desired input amount (other token)
- * @returns QuoteResult
+ * @returns QuoteSingleResult
  */
 const xykQuoteB = (
   input: string,
@@ -145,7 +144,7 @@ const xykQuoteB = (
   y: FPNumber,
   xIn: FPNumber,
   deduceFee: boolean
-): QuoteResult => {
+): QuoteSingleResult => {
   const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
   const y1 = safeDivide(xIn.mul(y), x.add(xIn));
   const yOut = y1.mul(FPNumber.ONE.sub(feeRatio));
@@ -154,12 +153,11 @@ const xykQuoteB = (
   return {
     amount: yOut,
     fee,
-    rewards: [],
     distribution: [
       {
+        source: LiquiditySourceTypes.XYKPool,
         input,
         output,
-        market: LiquiditySourceTypes.XYKPool,
         income: xIn,
         outcome: yOut,
         fee,
@@ -173,7 +171,7 @@ const xykQuoteB = (
  * @param x - base asset reserve
  * @param y - other token reserve
  * @param yOut - desired output amount (other token)
- * @returns QuoteResult
+ * @returns QuoteSingleResult
  */
 const xykQuoteC = (
   input: string,
@@ -182,7 +180,7 @@ const xykQuoteC = (
   y: FPNumber,
   yOut: FPNumber,
   deduceFee: boolean
-): QuoteResult => {
+): QuoteSingleResult => {
   if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
     throw new Error(
       `[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `
@@ -197,12 +195,11 @@ const xykQuoteC = (
   return {
     amount: xIn,
     fee,
-    rewards: [],
     distribution: [
       {
+        source: LiquiditySourceTypes.XYKPool,
         input,
         output,
-        market: LiquiditySourceTypes.XYKPool,
         income: xIn,
         outcome: yOut,
         fee,
@@ -216,7 +213,7 @@ const xykQuoteC = (
  * @param x - other token reserve
  * @param y - base asset reserve
  * @param yOut - desired output amount (base asset)
- * @returns QuoteResult
+ * @returns QuoteSingleResult
  */
 const xykQuoteD = (
   input: string,
@@ -225,7 +222,7 @@ const xykQuoteD = (
   y: FPNumber,
   yOut: FPNumber,
   deduceFee: boolean
-): QuoteResult => {
+): QuoteSingleResult => {
   const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
   const y1 = safeDivide(yOut, FPNumber.ONE.sub(feeRatio));
 
@@ -241,12 +238,11 @@ const xykQuoteD = (
   return {
     amount: xIn,
     fee,
-    rewards: [],
     distribution: [
       {
+        source: LiquiditySourceTypes.XYKPool,
         input,
         output,
-        market: LiquiditySourceTypes.XYKPool,
         income: xIn,
         outcome: yOut,
         fee,
@@ -285,14 +281,14 @@ const calcInputForExactOutput = (
 
 export const xykQuote = (
   baseAssetId: string,
-  syntheticBaseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
   deduceFee: boolean
-): QuoteResult => {
+): QuoteSingleResult => {
   try {
     const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
     return isDesiredInput
@@ -305,7 +301,7 @@ export const xykQuote = (
 
 export const xykQuoteWithoutImpact = (
   baseAssetId: string,
-  syntheticBaseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -346,13 +342,13 @@ export const xykQuoteWithoutImpact = (
 
 // check_rewards
 export const xykCheckRewards = (
-  baseAssetId: string,
-  syntheticBaseAssetId: string,
-  inputAsset: string,
-  outputAsset: string,
-  inputAmount: FPNumber,
-  outputAmount: FPNumber,
-  payload: QuotePayload
+  _baseAssetId: string,
+  _syntheticBaseAssetId: string,
+  _inputAsset: string,
+  _outputAsset: string,
+  _inputAmount: FPNumber,
+  _outputAmount: FPNumber,
+  _payload: QuotePayload
 ) => {
   // XYK Pool has no rewards currently
   return [];

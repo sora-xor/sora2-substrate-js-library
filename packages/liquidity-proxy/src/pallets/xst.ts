@@ -6,7 +6,7 @@ import { getAveragePrice } from './priceTools';
 import { oracleProxyQuoteUnchecked } from './oracleProxy';
 import { SwapChunk } from '../common/primitives';
 
-import type { QuotePayload, QuoteResult } from '../types';
+import type { QuotePayload, QuoteSingleResult } from '../types';
 
 const canExchange = (
   baseAssetId: string,
@@ -197,7 +197,7 @@ const xstDecideBuyAmounts = (
   payload: QuotePayload,
   deduceFee: boolean,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
-): QuoteResult => {
+): QuoteSingleResult => {
   if (!isGreaterThanZero(amount)) throw new Error(Errors.PriceCalculationFailed);
 
   const feeRatio = deduceFee ? getAggregatedFee(syntheticAsset, payload) : FPNumber.ZERO;
@@ -211,12 +211,11 @@ const xstDecideBuyAmounts = (
     return {
       amount: output,
       fee,
-      rewards: [],
       distribution: [
         {
+          source: LiquiditySourceTypes.XSTPool,
           input: syntheticAsset,
           output: syntheticBaseAssetId,
-          market: LiquiditySourceTypes.XSTPool,
           income: amount,
           outcome: output,
           fee,
@@ -232,12 +231,11 @@ const xstDecideBuyAmounts = (
     return {
       amount: input,
       fee,
-      rewards: [],
       distribution: [
         {
+          source: LiquiditySourceTypes.XSTPool,
           input: syntheticAsset,
           output: syntheticBaseAssetId,
-          market: LiquiditySourceTypes.XSTPool,
           income: input,
           outcome: amount,
           fee,
@@ -255,7 +253,7 @@ const xstDecideSellAmounts = (
   payload: QuotePayload,
   deduceFee: boolean,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
-): QuoteResult => {
+): QuoteSingleResult => {
   if (!isGreaterThanZero(amount)) throw new Error(Errors.PriceCalculationFailed);
 
   const feeRatio = deduceFee ? getAggregatedFee(syntheticAsset, payload) : FPNumber.ZERO;
@@ -268,12 +266,11 @@ const xstDecideSellAmounts = (
     return {
       amount: output,
       fee,
-      rewards: [],
       distribution: [
         {
+          source: LiquiditySourceTypes.XSTPool,
           input: syntheticBaseAssetId,
           output: syntheticAsset,
-          market: LiquiditySourceTypes.XSTPool,
           income: amount,
           outcome: output,
           fee,
@@ -289,12 +286,11 @@ const xstDecideSellAmounts = (
     return {
       amount: inputAmountWithFee,
       fee,
-      rewards: [],
       distribution: [
         {
+          source: LiquiditySourceTypes.XSTPool,
           input: syntheticBaseAssetId,
           output: syntheticAsset,
-          market: LiquiditySourceTypes.XSTPool,
           income: inputAmountWithFee,
           outcome: amount,
           fee,
@@ -316,7 +312,7 @@ export const xstQuoteWithoutImpact = (
 ): FPNumber => {
   try {
     // no impact already
-    const quoteResult = xstQuote(
+    const result = xstQuote(
       baseAssetId,
       syntheticBaseAssetId,
       inputAsset,
@@ -328,7 +324,7 @@ export const xstQuoteWithoutImpact = (
       false
     );
 
-    return quoteResult.amount;
+    return result.amount;
   } catch (error) {
     return FPNumber.ZERO;
   }
@@ -344,7 +340,7 @@ export const xstQuote = (
   payload: QuotePayload,
   deduceFee: boolean,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
-): QuoteResult => {
+): QuoteSingleResult => {
   try {
     if (!canExchange(baseAssetId, syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
       throw new Error(Errors.CantExchange);
@@ -353,27 +349,26 @@ export const xstQuote = (
     const {
       amount: resultAmount,
       fee: feeAmount,
-      rewards,
       distribution,
     } = isAssetAddress(inputAsset, syntheticBaseAssetId)
       ? xstDecideSellAmounts(syntheticBaseAssetId, outputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits)
       : xstDecideBuyAmounts(syntheticBaseAssetId, inputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits);
     const fee = convertFee(baseAssetId, syntheticBaseAssetId, feeAmount, payload);
 
-    return { amount: resultAmount, fee, rewards, distribution };
+    return { amount: resultAmount, fee, distribution };
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XSTPool);
   }
 };
 
 export const xstCheckRewards = (
-  baseAssetId: string,
-  syntheticBaseAssetId: string,
-  inputAsset: string,
-  outputAsset: string,
-  inputAmount: FPNumber,
-  outputAmount: FPNumber,
-  payload: QuotePayload
+  _baseAssetId: string,
+  _syntheticBaseAssetId: string,
+  _inputAsset: string,
+  _outputAsset: string,
+  _inputAmount: FPNumber,
+  _outputAmount: FPNumber,
+  _payload: QuotePayload
 ) => {
   // XST Pool has no rewards currently
   return [];

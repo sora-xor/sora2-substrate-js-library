@@ -5,7 +5,7 @@ import { safeDivide, getMaxPositive, safeQuoteResult, isAssetAddress, toFp } fro
 import { getAveragePrice } from './priceTools';
 import { SwapChunk } from '../common/primitives';
 
-import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
+import type { QuotePayload, QuoteSingleResult, LPRewardsInfo } from '../types';
 
 // can_exchange
 const canExchange = (
@@ -28,7 +28,7 @@ const canExchange = (
 // step_quote
 export const tbcStepQuote = (
   baseAssetId: string,
-  syntheticBaseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -209,7 +209,7 @@ const calculateBuyReward = (
 // check_rewards
 export const tbcCheckRewards = (
   baseAssetId: string,
-  syntheticBaseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   inputAmount: FPNumber,
@@ -360,7 +360,7 @@ const tbcDecideSellAmounts = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   deduceFee = true
-): QuoteResult => {
+): QuoteSingleResult => {
   const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(mainAssetId, collateralAssetId, payload)) : FPNumber.ZERO;
 
   if (isDesiredInput) {
@@ -370,12 +370,11 @@ const tbcDecideSellAmounts = (
     return {
       amount: outputAmount,
       fee,
-      rewards: [],
       distribution: [
         {
+          source: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           input: mainAssetId,
           output: collateralAssetId,
-          market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: amount,
           outcome: outputAmount,
           fee,
@@ -390,12 +389,11 @@ const tbcDecideSellAmounts = (
     return {
       amount: inputAmountWithFee,
       fee,
-      rewards: [],
       distribution: [
         {
+          source: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           input: mainAssetId,
           output: collateralAssetId,
-          market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: inputAmountWithFee,
           outcome: amount,
           fee,
@@ -413,24 +411,22 @@ const tbcDecideBuyAmounts = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   deduceFee = true
-): QuoteResult => {
+): QuoteSingleResult => {
   const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
 
   if (isDesiredInput) {
     const outputAmount = tbcBuyPrice(mainAssetId, collateralAsset, amount, isDesiredInput, payload);
     const fee = feeRatio.mul(outputAmount);
     const output = outputAmount.sub(fee);
-    const rewards = tbcCheckRewards(mainAssetId, collateralAsset, output, payload);
 
     return {
       amount: output,
       fee,
-      rewards,
       distribution: [
         {
+          source: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           input: collateralAsset,
           output: mainAssetId,
-          market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: amount,
           outcome: output,
           fee,
@@ -441,17 +437,15 @@ const tbcDecideBuyAmounts = (
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
     const inputAmount = tbcBuyPrice(mainAssetId, collateralAsset, amountWithFee, isDesiredInput, payload);
     const fee = amountWithFee.sub(amount);
-    const rewards = tbcCheckRewards(mainAssetId, collateralAsset, amount, payload);
 
     return {
       amount: inputAmount,
       fee,
-      rewards,
       distribution: [
         {
+          source: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           input: collateralAsset,
           output: mainAssetId,
-          market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: inputAmount,
           outcome: amount,
           fee,
@@ -477,7 +471,7 @@ export const tbcSellPriceNoVolume = (mainAssetId: string, collateralAsset: strin
 
 export const tbcQuoteWithoutImpact = (
   baseAssetId: string,
-  syntheticBaseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -528,14 +522,14 @@ export const tbcQuoteWithoutImpact = (
 
 export const tbcQuote = (
   baseAssetId: string,
-  syntheticBaseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
   deduceFee: boolean
-): QuoteResult => {
+): QuoteSingleResult => {
   try {
     if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
       throw new Error(Errors.CantExchange);

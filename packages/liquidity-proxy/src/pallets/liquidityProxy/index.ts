@@ -296,8 +296,13 @@ const quoteSingle = (
     throw new Error(Errors.UnavailableExchangePath);
   }
 
+  // [TODO] Could be removed?
   if (sources.length === 1) {
-    return LiquidityRegistry.quote(sources[0])(
+    const {
+      amount: resultAmount,
+      fee,
+      distribution,
+    } = LiquidityRegistry.quote(sources[0])(
       baseAssetId,
       syntheticBaseAssetId,
       inputAsset,
@@ -307,6 +312,23 @@ const quoteSingle = (
       payload,
       deduceFee
     );
+    const [inputAmount, outputAmount] = isDesiredInput ? [amount, resultAmount] : [resultAmount, amount];
+    const rewards = LiquidityRegistry.checkRewards(sources[0])(
+      baseAssetId,
+      syntheticBaseAssetId,
+      inputAsset,
+      outputAsset,
+      inputAmount,
+      outputAmount,
+      payload
+    );
+
+    return {
+      amount: resultAmount,
+      fee,
+      distribution,
+      rewards,
+    };
   }
 
   return smartSplit(
