@@ -1,5 +1,6 @@
 import { FPNumber } from '@sora-substrate/math';
 import { SwapVariant, LiquiditySourceTypes } from '../consts';
+import { isGreaterThanZero } from '../utils';
 
 import { SwapChunk } from '../common/primitives';
 
@@ -38,7 +39,7 @@ class LiquidityAggregator {
     let distribution: Partial<Record<LiquiditySourceTypes, FPNumber>> = {};
     let swapInfo: SwapInfo = {};
 
-    while (FPNumber.isGreaterThan(remainingAmount, FPNumber.ZERO)) {
+    while (isGreaterThanZero(remainingAmount)) {
       let candidates = this.findBestPriceCandidates();
       let source = candidates[0];
 

@@ -1,12 +1,13 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, Errors, PriceVariant, RewardReason } from '../consts';
-import { safeDivide, isXorAsset, getMaxPositive, safeQuoteResult } from '../utils';
+import { safeDivide, getMaxPositive, safeQuoteResult, isAssetAddress, toFp } from '../utils';
 import { getAveragePrice } from './price';
 import { SwapChunk } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
 
+// can_exchange
 const canExchange = (
   baseAssetId: string,
   inputAssetId: string,
@@ -15,15 +16,16 @@ const canExchange = (
 ): boolean => {
   if (baseAssetId !== Consts.XOR) return false;
 
-  if (inputAssetId === baseAssetId) {
+  if (isAssetAddress(inputAssetId, baseAssetId)) {
     return payload.enabledAssets.tbc.includes(outputAssetId);
-  } else if (outputAssetId === baseAssetId) {
+  } else if (isAssetAddress(outputAssetId, baseAssetId)) {
     return payload.enabledAssets.tbc.includes(inputAssetId);
   } else {
     return false;
   }
 };
 
+// step_quote
 export const tbcStepQuote = (
   baseAssetId: string,
   inputAsset: string,
@@ -52,10 +54,9 @@ export const tbcStepQuote = (
   for (let i = 1; i <= recommendedSamplesCount; i++) {
     let volume = step.mul(new FPNumber(i));
 
-    const { amount, fee } =
-      inputAsset === baseAssetId
-        ? tbcDecideSellAmounts(outputAsset, volume, isDesiredInput, payload, deduceFee)
-        : tbcDecideBuyAmounts(inputAsset, volume, isDesiredInput, payload, deduceFee);
+    const { amount, fee } = isAssetAddress(inputAsset, baseAssetId)
+      ? tbcDecideSellAmounts(inputAsset, outputAsset, volume, isDesiredInput, payload, deduceFee)
+      : tbcDecideBuyAmounts(outputAsset, inputAsset, volume, isDesiredInput, payload, deduceFee);
 
     const [inputAmount, outputAmount] = isDesiredInput ? [volume, amount] : [amount, volume];
     const feeAmount = fee;
@@ -74,13 +75,7 @@ export const tbcStepQuote = (
   return chunks;
 };
 
-/**
- * This function is used to determine particular asset price in terms of a reference asset, which is set for
- * bonding curve (there could be only single token chosen as reference for all comparisons). Basically, the
- * reference token is expected to be a USD-bound stablecoin, e.g. DAI.
- *
- * Example use: understand actual value of two tokens in terms of USD.
- */
+// reference_price
 const tbcReferencePrice = (assetAddress: string, priceVariant: PriceVariant, payload: QuotePayload): FPNumber => {
   const referenceAssetId = payload.consts.tbc.referenceAsset;
   // always treat TBCD as being worth $1
@@ -91,44 +86,34 @@ const tbcReferencePrice = (assetAddress: string, priceVariant: PriceVariant, pay
   }
 };
 
-/**
- * Calculate USD price for single collateral asset that is stored in reserves account. In other words, find out how much
- * reserves worth, considering only one asset type.
- */
+// actual_reserves_reference_price
 const actualReservesReferencePrice = (
   collateralAsset: string,
   payload: QuotePayload,
   priceVariant: PriceVariant
 ): FPNumber => {
-  const reserve = FPNumber.fromCodecValue(payload.reserves.tbc[collateralAsset]);
+  const reserve = toFp(payload.reserves.tbc[collateralAsset]);
   const price = tbcReferencePrice(collateralAsset, priceVariant, payload);
 
   return reserve.mul(price);
 };
 
-/**
- * Calculate USD price for all XOR in network, this is done by applying ideal sell function to XOR total supply.
- * `delta` is a XOR supply offset from current total supply.
- *
- * `((initial_price + current_state) / 2) * (xor_issuance + delta)`
- */
+// ideal_reserves_reference_price
 const idealReservesReferencePrice = (
+  mainAssetId: string,
   collateralAssetId: string,
   priceVariant: PriceVariant,
   delta: FPNumber,
   payload: QuotePayload
 ): FPNumber => {
-  const xorIssuance = FPNumber.fromCodecValue(payload.issuances[Consts.XOR]);
-  const initialPrice = FPNumber.fromCodecValue(payload.consts.tbc.initialPrice);
-  const currentState = tbcBuyFunction(collateralAssetId, priceVariant, delta, payload);
+  const baseTotalSupply = toFp(payload.issuances[mainAssetId]);
+  const initialPrice = toFp(payload.consts.tbc.initialPrice);
+  const currentState = tbcBuyFunction(mainAssetId, collateralAssetId, priceVariant, delta, payload);
 
-  return safeDivide(initialPrice.add(currentState), new FPNumber(2)).mul(xorIssuance.add(delta));
+  return safeDivide(initialPrice.add(currentState), new FPNumber(2)).mul(baseTotalSupply.add(delta));
 };
 
-/**
- * Mapping that defines ratio of fee penalty applied for selling XOR with
- * low collateralized reserves.
- */
+// map_collateralized_fraction_to_penalty
 const mapCollateralizedFractionToPenalty = (fraction: FPNumber): FPNumber => {
   if (FPNumber.isLessThan(fraction, new FPNumber(0.05))) {
     return new FPNumber(0.09);
@@ -152,13 +137,16 @@ const mapCollateralizedFractionToPenalty = (fraction: FPNumber): FPNumber => {
   }
 };
 
-/**
- * Calculate ratio of fee penalty that is applied to trades when XOR is sold while
- * reserves are low for target collateral asset.
- */
-const sellPenalty = (collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const idealReservesPrice = idealReservesReferencePrice(collateralAsset, PriceVariant.Sell, FPNumber.ZERO, payload);
-  const collateralReservesPrice = actualReservesReferencePrice(collateralAsset, payload, PriceVariant.Sell);
+// sell_penalty
+const sellPenalty = (mainAssetId: string, collateralAssetId: string, payload: QuotePayload): FPNumber => {
+  const idealReservesPrice = idealReservesReferencePrice(
+    mainAssetId,
+    collateralAssetId,
+    PriceVariant.Sell,
+    FPNumber.ZERO,
+    payload
+  );
+  const collateralReservesPrice = actualReservesReferencePrice(collateralAssetId, payload, PriceVariant.Sell);
 
   if (collateralReservesPrice.isZero()) {
     throw new Error(Errors.NotEnoughReserves);
@@ -170,38 +158,27 @@ const sellPenalty = (collateralAsset: string, payload: QuotePayload): FPNumber =
   return penalty;
 };
 
-/**
- * Calculate amount of PSWAP rewarded for collateralizing XOR in TBC.
- *
- * `ideal_reserves_before = sell_function(0 to xor_total_supply_before_trade)`
- *
- * `ideal_reserves_after = sell_function(0 to xor_total_supply_after_trade)`
- *
- * `actual_reserves_before = collateral_asset_reserves * collateral_asset_usd_price`
- *
- * `actual_reserves_after = actual_reserves_before + collateral_asset_input_amount * collateral_asset_usd_price`
- *
- * `unfunded_liabilities = (ideal_reserves_before - actual_reserves_before)`
- *
- * `a = unfunded_liabilities / ideal_reserves_before`
- *
- * `b = unfunded_liabilities / ideal_reserves_after`
- *
- * `P = initial_pswap_rewards`
- *
- * `N = enabled reserve currencies except PSWAP and VAL`
- *
- * `reward_pswap = ((a - b) * mean(a, b) * P) / N`
- */
-const checkRewards = (collateralAsset: string, xorAmount: FPNumber, payload: QuotePayload): Array<LPRewardsInfo> => {
-  if ([Consts.PSWAP, Consts.VAL, Consts.XST, Consts.TBCD].includes(collateralAsset)) {
+// check_rewards
+const checkRewards = (
+  mainAssetId: string,
+  collateralAssetId: string,
+  xorAmount: FPNumber,
+  payload: QuotePayload
+): Array<LPRewardsInfo> => {
+  if ([Consts.PSWAP, Consts.VAL, Consts.XST, Consts.TBCD].includes(collateralAssetId)) {
     return [];
   }
 
-  const idealBefore = idealReservesReferencePrice(collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
-  const idealAfter = idealReservesReferencePrice(collateralAsset, PriceVariant.Buy, xorAmount, payload);
+  const idealBefore = idealReservesReferencePrice(
+    mainAssetId,
+    collateralAssetId,
+    PriceVariant.Buy,
+    FPNumber.ZERO,
+    payload
+  );
+  const idealAfter = idealReservesReferencePrice(mainAssetId, collateralAssetId, PriceVariant.Buy, xorAmount, payload);
 
-  const actualBefore = actualReservesReferencePrice(collateralAsset, payload, PriceVariant.Buy);
+  const actualBefore = actualReservesReferencePrice(collateralAssetId, payload, PriceVariant.Buy);
   const unfundedLiabilities = idealBefore.sub(actualBefore);
 
   const a = safeDivide(unfundedLiabilities, idealBefore);
@@ -226,77 +203,56 @@ const checkRewards = (collateralAsset: string, xorAmount: FPNumber, payload: Quo
   ];
 };
 
-/**
- * Buy function with regards to asset total supply and its change delta. It represents the amount of
- * input collateral required from the User to receive the requested XOR amount, i.e., the price the User buys XOR at
- * XOR is also referred as main asset.
- * Value of `delta` is assumed to be either positive or negative.
- * For every `price_change_step` tokens the price goes up by `price_change_rate`.
- *
- * `buy_price_usd = (xor_total_supply + xor_supply_delta) / (price_change_step * price_change_rate) + initial_price_usd`
- */
+// buy_function
 const tbcBuyFunction = (
+  mainAssetId: string,
   collateralAssetId: string,
   priceVariant: PriceVariant,
   delta: FPNumber,
   payload: QuotePayload
 ): FPNumber => {
-  if (collateralAssetId === Consts.TBCD) {
+  if (isAssetAddress(collateralAssetId, Consts.TBCD)) {
     // Handle TBCD
-    const xp = tbcReferencePrice(Consts.XOR, priceVariant, payload);
+    const xp = tbcReferencePrice(mainAssetId, priceVariant, payload);
     // get the XOR price in USD (DAI) and add $1 to it
     const xorPrice = xp.add(FPNumber.ONE);
 
     return xorPrice;
   } else {
     // Everything other than TBCD
-    const xorIssuance = FPNumber.fromCodecValue(payload.issuances[Consts.XOR]);
-    const initialPrice = FPNumber.fromCodecValue(payload.consts.tbc.initialPrice);
-    const priceChangeStep = FPNumber.fromCodecValue(payload.consts.tbc.priceChangeStep);
-    const priceChangeRate = FPNumber.fromCodecValue(payload.consts.tbc.priceChangeRate);
+    const totalSupply = toFp(payload.issuances[mainAssetId]);
+    const initialPrice = toFp(payload.consts.tbc.initialPrice);
+    const priceChangeStep = toFp(payload.consts.tbc.priceChangeStep);
+    const priceChangeRate = toFp(payload.consts.tbc.priceChangeRate);
 
-    return safeDivide(xorIssuance.add(delta), priceChangeStep.mul(priceChangeRate)).add(initialPrice);
+    return safeDivide(totalSupply.add(delta), priceChangeStep.mul(priceChangeRate)).add(initialPrice);
   }
 };
 
-/**
- * Sell function with regards to asset total supply and its change delta. It represents the amount of
- * output collateral tokens received by User by indicating exact sold XOR amount. I.e. the price User sells at.
- * Value of `delta` is assumed to be either positive or negative.
- * Sell function is `sell_price_coefficient`% of buy function (see `tbcBuyFunction`).
- *
- * `sell_price = sell_price_coefficient * buy_price`
- */
-const tbcSellFunction = (collateralAssetId: string, delta: FPNumber, payload: QuotePayload): FPNumber => {
-  const buyFunctionResult = tbcBuyFunction(collateralAssetId, PriceVariant.Sell, delta, payload);
-  const sellPriceCoefficient = FPNumber.fromCodecValue(payload.consts.tbc.sellPriceCoefficient);
+// sell_function
+const tbcSellFunction = (
+  mainAssetId: string,
+  collateralAssetId: string,
+  delta: FPNumber,
+  payload: QuotePayload
+): FPNumber => {
+  const buyFunctionResult = tbcBuyFunction(mainAssetId, collateralAssetId, PriceVariant.Sell, delta, payload);
+  const sellPriceCoefficient = toFp(payload.consts.tbc.sellPriceCoefficient);
 
   return buyFunctionResult.mul(sellPriceCoefficient);
 };
 
-/**
- * Calculates and returns the current sell price, assuming that input is the main asset and output is the collateral asset.
- * To calculate sell price for a specific amount of assets:
- * 1. Current reserves of collateral token are taken
- * 2. Same amount by value is assumed for main asset
- *
- *    2.1. Values are compared via getting prices for both main and collateral tokens with regard to another token called reference token which is set for particular pair. This should be e.g. stablecoin DAI.
- *
- *    2.2. Reference price for base token is taken as 80% of current bonding curve buy price.
- *
- *    2.3. Reference price for collateral token is taken as current market price, i.e. price for 1 token on liquidity proxy.
- *
- * 3. Given known reserves for main and collateral, output collateral amount is calculated by applying x*y=k model resulting in curve-like dependency.
- */
+// sell_price
 const tbcSellPrice = (
-  collateralAsset: string,
+  mainAssetId: string,
+  collateralAssetId: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload
 ): FPNumber => {
-  const collateralSupply = FPNumber.fromCodecValue(payload.reserves.tbc[collateralAsset]);
-  const mainPricePerReferenceUnit = tbcSellFunction(collateralAsset, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAsset, PriceVariant.Sell, payload);
+  const collateralSupply = toFp(payload.reserves.tbc[collateralAssetId]);
+  const mainPricePerReferenceUnit = tbcSellFunction(mainAssetId, collateralAssetId, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAssetId, PriceVariant.Sell, payload);
   const mainSupply = safeDivide(collateralSupply.mul(collateralPricePerReferenceUnit), mainPricePerReferenceUnit);
 
   if (isDesiredInput) {
@@ -318,74 +274,27 @@ const tbcSellPrice = (
   }
 };
 
-/**
-Calculates and returns the current buy price, assuming that input is the collateral asset and output is the main asset.
-
-To calculate price for a specific amount of assets (with desired main asset output),
-one needs to calculate the area of a right trapezoid.
-
-`AB` : buy_function(xor_total_supply)
-`CD` : buy_function(xor_total_supply + xor_supply_delta)
-
-```nocompile
-         ..  C
-       ..  │
-  B  ..    │
-    │   S  │
-    │      │
-  A └──────┘ D
-```
-
-1) Amount of collateral tokens needed in USD to get `xor_supply_delta`(AD) XOR tokens
-S = ((AB + CD) / 2) * AD
-
-or
-
-buy_price_usd = ((buy_function(xor_total_supply) + buy_function(xor_total_supply + xor_supply_delta)) / 2) * xor_supply_delta
-
-2) Amount of XOR tokens received by depositing `S` collateral tokens in USD:
-
-Solving right trapezoid area formula with respect to `xor_supply_delta` (AD),
-actual square `S` is known and represents collateral amount.
-We have a quadratic equation:
-
-buy_function(x) = price_change_coefficient * x + initial_price
-
-Assume `P` = price_change_coefficient = 1337
-
-M * AD² + 2 * AB * AD - 2 * S = 0
-equation with two solutions, taking only positive one:
-AD = (√((AB * 2 / M)² + 8 * S / M) - 2 * AB / M) / 2 (old formula)
-AD = √(P * (AB² * P + 2 * S)) - AB * P (new formula)
-
-or
-(old)
-xor_supply_delta = (√((buy_function(xor_total_supply) * 2 / price_change_coeff)²
-  + 8 * buy_price_usd / price_change_coeff) - 2 * buy_function(xor_total_supply)
- / price_change_coeff) / 2
-(new)
-xor_supply_delta = √price_change_coefficient * √(buy_function(xor_total_supply)² * price_change_coefficient + 2 * buy_price_usd)
-  - buy_function(xor_total_supply) * price_change_coefficient
- */
+// buy_price
 const tbcBuyPrice = (
-  collateralAsset: string,
+  mainAssetId: string,
+  collateralAssetId: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload
 ): FPNumber => {
-  const priceChangeStep = FPNumber.fromCodecValue(payload.consts.tbc.priceChangeStep);
-  const priceChangeRate = FPNumber.fromCodecValue(payload.consts.tbc.priceChangeRate);
+  const priceChangeStep = toFp(payload.consts.tbc.priceChangeStep);
+  const priceChangeRate = toFp(payload.consts.tbc.priceChangeRate);
   const priceChangeCoeff = priceChangeStep.mul(priceChangeRate);
 
-  const currentState = tbcBuyFunction(collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAsset, PriceVariant.Buy, payload);
+  const currentState = tbcBuyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAssetId, PriceVariant.Buy, payload);
 
   if (isDesiredInput) {
     const collateralReferenceIn = collateralPricePerReferenceUnit.mul(amount);
 
     let mainOut: FPNumber;
 
-    if (collateralAsset === Consts.TBCD) {
+    if (isAssetAddress(collateralAssetId, Consts.TBCD)) {
       mainOut = safeDivide(collateralReferenceIn, currentState);
     } else {
       const sqrt = currentState
@@ -398,25 +307,27 @@ const tbcBuyPrice = (
     }
     return getMaxPositive(mainOut);
   } else {
-    const newState = tbcBuyFunction(collateralAsset, PriceVariant.Buy, amount, payload);
+    const newState = tbcBuyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, amount, payload);
     const collateralReferenceIn = safeDivide(currentState.add(newState).mul(amount), new FPNumber(2));
     const collateralQuantity = safeDivide(collateralReferenceIn, collateralPricePerReferenceUnit);
     return getMaxPositive(collateralQuantity);
   }
 };
 
+// decide_sell_amounts
 const tbcDecideSellAmounts = (
-  collateralAsset: string,
+  mainAssetId: string,
+  collateralAssetId: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
   deduceFee = true
 ): QuoteResult => {
-  const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(collateralAsset, payload)) : FPNumber.ZERO;
+  const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(mainAssetId, collateralAssetId, payload)) : FPNumber.ZERO;
 
   if (isDesiredInput) {
     const fee = amount.mul(newFee);
-    const outputAmount = tbcSellPrice(collateralAsset, amount.sub(fee), isDesiredInput, payload);
+    const outputAmount = tbcSellPrice(mainAssetId, collateralAssetId, amount.sub(fee), isDesiredInput, payload);
 
     return {
       amount: outputAmount,
@@ -424,8 +335,8 @@ const tbcDecideSellAmounts = (
       rewards: [],
       distribution: [
         {
-          input: Consts.XOR,
-          output: collateralAsset,
+          input: mainAssetId,
+          output: collateralAssetId,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: amount,
           outcome: outputAmount,
@@ -434,7 +345,7 @@ const tbcDecideSellAmounts = (
       ],
     };
   } else {
-    const inputAmount = tbcSellPrice(collateralAsset, amount, isDesiredInput, payload);
+    const inputAmount = tbcSellPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(newFee));
     const fee = inputAmountWithFee.sub(inputAmount);
 
@@ -444,8 +355,8 @@ const tbcDecideSellAmounts = (
       rewards: [],
       distribution: [
         {
-          input: Consts.XOR,
-          output: collateralAsset,
+          input: mainAssetId,
+          output: collateralAssetId,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: inputAmountWithFee,
           outcome: amount,
@@ -456,7 +367,9 @@ const tbcDecideSellAmounts = (
   }
 };
 
+// decide_buy_amounts
 const tbcDecideBuyAmounts = (
+  mainAssetId: string, // XOR
   collateralAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
@@ -466,10 +379,10 @@ const tbcDecideBuyAmounts = (
   const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
 
   if (isDesiredInput) {
-    const outputAmount = tbcBuyPrice(collateralAsset, amount, isDesiredInput, payload);
+    const outputAmount = tbcBuyPrice(mainAssetId, collateralAsset, amount, isDesiredInput, payload);
     const fee = feeRatio.mul(outputAmount);
     const output = outputAmount.sub(fee);
-    const rewards = checkRewards(collateralAsset, output, payload);
+    const rewards = checkRewards(mainAssetId, collateralAsset, output, payload);
 
     return {
       amount: output,
@@ -478,7 +391,7 @@ const tbcDecideBuyAmounts = (
       distribution: [
         {
           input: collateralAsset,
-          output: Consts.XOR,
+          output: mainAssetId,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: amount,
           outcome: output,
@@ -488,9 +401,9 @@ const tbcDecideBuyAmounts = (
     };
   } else {
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
-    const inputAmount = tbcBuyPrice(collateralAsset, amountWithFee, isDesiredInput, payload);
+    const inputAmount = tbcBuyPrice(mainAssetId, collateralAsset, amountWithFee, isDesiredInput, payload);
     const fee = amountWithFee.sub(amount);
-    const rewards = checkRewards(collateralAsset, amount, payload);
+    const rewards = checkRewards(mainAssetId, collateralAsset, amount, payload);
 
     return {
       amount: inputAmount,
@@ -499,7 +412,7 @@ const tbcDecideBuyAmounts = (
       distribution: [
         {
           input: collateralAsset,
-          output: Consts.XOR,
+          output: mainAssetId,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: inputAmount,
           outcome: amount,
@@ -510,15 +423,15 @@ const tbcDecideBuyAmounts = (
   }
 };
 
-export const tbcBuyPriceNoVolume = (collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const basePriceWrtRef = tbcBuyFunction(collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
+export const tbcBuyPriceNoVolume = (mainAssetId: string, collateralAsset: string, payload: QuotePayload): FPNumber => {
+  const basePriceWrtRef = tbcBuyFunction(mainAssetId, collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
   const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAsset, PriceVariant.Sell, payload);
 
   return safeDivide(basePriceWrtRef, collateralPricePerReferenceUnit);
 };
 
-export const tbcSellPriceNoVolume = (collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const basePriceWrtRef = tbcSellFunction(collateralAsset, FPNumber.ZERO, payload);
+export const tbcSellPriceNoVolume = (mainAssetId: string, collateralAsset: string, payload: QuotePayload): FPNumber => {
+  const basePriceWrtRef = tbcSellFunction(mainAssetId, collateralAsset, FPNumber.ZERO, payload);
   const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAsset, PriceVariant.Buy, payload);
 
   return safeDivide(basePriceWrtRef, collateralPricePerReferenceUnit);
@@ -538,9 +451,9 @@ export const tbcQuoteWithoutImpact = (
       throw new Error(Errors.CantExchange);
     }
 
-    if (isXorAsset(inputAsset)) {
-      const xorPrice = tbcSellPriceNoVolume(outputAsset, payload);
-      const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(outputAsset, payload)) : FPNumber.ZERO;
+    if (isAssetAddress(inputAsset, baseAssetId)) {
+      const xorPrice = tbcSellPriceNoVolume(inputAsset, outputAsset, payload);
+      const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(inputAsset, outputAsset, payload)) : FPNumber.ZERO;
 
       if (isDesiredinput) {
         const feeAmount = newFee.mul(amount);
@@ -554,7 +467,7 @@ export const tbcQuoteWithoutImpact = (
         return inputAmountWithFee;
       }
     } else {
-      const xorPrice = tbcBuyPriceNoVolume(inputAsset, payload);
+      const xorPrice = tbcBuyPriceNoVolume(outputAsset, inputAsset, payload);
       const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
 
       if (isDesiredinput) {
@@ -588,10 +501,10 @@ export const tbcQuote = (
       throw new Error(Errors.CantExchange);
     }
 
-    if (isXorAsset(inputAsset)) {
-      return tbcDecideSellAmounts(outputAsset, amount, isDesiredInput, payload, deduceFee);
+    if (isAssetAddress(inputAsset, baseAssetId)) {
+      return tbcDecideSellAmounts(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else {
-      return tbcDecideBuyAmounts(inputAsset, amount, isDesiredInput, payload, deduceFee);
+      return tbcDecideBuyAmounts(outputAsset, inputAsset, amount, isDesiredInput, payload, deduceFee);
     }
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.MulticollateralBondingCurvePool);

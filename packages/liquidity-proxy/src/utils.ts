@@ -10,7 +10,7 @@ export const getMaxPositive = (value: FPNumber) => FPNumber.max(value, FPNumber.
 export const isGreaterThanZero = (value: FPNumber) => FPNumber.isGreaterThan(value, FPNumber.ZERO);
 export const isLessThanOrEqualToZero = (value: FPNumber) => FPNumber.isLessThanOrEqualTo(value, FPNumber.ZERO);
 export const isAssetAddress = (a: string, b: string) => a === b;
-export const isXorAsset = (asset: string, dexBaseAsset = Consts.XOR) => isAssetAddress(asset, dexBaseAsset);
+
 export const matchType =
   (iType: AssetType, oType: AssetType) =>
   (a: AssetType, b: AssetType, bidirect = false) => {

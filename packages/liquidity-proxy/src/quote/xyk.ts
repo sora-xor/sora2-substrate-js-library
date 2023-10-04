@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, Errors } from '../consts';
-import { safeDivide, toFp, isAssetAddress, safeQuoteResult } from '../utils';
+import { safeDivide, toFp, isAssetAddress, safeQuoteResult, isLessThanOrEqualToZero } from '../utils';
 import { SwapChunk } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult } from '../types';
@@ -25,10 +25,7 @@ export const xykStepQuote = (
   const [reserveInput, reserveOutput] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
 
   // Check reserves validity.
-  if (
-    FPNumber.isLessThanOrEqualTo(reserveInput, FPNumber.ZERO) ||
-    FPNumber.isLessThanOrEqualTo(reserveOutput, FPNumber.ZERO)
-  ) {
+  if (isLessThanOrEqualToZero(reserveInput) || isLessThanOrEqualToZero(reserveOutput)) {
     throw new Error(Errors.PoolIsEmpty);
   }
 
