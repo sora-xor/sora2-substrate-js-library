@@ -3,16 +3,17 @@ import type { Api } from '../api';
 import { map } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
 import { HistoryItem } from '../BaseApi';
-import { Side } from './types';
+import { LimitOrder, Side, Value } from './types';
 
 import type { Observable } from '@polkadot/types/types';
+
 export class OrderBookModule<T> {
   constructor(private readonly root: Api<T>) {}
 
   public orderBooks = {};
   public userOrderBooks: Array<string> = [];
 
-  public async getOrderBooks() {
+  public async getOrderBooks(): Promise<void> {
     const toKey = (address) => address.code.toString();
 
     const entries = await this.root.api.query.orderBook.orderBooks.entries();
@@ -28,10 +29,10 @@ export class OrderBookModule<T> {
         orderBook,
         status: status.toString(),
         lastOrderId: lastOrderId.toNumber(),
-        tickSize: this.getValueFromJson(tickSize),
-        stepLotSize: this.getValueFromJson(stepLotSize),
-        minLotSize: this.getValueFromJson(minLotSize),
-        maxLotSize: this.getValueFromJson(maxLotSize),
+        tickSize: this.getValueFromJson(tickSize as unknown as Value),
+        stepLotSize: this.getValueFromJson(stepLotSize as unknown as Value),
+        minLotSize: this.getValueFromJson(minLotSize as unknown as Value),
+        maxLotSize: this.getValueFromJson(maxLotSize as unknown as Value),
       };
 
       return buffer;
@@ -40,7 +41,7 @@ export class OrderBookModule<T> {
     this.orderBooks = orderBooks;
   }
 
-  public async getUserOrderBooks(account: string) {
+  public async getUserOrderBooks(account: string): Promise<void> {
     const toKey = (address) => address.code.toString();
 
     const userOrderBooksIds = [];
@@ -62,7 +63,7 @@ export class OrderBookModule<T> {
     );
   }
 
-  public getAggregatedAsks(base: string, quote: string) {
+  public getAggregatedAsks(base: string, quote: string): Observable<Array<[]>> {
     return this.root.apiRx.query.orderBook.aggregatedAsks({ dexId: 0, base, quote }).pipe(
       map((data) => {
         const priceAmountMapping = data.toJSON() as any;
@@ -80,7 +81,7 @@ export class OrderBookModule<T> {
     );
   }
 
-  public getAggregatedBids(base: string, quote: string) {
+  public getAggregatedBids(base: string, quote: string): Observable<Array<[]>> {
     return this.root.apiRx.query.orderBook.aggregatedBids({ dexId: 0, base, quote }).pipe(
       map((data) => {
         const priceAmountMapping = data.toJSON() as any;
@@ -98,23 +99,23 @@ export class OrderBookModule<T> {
     );
   }
 
-  public getValue(value): FPNumber {
+  public getValue(value: Value): FPNumber {
     const decimals = value.isDivisible ? FPNumber.DEFAULT_PRECISION : 0;
     return FPNumber.fromCodecValue(value.inner, decimals);
   }
 
-  public getValueFromJson(value): FPNumber {
-    const decimals = JSON.parse(value).isDivisible ? FPNumber.DEFAULT_PRECISION : 0;
+  public getValueFromJson(value: Value): FPNumber {
+    const decimals = JSON.parse(value as unknown as string).isDivisible ? FPNumber.DEFAULT_PRECISION : 0;
     return FPNumber.fromCodecValue(value.inner, decimals);
   }
 
-  public getUserLimitOrdersIds(base: string, quote: string, account: string) {
+  public getUserLimitOrdersIds(base: string, quote: string, account: string): Observable<Array<number>> {
     return this.root.apiRx.query.orderBook
       .userLimitOrders(account, { dexId: 0, base, quote })
-      .pipe(map((ids) => ids.toJSON()));
+      .pipe(map((ids) => ids.toJSON() as Array<number>));
   }
 
-  public async getLimitOrder(base: string, quote: string, id: number) {
+  public async getLimitOrder(base: string, quote: string, id: number): Promise<LimitOrder> {
     const order = (await this.root.api.query.orderBook.limitOrders({ dexId: 0, base, quote }, id)).toJSON() as any;
 
     return {
@@ -132,7 +133,7 @@ export class OrderBookModule<T> {
     amount: string,
     side: Side,
     timestamp: string
-  ) {
+  ): Promise<void> {
     await this.root.submitExtrinsic(
       this.root.api.tx.orderBook.placeLimitOrder({ dexId: 0, base, quote }, price, amount, side, timestamp),
       this.root.account.pair,
@@ -140,7 +141,7 @@ export class OrderBookModule<T> {
     );
   }
 
-  public async cancelLimitOrder(base: string, quote: string, orderId: number) {
+  public async cancelLimitOrder(base: string, quote: string, orderId: number): Promise<void> {
     await this.root.submitExtrinsic(
       this.root.api.tx.orderBook.cancelLimitOrder({ dexId: 0, base, quote }, orderId),
       this.root.account.pair,
@@ -148,7 +149,7 @@ export class OrderBookModule<T> {
     );
   }
 
-  public async cancelLimitOrderBatch(base: string, quote: string, orderIds: number[]) {
+  public async cancelLimitOrderBatch(base: string, quote: string, orderIds: number[]): Promise<void> {
     await this.root.submitExtrinsic(
       this.root.api.tx.orderBook.cancelLimitOrdersBatch([[{ dexId: 0, base, quote }, orderIds]]),
       this.root.account.pair,

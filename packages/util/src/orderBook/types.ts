@@ -14,3 +14,20 @@ export enum OrderBookStatus {
 }
 
 export type Side = 'Buy' | 'Sell';
+
+export interface Value {
+  isDivisible: boolean;
+  inner: string;
+}
+
+export interface LimitOrder {
+  readonly id: number;
+  readonly owner: string;
+  readonly side: Side;
+  readonly price: Value;
+  readonly originalAmount: Value;
+  readonly amount: Value;
+  readonly time: string;
+  readonly lifespan: string;
+  readonly expiresAt: string;
+}
