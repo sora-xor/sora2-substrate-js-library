@@ -5,11 +5,12 @@ import { FPNumber } from '@sora-substrate/math';
 import { HistoryItem } from '../BaseApi';
 import { Side } from './types';
 
+import type { Observable } from '@polkadot/types/types';
 export class OrderBookModule<T> {
   constructor(private readonly root: Api<T>) {}
 
   public orderBooks = {};
-  public userOrderLimits = {};
+  public userOrderBooks: Array<string> = [];
 
   public async getOrderBooks() {
     const toKey = (address) => address.code.toString();
@@ -37,6 +38,28 @@ export class OrderBookModule<T> {
     }, {});
 
     this.orderBooks = orderBooks;
+  }
+
+  public async getUserOrderBooks(account: string) {
+    const toKey = (address) => address.code.toString();
+
+    const userOrderBooksIds = [];
+
+    const entries = await this.root.api.query.orderBook.userLimitOrders.entries(account);
+    entries.map(([book]) => {
+      userOrderBooksIds.push(toKey(book.toHuman()[1].base) + toKey(book.toHuman()[1].quote));
+    });
+
+    this.userOrderBooks = userOrderBooksIds;
+  }
+
+  public subscribeOnUserOrderBooks(account: string): Observable<Promise<String[]>> {
+    return this.root.system.getBlockNumberObservable().pipe(
+      map(async () => {
+        await this.getUserOrderBooks(account);
+        return this.userOrderBooks;
+      })
+    );
   }
 
   public getAggregatedAsks(base: string, quote: string) {

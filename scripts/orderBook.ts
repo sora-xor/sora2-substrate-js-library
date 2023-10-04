@@ -10,9 +10,12 @@ async function main(): Promise<void> {
     const account = 'cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm';
 
     await api.orderBook.getOrderBooks();
-    console.log('api.orderBook', api.orderBook.orderBooks);
 
-    console.log('orderBooks', api.orderBook.orderBooks);
+    await api.orderBook.getUserOrderBooks(account);
+
+    api.orderBook.subscribeOnUserOrderBooks(account).subscribe(async (ids) => {
+      console.log('ids', await ids);
+    });
 
     api.orderBook.getUserLimitOrdersIds(val, xor, account).subscribe((ids) => {
       console.log('ids', ids);
