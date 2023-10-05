@@ -14,18 +14,18 @@ async function main(): Promise<void> {
 
     await api.orderBook.getUserOrderBooks(account);
 
-    api.orderBook.getUserLimitOrdersIds(val, xor, account).subscribe((ids) => {
+    api.orderBook.subscribeOnUserLimitOrdersIds(val, xor, account).subscribe((ids) => {
       console.log('ids', ids);
     });
 
     const order = await api.orderBook.getLimitOrder(val, xor, 16);
     console.log('order', order);
 
-    api.orderBook.getAggregatedAsks(val, xor).subscribe((asks) => {
+    api.orderBook.subscribeOnAggregatedAsks(val, xor).subscribe((asks) => {
       console.log('asks', asks);
     });
 
-    api.orderBook.getAggregatedBids(val, xor).subscribe((bids) => {
+    api.orderBook.subscribeOnAggregatedBids(val, xor).subscribe((bids) => {
       console.log('bids', bids);
     });
 
