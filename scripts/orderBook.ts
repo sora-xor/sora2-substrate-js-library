@@ -11,11 +11,13 @@ async function main(): Promise<void> {
 
     await api.orderBook.getOrderBooks();
 
+    console.log('api.orderBook.orderBooks', api.orderBook.orderBooks);
+
     await api.orderBook.getUserOrderBooks(account);
 
-    api.orderBook.subscribeOnUserOrderBooks(account).subscribe(async (ids) => {
-      console.log('ids', await ids);
-    });
+    // api.orderBook.subscribeOnUserOrderBooks(account).subscribe(async (ids) => {
+    //   console.log('ids', await ids);
+    // });
 
     api.orderBook.getUserLimitOrdersIds(val, xor, account).subscribe((ids) => {
       console.log('ids', ids);
@@ -37,7 +39,7 @@ async function main(): Promise<void> {
     const side: Side = 'Buy';
     const timestamp = Date.now().toString().slice(0, -3);
 
-    await api.orderBook.placeLimitOrder(val, xor, price, amount, side, timestamp);
+    await api.orderBook.placeLimitOrder(val, xor, price, amount, side);
 
     await delay(100000);
   });

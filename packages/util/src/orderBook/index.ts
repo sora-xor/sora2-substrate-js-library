@@ -4,6 +4,7 @@ import { map } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
 import { HistoryItem } from '../BaseApi';
 import { LimitOrder, Side, Value } from './types';
+import { MAX_TIMESTAMP } from './consts';
 
 import type { Observable } from '@polkadot/types/types';
 
@@ -23,11 +24,13 @@ export class OrderBookModule<T> {
     const entries = await this.root.api.query.orderBook.orderBooks.entries();
 
     const orderBooks = entries.reduce((buffer, [key, value]) => {
+      if (value.isEmpty || value.isNone) return {};
       const orderBook = key.args[0].toJSON();
       const meta = value.unwrap();
       const { orderBookId, status, lastOrderId, tickSize, stepLotSize, minLotSize, maxLotSize } = meta;
-      const base = orderBookId.toJSON().base;
-      const quote = orderBookId.toJSON().quote;
+      const orderBookData = orderBookId.toJSON();
+      const base = orderBookData.base;
+      const quote = orderBookData.quote;
 
       buffer[toKey(base) + toKey(quote)] = {
         orderBook,
@@ -149,6 +152,8 @@ export class OrderBookModule<T> {
    */
   public async getLimitOrder(base: string, quote: string, id: number): Promise<LimitOrder> {
     const order = (await this.root.api.query.orderBook.limitOrders({ dexId: 0, base, quote }, id)).toJSON() as any;
+
+    if (!order) return null;
 
     return {
       ...order,
