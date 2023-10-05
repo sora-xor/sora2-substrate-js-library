@@ -8,8 +8,9 @@ import { SwapChunk } from '../common/primitives';
 import type { QuotePayload, QuoteSingleResult, LPRewardsInfo } from '../types';
 
 // can_exchange
-const canExchange = (
+export const tbcCanExchange = (
   baseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAssetId: string,
   outputAssetId: string,
   payload: QuotePayload
@@ -37,7 +38,7 @@ export const tbcStepQuote = (
   deduceFee: boolean,
   recommendedSamplesCount: number
 ): Array<SwapChunk> => {
-  if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+  if (!tbcCanExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
 
@@ -200,7 +201,7 @@ const calculateBuyReward = (
   const mean = safeDivide(a.add(b), new FPNumber(2));
   const amount = safeDivide(
     a.sub(b).mul(Consts.initialPswapTbcRewardsAmount).mul(mean),
-    Consts.incentivizedCurrenciesNum
+    Consts.incentivisedCurrenciesNum
   );
 
   return amount;
@@ -216,7 +217,7 @@ export const tbcCheckRewards = (
   outputAmount: FPNumber,
   payload: QuotePayload
 ): Array<LPRewardsInfo> => {
-  if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+  if (!tbcCanExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
 
@@ -480,7 +481,7 @@ export const tbcQuoteWithoutImpact = (
   deduceFee: boolean
 ): FPNumber => {
   try {
-    if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+    if (!tbcCanExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
       throw new Error(Errors.CantExchange);
     }
 
@@ -531,7 +532,7 @@ export const tbcQuote = (
   deduceFee: boolean
 ): QuoteSingleResult => {
   try {
-    if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+    if (!tbcCanExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
       throw new Error(Errors.CantExchange);
     }
 

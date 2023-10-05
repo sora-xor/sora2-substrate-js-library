@@ -2,6 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { LiquiditySourceTypes, Consts, AssetType, Errors, SwapVariant } from '../../consts';
 import { LiquidityAggregator } from './liquidityAggregator';
 import { LiquidityRegistry } from './liquidityRegistry';
+import { listLiquiditySources } from '../dexApi';
 import { isAssetAddress, intersection, matchType, safeDivide } from '../../utils';
 
 import type {
@@ -140,33 +141,6 @@ const getAssetLiquiditySources = (
 };
 
 /**
- * Liquidity sources for direct exchange between two asssets
- * @param inputAssetId input asset id
- * @param outputAssetId output asset id
- * @param assetPaths liquidity sources for assets
- * @param baseAssetId Dex base asset id
- */
-const listLiquiditySources = (
-  inputAssetId: string,
-  outputAssetId: string,
-  assetPaths: QuotePaths,
-  baseAssetId: string,
-  selectedSources: LiquiditySourceTypes[] = []
-): Array<LiquiditySourceTypes> => {
-  const getSource = (asset: string) => assetPaths[asset] ?? [];
-  const commonSources = intersection(getSource(inputAssetId), getSource(outputAssetId));
-  const directSources = commonSources.filter((source) => {
-    return (
-      source === LiquiditySourceTypes.XSTPool || [inputAssetId, outputAssetId].includes(baseAssetId) // TBC, XYK uses baseAsset
-    );
-  });
-
-  if (!selectedSources.length) return directSources;
-
-  return directSources.filter((source) => selectedSources.includes(source));
-};
-
-/**
  * Get available liquidity sources for the tokens & exchange pair
  */
 export const getAssetsLiquiditySources = (
@@ -230,7 +204,7 @@ const smartSplit = (
         isDesiredInput,
         payload,
         deduceFee,
-        Consts.NUM_SAMPLES
+        Consts.GetNumSamples
       );
 
       aggregator.addSource(source, chunks);
@@ -283,14 +257,14 @@ const quoteSingle = (
   payload: QuotePayload,
   deduceFee: boolean
 ): QuoteResult => {
-  const allSources = listLiquiditySources(
+  const sources = listLiquiditySources(
+    baseAssetId,
+    syntheticBaseAssetId,
     inputAsset,
     outputAsset,
-    payload.sources.assetPaths,
-    baseAssetId,
-    selectedSources
+    selectedSources,
+    payload
   );
-  const sources = allSources.filter((source) => !payload.enabledAssets.lockedSources.includes(source));
 
   if (!sources.length) {
     throw new Error(Errors.UnavailableExchangePath);

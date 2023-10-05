@@ -6,6 +6,8 @@ import {
   quote,
   LiquiditySourceTypes,
   PriceVariant,
+  SwapVariant,
+  FilterMode,
   newTrivial,
   getAssetsLiquiditySources,
 } from '@sora-substrate/liquidity-proxy';
@@ -38,11 +40,6 @@ interface SwapResultWithDexId extends SwapResult {
   dexId: DexId;
 }
 
-enum SwapVariant {
-  WithDesiredInput = 'WithDesiredInput',
-  WithDesiredOutput = 'WithDesiredOutput',
-}
-
 type SwapAmount =
   | {
       [SwapVariant.WithDesiredInput]: {
@@ -56,12 +53,6 @@ type SwapAmount =
         maxAmountIn: CodecString;
       };
     };
-
-enum FilterMode {
-  Disabled = 'Disabled',
-  AllowSelected = 'AllowSelected',
-  ForbidSelected = 'ForbidSelected',
-}
 
 const getFilterMode = (liquiditySources: LiquiditySourceTypes[], allowSelected = true) => {
   const sourcesPassed = !!liquiditySources.length;

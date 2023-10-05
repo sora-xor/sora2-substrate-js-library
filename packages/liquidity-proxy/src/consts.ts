@@ -24,12 +24,12 @@ export class Consts {
   /** Max `Rust` number value */
   static readonly MAX = new FPNumber('170141183460469231731.687303715884105727');
 
-  /** 4 registered - pswap and val which are not incentivized */
-  static readonly incentivizedCurrenciesNum = new FPNumber(2);
+  /** ETH & DAI which are incentivized */
+  static readonly incentivisedCurrenciesNum = new FPNumber(2);
   /** 2.5 billion pswap reserved for tbc rewards */
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
 
-  static readonly NUM_SAMPLES = 40;
+  static readonly GetNumSamples = 10;
 }
 
 export enum Errors {
@@ -71,4 +71,10 @@ export enum AssetType {
 export enum SwapVariant {
   WithDesiredInput = 'WithDesiredInput',
   WithDesiredOutput = 'WithDesiredOutput',
+}
+
+export enum FilterMode {
+  Disabled = 'Disabled',
+  AllowSelected = 'AllowSelected',
+  ForbidSelected = 'ForbidSelected',
 }

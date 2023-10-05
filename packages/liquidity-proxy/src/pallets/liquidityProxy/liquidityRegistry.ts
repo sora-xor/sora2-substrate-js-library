@@ -1,10 +1,29 @@
 import { LiquiditySourceTypes, Errors } from '../../consts';
 
-import { xykQuote, xykQuoteWithoutImpact, xykStepQuote, xykCheckRewards } from '../poolXyk';
-import { tbcQuote, tbcQuoteWithoutImpact, tbcStepQuote, tbcCheckRewards } from '../multicollateralBoundingCurvePool';
-import { xstQuote, xstQuoteWithoutImpact, xstStepQuote, xstCheckRewards } from '../xst';
+import { xykCanExchange, xykQuote, xykQuoteWithoutImpact, xykStepQuote, xykCheckRewards } from '../poolXyk';
+import {
+  tbcCanExchange,
+  tbcQuote,
+  tbcQuoteWithoutImpact,
+  tbcStepQuote,
+  tbcCheckRewards,
+} from '../multicollateralBoundingCurvePool';
+import { xstCanExchange, xstQuote, xstQuoteWithoutImpact, xstStepQuote, xstCheckRewards } from '../xst';
 
 export class LiquidityRegistry {
+  public static canExchange(source: LiquiditySourceTypes) {
+    switch (source) {
+      case LiquiditySourceTypes.XYKPool:
+        return xykCanExchange;
+      case LiquiditySourceTypes.MulticollateralBondingCurvePool:
+        return tbcCanExchange;
+      case LiquiditySourceTypes.XSTPool:
+        return xstCanExchange;
+      default:
+        throw new Error(Errors.UnsupportedLiquiditySource);
+    }
+  }
+
   public static quote(source: LiquiditySourceTypes) {
     switch (source) {
       case LiquiditySourceTypes.XYKPool:

@@ -6,6 +6,24 @@ import { SwapChunk } from '../common/primitives';
 
 import type { QuotePayload, QuoteSingleResult } from '../types';
 
+// can_exchange
+export const xykCanExchange = (
+  baseAssetId: string,
+  _syntheticBaseAssetId: string,
+  inputAssetId: string,
+  outputAssetId: string,
+  payload: QuotePayload
+): boolean => {
+  if (![inputAssetId, outputAssetId].includes(baseAssetId)) return false;
+
+  const isBaseAssetInput = isAssetAddress(inputAssetId, baseAssetId);
+  const nonBaseAsset = isBaseAssetInput ? outputAssetId : inputAssetId;
+  const reserves = [...payload.reserves.xyk[nonBaseAsset]];
+
+  return reserves.every((tokenReserve) => !!Number(tokenReserve));
+};
+
+// step_quote
 export const xykStepQuote = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
