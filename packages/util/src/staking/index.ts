@@ -525,26 +525,26 @@ export class StakingModule<T> {
     };
   }
 
-    /**
+  /**
    * Get nominators reward
    * @returns nominators reward
    */
-    public async getNominatorsReward(address: string): Promise<NominatorReward> {
-      const stakerRewards = await this.root.api.derive.staking.stakerRewards(address);
+  public async getNominatorsReward(address: string): Promise<NominatorReward> {
+    const stakerRewards = await this.root.api.derive.staking.stakerRewards(address);
 
-      return stakerRewards.map(({ era, validators: _validators }) => {
-        const validators = Object.entries(_validators).map(([address, { value }]) => ({
-          address,
-          value: FPNumber.fromCodecValue(value.toString(), VAL.decimals).toString(),
-        }));
+    return stakerRewards.map(({ era, validators: _validators }) => {
+      const validators = Object.entries(_validators).map(([address, { value }]) => ({
+        address,
+        value: FPNumber.fromCodecValue(value.toString(), VAL.decimals).toString(),
+      }));
 
-        return {
-          era: era.toString(),
-          sumRewards: validators.reduce((sum, { value }) => sum.add(new FPNumber(value)), FPNumber.ZERO).toString(),
-          validators,
-        };
-      });
-    }
+      return {
+        era: era.toString(),
+        sumRewards: validators.reduce((sum, { value }) => sum.add(new FPNumber(value)), FPNumber.ZERO).toString(),
+        validators,
+      };
+    });
+  }
 
   /**
    * Get a set of validators elected for a given era
@@ -819,7 +819,9 @@ export class StakingModule<T> {
    */
   public async payout(args: { payouts: Payouts }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
-    const transactions = args.payouts.map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era))).flat();
+    const transactions = args.payouts
+      .map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era)))
+      .flat();
     const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
 
     return this.root.submitExtrinsic(call, pair, {
