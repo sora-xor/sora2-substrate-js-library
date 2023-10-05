@@ -1,7 +1,7 @@
 import { api } from '@sora-substrate/util';
-
-import { delay, withConnectedAccount } from './examples/util';
 import { Side } from '@sora-substrate/util/orderBook/types';
+
+import { delay, withConnectedAccount } from './util';
 
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {
