@@ -2,7 +2,6 @@ import { api } from '@sora-substrate/util';
 
 import { delay, withConnectedAccount } from './examples/util';
 import { Side } from '@sora-substrate/util/orderBook/types';
-import { DexId } from '@sora-substrate/util/dex/consts';
 
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {
@@ -10,9 +9,8 @@ async function main(): Promise<void> {
     const val = '0x0200040000000000000000000000000000000000000000000000000000000000';
     const account = 'cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm';
 
-    await api.orderBook.getOrderBooks();
-
-    console.log('api.orderBook.orderBooks', api.orderBook.orderBooks);
+    const orderBooks = await api.orderBook.getOrderBooks();
+    console.log('orderBooks', orderBooks);
 
     await api.orderBook.getUserOrderBooks(account);
 

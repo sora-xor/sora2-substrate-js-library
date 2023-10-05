@@ -3,7 +3,7 @@ import type { Api } from '../api';
 import { map } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
 import { Operation } from '../BaseApi';
-import { LimitOrder, Side, Value } from './types';
+import type { LimitOrder, OrderBook, Side, Value } from './types';
 import { MAX_TIMESTAMP } from './consts';
 
 import type { Observable } from '@polkadot/types/types';
@@ -11,14 +11,11 @@ import type { Observable } from '@polkadot/types/types';
 export class OrderBookModule<T> {
   constructor(private readonly root: Api<T>) {}
 
-  public orderBooks = {}; // remove
-  public userOrderBooks: Array<string> = []; // remove
-
   /**
    * Get order books and set to public orderBooks object
    *
    */
-  public async getOrderBooks(): Promise<void> {
+  public async getOrderBooks(): Promise<OrderBook> {
     const toKey = (address) => address.code.toString();
 
     const entries = await this.root.api.query.orderBook.orderBooks.entries();
@@ -43,17 +40,16 @@ export class OrderBookModule<T> {
       };
 
       return buffer;
-    }, {});
+    }, {}) as OrderBook;
 
-    this.orderBooks = orderBooks;
-    // return;
+    return orderBooks;
   }
 
   /**
    * Get user's order book addresses and set to public userOrderBooks array
    *
    */
-  public async getUserOrderBooks(account: string): Promise<void> {
+  public async getUserOrderBooks(account: string): Promise<string[]> {
     const toKey = (address) => address.code.toString();
 
     const userOrderBooksIds = [];
@@ -63,8 +59,7 @@ export class OrderBookModule<T> {
       userOrderBooksIds.push(toKey(book.toHuman()[1].base) + toKey(book.toHuman()[1].quote));
     });
 
-    this.userOrderBooks = userOrderBooksIds;
-    // return
+    return userOrderBooksIds;
   }
 
   /**
@@ -73,12 +68,7 @@ export class OrderBookModule<T> {
    * @returns array of book addresses the user is in
    */
   public subscribeOnUserOrderBooks(account: string): Observable<Promise<string[]>> {
-    return this.root.system.getBlockNumberObservable().pipe(
-      map(async () => {
-        await this.getUserOrderBooks(account);
-        return this.userOrderBooks;
-      })
-    );
+    return this.root.system.getBlockNumberObservable().pipe(map(() => this.getUserOrderBooks(account)));
   }
 
   /**

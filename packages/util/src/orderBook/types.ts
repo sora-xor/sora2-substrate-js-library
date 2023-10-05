@@ -1,3 +1,4 @@
+import { FPNumber } from '@sora-substrate/math';
 import type { History } from '../BaseApi';
 
 export enum OrderBookStatus {
@@ -40,6 +41,22 @@ export interface LimitOrder {
   readonly time: string;
   readonly lifespan: string;
   readonly expiresAt: string;
+}
+
+export interface OrderBook {
+  readonly orderBookId: OrderBookId;
+  readonly status: OrderBookStatus;
+  readonly lastOrderId: number;
+  readonly tickSize: FPNumber;
+  readonly stepLotSize: FPNumber;
+  readonly minLotSize: FPNumber;
+  readonly maxLotSize: FPNumber;
+}
+
+export interface OrderBookId {
+  dexId: number;
+  base: string;
+  quote: string;
 }
 
 export interface LimitOrderHistory extends History {
