@@ -15,14 +15,13 @@ export class OrderBookModule<T> {
    * Get order books and set to public orderBooks object
    *
    */
-  public async getOrderBooks(): Promise<OrderBook> {
+  public async getOrderBooks(): Promise<Record<string, OrderBook>> {
     const toKey = (address) => address.code.toString();
 
     const entries = await this.root.api.query.orderBook.orderBooks.entries();
 
     const orderBooks = entries.reduce((buffer, [key, value]) => {
-      if (!value.isSome) return {};
-      const orderBook = key.args[0].toJSON();
+      if (!value.isSome) return buffer;
       const meta = value.unwrap();
       const { orderBookId, status, lastOrderId, tickSize, stepLotSize, minLotSize, maxLotSize } = meta;
       const orderBookData = orderBookId.toJSON();
@@ -30,7 +29,7 @@ export class OrderBookModule<T> {
       const quote = orderBookData.quote;
 
       buffer[toKey(base) + toKey(quote)] = {
-        orderBook,
+        orderBookId,
         status: status.toString(),
         lastOrderId: lastOrderId.toNumber(),
         tickSize: this.getValueFromJson(tickSize as unknown as Value),
@@ -40,7 +39,7 @@ export class OrderBookModule<T> {
       };
 
       return buffer;
-    }, {}) as OrderBook;
+    }, {});
 
     return orderBooks;
   }
