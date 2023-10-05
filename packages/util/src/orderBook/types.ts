@@ -23,21 +23,16 @@ export enum OrderBookStatus {
 
 export type Side = 'Buy' | 'Sell';
 
-export interface Value {
-  isDivisible: boolean;
-  inner: string;
-}
-
 export interface LimitOrder {
   readonly id: number;
   readonly owner: string;
   readonly side: Side;
-  readonly price: Value;
-  readonly originalAmount: Value;
-  readonly amount: Value;
-  readonly time: string;
-  readonly lifespan: string;
-  readonly expiresAt: string;
+  readonly price: FPNumber;
+  readonly originalAmount: FPNumber;
+  readonly amount: FPNumber;
+  readonly time: number;
+  readonly lifespan: number;
+  readonly expiresAt: number;
 }
 
 export interface OrderBook {
@@ -60,5 +55,5 @@ export interface LimitOrderHistory extends History {
   price?: string;
   side?: Side;
   limitOrderTimestamp?: number;
-  limitOrderIds?: number | number[];
+  limitOrderIds?: number[];
 }
