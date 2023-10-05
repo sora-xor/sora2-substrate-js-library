@@ -7,6 +7,7 @@ import { LimitOrder, Side, Value } from './types';
 import { MAX_TIMESTAMP } from './consts';
 
 import type { Observable } from '@polkadot/types/types';
+import type { DexId } from '../dex/consts';
 
 export class OrderBookModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -83,8 +84,8 @@ export class OrderBookModule<T> {
    * Get mappings price to amount of asks
    * @param orderBookId base and quote addresses
    */
-  public getAggregatedAsks(base: string, quote: string): Observable<Array<[]>> {
-    return this.root.apiRx.query.orderBook.aggregatedAsks({ dexId: 0, base, quote }).pipe(
+  public getAggregatedAsks(dexId: DexId, base: string, quote: string): Observable<Array<[]>> {
+    return this.root.apiRx.query.orderBook.aggregatedAsks({ dexId, base, quote }).pipe(
       map((data) => {
         const priceAmountMapping = data.toJSON() as any;
         let asks = [];
@@ -105,8 +106,8 @@ export class OrderBookModule<T> {
    * Get mappings price to amount of bids
    * @param orderBookId base and quote addresses
    */
-  public getAggregatedBids(base: string, quote: string): Observable<Array<[]>> {
-    return this.root.apiRx.query.orderBook.aggregatedBids({ dexId: 0, base, quote }).pipe(
+  public getAggregatedBids(dexId: DexId, base: string, quote: string): Observable<Array<[]>> {
+    return this.root.apiRx.query.orderBook.aggregatedBids({ dexId, base, quote }).pipe(
       map((data) => {
         const priceAmountMapping = data.toJSON() as any;
         let bids = [];
@@ -138,9 +139,9 @@ export class OrderBookModule<T> {
    * @param orderBookId base and quote addresses
    * @param account account address
    */
-  public getUserLimitOrdersIds(base: string, quote: string, account: string): Observable<Array<number>> {
+  public getUserLimitOrdersIds(dexId: DexId, base: string, quote: string, account: string): Observable<Array<number>> {
     return this.root.apiRx.query.orderBook
-      .userLimitOrders(account, { dexId: 0, base, quote })
+      .userLimitOrders(account, { dexId, base, quote })
       .pipe(map((ids) => ids.toJSON() as Array<number>));
   }
 
@@ -150,8 +151,8 @@ export class OrderBookModule<T> {
    * @param id limit order id
    * @returns formatted limit order info
    */
-  public async getLimitOrder(base: string, quote: string, id: number): Promise<LimitOrder> {
-    const order = (await this.root.api.query.orderBook.limitOrders({ dexId: 0, base, quote }, id)).toJSON() as any;
+  public async getLimitOrder(dexId: DexId, base: string, quote: string, id: number): Promise<LimitOrder> {
+    const order = (await this.root.api.query.orderBook.limitOrders({ dexId, base, quote }, id)).toJSON() as any;
 
     if (!order) return null;
 
@@ -172,6 +173,7 @@ export class OrderBookModule<T> {
    * @param timestamp order expiration
    */
   public placeLimitOrder(
+    dexId: DexId,
     base: string,
     quote: string,
     price: string,
@@ -180,7 +182,7 @@ export class OrderBookModule<T> {
     timestamp = MAX_TIMESTAMP
   ): Promise<T> {
     return this.root.submitExtrinsic(
-      this.root.api.tx.orderBook.placeLimitOrder({ dexId: 0, base, quote }, price, amount, side, timestamp),
+      this.root.api.tx.orderBook.placeLimitOrder({ dexId, base, quote }, price, amount, side, timestamp),
       this.root.account.pair,
       {
         type: Operation.PlaceLimitOrder,
