@@ -13,6 +13,10 @@ export class OrderBookModule<T> {
   public orderBooks = {};
   public userOrderBooks: Array<string> = [];
 
+  /**
+   * Get order books and set to public orderBooks object
+   *
+   */
   public async getOrderBooks(): Promise<void> {
     const toKey = (address) => address.code.toString();
 
@@ -41,6 +45,10 @@ export class OrderBookModule<T> {
     this.orderBooks = orderBooks;
   }
 
+  /**
+   * Get user's order book addresses and set to public userOrderBooks array
+   *
+   */
   public async getUserOrderBooks(account: string): Promise<void> {
     const toKey = (address) => address.code.toString();
 
@@ -54,6 +62,11 @@ export class OrderBookModule<T> {
     this.userOrderBooks = userOrderBooksIds;
   }
 
+  /**
+   * Creates a subscription that relies on block emitting
+   * @param account account address
+   * @returns array of book addresses the user is in
+   */
   public subscribeOnUserOrderBooks(account: string): Observable<Promise<String[]>> {
     return this.root.system.getBlockNumberObservable().pipe(
       map(async () => {
@@ -63,6 +76,10 @@ export class OrderBookModule<T> {
     );
   }
 
+  /**
+   * Get mappings price to amount of asks
+   * @param orderBookId base and quote addresses
+   */
   public getAggregatedAsks(base: string, quote: string): Observable<Array<[]>> {
     return this.root.apiRx.query.orderBook.aggregatedAsks({ dexId: 0, base, quote }).pipe(
       map((data) => {
@@ -81,6 +98,10 @@ export class OrderBookModule<T> {
     );
   }
 
+  /**
+   * Get mappings price to amount of bids
+   * @param orderBookId base and quote addresses
+   */
   public getAggregatedBids(base: string, quote: string): Observable<Array<[]>> {
     return this.root.apiRx.query.orderBook.aggregatedBids({ dexId: 0, base, quote }).pipe(
       map((data) => {
@@ -109,12 +130,23 @@ export class OrderBookModule<T> {
     return FPNumber.fromCodecValue(value.inner, decimals);
   }
 
+  /**
+   * Get user's limit order ids
+   * @param orderBookId base and quote addresses
+   * @param account account address
+   */
   public getUserLimitOrdersIds(base: string, quote: string, account: string): Observable<Array<number>> {
     return this.root.apiRx.query.orderBook
       .userLimitOrders(account, { dexId: 0, base, quote })
       .pipe(map((ids) => ids.toJSON() as Array<number>));
   }
 
+  /**
+   * Get user's limit order info
+   * @param orderBookId base and quote addresses
+   * @param id limit order id
+   * @returns formatted limit order info
+   */
   public async getLimitOrder(base: string, quote: string, id: number): Promise<LimitOrder> {
     const order = (await this.root.api.query.orderBook.limitOrders({ dexId: 0, base, quote }, id)).toJSON() as any;
 
@@ -126,31 +158,49 @@ export class OrderBookModule<T> {
     };
   }
 
-  public async placeLimitOrder(
+  /**
+   * Place limit order
+   * @param orderBookId base and quote addresses
+   * @param price order price
+   * @param amount order amount
+   * @param side buy or sell
+   * @param timestamp order expiration
+   */
+  public placeLimitOrder(
     base: string,
     quote: string,
     price: string,
     amount: string,
     side: Side,
-    timestamp: string
-  ): Promise<void> {
-    await this.root.submitExtrinsic(
+    timestamp = MAX_TIMESTAMP
+  ): Promise<T> {
+    return this.root.submitExtrinsic(
       this.root.api.tx.orderBook.placeLimitOrder({ dexId: 0, base, quote }, price, amount, side, timestamp),
       this.root.account.pair,
       {} as HistoryItem
     );
   }
 
-  public async cancelLimitOrder(base: string, quote: string, orderId: number): Promise<void> {
-    await this.root.submitExtrinsic(
+  /**
+   * Cancel one limit order by id
+   * @param orderBookId base and quote addresses
+   * @param orderId number
+   */
+  public cancelLimitOrder(base: string, quote: string, orderId: number): Promise<T> {
+    return this.root.submitExtrinsic(
       this.root.api.tx.orderBook.cancelLimitOrder({ dexId: 0, base, quote }, orderId),
       this.root.account.pair,
       {} as HistoryItem
     );
   }
 
-  public async cancelLimitOrderBatch(base: string, quote: string, orderIds: number[]): Promise<void> {
-    await this.root.submitExtrinsic(
+  /**
+   * Cancel several limit orders at once
+   * @param orderBookId base and quote addresses
+   * @param orderIds array ids
+   */
+  public cancelLimitOrderBatch(base: string, quote: string, orderIds: number[]): Promise<T> {
+    return this.root.submitExtrinsic(
       this.root.api.tx.orderBook.cancelLimitOrdersBatch([[{ dexId: 0, base, quote }, orderIds]]),
       this.root.account.pair,
       {} as HistoryItem
