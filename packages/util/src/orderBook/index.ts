@@ -2,7 +2,7 @@ import type { Api } from '../api';
 
 import { map } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
-import { HistoryItem, Operation } from '../BaseApi';
+import { Operation } from '../BaseApi';
 import { LimitOrder, Side, Value } from './types';
 import { MAX_TIMESTAMP } from './consts';
 
@@ -58,7 +58,7 @@ export class OrderBookModule<T> {
     const userOrderBooksIds = [];
 
     const entries = await this.root.api.query.orderBook.userLimitOrders.entries(account);
-    entries.map(([book]) => {
+    entries.forEach(([book]) => {
       userOrderBooksIds.push(toKey(book.toHuman()[1].base) + toKey(book.toHuman()[1].quote));
     });
 
@@ -70,7 +70,7 @@ export class OrderBookModule<T> {
    * @param account account address
    * @returns array of book addresses the user is in
    */
-  public subscribeOnUserOrderBooks(account: string): Observable<Promise<String[]>> {
+  public subscribeOnUserOrderBooks(account: string): Observable<Promise<string[]>> {
     return this.root.system.getBlockNumberObservable().pipe(
       map(async () => {
         await this.getUserOrderBooks(account);

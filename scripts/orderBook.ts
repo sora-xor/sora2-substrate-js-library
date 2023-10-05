@@ -15,10 +15,6 @@ async function main(): Promise<void> {
 
     await api.orderBook.getUserOrderBooks(account);
 
-    // api.orderBook.subscribeOnUserOrderBooks(account).subscribe(async (ids) => {
-    //   console.log('ids', await ids);
-    // });
-
     api.orderBook.getUserLimitOrdersIds(val, xor, account).subscribe((ids) => {
       console.log('ids', ids);
     });
@@ -37,7 +33,6 @@ async function main(): Promise<void> {
     const price = '1100000000000000000';
     const amount = '100000000000000000000';
     const side: Side = 'Buy';
-    const timestamp = Date.now().toString().slice(0, -3);
 
     await api.orderBook.placeLimitOrder(val, xor, price, amount, side);
 
