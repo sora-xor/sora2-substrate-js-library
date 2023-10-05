@@ -2,7 +2,7 @@ import type { Api } from '../api';
 
 import { map } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
-import { HistoryItem } from '../BaseApi';
+import { HistoryItem, Operation } from '../BaseApi';
 import { LimitOrder, Side, Value } from './types';
 import { MAX_TIMESTAMP } from './consts';
 
@@ -182,7 +182,15 @@ export class OrderBookModule<T> {
     return this.root.submitExtrinsic(
       this.root.api.tx.orderBook.placeLimitOrder({ dexId: 0, base, quote }, price, amount, side, timestamp),
       this.root.account.pair,
-      {} as HistoryItem
+      {
+        type: Operation.PlaceLimitOrder,
+        assetAddress: base,
+        asset2Address: quote,
+        price,
+        amount,
+        side,
+        limitOrderTimestamp: timestamp,
+      }
     );
   }
 
@@ -195,7 +203,12 @@ export class OrderBookModule<T> {
     return this.root.submitExtrinsic(
       this.root.api.tx.orderBook.cancelLimitOrder({ dexId: 0, base, quote }, orderId),
       this.root.account.pair,
-      {} as HistoryItem
+      {
+        type: Operation.CancelLimitOrder,
+        assetAddress: base,
+        asset2Address: quote,
+        limitOrderIds: orderId,
+      }
     );
   }
 
@@ -208,7 +221,12 @@ export class OrderBookModule<T> {
     return this.root.submitExtrinsic(
       this.root.api.tx.orderBook.cancelLimitOrdersBatch([[{ dexId: 0, base, quote }, orderIds]]),
       this.root.account.pair,
-      {} as HistoryItem
+      {
+        type: Operation.CancelLimitOrders,
+        assetAddress: base,
+        asset2Address: quote,
+        limitOrderIds: orderIds,
+      }
     );
   }
 }

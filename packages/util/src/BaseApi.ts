@@ -23,6 +23,7 @@ import type { EvmHistory } from './bridgeProxy/evm/types';
 import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 import type { OriginalIdentity, StakingHistory } from './staking/types';
+import type { LimitOrderHistory } from './orderBook/types';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -45,7 +46,7 @@ export type NetworkFeesObject = {
 
 export type IBridgeTransaction = EvmHistory | SubHistory | EthHistory;
 
-export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory | StakingHistory;
+export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory | StakingHistory | LimitOrderHistory;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
@@ -745,6 +746,10 @@ export enum Operation {
   DemeterFarmingGetRewards = 'DemeterFarmingGetRewards',
   /** Ceres Liquidity Locker  */
   CeresLiquidityLockerLockLiquidity = 'CeresLiquidityLockerLockLiquidity',
+  /** Order Book */
+  PlaceLimitOrder = 'PlaceLimitOrder',
+  CancelLimitOrder = 'CancelLimitOrder',
+  CancelLimitOrders = 'CancelLimitOrders',
 }
 
 export interface History {

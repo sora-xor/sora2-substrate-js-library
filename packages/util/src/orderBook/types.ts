@@ -1,3 +1,5 @@
+import type { History } from '../BaseApi';
+
 export enum OrderBookStatus {
   /**
    * All operations are allowed
@@ -38,4 +40,11 @@ export interface LimitOrder {
   readonly time: string;
   readonly lifespan: string;
   readonly expiresAt: string;
+}
+
+export interface LimitOrderHistory extends History {
+  price?: string;
+  side?: Side;
+  limitOrderTimestamp?: number;
+  limitOrderIds?: number | number[];
 }
