@@ -1,4 +1,4 @@
-@Library('jenkins-library@duty/fix_types_pipeline') _
+@Library('jenkins-library@duty/update_types_conditions') _
 
 def pipeline = new org.js.LibPipeline(
     steps: this,
