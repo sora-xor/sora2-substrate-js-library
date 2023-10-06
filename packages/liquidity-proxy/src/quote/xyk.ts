@@ -15,7 +15,7 @@ export const getXykReserves = (
   const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
   const nonBaseAsset = isBaseAssetInput ? outputAsset : inputAsset;
   const reserves = [...payload.reserves.xyk[nonBaseAsset]];
-  const [input, output] = isBaseAssetInput ? reserves : reserves.reverse();
+  const [input, output] = isBaseAssetInput ? reserves : reserves.toReversed();
 
   return [toFp(input), toFp(output)];
 };
