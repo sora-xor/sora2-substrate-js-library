@@ -3,7 +3,7 @@ import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, cryptoWaitReady } f
 import { Keyring } from '@polkadot/ui-keyring';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KeypairType } from '@polkadot/util-crypto/types';
-import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
+import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
