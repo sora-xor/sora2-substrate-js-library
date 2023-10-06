@@ -1,5 +1,6 @@
 import type { FPNumber, CodecString, NumberLike } from '@sora-substrate/math';
 import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
+import type { OrderBookAggregated } from './quote/orderBook/types';
 
 export type PrimaryMarketsEnabledAssets = {
   tbc: string[];
@@ -10,7 +11,6 @@ export type PrimaryMarketsEnabledAssets = {
       feeRatio: FPNumber;
     }
   >;
-  lockedSources: Array<LiquiditySourceTypes>;
 };
 
 export interface LPRewardsInfo {
@@ -70,6 +70,8 @@ export type OracleRate = {
 
 export type QuotePayload = {
   enabledAssets: PrimaryMarketsEnabledAssets;
+  enabledSources: Array<LiquiditySourceTypes>;
+  lockedSources: Array<LiquiditySourceTypes>;
   sources: PathsAndPairLiquiditySources;
   rates: Record<string, OracleRate>;
   reserves: {
@@ -78,6 +80,9 @@ export type QuotePayload = {
     };
     tbc: {
       [key: string]: CodecString;
+    };
+    orderBook: {
+      [key: string]: OrderBookAggregated | null;
     };
   };
   prices: {

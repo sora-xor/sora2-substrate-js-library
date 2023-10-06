@@ -4,6 +4,8 @@ import { XOR, XST } from '../assets/consts';
 import type { Api } from '../api';
 import type { DexInfo } from './types';
 
+import { LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
+
 export class DexModule<T> {
   constructor(private readonly root: Api<T>) {}
 
@@ -12,6 +14,8 @@ export class DexModule<T> {
   public static defaultSyntheticAssetId = XST.address;
 
   public dexList: DexInfo[] = [];
+  public lockedSources: LiquiditySourceTypes[] = [];
+  public enabledSources: LiquiditySourceTypes[] = [];
 
   get publicDexes(): DexInfo[] {
     return this.dexList.filter((dex) => !!dex.isPublic);
@@ -23,6 +27,10 @@ export class DexModule<T> {
 
   get baseAssetsIds(): string[] {
     return this.dexList.map((item) => item.baseAssetId);
+  }
+
+  public async update(): Promise<void> {
+    await Promise.allSettled([this.updateList(), this.updateEnabledSources(), this.updateLockedSources()]);
   }
 
   public async updateList(): Promise<void> {
@@ -37,6 +45,18 @@ export class DexModule<T> {
 
       return { dexId, baseAssetId, syntheticBaseAssetId, isPublic };
     });
+  }
+
+  public async updateLockedSources(): Promise<void> {
+    const sources = await this.root.api.query.tradingPair.lockedLiquiditySources();
+
+    this.lockedSources = sources.map((source) => source.toString() as LiquiditySourceTypes);
+  }
+
+  public async updateEnabledSources(): Promise<void> {
+    const sources = await this.root.api.query.dexapi.enabledSourceTypes();
+
+    this.enabledSources = sources.map((source) => source.toString() as LiquiditySourceTypes);
   }
 
   public getDexId(baseAssetId: string): number {

@@ -2,11 +2,21 @@ import { map } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
 import { Operation } from '../BaseApi';
 import { MAX_TIMESTAMP } from './consts';
+import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
+import type { OrderBook, OrderBookPriceAmount } from '@sora-substrate/liquidity-proxy';
 
 import type { Observable } from '@polkadot/types/types';
-import type { CommonBalanceUnit, CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
+import type { Option } from '@polkadot/types-codec';
+import type {
+  CommonBalanceUnit,
+  CommonPrimitivesAssetId32,
+  CommonPrimitivesPriceVariant,
+  OrderBookOrderBookStatus,
+  OrderBook as OrderBookStruct,
+} from '@polkadot/types/lookup';
+
 import type { Api } from '../api';
-import type { LimitOrder, OrderBook, Side } from './types';
+import type { LimitOrder } from './types';
 
 const toAssetId = (asset: CommonPrimitivesAssetId32) => asset.code.toString();
 
@@ -14,6 +24,42 @@ function toFP(value: CommonBalanceUnit): FPNumber {
   const decimals = value.isDivisible.isTrue ? FPNumber.DEFAULT_PRECISION : 0;
   return FPNumber.fromCodecValue(value.inner.toString(), decimals);
 }
+
+const getStatus = (status: OrderBookOrderBookStatus): OrderBookStatus => {
+  if (status.isTrade) return OrderBookStatus.Trade;
+  if (status.isPlaceAndCancel) return OrderBookStatus.PlaceAndCancel;
+  if (status.isOnlyCancel) return OrderBookStatus.OnlyCancel;
+
+  return OrderBookStatus.Stop;
+};
+
+const getPriceVariant = (variant: CommonPrimitivesPriceVariant): PriceVariant => {
+  if (variant.isBuy) {
+    return PriceVariant.Buy;
+  } else {
+    return PriceVariant.Sell;
+  }
+};
+
+const formatOrderBookOption = (option: Option<OrderBookStruct>): OrderBook | null => {
+  if (!option.isSome) return null;
+
+  const { orderBookId, status, lastOrderId, tickSize, stepLotSize, minLotSize, maxLotSize } = option.unwrap();
+
+  const dexId = orderBookId.dexId.toNumber();
+  const base = toAssetId(orderBookId.base);
+  const quote = toAssetId(orderBookId.quote);
+
+  return {
+    orderBookId: { dexId, base, quote },
+    status: getStatus(status),
+    lastOrderId: lastOrderId.toNumber(),
+    tickSize: toFP(tickSize),
+    stepLotSize: toFP(stepLotSize),
+    minLotSize: toFP(minLotSize),
+    maxLotSize: toFP(maxLotSize),
+  };
+};
 
 export class OrderBookModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -37,22 +83,13 @@ export class OrderBookModule<T> {
     const entries = await this.root.api.query.orderBook.orderBooks.entries();
 
     const orderBooks: Record<string, OrderBook> = entries.reduce((buffer, [_, value]) => {
-      if (!value.isSome) return buffer;
+      const book = formatOrderBookOption(value);
 
-      const meta = value.unwrap();
-      const { orderBookId, status, lastOrderId, tickSize, stepLotSize, minLotSize, maxLotSize } = meta;
-      const base = toAssetId(orderBookId.base);
-      const quote = toAssetId(orderBookId.quote);
+      if (!book) return buffer;
 
-      buffer[this.serializedKey(base, quote)] = {
-        orderBookId,
-        status: status.toString(),
-        lastOrderId: lastOrderId.toNumber(),
-        tickSize: toFP(tickSize),
-        stepLotSize: toFP(stepLotSize),
-        minLotSize: toFP(minLotSize),
-        maxLotSize: toFP(maxLotSize),
-      };
+      const { base, quote } = book.orderBookId;
+
+      buffer[this.serializedKey(base, quote)] = book;
 
       return buffer;
     }, {});
@@ -82,12 +119,24 @@ export class OrderBookModule<T> {
   }
 
   /**
+   * Get observable order book data
+   * @param orderBookId base and quote addresses
+   */
+  public getOrderBookObservable(base: string, quote: string): Observable<OrderBook | null> {
+    const dexId = this.root.dex.getDexId(quote);
+
+    return this.root.apiRx.query.orderBook
+      .orderBooks({ dexId, base, quote })
+      .pipe(map((option) => formatOrderBookOption(option)));
+  }
+
+  /**
    * Get mappings price to amount of asks
    *
    * Represented as **[[price, amount], [price, amount], ...]**
    * @param orderBookId base and quote addresses
    */
-  public subscribeOnAggregatedAsks(base: string, quote: string): Observable<Array<[FPNumber, FPNumber]>> {
+  public subscribeOnAggregatedAsks(base: string, quote: string): Observable<Array<OrderBookPriceAmount>> {
     const dexId = this.root.dex.getDexId(quote);
     return this.root.apiRx.query.orderBook.aggregatedAsks({ dexId, base, quote }).pipe(
       map((data) => {
@@ -110,7 +159,7 @@ export class OrderBookModule<T> {
    * Represented as **[[price, amount], [price, amount], ...]**
    * @param orderBookId base and quote addresses
    */
-  public subscribeOnAggregatedBids(base: string, quote: string): Observable<Array<[FPNumber, FPNumber]>> {
+  public subscribeOnAggregatedBids(base: string, quote: string): Observable<Array<OrderBookPriceAmount>> {
     const dexId = this.root.dex.getDexId(quote);
     return this.root.apiRx.query.orderBook.aggregatedBids({ dexId, base, quote }).pipe(
       map((data) => {
@@ -158,7 +207,7 @@ export class OrderBookModule<T> {
       lifespan: order.lifespan.toNumber(),
       time: order.time.toNumber(),
       owner: order.owner.toString(),
-      side: order.side.toString() as Side,
+      side: getPriceVariant(order.side),
       price: toFP(order.price),
       amount: toFP(order.amount),
       originalAmount: toFP(order.originalAmount),
@@ -178,7 +227,7 @@ export class OrderBookModule<T> {
     quote: string,
     price: string,
     amount: string,
-    side: Side,
+    side: PriceVariant,
     timestamp = MAX_TIMESTAMP
   ): Promise<T> {
     const dexId = this.root.dex.getDexId(quote);

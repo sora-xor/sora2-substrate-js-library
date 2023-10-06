@@ -149,7 +149,7 @@ const getAssetLiquiditySources = (
   };
 
   return Object.entries(rules).reduce((acc: LiquiditySourceTypes[], [source, rule]) => {
-    if (!enabledAssets.lockedSources.includes(source as LiquiditySourceTypes) && rule()) {
+    if (rule()) {
       acc.push(source as LiquiditySourceTypes);
     }
     return acc;
@@ -455,7 +455,7 @@ const quoteSingle = (
     baseAssetId,
     selectedSources
   );
-  const sources = allSources.filter((source) => !payload.enabledAssets.lockedSources.includes(source));
+  const sources = allSources.filter((source) => !payload.lockedSources.includes(source));
 
   if (!sources.length) {
     throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAsset}, ${outputAsset}]`);

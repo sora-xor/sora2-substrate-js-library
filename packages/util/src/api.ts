@@ -147,8 +147,8 @@ export class Api<T = void> extends BaseApi<T> {
       await this.restoreActiveAccount();
     }
 
-    // Update available dex list
-    await this.dex.updateList();
+    // Update dex data
+    await this.dex.update();
   }
 
   /**
