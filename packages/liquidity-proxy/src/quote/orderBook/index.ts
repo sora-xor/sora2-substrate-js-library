@@ -4,7 +4,7 @@ import { isAssetAddress, safeQuoteResult, safeDivide, isGreaterThanZero } from '
 import { LiquiditySourceTypes, Errors, Consts, PriceVariant } from '../../consts';
 
 import type { QuotePayload, QuoteResult } from '../../types';
-import type { OrderBookId, OrderBookAggregated, OrderBookPriceAmount } from './types';
+import type { OrderBookId, OrderBook, OrderBookAggregated, OrderBookPriceAmount } from './types';
 
 type DealInfo = {
   inputAsset: string;
@@ -106,20 +106,21 @@ const getDirection = (book: OrderBookAggregated, inputAsset: string, outputAsset
   throw new Error('Invalid Assets');
 };
 
-// pub fn align_amount(&self, mut amount: OrderVolume) -> OrderVolume {
+// [TODO] check
+// align_amount
+const alignAmount = (amount: FPNumber, book: OrderBook) => {
+  const steps = safeDivide(amount, book.stepLotSize).dp(0);
+  const aligned = steps.mul(book.stepLotSize);
 
-// round to min
-
-//   let steps = amount
-//       .balance()
-//       .saturating_div(*self.step_lot_size.balance());
-//   let aligned = steps.saturating_mul(*self.step_lot_size.balance());
-//   amount.set(aligned);
-//   amount
-// }
+  return aligned;
+};
 
 // sum_market
-const sumMarket = (marketData: OrderBookPriceAmount[], depthLimit: OrderAmount | null): [OrderAmount, OrderAmount] => {
+const sumMarket = (
+  book: OrderBook,
+  marketData: OrderBookPriceAmount[],
+  depthLimit: OrderAmount | null
+): [OrderAmount, OrderAmount] => {
   let marketBaseVolume = FPNumber.ZERO;
   let marketQuoteVolume = FPNumber.ZERO;
   let enoughLiquidity = false;
@@ -132,8 +133,7 @@ const sumMarket = (marketData: OrderBookPriceAmount[], depthLimit: OrderAmount |
       if (limit.isBase) {
         let baseLimit = limit.value;
         if (FPNumber.isGreaterThan(marketBaseVolume.add(baseVolume), baseLimit)) {
-          // self.align_amount
-          let delta = baseLimit.sub(marketBaseVolume);
+          const delta = alignAmount(baseLimit.sub(marketBaseVolume), book);
           marketBaseVolume = marketBaseVolume.add(delta);
           marketQuoteVolume = marketQuoteVolume.add(price.mul(delta));
           enoughLiquidity = true;
@@ -142,8 +142,7 @@ const sumMarket = (marketData: OrderBookPriceAmount[], depthLimit: OrderAmount |
       } else {
         let quoteLimit = limit.value;
         if (FPNumber.isGreaterThan(marketQuoteVolume.add(quoteLimit), quoteLimit)) {
-          // self.align_amount
-          let delta = safeDivide(quoteLimit.sub(marketQuoteVolume), price);
+          const delta = alignAmount(safeDivide(quoteLimit.sub(marketQuoteVolume), price), book);
           marketBaseVolume = marketBaseVolume.add(delta);
           marketQuoteVolume = marketQuoteVolume.add(price.mul(delta));
           enoughLiquidity = true;
@@ -182,19 +181,31 @@ const calculateDeal = (
 
   if (isDesiredInput) {
     if (isBuyDirection) {
-      // copy_divisibility "amount"
-      [base, quote] = sumMarket(book.aggregated.asks, new OrderAmount(OrderAmountType.Quote, amount));
+      [base, quote] = sumMarket(
+        book,
+        book.aggregated.asks,
+        new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision))
+      );
     } else {
-      // copy_divisibility "amount"
-      [base, quote] = sumMarket(book.aggregated.bids, new OrderAmount(OrderAmountType.Base, amount));
+      [base, quote] = sumMarket(
+        book,
+        book.aggregated.bids,
+        new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision))
+      );
     }
   } else {
     if (isBuyDirection) {
-      // copy_divisibility "amount"
-      [base, quote] = sumMarket(book.aggregated.asks, new OrderAmount(OrderAmountType.Base, amount));
+      [base, quote] = sumMarket(
+        book,
+        book.aggregated.asks,
+        new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision))
+      );
     } else {
-      // copy_divisibility "amount"
-      [base, quote] = sumMarket(book.aggregated.bids, new OrderAmount(OrderAmountType.Quote, amount));
+      [base, quote] = sumMarket(
+        book,
+        book.aggregated.bids,
+        new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision))
+      );
     }
   }
 
