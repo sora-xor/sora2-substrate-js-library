@@ -662,6 +662,16 @@ const quoteWithoutImpactSingle = (
       value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else if (market === LiquiditySourceTypes.XSTPool) {
       value = xstQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+    } else if (market === LiquiditySourceTypes.OrderBook) {
+      value = orderBookQuoteWithoutImpact(
+        baseAssetId,
+        inputAsset,
+        outputAsset,
+        amount,
+        isDesiredInput,
+        payload,
+        deduceFee
+      );
     }
 
     return result.add(value);
