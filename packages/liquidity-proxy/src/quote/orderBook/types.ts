@@ -22,11 +22,11 @@ export type OrderBook = {
  * Bid or Ask of Order Book.
  * Represented as [price, amount]
  * */
-export type OrderBookPriceAmount = [FPNumber, FPNumber];
+export type OrderBookPriceVolume = [FPNumber, FPNumber];
 
 export type OrderBookAggregated = OrderBook & {
   aggregated: {
-    asks: Array<OrderBookPriceAmount>;
-    bids: Array<OrderBookPriceAmount>;
+    asks: Array<OrderBookPriceVolume>;
+    bids: Array<OrderBookPriceVolume>;
   };
 };

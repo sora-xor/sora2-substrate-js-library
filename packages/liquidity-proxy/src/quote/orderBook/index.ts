@@ -2,9 +2,10 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { isAssetAddress, safeQuoteResult, safeDivide, isGreaterThanZero } from '../../utils';
 import { LiquiditySourceTypes, Errors, Consts, PriceVariant } from '../../consts';
+import { OrderBookStatus } from './consts';
 
 import type { QuotePayload, QuoteResult } from '../../types';
-import type { OrderBookId, OrderBook, OrderBookAggregated, OrderBookPriceAmount } from './types';
+import type { OrderBookId, OrderBook, OrderBookAggregated, OrderBookPriceVolume } from './types';
 
 type DealInfo = {
   inputAsset: string;
@@ -76,6 +77,27 @@ class OrderAmount {
   }
 }
 
+export const orderBookCanExchange = (
+  baseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  payload: QuotePayload
+): boolean => {
+  const id = assembleOrderBookId(baseAssetId, inputAsset, outputAsset);
+
+  if (!id) return false;
+
+  const book = getOrderBook(id, payload);
+
+  if (!book) return false;
+
+  return book.status === OrderBookStatus.Trade;
+};
+
+const getOrderBook = (id: OrderBookId, payload: QuotePayload) => {
+  return payload.reserves.orderBook[id.base];
+};
+
 // assemble_order_book_id
 const assembleOrderBookId = (baseAssetId: string, inputAsset: string, outputAsset: string): OrderBookId => {
   // trick
@@ -115,10 +137,20 @@ const alignAmount = (amount: FPNumber, book: OrderBook) => {
   return aligned;
 };
 
+const bestAsk = (book: OrderBookAggregated): OrderBookPriceVolume => {
+  // let asks = data.get_aggregated_asks(&self.order_book_id);
+  // asks.iter().min().map(|(k, v)| (*k, *v))
+};
+
+const bestBid = (book: OrderBookAggregated): OrderBookPriceVolume => {
+  // let bids = data.get_aggregated_bids(&self.order_book_id);
+  // bids.iter().max().map(|(k, v)| (*k, *v))
+};
+
 // sum_market
 const sumMarket = (
   book: OrderBook,
-  marketData: OrderBookPriceAmount[],
+  marketData: OrderBookPriceVolume[],
   depthLimit: OrderAmount | null
 ): [OrderAmount, OrderAmount] => {
   let marketBaseVolume = FPNumber.ZERO;
@@ -242,11 +274,11 @@ export const orderBookQuote = (
 
     if (!id) throw new Error(Errors.UnknownOrderBook);
 
-    const orderBook = payload.reserves.orderBook[id.quote];
+    const book = getOrderBook(id, payload);
 
-    if (!orderBook) throw new Error(Errors.UnknownOrderBook);
+    if (!book) throw new Error(Errors.UnknownOrderBook);
 
-    const dealInfo = calculateDeal(orderBook, inputAsset, outputAsset, amount, isDesiredInput);
+    const dealInfo = calculateDeal(book, inputAsset, outputAsset, amount, isDesiredInput);
 
     // order-book doesn't take fee
     const fee = FPNumber.ZERO;
@@ -286,5 +318,61 @@ export const orderBookQuote = (
     }
   } catch {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.OrderBook);
+  }
+};
+
+// quote_without_impact
+export const orderBookQuoteWithoutImpact = (
+  baseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload,
+  _deduceFee = true
+): FPNumber => {
+  try {
+    const id = assembleOrderBookId(baseAssetId, inputAsset, outputAsset);
+
+    if (!id) throw new Error(Errors.UnknownOrderBook);
+
+    const book = getOrderBook(id, payload);
+
+    if (!book) throw new Error(Errors.UnknownOrderBook);
+
+    const direction = getDirection(book, inputAsset, outputAsset);
+    const isBuyDirection = direction === PriceVariant.Buy;
+
+    const bestPriceVolume = isBuyDirection ? bestAsk(book) : bestBid(book);
+
+    if (!bestPriceVolume) {
+      throw new Error(Errors.NotEnoughLiquidityInOrderBook);
+    }
+
+    const [price] = bestPriceVolume;
+
+    let targetAmount!: FPNumber;
+
+    if (isDesiredInput) {
+      if (isBuyDirection) {
+        targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
+      } else {
+        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
+      }
+    } else {
+      if (isBuyDirection) {
+        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
+      } else {
+        targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
+      }
+    }
+
+    if (!isGreaterThanZero(targetAmount)) {
+      throw new Error(Errors.InvalidOrderAmount);
+    }
+
+    return targetAmount;
+  } catch {
+    return FPNumber.ZERO;
   }
 };

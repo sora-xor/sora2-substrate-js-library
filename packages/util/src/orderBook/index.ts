@@ -3,7 +3,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { Operation } from '../BaseApi';
 import { MAX_TIMESTAMP } from './consts';
 import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
-import type { OrderBook, OrderBookPriceAmount } from '@sora-substrate/liquidity-proxy';
+import type { OrderBook, OrderBookPriceVolume } from '@sora-substrate/liquidity-proxy';
 
 import type { Observable } from '@polkadot/types/types';
 import type { Option } from '@polkadot/types-codec';
@@ -136,7 +136,7 @@ export class OrderBookModule<T> {
    * Represented as **[[price, amount], [price, amount], ...]**
    * @param orderBookId base and quote addresses
    */
-  public subscribeOnAggregatedAsks(base: string, quote: string): Observable<Array<OrderBookPriceAmount>> {
+  public subscribeOnAggregatedAsks(base: string, quote: string): Observable<Array<OrderBookPriceVolume>> {
     const dexId = this.root.dex.getDexId(quote);
     return this.root.apiRx.query.orderBook.aggregatedAsks({ dexId, base, quote }).pipe(
       map((data) => {
@@ -159,7 +159,7 @@ export class OrderBookModule<T> {
    * Represented as **[[price, amount], [price, amount], ...]**
    * @param orderBookId base and quote addresses
    */
-  public subscribeOnAggregatedBids(base: string, quote: string): Observable<Array<OrderBookPriceAmount>> {
+  public subscribeOnAggregatedBids(base: string, quote: string): Observable<Array<OrderBookPriceVolume>> {
     const dexId = this.root.dex.getDexId(quote);
     return this.root.apiRx.query.orderBook.aggregatedBids({ dexId, base, quote }).pipe(
       map((data) => {
