@@ -9,6 +9,7 @@ import {
   tbcCheckRewards,
 } from '../multicollateralBoundingCurvePool';
 import { xstCanExchange, xstQuote, xstQuoteWithoutImpact, xstStepQuote, xstCheckRewards } from '../xst';
+import { orderBookCanExchange, orderBookQuote, orderBookQuoteWithoutImpact } from '../orderBook';
 
 export class LiquidityRegistry {
   public static canExchange(source: LiquiditySourceTypes) {
@@ -19,6 +20,8 @@ export class LiquidityRegistry {
         return tbcCanExchange;
       case LiquiditySourceTypes.XSTPool:
         return xstCanExchange;
+      case LiquiditySourceTypes.OrderBook:
+        return orderBookCanExchange;
       default:
         throw new Error(Errors.UnsupportedLiquiditySource);
     }
@@ -32,6 +35,8 @@ export class LiquidityRegistry {
         return tbcQuote;
       case LiquiditySourceTypes.XSTPool:
         return xstQuote;
+      case LiquiditySourceTypes.OrderBook:
+        return orderBookQuote;
       default:
         throw new Error(Errors.UnsupportedLiquiditySource);
     }
@@ -45,6 +50,8 @@ export class LiquidityRegistry {
         return tbcQuoteWithoutImpact;
       case LiquiditySourceTypes.XSTPool:
         return xstQuoteWithoutImpact;
+      case LiquiditySourceTypes.OrderBook:
+        return orderBookQuoteWithoutImpact;
       default:
         throw new Error(Errors.UnsupportedLiquiditySource);
     }

@@ -17,6 +17,7 @@ import type {
   SwapResult,
   SwapQuote,
   OracleRate,
+  OrderBookAggregated,
 } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
 import type {
@@ -109,8 +110,35 @@ const toBandRate = (o: Observable<Option<BandBandRate>>): Observable<OracleRate>
 const toAssetIds = (data: BTreeSet<CommonPrimitivesAssetId32>): string[] =>
   [...data.values()].map((asset) => asset.code.toString());
 
-const getAssetAveragePrice = <T>(root: Api<T>, assetAddress: string): Observable<{ buy: string; sell: string }> => {
+const getAssetAveragePrice = <T>(
+  assetAddress: string,
+  root: Api<T>
+): Observable<{ [PriceVariant.Buy]: string; [PriceVariant.Sell]: string }> => {
   return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
+};
+
+const getAggregatedOrderBook = <T>(
+  assetAddress: string,
+  baseAssetId: string,
+  root: Api<T>
+): Observable<OrderBookAggregated> => {
+  return combineLatest([
+    root.orderBook.getOrderBookObservable(assetAddress, baseAssetId),
+    root.orderBook.subscribeOnAggregatedAsks(assetAddress, baseAssetId),
+    root.orderBook.subscribeOnAggregatedBids(assetAddress, baseAssetId),
+  ]).pipe(
+    map(([book, asks, bids]) => {
+      if (!book) return null;
+
+      return {
+        ...book,
+        aggregated: {
+          asks,
+          bids,
+        },
+      };
+    })
+  );
 };
 
 const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key: string]: T } =>
@@ -249,25 +277,15 @@ export class SwapModule<T> {
     }, {});
   }
 
-  public async getLockedSources(): Promise<LiquiditySourceTypes[]> {
-    const sources = await this.root.api.query.tradingPair.lockedLiquiditySources();
-    return sources.map((source) => source.toString() as LiquiditySourceTypes);
-  }
-
   /**
    * Get primary markets enabled assets observable
    */
   public async getPrimaryMarketsEnabledAssets(): Promise<PrimaryMarketsEnabledAssets> {
-    const [tbc, xst, lockedSources] = await Promise.all([
-      this.getTbcAssets(),
-      this.getXstAssets(),
-      this.getLockedSources(),
-    ]);
+    const [tbc, xst] = await Promise.all([this.getTbcAssets(), this.getXstAssets()]);
 
     return {
       tbc,
       xst,
-      lockedSources,
     };
   }
 
@@ -290,20 +308,22 @@ export class SwapModule<T> {
     const xstusd = XSTUSD.address;
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
+    const enabledSources = [...this.root.dex.enabledSources];
+    const lockedSources = [...this.root.dex.lockedSources];
 
-    const enabledAssets = isXorDex
-      ? await this.getPrimaryMarketsEnabledAssets()
-      : { tbc: [], xst: {}, lockedSources: [] };
+    const enabledAssets = isXorDex ? await this.getPrimaryMarketsEnabledAssets() : { tbc: [], xst: {} };
 
     const tbcAssets = enabledAssets?.tbc ?? [];
     const xstAssets = enabledAssets?.xst ?? {};
 
-    // is TBC or XST sources used (only for XOR Dex)
-    const isPrimaryMarketSourceUsed = (source: LiquiditySourceTypes): boolean =>
-      isXorDex && (!selectedSources.length || selectedSources.includes(source));
+    const isSourceUsed = (source: LiquiditySourceTypes): boolean =>
+      enabledSources.includes(source) && (!selectedSources.length || selectedSources.includes(source));
 
-    const tbcUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
-    const xstUsed = isPrimaryMarketSourceUsed(LiquiditySourceTypes.XSTPool);
+    // is XYK and [TBC, XST, OrderBook](only for XOR Dex) sources used
+    const xykUsed = isSourceUsed(LiquiditySourceTypes.XYKPool);
+    const tbcUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
+    const xstUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.XSTPool);
+    const orderBookUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.OrderBook);
 
     // possible paths for swap (we need to find all possible assets)
     const exchangePaths = newTrivial(
@@ -315,10 +335,12 @@ export class SwapModule<T> {
     );
     // list of all assets what could be used in swap
     const assetsInPaths = [...new Set(exchangePaths.flat(1))];
-    // Assets that have XYK reserves (with baseAssetId)
+    // Assets that could have XYK reserves (with baseAssetId)
     const assetsWithXykReserves = assetsInPaths.filter((address) => address !== baseAssetId);
-    // Assets that have TBC collateral reserves (not XOR)
+    // Assets that could have TBC collateral reserves (not XOR)
     const assetsWithTbcReserves = assetsInPaths.filter((address) => tbcAssets.includes(address));
+    // Assets that could have OrderBook reserves (base: assetId; quote: baseAssetId)
+    const assetsWithOrderBookReserves = assetsInPaths.filter((address) => address !== baseAssetId);
     // Assets that have average price data (storage has prices only for collateral TBC assets), DAI required
     const assetsWithAveragePrices = [...new Set([...assetsWithTbcReserves, dai])];
     // Assets for which we need to know the total supply
@@ -331,9 +353,13 @@ export class SwapModule<T> {
       return buffer;
     }, []);
 
-    const xykReserves = assetsWithXykReserves.map((address) =>
-      toCodec(this.root.apiRx.query.poolXYK.reserves(baseAssetId, address))
-    );
+    const xykReserves = xykUsed
+      ? assetsWithXykReserves.map((address) => toCodec(this.root.apiRx.query.poolXYK.reserves(baseAssetId, address)))
+      : [];
+
+    const orderBookReserves = orderBookUsed
+      ? assetsWithOrderBookReserves.map((address) => getAggregatedOrderBook(address, baseAssetId, this.root))
+      : [];
 
     // fill array if TBC source available
     const tbcReserves = tbcUsed
@@ -344,7 +370,7 @@ export class SwapModule<T> {
 
     // fill array if TBC or XST source available
     const assetsPrices =
-      tbcUsed || xstUsed ? assetsWithAveragePrices.map((address) => getAssetAveragePrice(this.root, address)) : [];
+      tbcUsed || xstUsed ? assetsWithAveragePrices.map((address) => getAssetAveragePrice(address, this.root)) : [];
 
     // if TBC source available
     const assetsIssuances = tbcUsed ? [toCodec(this.root.apiRx.query.balances.totalIssuance())] : [];
@@ -378,6 +404,7 @@ export class SwapModule<T> {
       ...tickersRates,
       ...assetsIssuances,
       ...assetsPrices,
+      ...orderBookReserves,
       ...tbcReserves,
       ...xykReserves,
       ...tbcConsts,
@@ -388,10 +415,11 @@ export class SwapModule<T> {
 
         const rates = data.slice(0, position);
         const issuances: Array<string> = data.slice(position, (position += assetsIssuances.length));
-        const prices: Array<{ buy: CodecString; sell: CodecString }> = data.slice(
+        const prices: Array<{ [PriceVariant.Buy]: CodecString; [PriceVariant.Sell]: CodecString }> = data.slice(
           position,
           (position += assetsPrices.length)
         );
+        const orderBook: Array<OrderBookAggregated> = data.slice(position, (position += orderBookReserves.length));
         const tbc: Array<string> = data.slice(position, (position += tbcReserves.length));
         const xyk: Array<[string, string]> = data.slice(position, (position += xykReserves.length));
         const [initialPrice, priceChangeStep, priceChangeRate, sellPriceCoefficient, tbcReferenceAsset] = data.slice(
@@ -411,11 +439,14 @@ export class SwapModule<T> {
 
         const payload: QuotePayload = {
           enabledAssets,
+          enabledSources,
+          lockedSources,
           sources,
           rates: combineValuesWithKeys(rates, tickersWithOracleRates),
           reserves: {
             xyk: xykData,
             tbc: combineValuesWithKeys(tbc, assetsWithTbcReserves),
+            orderBook: combineValuesWithKeys(orderBook, assetsWithOrderBookReserves),
           },
           prices: combineValuesWithKeys(prices, assetsWithAveragePrices),
           issuances: combineValuesWithKeys(issuances, assetsWithIssuances),

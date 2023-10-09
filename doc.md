@@ -56,9 +56,6 @@
 - [hermesGovernancePlatform](#hermesgovernanceplatform-pallet)
 - [preimage](#preimage-pallet)
 - [orderBook](#orderbook-pallet)
-- [mmr](#mmr-pallet)
-- [beefy](#beefy-pallet)
-- [mmrLeaf](#mmrleaf-pallet)
 - [leafProvider](#leafprovider-pallet)
 - [bridgeProxy](#bridgeproxy-pallet)
 - [ethereumLightClient](#ethereumlightclient-pallet)
@@ -75,6 +72,9 @@
 - [parachainBridgeApp](#parachainbridgeapp-pallet)
 - [bridgeDataSigner](#bridgedatasigner-pallet)
 - [multisigVerifier](#multisigverifier-pallet)
+- [mmr](#mmr-pallet)
+- [beefy](#beefy-pallet)
+- [mmrLeaf](#mmrleaf-pallet)
 - [sudo](#sudo-pallet)
 - [utility](#utility-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
@@ -9496,172 +9496,6 @@ arguments:
 - amount: `u128`
 <hr>
 
-## Mmr pallet
-
-### _State Queries_
-
-#### **api.query.mmr.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.mmr.rootHash**
-
-> Latest MMR Root hash.
-
-arguments: -
-
-returns: `H256`
-
-<hr>
-
-#### **api.query.mmr.numberOfLeaves**
-
-> Current size of the MMR (number of leaves).
-
-arguments: -
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.mmr.nodes**
-
-> Hashes of the nodes in the MMR.
->
-> Note this collection only contains MMR peaks, the inner nodes (and leaves)
-> are pruned and only stored in the Offchain DB.
-
-arguments:
-
-- key: `u64`
-
-returns: `H256`
-
-<hr>
-
-### _Custom RPCs_
-
-#### **api.rpc.mmr.generateProof**
-
-> Generate MMR proof for given leaf index.
-
-arguments:
-
-- leafIndex: `u64`
-- at: `BlockHash`
-
-returns: `MmrLeafBatchProof`
-
-<hr>
-
-## Beefy pallet
-
-### _State Queries_
-
-#### **api.query.beefy.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.beefy.authorities**
-
-> The current authorities set
-
-arguments: -
-
-returns: `Vec<SpBeefyCryptoPublic>`
-
-<hr>
-
-#### **api.query.beefy.validatorSetId**
-
-> The current validator set id
-
-arguments: -
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.beefy.nextAuthorities**
-
-> Authorities set scheduled to be used with the next session
-
-arguments: -
-
-returns: `Vec<SpBeefyCryptoPublic>`
-
-<hr>
-
-### _Custom RPCs_
-
-#### **api.rpc.beefy.getFinalizedHead**
-
-> Returns hash of the latest BEEFY finalized block as seen by this client.
-
-arguments: -
-
-returns: `H256`
-
-<hr>
-
-#### **api.rpc.beefy.subscribeJustifications**
-
-> Returns the block most recently finalized by BEEFY, alongside side its justification.
-
-arguments: -
-
-returns: `BeefySignedCommitment`
-
-<hr>
-
-## MmrLeaf pallet
-
-### _State Queries_
-
-#### **api.query.mmrLeaf.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.mmrLeaf.beefyAuthorities**
-
-> Details of current BEEFY authority set.
-
-arguments: -
-
-returns: `SpBeefyMmrBeefyAuthoritySet`
-
-<hr>
-
-#### **api.query.mmrLeaf.beefyNextAuthorities**
-
-> Details of next BEEFY authority set.
->
-> This storage entry is used as cache for calls to `update_beefy_next_authority_set`.
-
-arguments: -
-
-returns: `SpBeefyMmrBeefyAuthoritySet`
-
-<hr>
-
 ## LeafProvider pallet
 
 ### _State Queries_
@@ -10164,6 +9998,16 @@ returns: `u128`
 
 <hr>
 
+#### **api.query.bridgeOutboundChannel.latestCommitment**
+
+arguments:
+
+- key: `U256`
+
+returns: `BridgeTypesGenericCommitmentWithBlock`
+
+<hr>
+
 ## Dispatch pallet
 
 ### _State Queries_
@@ -10616,6 +10460,16 @@ returns: `u64`
 
 <hr>
 
+#### **api.query.substrateBridgeOutboundChannel.latestCommitment**
+
+arguments:
+
+- key: `BridgeTypesSubNetworkId`
+
+returns: `BridgeTypesGenericCommitmentWithBlock`
+
+<hr>
+
 ## SubstrateDispatch pallet
 
 ### _State Queries_
@@ -10896,14 +10750,6 @@ returns: `BTreeSet<SpCoreEcdsaPublic>`
 
 <hr>
 
-#### **api.query.multisigVerifier.thisNetworkId**
-
-arguments: -
-
-returns: `BridgeTypesGenericNetworkId`
-
-<hr>
-
 ### _Extrinsics_
 
 #### **api.tx.multisigVerifier.initialize**
@@ -10926,6 +10772,172 @@ arguments:
 arguments:
 
 - peer: `SpCoreEcdsaPublic`
+<hr>
+
+## Mmr pallet
+
+### _State Queries_
+
+#### **api.query.mmr.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.mmr.rootHash**
+
+> Latest MMR Root hash.
+
+arguments: -
+
+returns: `H256`
+
+<hr>
+
+#### **api.query.mmr.numberOfLeaves**
+
+> Current size of the MMR (number of leaves).
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.mmr.nodes**
+
+> Hashes of the nodes in the MMR.
+>
+> Note this collection only contains MMR peaks, the inner nodes (and leaves)
+> are pruned and only stored in the Offchain DB.
+
+arguments:
+
+- key: `u64`
+
+returns: `H256`
+
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.mmr.generateProof**
+
+> Generate MMR proof for given leaf index.
+
+arguments:
+
+- leafIndex: `u64`
+- at: `BlockHash`
+
+returns: `MmrLeafBatchProof`
+
+<hr>
+
+## Beefy pallet
+
+### _State Queries_
+
+#### **api.query.beefy.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.beefy.authorities**
+
+> The current authorities set
+
+arguments: -
+
+returns: `Vec<SpBeefyCryptoPublic>`
+
+<hr>
+
+#### **api.query.beefy.validatorSetId**
+
+> The current validator set id
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.beefy.nextAuthorities**
+
+> Authorities set scheduled to be used with the next session
+
+arguments: -
+
+returns: `Vec<SpBeefyCryptoPublic>`
+
+<hr>
+
+### _Custom RPCs_
+
+#### **api.rpc.beefy.getFinalizedHead**
+
+> Returns hash of the latest BEEFY finalized block as seen by this client.
+
+arguments: -
+
+returns: `H256`
+
+<hr>
+
+#### **api.rpc.beefy.subscribeJustifications**
+
+> Returns the block most recently finalized by BEEFY, alongside side its justification.
+
+arguments: -
+
+returns: `BeefySignedCommitment`
+
+<hr>
+
+## MmrLeaf pallet
+
+### _State Queries_
+
+#### **api.query.mmrLeaf.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.mmrLeaf.beefyAuthorities**
+
+> Details of current BEEFY authority set.
+
+arguments: -
+
+returns: `SpBeefyMmrBeefyAuthoritySet`
+
+<hr>
+
+#### **api.query.mmrLeaf.beefyNextAuthorities**
+
+> Details of next BEEFY authority set.
+>
+> This storage entry is used as cache for calls to `update_beefy_next_authority_set`.
+
+arguments: -
+
+returns: `SpBeefyMmrBeefyAuthoritySet`
+
 <hr>
 
 ## Sudo pallet

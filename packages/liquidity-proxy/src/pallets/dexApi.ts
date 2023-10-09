@@ -16,7 +16,7 @@ export const listLiquiditySources = (
 ): Array<LiquiditySourceTypes> => {
   const sources = Object.values(LiquiditySourceTypes).filter((source) => {
     return (
-      !payload.enabledAssets.lockedSources.includes(source) &&
+      !payload.lockedSources.includes(source) &&
       LiquidityRegistry.canExchange(source)(baseAssetId, syntheticBaseAssetId, inputAssetId, outputAssetId, payload)
     );
   });

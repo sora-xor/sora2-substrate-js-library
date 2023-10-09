@@ -130,10 +130,12 @@ const getAssetLiquiditySources = (
       baseAssetId === address || xykReserves[address].every((tokenReserve) => !!Number(tokenReserve)),
     [LiquiditySourceTypes.XSTPool]: () =>
       baseAssetId === Consts.XOR && (address === syntheticBaseAssetId || !!enabledAssets.xst[address]),
+    // [LiquiditySourceTypes.OrderBook]: () =>
+    //   baseAssetId === Consts.XOR &&
   };
 
   return Object.entries(rules).reduce((acc: LiquiditySourceTypes[], [source, rule]) => {
-    if (!enabledAssets.lockedSources.includes(source as LiquiditySourceTypes) && rule()) {
+    if (rule()) {
       acc.push(source as LiquiditySourceTypes);
     }
     return acc;
@@ -270,7 +272,6 @@ const quoteSingle = (
     throw new Error(Errors.UnavailableExchangePath);
   }
 
-  // [TODO] Could be removed?
   if (sources.length === 1) {
     const {
       amount: resultAmount,

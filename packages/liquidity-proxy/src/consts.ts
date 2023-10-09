@@ -41,6 +41,9 @@ export enum Errors {
   SyntheticDoesNotExist = 'Synthetic asset does not exist.',
   SyntheticBaseBuySellLimitExceeded = 'Input/output amount of synthetic base asset exceeds the limit',
   UnavailableExchangePath = 'No route exists in a given DEX for given parameters to carry out the swap',
+  UnknownOrderBook = 'Order book does not exist for this trading pair',
+  NotEnoughLiquidityInOrderBook = 'Not Enough Liquidity In OrderBook',
+  InvalidOrderAmount = 'Invalid Order Amount',
   // own
   UnsupportedLiquiditySource = 'Unsupported liquidity source',
 }
@@ -49,6 +52,7 @@ export enum LiquiditySourceTypes {
   XYKPool = 'XYKPool',
   XSTPool = 'XSTPool',
   MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool',
+  OrderBook = 'OrderBook',
 }
 
 export enum RewardReason {
@@ -57,8 +61,8 @@ export enum RewardReason {
 }
 
 export enum PriceVariant {
-  Buy = 'buy',
-  Sell = 'sell',
+  Buy = 'Buy',
+  Sell = 'Sell',
 }
 
 export enum AssetType {

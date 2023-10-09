@@ -113,8 +113,8 @@ export type NominatorReward = {
   era: string;
   sumRewards: string; // per era for stash address
   validators: {
-      address: string;
-      value: string;
+    address: string;
+    value: string;
   }[];
 }[];
 
