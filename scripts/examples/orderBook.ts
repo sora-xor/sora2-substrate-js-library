@@ -1,5 +1,5 @@
 import { api } from '@sora-substrate/util';
-import { Side } from '@sora-substrate/util/orderBook/types';
+import { PriceVariant } from '@sora-substrate/liquidity-proxy';
 
 import { delay, withConnectedAccount } from './util';
 
@@ -31,7 +31,7 @@ async function main(): Promise<void> {
 
     const price = '1100000000000000000';
     const amount = '100000000000000000000';
-    const side: Side = 'Buy';
+    const side: PriceVariant = PriceVariant.Buy;
 
     await api.orderBook.placeLimitOrder(val, xor, price, amount, side);
 
