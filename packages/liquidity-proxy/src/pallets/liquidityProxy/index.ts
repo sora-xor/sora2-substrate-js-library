@@ -117,11 +117,12 @@ export const newTrivial = (
  * Get available list of liquidity sources for the selected asset
  */
 const getAssetLiquiditySources = (
-  address: string,
-  xykReserves: QuotePayload['reserves']['xyk'],
-  enabledAssets: PrimaryMarketsEnabledAssets,
   baseAssetId: string,
-  syntheticBaseAssetId: string
+  syntheticBaseAssetId: string,
+  address: string,
+  enabledAssets: PrimaryMarketsEnabledAssets,
+  xykReserves: QuotePayload['reserves']['xyk'],
+  orderBookReserves: QuotePayload['reserves']['orderBook']
 ): Array<LiquiditySourceTypes> => {
   const rules = {
     [LiquiditySourceTypes.MulticollateralBondingCurvePool]: () =>
@@ -130,8 +131,7 @@ const getAssetLiquiditySources = (
       baseAssetId === address || xykReserves[address].every((tokenReserve) => !!Number(tokenReserve)),
     [LiquiditySourceTypes.XSTPool]: () =>
       baseAssetId === Consts.XOR && (address === syntheticBaseAssetId || !!enabledAssets.xst[address]),
-    // [LiquiditySourceTypes.OrderBook]: () =>
-    //   baseAssetId === Consts.XOR &&
+    [LiquiditySourceTypes.OrderBook]: () => baseAssetId === Consts.XOR && !!orderBookReserves[address],
   };
 
   return Object.entries(rules).reduce((acc: LiquiditySourceTypes[], [source, rule]) => {
@@ -146,11 +146,12 @@ const getAssetLiquiditySources = (
  * Get available liquidity sources for the tokens & exchange pair
  */
 export const getAssetsLiquiditySources = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
   exchangePaths: string[][],
   enabledAssets: PrimaryMarketsEnabledAssets,
   xykReserves: QuotePayload['reserves']['xyk'],
-  baseAssetId: string,
-  syntheticBaseAssetId: string
+  orderBookReserves: QuotePayload['reserves']['orderBook']
 ): PathsAndPairLiquiditySources => {
   const assetPaths: QuotePaths = {};
   let liquiditySources: Array<LiquiditySourceTypes> = [];
@@ -161,7 +162,14 @@ export const getAssetsLiquiditySources = (
     exchangePath.forEach((asset, index) => {
       const assetSources = (assetPaths[asset] =
         assetPaths[asset] ||
-        getAssetLiquiditySources(asset, xykReserves, enabledAssets, baseAssetId, syntheticBaseAssetId));
+        getAssetLiquiditySources(
+          baseAssetId,
+          syntheticBaseAssetId,
+          asset,
+          enabledAssets,
+          xykReserves,
+          orderBookReserves
+        ));
 
       exchangePathSources = index === 0 ? assetSources : intersection(exchangePathSources, assetSources);
     });
@@ -191,7 +199,7 @@ const smartSplit = (
     throw new Error(Errors.UnavailableExchangePath);
   }
 
-  let aggregator = new LiquidityAggregator(
+  const aggregator = new LiquidityAggregator(
     isDesiredInput ? SwapVariant.WithDesiredInput : SwapVariant.WithDesiredOutput
   );
 
@@ -215,7 +223,7 @@ const smartSplit = (
     }
   }
 
-  let result = aggregator.aggregateSwapOutcome(amount);
+  const result = aggregator.aggregateSwapOutcome(amount);
 
   if (!result) {
     throw new Error(Errors.UnavailableExchangePath);

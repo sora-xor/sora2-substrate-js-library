@@ -429,12 +429,14 @@ export class SwapModule<T> {
         const [floorPrice, xstReferenceAsset] = data.slice(position, (position += xstConsts.length));
 
         const xykData = combineValuesWithKeys(xyk, assetsWithXykReserves);
+        const orderBookData = combineValuesWithKeys(orderBook, assetsWithOrderBookReserves);
         const sources = getAssetsLiquiditySources(
+          baseAssetId,
+          syntheticBaseAssetId,
           exchangePaths,
           enabledAssets,
           xykData,
-          baseAssetId,
-          syntheticBaseAssetId
+          orderBookData
         );
 
         const payload: QuotePayload = {
@@ -446,7 +448,7 @@ export class SwapModule<T> {
           reserves: {
             xyk: xykData,
             tbc: combineValuesWithKeys(tbc, assetsWithTbcReserves),
-            orderBook: combineValuesWithKeys(orderBook, assetsWithOrderBookReserves),
+            orderBook: orderBookData,
           },
           prices: combineValuesWithKeys(prices, assetsWithAveragePrices),
           issuances: combineValuesWithKeys(issuances, assetsWithIssuances),
