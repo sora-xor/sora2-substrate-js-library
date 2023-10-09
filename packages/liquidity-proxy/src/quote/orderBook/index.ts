@@ -128,23 +128,29 @@ const getDirection = (book: OrderBookAggregated, inputAsset: string, outputAsset
   throw new Error('Invalid Assets');
 };
 
-// [TODO] check
 // align_amount
 const alignAmount = (amount: FPNumber, book: OrderBook) => {
-  const steps = safeDivide(amount, book.stepLotSize).dp(0);
-  const aligned = steps.mul(book.stepLotSize);
+  // get rounded by stepLotSize steps
+  const steps = Math.floor(safeDivide(amount, book.stepLotSize).toNumber());
+  const aligned = FPNumber.fromNatural(steps, amount.precision).mul(book.stepLotSize);
 
   return aligned;
 };
 
-const bestAsk = (book: OrderBookAggregated): OrderBookPriceVolume => {
-  // let asks = data.get_aggregated_asks(&self.order_book_id);
-  // asks.iter().min().map(|(k, v)| (*k, *v))
+const bestAsk = (book: OrderBookAggregated): FPNumber | null => {
+  const asks = book.aggregated.asks;
+
+  if (!asks.length) return null;
+
+  return FPNumber.min(...asks.map(([price, _]) => price));
 };
 
-const bestBid = (book: OrderBookAggregated): OrderBookPriceVolume => {
-  // let bids = data.get_aggregated_bids(&self.order_book_id);
-  // bids.iter().max().map(|(k, v)| (*k, *v))
+const bestBid = (book: OrderBookAggregated): FPNumber | null => {
+  const bids = book.aggregated.bids;
+
+  if (!bids.length) return null;
+
+  return FPNumber.max(...bids.map(([price, _]) => price));
 };
 
 // sum_market
@@ -343,13 +349,11 @@ export const orderBookQuoteWithoutImpact = (
     const direction = getDirection(book, inputAsset, outputAsset);
     const isBuyDirection = direction === PriceVariant.Buy;
 
-    const bestPriceVolume = isBuyDirection ? bestAsk(book) : bestBid(book);
+    const price = isBuyDirection ? bestAsk(book) : bestBid(book);
 
-    if (!bestPriceVolume) {
+    if (!price) {
       throw new Error(Errors.NotEnoughLiquidityInOrderBook);
     }
-
-    const [price] = bestPriceVolume;
 
     let targetAmount!: FPNumber;
 
