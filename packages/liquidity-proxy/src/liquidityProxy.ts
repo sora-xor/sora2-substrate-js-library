@@ -3,6 +3,7 @@ import { LiquiditySourceTypes, Consts, AssetType } from './consts';
 import { xykQuote, xykQuoteWithoutImpact, getXykReserves } from './quote/xyk';
 import { tbcQuote, tbcQuoteWithoutImpact, tbcSellPriceNoVolume, tbcBuyPriceNoVolume } from './quote/tbc';
 import { xstQuote, xstQuoteWithoutImpact, xstSellPriceNoVolume, xstBuyPriceNoVolume } from './quote/xst';
+import { orderBookQuote, orderBookQuoteWithoutImpact } from './quote/orderBook';
 import {
   isGreaterThanZero,
   isLessThanOrEqualToZero,
@@ -149,7 +150,7 @@ const getAssetLiquiditySources = (
   };
 
   return Object.entries(rules).reduce((acc: LiquiditySourceTypes[], [source, rule]) => {
-    if (!enabledAssets.lockedSources.includes(source as LiquiditySourceTypes) && rule()) {
+    if (rule()) {
       acc.push(source as LiquiditySourceTypes);
     }
     return acc;
@@ -455,10 +456,16 @@ const quoteSingle = (
     baseAssetId,
     selectedSources
   );
-  const sources = allSources.filter((source) => !payload.enabledAssets.lockedSources.includes(source));
+  let sources = allSources.filter((source) => !payload.lockedSources.includes(source));
 
   if (!sources.length) {
     throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAsset}, ${outputAsset}]`);
+  }
+
+  // The temp solution is to exclude OrderBook source if there are multiple sources.
+  // Will be removed in ALT implementation
+  if (sources.length > 1) {
+    sources = sources.filter((source) => source !== LiquiditySourceTypes.OrderBook);
   }
 
   if (sources.length === 1) {
@@ -471,6 +478,9 @@ const quoteSingle = (
       }
       case LiquiditySourceTypes.XSTPool: {
         return xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+      }
+      case LiquiditySourceTypes.OrderBook: {
+        return orderBookQuote(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
       }
       default: {
         throw new Error(`[liquidityProxy] Unexpected liquidity source: ${sources[0]}`);
@@ -652,6 +662,16 @@ const quoteWithoutImpactSingle = (
       value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else if (market === LiquiditySourceTypes.XSTPool) {
       value = xstQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+    } else if (market === LiquiditySourceTypes.OrderBook) {
+      value = orderBookQuoteWithoutImpact(
+        baseAssetId,
+        inputAsset,
+        outputAsset,
+        amount,
+        isDesiredInput,
+        payload,
+        deduceFee
+      );
     }
 
     return result.add(value);

@@ -1,32 +1,12 @@
-import { FPNumber } from '@sora-substrate/math';
+import type { FPNumber } from '@sora-substrate/math';
+import type { PriceVariant } from '@sora-substrate/liquidity-proxy';
+
 import type { History } from '../BaseApi';
-
-export enum OrderBookStatus {
-  /**
-   * All operations are allowed
-   */
-  Trade,
-  /**
-   * Users can place and cancel limit order, but trading is forbidden
-   */
-  PlaceAndCancel,
-  /**
-   * Users can only cancel their limit orders. Placement and trading are forbidden
-   */
-  OnlyCancel,
-  /**
-   * All operations with order book are forbidden. Current limit orders are
-   * frozen and users cannot cancel them
-   */
-  Stop,
-}
-
-export type Side = 'Buy' | 'Sell';
 
 export interface LimitOrder {
   readonly id: number;
   readonly owner: string;
-  readonly side: Side;
+  readonly side: PriceVariant;
   readonly price: FPNumber;
   readonly originalAmount: FPNumber;
   readonly amount: FPNumber;
@@ -35,25 +15,9 @@ export interface LimitOrder {
   readonly expiresAt: number;
 }
 
-export interface OrderBook {
-  readonly orderBookId: OrderBookId;
-  readonly status: OrderBookStatus;
-  readonly lastOrderId: number;
-  readonly tickSize: FPNumber;
-  readonly stepLotSize: FPNumber;
-  readonly minLotSize: FPNumber;
-  readonly maxLotSize: FPNumber;
-}
-
-export interface OrderBookId {
-  dexId: number;
-  base: string;
-  quote: string;
-}
-
 export interface LimitOrderHistory extends History {
   price?: string;
-  side?: Side;
+  side?: PriceVariant;
   limitOrderTimestamp?: number;
   limitOrderIds?: number[];
 }
