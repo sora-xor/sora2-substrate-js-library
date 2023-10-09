@@ -7,7 +7,7 @@ import { SwapChunk } from '../common/primitives';
 import type { QuotePayload, QuoteSingleResult } from '../types';
 
 // can_exchange
-export const xykCanExchange = (
+export const canExchange = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAssetId: string,
@@ -24,7 +24,7 @@ export const xykCanExchange = (
 };
 
 // step_quote
-export const xykStepQuote = (
+export const stepQuote = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -297,7 +297,7 @@ const calcInputForExactOutput = (
     : xykQuoteD(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
 };
 
-export const xykQuote = (
+export const quote = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -317,7 +317,7 @@ export const xykQuote = (
   }
 };
 
-export const xykQuoteWithoutImpact = (
+export const quoteWithoutImpact = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -359,7 +359,7 @@ export const xykQuoteWithoutImpact = (
 };
 
 // check_rewards
-export const xykCheckRewards = (
+export const checkRewards = (
   _baseAssetId: string,
   _syntheticBaseAssetId: string,
   _inputAsset: string,

@@ -9,7 +9,7 @@ import { SwapChunk } from '../common/primitives';
 import type { QuotePayload, QuoteSingleResult } from '../types';
 
 // can_exchange
-export const xstCanExchange = (
+export const canExchange = (
   baseAssetId: string,
   syntheticBaseAssetId: string,
   inputAssetId: string,
@@ -27,7 +27,7 @@ export const xstCanExchange = (
   }
 };
 
-export const xstStepQuote = (
+export const stepQuote = (
   baseAssetId: string,
   syntheticBaseAssetId: string,
   inputAsset: string,
@@ -38,7 +38,7 @@ export const xstStepQuote = (
   deduceFee: boolean,
   recommendedSamplesCount: number
 ): Array<SwapChunk> => {
-  if (!xstCanExchange(baseAssetId, syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+  if (!canExchange(baseAssetId, syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
 
@@ -301,7 +301,7 @@ const xstDecideSellAmounts = (
   }
 };
 
-export const xstQuoteWithoutImpact = (
+export const quoteWithoutImpact = (
   baseAssetId: string,
   syntheticBaseAssetId: string,
   inputAsset: string,
@@ -331,7 +331,7 @@ export const xstQuoteWithoutImpact = (
   }
 };
 
-export const xstQuote = (
+export const quote = (
   baseAssetId: string,
   syntheticBaseAssetId: string,
   inputAsset: string,
@@ -343,7 +343,7 @@ export const xstQuote = (
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteSingleResult => {
   try {
-    if (!xstCanExchange(baseAssetId, syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+    if (!canExchange(baseAssetId, syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
       throw new Error(Errors.CantExchange);
     }
 
@@ -362,7 +362,7 @@ export const xstQuote = (
   }
 };
 
-export const xstCheckRewards = (
+export const checkRewards = (
   _baseAssetId: string,
   _syntheticBaseAssetId: string,
   _inputAsset: string,

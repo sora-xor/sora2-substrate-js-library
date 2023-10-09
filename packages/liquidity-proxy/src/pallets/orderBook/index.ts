@@ -2,6 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { isAssetAddress, safeQuoteResult, safeDivide, isGreaterThanZero } from '../../utils';
 import { LiquiditySourceTypes, Errors, Consts, PriceVariant } from '../../consts';
+import { SwapChunk } from '../../common/primitives';
 import { OrderBookStatus } from './consts';
 
 import type { QuotePayload, QuoteSingleResult } from '../../types';
@@ -77,7 +78,8 @@ class OrderAmount {
   }
 }
 
-export const orderBookCanExchange = (
+// can_exchange
+export const canExchange = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -265,8 +267,54 @@ const calculateDeal = (
   };
 };
 
-// quote
-export const orderBookQuote = (
+// market_depth
+const marketDepth = (
+  book: OrderBookAggregated,
+  side: PriceVariant,
+  volumeLimit: OrderAmount | null
+): OrderBookPriceVolume[] => {
+  if (side === PriceVariant.Buy) {
+    return getMarketDepth(volumeLimit, [...book.aggregated.bids].reverse());
+  } else {
+    return getMarketDepth(volumeLimit, book.aggregated.asks);
+  }
+};
+
+// get_market_depth
+const getMarketDepth = (
+  volumeLimit: OrderAmount | null,
+  marketData: OrderBookPriceVolume[]
+): OrderBookPriceVolume[] => {
+  if (volumeLimit) {
+    const marketDepth: OrderBookPriceVolume[] = [];
+    let limit = volumeLimit.value;
+
+    if (!isGreaterThanZero(limit)) {
+      return marketDepth;
+    }
+
+    for (const [price, volume] of marketData) {
+      marketDepth.push([price, volume]);
+
+      if (volumeLimit.isBase) {
+        limit = limit.sub(volume);
+      } else {
+        limit = limit.sub(volume.mul(price));
+      }
+
+      if (!isGreaterThanZero(limit)) {
+        break;
+      }
+    }
+
+    return marketDepth;
+  } else {
+    return marketData;
+  }
+};
+
+// step_quote
+export const stepQuote = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -274,17 +322,68 @@ export const orderBookQuote = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  _deduceFee = true
+  _deduceFee: boolean,
+  _recommendedSamplesCount: number
+): Array<SwapChunk> => {
+  if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+    throw new Error(Errors.CantExchange);
+  }
+
+  const id = assembleOrderBookId(baseAssetId, inputAsset, outputAsset);
+  const book = getOrderBook(id, payload);
+  const direction = getDirection(book, inputAsset, outputAsset);
+  const isBuyDirection = direction === PriceVariant.Buy;
+
+  let limit!: OrderAmount;
+
+  if (isDesiredInput) {
+    if (isBuyDirection) {
+      limit = new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision));
+    } else {
+      limit = new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision));
+    }
+  } else {
+    if (isBuyDirection) {
+      limit = new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision));
+    } else {
+      limit = new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision));
+    }
+  }
+
+  const marketDepthCalculated = marketDepth(book, isBuyDirection ? PriceVariant.Sell : PriceVariant.Buy, limit);
+  const chunks: Array<SwapChunk> = [];
+
+  for (const [price, baseVolume] of marketDepthCalculated) {
+    const quoteVolume = price.mul(baseVolume);
+
+    if (isBuyDirection) {
+      chunks.push(new SwapChunk(quoteVolume, baseVolume, FPNumber.ZERO));
+    } else {
+      chunks.push(new SwapChunk(baseVolume, quoteVolume, FPNumber.ZERO));
+    }
+  }
+
+  return chunks;
+};
+
+// quote
+export const quote = (
+  baseAssetId: string,
+  _syntheticBaseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload,
+  _deduceFee: boolean
 ): QuoteSingleResult => {
   try {
+    if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+      throw new Error(Errors.CantExchange);
+    }
+
     const id = assembleOrderBookId(baseAssetId, inputAsset, outputAsset);
-
-    if (!id) throw new Error(Errors.UnknownOrderBook);
-
     const book = getOrderBook(id, payload);
-
-    if (!book) throw new Error(Errors.UnknownOrderBook);
-
     const dealInfo = calculateDeal(book, inputAsset, outputAsset, amount, isDesiredInput);
 
     // order-book doesn't take fee
@@ -327,7 +426,7 @@ export const orderBookQuote = (
 };
 
 // quote_without_impact
-export const orderBookQuoteWithoutImpact = (
+export const quoteWithoutImpact = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -335,20 +434,17 @@ export const orderBookQuoteWithoutImpact = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  _deduceFee = true
+  _deduceFee: boolean
 ): FPNumber => {
   try {
+    if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+      throw new Error(Errors.CantExchange);
+    }
+
     const id = assembleOrderBookId(baseAssetId, inputAsset, outputAsset);
-
-    if (!id) throw new Error(Errors.UnknownOrderBook);
-
     const book = getOrderBook(id, payload);
-
-    if (!book) throw new Error(Errors.UnknownOrderBook);
-
     const direction = getDirection(book, inputAsset, outputAsset);
     const isBuyDirection = direction === PriceVariant.Buy;
-
     const price = isBuyDirection ? bestAsk(book) : bestBid(book);
 
     if (!price) {
@@ -379,4 +475,18 @@ export const orderBookQuoteWithoutImpact = (
   } catch {
     return FPNumber.ZERO;
   }
+};
+
+// check_rewards
+export const checkRewards = (
+  _baseAssetId: string,
+  _syntheticBaseAssetId: string,
+  _inputAsset: string,
+  _outputAsset: string,
+  _inputAmount: FPNumber,
+  _outputAmount: FPNumber,
+  _payload: QuotePayload
+) => {
+  // XYK Pool has no rewards currently
+  return [];
 };

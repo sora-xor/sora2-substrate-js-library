@@ -8,7 +8,7 @@ import { SwapChunk } from '../common/primitives';
 import type { QuotePayload, QuoteSingleResult, LPRewardsInfo } from '../types';
 
 // can_exchange
-export const tbcCanExchange = (
+export const canExchange = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAssetId: string,
@@ -27,7 +27,7 @@ export const tbcCanExchange = (
 };
 
 // step_quote
-export const tbcStepQuote = (
+export const stepQuote = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -38,7 +38,7 @@ export const tbcStepQuote = (
   deduceFee: boolean,
   recommendedSamplesCount: number
 ): Array<SwapChunk> => {
-  if (!tbcCanExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+  if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
 
@@ -208,7 +208,7 @@ const calculateBuyReward = (
 };
 
 // check_rewards
-export const tbcCheckRewards = (
+export const checkRewards = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -217,7 +217,7 @@ export const tbcCheckRewards = (
   outputAmount: FPNumber,
   payload: QuotePayload
 ): Array<LPRewardsInfo> => {
-  if (!tbcCanExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+  if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
 
@@ -470,7 +470,7 @@ export const tbcSellPriceNoVolume = (mainAssetId: string, collateralAsset: strin
   return safeDivide(basePriceWrtRef, collateralPricePerReferenceUnit);
 };
 
-export const tbcQuoteWithoutImpact = (
+export const quoteWithoutImpact = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -481,7 +481,7 @@ export const tbcQuoteWithoutImpact = (
   deduceFee: boolean
 ): FPNumber => {
   try {
-    if (!tbcCanExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+    if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
       throw new Error(Errors.CantExchange);
     }
 
@@ -521,7 +521,7 @@ export const tbcQuoteWithoutImpact = (
   }
 };
 
-export const tbcQuote = (
+export const quote = (
   baseAssetId: string,
   _syntheticBaseAssetId: string,
   inputAsset: string,
@@ -532,7 +532,7 @@ export const tbcQuote = (
   deduceFee: boolean
 ): QuoteSingleResult => {
   try {
-    if (!tbcCanExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+    if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
       throw new Error(Errors.CantExchange);
     }
 

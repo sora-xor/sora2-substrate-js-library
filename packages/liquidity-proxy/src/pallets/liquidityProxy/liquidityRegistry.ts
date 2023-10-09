@@ -1,27 +1,21 @@
 import { LiquiditySourceTypes, Errors } from '../../consts';
 
-import { xykCanExchange, xykQuote, xykQuoteWithoutImpact, xykStepQuote, xykCheckRewards } from '../poolXyk';
-import {
-  tbcCanExchange,
-  tbcQuote,
-  tbcQuoteWithoutImpact,
-  tbcStepQuote,
-  tbcCheckRewards,
-} from '../multicollateralBoundingCurvePool';
-import { xstCanExchange, xstQuote, xstQuoteWithoutImpact, xstStepQuote, xstCheckRewards } from '../xst';
-import { orderBookCanExchange, orderBookQuote, orderBookQuoteWithoutImpact } from '../orderBook';
+import * as XYK from '../poolXyk';
+import * as TBC from '../multicollateralBoundingCurvePool';
+import * as XST from '../xst';
+import * as OrderBook from '../orderBook';
 
 export class LiquidityRegistry {
   public static canExchange(source: LiquiditySourceTypes) {
     switch (source) {
       case LiquiditySourceTypes.XYKPool:
-        return xykCanExchange;
+        return XYK.canExchange;
       case LiquiditySourceTypes.MulticollateralBondingCurvePool:
-        return tbcCanExchange;
+        return TBC.canExchange;
       case LiquiditySourceTypes.XSTPool:
-        return xstCanExchange;
+        return XST.canExchange;
       case LiquiditySourceTypes.OrderBook:
-        return orderBookCanExchange;
+        return OrderBook.canExchange;
       default:
         throw new Error(Errors.UnsupportedLiquiditySource);
     }
@@ -30,13 +24,13 @@ export class LiquidityRegistry {
   public static quote(source: LiquiditySourceTypes) {
     switch (source) {
       case LiquiditySourceTypes.XYKPool:
-        return xykQuote;
+        return XYK.quote;
       case LiquiditySourceTypes.MulticollateralBondingCurvePool:
-        return tbcQuote;
+        return TBC.quote;
       case LiquiditySourceTypes.XSTPool:
-        return xstQuote;
+        return XST.quote;
       case LiquiditySourceTypes.OrderBook:
-        return orderBookQuote;
+        return OrderBook.quote;
       default:
         throw new Error(Errors.UnsupportedLiquiditySource);
     }
@@ -45,13 +39,13 @@ export class LiquidityRegistry {
   public static quoteWithoutImpact(source: LiquiditySourceTypes) {
     switch (source) {
       case LiquiditySourceTypes.XYKPool:
-        return xykQuoteWithoutImpact;
+        return XYK.quoteWithoutImpact;
       case LiquiditySourceTypes.MulticollateralBondingCurvePool:
-        return tbcQuoteWithoutImpact;
+        return TBC.quoteWithoutImpact;
       case LiquiditySourceTypes.XSTPool:
-        return xstQuoteWithoutImpact;
+        return XST.quoteWithoutImpact;
       case LiquiditySourceTypes.OrderBook:
-        return orderBookQuoteWithoutImpact;
+        return OrderBook.quoteWithoutImpact;
       default:
         throw new Error(Errors.UnsupportedLiquiditySource);
     }
@@ -60,11 +54,13 @@ export class LiquidityRegistry {
   public static stepQuote(source: LiquiditySourceTypes) {
     switch (source) {
       case LiquiditySourceTypes.XYKPool:
-        return xykStepQuote;
+        return XYK.stepQuote;
       case LiquiditySourceTypes.MulticollateralBondingCurvePool:
-        return tbcStepQuote;
+        return TBC.stepQuote;
       case LiquiditySourceTypes.XSTPool:
-        return xstStepQuote;
+        return XST.stepQuote;
+      case LiquiditySourceTypes.OrderBook:
+        return OrderBook.stepQuote;
       default:
         throw new Error(Errors.UnsupportedLiquiditySource);
     }
@@ -72,12 +68,14 @@ export class LiquidityRegistry {
 
   public static checkRewards(source: LiquiditySourceTypes) {
     switch (source) {
-      case LiquiditySourceTypes.MulticollateralBondingCurvePool:
-        return tbcCheckRewards;
       case LiquiditySourceTypes.XYKPool:
-        return xykCheckRewards;
+        return XYK.checkRewards;
+      case LiquiditySourceTypes.MulticollateralBondingCurvePool:
+        return TBC.checkRewards;
       case LiquiditySourceTypes.XSTPool:
-        return xstCheckRewards;
+        return XST.checkRewards;
+      case LiquiditySourceTypes.OrderBook:
+        return OrderBook.checkRewards;
       default:
         throw new Error(Errors.UnsupportedLiquiditySource);
     }
