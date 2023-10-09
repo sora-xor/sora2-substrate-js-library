@@ -51,8 +51,8 @@ export const stepQuote = (
   // Get the price without checking the limit, because even if it exceeds the limit it will be rounded below.
   // It is necessary to use as much liquidity from the source as we can.
   const { amount: resultAmount, fee } = isAssetAddress(inputAsset, syntheticBaseAssetId)
-    ? xstDecideSellAmounts(syntheticBaseAssetId, outputAsset, amount, isDesiredInput, payload, deduceFee)
-    : xstDecideBuyAmounts(syntheticBaseAssetId, inputAsset, amount, isDesiredInput, payload, deduceFee);
+    ? decideSellAmounts(syntheticBaseAssetId, outputAsset, amount, isDesiredInput, payload, deduceFee)
+    : decideBuyAmounts(syntheticBaseAssetId, inputAsset, amount, isDesiredInput, payload, deduceFee);
 
   const [inputAmount, outputAmount] = isDesiredInput ? [amount, resultAmount] : [resultAmount, amount];
   const feeAmount = deduceFee ? convertFee(baseAssetId, syntheticBaseAssetId, fee, payload) : fee;
@@ -123,7 +123,7 @@ const convertFee = (
   return fee;
 };
 
-const xstReferencePrice = (
+const referencePrice = (
   syntheticBaseAssetId: string,
   assetAddress: string,
   priceVariant: PriceVariant,
@@ -152,15 +152,15 @@ const xstReferencePrice = (
  * Buys the main asset (e.g., XST).
  * Calculates and returns the current buy price, assuming that input is the synthetic asset and output is the main asset.
  */
-const xstBuyPrice = (
+const buyPrice = (
   syntheticBaseAssetId: string,
   syntheticAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload
 ): FPNumber => {
-  const mainAssetPrice = xstReferencePrice(syntheticBaseAssetId, syntheticBaseAssetId, PriceVariant.Buy, payload);
-  const syntheticAssetPrice = xstReferencePrice(syntheticBaseAssetId, syntheticAsset, PriceVariant.Sell, payload);
+  const mainAssetPrice = referencePrice(syntheticBaseAssetId, syntheticBaseAssetId, PriceVariant.Buy, payload);
+  const syntheticAssetPrice = referencePrice(syntheticBaseAssetId, syntheticAsset, PriceVariant.Sell, payload);
 
   if (isDesiredInput) {
     // Input target amount of synthetic asset (e.g. XSTUSD) to get some synthetic base asset (e.g. XST)
@@ -171,15 +171,15 @@ const xstBuyPrice = (
   }
 };
 
-const xstSellPrice = (
+const sellPrice = (
   syntheticBaseAssetId: string,
   syntheticAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload
 ): FPNumber => {
-  const mainAssetPrice = xstReferencePrice(syntheticBaseAssetId, syntheticBaseAssetId, PriceVariant.Sell, payload);
-  const syntheticAssetPrice = xstReferencePrice(syntheticBaseAssetId, syntheticAsset, PriceVariant.Buy, payload);
+  const mainAssetPrice = referencePrice(syntheticBaseAssetId, syntheticBaseAssetId, PriceVariant.Sell, payload);
+  const syntheticAssetPrice = referencePrice(syntheticBaseAssetId, syntheticAsset, PriceVariant.Buy, payload);
 
   if (isDesiredInput) {
     // Sell desired amount of synthetic base asset (e.g. XST) for some synthetic asset (e.g. XSTUSD)
@@ -190,7 +190,7 @@ const xstSellPrice = (
   }
 };
 
-const xstDecideBuyAmounts = (
+const decideBuyAmounts = (
   syntheticBaseAssetId: string,
   syntheticAsset: string,
   amount: FPNumber,
@@ -204,7 +204,7 @@ const xstDecideBuyAmounts = (
   const feeRatio = deduceFee ? getAggregatedFee(syntheticAsset, payload) : FPNumber.ZERO;
 
   if (isDesiredInput) {
-    const outputAmount = xstBuyPrice(syntheticBaseAssetId, syntheticAsset, amount, isDesiredInput, payload);
+    const outputAmount = buyPrice(syntheticBaseAssetId, syntheticAsset, amount, isDesiredInput, payload);
     const fee = feeRatio.mul(outputAmount);
     const output = outputAmount.sub(fee);
     ensureBaseAssetAmountWithinLimit(output, payload, checkLimits);
@@ -227,7 +227,7 @@ const xstDecideBuyAmounts = (
     ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
     const fee = amountWithFee.sub(amount);
-    const input = xstBuyPrice(syntheticBaseAssetId, syntheticAsset, amountWithFee, isDesiredInput, payload);
+    const input = buyPrice(syntheticBaseAssetId, syntheticAsset, amountWithFee, isDesiredInput, payload);
 
     return {
       amount: input,
@@ -246,7 +246,7 @@ const xstDecideBuyAmounts = (
   }
 };
 
-const xstDecideSellAmounts = (
+const decideSellAmounts = (
   syntheticBaseAssetId: string,
   syntheticAsset: string,
   amount: FPNumber,
@@ -262,7 +262,7 @@ const xstDecideSellAmounts = (
   if (isDesiredInput) {
     ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
     const fee = amount.mul(feeRatio);
-    const output = xstSellPrice(syntheticBaseAssetId, syntheticAsset, amount.sub(fee), isDesiredInput, payload);
+    const output = sellPrice(syntheticBaseAssetId, syntheticAsset, amount.sub(fee), isDesiredInput, payload);
 
     return {
       amount: output,
@@ -279,7 +279,7 @@ const xstDecideSellAmounts = (
       ],
     };
   } else {
-    const inputAmount = xstSellPrice(syntheticBaseAssetId, syntheticAsset, amount, isDesiredInput, payload);
+    const inputAmount = sellPrice(syntheticBaseAssetId, syntheticAsset, amount, isDesiredInput, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
     const fee = inputAmountWithFee.sub(inputAmount);
     ensureBaseAssetAmountWithinLimit(inputAmountWithFee, payload, checkLimits);
@@ -313,7 +313,7 @@ export const quoteWithoutImpact = (
 ): FPNumber => {
   try {
     // no impact already
-    const result = xstQuote(
+    const result = quote(
       baseAssetId,
       syntheticBaseAssetId,
       inputAsset,
@@ -352,8 +352,8 @@ export const quote = (
       fee: feeAmount,
       distribution,
     } = isAssetAddress(inputAsset, syntheticBaseAssetId)
-      ? xstDecideSellAmounts(syntheticBaseAssetId, outputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits)
-      : xstDecideBuyAmounts(syntheticBaseAssetId, inputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits);
+      ? decideSellAmounts(syntheticBaseAssetId, outputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits)
+      : decideBuyAmounts(syntheticBaseAssetId, inputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits);
     const fee = convertFee(baseAssetId, syntheticBaseAssetId, feeAmount, payload);
 
     return { amount: resultAmount, fee, distribution };

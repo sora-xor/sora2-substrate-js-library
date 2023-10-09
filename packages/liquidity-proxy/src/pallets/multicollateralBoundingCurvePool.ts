@@ -57,8 +57,8 @@ export const stepQuote = (
     let volume = step.mul(new FPNumber(i));
 
     const { amount, fee } = isAssetAddress(inputAsset, baseAssetId)
-      ? tbcDecideSellAmounts(inputAsset, outputAsset, volume, isDesiredInput, payload, deduceFee)
-      : tbcDecideBuyAmounts(outputAsset, inputAsset, volume, isDesiredInput, payload, deduceFee);
+      ? decideSellAmounts(inputAsset, outputAsset, volume, isDesiredInput, payload, deduceFee)
+      : decideBuyAmounts(outputAsset, inputAsset, volume, isDesiredInput, payload, deduceFee);
 
     const [inputAmount, outputAmount] = isDesiredInput ? [volume, amount] : [amount, volume];
     const feeAmount = fee;
@@ -78,7 +78,7 @@ export const stepQuote = (
 };
 
 // reference_price
-const tbcReferencePrice = (assetAddress: string, priceVariant: PriceVariant, payload: QuotePayload): FPNumber => {
+const referencePrice = (assetAddress: string, priceVariant: PriceVariant, payload: QuotePayload): FPNumber => {
   const referenceAssetId = payload.consts.tbc.referenceAsset;
   // always treat TBCD as being worth $1
   if ([referenceAssetId, Consts.TBCD].includes(assetAddress)) {
@@ -95,7 +95,7 @@ const actualReservesReferencePrice = (
   priceVariant: PriceVariant
 ): FPNumber => {
   const reserve = toFp(payload.reserves.tbc[collateralAsset]);
-  const price = tbcReferencePrice(collateralAsset, priceVariant, payload);
+  const price = referencePrice(collateralAsset, priceVariant, payload);
 
   return reserve.mul(price);
 };
@@ -110,7 +110,7 @@ const idealReservesReferencePrice = (
 ): FPNumber => {
   const baseTotalSupply = toFp(payload.issuances[mainAssetId]);
   const initialPrice = toFp(payload.consts.tbc.initialPrice);
-  const currentState = tbcBuyFunction(mainAssetId, collateralAssetId, priceVariant, delta, payload);
+  const currentState = buyFunction(mainAssetId, collateralAssetId, priceVariant, delta, payload);
 
   return safeDivide(initialPrice.add(currentState), new FPNumber(2)).mul(baseTotalSupply.add(delta));
 };
@@ -243,7 +243,7 @@ export const checkRewards = (
 };
 
 // buy_function
-const tbcBuyFunction = (
+const buyFunction = (
   mainAssetId: string,
   collateralAssetId: string,
   priceVariant: PriceVariant,
@@ -252,7 +252,7 @@ const tbcBuyFunction = (
 ): FPNumber => {
   if (isAssetAddress(collateralAssetId, Consts.TBCD)) {
     // Handle TBCD
-    const xp = tbcReferencePrice(mainAssetId, priceVariant, payload);
+    const xp = referencePrice(mainAssetId, priceVariant, payload);
     // get the XOR price in USD (DAI) and add $1 to it
     const xorPrice = xp.add(FPNumber.ONE);
 
@@ -269,20 +269,20 @@ const tbcBuyFunction = (
 };
 
 // sell_function
-const tbcSellFunction = (
+const sellFunction = (
   mainAssetId: string,
   collateralAssetId: string,
   delta: FPNumber,
   payload: QuotePayload
 ): FPNumber => {
-  const buyFunctionResult = tbcBuyFunction(mainAssetId, collateralAssetId, PriceVariant.Sell, delta, payload);
+  const buyFunctionResult = buyFunction(mainAssetId, collateralAssetId, PriceVariant.Sell, delta, payload);
   const sellPriceCoefficient = toFp(payload.consts.tbc.sellPriceCoefficient);
 
   return buyFunctionResult.mul(sellPriceCoefficient);
 };
 
 // sell_price
-const tbcSellPrice = (
+const sellPrice = (
   mainAssetId: string,
   collateralAssetId: string,
   amount: FPNumber,
@@ -290,8 +290,8 @@ const tbcSellPrice = (
   payload: QuotePayload
 ): FPNumber => {
   const collateralSupply = toFp(payload.reserves.tbc[collateralAssetId]);
-  const mainPricePerReferenceUnit = tbcSellFunction(mainAssetId, collateralAssetId, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAssetId, PriceVariant.Sell, payload);
+  const mainPricePerReferenceUnit = sellFunction(mainAssetId, collateralAssetId, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = referencePrice(collateralAssetId, PriceVariant.Sell, payload);
   const mainSupply = safeDivide(collateralSupply.mul(collateralPricePerReferenceUnit), mainPricePerReferenceUnit);
 
   if (isDesiredInput) {
@@ -314,7 +314,7 @@ const tbcSellPrice = (
 };
 
 // buy_price
-const tbcBuyPrice = (
+const buyPrice = (
   mainAssetId: string,
   collateralAssetId: string,
   amount: FPNumber,
@@ -325,8 +325,8 @@ const tbcBuyPrice = (
   const priceChangeRate = toFp(payload.consts.tbc.priceChangeRate);
   const priceChangeCoeff = priceChangeStep.mul(priceChangeRate);
 
-  const currentState = tbcBuyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAssetId, PriceVariant.Buy, payload);
+  const currentState = buyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = referencePrice(collateralAssetId, PriceVariant.Buy, payload);
 
   if (isDesiredInput) {
     const collateralReferenceIn = collateralPricePerReferenceUnit.mul(amount);
@@ -346,7 +346,7 @@ const tbcBuyPrice = (
     }
     return getMaxPositive(mainOut);
   } else {
-    const newState = tbcBuyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, amount, payload);
+    const newState = buyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, amount, payload);
     const collateralReferenceIn = safeDivide(currentState.add(newState).mul(amount), new FPNumber(2));
     const collateralQuantity = safeDivide(collateralReferenceIn, collateralPricePerReferenceUnit);
     return getMaxPositive(collateralQuantity);
@@ -354,7 +354,7 @@ const tbcBuyPrice = (
 };
 
 // decide_sell_amounts
-const tbcDecideSellAmounts = (
+const decideSellAmounts = (
   mainAssetId: string,
   collateralAssetId: string,
   amount: FPNumber,
@@ -366,7 +366,7 @@ const tbcDecideSellAmounts = (
 
   if (isDesiredInput) {
     const fee = amount.mul(newFee);
-    const outputAmount = tbcSellPrice(mainAssetId, collateralAssetId, amount.sub(fee), isDesiredInput, payload);
+    const outputAmount = sellPrice(mainAssetId, collateralAssetId, amount.sub(fee), isDesiredInput, payload);
 
     return {
       amount: outputAmount,
@@ -383,7 +383,7 @@ const tbcDecideSellAmounts = (
       ],
     };
   } else {
-    const inputAmount = tbcSellPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
+    const inputAmount = sellPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(newFee));
     const fee = inputAmountWithFee.sub(inputAmount);
 
@@ -405,7 +405,7 @@ const tbcDecideSellAmounts = (
 };
 
 // decide_buy_amounts
-const tbcDecideBuyAmounts = (
+const decideBuyAmounts = (
   mainAssetId: string, // XOR
   collateralAsset: string,
   amount: FPNumber,
@@ -416,7 +416,7 @@ const tbcDecideBuyAmounts = (
   const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
 
   if (isDesiredInput) {
-    const outputAmount = tbcBuyPrice(mainAssetId, collateralAsset, amount, isDesiredInput, payload);
+    const outputAmount = buyPrice(mainAssetId, collateralAsset, amount, isDesiredInput, payload);
     const fee = feeRatio.mul(outputAmount);
     const output = outputAmount.sub(fee);
 
@@ -436,7 +436,7 @@ const tbcDecideBuyAmounts = (
     };
   } else {
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
-    const inputAmount = tbcBuyPrice(mainAssetId, collateralAsset, amountWithFee, isDesiredInput, payload);
+    const inputAmount = buyPrice(mainAssetId, collateralAsset, amountWithFee, isDesiredInput, payload);
     const fee = amountWithFee.sub(amount);
 
     return {
@@ -456,16 +456,16 @@ const tbcDecideBuyAmounts = (
   }
 };
 
-export const tbcBuyPriceNoVolume = (mainAssetId: string, collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const basePriceWrtRef = tbcBuyFunction(mainAssetId, collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAsset, PriceVariant.Sell, payload);
+export const buyPriceNoVolume = (mainAssetId: string, collateralAsset: string, payload: QuotePayload): FPNumber => {
+  const basePriceWrtRef = buyFunction(mainAssetId, collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = referencePrice(collateralAsset, PriceVariant.Sell, payload);
 
   return safeDivide(basePriceWrtRef, collateralPricePerReferenceUnit);
 };
 
-export const tbcSellPriceNoVolume = (mainAssetId: string, collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const basePriceWrtRef = tbcSellFunction(mainAssetId, collateralAsset, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = tbcReferencePrice(collateralAsset, PriceVariant.Buy, payload);
+export const sellPriceNoVolume = (mainAssetId: string, collateralAsset: string, payload: QuotePayload): FPNumber => {
+  const basePriceWrtRef = sellFunction(mainAssetId, collateralAsset, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = referencePrice(collateralAsset, PriceVariant.Buy, payload);
 
   return safeDivide(basePriceWrtRef, collateralPricePerReferenceUnit);
 };
@@ -486,7 +486,7 @@ export const quoteWithoutImpact = (
     }
 
     if (isAssetAddress(inputAsset, baseAssetId)) {
-      const xorPrice = tbcSellPriceNoVolume(inputAsset, outputAsset, payload);
+      const xorPrice = sellPriceNoVolume(inputAsset, outputAsset, payload);
       const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(inputAsset, outputAsset, payload)) : FPNumber.ZERO;
 
       if (isDesiredinput) {
@@ -501,7 +501,7 @@ export const quoteWithoutImpact = (
         return inputAmountWithFee;
       }
     } else {
-      const xorPrice = tbcBuyPriceNoVolume(outputAsset, inputAsset, payload);
+      const xorPrice = buyPriceNoVolume(outputAsset, inputAsset, payload);
       const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
 
       if (isDesiredinput) {
@@ -537,9 +537,9 @@ export const quote = (
     }
 
     if (isAssetAddress(inputAsset, baseAssetId)) {
-      return tbcDecideSellAmounts(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+      return decideSellAmounts(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else {
-      return tbcDecideBuyAmounts(outputAsset, inputAsset, amount, isDesiredInput, payload, deduceFee);
+      return decideBuyAmounts(outputAsset, inputAsset, amount, isDesiredInput, payload, deduceFee);
     }
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.MulticollateralBondingCurvePool);
