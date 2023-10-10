@@ -772,7 +772,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Order book is deleted
        **/
-      OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, countOfCanceledOrders: u32], { orderBookId: OrderBookOrderBookId, countOfCanceledOrders: u32 }>;
+      OrderBookDeleted: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId], { orderBookId: OrderBookOrderBookId }>;
       /**
        * Order book status is changed
        **/
