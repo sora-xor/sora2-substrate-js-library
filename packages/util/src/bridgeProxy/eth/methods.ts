@@ -29,14 +29,12 @@ export function formatRequest(request: EthBridgeRequestsOffchainRequest, status:
     formattedItem.soraAssetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
     formattedItem.amount = new FPNumber(transferRequest.amount).toString();
     formattedItem.from = transferRequest.author.toString();
-    formattedItem.to = this.account.pair.address;
     formattedItem.kind = transferRequest.assetKind.toString();
     formattedItem.hash = transferRequest.txHash.toString();
   } else if (request.isLoadIncoming) {
     const txRequest = request.asLoadIncoming.asTransaction;
     // TODO: formattedItem.soraAssetAddress is missed here
     formattedItem.from = txRequest.author.toString();
-    formattedItem.to = this.account.pair.address;
     formattedItem.kind = txRequest.kind.toString();
     formattedItem.hash = txRequest.hash.toString();
   } else if (request.isOutgoing) {
