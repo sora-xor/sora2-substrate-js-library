@@ -38,6 +38,7 @@ export interface ValidatorInfoFull extends ValidatorInfo {
 type Unlocking = {
   value: string;
   remainingEras: string;
+  remainingHours: string;
   remainingDays: string;
 };
 
