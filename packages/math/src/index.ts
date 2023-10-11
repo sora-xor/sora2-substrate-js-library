@@ -419,6 +419,24 @@ export class FPNumber {
   }
 
   /**
+   * Returns `true` if mod operation returns zero.
+   *
+   * For instance, 4 % 2 = 0, so it returns `true` in this case.
+   *
+   * TODO: Add tests
+   * @param {FPNumber} target Target number
+   */
+  public isZeroMod(target: FPNumber): boolean {
+    return new FPNumber(
+      this.value
+        .mod(equalizedBN(target, this.precision))
+        .times(10 ** this.precision)
+        .dp(0, FPNumber.DEFAULT_ROUND_MODE),
+      this.precision
+    ).isZero();
+  }
+
+  /**
    * Return the nagetive number
    */
   public negative(): FPNumber {
