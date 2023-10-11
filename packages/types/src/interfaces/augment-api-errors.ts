@@ -1958,6 +1958,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ExpirationNotFound: AugmentedError<ApiType>;
       /**
+       * It is possible to delete an order-book only with the statuses: OnlyCancel or Stop
+       **/
+      ForbiddenStatusToDeleteOrderBook: AugmentedError<ApiType>;
+      /**
        * Cannot create order book with equal base and target assets
        **/
       ForbiddenToCreateOrderBookWithSameAssets: AugmentedError<ApiType>;
@@ -2041,6 +2045,7 @@ declare module '@polkadot/api-base/types/errors' {
        * Order book already exists for this trading pair
        **/
       OrderBookAlreadyExists: AugmentedError<ApiType>;
+      OrderBookIsNotEmpty: AugmentedError<ApiType>;
       /**
        * It is impossible to place the limit order because bounds of the max count of prices for the side have been reached
        **/

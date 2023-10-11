@@ -137,7 +137,8 @@ const getAggregatedOrderBook = <T>(
           bids,
         },
       };
-    })
+    }),
+    distinctUntilChanged(comparator)
   );
 };
 

@@ -57,21 +57,24 @@ export class FPNumber {
    */
   public static DEFAULT_ROUND_MODE: BigNumber.RoundingMode = 3;
 
-  /**
-   * Zero value (0)
-   */
+  /** Zero value (0) */
   public static ZERO = FPNumber.fromNatural(0);
-
-  /**
-   * One value (1)
-   */
+  /** One value (1) */
   public static ONE = FPNumber.fromNatural(1);
-
-  /**
-   * Hundred value (100)
-   */
+  /** Two value (2) */
+  public static TWO = FPNumber.fromNatural(2);
+  /** Three value (3) */
+  public static THREE = FPNumber.fromNatural(3);
+  /** Four value (4) */
+  public static FOUR = FPNumber.fromNatural(4);
+  /** Five value (5) */
+  public static FIVE = FPNumber.fromNatural(5);
+  /** Ten value (10) */
+  public static TEN = FPNumber.fromNatural(10);
+  /** Hundred value (100) */
   public static HUNDRED = FPNumber.fromNatural(100);
-
+  /** Thousand value (1000) */
+  public static THOUSAND = FPNumber.fromNatural(1000);
   /**
    * Return the **max** value, `null` if an array is empty
    * @param {...FPNumber} numbers
@@ -399,6 +402,38 @@ export class FPNumber {
         .dp(0, FPNumber.DEFAULT_ROUND_MODE),
       this.precision
     );
+  }
+
+  /**
+   * Mod operator TODO: Add tests
+   * @param {FPNumber} target Target number
+   */
+  public mod(target: FPNumber): FPNumber {
+    return new FPNumber(
+      this.value
+        .mod(equalizedBN(target, this.precision))
+        .times(10 ** this.precision)
+        .dp(0, FPNumber.DEFAULT_ROUND_MODE),
+      this.precision
+    );
+  }
+
+  /**
+   * Returns `true` if mod operation returns zero.
+   *
+   * For instance, 4 % 2 = 0, so it returns `true` in this case.
+   *
+   * TODO: Add tests
+   * @param {FPNumber} target Target number
+   */
+  public isZeroMod(target: FPNumber): boolean {
+    return new FPNumber(
+      this.value
+        .mod(equalizedBN(target, this.precision))
+        .times(10 ** this.precision)
+        .dp(0, FPNumber.DEFAULT_ROUND_MODE),
+      this.precision
+    ).isZero();
   }
 
   /**

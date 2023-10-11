@@ -1781,6 +1781,15 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
        **/
       swapTransferBatch: AugmentedSubmittable<(swapBatches: Vec<LiquidityProxySwapBatchInfo> | (LiquidityProxySwapBatchInfo | { outcomeAssetId?: any; outcomeAssetReuse?: any; dexId?: any; receivers?: any } | string | Uint8Array)[], inputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, maxInputAmount: u128 | AnyNumber | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<LiquidityProxySwapBatchInfo>, CommonPrimitivesAssetId32, u128, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode]>;
+      /**
+       * Extrinsic which is enable XORless transfers.
+       * Internally it's swaps `asset_id` to `desired_xor_amount` of `XOR` and transfers remaining amount of `asset_id` to `receiver`.
+       * Client apps should specify the XOR amount which should be paid as a fee in `desired_xor_amount` parameter.
+       * If sender will not have enough XOR to pay fees after execution, transaction will be rejected.
+       * This extrinsic is done as temporary solution for XORless transfers, in future it would be removed
+       * and logic for XORless extrinsics should be moved to xor-fee pallet.
+       **/
+      xorlessTransfer: AugmentedSubmittable<(dexId: u32 | AnyNumber | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, receiver: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array, desiredXorAmount: u128 | AnyNumber | Uint8Array, maxAmountIn: u128 | AnyNumber | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, CommonPrimitivesAssetId32, AccountId32, u128, u128, u128, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode]>;
     };
     migrationApp: {
       migrateErc20: AugmentedSubmittable<(networkId: U256 | AnyNumber | Uint8Array, erc20Assets: Vec<ITuple<[CommonPrimitivesAssetId32, H160, u8]>> | ([CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, H160 | string | Uint8Array, u8 | AnyNumber | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [U256, Vec<ITuple<[CommonPrimitivesAssetId32, H160, u8]>>]>;
