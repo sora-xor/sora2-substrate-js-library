@@ -1756,6 +1756,7 @@ declare module '@polkadot/api-base/types/errors' {
        * Slippage either exceeds minimum tolerated output or maximum tolerated input.
        **/
       SlippageNotTolerated: AugmentedError<ApiType>;
+      TheSameSenderAndReceiver: AugmentedError<ApiType>;
       /**
        * Unable to disable liquidity source
        **/
