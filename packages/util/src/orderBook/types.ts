@@ -1,9 +1,10 @@
 import type { FPNumber } from '@sora-substrate/math';
-import type { PriceVariant } from '@sora-substrate/liquidity-proxy';
+import type { OrderBookId, PriceVariant } from '@sora-substrate/liquidity-proxy';
 
 import type { History } from '../BaseApi';
 
 export interface LimitOrder {
+  readonly orderBookId: OrderBookId;
   readonly id: number;
   readonly owner: string;
   readonly side: PriceVariant;
