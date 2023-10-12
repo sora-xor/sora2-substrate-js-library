@@ -50,12 +50,11 @@ export const stepQuote = (
 
   // Get the price without checking the limit, because even if it exceeds the limit it will be rounded below.
   // It is necessary to use as much liquidity from the source as we can.
-  const { amount: resultAmount, fee } = isAssetAddress(inputAsset, syntheticBaseAssetId)
-    ? decideSellAmounts(syntheticBaseAssetId, outputAsset, amount, isDesiredInput, payload, deduceFee)
-    : decideBuyAmounts(syntheticBaseAssetId, inputAsset, amount, isDesiredInput, payload, deduceFee);
+  const { amount: resultAmount, fee: feeAmount } = isAssetAddress(inputAsset, syntheticBaseAssetId)
+    ? decideSellAmounts(baseAssetId, syntheticBaseAssetId, outputAsset, amount, isDesiredInput, payload, deduceFee)
+    : decideBuyAmounts(baseAssetId, syntheticBaseAssetId, inputAsset, amount, isDesiredInput, payload, deduceFee);
 
   const [inputAmount, outputAmount] = isDesiredInput ? [amount, resultAmount] : [resultAmount, amount];
-  const feeAmount = deduceFee ? convertFee(baseAssetId, syntheticBaseAssetId, fee, payload) : fee;
 
   let monolith = new SwapChunk(inputAmount, outputAmount, feeAmount);
 
@@ -191,6 +190,7 @@ const sellPrice = (
 };
 
 const decideBuyAmounts = (
+  baseAssetId: string,
   syntheticBaseAssetId: string,
   syntheticAsset: string,
   amount: FPNumber,
@@ -205,9 +205,10 @@ const decideBuyAmounts = (
 
   if (isDesiredInput) {
     const outputAmount = buyPrice(syntheticBaseAssetId, syntheticAsset, amount, isDesiredInput, payload);
-    const fee = feeRatio.mul(outputAmount);
-    const output = outputAmount.sub(fee);
+    const feeAmount = feeRatio.mul(outputAmount);
+    const output = outputAmount.sub(feeAmount);
     ensureBaseAssetAmountWithinLimit(output, payload, checkLimits);
+    const fee = convertFee(baseAssetId, syntheticBaseAssetId, feeAmount, payload); // in XOR
 
     return {
       amount: output,
@@ -226,8 +227,9 @@ const decideBuyAmounts = (
   } else {
     ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
-    const fee = amountWithFee.sub(amount);
+    const feeAmount = amountWithFee.sub(amount);
     const input = buyPrice(syntheticBaseAssetId, syntheticAsset, amountWithFee, isDesiredInput, payload);
+    const fee = convertFee(baseAssetId, syntheticBaseAssetId, feeAmount, payload); // in XOR
 
     return {
       amount: input,
@@ -247,6 +249,7 @@ const decideBuyAmounts = (
 };
 
 const decideSellAmounts = (
+  baseAssetId: string,
   syntheticBaseAssetId: string,
   syntheticAsset: string,
   amount: FPNumber,
@@ -261,8 +264,9 @@ const decideSellAmounts = (
 
   if (isDesiredInput) {
     ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
-    const fee = amount.mul(feeRatio);
-    const output = sellPrice(syntheticBaseAssetId, syntheticAsset, amount.sub(fee), isDesiredInput, payload);
+    const feeAmount = amount.mul(feeRatio);
+    const output = sellPrice(syntheticBaseAssetId, syntheticAsset, amount.sub(feeAmount), isDesiredInput, payload);
+    const fee = convertFee(baseAssetId, syntheticBaseAssetId, feeAmount, payload); // in XOR
 
     return {
       amount: output,
@@ -281,8 +285,9 @@ const decideSellAmounts = (
   } else {
     const inputAmount = sellPrice(syntheticBaseAssetId, syntheticAsset, amount, isDesiredInput, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
-    const fee = inputAmountWithFee.sub(inputAmount);
     ensureBaseAssetAmountWithinLimit(inputAmountWithFee, payload, checkLimits);
+    const feeAmount = inputAmountWithFee.sub(inputAmount);
+    const fee = convertFee(baseAssetId, syntheticBaseAssetId, feeAmount, payload); // in XOR
 
     return {
       amount: inputAmountWithFee,
@@ -347,16 +352,27 @@ export const quote = (
       throw new Error(Errors.CantExchange);
     }
 
-    const {
-      amount: resultAmount,
-      fee: feeAmount,
-      distribution,
-    } = isAssetAddress(inputAsset, syntheticBaseAssetId)
-      ? decideSellAmounts(syntheticBaseAssetId, outputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits)
-      : decideBuyAmounts(syntheticBaseAssetId, inputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits);
-    const fee = convertFee(baseAssetId, syntheticBaseAssetId, feeAmount, payload);
-
-    return { amount: resultAmount, fee, distribution };
+    return isAssetAddress(inputAsset, syntheticBaseAssetId)
+      ? decideSellAmounts(
+          baseAssetId,
+          syntheticBaseAssetId,
+          outputAsset,
+          amount,
+          isDesiredInput,
+          payload,
+          deduceFee,
+          checkLimits
+        )
+      : decideBuyAmounts(
+          baseAssetId,
+          syntheticBaseAssetId,
+          inputAsset,
+          amount,
+          isDesiredInput,
+          payload,
+          deduceFee,
+          checkLimits
+        );
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XSTPool);
   }
