@@ -202,6 +202,7 @@ export class OrderBookModule<T> {
     const order = orderCodec.unwrap();
 
     return {
+      orderBookId: { dexId, base, quote },
       id: order.id.toNumber(),
       expiresAt: order.expiresAt.toNumber(),
       lifespan: order.lifespan.toNumber(),
