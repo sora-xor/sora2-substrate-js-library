@@ -3,6 +3,7 @@ import { connection } from '@sora-substrate/connection';
 import { DAI, XOR } from '@sora-substrate/util/assets/consts';
 import { map } from 'rxjs';
 import { formatBalance } from '@sora-substrate/util/assets';
+import { delay } from './util';
 
 const YOUR_MNEMONIC_HERE = '';
 const NODE = 'wss://mof2.sora.org';
@@ -47,6 +48,7 @@ async function main(): Promise<void> {
         } else {
           await api.transfer(XOR, X1_ADDRESS, howMuchShouldYouSendFp.toString());
           console.info('X1 should receive funds');
+          await new Promise((resolve) => setTimeout(resolve, 20_000)); // wait 20 seconds
         }
       }
     });
