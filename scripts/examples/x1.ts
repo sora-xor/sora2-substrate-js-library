@@ -4,7 +4,7 @@ import { DAI, XOR } from '@sora-substrate/util/assets/consts';
 import { map } from 'rxjs';
 import { formatBalance } from '@sora-substrate/util/assets';
 
-const YOU_MNEMONIC_HERE = '';
+const YOUR_MNEMONIC_HERE = '';
 const NODE = 'wss://mof2.sora.org';
 const X1_ADDRESS = '';
 const LIMIT_IN_DOLLAR_STRING = '2000';
@@ -16,7 +16,7 @@ async function main(): Promise<void> {
   await connection.open(NODE);
   await api.initialize(true);
   await api.calcStaticNetworkFees();
-  api.importAccount(YOU_MNEMONIC_HERE, 'name', 'pass');
+  api.importAccount(YOUR_MNEMONIC_HERE, 'name', 'pass');
 
   const TRANSFER_FEE = FPNumber.fromCodecValue(api.NetworkFee.Transfer);
 
