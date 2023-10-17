@@ -1,12 +1,12 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { Consts, PriceVariant } from '../consts';
-import { safeDivide } from '../utils';
+import { safeDivide, toFp } from '../utils';
 
 import type { QuotePayload } from '../types';
 
 const getAssetAveragePrice = (assetId: string, priceVariant: PriceVariant, payload: QuotePayload): FPNumber => {
-  return FPNumber.fromCodecValue(payload.prices[assetId][priceVariant]);
+  return toFp(payload.prices[assetId][priceVariant]);
 };
 
 export const getAveragePrice = (
