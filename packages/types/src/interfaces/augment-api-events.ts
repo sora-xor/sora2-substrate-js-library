@@ -661,7 +661,7 @@ declare module '@polkadot/api-base/types/events' {
        * XORless transfer has been performed
        * [Asset Id, Caller Account, Receiver Account, Amount, Additional Data]
        **/
-      XorlessTransfer: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, AccountId32, AccountId32, u128, Bytes]>;
+      XorlessTransfer: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, AccountId32, AccountId32, u128, Option<Bytes>]>;
     };
     migrationApp: {
       Erc20Migrated: AugmentedEvent<ApiType, [U256, H160]>;

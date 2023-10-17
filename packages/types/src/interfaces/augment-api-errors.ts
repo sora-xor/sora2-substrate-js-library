@@ -1963,6 +1963,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ForbiddenStatusToDeleteOrderBook: AugmentedError<ApiType>;
       /**
+       * It is possible to update an order-book only with the statuses: OnlyCancel or Stop
+       **/
+      ForbiddenStatusToUpdateOrderBook: AugmentedError<ApiType>;
+      /**
        * Cannot create order book with equal base and target assets
        **/
       ForbiddenToCreateOrderBookWithSameAssets: AugmentedError<ApiType>;
