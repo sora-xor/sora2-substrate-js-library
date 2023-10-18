@@ -356,7 +356,7 @@ describe('FPNumber', () => {
   ])('[max] max (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
-    const max = FPNumber.max(instance1, instance2) as FPNumber;
+    const max = FPNumber.max(instance1, instance2);
     expect(max.toString()).toBe(result);
   });
 
@@ -380,7 +380,7 @@ describe('FPNumber', () => {
   ])('[min] min (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
-    const min = FPNumber.min(instance1, instance2) as FPNumber;
+    const min = FPNumber.min(instance1, instance2);
     expect(min.toString()).toBe(result);
   });
 
