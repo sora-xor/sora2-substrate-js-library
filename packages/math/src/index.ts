@@ -410,10 +410,7 @@ export class FPNumber {
    */
   public mod(target: FPNumber): FPNumber {
     return new FPNumber(
-      this.value
-        .mod(equalizedBN(target, this.precision))
-        .times(10 ** this.precision)
-        .dp(0, FPNumber.DEFAULT_ROUND_MODE),
+      this.value.mod(equalizedBN(target, this.precision)).dp(0, FPNumber.DEFAULT_ROUND_MODE),
       this.precision
     );
   }
