@@ -263,22 +263,14 @@ export class AssetsModule<T> {
   }
 
   private async addToAccountAssetsList(address: string): Promise<void> {
-    // Check asset in account assets list
-    const accountAsset = this.getAsset(address);
-    // If asset is not added to account assets
-    if (!accountAsset) {
-      // Get asset data and balance info
-      const asset = await this.getAccountAsset(address);
-      // During async execution of the method above, asset may have already been added
-      // Check again, that asset is not in account assets list
-      if (!this.getAsset(address)) {
-        this.accountAssets.push(asset);
-        this.subscribeToAssetBalance(asset);
-      }
-    } else {
-      // Move asset to the end of list, keep balance subscription
-      this.removeFromAccountAssets(address);
-      this.accountAssets.push(accountAsset);
+    if (this.getAsset(address)) return;
+    // Get asset data and balance info
+    const asset = await this.getAccountAsset(address);
+    // During async execution of the method above, asset may have already been added
+    // Check again, that asset is not in account assets list
+    if (!this.getAsset(address)) {
+      this.accountAssets.push(asset);
+      this.subscribeToAssetBalance(asset);
     }
   }
 
@@ -293,7 +285,7 @@ export class AssetsModule<T> {
   }
 
   /**
-   * Add account asset & create balance subscription
+   * Add account asset to the end of list & create balance subscription
    * @param address asset address
    */
   public async addAccountAsset(address: string): Promise<void> {
@@ -484,12 +476,9 @@ export class AssetsModule<T> {
   }
 
   private addToAccountAssetsAddressesList(assetAddress: string): void {
-    const assetsAddressesCopy = [...this.accountAssetsAddresses];
-    const index = assetsAddressesCopy.findIndex((address) => address === assetAddress);
-
-    ~index ? (assetsAddressesCopy[index] = assetAddress) : assetsAddressesCopy.push(assetAddress);
-
-    this.accountAssetsAddresses = assetsAddressesCopy;
+    if (this.accountAssetsAddresses.includes(assetAddress)) return;
+    // add address to the end of list
+    this.accountAssetsAddresses = [...this.accountAssetsAddresses, assetAddress];
   }
 
   private removeFromAccountAssetsAddressesList(address: string): void {
