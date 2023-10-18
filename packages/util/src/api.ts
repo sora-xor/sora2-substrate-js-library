@@ -3,7 +3,7 @@ import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, cryptoWaitReady } f
 import { Keyring } from '@polkadot/ui-keyring';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KeypairType } from '@polkadot/util-crypto/types';
-import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
+import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
@@ -16,6 +16,7 @@ import { RewardsModule } from './rewards';
 import { PoolXykModule } from './poolXyk';
 import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
+import { OrderBookModule } from './orderBook';
 import { MstTransfersModule } from './mstTransfers';
 import { SystemModule } from './system';
 import { StakingModule } from './staking';
@@ -46,6 +47,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly poolXyk = new PoolXykModule<T>(this);
   public readonly referralSystem = new ReferralSystemModule<T>(this);
   public readonly assets = new AssetsModule<T>(this);
+  public readonly orderBook = new OrderBookModule<T>(this);
   /** This module is used for internal needs */
   public readonly mstTransfers = new MstTransfersModule<T>(this);
   public readonly system = new SystemModule<T>(this);
@@ -145,8 +147,8 @@ export class Api<T = void> extends BaseApi<T> {
       await this.restoreActiveAccount();
     }
 
-    // Update available dex list
-    await this.dex.updateList();
+    // Update dex data
+    await this.dex.update();
   }
 
   /**

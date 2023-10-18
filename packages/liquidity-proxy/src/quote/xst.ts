@@ -60,7 +60,7 @@ const xstReferencePrice = (assetAddress: string, priceVariant: PriceVariant, pay
     const averagePrice = getAveragePrice(assetAddress, referenceAssetId, priceVariant, payload);
     const floorPrice = FPNumber.fromCodecValue(payload.consts.xst.floorPrice);
 
-    return FPNumber.max(averagePrice, floorPrice) as FPNumber;
+    return FPNumber.max(averagePrice, floorPrice);
   } else {
     const symbol = payload.enabledAssets.xst[assetAddress].referenceSymbol;
     const rate = oracleProxyQuoteUnchecked(symbol, payload);
@@ -124,9 +124,10 @@ const xstBuyPriceWithFee = (
 
   if (isDesiredInput) {
     const outputAmount = xstBuyPrice(syntheticAsset, amount, isDesiredInput, payload);
-    const fee = feeRatio.mul(outputAmount);
-    const output = outputAmount.sub(fee);
+    const feeAmount = feeRatio.mul(outputAmount);
+    const output = outputAmount.sub(feeAmount);
     ensureBaseAssetAmountWithinLimit(output, payload, checkLimits);
+    const fee = convertFee(feeAmount, payload); // in XOR
 
     return {
       amount: output,
@@ -146,8 +147,9 @@ const xstBuyPriceWithFee = (
   } else {
     ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
-    const fee = amountWithFee.sub(amount);
+    const feeAmount = amountWithFee.sub(amount);
     const input = xstBuyPrice(syntheticAsset, amountWithFee, isDesiredInput, payload);
+    const fee = convertFee(feeAmount, payload); // in XOR
 
     return {
       amount: input,
@@ -181,8 +183,9 @@ const xstSellPriceWithFee = (
 
   if (isDesiredInput) {
     ensureBaseAssetAmountWithinLimit(amount, payload, checkLimits);
-    const fee = amount.mul(feeRatio);
-    const output = xstSellPrice(syntheticAsset, amount.sub(fee), isDesiredInput, payload);
+    const feeAmount = amount.mul(feeRatio);
+    const output = xstSellPrice(syntheticAsset, amount.sub(feeAmount), isDesiredInput, payload);
+    const fee = convertFee(feeAmount, payload); // in XOR
 
     return {
       amount: output,
@@ -202,8 +205,9 @@ const xstSellPriceWithFee = (
   } else {
     const inputAmount = xstSellPrice(syntheticAsset, amount, isDesiredInput, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
-    const fee = inputAmountWithFee.sub(inputAmount);
     ensureBaseAssetAmountWithinLimit(inputAmountWithFee, payload, checkLimits);
+    const feeAmount = inputAmountWithFee.sub(inputAmount);
+    const fee = convertFee(feeAmount, payload); // in XOR
 
     return {
       amount: inputAmountWithFee,
@@ -265,17 +269,9 @@ export const xstQuote = (
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
   try {
-    const {
-      amount: resultAmount,
-      fee: feeAmount,
-      rewards,
-      distribution,
-    } = isAssetAddress(inputAsset, Consts.XST)
+    return isAssetAddress(inputAsset, Consts.XST)
       ? xstSellPriceWithFee(outputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits)
       : xstBuyPriceWithFee(inputAsset, amount, isDesiredInput, payload, deduceFee, checkLimits);
-    const fee = convertFee(feeAmount, payload);
-
-    return { amount: resultAmount, fee, rewards, distribution };
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XSTPool);
   }

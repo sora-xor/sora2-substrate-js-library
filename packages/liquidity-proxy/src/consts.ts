@@ -30,11 +30,18 @@ export class Consts {
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
 }
 
+export enum Errors {
+  UnknownOrderBook = 'Order book does not exist for this trading pair',
+  NotEnoughLiquidityInOrderBook = 'Not Enough Liquidity In OrderBook',
+  InvalidOrderAmount = 'Invalid Order Amount',
+}
+
 export enum LiquiditySourceTypes {
   Default = '',
   XYKPool = 'XYKPool',
   XSTPool = 'XSTPool',
   MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool',
+  OrderBook = 'OrderBook',
 }
 
 export enum RewardReason {
@@ -43,8 +50,8 @@ export enum RewardReason {
 }
 
 export enum PriceVariant {
-  Buy = 'buy',
-  Sell = 'sell',
+  Buy = 'Buy',
+  Sell = 'Sell',
 }
 
 export enum AssetType {

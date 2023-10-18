@@ -3,6 +3,7 @@ import { LiquiditySourceTypes, Consts, AssetType } from './consts';
 import { xykQuote, xykQuoteWithoutImpact, getXykReserves } from './quote/xyk';
 import { tbcQuote, tbcQuoteWithoutImpact, tbcSellPriceNoVolume, tbcBuyPriceNoVolume } from './quote/tbc';
 import { xstQuote, xstQuoteWithoutImpact, xstSellPriceNoVolume, xstBuyPriceNoVolume } from './quote/xst';
+import { orderBookQuote, orderBookQuoteWithoutImpact } from './quote/orderBook';
 import {
   isGreaterThanZero,
   isLessThanOrEqualToZero,
@@ -133,11 +134,12 @@ export const newTrivial = (
  * @param syntheticBaseAssetId Dex synthetic base asset id
  */
 const getAssetLiquiditySources = (
-  address: string,
-  xykReserves: QuotePayload['reserves']['xyk'],
-  enabledAssets: PrimaryMarketsEnabledAssets,
   baseAssetId: string,
-  syntheticBaseAssetId: string
+  syntheticBaseAssetId: string,
+  address: string,
+  enabledAssets: PrimaryMarketsEnabledAssets,
+  xykReserves: QuotePayload['reserves']['xyk'],
+  orderBookReserves: QuotePayload['reserves']['orderBook']
 ): Array<LiquiditySourceTypes> => {
   const rules = {
     [LiquiditySourceTypes.MulticollateralBondingCurvePool]: () =>
@@ -146,10 +148,11 @@ const getAssetLiquiditySources = (
       baseAssetId === address || xykReserves[address].every((tokenReserve) => !!Number(tokenReserve)),
     [LiquiditySourceTypes.XSTPool]: () =>
       baseAssetId === Consts.XOR && (address === syntheticBaseAssetId || !!enabledAssets.xst[address]),
+    [LiquiditySourceTypes.OrderBook]: () => baseAssetId === Consts.XOR && !!orderBookReserves[address],
   };
 
   return Object.entries(rules).reduce((acc: LiquiditySourceTypes[], [source, rule]) => {
-    if (!enabledAssets.lockedSources.includes(source as LiquiditySourceTypes) && rule()) {
+    if (rule()) {
       acc.push(source as LiquiditySourceTypes);
     }
     return acc;
@@ -174,7 +177,7 @@ const listLiquiditySources = (
   const commonSources = intersection(getSource(inputAssetId), getSource(outputAssetId));
   const directSources = commonSources.filter((source) => {
     return (
-      source === LiquiditySourceTypes.XSTPool || [inputAssetId, outputAssetId].includes(baseAssetId) // TBC, XYK uses baseAsset
+      source === LiquiditySourceTypes.XSTPool || [inputAssetId, outputAssetId].includes(baseAssetId) // TBC, XYK, OrderBook uses baseAsset
     );
   });
 
@@ -193,11 +196,12 @@ const listLiquiditySources = (
  * @param syntheticBaseAssetId Dex synthetic base asset id
  */
 export const getAssetsLiquiditySources = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
   exchangePaths: string[][],
   enabledAssets: PrimaryMarketsEnabledAssets,
   xykReserves: QuotePayload['reserves']['xyk'],
-  baseAssetId: string,
-  syntheticBaseAssetId: string
+  orderBookReserves: QuotePayload['reserves']['orderBook']
 ): PathsAndPairLiquiditySources => {
   const assetPaths: QuotePaths = {};
   let liquiditySources: Array<LiquiditySourceTypes> = [];
@@ -208,7 +212,14 @@ export const getAssetsLiquiditySources = (
     exchangePath.forEach((asset, index) => {
       const assetSources = (assetPaths[asset] =
         assetPaths[asset] ||
-        getAssetLiquiditySources(asset, xykReserves, enabledAssets, baseAssetId, syntheticBaseAssetId));
+        getAssetLiquiditySources(
+          baseAssetId,
+          syntheticBaseAssetId,
+          asset,
+          enabledAssets,
+          xykReserves,
+          orderBookReserves
+        ));
 
       exchangePathSources = index === 0 ? assetSources : intersection(exchangePathSources, assetSources);
     });
@@ -455,10 +466,16 @@ const quoteSingle = (
     baseAssetId,
     selectedSources
   );
-  const sources = allSources.filter((source) => !payload.enabledAssets.lockedSources.includes(source));
+  let sources = allSources.filter((source) => !payload.lockedSources.includes(source));
 
   if (!sources.length) {
     throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAsset}, ${outputAsset}]`);
+  }
+
+  // The temp solution is to exclude OrderBook source if there are multiple sources.
+  // Will be removed in ALT implementation
+  if (sources.length > 1) {
+    sources = sources.filter((source) => source !== LiquiditySourceTypes.OrderBook);
   }
 
   if (sources.length === 1) {
@@ -471,6 +488,9 @@ const quoteSingle = (
       }
       case LiquiditySourceTypes.XSTPool: {
         return xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+      }
+      case LiquiditySourceTypes.OrderBook: {
+        return orderBookQuote(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
       }
       default: {
         throw new Error(`[liquidityProxy] Unexpected liquidity source: ${sources[0]}`);
@@ -652,6 +672,16 @@ const quoteWithoutImpactSingle = (
       value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else if (market === LiquiditySourceTypes.XSTPool) {
       value = xstQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+    } else if (market === LiquiditySourceTypes.OrderBook) {
+      value = orderBookQuoteWithoutImpact(
+        baseAssetId,
+        inputAsset,
+        outputAsset,
+        amount,
+        isDesiredInput,
+        payload,
+        deduceFee
+      );
     }
 
     return result.add(value);

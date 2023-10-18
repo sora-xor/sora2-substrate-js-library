@@ -32,6 +32,7 @@ import type {
   MyStakingInfo,
   StakeReturn,
   NominatorReward,
+  Payouts,
   // EraElectionStatus,
 } from './types';
 
@@ -385,41 +386,6 @@ export class StakingModule<T> {
   }
 
   /**
-   * Get nominators reward
-   * @returns nominators reward
-   */
-  public async getNominatorsReward(address: string): Promise<NominatorReward> {
-    const [currentEra, eraAverageRewards] = await Promise.all([this.getCurrentEra(), this.getAverageRewards()]);
-    const [eraTotalStake, electedValidators] = await Promise.all([
-      this.getEraTotalStake(currentEra),
-      this.getElectedValidators(currentEra),
-    ]);
-
-    const nominatorReward = electedValidators.reduce((sum, validator) => {
-      const nominatorInfo = validator.others.find(({ who }) => who === address);
-
-      if (!nominatorInfo) return sum;
-
-      const validatorTotalStake = FPNumber.fromCodecValue(validator?.total ?? '0');
-      const validatorShareStake = validatorTotalStake.div(FPNumber.fromCodecValue(eraTotalStake));
-      const stakeReturnReward = eraAverageRewards.mul(validatorShareStake);
-
-      const nominatorShare = FPNumber.fromCodecValue(nominatorInfo.value).div(validatorTotalStake);
-      const nominatorRewardByValidator = nominatorShare.mul(stakeReturnReward);
-
-      return sum.add(nominatorRewardByValidator);
-    }, FPNumber.ZERO);
-
-    const rewardPerDay = nominatorReward.mul(new FPNumber(COUNT_ERAS_IN_DAILY));
-
-    return {
-      rewardPerEra: nominatorReward.toString(),
-      rewardPerDay: rewardPerDay.toString(),
-      rewardPerYear: rewardPerDay.mul(new FPNumber(COUNT_DAYS_IN_YEAR)).toString(),
-    };
-  }
-
-  /**
    * Get information about validators
    * @returns list of validators infos sorted by recommended
    */
@@ -557,6 +523,27 @@ export class StakingModule<T> {
       totalStake,
       unbond: { unlocking, sum },
     };
+  }
+
+  /**
+   * Get nominators reward
+   * @returns nominators reward
+   */
+  public async getNominatorsReward(address: string): Promise<NominatorReward> {
+    const stakerRewards = await this.root.api.derive.staking.stakerRewards(address);
+
+    return stakerRewards.map(({ era, validators: _validators }) => {
+      const validators = Object.entries(_validators).map(([address, { value }]) => ({
+        address,
+        value: FPNumber.fromCodecValue(value.toString(), VAL.decimals).toString(),
+      }));
+
+      return {
+        era: era.toString(),
+        sumRewards: validators.reduce((sum, { value }) => sum.add(new FPNumber(value)), FPNumber.ZERO).toString(),
+        validators,
+      };
+    });
   }
 
   /**
@@ -827,20 +814,19 @@ export class StakingModule<T> {
 
   /**
    * Distribute payout for staking in a given era for given validators
-   * @param args.validators array of validators addresses
-   * @param args.eraIndex era index
+   * @param args.payouts
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async payout(args: { validators: string[]; eraIndex: number }, signerPair?: KeyringPair): Promise<T> {
+  public async payout(args: { payouts: Payouts }, signerPair?: KeyringPair): Promise<T> {
     const pair = this.getSignerPair(signerPair);
-    const transactions = args.validators.map((validator) =>
-      this.root.api.tx.staking.payoutStakers(validator, args.eraIndex)
-    );
+    const transactions = args.payouts
+      .map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era)))
+      .flat();
     const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
 
     return this.root.submitExtrinsic(call, pair, {
       type: Operation.StakingPayout,
-      validators: args.validators,
+      payouts: args.payouts,
     });
   }
 }

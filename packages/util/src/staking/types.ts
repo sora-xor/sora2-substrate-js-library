@@ -4,6 +4,7 @@ export interface StakingHistory extends History {
   validators?: string[];
   payee?: string;
   controller?: string;
+  payouts: Payouts;
 }
 
 export enum StakingRewardsDestination {
@@ -34,9 +35,10 @@ export interface ValidatorInfoFull extends ValidatorInfo {
   };
 }
 
-type Unlocking = {
+export type Unlocking = {
   value: string;
   remainingEras: string;
+  remainingHours: string;
   remainingDays: string;
 };
 
@@ -109,10 +111,18 @@ export type StakeReturn = {
 };
 
 export type NominatorReward = {
-  rewardPerEra: string;
-  rewardPerDay: string;
-  rewardPerYear: string;
-};
+  era: string;
+  sumRewards: string; // per era for stash address
+  validators: {
+    address: string;
+    value: string;
+  }[];
+}[];
+
+export type Payouts = {
+  era: string;
+  validators: string[];
+}[];
 
 type JudgementsType = 'Unknown' | 'FeePaid' | 'Reasonable' | 'KnownGood' | 'OutOfDate' | 'LowQuality' | 'Erroneous';
 

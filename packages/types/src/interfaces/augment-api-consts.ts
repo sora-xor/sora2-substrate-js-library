@@ -429,6 +429,7 @@ declare module '@polkadot/api-base/types/consts' {
     };
     multisigVerifier: {
       maxPeers: u32 & AugmentedConst<ApiType>;
+      thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
     };
     scheduler: {
       /**
