@@ -4,7 +4,7 @@ def pipeline = new org.js.LibPipeline(
     steps: this,
     test: false,
     dockerImageName: 'soramitsu/substrate-js-library',
-    buildDockerImage: 'build-tools/node:20-alpine',
+    buildDockerImage: 'build-tools/node:14-alpine',
     preBuildCmds: ['yarn'],
     buildCmds: ['yarn build', 'yarn export-types:all'],
     sonarProjectName: 'sora2-substrate-js-library',
