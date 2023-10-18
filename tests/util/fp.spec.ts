@@ -268,6 +268,75 @@ describe('FPNumber', () => {
   });
 
   it.each([
+    [1, 18, 2, 18, '1'],
+    [1, 18, -2, 18, '1'],
+    [1, 18, 0, 18, 'NaN'],
+    [-1, 18, 0, 18, 'NaN'],
+    [0, 18, 1, 18, '0'],
+    [100, 18, 10, 10, '0'],
+    [100, 18, -10, 10, '0'],
+    [100, 18, 33, 10, '1'],
+    [-100, 18, 33, 10, '-1'],
+    [-100, 18, -33, 10, '-1'],
+    ['0.00000009615905582904815673828125', 32, '0.00000001373700797557830810546875', 32, '0'],
+    ['0.00000009615905582904', 20, '10', 20, '0.00000009615905582904'],
+    [4, 10, 6, 10, '4'],
+    [-4, 10, 6, 10, '-4'],
+    [7, 10, 4, 10, '3'],
+    [-7, 10, 4, 10, '-3'],
+    [-7, 10, -4, 10, '-3'],
+    [0, 10, 'Infinity', 10, '0'],
+    [0, 10, '-Infinity', 10, '0'],
+    [0, 10, 'NaN', 10, 'NaN'],
+    ['Infinity', 10, 0, 10, 'NaN'],
+    ['-Infinity', 10, 0, 10, 'NaN'],
+    ['NaN', 10, 0, 10, 'NaN'],
+    ['Infinity', 10, 'Infinity', 10, 'NaN'],
+    ['Infinity', 10, '-Infinity', 10, 'NaN'],
+    ['Infinity', 10, 'NaN', 10, 'NaN'],
+  ])('[mod] (value "%s", precision "%s") % (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
+    const instance1 = new FPNumber(num1, pr1);
+    const instance2 = new FPNumber(num2, pr2);
+    expect(instance1.mod(instance2).toString()).toBe(result);
+  });
+
+  it.each([
+    [1, 18, 2, 18, false],
+    [1, 18, -2, 18, false],
+    [1, 18, 0, 18, false],
+    [-1, 18, 0, 18, false],
+    [0, 18, 1, 18, true],
+    [100, 18, 10, 10, true],
+    [100, 18, -10, 10, true],
+    [100, 18, 33, 10, false],
+    [-100, 18, 33, 10, false],
+    [-100, 18, -33, 10, false],
+    ['0.00000009615905582904815673828125', 32, '0.00000001373700797557830810546875', 32, true],
+    ['0.00000009615905582904', 20, '10', 20, false],
+    [4, 10, 6, 10, false],
+    [-4, 10, 6, 10, false],
+    [7, 10, 4, 10, false],
+    [-7, 10, 4, 10, false],
+    [-7, 10, -4, 10, false],
+    [0, 10, 'Infinity', 10, true],
+    [0, 10, '-Infinity', 10, true],
+    [0, 10, 'NaN', 10, false],
+    ['Infinity', 10, 0, 10, false],
+    ['-Infinity', 10, 0, 10, false],
+    ['NaN', 10, 0, 10, false],
+    ['Infinity', 10, 'Infinity', 10, false],
+    ['Infinity', 10, '-Infinity', 10, false],
+    ['Infinity', 10, 'NaN', 10, false],
+  ])(
+    '[isZeroMod] (value "%s", precision "%s") % (value "%s", precision "%s") = "%s"',
+    (num1, pr1, num2, pr2, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      expect(instance1.isZeroMod(instance2)).toBe(Boolean(result));
+    }
+  );
+
+  it.each([
     [1, 18, 2, 18, '2'],
     [1, 18, -2, 18, '1'],
     [1, 18, 0, 18, '1'],
