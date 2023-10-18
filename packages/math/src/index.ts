@@ -93,7 +93,7 @@ export class FPNumber {
    * @param {...FPNumber} numbers
    */
   public static min(...numbers: Array<FPNumber>): FPNumber | null {
-    if (!numbers || !numbers.length) {
+    if (!numbers?.length) {
       return null;
     }
     const precision = numbers[0].precision;
@@ -473,4 +473,122 @@ export class FPNumber {
   public isZero(): boolean {
     return this.value.isZero();
   }
+
+  /**
+   * Return `true` if the value is less than 0
+   */
+  public isLtZero(): boolean {
+    return this.lt(FPNumber.ZERO);
+  }
+
+  /**
+   * Return `true` if the value is less than or equal to 0
+   */
+  public isLteZero(): boolean {
+    return this.lte(FPNumber.ZERO);
+  }
+
+  /**
+   * Return `true` if the value is greater than 0
+   */
+  public isGtZero(): boolean {
+    return this.gt(FPNumber.ZERO);
+  }
+
+  /**
+   * Return `true` if the value is greater than or equal to 0
+   */
+  public isGteZero(): boolean {
+    return this.gte(FPNumber.ZERO);
+  }
+
+  /**
+   * Return the **max** value (this number or the number from param)
+   * @param {FPNumber} number Another number
+   */
+  public max(number: FPNumber): FPNumber | null {
+    const precision = this.precision;
+    const filtered = equalizedBN(number, precision);
+    return new FPNumber(BigNumber.max(this.value, filtered), precision);
+  }
+
+  /**
+   * Return the **min** value (this number or the number from param)
+   * @param {FPNumber} number Another number
+   */
+  public min(number: FPNumber): FPNumber | null {
+    const precision = this.precision;
+    const filtered = equalizedBN(number, precision);
+    return new FPNumber(BigNumber.min(this.value, filtered), precision);
+  }
+
+  /**
+   * Return `true` if this number is less than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public lt(number: FPNumber): boolean {
+    return FPNumber.lt(this, number);
+  }
+
+  /**
+   * Return `true` if this number is less than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public isLessThan = this.lt;
+
+  /**
+   * Return `true` if this number is less of equal than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public lte(number: FPNumber): boolean {
+    return FPNumber.lte(this, number);
+  }
+
+  /**
+   * Return `true` if this number is less of equal than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public isLessThanOrEqualTo = this.lte;
+
+  /**
+   * Return `true` if this number is greater than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public gt(number: FPNumber): boolean {
+    return FPNumber.gt(this, number);
+  }
+
+  /**
+   * Return `true` if this number is greater than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public isGreaterThan = this.gt;
+
+  /**
+   * Return `true` if this number is greater or equal than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public gte(number: FPNumber): boolean {
+    return FPNumber.gte(this, number);
+  }
+
+  /**
+   * Return `true` if this number is greater or equal than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public isGreaterThanOrEqualTo = this.gte;
+
+  /**
+   * Return `true` if values are equal
+   * @param {FPNumber} number Another number
+   */
+  public eq(number: FPNumber): boolean {
+    return FPNumber.eq(this, number);
+  }
+
+  /**
+   * Return `true` if values are equal
+   * @param {FPNumber} number Another number
+   */
+  public isEqualTo = this.eq;
 }
