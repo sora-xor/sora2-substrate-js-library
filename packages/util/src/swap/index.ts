@@ -663,9 +663,9 @@ export class SwapModule<T> {
       liquiditySource,
       dexId
     );
-    if (!this.root.assets.getAsset(assetB.address)) {
-      this.root.assets.addAccountAsset(assetB.address);
-    }
+
+    this.root.assets.addAccountAsset(assetB.address);
+
     return this.root.submitExtrinsic(
       (this.root.api.tx.liquidityProxy as any).swap(...params.args),
       this.root.account.pair,
@@ -714,9 +714,8 @@ export class SwapModule<T> {
       liquiditySource,
       dexId
     );
-    if (!this.root.assets.getAsset(assetB.address)) {
-      this.root.assets.addAccountAsset(assetB.address);
-    }
+
+    this.root.assets.addAccountAsset(assetB.address);
 
     const formattedToAddress = receiver.slice(0, 2) === 'cn' ? receiver : this.root.formatAddress(receiver);
 
