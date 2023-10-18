@@ -145,7 +145,8 @@ const getAssetLiquiditySources = (
     [LiquiditySourceTypes.MulticollateralBondingCurvePool]: () =>
       baseAssetId === Consts.XOR && [...enabledAssets.tbc, Consts.XOR].includes(address),
     [LiquiditySourceTypes.XYKPool]: () =>
-      baseAssetId === address || xykReserves[address].every((tokenReserve) => !!Number(tokenReserve)),
+      baseAssetId === address ||
+      (Array.isArray(xykReserves[address]) && xykReserves[address].every((tokenReserve) => !!Number(tokenReserve))),
     [LiquiditySourceTypes.XSTPool]: () =>
       baseAssetId === Consts.XOR && (address === syntheticBaseAssetId || !!enabledAssets.xst[address]),
     [LiquiditySourceTypes.OrderBook]: () => baseAssetId === Consts.XOR && !!orderBookReserves[address],
