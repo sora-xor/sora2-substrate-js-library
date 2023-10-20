@@ -389,6 +389,48 @@ describe('FPNumber', () => {
   });
 
   it.each([
+    [1, 18, 2, 18, 3, 18, '3'],
+    [1, 18, -2, 18, 0, 18, '1'],
+    [1, 18, 1.123, 18, -1.123, 18, '1.123'],
+    [1, 10, 2, 18, 3, 0, '3'],
+    [1, 10, 2, 18, 3, 20, '3'],
+    [Number.NEGATIVE_INFINITY, 10, 'Infinity', 10, 0, 0, 'Infinity'],
+    [Number.NaN, 10, 'NaN', 10, 0, 0, 'NaN'],
+  ])(
+    '[max] max (value "%s", precision "%s") (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"',
+    (num1, pr1, num2, pr2, num3, pr3, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      const instance3 = new FPNumber(num3, pr3);
+      const staticMax = FPNumber.max(instance1, instance2, instance3);
+      const max = instance1.max(instance2, instance3);
+      expect(staticMax.toString()).toBe(result);
+      expect(max.toString()).toBe(result);
+    }
+  );
+
+  it.each([
+    [1, 18, 2, 18, -2, 18, '-2'],
+    [1, 18, 0, 18, -1, 18, '-1'],
+    [1, 18, 1.123, 18, -1.123, 18, '-1.123'],
+    [1, 10, 2, 18, -3, 0, '-3'],
+    [1, 10, 2, 18, 0, 20, '0'],
+    [Number.NEGATIVE_INFINITY, 10, 'Infinity', 10, 0, 0, '-Infinity'],
+    [Number.NaN, 10, 'NaN', 10, Number.NEGATIVE_INFINITY, 0, 'NaN'],
+  ])(
+    '[min] min (value "%s", precision "%s") (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"',
+    (num1, pr1, num2, pr2, num3, pr3, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      const instance3 = new FPNumber(num3, pr3);
+      const staticMin = FPNumber.min(instance1, instance2, instance3);
+      const min = instance1.min(instance2, instance3);
+      expect(staticMin.toString()).toBe(result);
+      expect(min.toString()).toBe(result);
+    }
+  );
+
+  it.each([
     [1, 18, 2, 18, true],
     [1, 18, -2, 18, false],
     [1, 18, 0, 18, false],

@@ -503,23 +503,19 @@ export class FPNumber {
   }
 
   /**
-   * Return the **max** value (this number or the number from param)
-   * @param {FPNumber} number Another number
+   * Return the **max** value (this number or the number from params)
+   * @param {Array<FPNumber>} numbers Other numbers
    */
-  public max(number: FPNumber): FPNumber | null {
-    const precision = this.precision;
-    const filtered = equalizedBN(number, precision);
-    return new FPNumber(BigNumber.max(this.value, filtered), precision);
+  public max(...numbers: Array<FPNumber>): FPNumber {
+    return FPNumber.max(this, ...numbers);
   }
 
   /**
-   * Return the **min** value (this number or the number from param)
-   * @param {FPNumber} number Another number
+   * Return the **min** value (this number or the number from params)
+   * @param {Array<FPNumber>} numbers Other numbers
    */
-  public min(number: FPNumber): FPNumber | null {
-    const precision = this.precision;
-    const filtered = equalizedBN(number, precision);
-    return new FPNumber(BigNumber.min(this.value, filtered), precision);
+  public min(...numbers: Array<FPNumber>): FPNumber {
+    return FPNumber.min(this, ...numbers);
   }
 
   /**
