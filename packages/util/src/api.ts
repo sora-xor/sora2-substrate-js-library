@@ -148,7 +148,7 @@ export class Api<T = void> extends BaseApi<T> {
     }
 
     // Update dex data
-    await this.dex.update();
+    await Promise.allSettled([this.dex.update(), this.swap.update()]);
   }
 
   /**
