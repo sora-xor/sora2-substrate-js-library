@@ -130,7 +130,13 @@ const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key
 const emptySwapResult = { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0, route: [] };
 
 export class SwapModule<T> {
+  public enabledAssets!: PrimaryMarketsEnabledAssets;
+
   constructor(private readonly root: Api<T>) {}
+
+  public async update(): Promise<void> {
+    this.enabledAssets = await this.getPrimaryMarketsEnabledAssets();
+  }
 
   private prepareSourcesForSwapParams(liquiditySource: LiquiditySourceTypes): Array<LiquiditySourceTypes> {
     return liquiditySource ? [liquiditySource] : [];
@@ -277,12 +283,12 @@ export class SwapModule<T> {
    * @param selectedSources Selected liquidity sources
    * @param dexId Selected dex id for swap
    */
-  public async subscribeOnReserves(
+  public subscribeOnReserves(
     firstAssetAddress: string,
     secondAssetAddress: string,
     selectedSources: LiquiditySourceTypes[] = [],
     dexId = DexId.XOR
-  ): Promise<Observable<QuotePayload>> {
+  ): Observable<QuotePayload> | null {
     const isXorDex = dexId === DexId.XOR;
     const xor = XOR.address;
     const dai = DAI.address;
@@ -291,8 +297,7 @@ export class SwapModule<T> {
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
     const enabledSources = [...this.root.dex.enabledSources];
     const lockedSources = [...this.root.dex.lockedSources];
-
-    const enabledAssets = isXorDex ? await this.getPrimaryMarketsEnabledAssets() : { tbc: [], xst: {} };
+    const enabledAssets = isXorDex ? { ...this.enabledAssets } : { tbc: [], xst: {} };
 
     const tbcAssets = enabledAssets?.tbc ?? [];
     const xstAssets = enabledAssets?.xst ?? {};
@@ -305,6 +310,10 @@ export class SwapModule<T> {
     const tbcUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
     const xstUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.XSTPool);
     const orderBookUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.OrderBook);
+
+    if ([xykUsed, tbcUsed, xstUsed, orderBookUsed].every((isUsed) => !isUsed)) {
+      return null;
+    }
 
     // possible paths for swap (we need to find all possible assets)
     const exchangePaths = newTrivial(
@@ -464,13 +473,15 @@ export class SwapModule<T> {
    * @param sources Liquidity sources available for swap (all sources by default)
    * @param dexId Selected Dex Id
    */
-  public async getSwapQuoteObservable(
+  public getSwapQuoteObservable(
     firstAssetAddress: string,
     secondAssetAddress: string,
     sources: LiquiditySourceTypes[] = [],
     dexId = DexId.XOR
-  ): Promise<Observable<SwapQuoteData>> {
-    const dexReservesObservable = await this.subscribeOnReserves(firstAssetAddress, secondAssetAddress, sources, dexId);
+  ): Observable<SwapQuoteData> | null {
+    const dexReservesObservable = this.subscribeOnReserves(firstAssetAddress, secondAssetAddress, sources, dexId);
+
+    if (!dexReservesObservable) return null;
 
     const swapQuoteObservable = dexReservesObservable.pipe(
       map((payload) => {
@@ -516,25 +527,30 @@ export class SwapModule<T> {
    * @param secondAssetAddress Second swap token address
    * @param sources Liquidity sources for swap (all sources by default)
    */
-  public async getDexesSwapQuoteObservable(
+  public getDexesSwapQuoteObservable(
     firstAssetAddress: string,
     secondAssetAddress: string,
     sources: LiquiditySourceTypes[] = []
-  ): Promise<Observable<SwapQuoteData>> {
+  ): Observable<SwapQuoteData> | null {
     const observables: Observable<SwapQuoteData>[] = [];
 
     for (const { dexId } of this.root.dex.dexList) {
-      const swapQuoteDataObservable = await this.getSwapQuoteObservable(
+      const swapQuoteDataObservable = this.getSwapQuoteObservable(
         firstAssetAddress,
         secondAssetAddress,
         sources,
         dexId
       );
 
-      observables.push(swapQuoteDataObservable);
+      if (swapQuoteDataObservable) {
+        observables.push(swapQuoteDataObservable);
+      }
     }
 
-    const aggregated = combineLatest(observables).pipe(
+    if (observables.length === 0) return null;
+    if (observables.length === 1) return observables[0];
+
+    return combineLatest(observables).pipe(
       map((swapQuoteData) => {
         const isAvailable = swapQuoteData.some(({ isAvailable }) => !!isAvailable);
         const liquiditySources = [...new Set(swapQuoteData.map(({ liquiditySources }) => liquiditySources).flat(1))];
@@ -588,8 +604,6 @@ export class SwapModule<T> {
         };
       })
     );
-
-    return aggregated;
   }
 
   private calcTxParams(
