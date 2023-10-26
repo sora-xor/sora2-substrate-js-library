@@ -35,3 +35,5 @@ yarn-error.log*
 !scripts/example.csv
 scripts/examples/local.ts
 scripts/examples/local.*.ts
+scripts/examples/local.js
+scripts/examples/local.*.js

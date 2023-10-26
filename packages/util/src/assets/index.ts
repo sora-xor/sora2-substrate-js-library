@@ -41,7 +41,7 @@ export function formatBalance(
   const miscFrozen = new FPNumber((data as PalletBalancesAccountData).miscFrozen || 0, assetDecimals);
   const feeFrozen = new FPNumber((data as PalletBalancesAccountData).feeFrozen || 0, assetDecimals);
   const frozen = new FPNumber((data as OrmlTokensAccountData).frozen || 0, assetDecimals);
-  const locked = FPNumber.max(miscFrozen, feeFrozen) as FPNumber;
+  const locked = FPNumber.max(miscFrozen, feeFrozen);
   // bondedData can be NaN, it can be checked by isEmpty===true
   const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
   const freeAndReserved = free.add(reserved);

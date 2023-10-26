@@ -268,6 +268,75 @@ describe('FPNumber', () => {
   });
 
   it.each([
+    [1, 18, 2, 18, '1'],
+    [1, 18, -2, 18, '1'],
+    [1, 18, 0, 18, 'NaN'],
+    [-1, 18, 0, 18, 'NaN'],
+    [0, 18, 1, 18, '0'],
+    [100, 18, 10, 10, '0'],
+    [100, 18, -10, 10, '0'],
+    [100, 18, 33, 10, '1'],
+    [-100, 18, 33, 10, '-1'],
+    [-100, 18, -33, 10, '-1'],
+    ['0.00000009615905582904815673828125', 32, '0.00000001373700797557830810546875', 32, '0'],
+    ['0.00000009615905582904', 20, '10', 20, '0.00000009615905582904'],
+    [4, 10, 6, 10, '4'],
+    [-4, 10, 6, 10, '-4'],
+    [7, 10, 4, 10, '3'],
+    [-7, 10, 4, 10, '-3'],
+    [-7, 10, -4, 10, '-3'],
+    [0, 10, 'Infinity', 10, '0'],
+    [0, 10, '-Infinity', 10, '0'],
+    [0, 10, 'NaN', 10, 'NaN'],
+    ['Infinity', 10, 0, 10, 'NaN'],
+    ['-Infinity', 10, 0, 10, 'NaN'],
+    ['NaN', 10, 0, 10, 'NaN'],
+    ['Infinity', 10, 'Infinity', 10, 'NaN'],
+    ['Infinity', 10, '-Infinity', 10, 'NaN'],
+    ['Infinity', 10, 'NaN', 10, 'NaN'],
+  ])('[mod] (value "%s", precision "%s") % (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
+    const instance1 = new FPNumber(num1, pr1);
+    const instance2 = new FPNumber(num2, pr2);
+    expect(instance1.mod(instance2).toString()).toBe(result);
+  });
+
+  it.each([
+    [1, 18, 2, 18, false],
+    [1, 18, -2, 18, false],
+    [1, 18, 0, 18, false],
+    [-1, 18, 0, 18, false],
+    [0, 18, 1, 18, true],
+    [100, 18, 10, 10, true],
+    [100, 18, -10, 10, true],
+    [100, 18, 33, 10, false],
+    [-100, 18, 33, 10, false],
+    [-100, 18, -33, 10, false],
+    ['0.00000009615905582904815673828125', 32, '0.00000001373700797557830810546875', 32, true],
+    ['0.00000009615905582904', 20, '10', 20, false],
+    [4, 10, 6, 10, false],
+    [-4, 10, 6, 10, false],
+    [7, 10, 4, 10, false],
+    [-7, 10, 4, 10, false],
+    [-7, 10, -4, 10, false],
+    [0, 10, 'Infinity', 10, true],
+    [0, 10, '-Infinity', 10, true],
+    [0, 10, 'NaN', 10, false],
+    ['Infinity', 10, 0, 10, false],
+    ['-Infinity', 10, 0, 10, false],
+    ['NaN', 10, 0, 10, false],
+    ['Infinity', 10, 'Infinity', 10, false],
+    ['Infinity', 10, '-Infinity', 10, false],
+    ['Infinity', 10, 'NaN', 10, false],
+  ])(
+    '[isZeroMod] (value "%s", precision "%s") % (value "%s", precision "%s") = "%s"',
+    (num1, pr1, num2, pr2, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      expect(instance1.isZeroMod(instance2)).toBe(Boolean(result));
+    }
+  );
+
+  it.each([
     [1, 18, 2, 18, '2'],
     [1, 18, -2, 18, '1'],
     [1, 18, 0, 18, '1'],
@@ -287,7 +356,9 @@ describe('FPNumber', () => {
   ])('[max] max (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
-    const max = FPNumber.max(instance1, instance2) as FPNumber;
+    const staticMax = FPNumber.max(instance1, instance2);
+    const max = instance1.max(instance2);
+    expect(staticMax.toString()).toBe(result);
     expect(max.toString()).toBe(result);
   });
 
@@ -311,9 +382,53 @@ describe('FPNumber', () => {
   ])('[min] min (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
-    const min = FPNumber.min(instance1, instance2) as FPNumber;
+    const staticMin = FPNumber.min(instance1, instance2);
+    const min = instance1.min(instance2);
+    expect(staticMin.toString()).toBe(result);
     expect(min.toString()).toBe(result);
   });
+
+  it.each([
+    [1, 18, 2, 18, 3, 18, '3'],
+    [1, 18, -2, 18, 0, 18, '1'],
+    [1, 18, 1.123, 18, -1.123, 18, '1.123'],
+    [1, 10, 2, 18, 3, 0, '3'],
+    [1, 10, 2, 18, 3, 20, '3'],
+    [Number.NEGATIVE_INFINITY, 10, 'Infinity', 10, 0, 0, 'Infinity'],
+    [Number.NaN, 10, 'NaN', 10, 0, 0, 'NaN'],
+  ])(
+    '[max] max (value "%s", precision "%s") (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"',
+    (num1, pr1, num2, pr2, num3, pr3, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      const instance3 = new FPNumber(num3, pr3);
+      const staticMax = FPNumber.max(instance1, instance2, instance3);
+      const max = instance1.max(instance2, instance3);
+      expect(staticMax.toString()).toBe(result);
+      expect(max.toString()).toBe(result);
+    }
+  );
+
+  it.each([
+    [1, 18, 2, 18, -2, 18, '-2'],
+    [1, 18, 0, 18, -1, 18, '-1'],
+    [1, 18, 1.123, 18, -1.123, 18, '-1.123'],
+    [1, 10, 2, 18, -3, 0, '-3'],
+    [1, 10, 2, 18, 0, 20, '0'],
+    [Number.NEGATIVE_INFINITY, 10, 'Infinity', 10, 0, 0, '-Infinity'],
+    [Number.NaN, 10, 'NaN', 10, Number.NEGATIVE_INFINITY, 0, 'NaN'],
+  ])(
+    '[min] min (value "%s", precision "%s") (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"',
+    (num1, pr1, num2, pr2, num3, pr3, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      const instance3 = new FPNumber(num3, pr3);
+      const staticMin = FPNumber.min(instance1, instance2, instance3);
+      const min = instance1.min(instance2, instance3);
+      expect(staticMin.toString()).toBe(result);
+      expect(min.toString()).toBe(result);
+    }
+  );
 
   it.each([
     [1, 18, 2, 18, true],
@@ -340,7 +455,10 @@ describe('FPNumber', () => {
     (num1, pr1, num2, pr2, result) => {
       const instance1 = new FPNumber(num1, pr1);
       const instance2 = new FPNumber(num2, pr2);
-      expect(FPNumber.lt(instance1, instance2)).toBe(result);
+      const staticLt = FPNumber.lt(instance1, instance2);
+      const lt = instance1.lt(instance2);
+      expect(staticLt).toBe(result);
+      expect(lt).toBe(result);
     }
   );
 
@@ -369,7 +487,10 @@ describe('FPNumber', () => {
     (num1, pr1, num2, pr2, result) => {
       const instance1 = new FPNumber(num1, pr1);
       const instance2 = new FPNumber(num2, pr2);
-      expect(FPNumber.gt(instance1, instance2)).toBe(result);
+      const staticGt = FPNumber.gt(instance1, instance2);
+      const gt = instance1.gt(instance2);
+      expect(staticGt).toBe(result);
+      expect(gt).toBe(result);
     }
   );
 
@@ -394,7 +515,66 @@ describe('FPNumber', () => {
     (num1, pr1, num2, pr2, result) => {
       const instance1 = new FPNumber(num1, pr1);
       const instance2 = new FPNumber(num2, pr2);
-      expect(FPNumber.eq(instance1, instance2)).toBe(result);
+      const staticEq = FPNumber.eq(instance1, instance2);
+      const eq = instance1.eq(instance2);
+      expect(staticEq).toBe(result);
+      expect(eq).toBe(result);
+    }
+  );
+
+  it.each([
+    [2, 18, 2, 18, true],
+    [-2.123, 18, -2, 18, true],
+    ['-0', 18, 0, 18, true],
+    [-1, 18, 0, 18, true],
+    [2, 10, 2, 18, true],
+    [-2.123, 10, -2, 18, true],
+    ['-0', 10, 0, 18, true],
+    [-1, 10, 0, 18, true],
+    ['NaN', 10, 'NaN', 10, false],
+    ['NaN', 10, Number.NaN, 10, false],
+    ['Infinity', 10, Number.POSITIVE_INFINITY, 18, true],
+    [Number.NEGATIVE_INFINITY, 10, '-Infinity', 18, true],
+    ['Infinity', 10, Number.NEGATIVE_INFINITY, 10, false],
+    ['Infinity', 10, Number.NaN, 10, false],
+    [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, false],
+  ])(
+    '[lte - lessThanOrEqualTo] (value "%s", precision "%s") <= (value "%s", precision "%s") -> "%s"',
+    (num1, pr1, num2, pr2, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      const staticLte = FPNumber.lte(instance1, instance2);
+      const lte = instance1.lte(instance2);
+      expect(staticLte).toBe(result);
+      expect(lte).toBe(result);
+    }
+  );
+
+  it.each([
+    [2, 18, 2, 18, true],
+    [-2, 18, -2.123, 18, true],
+    ['-0', 18, 0, 18, true],
+    [0, 18, -1, 18, true],
+    [2, 10, 2, 18, true],
+    [-2, 10, -2.123, 18, true],
+    ['-0', 10, 0, 18, true],
+    [0, 10, -1, 18, true],
+    ['NaN', 10, 'NaN', 10, false],
+    ['NaN', 10, Number.NaN, 10, false],
+    ['Infinity', 10, Number.POSITIVE_INFINITY, 18, true],
+    [Number.NEGATIVE_INFINITY, 10, '-Infinity', 18, true],
+    ['Infinity', 10, Number.NEGATIVE_INFINITY, 10, true],
+    ['Infinity', 10, Number.NaN, 10, false],
+    [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, false],
+  ])(
+    '[gte - greaterThanOrEqualTo] (value "%s", precision "%s") >= (value "%s", precision "%s") -> "%s"',
+    (num1, pr1, num2, pr2, result) => {
+      const instance1 = new FPNumber(num1, pr1);
+      const instance2 = new FPNumber(num2, pr2);
+      const staticGte = FPNumber.gte(instance1, instance2);
+      const gte = instance1.gte(instance2);
+      expect(staticGte).toBe(result);
+      expect(gte).toBe(result);
     }
   );
 
@@ -466,6 +646,102 @@ describe('FPNumber', () => {
   ])('[isZero] (value "%s", precision "%s") === 0 -> "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.isZero()).toBe(result);
+  });
+
+  it.each([
+    [0.000000000000000001, 18, false],
+    [0.0000000000000000001, 18, true],
+    [-0.000000000000000001, 18, true],
+    [-0.0000000000000000001, 18, true],
+    [0, 18, true],
+    [-0, 18, true],
+    [Number.POSITIVE_INFINITY, 18, false],
+    [Number.NEGATIVE_INFINITY, 18, true],
+    [Number.NaN, 18, false],
+    ['0.000000000000000001', 18, false],
+    ['0.0000000000000000001', 18, true],
+    ['-0.000000000000000001', 18, true],
+    ['-0.0000000000000000001', 18, true],
+    ['0', 18, true],
+    ['-0', 18, true],
+    ['Infinity', 18, false],
+    ['-Infinity', 18, true],
+    ['NaN', 18, false],
+  ])('[isLteZero] (value "%s", precision "%s") === 0 -> "%s"', (value, precision, result) => {
+    const instance = new FPNumber(value, precision);
+    expect(instance.isLteZero()).toBe(result);
+  });
+
+  it.each([
+    [0.000000000000000001, 18, true],
+    [0.0000000000000000001, 18, true],
+    [-0.000000000000000001, 18, false],
+    [-0.0000000000000000001, 18, true],
+    [0, 18, true],
+    [-0, 18, true],
+    [Number.POSITIVE_INFINITY, 18, true],
+    [Number.NEGATIVE_INFINITY, 18, false],
+    [Number.NaN, 18, false],
+    ['0.000000000000000001', 18, true],
+    ['0.0000000000000000001', 18, true],
+    ['-0.000000000000000001', 18, false],
+    ['-0.0000000000000000001', 18, true],
+    ['0', 18, true],
+    ['-0', 18, true],
+    ['Infinity', 18, true],
+    ['-Infinity', 18, false],
+    ['NaN', 18, false],
+  ])('[isGteZero] (value "%s", precision "%s") === 0 -> "%s"', (value, precision, result) => {
+    const instance = new FPNumber(value, precision);
+    expect(instance.isGteZero()).toBe(result);
+  });
+
+  it.each([
+    [0.000000000000000001, 18, false],
+    [0.0000000000000000001, 18, false],
+    [-0.000000000000000001, 18, true],
+    [-0.0000000000000000001, 18, false],
+    [0, 18, false],
+    [-0, 18, false],
+    [Number.POSITIVE_INFINITY, 18, false],
+    [Number.NEGATIVE_INFINITY, 18, true],
+    [Number.NaN, 18, false],
+    ['0.000000000000000001', 18, false],
+    ['0.0000000000000000001', 18, false],
+    ['-0.000000000000000001', 18, true],
+    ['-0.0000000000000000001', 18, false],
+    ['0', 18, false],
+    ['-0', 18, false],
+    ['Infinity', 18, false],
+    ['-Infinity', 18, true],
+    ['NaN', 18, false],
+  ])('[isLtZero] (value "%s", precision "%s") === 0 -> "%s"', (value, precision, result) => {
+    const instance = new FPNumber(value, precision);
+    expect(instance.isLtZero()).toBe(result);
+  });
+
+  it.each([
+    [0.000000000000000001, 18, true],
+    [0.0000000000000000001, 18, false],
+    [-0.000000000000000001, 18, false],
+    [-0.0000000000000000001, 18, false],
+    [0, 18, false],
+    [-0, 18, false],
+    [Number.POSITIVE_INFINITY, 18, true],
+    [Number.NEGATIVE_INFINITY, 18, false],
+    [Number.NaN, 18, false],
+    ['0.000000000000000001', 18, true],
+    ['0.0000000000000000001', 18, false],
+    ['-0.000000000000000001', 18, false],
+    ['-0.0000000000000000001', 18, false],
+    ['0', 18, false],
+    ['-0', 18, false],
+    ['Infinity', 18, true],
+    ['-Infinity', 18, false],
+    ['NaN', 18, false],
+  ])('[isGtZero] (value "%s", precision "%s") === 0 -> "%s"', (value, precision, result) => {
+    const instance = new FPNumber(value, precision);
+    expect(instance.isGtZero()).toBe(result);
   });
 
   it.each([

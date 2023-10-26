@@ -7,8 +7,6 @@ import type { QuoteResult } from './types';
 // UTILS
 export const toFp = (item: CodecString): FPNumber => FPNumber.fromCodecValue(item);
 export const getMaxPositive = (value: FPNumber) => FPNumber.max(value, FPNumber.ZERO);
-export const isGreaterThanZero = (value: FPNumber) => FPNumber.isGreaterThan(value, FPNumber.ZERO);
-export const isLessThanOrEqualToZero = (value: FPNumber) => FPNumber.isLessThanOrEqualTo(value, FPNumber.ZERO);
 export const isAssetAddress = (a: string, b: string) => a === b;
 export const isXorAsset = (asset: string, dexBaseAsset = Consts.XOR) => isAssetAddress(asset, dexBaseAsset);
 export const matchType =
@@ -20,7 +18,7 @@ export const isBetter = (isDesiredInput: boolean, amountA: FPNumber, amountB: FP
   if (isDesiredInput) {
     return FPNumber.isGreaterThan(amountA, amountB);
   } else {
-    return isGreaterThanZero(amountA) && (amountB.isZero() || FPNumber.isLessThan(amountA, amountB));
+    return amountA.isGtZero() && (amountB.isZero() || FPNumber.isLessThan(amountA, amountB));
   }
 };
 export const extremum = (isDesiredInput: boolean): FPNumber => {

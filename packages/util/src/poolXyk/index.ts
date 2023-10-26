@@ -259,7 +259,7 @@ export class PoolXykModule<T> {
     }
     const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
     const pts = FPNumber.fromCodecValue(totalSupply, poolToken.decimals);
-    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b)) as FPNumber;
+    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b));
     return [result.toCodecString(), pts.toCodecString()];
   }
 
