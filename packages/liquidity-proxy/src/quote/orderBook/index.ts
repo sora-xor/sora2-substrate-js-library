@@ -1,6 +1,6 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { isAssetAddress, safeQuoteResult, safeDivide, isGreaterThanZero } from '../../utils';
+import { isAssetAddress, safeQuoteResult, safeDivide } from '../../utils';
 import { LiquiditySourceTypes, Errors, Consts, PriceVariant } from '../../consts';
 import { OrderBookStatus } from './consts';
 
@@ -170,7 +170,7 @@ const sumMarket = (
     if (depthLimit) {
       if (limit.isBase) {
         let baseLimit = limit.value;
-        if (FPNumber.isGreaterThan(marketBaseVolume.add(baseVolume), baseLimit)) {
+        if (FPNumber.isGreaterThanOrEqualTo(marketBaseVolume.add(baseVolume), baseLimit)) {
           const delta = alignAmount(baseLimit.sub(marketBaseVolume), book);
           marketBaseVolume = marketBaseVolume.add(delta);
           marketQuoteVolume = marketQuoteVolume.add(price.mul(delta));
@@ -179,7 +179,7 @@ const sumMarket = (
         }
       } else {
         let quoteLimit = limit.value;
-        if (FPNumber.isGreaterThan(marketQuoteVolume.add(quoteLimit), quoteLimit)) {
+        if (FPNumber.isGreaterThanOrEqualTo(marketQuoteVolume.add(quoteLimit), quoteLimit)) {
           const delta = alignAmount(safeDivide(quoteLimit.sub(marketQuoteVolume), price), book);
           marketBaseVolume = marketBaseVolume.add(delta);
           marketQuoteVolume = marketQuoteVolume.add(price.mul(delta));
@@ -247,7 +247,7 @@ const calculateDeal = (
     }
   }
 
-  if (!(isGreaterThanZero(base.value) && isGreaterThanZero(quote.value))) {
+  if (!(base.value.isGtZero() && quote.value.isGtZero())) {
     throw new Error(Errors.InvalidOrderAmount);
   }
 
@@ -371,7 +371,7 @@ export const orderBookQuoteWithoutImpact = (
       }
     }
 
-    if (!isGreaterThanZero(targetAmount)) {
+    if (!targetAmount.isGtZero()) {
       throw new Error(Errors.InvalidOrderAmount);
     }
 

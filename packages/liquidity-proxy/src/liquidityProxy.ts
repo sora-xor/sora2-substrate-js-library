@@ -4,16 +4,7 @@ import { xykQuote, xykQuoteWithoutImpact, getXykReserves } from './quote/xyk';
 import { tbcQuote, tbcQuoteWithoutImpact, tbcSellPriceNoVolume, tbcBuyPriceNoVolume } from './quote/tbc';
 import { xstQuote, xstQuoteWithoutImpact, xstSellPriceNoVolume, xstBuyPriceNoVolume } from './quote/xst';
 import { orderBookQuote, orderBookQuoteWithoutImpact } from './quote/orderBook';
-import {
-  isGreaterThanZero,
-  isLessThanOrEqualToZero,
-  isAssetAddress,
-  isBetter,
-  extremum,
-  intersection,
-  matchType,
-  safeDivide,
-} from './utils';
+import { isAssetAddress, isBetter, extremum, intersection, matchType, safeDivide } from './utils';
 
 import type {
   QuotePayload,
@@ -262,7 +253,7 @@ const primaryMarketAmountBuyingBaseAsset = (
   payload: QuotePayload
 ): FPNumber => {
   try {
-    const secondaryPrice = isGreaterThanZero(baseReserve) ? safeDivide(otherReserve, baseReserve) : Consts.MAX;
+    const secondaryPrice = baseReserve.isGtZero() ? safeDivide(otherReserve, baseReserve) : Consts.MAX;
 
     const primaryBuyPrice = isAssetAddress(collateralAsset, Consts.XSTUSD)
       ? xstBuyPriceNoVolume(collateralAsset, payload)
@@ -276,7 +267,7 @@ const primaryMarketAmountBuyingBaseAsset = (
 
         if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
           return FPNumber.ZERO;
-        } else if (isLessThanOrEqualToZero(amountSecondary)) {
+        } else if (amountSecondary.isLteZero()) {
           return amount;
         } else {
           return amount.sub(amountSecondary);
@@ -290,7 +281,7 @@ const primaryMarketAmountBuyingBaseAsset = (
 
         if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
           return FPNumber.ZERO;
-        } else if (isLessThanOrEqualToZero(amountSecondary)) {
+        } else if (amountSecondary.isLteZero()) {
           return amount;
         } else {
           return amount.sub(amountSecondary);
@@ -319,7 +310,7 @@ const primaryMarketAmountSellingBaseAsset = (
   payload: QuotePayload
 ): FPNumber => {
   try {
-    const secondaryPrice = isGreaterThanZero(xorReserve) ? safeDivide(otherReserve, xorReserve) : FPNumber.ZERO;
+    const secondaryPrice = xorReserve.isGtZero() ? safeDivide(otherReserve, xorReserve) : FPNumber.ZERO;
 
     const primarySellPrice = isAssetAddress(collateralAsset, Consts.XSTUSD)
       ? xstSellPriceNoVolume(collateralAsset, payload)
@@ -333,7 +324,7 @@ const primaryMarketAmountSellingBaseAsset = (
 
         if (FPNumber.isGreaterThan(amountSecondary, amount)) {
           return FPNumber.ZERO;
-        } else if (isLessThanOrEqualToZero(amountSecondary)) {
+        } else if (amountSecondary.isLteZero()) {
           return amount;
         } else {
           return amount.sub(amountSecondary);
@@ -347,7 +338,7 @@ const primaryMarketAmountSellingBaseAsset = (
 
         if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
           return FPNumber.ZERO;
-        } else if (isLessThanOrEqualToZero(amountSecondary)) {
+        } else if (amountSecondary.isLteZero()) {
           return amount;
         } else {
           return amount.sub(amountSecondary);
@@ -388,7 +379,7 @@ const smartSplit = (
     ? primaryMarketAmountSellingBaseAsset(outputAsset, amount, isDesiredInput, baseReserve, otherReserve, payload)
     : primaryMarketAmountBuyingBaseAsset(inputAsset, amount, isDesiredInput, baseReserve, otherReserve, payload);
 
-  if (isGreaterThanZero(primaryAmount)) {
+  if (primaryAmount.isGtZero()) {
     const outcomePrimary = quotePrimaryMarket(
       inputAsset,
       outputAsset,
