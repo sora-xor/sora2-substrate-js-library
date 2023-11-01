@@ -38,21 +38,28 @@ export function formatBalance(
 ): AccountBalance {
   const free = new FPNumber(data.free || 0, assetDecimals);
   const reserved = new FPNumber(data.reserved || 0, assetDecimals);
+  // [Substrate 4: PalletBalancesAccountData]
   const miscFrozen = new FPNumber((data as PalletBalancesAccountData).miscFrozen || 0, assetDecimals);
+  // [Substrate 4: PalletBalancesAccountData]
   const feeFrozen = new FPNumber((data as PalletBalancesAccountData).feeFrozen || 0, assetDecimals);
-  const frozen = new FPNumber((data as OrmlTokensAccountData).frozen || 0, assetDecimals);
-  const locked = FPNumber.max(miscFrozen, feeFrozen);
-  // bondedData can be NaN, it can be checked by isEmpty===true
+  const frozenDeprecated = FPNumber.max(miscFrozen, feeFrozen);
+  // [Substrate 5: PalletBalancesAccountData] & OrmlTokensAccountData
+  const frozenCurrent = new FPNumber((data as OrmlTokensAccountData).frozen || 0, assetDecimals);
+  const frozen = FPNumber.max(frozenCurrent, frozenDeprecated);
+  // [SORA] bondedData can be NaN, it can be checked by isEmpty===true
   const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
-  const freeAndReserved = free.add(reserved);
+  // [SORA]
+  const locked = reserved.add(frozen).add(bonded);
+
   return {
+    free: free.toCodecString(),
     reserved: reserved.toCodecString(),
-    locked: locked.toCodecString(),
-    total: freeAndReserved.add(bonded).toCodecString(),
-    transferable: free.sub(locked).toCodecString(),
-    frozen: (frozen.isZero() ? locked.add(reserved) : frozen).add(bonded).toCodecString(),
+    frozen: frozen.toCodecString(),
     bonded: bonded.toCodecString(),
-  } as AccountBalance;
+    locked: locked.toCodecString(),
+    total: free.add(locked).toCodecString(),
+    transferable: free.sub(frozen).toCodecString(),
+  };
 }
 
 async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
