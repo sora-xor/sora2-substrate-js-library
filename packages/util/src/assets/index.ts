@@ -50,14 +50,16 @@ export function formatBalance(
   const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
   // [SORA]
   const locked = reserved.add(frozen).add(bonded);
+
   return {
-    total: free.add(locked).toCodecString(),
-    transferable: free.sub(frozen).toCodecString(),
+    free: free.toCodecString(),
     reserved: reserved.toCodecString(),
     frozen: frozen.toCodecString(),
     bonded: bonded.toCodecString(),
     locked: locked.toCodecString(),
-  } as AccountBalance;
+    total: free.add(locked).toCodecString(),
+    transferable: free.sub(frozen).toCodecString(),
+  };
 }
 
 async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {

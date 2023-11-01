@@ -23,18 +23,20 @@ export type Blacklist = Array<string>;
  * Account Balance structure. Each value === value * 10 ^ decimals
  */
 export interface AccountBalance {
-  /** free + locked */
-  total: CodecString;
-  /** free - frozen */
-  transferable: CodecString;
-  /** reserved */
+  /** [Substrate] "free" balance */
+  free: CodecString;
+  /** [Substrate] "reserved" balance */
   reserved: CodecString;
-  /** frozen */
+  /** [Substrate] "frozen" balance */
   frozen: CodecString;
-  /** bonded (referral system) */
+  /** [SORA] "bonded" balance in referral system */
   bonded: CodecString;
-  /** reserved + frozen + bonded */
+  /** [SORA] "locked" balance ("reserved" + "frozen" + "bonded") */
   locked: CodecString;
+  /** [SORA] total balance ("free" + "locked") */
+  total: CodecString;
+  /** [SORA] usable balance ("free" - "frozen") */
+  transferable: CodecString;
 }
 
 export type Asset = {
