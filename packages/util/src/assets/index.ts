@@ -49,9 +49,9 @@ export function formatBalance(
   // [SORA] bondedData can be NaN, it can be checked by isEmpty===true
   const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
   // [SORA]
-  const locked = frozen.add(bonded);
+  const locked = reserved.add(frozen).add(bonded);
   return {
-    total: free.add(reserved).add(locked).toCodecString(),
+    total: free.add(locked).toCodecString(),
     transferable: free.sub(frozen).toCodecString(),
     reserved: reserved.toCodecString(),
     frozen: frozen.toCodecString(),
