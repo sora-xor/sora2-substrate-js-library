@@ -24,17 +24,14 @@ export type Blacklist = Array<string>;
  *
  * total = free + reserved + bonded
  *
- * locked = max(miscFrozen, feeFrozen)
- *
  * transferable = free - locked
  *
  * frozen = locked + reserved + bonded
  */
 export interface AccountBalance {
-  reserved: CodecString;
   total: CodecString;
-  locked: CodecString;
   transferable: CodecString;
+  reserved: CodecString;
   frozen: CodecString;
   bonded: CodecString;
 }

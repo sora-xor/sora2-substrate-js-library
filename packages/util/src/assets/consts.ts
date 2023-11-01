@@ -17,18 +17,18 @@ export enum KnownSymbols {
 }
 
 const ZERO_STR = '0';
-export const ZeroBalance = {
-  frozen: ZERO_STR,
-  locked: ZERO_STR,
+
+export const ZeroBalance: AccountBalance = {
   total: ZERO_STR,
   transferable: ZERO_STR,
+  reserved: ZERO_STR,
+  frozen: ZERO_STR,
   bonded: ZERO_STR,
-} as AccountBalance;
+};
 
 export enum BalanceType {
   Transferable = 'transferable',
   Frozen = 'frozen',
-  Locked = 'locked',
   Reserved = 'reserved',
   Total = 'total',
   Bonded = 'bonded',
