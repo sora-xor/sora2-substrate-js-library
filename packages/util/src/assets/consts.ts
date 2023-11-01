@@ -29,12 +29,13 @@ export const ZeroBalance: AccountBalance = {
 };
 
 export enum BalanceType {
-  Transferable = 'transferable',
-  Frozen = 'frozen',
+  Free = 'free',
   Reserved = 'reserved',
-  Total = 'total',
+  Frozen = 'frozen',
   Bonded = 'bonded',
   Locked = 'locked',
+  Total = 'total',
+  Transferable = 'transferable',
 }
 
 class ArrayLike<T> extends Array<T> {
