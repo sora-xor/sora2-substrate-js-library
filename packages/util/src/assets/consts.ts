@@ -24,6 +24,7 @@ export const ZeroBalance: AccountBalance = {
   reserved: ZERO_STR,
   frozen: ZERO_STR,
   bonded: ZERO_STR,
+  locked: ZERO_STR,
 };
 
 export enum BalanceType {
@@ -32,6 +33,7 @@ export enum BalanceType {
   Reserved = 'reserved',
   Total = 'total',
   Bonded = 'bonded',
+  Locked = 'locked',
 }
 
 class ArrayLike<T> extends Array<T> {

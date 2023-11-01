@@ -45,15 +45,18 @@ export function formatBalance(
   const frozenDeprecated = FPNumber.max(miscFrozen, feeFrozen);
   // [Substrate 5: PalletBalancesAccountData] & OrmlTokensAccountData
   const frozenCurrent = new FPNumber((data as OrmlTokensAccountData).frozen || 0, assetDecimals);
-  const frozen = frozenCurrent.isZero() ? frozenDeprecated : frozenCurrent;
-  // bondedData can be NaN, it can be checked by isEmpty===true
+  const frozen = FPNumber.max(frozenCurrent, frozenDeprecated);
+  // [SORA] bondedData can be NaN, it can be checked by isEmpty===true
   const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
+  // [SORA]
+  const locked = frozen.add(bonded);
   return {
-    total: free.add(reserved).add(bonded).toCodecString(),
+    total: free.add(reserved).add(locked).toCodecString(),
     transferable: free.sub(frozen).toCodecString(),
     reserved: reserved.toCodecString(),
-    frozen: frozen.add(bonded).toCodecString(),
+    frozen: frozen.toCodecString(),
     bonded: bonded.toCodecString(),
+    locked: locked.toCodecString(),
   } as AccountBalance;
 }
 

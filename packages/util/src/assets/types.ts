@@ -21,19 +21,20 @@ export type Blacklist = Array<string>;
 
 /**
  * Account Balance structure. Each value === value * 10 ^ decimals
- *
- * total = free + reserved + bonded
- *
- * transferable = free - locked
- *
- * frozen = locked + reserved + bonded
  */
 export interface AccountBalance {
+  /** free + reserved */
   total: CodecString;
+  /** free - frozen */
   transferable: CodecString;
+  /** reserved */
   reserved: CodecString;
+  /** frozen */
   frozen: CodecString;
+  /** locked in referral system */
   bonded: CodecString;
+  /** frozen + bonded */
+  locked: CodecString;
 }
 
 export type Asset = {
