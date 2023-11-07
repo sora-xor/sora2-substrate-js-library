@@ -232,7 +232,7 @@ export class OrderBookModule<T> {
       ),
       this.root.account.pair,
       {
-        type: Operation.OrderBookCancelLimitOrder,
+        type: Operation.OrderBookPlaceLimitOrder,
         assetAddress: base,
         asset2Address: quote,
         price,
