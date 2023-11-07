@@ -747,9 +747,9 @@ export enum Operation {
   /** Ceres Liquidity Locker  */
   CeresLiquidityLockerLockLiquidity = 'CeresLiquidityLockerLockLiquidity',
   /** Order Book */
-  PlaceLimitOrder = 'PlaceLimitOrder',
-  CancelLimitOrder = 'CancelLimitOrder',
-  CancelLimitOrders = 'CancelLimitOrders',
+  OrderBookPlaceLimitOrder = 'OrderBookPlaceLimitOrder',
+  OrderBookCancelLimitOrder = 'OrderBookCancelLimitOrder',
+  OrderBookCancelLimitOrders = 'OrderBookCancelLimitOrders',
 }
 
 export interface History {
