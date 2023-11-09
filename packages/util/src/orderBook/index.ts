@@ -1,5 +1,5 @@
 import { map } from 'rxjs';
-import { FPNumber } from '@sora-substrate/math';
+import { CodecString, FPNumber } from '@sora-substrate/math';
 import { Operation } from '../BaseApi';
 import { MAX_TIMESTAMP } from './consts';
 import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
@@ -292,5 +292,18 @@ export class OrderBookModule<T> {
     if (!key) return null;
     const [base, quote] = key.split(',');
     return { base, quote };
+  }
+
+  /**
+   * Returns the network fee for orderBook.placeLimitOrder. Should be executed during each timestamp change.
+   *
+   * It won't be called frequently cuz the timestamp will be managed by the datepicker.
+   */
+  public async getPlaceOrderNetworkFee(base: string, quote: string, timestamp = MAX_TIMESTAMP): Promise<CodecString> {
+    const dexId = this.root.dex.getDexId(quote);
+
+    const tx = this.root.api.tx.orderBook.placeLimitOrder({ dexId, base, quote }, 0, 0, PriceVariant.Buy, timestamp);
+
+    return await this.root.getTransactionFee(tx);
   }
 }
