@@ -640,8 +640,13 @@ declare module '@polkadot/api-base/types/events' {
     };
     liquidityProxy: {
       /**
+       * ADAR fee which is withdrawn from reused outcome asset amount
+       * [Asset Id, ADAR Fee]
+       **/
+      ADARFeeWithdrawn: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, u128]>;
+      /**
        * Batch of swap transfers has been performed
-       * [ADAR Fee, Input amount]
+       * [Input asset ADAR Fee, Input amount]
        **/
       BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128]>;
       /**

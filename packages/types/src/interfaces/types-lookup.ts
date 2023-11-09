@@ -737,7 +737,9 @@ declare module '@polkadot/types/lookup' {
     readonly asBatchSwapExecuted: ITuple<[u128, u128]>;
     readonly isXorlessTransfer: boolean;
     readonly asXorlessTransfer: ITuple<[CommonPrimitivesAssetId32, AccountId32, AccountId32, u128, Option<Bytes>]>;
-    readonly type: 'Exchange' | 'LiquiditySourceEnabled' | 'LiquiditySourceDisabled' | 'BatchSwapExecuted' | 'XorlessTransfer';
+    readonly isAdarFeeWithdrawn: boolean;
+    readonly asAdarFeeWithdrawn: ITuple<[CommonPrimitivesAssetId32, u128]>;
+    readonly type: 'Exchange' | 'LiquiditySourceEnabled' | 'LiquiditySourceDisabled' | 'BatchSwapExecuted' | 'XorlessTransfer' | 'AdarFeeWithdrawn';
   }
 
   /** @name CommonPrimitivesLiquiditySourceId (89) */
