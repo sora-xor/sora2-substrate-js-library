@@ -17,6 +17,8 @@ import type {
 
 import type { Api } from '../api';
 import type { LimitOrder } from './types';
+import { XOR } from '../assets/consts';
+import { DexId } from '../dex/consts';
 
 const toAssetId = (asset: CommonPrimitivesAssetId32) => asset.code.toString();
 
@@ -299,10 +301,14 @@ export class OrderBookModule<T> {
    *
    * It won't be called frequently cuz the timestamp will be managed by the datepicker.
    */
-  public async getPlaceOrderNetworkFee(base: string, quote: string, timestamp = MAX_TIMESTAMP): Promise<CodecString> {
-    const dexId = this.root.dex.getDexId(quote);
-
-    const tx = this.root.api.tx.orderBook.placeLimitOrder({ dexId, base, quote }, 0, 0, PriceVariant.Buy, timestamp);
+  public async getPlaceOrderNetworkFee(timestamp = MAX_TIMESTAMP): Promise<CodecString> {
+    const tx = this.root.api.tx.orderBook.placeLimitOrder(
+      { dexId: DexId.XOR, base: XOR.address, quote: XOR.address },
+      0,
+      0,
+      PriceVariant.Buy,
+      timestamp
+    );
 
     return await this.root.getTransactionFee(tx);
   }
