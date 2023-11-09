@@ -672,7 +672,8 @@ export default {
       LiquiditySourceEnabled: 'CommonPrimitivesLiquiditySourceType',
       LiquiditySourceDisabled: 'CommonPrimitivesLiquiditySourceType',
       BatchSwapExecuted: '(u128,u128)',
-      XorlessTransfer: '(CommonPrimitivesAssetId32,AccountId32,AccountId32,u128,Option<Bytes>)'
+      XorlessTransfer: '(CommonPrimitivesAssetId32,AccountId32,AccountId32,u128,Option<Bytes>)',
+      ADARFeeWithdrawn: '(CommonPrimitivesAssetId32,u128)'
     }
   },
   /**
