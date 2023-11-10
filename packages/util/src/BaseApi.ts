@@ -396,6 +396,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 (method === 'RequestStatusUpdate' && (isEvmOperation(type) || isSubstrateOperation(type)))
               ) {
                 updated.hash = first(data.toJSON() as any);
+              } else if (section === 'orderBook' && method === 'LimitOrderPlaced') {
+                const [_, orderId] = data;
+                updated.orderId = Number(orderId.toHuman());
               } else if (section === 'system' && method === 'ExtrinsicFailed') {
                 updated.status = TransactionStatus.Error;
                 updated.endTime = Date.now();

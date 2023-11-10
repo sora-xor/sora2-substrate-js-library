@@ -18,4 +18,5 @@ export interface LimitOrder {
 
 export interface LimitOrderHistory extends History {
   orders?: Array<Partial<LimitOrder>>;
+  orderId?: number;
 }
