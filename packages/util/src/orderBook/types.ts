@@ -8,17 +8,14 @@ export interface LimitOrder {
   readonly id: number;
   readonly owner: string;
   readonly side: PriceVariant;
-  readonly price: FPNumber;
+  readonly price: FPNumber | string;
   readonly originalAmount: FPNumber;
-  readonly amount: FPNumber;
+  readonly amount: FPNumber | string;
   readonly time: number;
   readonly lifespan: number;
   readonly expiresAt: number;
 }
 
 export interface LimitOrderHistory extends History {
-  price?: string;
-  side?: PriceVariant;
-  limitOrderTimestamp?: number;
-  limitOrderIds?: number[];
+  orders?: Array<Partial<LimitOrder>>;
 }

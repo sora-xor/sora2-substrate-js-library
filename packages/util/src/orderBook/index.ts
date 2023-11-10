@@ -237,10 +237,7 @@ export class OrderBookModule<T> {
         type: Operation.OrderBookPlaceLimitOrder,
         assetAddress: base,
         asset2Address: quote,
-        price,
-        amount,
-        side,
-        limitOrderTimestamp: timestamp,
+        orders: [{ side, amount, price }],
       }
     );
   }
@@ -250,7 +247,14 @@ export class OrderBookModule<T> {
    * @param orderBookId base and quote addresses
    * @param orderId number
    */
-  public cancelLimitOrder(base: string, quote: string, orderId: number): Promise<T> {
+  public cancelLimitOrder(
+    base: string,
+    quote: string,
+    orderId: number,
+    side: PriceVariant,
+    amount: string,
+    price: string
+  ): Promise<T> {
     const dexId = this.root.dex.getDexId(quote);
 
     return this.root.submitExtrinsic(
@@ -260,7 +264,7 @@ export class OrderBookModule<T> {
         type: Operation.OrderBookCancelLimitOrder,
         assetAddress: base,
         asset2Address: quote,
-        limitOrderIds: [orderId],
+        orders: [{ id: orderId, side, amount, price }],
       }
     );
   }
@@ -270,7 +274,12 @@ export class OrderBookModule<T> {
    * @param orderBookId base and quote addresses
    * @param orderIds array ids
    */
-  public cancelLimitOrderBatch(base: string, quote: string, orderIds: number[]): Promise<T> {
+  public cancelLimitOrderBatch(
+    base: string,
+    quote: string,
+    orderIds: number[],
+    orders: Partial<LimitOrder>[]
+  ): Promise<T> {
     const dexId = this.root.dex.getDexId(quote);
 
     return this.root.submitExtrinsic(
@@ -280,7 +289,7 @@ export class OrderBookModule<T> {
         type: Operation.OrderBookCancelLimitOrders,
         assetAddress: base,
         asset2Address: quote,
-        limitOrderIds: orderIds,
+        orders,
       }
     );
   }
