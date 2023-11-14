@@ -267,6 +267,9 @@ export class StakingModule<T> {
    */
   public async getStashByController(controllerAddress: string): Promise<string> {
     const codec = await this.root.api.query.staking.ledger(controllerAddress);
+
+    if (codec.isEmpty) return '';
+
     const data = codec.unwrap();
 
     return data?.stash?.toString() ?? '';
