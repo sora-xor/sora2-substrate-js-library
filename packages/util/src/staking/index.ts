@@ -260,6 +260,19 @@ export class StakingModule<T> {
   }
 
   /**
+   * **CONTROLLER**
+   * CONTROLLER - STASH relation
+   * Get observable information about stash address, locked funds and claimed rewards
+   * @param controllerAddress address of controller account
+   */
+  public async getStashByController(controllerAddress: string): Promise<string> {
+    const codec = await this.root.api.query.staking.ledger(controllerAddress);
+    const data = codec.unwrap();
+
+    return data?.stash?.toString() ?? '';
+  }
+
+  /**
    * **STASH**
    * STASH - CONTROLLER relation
    * Get observable controller account address for stash account
