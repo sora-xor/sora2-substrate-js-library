@@ -276,6 +276,16 @@ export class StakingModule<T> {
 
   /**
    * **STASH**
+   * STASH - CONTROLLER relation
+   * Get controller account address for stash account
+   * @param stashAddress address of stash account
+   */
+  public getController(stashAddress: string): Promise<string> {
+    return this.root.api.query.staking.bonded(stashAddress).toString()
+  }
+
+  /**
+   * **STASH**
    * Get observable rewards destination of stash account
    * @param stashAddress address of stash account
    * @returns rewards destination
