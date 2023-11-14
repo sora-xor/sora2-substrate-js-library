@@ -1036,6 +1036,7 @@ declare module '@polkadot/api-base/types/storage' {
     orderBook: {
       aggregatedAsks: AugmentedQuery<ApiType, (arg: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => Observable<BTreeMap<CommonBalanceUnit, CommonBalanceUnit>>, [OrderBookOrderBookId]>;
       aggregatedBids: AugmentedQuery<ApiType, (arg: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => Observable<BTreeMap<CommonBalanceUnit, CommonBalanceUnit>>, [OrderBookOrderBookId]>;
+      alignmentCursor: AugmentedQuery<ApiType, (arg: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => Observable<Option<u128>>, [OrderBookOrderBookId]>;
       asks: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, arg2: CommonBalanceUnit | { inner?: any; isDivisible?: any } | string | Uint8Array) => Observable<Option<Vec<u128>>>, [OrderBookOrderBookId, CommonBalanceUnit]>;
       bids: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, arg2: CommonBalanceUnit | { inner?: any; isDivisible?: any } | string | Uint8Array) => Observable<Option<Vec<u128>>>, [OrderBookOrderBookId, CommonBalanceUnit]>;
       expirationsAgenda: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[OrderBookOrderBookId, u128]>>>, [u32]>;

@@ -741,6 +741,10 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Failed to cancel expired order
        **/
+      AlignmentFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, error: SpRuntimeDispatchError }>;
+      /**
+       * Failed to cancel expired order
+       **/
       ExpirationFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError }>;
       /**
        * User canceled their limit order or the limit order has reached the end of its lifespan
