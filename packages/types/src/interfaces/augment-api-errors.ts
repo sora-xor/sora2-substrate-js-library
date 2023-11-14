@@ -2050,6 +2050,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Order book already exists for this trading pair
        **/
       OrderBookAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * Order Book is locked for technical maintenance. Try again later.
+       **/
+      OrderBookIsLocked: AugmentedError<ApiType>;
       OrderBookIsNotEmpty: AugmentedError<ApiType>;
       /**
        * It is impossible to place the limit order because bounds of the max count of prices for the side have been reached
