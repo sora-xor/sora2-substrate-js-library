@@ -1238,6 +1238,7 @@ export default {
         ownerId: 'AccountId32',
         direction: 'CommonPrimitivesPriceVariant',
         amount: 'OrderBookOrderAmount',
+        averagePrice: 'CommonBalanceUnit',
       },
       LimitOrderIsSplitIntoMarketOrderAndLimitOrder: {
         orderBookId: 'OrderBookOrderBookId',
@@ -1331,7 +1332,7 @@ export default {
    * Lookup149: order_book::types::CancelReason
    **/
   OrderBookCancelReason: {
-    _enum: ['Manual', 'Expired']
+    _enum: ['Manual', 'Expired', 'Aligned']
   },
   /**
    * Lookup150: leaf_provider::pallet::Event<T>
