@@ -1393,6 +1393,7 @@ declare module '@polkadot/types/lookup' {
       readonly ownerId: AccountId32;
       readonly direction: CommonPrimitivesPriceVariant;
       readonly amount: OrderBookOrderAmount;
+      readonly averagePrice: CommonBalanceUnit;
     } & Struct;
     readonly isLimitOrderIsSplitIntoMarketOrderAndLimitOrder: boolean;
     readonly asLimitOrderIsSplitIntoMarketOrderAndLimitOrder: {
@@ -1497,7 +1498,8 @@ declare module '@polkadot/types/lookup' {
   interface OrderBookCancelReason extends Enum {
     readonly isManual: boolean;
     readonly isExpired: boolean;
-    readonly type: 'Manual' | 'Expired';
+    readonly isAligned: boolean;
+    readonly type: 'Manual' | 'Expired' | 'Aligned';
   }
 
   /** @name LeafProviderEvent (150) */
