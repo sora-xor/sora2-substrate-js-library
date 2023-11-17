@@ -315,14 +315,18 @@ declare module '@polkadot/api-base/types/storage' {
     };
     ceresGovernancePlatform: {
       /**
+       * Account which has permissions for creating a poll
+       **/
+      authorityAccount: AugmentedQuery<ApiType, () => Observable<AccountId32>, []>;
+      /**
        * Pallet storage version
        **/
       palletStorageVersion: AugmentedQuery<ApiType, () => Observable<CeresGovernancePlatformStorageVersion>, []>;
-      pollData: AugmentedQuery<ApiType, (arg: Bytes | string | Uint8Array) => Observable<CeresGovernancePlatformPollInfo>, [Bytes]>;
+      pollData: AugmentedQuery<ApiType, (arg: H256 | string | Uint8Array) => Observable<Option<CeresGovernancePlatformPollInfo>>, [H256]>;
       /**
        * A vote of a particular user for a particular poll
        **/
-      voting: AugmentedQuery<ApiType, (arg1: Bytes | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<CeresGovernancePlatformVotingInfo>, [Bytes, AccountId32]>;
+      voting: AugmentedQuery<ApiType, (arg1: H256 | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<CeresGovernancePlatformVotingInfo>>, [H256, AccountId32]>;
     };
     ceresLaunchpad: {
       /**

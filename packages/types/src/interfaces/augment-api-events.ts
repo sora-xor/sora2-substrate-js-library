@@ -154,17 +154,17 @@ declare module '@polkadot/api-base/types/events' {
     };
     ceresGovernancePlatform: {
       /**
-       * Create poll [who, option, start_timestamp, end_timestamp]
+       * Create poll [who, title, poll_asset, start_timestamp, end_timestamp]
        **/
-      Created: AugmentedEvent<ApiType, [AccountId32, u32, u64, u64]>;
+      Created: AugmentedEvent<ApiType, [AccountId32, Bytes, CommonPrimitivesAssetId32, u64, u64]>;
       /**
-       * Voting [who, poll, option, balance]
+       * Voting [who, poll, option, asset, balance]
        **/
-      Voted: AugmentedEvent<ApiType, [AccountId32, Bytes, u32, u128]>;
+      Voted: AugmentedEvent<ApiType, [AccountId32, H256, u32, CommonPrimitivesAssetId32, u128]>;
       /**
-       * Withdrawn [who, balance]
+       * Withdrawn [who, poll, asset, balance]
        **/
-      Withdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      Withdrawn: AugmentedEvent<ApiType, [AccountId32, H256, CommonPrimitivesAssetId32, u128]>;
     };
     ceresLaunchpad: {
       /**

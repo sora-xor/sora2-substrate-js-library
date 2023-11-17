@@ -423,15 +423,15 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Create poll
        **/
-      createPoll: AugmentedSubmittable<(pollId: Bytes | string | Uint8Array, numberOfOptions: u32 | AnyNumber | Uint8Array, pollStartTimestamp: u64 | AnyNumber | Uint8Array, pollEndTimestamp: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u32, u64, u64]>;
+      createPoll: AugmentedSubmittable<(pollAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, pollStartTimestamp: u64 | AnyNumber | Uint8Array, pollEndTimestamp: u64 | AnyNumber | Uint8Array, title: Bytes | string | Uint8Array, description: Bytes | string | Uint8Array, options: Vec<Bytes> | (Bytes | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u64, u64, Bytes, Bytes, Vec<Bytes>]>;
       /**
        * Voting for option
        **/
-      vote: AugmentedSubmittable<(pollId: Bytes | string | Uint8Array, votingOption: u32 | AnyNumber | Uint8Array, numberOfVotes: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u32, u128]>;
+      vote: AugmentedSubmittable<(pollId: H256 | string | Uint8Array, votingOption: u32 | AnyNumber | Uint8Array, numberOfVotes: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, u32, u128]>;
       /**
        * Withdraw voting funds
        **/
-      withdraw: AugmentedSubmittable<(pollId: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
+      withdraw: AugmentedSubmittable<(pollId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
     ceresLaunchpad: {
       /**
