@@ -349,6 +349,10 @@ declare module '@polkadot/api-base/types/errors' {
     };
     ceresGovernancePlatform: {
       /**
+       * Duplicate options
+       **/
+      DuplicateOptions: AugmentedError<ApiType>;
+      /**
        * Funds already withdrawn,
        **/
       FundsAlreadyWithdrawn: AugmentedError<ApiType>;
@@ -357,29 +361,33 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidEndTimestamp: AugmentedError<ApiType>;
       /**
-       * Invalid number of option
-       **/
-      InvalidNumberOfOption: AugmentedError<ApiType>;
-      /**
        * Invalid number of votes
        **/
       InvalidNumberOfVotes: AugmentedError<ApiType>;
+      /**
+       * Invalid option
+       **/
+      InvalidOption: AugmentedError<ApiType>;
       /**
        * Invalid start timestamp
        **/
       InvalidStartTimestamp: AugmentedError<ApiType>;
       /**
-       * Invalid votes
+       * Invalid voting options
        **/
-      InvalidVotes: AugmentedError<ApiType>;
+      InvalidVotingOptions: AugmentedError<ApiType>;
       /**
        * Not enough funds
        **/
       NotEnoughFunds: AugmentedError<ApiType>;
       /**
-       * Poll id already exists
+       * Not voted
        **/
-      PollIdAlreadyExists: AugmentedError<ApiType>;
+      NotVoted: AugmentedError<ApiType>;
+      /**
+       * Poll does not exist
+       **/
+      PollDoesNotExist: AugmentedError<ApiType>;
       /**
        * Poll is finished
        **/
@@ -392,6 +400,14 @@ declare module '@polkadot/api-base/types/errors' {
        * Poll is not started
        **/
       PollIsNotStarted: AugmentedError<ApiType>;
+      /**
+       * Too many voting options
+       **/
+      TooManyVotingOptions: AugmentedError<ApiType>;
+      /**
+       * Unauthorized
+       **/
+      Unauthorized: AugmentedError<ApiType>;
       /**
        * Vote denied
        **/
