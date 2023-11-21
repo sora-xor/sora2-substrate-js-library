@@ -846,6 +846,16 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongUpperBound: AugmentedError<ApiType>;
     };
+    dexapi: {
+      /**
+       * Liquidity source is already disabled
+       **/
+      LiquiditySourceAlreadyDisabled: AugmentedError<ApiType>;
+      /**
+       * Liquidity source is already enabled
+       **/
+      LiquiditySourceAlreadyEnabled: AugmentedError<ApiType>;
+    };
     dexManager: {
       /**
        * DEX with given Id is not registered.

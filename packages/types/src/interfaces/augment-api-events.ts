@@ -386,6 +386,16 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Voted: AugmentedEvent<ApiType, [voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote], { voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote }>;
     };
+    dexapi: {
+      /**
+       * Liquidity source is disabled
+       **/
+      LiquiditySourceDisabled: AugmentedEvent<ApiType, [CommonPrimitivesLiquiditySourceType]>;
+      /**
+       * Liquidity source is enabled
+       **/
+      LiquiditySourceEnabled: AugmentedEvent<ApiType, [CommonPrimitivesLiquiditySourceType]>;
+    };
     dispatch: {
       /**
        * We have failed to decode a Call from the message.
