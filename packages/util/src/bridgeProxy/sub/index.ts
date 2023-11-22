@@ -1,7 +1,6 @@
 import { FPNumber } from '@sora-substrate/math';
 import { assert } from '@polkadot/util';
 
-import { XOR } from '../../assets/consts';
 import { BaseApi, isSubstrateOperation, Operation } from '../../BaseApi';
 import { Messages } from '../../logger';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
@@ -22,8 +21,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   // override it from frontend config if needed
   public parachainIds: ParachainIds = {
-    // Sora parachain in Kusama (Rococo)
-    [SubNetwork.Mainnet]: 2011,
+    [SubNetwork.RococoSora]: 2011,
+    [SubNetwork.KusamaSora]: 2011,
   };
 
   private prepareNetworkParam(subNetwork: SubNetwork) {
@@ -49,8 +48,9 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
     switch (subNetwork) {
       case SubNetwork.Kusama:
+        return SubNetwork.KusamaSora;
       case SubNetwork.Rococo:
-        return SubNetwork.Mainnet;
+        return SubNetwork.RococoSora;
       default:
         throw new Error(`"${subNetwork}" has not SORA parachain`);
     }
@@ -69,7 +69,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public isSoraParachain(subNetwork: SubNetwork): boolean {
-    return subNetwork === SubNetwork.Mainnet;
+    return [SubNetwork.KusamaSora, SubNetwork.RococoSora].includes(subNetwork);
   }
 
   private getRecipientArg(subNetwork: SubNetwork, recipient: string) {
@@ -190,19 +190,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     }
   }
 
-  // assets for Sora parachain transfer
-  private getMainnetAssets(): Record<string, SubAsset> {
-    return {
-      [XOR.address]: {
-        assetKind: SubAssetKind.Thischain,
-        decimals: 18,
-      },
-    };
-  }
-
   public async getRegisteredAssets(subNetwork: SubNetwork): Promise<Record<string, SubAsset>> {
-    if (this.isSoraParachain(subNetwork)) return this.getMainnetAssets();
-
     return this.isRelayChain(subNetwork)
       ? await this.getRelayChainAssets(subNetwork)
       : await this.getParaChainAssets(subNetwork);
