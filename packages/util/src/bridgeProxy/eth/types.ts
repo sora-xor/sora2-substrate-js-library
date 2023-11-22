@@ -2,11 +2,7 @@ import type { CodecString } from '@sora-substrate/math';
 
 import type { Operation, History } from '../../BaseApi';
 import type { BridgeNetworkType, BridgeTxDirection, BridgeTxStatus } from '../consts';
-import type { EthAssetKind, EthCurrencyType, EthRequestType, EthNetwork } from './consts';
-
-export type EthNetworkParam = {
-  [BridgeNetworkType.Eth]: EthNetwork;
-};
+import type { EthAssetKind, EthCurrencyType, EthRequestType } from './consts';
 
 export interface EthHistory extends History {
   type: Operation.EthBridgeIncoming | Operation.EthBridgeOutgoing;

@@ -15,6 +15,14 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     super('evmHistory');
   }
 
+  private prepareNetworkParam(evmNetwork: EvmNetwork) {
+    const genericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
+      [BridgeNetworkType.Evm]: evmNetwork,
+    });
+
+    return genericNetworkId;
+  }
+
   public generateHistoryItem(params: EvmHistory): EvmHistory | null {
     if (!params.type) {
       return null;
@@ -62,7 +70,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     return await getUserTransactions(
       this.api,
       accountAddress,
-      { [BridgeNetworkType.Evm]: evmNetwork },
+      this.prepareNetworkParam(evmNetwork),
       evmNetwork,
       BridgeNetworkType.Evm
     );
@@ -73,7 +81,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       this.api,
       accountAddress,
       hash,
-      { [BridgeNetworkType.Evm]: evmNetwork },
+      this.prepareNetworkParam(evmNetwork),
       evmNetwork,
       BridgeNetworkType.Evm
     );
@@ -84,26 +92,22 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       this.apiRx,
       accountAddress,
       hash,
-      { [BridgeNetworkType.Evm]: evmNetwork },
+      this.prepareNetworkParam(evmNetwork),
       evmNetwork,
       BridgeNetworkType.Evm
     );
   }
 
   public async getLockedAssets(evmNetwork: EvmNetwork, assetAddress: string) {
-    return await getLockedAssets(this.api, { [BridgeNetworkType.Evm]: evmNetwork }, assetAddress);
+    return await getLockedAssets(this.api, this.prepareNetworkParam(evmNetwork), assetAddress);
   }
 
   /** UNCHECKED */
   protected getTransferExtrinsic(asset: Asset, recipient: string, amount: string | number, evmNetwork: EvmNetwork) {
+    const network = this.prepareNetworkParam(evmNetwork);
     const value = new FPNumber(amount, asset.decimals).toCodecString();
 
-    return this.api.tx.bridgeProxy.burn(
-      { [BridgeNetworkType.Evm]: evmNetwork },
-      asset.address,
-      { [BridgeAccountType.Evm]: recipient },
-      value
-    );
+    return this.api.tx.bridgeProxy.burn(network, asset.address, { [BridgeAccountType.Evm]: recipient }, value);
   }
 
   public async transfer(

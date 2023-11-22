@@ -4,6 +4,8 @@ export enum SubAssetKind {
 }
 
 export enum SubNetwork {
+  /** Sora parachain (Kusama | Rococo) */
+  Mainnet = 'Mainnet',
   /** Kusama relaychain */
   Kusama = 'Kusama',
   /** Polkadot relaychain */
@@ -11,12 +13,6 @@ export enum SubNetwork {
   /** Rococo relaychain (Kusama testnet) */
   Rococo = 'Rococo',
   Custom = 'Custom', // not used yet
-  /** SORA parachain in Rococo relaychain */
-  RococoSora = 'RococoSora',
-  /** Karura parachain in Kusama relaychain */
-  KusamaKarura = 'KusamaKarura',
-  /** SORA parachain in Kusama relaychain */
-  KusamaSora = 'KusamaSora',
 }
 
 export enum XcmVersionedMultiLocation {

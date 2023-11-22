@@ -2,6 +2,7 @@ import { map } from 'rxjs';
 
 import type { Observable } from '@polkadot/types/types';
 import type {
+  BridgeTypesGenericNetworkId,
   BridgeProxyBridgeRequest,
   BridgeTypesGenericAccount,
   BridgeTypesGenericTimepoint,
@@ -15,7 +16,7 @@ import type { CodecString } from '@sora-substrate/math';
 import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
 import { SubNetwork } from './sub/consts';
 
-import type { BridgeNetworkParam, BridgeNetworkId, BridgeTransactionData } from './types';
+import type { BridgeNetworkId, BridgeTransactionData } from './types';
 import type { ParachainIds } from './sub/types';
 
 function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
@@ -142,7 +143,7 @@ function formatBridgeTx(
 export async function getUserTransactions(
   api: ApiPromise,
   accountAddress: string,
-  networkParam: BridgeNetworkParam,
+  networkParam: BridgeTypesGenericNetworkId,
   networkId: BridgeNetworkId,
   networkType: BridgeNetworkType,
   parachainIds?: ParachainIds
@@ -171,7 +172,7 @@ export async function getTransactionDetails(
   api: ApiPromise,
   accountAddress: string,
   hash: string,
-  networkParam: BridgeNetworkParam,
+  networkParam: BridgeTypesGenericNetworkId,
   networkId: BridgeNetworkId,
   networkType: BridgeNetworkType,
   parachainIds?: ParachainIds
@@ -190,7 +191,7 @@ export function subscribeOnTransactionDetails(
   apiRx: ApiRx,
   accountAddress: string,
   hash: string,
-  networkParam: BridgeNetworkParam,
+  networkParam: BridgeTypesGenericNetworkId,
   networkId: BridgeNetworkId,
   networkType: BridgeNetworkType,
   parachainIds?: ParachainIds
@@ -207,7 +208,7 @@ export function subscribeOnTransactionDetails(
 /** Get the amount of the asset locked on the bridge on the SORA side */
 export async function getLockedAssets(
   api: ApiPromise,
-  networkParam: BridgeNetworkParam,
+  networkParam: BridgeTypesGenericNetworkId,
   assetAddress: string
 ): Promise<CodecString | null> {
   try {
