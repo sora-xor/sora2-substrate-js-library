@@ -25,13 +25,10 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     [SubNetwork.KusamaSora]: 2011,
   };
 
-  private prepareNetworkParam(subNetwork: SubNetwork) {
-    if (!(this.isRelayChain(subNetwork) || this.isSoraParachain(subNetwork))) {
-      throw new Error(`"${subNetwork}" network parameter is not defined`);
-    }
-
+  public prepareNetworkParam(subNetwork: SubNetwork) {
+    const relaychain = this.getRelayChain(subNetwork);
     const genericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
-      [BridgeNetworkType.Sub]: subNetwork,
+      [BridgeNetworkType.Sub]: relaychain,
     });
 
     return genericNetworkId;
@@ -209,7 +206,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       accountAddress,
       this.prepareNetworkParam(subNetwork),
       subNetwork,
-      BridgeNetworkType.Sub,
       this.parachainIds
     );
   }
@@ -221,7 +217,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       hash,
       this.prepareNetworkParam(subNetwork),
       subNetwork,
-      BridgeNetworkType.Sub,
       this.parachainIds
     );
   }
@@ -233,7 +228,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       hash,
       this.prepareNetworkParam(subNetwork),
       subNetwork,
-      BridgeNetworkType.Sub,
       this.parachainIds
     );
   }

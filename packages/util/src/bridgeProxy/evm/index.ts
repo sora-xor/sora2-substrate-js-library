@@ -15,7 +15,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     super('evmHistory');
   }
 
-  private prepareNetworkParam(evmNetwork: EvmNetwork) {
+  public prepareNetworkParam(evmNetwork: EvmNetwork) {
     const genericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
       [BridgeNetworkType.Evm]: evmNetwork,
     });
@@ -67,13 +67,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
   }
 
   public async getUserTransactions(accountAddress: string, evmNetwork: EvmNetwork) {
-    return await getUserTransactions(
-      this.api,
-      accountAddress,
-      this.prepareNetworkParam(evmNetwork),
-      evmNetwork,
-      BridgeNetworkType.Evm
-    );
+    return await getUserTransactions(this.api, accountAddress, this.prepareNetworkParam(evmNetwork), evmNetwork);
   }
 
   public async getTransactionDetails(accountAddress: string, evmNetwork: EvmNetwork, hash: string) {
@@ -82,8 +76,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       accountAddress,
       hash,
       this.prepareNetworkParam(evmNetwork),
-      evmNetwork,
-      BridgeNetworkType.Evm
+      evmNetwork
     );
   }
 
@@ -93,8 +86,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       accountAddress,
       hash,
       this.prepareNetworkParam(evmNetwork),
-      evmNetwork,
-      BridgeNetworkType.Evm
+      evmNetwork
     );
   }
 

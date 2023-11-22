@@ -23,7 +23,7 @@ export class EthBridgeApi<T> extends BaseApi<T> {
     super('ethBridgeHistory');
   }
 
-  private prepareNetworkParam(_evmNetwork: EvmNetwork) {
+  public prepareNetworkParam(_evmNetwork: EvmNetwork) {
     const genericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
       [BridgeNetworkType.Eth]: this.externalNetwork,
     });
