@@ -4,10 +4,6 @@ import type { Operation, History } from '../../BaseApi';
 import type { BridgeTxStatus, BridgeNetworkType } from '../consts';
 import type { SubNetwork, SubAssetKind } from './consts';
 
-export type SubNetworkParam = {
-  [BridgeNetworkType.Sub]: SubNetwork;
-};
-
 export interface SubHistory extends History {
   type: Operation.SubstrateIncoming | Operation.SubstrateOutgoing;
   /* SORA network bridge transaction hash */

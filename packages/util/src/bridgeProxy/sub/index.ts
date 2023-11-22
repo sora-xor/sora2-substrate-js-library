@@ -21,12 +21,18 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   // override it from frontend config if needed
   public parachainIds: ParachainIds = {
-    // Sora
     [SubNetwork.RococoSora]: 2011,
     [SubNetwork.KusamaSora]: 2011,
-    // Karura
-    [SubNetwork.KusamaKarura]: 2000,
   };
+
+  public prepareNetworkParam(subNetwork: SubNetwork) {
+    const relaychain = this.getRelayChain(subNetwork);
+    const genericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
+      [BridgeNetworkType.Sub]: relaychain,
+    });
+
+    return genericNetworkId;
+  }
 
   public getRelayChain(subNetwork: SubNetwork): SubNetwork {
     if (this.isRelayChain(subNetwork)) return subNetwork;
@@ -34,7 +40,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     switch (subNetwork) {
       case SubNetwork.RococoSora:
         return SubNetwork.Rococo;
-      case SubNetwork.KusamaKarura:
       case SubNetwork.KusamaSora:
         return SubNetwork.Kusama;
       default:
@@ -47,7 +52,6 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
     switch (subNetwork) {
       case SubNetwork.Kusama:
-      case SubNetwork.KusamaKarura:
         return SubNetwork.KusamaSora;
       case SubNetwork.Rococo:
         return SubNetwork.RococoSora;
@@ -56,10 +60,10 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     }
   }
 
-  public getParachainId(subNetwork: SubNetwork): number {
-    const parachainId = this.parachainIds[subNetwork];
+  public getParachainId(parachain: SubNetwork): number {
+    const parachainId = this.parachainIds[parachain];
 
-    if (!parachainId) throw new Error(`Parachain id is not defined for "${subNetwork}" parachain`);
+    if (!parachainId) throw new Error(`Parachain id is not defined for "${parachain}" parachain`);
 
     return parachainId;
   }
@@ -69,7 +73,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public isSoraParachain(subNetwork: SubNetwork): boolean {
-    return [SubNetwork.RococoSora, SubNetwork.KusamaSora].includes(subNetwork);
+    return [SubNetwork.KusamaSora, SubNetwork.RococoSora].includes(subNetwork);
   }
 
   private getRecipientArg(subNetwork: SubNetwork, recipient: string) {
@@ -200,11 +204,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     return await getUserTransactions(
       this.api,
       accountAddress,
-      {
-        [BridgeNetworkType.Sub]: this.getRelayChain(subNetwork),
-      },
+      this.prepareNetworkParam(subNetwork),
       subNetwork,
-      BridgeNetworkType.Sub,
       this.parachainIds
     );
   }
@@ -214,9 +215,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       this.api,
       accountAddress,
       hash,
-      { [BridgeNetworkType.Sub]: this.getRelayChain(subNetwork) },
+      this.prepareNetworkParam(subNetwork),
       subNetwork,
-      BridgeNetworkType.Sub,
       this.parachainIds
     );
   }
@@ -226,23 +226,22 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       this.apiRx,
       accountAddress,
       hash,
-      { [BridgeNetworkType.Sub]: this.getRelayChain(subNetwork) },
+      this.prepareNetworkParam(subNetwork),
       subNetwork,
-      BridgeNetworkType.Sub,
       this.parachainIds
     );
   }
 
   public async getLockedAssets(subNetwork: SubNetwork, assetAddress: string) {
-    return await getLockedAssets(this.api, { [BridgeNetworkType.Sub]: subNetwork }, assetAddress);
+    return await getLockedAssets(this.api, this.prepareNetworkParam(subNetwork), assetAddress);
   }
 
   protected getTransferExtrinsic(asset: Asset, recipient: string, amount: string | number, subNetwork: SubNetwork) {
-    const network = this.getRelayChain(subNetwork);
+    const network = this.prepareNetworkParam(subNetwork);
     const recipientData = this.getRecipientArg(subNetwork, recipient);
     const value = new FPNumber(amount, asset.decimals).toCodecString();
 
-    return this.api.tx.bridgeProxy.burn({ [BridgeNetworkType.Sub]: network }, asset.address, recipientData, value);
+    return this.api.tx.bridgeProxy.burn(network, asset.address, recipientData, value);
   }
 
   public async transfer(

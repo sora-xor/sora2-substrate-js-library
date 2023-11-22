@@ -10,11 +10,8 @@ export enum SubNetwork {
   Polkadot = 'Polkadot',
   /** Rococo relaychain (Kusama testnet) */
   Rococo = 'Rococo',
-  Custom = 'Custom', // not used yet
   /** SORA parachain in Rococo relaychain */
   RococoSora = 'RococoSora',
-  /** Karura parachain in Kusama relaychain */
-  KusamaKarura = 'KusamaKarura',
   /** SORA parachain in Kusama relaychain */
   KusamaSora = 'KusamaSora',
 }
