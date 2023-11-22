@@ -1,8 +1,12 @@
+import { FPNumber } from '@sora-substrate/math';
+
 import type { ApiPromise } from '@polkadot/api';
 import type { CodecString } from '@sora-substrate/math';
 import type { u32, u128 } from '@polkadot/types';
 import type { Option } from '@polkadot/types-codec';
 import type { XcmV3MultiLocation } from '@polkadot/types/lookup';
+
+import type { Asset } from '../../assets/types';
 
 export class SoraParachainApi {
   public async getRelayChainBlockNumber(blockHash: string, api: ApiPromise): Promise<number> {
@@ -26,5 +30,12 @@ export class SoraParachainApi {
     const amount = (await api.query.xcmApp.assetMinimumAmount(multilocation)) as Option<u128>;
 
     return amount.isSome ? amount.unwrap().toString() : '0';
+  }
+
+  public getTransferExtrinsic(asset: Asset, recipient: string, amount: string | number, api: ApiPromise) {
+    const account = api.createType('AccountId32', recipient);
+    const value = new FPNumber(amount, asset.decimals).toCodecString();
+
+    return api.tx.xcmApp.sendXorToMainnet(account, value);
   }
 }

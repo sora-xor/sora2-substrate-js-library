@@ -40,7 +40,14 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   public getRelayChain(subNetwork: SubNetwork): SubNetwork {
     if (this.isRelayChain(subNetwork)) return subNetwork;
 
-    throw new Error(`"${subNetwork}" has not relaychain`);
+    switch (subNetwork) {
+      case SubNetwork.RococoSora:
+        return SubNetwork.Rococo;
+      case SubNetwork.KusamaSora:
+        return SubNetwork.Kusama;
+      default:
+        throw new Error(`"${subNetwork}" has not relaychain`);
+    }
   }
 
   public getSoraParachain(subNetwork: SubNetwork): SubNetwork {
@@ -56,10 +63,10 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     }
   }
 
-  public getParachainId(subNetwork: SubNetwork): number {
-    const parachainId = this.parachainIds[subNetwork];
+  public getParachainId(parachain: SubNetwork): number {
+    const parachainId = this.parachainIds[parachain];
 
-    if (!parachainId) throw new Error(`Parachain id is not defined for "${subNetwork}" parachain`);
+    if (!parachainId) throw new Error(`Parachain id is not defined for "${parachain}" parachain`);
 
     return parachainId;
   }
