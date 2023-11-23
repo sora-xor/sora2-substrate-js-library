@@ -81,8 +81,11 @@ export class BridgeProxyModule<T> {
           const subNetwork = genericNetworkId.asSub;
           const name = subNetwork.toString();
 
+          // adding parachains we work through relaychain
           if (subNetwork.isRococo) {
-            // adding parachains we work through relaychain
+            apps[type].push(SubNetwork.RococoSora);
+          } else if (subNetwork.isKusama) {
+            apps[type].push(SubNetwork.KusamaSora);
           }
 
           apps[type].push(name as SubNetwork);
