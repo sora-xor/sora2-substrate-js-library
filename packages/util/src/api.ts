@@ -1,14 +1,12 @@
 import { assert, isHex } from '@polkadot/util';
-import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, cryptoWaitReady } from '@polkadot/util-crypto';
-import { Keyring } from '@polkadot/ui-keyring';
+import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
-import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
-import { BaseApi, Operation, KeyringType, OnChainIdentity } from './BaseApi';
+import { BaseApi, Operation, OnChainIdentity, keyring } from './BaseApi';
 import { Messages } from './logger';
 import { BridgeProxyModule } from './bridgeProxy';
 import { SwapModule } from './swap';
@@ -29,14 +27,10 @@ import type { AccountAsset, Asset } from './assets/types';
 import type { HistoryItem } from './BaseApi';
 import { OriginalIdentity } from './staking/types';
 
-let keyring!: Keyring;
-
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
  */
 export class Api<T = void> extends BaseApi<T> {
-  private readonly type: KeypairType = KeyringType;
-
   public readonly defaultSlippageTolerancePercent = 0.5;
   public readonly seedLength = 12;
 
@@ -104,22 +98,6 @@ export class Api<T = void> extends BaseApi<T> {
   public setAccount(account: CreateResult): void {
     super.setAccount(account);
     this.bridgeProxy.setAccount(account);
-  }
-
-  public async initKeyring(silent = false): Promise<void> {
-    keyring = new Keyring();
-
-    await cryptoWaitReady();
-
-    try {
-      // Restore accounts from keyring storage (localStorage)
-      keyring.loadAll({ type: this.type });
-    } catch (error) {
-      // Dont throw "Unable to initialise options more than once" error in silent mode
-      if (!silent) {
-        throw error;
-      }
-    }
   }
 
   public async restoreActiveAccount(): Promise<void> {
@@ -268,16 +246,6 @@ export class Api<T = void> extends BaseApi<T> {
     const meta = { name: name || '' };
 
     return keyring.createFromUri(suri, meta, this.type);
-  }
-
-  /**
-   * Get already imported account pair by address
-   * @param address account address
-   */
-  public getAccountPair(address: string): KeyringPair {
-    const defaultAddress = this.formatAddress(address, false);
-
-    return keyring.getPair(defaultAddress);
   }
 
   /**

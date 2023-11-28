@@ -2,11 +2,13 @@ import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { Observable, Subscriber } from 'rxjs';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { Keyring } from '@polkadot/ui-keyring';
+import { decodeAddress, encodeAddress, cryptoWaitReady } from '@polkadot/util-crypto';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import { connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
+import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
@@ -82,6 +84,8 @@ export const KeyringType = 'sr25519';
 // We don't need to know real account address for checking network fees
 const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
 
+export let keyring!: Keyring;
+
 export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   /**
    * Network fee values which can be used right after `calcStaticNetworkFees` method.
@@ -130,6 +134,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   } as NetworkFeesObject;
 
   public readonly prefix = 69;
+  public readonly type: KeypairType = KeyringType;
 
   private _history: AccountHistory<HistoryItem> = {};
 
@@ -284,20 +289,46 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     this.account = account;
   }
 
+  public async initKeyring(silent = false): Promise<void> {
+    keyring = new Keyring();
+
+    await cryptoWaitReady();
+
+    try {
+      // Restore accounts from keyring storage (localStorage)
+      keyring.loadAll({ type: this.type });
+    } catch (error) {
+      // Dont throw "Unable to initialise options more than once" error in silent mode
+      if (!silent) {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Get already imported account pair by address
+   * @param address account address
+   */
+  public getAccountPair(address: string): KeyringPair {
+    const defaultAddress = this.formatAddress(address, false);
+
+    return keyring.getPair(defaultAddress);
+  }
+
   /**
    * Unlock pair to sign tx
    * @param password
    */
-  public unlockPair(password: string): void {
-    this.account.pair.unlock(password);
+  public unlockPair(password: string, pair: KeyringPair = this.account.pair): void {
+    pair.unlock(password);
   }
 
   /**
    * Lock pair
    */
-  public lockPair(): void {
-    if (!this.account.pair?.isLocked) {
-      this.account.pair.lock();
+  public lockPair(pair: KeyringPair = this.account.pair): void {
+    if (!pair?.isLocked) {
+      pair.lock();
     }
   }
 
@@ -318,32 +349,33 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     this.storage = storage;
   }
 
-  private getAccountWithOptions(): AccountWithOptions {
+  private getAccountWithOptions(pair: KeyringPair): AccountWithOptions {
     return {
-      account: this.accountPair.isLocked ? this.accountPair.address : this.accountPair,
-      options: { signer: this.signer },
+      account: pair.isLocked ? pair.address : pair,
+      options: { signer: pair.isLocked ? this.signer : undefined },
     };
   }
 
   public async submitApiExtrinsic(
     api: ApiPromise,
     extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
+    pair?: KeyringPair,
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
+    const signer = pair ?? this.account.pair;
     const nonce = await api.rpc.system.accountNextIndex(signer.address);
-    const { account, options } = this.getAccountWithOptions();
+    const { account, options } = this.getAccountWithOptions(signer);
     // Signing the transaction
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
 
     // we should lock pair, if it's not locked
-    this.shouldPairBeLocked && this.lockPair();
+    this.shouldPairBeLocked && this.lockPair(signer);
 
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
 
     // history initial params
-    const from = isNotFaucetOperation && signer ? this.address : undefined;
+    const from = isNotFaucetOperation && signer ? signer.address : undefined;
     const txId = signedTx.hash.toString();
     const id = historyData.id ?? txId;
     const type = historyData.type;
@@ -456,11 +488,11 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
   public async submitExtrinsic(
     extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
+    pair?: KeyringPair,
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    return await this.submitApiExtrinsic(this.api, extrinsic, signer, historyData, unsigned);
+    return await this.submitApiExtrinsic(this.api, extrinsic, pair, historyData, unsigned);
   }
 
   /**
@@ -548,7 +580,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         case Operation.StakingBondAndNominate:
           const transactions = [
             this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress }),
-            this.api.tx.staking.nominate([mockAccountAddress])
+            this.api.tx.staking.nominate([mockAccountAddress]),
           ];
 
           return this.api.tx.utility.batchAll(transactions);

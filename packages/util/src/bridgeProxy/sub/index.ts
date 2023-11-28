@@ -245,8 +245,9 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public async transfer(
-    asset: Asset,
+    sender: string,
     recipient: string,
+    asset: Asset,
     amount: string | number,
     subNetwork: SubNetwork,
     historyId?: string
@@ -260,8 +261,9 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       assetAddress: asset.address,
       amount: `${amount}`,
     };
+    const accountPair = this.getAccountPair(sender);
 
-    await this.submitExtrinsic(extrinsic, this.account.pair, historyItem);
+    await this.submitExtrinsic(extrinsic, accountPair, historyItem);
   }
 
   public async getNetworkFee(asset: Asset, subNetwork: SubNetwork): Promise<CodecString> {
