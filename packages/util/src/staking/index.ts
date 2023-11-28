@@ -698,7 +698,7 @@ export class StakingModule<T> {
     const call = this.root.api.tx.utility.batchAll(transactions);
 
     return this.root.submitExtrinsic(call, pair, {
-      type: Operation.StakingBond,
+      type: Operation.StakingBondAndNominate,
       symbol: XOR.symbol,
       assetAddress: XOR.address,
       amount: `${args.value}`,
