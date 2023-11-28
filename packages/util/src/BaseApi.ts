@@ -117,6 +117,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.DemeterFarmingGetRewards]: '0',
     [Operation.CeresLiquidityLockerLockLiquidity]: '0',
     [Operation.StakingBond]: '0',
+    [Operation.StakingBondAndNominate]: '0',
     [Operation.StakingBondExtra]: '0',
     [Operation.StakingRebond]: '0',
     [Operation.StakingUnbond]: '0',
@@ -544,6 +545,13 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
         case Operation.StakingBond:
           return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
+        case Operation.StakingBondAndNominate:
+          const transactions = [
+            this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress }),
+            this.api.tx.staking.nominate([mockAccountAddress])
+          ];
+
+          return this.api.tx.utility.batchAll(transactions);
         case Operation.StakingBondExtra:
           return this.api.tx.staking.bondExtra(0);
         case Operation.StakingRebond:
@@ -605,6 +613,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.DemeterFarmingGetRewards,
       Operation.CeresLiquidityLockerLockLiquidity,
       Operation.StakingBond,
+      Operation.StakingBondAndNominate,
       Operation.StakingBondExtra,
       Operation.StakingRebond,
       Operation.StakingUnbond,
@@ -729,6 +738,7 @@ export enum Operation {
   ReferralSetInvitedUser = 'ReferralSetInvitedUser',
   /** Staking */
   StakingBond = 'StakingBond',
+  StakingBondAndNominate = 'StakingBondAndNominate',
   StakingBondExtra = 'StakingBondExtra',
   StakingRebond = 'StakingRebond',
   StakingUnbond = 'StakingUnbond',
