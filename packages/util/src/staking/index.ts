@@ -676,6 +676,38 @@ export class StakingModule<T> {
 
   /**
    * **STASH**
+   * Lock the stake
+   * @param args.value amount to bond (XOR)
+   * @param args.controller address of controller account
+   * @param args.payee destination of rewards (one of payee or account address for payments)
+   * @param args.validators list of validators addresses to nominate
+   * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
+   */
+  public async bondAndNominate(
+    args: { value: NumberLike; controller: string; payee: StakingRewardsDestination | string, validators: string[] },
+    signerPair?: KeyringPair
+  ): Promise<T> {
+    const pair = this.getSignerPair(signerPair);
+    const params = this.calcBondParams(args.value, args.controller, args.payee);
+
+    const transactions = [
+      this.root.api.tx.staking.bond(...params), this.root.api.tx.staking.bond(...params),
+      this.root.api.tx.staking.nominate(args.validators)
+    ];
+
+    const call = this.root.api.tx.utility.batchAll(transactions);
+
+    return this.root.submitExtrinsic(call, pair, {
+      type: Operation.StakingBond,
+      symbol: XOR.symbol,
+      assetAddress: XOR.address,
+      amount: `${args.value}`,
+      validators: args.validators,
+    });
+  }
+
+  /**
+   * **STASH**
    * Add more funds to an existing stake
    * @param args.value amount add to stake
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
