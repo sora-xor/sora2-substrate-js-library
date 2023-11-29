@@ -691,7 +691,7 @@ export class StakingModule<T> {
     const params = this.calcBondParams(args.value, args.controller, args.payee);
 
     const transactions = [
-      this.root.api.tx.staking.bond(...params), this.root.api.tx.staking.bond(...params),
+      this.root.api.tx.staking.bond(...params),
       this.root.api.tx.staking.nominate(args.validators)
     ];
 
