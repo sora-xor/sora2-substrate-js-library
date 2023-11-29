@@ -691,14 +691,14 @@ export class StakingModule<T> {
     const params = this.calcBondParams(args.value, args.controller, args.payee);
 
     const transactions = [
-      this.root.api.tx.staking.bond(...params), this.root.api.tx.staking.bond(...params),
+      this.root.api.tx.staking.bond(...params),
       this.root.api.tx.staking.nominate(args.validators)
     ];
 
     const call = this.root.api.tx.utility.batchAll(transactions);
 
     return this.root.submitExtrinsic(call, pair, {
-      type: Operation.StakingBond,
+      type: Operation.StakingBondAndNominate,
       symbol: XOR.symbol,
       assetAddress: XOR.address,
       amount: `${args.value}`,
