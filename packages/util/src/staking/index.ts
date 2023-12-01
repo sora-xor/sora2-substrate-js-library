@@ -393,7 +393,7 @@ export class StakingModule<T> {
       .mul(new FPNumber(COUNT_ERAS_IN_DAILY))
       .mul(new FPNumber(COUNT_DAYS_IN_YEAR));
     const nominatorShare = FPNumber.ONE.sub(FPNumber.fromCodecValue(commission, COMMISSION_DECIMALS));
-    const apy = ratioReturnStakeToTotalStake.sub(FPNumber.ONE).mul(FPNumber.HUNDRED).mul(nominatorShare);
+    const apy = ratioReturnStakeToTotalStake.mul(FPNumber.HUNDRED).mul(nominatorShare);
 
     return {
       stakeReturn: stakeReturn.toCodecString(),
