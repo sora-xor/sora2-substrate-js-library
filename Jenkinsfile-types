@@ -1,6 +1,6 @@
 @Library('jenkins-library@duty/update_types_conditions') _
 
-def pipeline = new org.js.LibPipeline(
+def pipeline = new org.js.CheckTypes(
     steps: this,
     test: false,
     dockerImageName: 'soramitsu/substrate-js-library',
@@ -15,6 +15,7 @@ def pipeline = new org.js.LibPipeline(
     dojoProductType: 'sora',
     prStatusNotif: true,
     typesCheck: true,
+    status: true,
     jobCron: '0 5,14 * * 1-5'
 )
 pipeline.runPipeline()
