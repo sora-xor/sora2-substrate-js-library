@@ -14,10 +14,9 @@ import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CodecString } from '@sora-substrate/math';
 
 import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
-import { SubNetwork } from './sub/consts';
 
 import type { BridgeNetworkId, BridgeTransactionData } from './types';
-import type { ParachainIds } from './sub/types';
+import type { SubNetwork, ParachainIds } from './sub/types';
 import type { EvmNetwork } from './evm/types';
 
 function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
