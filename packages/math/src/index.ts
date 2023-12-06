@@ -269,28 +269,11 @@ export class FPNumber {
     return format ? formatted.toFormat(format) : formatted.toFormat();
   }
 
-  public toLocaleString(): string {
-    let [integer, decimal] = this.format().split('.');
-
-    if (integer.length > 3) {
-      const integerReversed = integer.split('').reverse();
-      const lastIndex = integerReversed.length - 1;
-      integer = integerReversed
-        .reduce((prev, current, index) => {
-          prev += current;
-          if (++index % 3 === 0 && index !== integerReversed.length) {
-            // Avoid thousands' delimiter for negative numbers
-            if (index === lastIndex && integerReversed[lastIndex] === '-') {
-              return prev;
-            }
-            prev += FPNumber.DELIMITERS_CONFIG.thousand;
-          }
-          return prev;
-        })
-        .split('')
-        .reverse()
-        .join('');
-    }
+  public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES): string {
+    let [integer, decimal] = this.format(dp, {
+      groupSeparator: FPNumber.DELIMITERS_CONFIG.thousand,
+      decimalSeparator: FPNumber.DELIMITERS_CONFIG.decimal,
+    }).split(FPNumber.DELIMITERS_CONFIG.decimal);
 
     return decimal ? integer.concat(FPNumber.DELIMITERS_CONFIG.decimal, decimal) : integer;
   }
@@ -351,7 +334,7 @@ export class FPNumber {
    * @param {number} [dp=precision] Decimal places
    */
   public dp(dp: number = this.precision): FPNumber {
-    return FPNumber.fromNatural(this.toNumber(dp));
+    return FPNumber.fromNatural(this.toNumber(dp), dp);
   }
 
   /**
