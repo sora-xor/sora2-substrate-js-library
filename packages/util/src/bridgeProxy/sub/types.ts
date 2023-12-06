@@ -2,7 +2,29 @@ import type { CodecString } from '@sora-substrate/math';
 
 import type { Operation, History } from '../../BaseApi';
 import type { BridgeTxStatus, BridgeNetworkType } from '../consts';
-import type { SubNetwork, SubAssetKind } from './consts';
+import type { SubNetworkId, SubAssetKind } from './consts';
+
+export type SubAsset = {
+  assetKind: SubAssetKind;
+  decimals: number;
+};
+
+export type Standalone = SubNetworkId.Liberland;
+
+export type Relaychain = SubNetworkId.Kusama | SubNetworkId.Rococo | SubNetworkId.Polkadot | SubNetworkId.Alphanet;
+
+export type SoraParachain = SubNetworkId.KusamaSora | SubNetworkId.RococoSora | SubNetworkId.AlphanetSora;
+
+export type Parachain = SoraParachain; // only SORA parachains yet
+/** Used in frontend app */
+export type SubNetwork = Relaychain | Parachain | Standalone;
+
+/** Defined on SORA blockchain enum */
+export type SubNetworkChainId = Exclude<SubNetwork, SoraParachain>;
+
+export type ParachainIds = Partial<{
+  [key in Parachain]: number;
+}>;
 
 /**
  * Network definitions:
@@ -48,12 +70,3 @@ export interface SubHistory extends History {
   externalNetworkType?: BridgeNetworkType;
   externalNetworkFee?: CodecString;
 }
-
-export type SubAsset = {
-  assetKind: SubAssetKind;
-  decimals: number;
-};
-
-export type ParachainIds = Partial<{
-  [key in SubNetwork]: number;
-}>;
