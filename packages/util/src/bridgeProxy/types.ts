@@ -3,7 +3,7 @@ import type { CodecString } from '@sora-substrate/math';
 import type { BridgeTxDirection, BridgeTxStatus, BridgeNetworkType } from './consts';
 
 import type { EvmNetwork, EvmSupportedApp } from './evm/types';
-import type { SubNetwork } from './sub/consts';
+import type { SubNetwork } from './sub/types';
 
 export type BridgeNetworkId = EvmNetwork | SubNetwork;
 

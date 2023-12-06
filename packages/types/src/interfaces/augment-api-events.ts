@@ -792,7 +792,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * New order book is created by user
        **/
-      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, creator: AccountId32], { orderBookId: OrderBookOrderBookId, creator: AccountId32 }>;
+      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, creator: Option<AccountId32>], { orderBookId: OrderBookOrderBookId, creator: Option<AccountId32> }>;
       /**
        * Order book is deleted
        **/
