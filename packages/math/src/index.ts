@@ -271,6 +271,7 @@ export class FPNumber {
 
   public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES): string {
     let [integer, decimal] = this.format(dp, {
+      groupSize: 3,
       groupSeparator: FPNumber.DELIMITERS_CONFIG.thousand,
       decimalSeparator: FPNumber.DELIMITERS_CONFIG.decimal,
     }).split(FPNumber.DELIMITERS_CONFIG.decimal);
