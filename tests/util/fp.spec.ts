@@ -141,11 +141,11 @@ describe('FPNumber', () => {
     ['0.000001', 18, 6, '0.000001'],
     ['0.000001', 18, 18, '0.000001'],
 
-    ['-123.456', 18, 0, '-124'],
-    ['-123.456', 18, 1, '-123.5'],
-    ['-123.456', 18, 2, '-123.46'],
-    ['-123.456', 18, 3, '-123.456'],
-    ['-123.456', 18, 18, '-123.456'],
+    ['-123.456', 18, 0, '-124', '-123'],
+    ['-123.456', 18, 1, '-123.5', '-123.4'],
+    ['-123.456', 18, 2, '-123.46', '-123.45'],
+    ['-123.456', 18, 3, '-123.456', '-123.456'],
+    ['-123.456', 18, 18, '-123.456', '-123.456'],
 
     ['1.123456789012345678', 18, 0, '1'],
     ['1.123456789012345678', 18, 1, '1.1'],
@@ -177,11 +177,11 @@ describe('FPNumber', () => {
     [Number.NaN, 18, 18, 'NaN'],
   ])(
     '[dp] instance of "%s" with "%s" precision converted to "%s" decimal places should display "%s"',
-    (value, precision, decimals, result) => {
+    (value, precision, decimals, result1, result2?) => {
       const instance1 = new FPNumber(value, precision);
       const instance2 = new FPNumber(value, decimals);
-      expect(instance1.dp(decimals).toString()).toBe(result);
-      expect(instance2.dp(precision).toString()).toBe(result);
+      expect(instance1.dp(decimals).toString()).toBe(result1);
+      expect(instance2.dp(precision).toString()).toBe(result2 ?? result1);
     }
   );
 
