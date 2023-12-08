@@ -335,7 +335,7 @@ export class FPNumber {
    * @param {number} [dp=precision] Decimal places
    */
   public dp(dp: number = this.precision): FPNumber {
-    return FPNumber.fromNatural(this.toNumber(dp), dp);
+    return FPNumber.fromNatural(this.toFixed(dp), dp);
   }
 
   /**
