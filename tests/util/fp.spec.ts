@@ -129,6 +129,39 @@ describe('FPNumber', () => {
   });
 
   it.each([
+    ['-0', 18, 18, '0'],
+    ['-0', 18, 2, '0'],
+    ['-0', 2, 18, '0'],
+    ['-0', 0, 18, '0'],
+    ['0.000001', 18, 18, '0.000001'],
+    ['0.000001', 18, 2, '0'],
+    ['0.000001', 2, 18, '0'],
+    ['0.000001', 0, 18, '0'],
+    ['-123.456', 18, 18, '-123.456'],
+    ['-123.456', 18, 2, '-123.45'],
+    ['-123.456', 2, 18, '-123.45'],
+    ['-123.456', 0, 18, '-123'],
+    ['1.123456789012345678', 18, 18, '1.123456789012345678'],
+    ['1.123456789012345678', 18, 2, '1.12'],
+    ['1.123456789012345678', 2, 18, '1.12'],
+    ['1.123456789012345678', 0, 18, '1'],
+    [Number.POSITIVE_INFINITY, 18, 0, 'Infinity'],
+    [Number.POSITIVE_INFINITY, 18, 10, 'Infinity'],
+    [Number.NEGATIVE_INFINITY, 18, 0, '-Infinity'],
+    [Number.NEGATIVE_INFINITY, 18, 10, '-Infinity'],
+    [Number.NaN, 18, 18, 'NaN'],
+    [Number.NaN, 18, 2, 'NaN'],
+    [Number.NaN, 2, 18, 'NaN'],
+    [Number.NaN, 0, 18, 'NaN'],
+  ])(
+    '[dp] instance of "%s" with "%s" precision converted to "%s" decimal places should display "%s"',
+    (value, precision, decimals, result) => {
+      const instance = new FPNumber(value, precision);
+      expect(instance.dp(decimals).toString()).toBe(result);
+    }
+  );
+
+  it.each([
     ['1234567890', 8, '12.3456789'],
     ['12345678912', 10, '1.2345678912'],
     ['1000000000', 9, '1'],
