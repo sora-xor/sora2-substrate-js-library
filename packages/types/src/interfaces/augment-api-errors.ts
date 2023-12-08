@@ -2535,9 +2535,34 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CannotFillUnknownOrderBook: AugmentedError<ApiType>;
       /**
+       * Provided range is incorrect, check that lower bound is less or equal than the upper one.
+       **/
+      EmptyRandomRange: AugmentedError<ApiType>;
+      /**
+       * Price step, best price, and worst price must be a multiple of
+       * order book's tick size. Price step must also be non-zero.
+       **/
+      IncorrectPrice: AugmentedError<ApiType>;
+      /**
        * The account intended for removal is not in whitelist
        **/
       NotInWhitelist: AugmentedError<ApiType>;
+      /**
+       * Order Book already exists
+       **/
+      OrderBookAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * The range for generating order amounts must be within order book's accepted values.
+       **/
+      OutOfBoundsRandomRange: AugmentedError<ApiType>;
+      /**
+       * The count of created orders is too large.
+       **/
+      TooManyOrders: AugmentedError<ApiType>;
+      /**
+       * The count of prices to fill is too large.
+       **/
+      TooManyPrices: AugmentedError<ApiType>;
       /**
        * Cannot add an account to the whitelist: it's full
        **/
