@@ -335,9 +335,7 @@ export class FPNumber {
    * @param {number} [dp=precision] Decimal places
    */
   public dp(dp: number = this.precision): FPNumber {
-    let result = this.value.div(10 ** this.precision);
-    result = result.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
-    return new FPNumber(result, dp);
+    return FPNumber.fromNatural(this.toNumber(dp), dp);
   }
 
   /**
