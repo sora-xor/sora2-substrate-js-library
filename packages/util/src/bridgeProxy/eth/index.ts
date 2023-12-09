@@ -3,7 +3,7 @@ import { assert } from '@polkadot/util';
 import { map, combineLatest } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
-import type { EthBridgeRequestsOffchainRequest } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericNetworkId, EthBridgeRequestsOffchainRequest } from '@polkadot/types/lookup';
 
 import { BaseApi, Operation, isEthOperation } from '../../BaseApi';
 import { Messages } from '../../logger';
@@ -23,8 +23,8 @@ export class EthBridgeApi<T> extends BaseApi<T> {
     super('ethBridgeHistory');
   }
 
-  public prepareNetworkParam(_evmNetwork: EvmNetwork) {
-    const genericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
+  public prepareNetworkParam(_evmNetwork: EvmNetwork): BridgeTypesGenericNetworkId {
+    const genericNetworkId: BridgeTypesGenericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
       [BridgeNetworkType.Eth]: this.externalNetwork,
     });
 
