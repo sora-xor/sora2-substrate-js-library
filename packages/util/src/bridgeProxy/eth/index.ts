@@ -23,6 +23,14 @@ export class EthBridgeApi<T> extends BaseApi<T> {
     super('ethBridgeHistory');
   }
 
+  public prepareNetworkParam(_evmNetwork: EvmNetwork) {
+    const genericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
+      [BridgeNetworkType.Eth]: this.externalNetwork,
+    });
+
+    return genericNetworkId;
+  }
+
   public initAccountStorage(): void {
     super.initAccountStorage();
     // 1.18 migration
@@ -199,6 +207,6 @@ export class EthBridgeApi<T> extends BaseApi<T> {
   }
 
   public async getLockedAssets(evmNetwork: EvmNetwork, assetAddress: string) {
-    return await getLockedAssets(this.api, { [BridgeNetworkType.Eth]: this.externalNetwork }, assetAddress);
+    return await getLockedAssets(this.api, this.prepareNetworkParam(evmNetwork), assetAddress);
   }
 }

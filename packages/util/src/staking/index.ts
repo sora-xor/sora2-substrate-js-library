@@ -260,6 +260,22 @@ export class StakingModule<T> {
   }
 
   /**
+   * **CONTROLLER**
+   * CONTROLLER - STASH relation
+   * Get observable information about stash address, locked funds and claimed rewards
+   * @param controllerAddress address of controller account
+   */
+  public async getStashByController(controllerAddress: string): Promise<string> {
+    const codec = await this.root.api.query.staking.ledger(controllerAddress);
+
+    if (codec.isEmpty) return '';
+
+    const data = codec.unwrap();
+
+    return data?.stash?.toString() ?? '';
+  }
+
+  /**
    * **STASH**
    * STASH - CONTROLLER relation
    * Get observable controller account address for stash account
@@ -377,7 +393,7 @@ export class StakingModule<T> {
       .mul(new FPNumber(COUNT_ERAS_IN_DAILY))
       .mul(new FPNumber(COUNT_DAYS_IN_YEAR));
     const nominatorShare = FPNumber.ONE.sub(FPNumber.fromCodecValue(commission, COMMISSION_DECIMALS));
-    const apy = ratioReturnStakeToTotalStake.sub(FPNumber.ONE).mul(FPNumber.HUNDRED).mul(nominatorShare);
+    const apy = ratioReturnStakeToTotalStake.mul(FPNumber.HUNDRED).mul(nominatorShare);
 
     return {
       stakeReturn: stakeReturn.toCodecString(),
@@ -655,6 +671,35 @@ export class StakingModule<T> {
       symbol: XOR.symbol,
       assetAddress: XOR.address,
       amount: `${args.value}`,
+    });
+  }
+
+  /**
+   * **STASH**
+   * Lock the stake
+   * @param args.value amount to bond (XOR)
+   * @param args.controller address of controller account
+   * @param args.payee destination of rewards (one of payee or account address for payments)
+   * @param args.validators list of validators addresses to nominate
+   * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
+   */
+  public async bondAndNominate(
+    args: { value: NumberLike; controller: string; payee: StakingRewardsDestination | string; validators: string[] },
+    signerPair?: KeyringPair
+  ): Promise<T> {
+    const pair = this.getSignerPair(signerPair);
+    const params = this.calcBondParams(args.value, args.controller, args.payee);
+
+    const transactions = [this.root.api.tx.staking.bond(...params), this.root.api.tx.staking.nominate(args.validators)];
+
+    const call = this.root.api.tx.utility.batchAll(transactions);
+
+    return this.root.submitExtrinsic(call, pair, {
+      type: Operation.StakingBondAndNominate,
+      symbol: XOR.symbol,
+      assetAddress: XOR.address,
+      amount: `${args.value}`,
+      validators: args.validators,
     });
   }
 

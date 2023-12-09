@@ -10,7 +10,7 @@ import { EvmBridgeApi } from './evm';
 import { SubBridgeApi } from './sub';
 
 import { BridgeNetworkType } from './consts';
-import { SubNetwork } from './sub/consts';
+import { SubNetworkId } from './sub/consts';
 import type { Api } from '../api';
 import type { Storage } from '../storage';
 import type { SupportedApps } from './types';
@@ -81,11 +81,14 @@ export class BridgeProxyModule<T> {
           const subNetwork = genericNetworkId.asSub;
           const name = subNetwork.toString();
 
+          // adding parachains we work through relaychain
           if (subNetwork.isRococo) {
-            // adding parachains we work through relaychain
+            apps[type].push(SubNetworkId.RococoSora);
+          } else if (subNetwork.isKusama) {
+            apps[type].push(SubNetworkId.KusamaSora);
           }
 
-          apps[type].push(name as SubNetwork);
+          apps[type].push(name as SubNetworkId);
         }
       });
 

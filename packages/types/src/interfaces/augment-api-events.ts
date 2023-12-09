@@ -154,17 +154,17 @@ declare module '@polkadot/api-base/types/events' {
     };
     ceresGovernancePlatform: {
       /**
-       * Create poll [who, option, start_timestamp, end_timestamp]
+       * Create poll [who, title, poll_asset, start_timestamp, end_timestamp]
        **/
-      Created: AugmentedEvent<ApiType, [AccountId32, u32, u64, u64]>;
+      Created: AugmentedEvent<ApiType, [AccountId32, Bytes, CommonPrimitivesAssetId32, u64, u64]>;
       /**
-       * Voting [who, poll, option, balance]
+       * Voting [who, poll, option, asset, balance]
        **/
-      Voted: AugmentedEvent<ApiType, [AccountId32, Bytes, u32, u128]>;
+      Voted: AugmentedEvent<ApiType, [AccountId32, H256, u32, CommonPrimitivesAssetId32, u128]>;
       /**
-       * Withdrawn [who, balance]
+       * Withdrawn [who, poll, asset, balance]
        **/
-      Withdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      Withdrawn: AugmentedEvent<ApiType, [AccountId32, H256, CommonPrimitivesAssetId32, u128]>;
     };
     ceresLaunchpad: {
       /**
@@ -385,6 +385,16 @@ declare module '@polkadot/api-base/types/events' {
        * An account has voted in a referendum
        **/
       Voted: AugmentedEvent<ApiType, [voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote], { voter: AccountId32, refIndex: u32, vote: PalletDemocracyVoteAccountVote }>;
+    };
+    dexapi: {
+      /**
+       * Liquidity source is disabled
+       **/
+      LiquiditySourceDisabled: AugmentedEvent<ApiType, [CommonPrimitivesLiquiditySourceType]>;
+      /**
+       * Liquidity source is enabled
+       **/
+      LiquiditySourceEnabled: AugmentedEvent<ApiType, [CommonPrimitivesLiquiditySourceType]>;
     };
     dispatch: {
       /**
@@ -640,8 +650,13 @@ declare module '@polkadot/api-base/types/events' {
     };
     liquidityProxy: {
       /**
+       * ADAR fee which is withdrawn from reused outcome asset amount
+       * [Asset Id, ADAR Fee]
+       **/
+      ADARFeeWithdrawn: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, u128]>;
+      /**
        * Batch of swap transfers has been performed
-       * [ADAR Fee, Input amount]
+       * [Input asset ADAR Fee, Input amount]
        **/
       BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128]>;
       /**
@@ -736,6 +751,10 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * Failed to cancel expired order
        **/
+      AlignmentFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, error: SpRuntimeDispatchError }>;
+      /**
+       * Failed to cancel expired order
+       **/
       ExpirationFailure: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError], { orderBookId: OrderBookOrderBookId, orderId: u128, error: SpRuntimeDispatchError }>;
       /**
        * User canceled their limit order or the limit order has reached the end of its lifespan
@@ -744,7 +763,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * User tried to place the limit order out of the spread. The limit order is converted into a market order.
        **/
-      LimitOrderConvertedToMarketOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount], { orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount }>;
+      LimitOrderConvertedToMarketOrder: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: CommonBalanceUnit], { orderBookId: OrderBookOrderBookId, ownerId: AccountId32, direction: CommonPrimitivesPriceVariant, amount: OrderBookOrderAmount, averagePrice: CommonBalanceUnit }>;
       /**
        * Some amount of the limit order is executed
        **/
@@ -773,7 +792,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * New order book is created by user
        **/
-      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, creator: AccountId32], { orderBookId: OrderBookOrderBookId, creator: AccountId32 }>;
+      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, creator: Option<AccountId32>], { orderBookId: OrderBookOrderBookId, creator: Option<AccountId32> }>;
       /**
        * Order book is deleted
        **/

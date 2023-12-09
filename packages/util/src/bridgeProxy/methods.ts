@@ -2,6 +2,7 @@ import { map } from 'rxjs';
 
 import type { Observable } from '@polkadot/types/types';
 import type {
+  BridgeTypesGenericNetworkId,
   BridgeProxyBridgeRequest,
   BridgeTypesGenericAccount,
   BridgeTypesGenericTimepoint,
@@ -13,10 +14,10 @@ import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CodecString } from '@sora-substrate/math';
 
 import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
-import { SubNetwork } from './sub/consts';
 
-import type { BridgeNetworkParam, BridgeNetworkId, BridgeTransactionData } from './types';
-import type { ParachainIds } from './sub/types';
+import type { BridgeNetworkId, BridgeTransactionData } from './types';
+import type { SubNetwork, ParachainIds } from './sub/types';
+import type { EvmNetwork } from './evm/types';
 
 function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
   if (junction.isAccountId32) {
@@ -48,31 +49,47 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   }
 }
 
+function getNetworkType(network: BridgeTypesGenericNetworkId): BridgeNetworkType {
+  if (network.isSub) return BridgeNetworkType.Sub;
+  if (network.isEvm) return BridgeNetworkType.Evm;
+  return BridgeNetworkType.Eth;
+}
+
+function getNetworkId(network: BridgeTypesGenericNetworkId): BridgeNetworkId {
+  if (network.isSub) return network.asSub.toString() as SubNetwork;
+  if (network.isEvm) return network.asEvm.toNumber() as EvmNetwork;
+  return network.asEvmLegacy.toNumber();
+}
+
 function getSubNetworkId(
   data: BridgeTypesGenericAccount,
-  parachainIds: ParachainIds,
-  usedNetwork: BridgeNetworkId
-): BridgeNetworkId {
+  networkParam: BridgeTypesGenericNetworkId,
+  usedNetwork: SubNetwork,
+  parachainIds: ParachainIds
+): BridgeNetworkId | null {
   // we don't know from where are this tx. For now this will be a used network
   if (data.isUnknown) return usedNetwork;
 
   const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
 
+  // this is relaychain as in networkParam
+  if (interior.isX1) {
+    return getNetworkId(networkParam);
+  }
+  // this is parachain
   if (interior.isX2) {
-    const networkParam = interior.asX2[0];
+    const [networkJunction] = interior.asX2;
 
-    if (networkParam.isParachain) {
-      const paraId = networkParam.asParachain.toNumber();
+    if (networkJunction.isParachain) {
+      const paraId = networkJunction.asParachain.toNumber();
 
-      for (const parachainKey in parachainIds) {
-        if (parachainIds[parachainKey] === paraId) {
-          return SubNetwork[parachainKey];
-        }
+      if (parachainIds[usedNetwork] === paraId) {
+        return usedNetwork;
       }
     }
   }
 
-  return usedNetwork;
+  return null;
 }
 
 function getBlock(data: BridgeTypesGenericTimepoint): number {
@@ -92,8 +109,8 @@ function getBlock(data: BridgeTypesGenericTimepoint): number {
 function formatBridgeTx(
   hash: string,
   data: Option<BridgeProxyBridgeRequest>,
-  networkId: BridgeNetworkId,
-  networkType: BridgeNetworkType,
+  networkParam: BridgeTypesGenericNetworkId,
+  usedNetworkId: BridgeNetworkId,
   parachainIds?: ParachainIds
 ): BridgeTransactionData | null {
   if (!data.isSome) {
@@ -102,22 +119,24 @@ function formatBridgeTx(
 
   const unwrapped = data.unwrap();
   const formatted: BridgeTransactionData = {} as any;
-  const isSub = networkType === BridgeNetworkType.Sub;
   const externalNetworkSrc = unwrapped.direction.isInbound ? unwrapped.source : unwrapped.dest;
-  const externalNetwork = isSub ? getSubNetworkId(externalNetworkSrc, parachainIds, networkId) : networkId;
+  const externalNetworkId = networkParam.isSub
+    ? getSubNetworkId(externalNetworkSrc, networkParam, usedNetworkId as SubNetwork, parachainIds)
+    : getNetworkId(networkParam);
 
-  if (externalNetwork !== networkId) return null;
+  if (externalNetworkId !== usedNetworkId) return null;
 
-  formatted.externalNetwork = externalNetwork;
-  formatted.externalNetworkType = networkType;
+  formatted.externalNetwork = externalNetworkId;
+  formatted.externalNetworkType = getNetworkType(networkParam);
   formatted.soraHash = hash;
   formatted.amount = unwrapped.amount.toString();
   formatted.soraAssetAddress = unwrapped.assetId.code.toString();
-  formatted.status = unwrapped.status.isFailed
-    ? BridgeTxStatus.Failed
-    : unwrapped.status.isDone || unwrapped.status.isCommitted
-    ? BridgeTxStatus.Done
-    : BridgeTxStatus.Pending;
+  formatted.status =
+    unwrapped.status.isFailed || unwrapped.status.isRefunded
+      ? BridgeTxStatus.Failed
+      : unwrapped.status.isDone || unwrapped.status.isCommitted
+      ? BridgeTxStatus.Done
+      : BridgeTxStatus.Pending;
   formatted.startBlock = getBlock(unwrapped.startTimepoint);
   formatted.endBlock = getBlock(unwrapped.endTimepoint);
 
@@ -142,9 +161,8 @@ function formatBridgeTx(
 export async function getUserTransactions(
   api: ApiPromise,
   accountAddress: string,
-  networkParam: BridgeNetworkParam,
-  networkId: BridgeNetworkId,
-  networkType: BridgeNetworkType,
+  networkParam: BridgeTypesGenericNetworkId,
+  usedNetworkId: BridgeNetworkId,
   parachainIds?: ParachainIds
 ): Promise<BridgeTransactionData[]> {
   try {
@@ -153,7 +171,7 @@ export async function getUserTransactions(
 
     for (const [key, value] of data) {
       const hash = key.args[1];
-      const tx = formatBridgeTx(hash.toString(), value, networkId, networkType, parachainIds);
+      const tx = formatBridgeTx(hash.toString(), value, networkParam, usedNetworkId, parachainIds);
 
       if (tx) {
         buffer.push(tx);
@@ -171,15 +189,14 @@ export async function getTransactionDetails(
   api: ApiPromise,
   accountAddress: string,
   hash: string,
-  networkParam: BridgeNetworkParam,
-  networkId: BridgeNetworkId,
-  networkType: BridgeNetworkType,
+  networkParam: BridgeTypesGenericNetworkId,
+  usedNetworkId: BridgeNetworkId,
   parachainIds?: ParachainIds
 ): Promise<BridgeTransactionData | null> {
   try {
     const data = await api.query.bridgeProxy.transactions([networkParam, accountAddress], hash);
 
-    return formatBridgeTx(hash, data, networkId, networkType, parachainIds);
+    return formatBridgeTx(hash, data, networkParam, usedNetworkId, parachainIds);
   } catch {
     return null;
   }
@@ -190,15 +207,14 @@ export function subscribeOnTransactionDetails(
   apiRx: ApiRx,
   accountAddress: string,
   hash: string,
-  networkParam: BridgeNetworkParam,
-  networkId: BridgeNetworkId,
-  networkType: BridgeNetworkType,
+  networkParam: BridgeTypesGenericNetworkId,
+  usedNetworkId: BridgeNetworkId,
   parachainIds?: ParachainIds
 ): Observable<BridgeTransactionData | null> | null {
   try {
     return apiRx.query.bridgeProxy
       .transactions([networkParam, accountAddress], hash)
-      .pipe(map((value) => formatBridgeTx(hash, value, networkId, networkType, parachainIds)));
+      .pipe(map((value) => formatBridgeTx(hash, value, networkParam, usedNetworkId, parachainIds)));
   } catch {
     return null;
   }
@@ -207,7 +223,7 @@ export function subscribeOnTransactionDetails(
 /** Get the amount of the asset locked on the bridge on the SORA side */
 export async function getLockedAssets(
   api: ApiPromise,
-  networkParam: BridgeNetworkParam,
+  networkParam: BridgeTypesGenericNetworkId,
   assetAddress: string
 ): Promise<CodecString | null> {
   try {

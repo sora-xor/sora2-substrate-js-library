@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, Bytes, Compact, Option, Result, Text, U256, U8aFixed, Vec, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesEthashproofDoubleNodeWithMerkleProof, BridgeTypesEthashproofMixNonce, BridgeTypesEvmProof, BridgeTypesGenericAccount, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesHeader, BridgeTypesLog, BridgeTypesNetworkConfig, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, QaToolsPalletsOrderBookToolsOrderBookFillSettings, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeMultiSignature, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesEthashproofDoubleNodeWithMerkleProof, BridgeTypesEthashproofMixNonce, BridgeTypesEvmProof, BridgeTypesGenericAccount, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesHeader, BridgeTypesLog, BridgeTypesNetworkConfig, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, QaToolsPalletToolsOrderBookSettingsOrderBookAttributes, QaToolsPalletToolsOrderBookSettingsOrderBookFill, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeMultiSignature, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -203,8 +203,8 @@ declare module '@polkadot/api-base/types/submittable' {
       setDynamicFeeParameters: AugmentedSubmittable<(feeParameters: BandFeeCalculationParameters | { decay?: any; minFee?: any; deviation?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BandFeeCalculationParameters]>;
     };
     beefyLightClient: {
-      initialize: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, latestBeefyBlock: u64 | AnyNumber | Uint8Array, validatorSet: SpBeefyMmrBeefyAuthoritySet | { id?: any; len?: any; root?: any } | string | Uint8Array, nextValidatorSet: SpBeefyMmrBeefyAuthoritySet | { id?: any; len?: any; root?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, u64, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrBeefyAuthoritySet]>;
-      submitSignatureCommitment: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, commitment: SpBeefyCommitment | { payload?: any; blockNumber?: any; validatorSetId?: any } | string | Uint8Array, validatorProof: BridgeCommonBeefyTypesValidatorProof | { validatorClaimsBitfield?: any; signatures?: any; positions?: any; publicKeys?: any; publicKeyMerkleProofs?: any } | string | Uint8Array, latestMmrLeaf: SpBeefyMmrMmrLeaf | { version?: any; parentNumberAndHash?: any; beefyNextAuthoritySet?: any; leafExtra?: any } | string | Uint8Array, proof: BridgeCommonSimplifiedProofProof | { order?: any; items?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, SpBeefyCommitment, BridgeCommonBeefyTypesValidatorProof, SpBeefyMmrMmrLeaf, BridgeCommonSimplifiedProofProof]>;
+      initialize: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, latestBeefyBlock: u64 | AnyNumber | Uint8Array, validatorSet: SpBeefyMmrBeefyAuthoritySet | { id?: any; len?: any; root?: any } | string | Uint8Array, nextValidatorSet: SpBeefyMmrBeefyAuthoritySet | { id?: any; len?: any; root?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, u64, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrBeefyAuthoritySet]>;
+      submitSignatureCommitment: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, commitment: SpBeefyCommitment | { payload?: any; blockNumber?: any; validatorSetId?: any } | string | Uint8Array, validatorProof: BridgeCommonBeefyTypesValidatorProof | { validatorClaimsBitfield?: any; signatures?: any; positions?: any; publicKeys?: any; publicKeyMerkleProofs?: any } | string | Uint8Array, latestMmrLeaf: SpBeefyMmrMmrLeaf | { version?: any; parentNumberAndHash?: any; beefyNextAuthoritySet?: any; leafExtra?: any } | string | Uint8Array, proof: BridgeCommonSimplifiedProofProof | { order?: any; items?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, SpBeefyCommitment, BridgeCommonBeefyTypesValidatorProof, SpBeefyMmrMmrLeaf, BridgeCommonSimplifiedProofProof]>;
     };
     bridgeDataSigner: {
       addPeer: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, SpCoreEcdsaPublic]>;
@@ -423,15 +423,15 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Create poll
        **/
-      createPoll: AugmentedSubmittable<(pollId: Bytes | string | Uint8Array, numberOfOptions: u32 | AnyNumber | Uint8Array, pollStartTimestamp: u64 | AnyNumber | Uint8Array, pollEndTimestamp: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u32, u64, u64]>;
+      createPoll: AugmentedSubmittable<(pollAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, pollStartTimestamp: u64 | AnyNumber | Uint8Array, pollEndTimestamp: u64 | AnyNumber | Uint8Array, title: Bytes | string | Uint8Array, description: Bytes | string | Uint8Array, options: Vec<Bytes> | (Bytes | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u64, u64, Bytes, Bytes, Vec<Bytes>]>;
       /**
        * Voting for option
        **/
-      vote: AugmentedSubmittable<(pollId: Bytes | string | Uint8Array, votingOption: u32 | AnyNumber | Uint8Array, numberOfVotes: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, u32, u128]>;
+      vote: AugmentedSubmittable<(pollId: H256 | string | Uint8Array, votingOption: u32 | AnyNumber | Uint8Array, numberOfVotes: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, u32, u128]>;
       /**
        * Withdraw voting funds
        **/
-      withdraw: AugmentedSubmittable<(pollId: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes]>;
+      withdraw: AugmentedSubmittable<(pollId: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
     ceresLaunchpad: {
       /**
@@ -1010,6 +1010,8 @@ declare module '@polkadot/api-base/types/submittable' {
       vote: AugmentedSubmittable<(refIndex: Compact<u32> | AnyNumber | Uint8Array, vote: PalletDemocracyVoteAccountVote | { Standard: any } | { Split: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>, PalletDemocracyVoteAccountVote]>;
     };
     dexapi: {
+      disableLiquiditySource: AugmentedSubmittable<(source: CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesLiquiditySourceType]>;
+      enableLiquiditySource: AugmentedSubmittable<(source: CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesLiquiditySourceType]>;
     };
     electionProviderMultiPhase: {
       /**
@@ -1985,21 +1987,21 @@ declare module '@polkadot/api-base/types/submittable' {
       cancelLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, orderId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128]>;
       cancelLimitOrdersBatch: AugmentedSubmittable<(limitOrdersToCancel: Vec<ITuple<[OrderBookOrderBookId, Vec<u128>]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, Vec<u128> | (u128 | AnyNumber | Uint8Array)[]])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[OrderBookOrderBookId, Vec<u128>]>>]>;
       changeOrderbookStatus: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, status: OrderBookOrderBookStatus | 'Trade' | 'PlaceAndCancel' | 'OnlyCancel' | 'Stop' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, OrderBookOrderBookStatus]>;
-      createOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId]>;
+      createOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, u128, u128]>;
       deleteOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId]>;
       executeMarketOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, direction: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, CommonPrimitivesPriceVariant, u128]>;
       placeLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, price: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array, side: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, lifespan: Option<u64> | null | Uint8Array | u64 | AnyNumber) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, CommonPrimitivesPriceVariant, Option<u64>]>;
       updateOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, u128, u128]>;
     };
     parachainBridgeApp: {
-      addAssetidParaid: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, paraId: u32 | AnyNumber | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, u32, CommonPrimitivesAssetId32]>;
-      burn: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: XcmVersionedMultiLocation | { V2: any } | { V3: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, XcmVersionedMultiLocation, u128]>;
+      addAssetidParaid: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, paraId: u32 | AnyNumber | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, u32, CommonPrimitivesAssetId32]>;
+      burn: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: XcmVersionedMultiLocation | { V2: any } | { V3: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, XcmVersionedMultiLocation, u128]>;
       finalizeAssetRegistration: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, assetKind: BridgeTypesAssetKind | 'Thischain' | 'Sidechain' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, BridgeTypesAssetKind]>;
       mint: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, sender: Option<XcmVersionedMultiLocation> | null | Uint8Array | XcmVersionedMultiLocation | { V2: any } | { V3: any } | string, recipient: AccountId32 | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, Option<XcmVersionedMultiLocation>, AccountId32, u128]>;
-      registerSidechainAsset: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, sidechainAsset: XcmV3MultiassetAssetId | { Concrete: any } | { Abstract: any } | string | Uint8Array, symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, decimals: u8 | AnyNumber | Uint8Array, allowedParachains: Vec<u32> | (u32 | AnyNumber | Uint8Array)[], minimalXcmAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, XcmV3MultiassetAssetId, Bytes, Bytes, u8, Vec<u32>, u128]>;
-      registerThischainAsset: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, sidechainAsset: XcmV3MultiassetAssetId | { Concrete: any } | { Abstract: any } | string | Uint8Array, allowedParachains: Vec<u32> | (u32 | AnyNumber | Uint8Array)[], minimalXcmAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, XcmV3MultiassetAssetId, Vec<u32>, u128]>;
-      removeAssetidParaid: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, paraId: u32 | AnyNumber | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, u32, CommonPrimitivesAssetId32]>;
-      setMinimumXcmIncomingAssetCount: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, minimalXcmAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, u128]>;
+      registerSidechainAsset: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, sidechainAsset: XcmV3MultiassetAssetId | { Concrete: any } | { Abstract: any } | string | Uint8Array, symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, decimals: u8 | AnyNumber | Uint8Array, allowedParachains: Vec<u32> | (u32 | AnyNumber | Uint8Array)[], minimalXcmAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, XcmV3MultiassetAssetId, Bytes, Bytes, u8, Vec<u32>, u128]>;
+      registerThischainAsset: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, sidechainAsset: XcmV3MultiassetAssetId | { Concrete: any } | { Abstract: any } | string | Uint8Array, allowedParachains: Vec<u32> | (u32 | AnyNumber | Uint8Array)[], minimalXcmAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, XcmV3MultiassetAssetId, Vec<u32>, u128]>;
+      removeAssetidParaid: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, paraId: u32 | AnyNumber | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, u32, CommonPrimitivesAssetId32]>;
+      setMinimumXcmIncomingAssetCount: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, minimalXcmAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, u128]>;
       updateTransactionStatus: AugmentedSubmittable<(messageId: H256 | string | Uint8Array, transferStatus: BridgeTypesSubstrateXcmAppTransferStatus | 'Success' | 'XCMTransferError' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, BridgeTypesSubstrateXcmAppTransferStatus]>;
     };
     permissions: {
@@ -2045,39 +2047,32 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     qaTools: {
       /**
-       * Add the account to the list of allowed callers.
-       **/
-      addToWhitelist: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
-       * Create multiple many order books with default parameters if do not exist and
-       * fill them according to given parameters.
+       * Create multiple many order books with parameters and fill them according to given parameters.
        * 
        * Balance for placing the orders is minted automatically, trading pairs are
        * created if needed.
        * 
-       * Parameters:
-       * - `origin`: caller, should be account because unsigned error messages are unclear,
-       * - `dex_id`: DEXId for all created order books,
-       * - `bids_owner`: Creator of the buy orders placed on the order books,
-       * - `asks_owner`: Creator of the sell orders placed on the order books,
-       * - `fill_settings`: Parameters for placing the orders in each order book.
-       * `best_bid_price` should be at least 3 price steps from the lowest accepted price,
-       * and `best_ask_price` - at least 3 steps below maximum price,
-       **/
-      orderBookCreateAndFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, fillSettings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletsOrderBookToolsOrderBookFillSettings]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletsOrderBookToolsOrderBookFillSettings | { bestBidPrice?: any; bestAskPrice?: any; lifespan?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletsOrderBookToolsOrderBookFillSettings]>>]>;
-      /**
-       * Create multiple order books with default parameters (if do not exist yet).
+       * In order to create empty order books, one can leave settings empty.
        * 
        * Parameters:
-       * - `origin`: caller, should be account because error messages for unsigned txs are unclear,
-       * - `order_book_ids`: ids of the created order books; trading pairs are created
-       * if necessary,
+       * - `origin`: root
+       * - `bids_owner`: Creator of the buy orders placed on the order books,
+       * - `asks_owner`: Creator of the sell orders placed on the order books,
+       * - `settings`: Parameters for creation of the order book and placing the orders in each order book.
        **/
-      orderBookCreateEmptyBatch: AugmentedSubmittable<(orderBookIds: Vec<OrderBookOrderBookId> | (OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Vec<OrderBookOrderBookId>]>;
+      orderBookCreateAndFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookSettingsOrderBookAttributes, QaToolsPalletToolsOrderBookSettingsOrderBookFill]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookSettingsOrderBookAttributes | { tickSize?: any; stepLotSize?: any; minLotSize?: any; maxLotSize?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookSettingsOrderBookFill | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookSettingsOrderBookAttributes, QaToolsPalletToolsOrderBookSettingsOrderBookFill]>>]>;
       /**
-       * Remove the account from the list of allowed callers.
+       * Fill the order books according to given parameters.
+       * 
+       * Balance for placing the orders is minted automatically.
+       * 
+       * Parameters:
+       * - `origin`: root
+       * - `bids_owner`: Creator of the buy orders placed on the order books,
+       * - `asks_owner`: Creator of the sell orders placed on the order books,
+       * - `settings`: Parameters for placing the orders in each order book.
        **/
-      removeFromWhitelist: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      orderBookFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookSettingsOrderBookFill]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookSettingsOrderBookFill | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookSettingsOrderBookFill]>>]>;
     };
     referrals: {
       /**
@@ -2560,7 +2555,7 @@ declare module '@polkadot/api-base/types/submittable' {
       withdrawUnbonded: AugmentedSubmittable<(numSlashingSpans: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
     };
     substrateBridgeInboundChannel: {
-      submit: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, commitment: BridgeTypesGenericCommitment | { Sub: any } | { EVM: any } | string | Uint8Array, proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, BridgeTypesGenericCommitment, FramenodeRuntimeMultiProof]>;
+      submit: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, commitment: BridgeTypesGenericCommitment | { Sub: any } | { EVM: any } | string | Uint8Array, proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, BridgeTypesGenericCommitment, FramenodeRuntimeMultiProof]>;
     };
     sudo: {
       /**

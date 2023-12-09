@@ -349,6 +349,10 @@ declare module '@polkadot/api-base/types/errors' {
     };
     ceresGovernancePlatform: {
       /**
+       * Duplicate options
+       **/
+      DuplicateOptions: AugmentedError<ApiType>;
+      /**
        * Funds already withdrawn,
        **/
       FundsAlreadyWithdrawn: AugmentedError<ApiType>;
@@ -357,29 +361,33 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidEndTimestamp: AugmentedError<ApiType>;
       /**
-       * Invalid number of option
-       **/
-      InvalidNumberOfOption: AugmentedError<ApiType>;
-      /**
        * Invalid number of votes
        **/
       InvalidNumberOfVotes: AugmentedError<ApiType>;
+      /**
+       * Invalid option
+       **/
+      InvalidOption: AugmentedError<ApiType>;
       /**
        * Invalid start timestamp
        **/
       InvalidStartTimestamp: AugmentedError<ApiType>;
       /**
-       * Invalid votes
+       * Invalid voting options
        **/
-      InvalidVotes: AugmentedError<ApiType>;
+      InvalidVotingOptions: AugmentedError<ApiType>;
       /**
        * Not enough funds
        **/
       NotEnoughFunds: AugmentedError<ApiType>;
       /**
-       * Poll id already exists
+       * Not voted
        **/
-      PollIdAlreadyExists: AugmentedError<ApiType>;
+      NotVoted: AugmentedError<ApiType>;
+      /**
+       * Poll does not exist
+       **/
+      PollDoesNotExist: AugmentedError<ApiType>;
       /**
        * Poll is finished
        **/
@@ -392,6 +400,14 @@ declare module '@polkadot/api-base/types/errors' {
        * Poll is not started
        **/
       PollIsNotStarted: AugmentedError<ApiType>;
+      /**
+       * Too many voting options
+       **/
+      TooManyVotingOptions: AugmentedError<ApiType>;
+      /**
+       * Unauthorized
+       **/
+      Unauthorized: AugmentedError<ApiType>;
       /**
        * Vote denied
        **/
@@ -829,6 +845,16 @@ declare module '@polkadot/api-base/types/errors' {
        * Invalid upper bound.
        **/
       WrongUpperBound: AugmentedError<ApiType>;
+    };
+    dexapi: {
+      /**
+       * Liquidity source is already disabled
+       **/
+      LiquiditySourceAlreadyDisabled: AugmentedError<ApiType>;
+      /**
+       * Liquidity source is already enabled
+       **/
+      LiquiditySourceAlreadyEnabled: AugmentedError<ApiType>;
     };
     dexManager: {
       /**
@@ -2050,6 +2076,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Order book already exists for this trading pair
        **/
       OrderBookAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * Order Book is locked for technical maintenance. Try again later.
+       **/
+      OrderBookIsLocked: AugmentedError<ApiType>;
       OrderBookIsNotEmpty: AugmentedError<ApiType>;
       /**
        * It is impossible to place the limit order because bounds of the max count of prices for the side have been reached
@@ -2505,9 +2535,34 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CannotFillUnknownOrderBook: AugmentedError<ApiType>;
       /**
+       * Provided range is incorrect, check that lower bound is less or equal than the upper one.
+       **/
+      EmptyRandomRange: AugmentedError<ApiType>;
+      /**
+       * Price step, best price, and worst price must be a multiple of
+       * order book's tick size. Price step must also be non-zero.
+       **/
+      IncorrectPrice: AugmentedError<ApiType>;
+      /**
        * The account intended for removal is not in whitelist
        **/
       NotInWhitelist: AugmentedError<ApiType>;
+      /**
+       * Order Book already exists
+       **/
+      OrderBookAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * The range for generating order amounts must be within order book's accepted values.
+       **/
+      OutOfBoundsRandomRange: AugmentedError<ApiType>;
+      /**
+       * The count of created orders is too large.
+       **/
+      TooManyOrders: AugmentedError<ApiType>;
+      /**
+       * The count of prices to fill is too large.
+       **/
+      TooManyPrices: AugmentedError<ApiType>;
       /**
        * Cannot add an account to the whitelist: it's full
        **/

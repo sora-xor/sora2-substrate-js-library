@@ -1,5 +1,5 @@
 import { map } from 'rxjs';
-import { FPNumber } from '@sora-substrate/math';
+import { CodecString, FPNumber } from '@sora-substrate/math';
 import { Operation } from '../BaseApi';
 import { MAX_TIMESTAMP } from './consts';
 import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
@@ -17,6 +17,8 @@ import type {
 
 import type { Api } from '../api';
 import type { LimitOrder } from './types';
+import { XOR } from '../assets/consts';
+import { DexId } from '../dex/consts';
 
 const toAssetId = (asset: CommonPrimitivesAssetId32) => asset.code.toString();
 
@@ -64,19 +66,8 @@ const formatOrderBookOption = (option: Option<OrderBookStruct>): OrderBook | nul
 export class OrderBookModule<T> {
   constructor(private readonly root: Api<T>) {}
 
-  serializedKey(base: string, quote: string): string {
-    if (!(base && quote)) return '';
-    return `${base},${quote}`;
-  }
-
-  deserializeKey(key: string): Partial<{ base: string; quote: string }> {
-    if (!key) return null;
-    const [base, quote] = key.split(',');
-    return { base, quote };
-  }
-
   /**
-   * Get order books and set to public orderBooks object
+   * Get order books
    *
    */
   public async getOrderBooks(): Promise<Record<string, OrderBook>> {
@@ -98,7 +89,7 @@ export class OrderBookModule<T> {
   }
 
   /**
-   * Get user's order book addresses and set to public userOrderBooks array
+   * Get user's order book addresses
    */
   public async getUserOrderBooks(account: string): Promise<string[]> {
     const entries = await this.root.api.query.orderBook.userLimitOrders.entries(account);
@@ -234,10 +225,16 @@ export class OrderBookModule<T> {
     const dexId = this.root.dex.getDexId(quote);
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.orderBook.placeLimitOrder({ dexId, base, quote }, price, amount, side, timestamp),
+      this.root.api.tx.orderBook.placeLimitOrder(
+        { dexId, base, quote },
+        new FPNumber(price).toCodecString(),
+        new FPNumber(amount).toCodecString(),
+        side,
+        timestamp
+      ),
       this.root.account.pair,
       {
-        type: Operation.PlaceLimitOrder,
+        type: Operation.OrderBookPlaceLimitOrder,
         assetAddress: base,
         asset2Address: quote,
         price,
@@ -260,7 +257,7 @@ export class OrderBookModule<T> {
       this.root.api.tx.orderBook.cancelLimitOrder({ dexId, base, quote }, orderId),
       this.root.account.pair,
       {
-        type: Operation.CancelLimitOrder,
+        type: Operation.OrderBookCancelLimitOrder,
         assetAddress: base,
         asset2Address: quote,
         limitOrderIds: [orderId],
@@ -280,11 +277,39 @@ export class OrderBookModule<T> {
       this.root.api.tx.orderBook.cancelLimitOrdersBatch([[{ dexId, base, quote }, orderIds]]),
       this.root.account.pair,
       {
-        type: Operation.CancelLimitOrders,
+        type: Operation.OrderBookCancelLimitOrders,
         assetAddress: base,
         asset2Address: quote,
         limitOrderIds: orderIds,
       }
     );
+  }
+
+  public serializedKey(base: string, quote: string): string {
+    if (!(base && quote)) return '';
+    return `${base},${quote}`;
+  }
+
+  public deserializeKey(key: string): Partial<{ base: string; quote: string }> {
+    if (!key) return null;
+    const [base, quote] = key.split(',');
+    return { base, quote };
+  }
+
+  /**
+   * Returns the network fee for orderBook.placeLimitOrder. Should be executed during each timestamp change.
+   *
+   * It won't be called frequently cuz the timestamp will be managed by the datepicker.
+   */
+  public async getPlaceOrderNetworkFee(timestamp = MAX_TIMESTAMP): Promise<CodecString> {
+    const tx = this.root.api.tx.orderBook.placeLimitOrder(
+      { dexId: DexId.XOR, base: XOR.address, quote: XOR.address },
+      0,
+      0,
+      PriceVariant.Buy,
+      timestamp
+    );
+
+    return await this.root.getTransactionFee(tx);
   }
 }

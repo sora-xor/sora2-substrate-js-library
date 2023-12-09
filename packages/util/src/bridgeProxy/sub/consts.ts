@@ -3,20 +3,23 @@ export enum SubAssetKind {
   Sidechain = 'Sidechain',
 }
 
-export enum SubNetwork {
-  /** Kusama relaychain */
-  Kusama = 'Kusama',
+export enum SubNetworkId {
   /** Polkadot relaychain */
   Polkadot = 'Polkadot',
-  /** Rococo relaychain (Kusama testnet) */
-  Rococo = 'Rococo',
-  Custom = 'Custom', // not used yet
-  /** SORA parachain in Rococo relaychain */
-  RococoSora = 'RococoSora',
-  /** Karura parachain in Kusama relaychain */
-  KusamaKarura = 'KusamaKarura',
+  /** Kusama relaychain */
+  Kusama = 'Kusama',
   /** SORA parachain in Kusama relaychain */
   KusamaSora = 'KusamaSora',
+  /** Rococo relaychain (Kusama testnet) */
+  Rococo = 'Rococo',
+  /** SORA parachain in Rococo relaychain */
+  RococoSora = 'RococoSora',
+  /** Alphanet relaychain (testnet) */
+  Alphanet = 'Alphanet',
+  /** SORA parachain in Alphanet relaychain */
+  AlphanetSora = 'AlphanetSora',
+  /** Standalone Substrate network */
+  Liberland = 'Liberland',
 }
 
 export enum XcmVersionedMultiLocation {

@@ -221,11 +221,11 @@ declare module '@polkadot/api-base/types/storage' {
       validatorSetId: AugmentedQuery<ApiType, () => Observable<u64>, []>;
     };
     beefyLightClient: {
-      currentValidatorSet: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Option<SpBeefyMmrBeefyAuthoritySet>>, [BridgeTypesSubNetworkId]>;
-      latestBeefyBlock: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
-      latestMMRRoots: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Vec<H256>>, [BridgeTypesSubNetworkId]>;
-      latestRandomSeed: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<ITuple<[H256, u32]>>, [BridgeTypesSubNetworkId]>;
-      nextValidatorSet: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Option<SpBeefyMmrBeefyAuthoritySet>>, [BridgeTypesSubNetworkId]>;
+      currentValidatorSet: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<Option<SpBeefyMmrBeefyAuthoritySet>>, [BridgeTypesSubNetworkId]>;
+      latestBeefyBlock: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
+      latestMMRRoots: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<Vec<H256>>, [BridgeTypesSubNetworkId]>;
+      latestRandomSeed: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<ITuple<[H256, u32]>>, [BridgeTypesSubNetworkId]>;
+      nextValidatorSet: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<Option<SpBeefyMmrBeefyAuthoritySet>>, [BridgeTypesSubNetworkId]>;
       thisNetworkId: AugmentedQuery<ApiType, () => Observable<BridgeTypesSubNetworkId>, []>;
     };
     bridgeDataSigner: {
@@ -315,14 +315,18 @@ declare module '@polkadot/api-base/types/storage' {
     };
     ceresGovernancePlatform: {
       /**
+       * Account which has permissions for creating a poll
+       **/
+      authorityAccount: AugmentedQuery<ApiType, () => Observable<AccountId32>, []>;
+      /**
        * Pallet storage version
        **/
       palletStorageVersion: AugmentedQuery<ApiType, () => Observable<CeresGovernancePlatformStorageVersion>, []>;
-      pollData: AugmentedQuery<ApiType, (arg: Bytes | string | Uint8Array) => Observable<CeresGovernancePlatformPollInfo>, [Bytes]>;
+      pollData: AugmentedQuery<ApiType, (arg: H256 | string | Uint8Array) => Observable<Option<CeresGovernancePlatformPollInfo>>, [H256]>;
       /**
        * A vote of a particular user for a particular poll
        **/
-      voting: AugmentedQuery<ApiType, (arg1: Bytes | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<CeresGovernancePlatformVotingInfo>, [Bytes, AccountId32]>;
+      voting: AugmentedQuery<ApiType, (arg1: H256 | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<CeresGovernancePlatformVotingInfo>>, [H256, AccountId32]>;
     };
     ceresLaunchpad: {
       /**
@@ -1036,6 +1040,7 @@ declare module '@polkadot/api-base/types/storage' {
     orderBook: {
       aggregatedAsks: AugmentedQuery<ApiType, (arg: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => Observable<BTreeMap<CommonBalanceUnit, CommonBalanceUnit>>, [OrderBookOrderBookId]>;
       aggregatedBids: AugmentedQuery<ApiType, (arg: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => Observable<BTreeMap<CommonBalanceUnit, CommonBalanceUnit>>, [OrderBookOrderBookId]>;
+      alignmentCursor: AugmentedQuery<ApiType, (arg: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => Observable<Option<u128>>, [OrderBookOrderBookId]>;
       asks: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, arg2: CommonBalanceUnit | { inner?: any; isDivisible?: any } | string | Uint8Array) => Observable<Option<Vec<u128>>>, [OrderBookOrderBookId, CommonBalanceUnit]>;
       bids: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, arg2: CommonBalanceUnit | { inner?: any; isDivisible?: any } | string | Uint8Array) => Observable<Option<Vec<u128>>>, [OrderBookOrderBookId, CommonBalanceUnit]>;
       expirationsAgenda: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[OrderBookOrderBookId, u128]>>>, [u32]>;
@@ -1050,10 +1055,10 @@ declare module '@polkadot/api-base/types/storage' {
       userLimitOrders: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => Observable<Option<Vec<u128>>>, [AccountId32, OrderBookOrderBookId]>;
     };
     parachainBridgeApp: {
-      allowedParachainAssets: AugmentedQuery<ApiType, (arg1: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, arg2: u32 | AnyNumber | Uint8Array) => Observable<Vec<CommonPrimitivesAssetId32>>, [BridgeTypesSubNetworkId, u32]>;
-      assetKinds: AugmentedQuery<ApiType, (arg1: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<BridgeTypesAssetKind>>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32]>;
-      relaychainAsset: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Option<CommonPrimitivesAssetId32>>, [BridgeTypesSubNetworkId]>;
-      sidechainPrecision: AugmentedQuery<ApiType, (arg1: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<u8>>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32]>;
+      allowedParachainAssets: AugmentedQuery<ApiType, (arg1: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, arg2: u32 | AnyNumber | Uint8Array) => Observable<Vec<CommonPrimitivesAssetId32>>, [BridgeTypesSubNetworkId, u32]>;
+      assetKinds: AugmentedQuery<ApiType, (arg1: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<BridgeTypesAssetKind>>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32]>;
+      relaychainAsset: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<Option<CommonPrimitivesAssetId32>>, [BridgeTypesSubNetworkId]>;
+      sidechainPrecision: AugmentedQuery<ApiType, (arg1: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<u8>>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32]>;
     };
     permissions: {
       owners: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: PermissionsScope | { Limited: any } | { Unlimited: any } | string | Uint8Array) => Observable<Vec<AccountId32>>, [u32, PermissionsScope]>;
@@ -1109,9 +1114,9 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       burnUpdateInfo: AugmentedQuery<ApiType, () => Observable<ITuple<[FixnumFixedPoint, FixnumFixedPoint]>>, []>;
       /**
-       * Fraction of PSWAP that could be buy backed to XST
+       * Fraction of PSWAP that could be buy backed to TBCD
        **/
-      buyBackXSTFraction: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
+      buyBackTBCDFraction: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
        * Sum of all shares of incentive token owners.
        **/
@@ -1476,20 +1481,20 @@ declare module '@polkadot/api-base/types/storage' {
       validatorSlashInEra: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<ITuple<[Perbill, u128]>>>, [u32, AccountId32]>;
     };
     substrateBridgeInboundChannel: {
-      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
+      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
     };
     substrateBridgeOutboundChannel: {
-      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
+      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<u64>, [BridgeTypesSubNetworkId]>;
       /**
        * Interval between committing messages.
        **/
       interval: AugmentedQuery<ApiType, () => Observable<u32>, []>;
-      latestCommitment: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Option<BridgeTypesGenericCommitmentWithBlock>>, [BridgeTypesSubNetworkId]>;
+      latestCommitment: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<Option<BridgeTypesGenericCommitmentWithBlock>>, [BridgeTypesSubNetworkId]>;
       /**
        * Messages waiting to be committed. To update the queue, use `append_message_queue` and `take_message_queue` methods
        * (to keep correct value in [QueuesTotalGas]).
        **/
-      messageQueues: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | { Mainnet: any } | { Kusama: any } | { Polkadot: any } | { Rococo: any } | { Custom: any } | string | Uint8Array) => Observable<Vec<BridgeTypesSubstrateBridgeMessage>>, [BridgeTypesSubNetworkId]>;
+      messageQueues: AugmentedQuery<ApiType, (arg: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array) => Observable<Vec<BridgeTypesSubstrateBridgeMessage>>, [BridgeTypesSubNetworkId]>;
     };
     substrateDispatch: {
     };

@@ -2,7 +2,7 @@ import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { Observable, Subscriber } from 'rxjs';
-import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
+import { decodeAddress, encodeAddress, base58Decode } from '@polkadot/util-crypto';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import { connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
@@ -115,6 +115,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.DemeterFarmingGetRewards]: '0',
     [Operation.CeresLiquidityLockerLockLiquidity]: '0',
     [Operation.StakingBond]: '0',
+    [Operation.StakingBondAndNominate]: '0',
     [Operation.StakingBondExtra]: '0',
     [Operation.StakingRebond]: '0',
     [Operation.StakingUnbond]: '0',
@@ -543,6 +544,13 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
         case Operation.StakingBond:
           return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
+        case Operation.StakingBondAndNominate:
+          const transactions = [
+            this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress }),
+            this.api.tx.staking.nominate([mockAccountAddress]),
+          ];
+
+          return this.api.tx.utility.batchAll(transactions);
         case Operation.StakingBondExtra:
           return this.api.tx.staking.bondExtra(0);
         case Operation.StakingRebond:
@@ -612,6 +620,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
       Operation.DemeterFarmingGetRewards,
       Operation.CeresLiquidityLockerLockLiquidity,
       Operation.StakingBond,
+      Operation.StakingBondAndNominate,
       Operation.StakingBondExtra,
       Operation.StakingRebond,
       Operation.StakingUnbond,
@@ -651,7 +660,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   }
 
   /**
-   * Format address
+   * Format account address
    * @param withSoraPrefix `true` by default
    */
   public formatAddress(address: string, withSoraPrefix = true): string {
@@ -664,14 +673,14 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   }
 
   /**
-   * Validate address
+   * Validate account address
    * @param address
    */
   public validateAddress(address: string): boolean {
     try {
-      decodeAddress(address, false);
+      base58Decode(address);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -739,6 +748,7 @@ export enum Operation {
   ReferralSetInvitedUser = 'ReferralSetInvitedUser',
   /** Staking */
   StakingBond = 'StakingBond',
+  StakingBondAndNominate = 'StakingBondAndNominate',
   StakingBondExtra = 'StakingBondExtra',
   StakingRebond = 'StakingRebond',
   StakingUnbond = 'StakingUnbond',
@@ -757,9 +767,9 @@ export enum Operation {
   /** Ceres Liquidity Locker  */
   CeresLiquidityLockerLockLiquidity = 'CeresLiquidityLockerLockLiquidity',
   /** Order Book */
-  PlaceLimitOrder = 'PlaceLimitOrder',
-  CancelLimitOrder = 'CancelLimitOrder',
-  CancelLimitOrders = 'CancelLimitOrders',
+  OrderBookPlaceLimitOrder = 'OrderBookPlaceLimitOrder',
+  OrderBookCancelLimitOrder = 'OrderBookCancelLimitOrder',
+  OrderBookCancelLimitOrders = 'OrderBookCancelLimitOrders',
   /** Asset management */
   RegisterAsset = 'RegisterAsset',
   Transfer = 'Transfer',
