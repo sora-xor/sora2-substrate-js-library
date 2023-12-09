@@ -5385,6 +5385,22 @@ returns: `Vec<CommonPrimitivesLiquiditySourceType>`
 
 <hr>
 
+### _Extrinsics_
+
+#### **api.tx.dexapi.enableLiquiditySource**
+
+arguments:
+
+- source: `CommonPrimitivesLiquiditySourceType`
+<hr>
+
+#### **api.tx.dexapi.disableLiquiditySource**
+
+arguments:
+
+- source: `CommonPrimitivesLiquiditySourceType`
+<hr>
+
 ## EthBridge pallet
 
 ### _State Queries_
@@ -6121,9 +6137,9 @@ returns: `FixnumFixedPoint`
 
 <hr>
 
-#### **api.query.pswapDistribution.buyBackXSTFraction**
+#### **api.query.pswapDistribution.buyBackTBCDFraction**
 
-> Fraction of PSWAP that could be buy backed to XST
+> Fraction of PSWAP that could be buy backed to TBCD
 
 arguments: -
 
@@ -8054,7 +8070,7 @@ returns: `u16`
 
 arguments:
 
-- key: `(Bytes,AccountId32)`
+- key: `(H256,AccountId32)`
 
 returns: `CeresGovernancePlatformVotingInfo`
 
@@ -8064,7 +8080,7 @@ returns: `CeresGovernancePlatformVotingInfo`
 
 arguments:
 
-- key: `Bytes`
+- key: `H256`
 
 returns: `CeresGovernancePlatformPollInfo`
 
@@ -8080,6 +8096,16 @@ returns: `CeresGovernancePlatformStorageVersion`
 
 <hr>
 
+#### **api.query.ceresGovernancePlatform.authorityAccount**
+
+> Account which has permissions for creating a poll
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.ceresGovernancePlatform.vote**
@@ -8088,7 +8114,7 @@ returns: `CeresGovernancePlatformStorageVersion`
 
 arguments:
 
-- pollId: `Bytes`
+- pollId: `H256`
 - votingOption: `u32`
 - numberOfVotes: `u128`
 <hr>
@@ -8099,10 +8125,12 @@ arguments:
 
 arguments:
 
-- pollId: `Bytes`
-- numberOfOptions: `u32`
+- pollAsset: `CommonPrimitivesAssetId32`
 - pollStartTimestamp: `u64`
 - pollEndTimestamp: `u64`
+- title: `Bytes`
+- description: `Bytes`
+- options: `Vec<Bytes>`
 <hr>
 
 #### **api.tx.ceresGovernancePlatform.withdraw**
@@ -8111,7 +8139,7 @@ arguments:
 
 arguments:
 
-- pollId: `Bytes`
+- pollId: `H256`
 <hr>
 
 ## CeresLaunchpad pallet
@@ -9414,6 +9442,16 @@ returns: `Vec<(OrderBookOrderBookId,u128)>`
 
 <hr>
 
+#### **api.query.orderBook.alignmentCursor**
+
+arguments:
+
+- key: `OrderBookOrderBookId`
+
+returns: `u128`
+
+<hr>
+
 #### **api.query.orderBook.incompleteExpirationsSince**
 
 > Earliest block with incomplete expirations;
@@ -9433,6 +9471,10 @@ returns: `u32`
 arguments:
 
 - orderBookId: `OrderBookOrderBookId`
+- tickSize: `u128`
+- stepLotSize: `u128`
+- minLotSize: `u128`
+- maxLotSize: `u128`
 <hr>
 
 #### **api.tx.orderBook.deleteOrderbook**
@@ -11291,6 +11333,28 @@ arguments:
 - commissionRatio: `u128`
 <hr>
 
+#### **api.tx.liquidityProxy.xorlessTransfer**
+
+> Extrinsic which is enable XORless transfers.
+> Internally it's swaps `asset_id` to `desired_xor_amount` of `XOR` and transfers remaining amount of `asset_id` to `receiver`.
+> Client apps should specify the XOR amount which should be paid as a fee in `desired_xor_amount` parameter.
+> If sender will not have enough XOR to pay fees after execution, transaction will be rejected.
+> This extrinsic is done as temporary solution for XORless transfers, in future it would be removed
+> and logic for XORless extrinsics should be moved to xor-fee pallet.
+
+arguments:
+
+- dexId: `u32`
+- assetId: `CommonPrimitivesAssetId32`
+- receiver: `AccountId32`
+- amount: `u128`
+- desiredXorAmount: `u128`
+- maxAmountIn: `u128`
+- selectedSourceTypes: `Vec<CommonPrimitivesLiquiditySourceType>`
+- filterMode: `CommonPrimitivesFilterMode`
+- additionalData: `Option<Bytes>`
+<hr>
+
 ### _Custom RPCs_
 
 #### **api.rpc.liquidityProxy.quote**
@@ -11381,62 +11445,47 @@ arguments:
 
 ### _Extrinsics_
 
-#### **api.tx.qaTools.addToWhitelist**
-
-> Add the account to the list of allowed callers.
-
-arguments:
-
-- account: `AccountId32`
-<hr>
-
-#### **api.tx.qaTools.removeFromWhitelist**
-
-> Remove the account from the list of allowed callers.
-
-arguments:
-
-- account: `AccountId32`
-<hr>
-
-#### **api.tx.qaTools.orderBookCreateEmptyBatch**
-
-> Create multiple order books with default parameters (if do not exist yet).
->
-> Parameters:
->
-> - `origin`: caller, should be account because error messages for unsigned txs are unclear,
-> - `order_book_ids`: ids of the created order books; trading pairs are created
->   if necessary,
-
-arguments:
-
-- orderBookIds: `Vec<OrderBookOrderBookId>`
-<hr>
-
 #### **api.tx.qaTools.orderBookCreateAndFillBatch**
 
-> Create multiple many order books with default parameters if do not exist and
-> fill them according to given parameters.
+> Create multiple many order books with parameters and fill them according to given parameters.
 >
 > Balance for placing the orders is minted automatically, trading pairs are
 > created if needed.
 >
+> In order to create empty order books, one can leave settings empty.
+>
 > Parameters:
 >
-> - `origin`: caller, should be account because unsigned error messages are unclear,
-> - `dex_id`: DEXId for all created order books,
+> - `origin`: root
 > - `bids_owner`: Creator of the buy orders placed on the order books,
 > - `asks_owner`: Creator of the sell orders placed on the order books,
-> - `fill_settings`: Parameters for placing the orders in each order book.
->   `best_bid_price` should be at least 3 price steps from the lowest accepted price,
->   and `best_ask_price` - at least 3 steps below maximum price,
+> - `settings`: Parameters for creation of the order book and placing the orders in each order book.
 
 arguments:
 
 - bidsOwner: `AccountId32`
 - asksOwner: `AccountId32`
-- fillSettings: `Vec<(OrderBookOrderBookId,QaToolsPalletsOrderBookToolsOrderBookFillSettings)>`
+- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookSettingsOrderBookAttributes,QaToolsPalletToolsOrderBookSettingsOrderBookFill)>`
+<hr>
+
+#### **api.tx.qaTools.orderBookFillBatch**
+
+> Fill the order books according to given parameters.
+>
+> Balance for placing the orders is minted automatically.
+>
+> Parameters:
+>
+> - `origin`: root
+> - `bids_owner`: Creator of the buy orders placed on the order books,
+> - `asks_owner`: Creator of the sell orders placed on the order books,
+> - `settings`: Parameters for placing the orders in each order book.
+
+arguments:
+
+- bidsOwner: `AccountId32`
+- asksOwner: `AccountId32`
+- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookSettingsOrderBookFill)>`
 <hr>
 
 ## Author pallet
