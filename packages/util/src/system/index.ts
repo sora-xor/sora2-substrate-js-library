@@ -4,7 +4,7 @@ import type { Observable } from '@polkadot/types/types';
 import type { GenericExtrinsic } from '@polkadot/types';
 import type { u32, Vec, u128 } from '@polkadot/types-codec';
 import type { AnyTuple } from '@polkadot/types-codec/types';
-import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import type { FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo } from '@polkadot/types/lookup';
 
 import type { Api } from '../api';
 
@@ -46,8 +46,13 @@ export class SystemModule<T> {
     );
   }
 
-  public getRuntimeVersionObservable(apiRx = this.root.apiRx): Observable<number> {
-    return apiRx.query.system.lastRuntimeUpgrade().pipe<number>(map((data) => data.value.specVersion.toNumber()));
+  public getRuntimeVersionObservable(apiRx = this.root.apiRx): Observable<number | null> {
+    return apiRx.query.system.lastRuntimeUpgrade().pipe<number>(
+      map((data) => {
+        const systemInfo: FrameSystemLastRuntimeUpgradeInfo | null = data.unwrapOr(null);
+        return systemInfo?.specVersion?.toNumber?.() ?? null;
+      })
+    );
   }
 
   public getEventsObservable(apiRx = this.root.apiRx): Observable<Vec<FrameSystemEventRecord>> {

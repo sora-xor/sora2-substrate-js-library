@@ -4,6 +4,10 @@ import type { AccountBalance, Asset } from './types';
 
 export const MaxRustNumber = '170141183460469231731.687303715884105727';
 export const MaxTotalSupply = '100000000000000000000'; // It's better to round it for UX
+/** VAL supply difference between circulating and total supply */
+export const VAL_CIRCULATING_DIFF = new FPNumber('33449609.3779');
+/** PSWAP supply difference between circulating and total supply */
+export const PSWAP_CIRCULATING_DIFF = new FPNumber('6345014420.6195');
 
 export enum KnownSymbols {
   XOR = 'XOR',
@@ -66,36 +70,42 @@ export const NativeAssets = new ArrayLike<Asset>([
     symbol: KnownSymbols.XOR,
     name: 'SORA',
     decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
   },
   {
     address: '0x0200040000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.VAL,
     name: 'SORA Validator Token',
     decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
   },
   {
     address: '0x0200050000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.PSWAP,
     name: 'Polkaswap',
     decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
   },
   {
     address: '0x0200080000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XSTUSD,
     name: 'SORA Synthetic USD',
     decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
   },
   {
     address: '0x0200090000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XST,
     name: 'SORA Synthetics',
     decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
   },
   {
     address: '0x02000a0000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.TBCD,
     name: 'SORA TBC Dollar',
     decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
   },
 ]);
 
@@ -106,12 +116,14 @@ export const KnownAssets = new ArrayLike<Asset>([
     symbol: KnownSymbols.DAI,
     name: 'Dai Stablecoin',
     decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
   },
   {
     address: '0x0200070000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.ETH,
     name: 'Ether',
     decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
   },
 ]);
 

@@ -70,6 +70,7 @@ export class PoolXykModule<T> {
       decimals: FPNumber.DEFAULT_PRECISION, // [DECIMALS]
       name: 'Pool XYK Token',
       symbol: 'POOLXYK',
+      isMintable: true,
     };
   }
 

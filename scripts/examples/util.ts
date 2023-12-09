@@ -10,7 +10,7 @@ export async function delay(ms = 40000): Promise<void> {
 }
 
 export async function connectAndImportAccount(
-  env = SORA_ENV.stage,
+  env: SORA_ENV | string = SORA_ENV.stage,
   withKeyringLoading = true,
   mnemonic?: string
 ): Promise<void> {
@@ -18,7 +18,7 @@ export async function connectAndImportAccount(
   console.info('Connected: ' + env);
   await api.initialize(withKeyringLoading);
   await api.calcStaticNetworkFees();
-  // salon muscle select culture inform pen typical object fox fruit culture civil
+
   api.importAccount(mnemonic ?? TST_MNEMONIC, 'name', 'pass');
 }
 
@@ -27,7 +27,11 @@ export async function disconnect(): Promise<void> {
   await connection.close();
 }
 
-export async function withConnectedAccount(fn: Function, env = SORA_ENV.dev, mnemonic?: string): Promise<void> {
+export async function withConnectedAccount(
+  fn: Function,
+  env: SORA_ENV | string = SORA_ENV.dev,
+  mnemonic?: string
+): Promise<void> {
   await connectAndImportAccount(env, true, mnemonic);
   await fn();
   await disconnect();
