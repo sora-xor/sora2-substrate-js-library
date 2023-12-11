@@ -23,6 +23,5 @@ export * from './api';
 export * from './BaseApi';
 export * from './FaucetApi';
 export * from './storage';
-export * from './http';
 
 export { FPNumber, CodecString } from '@sora-substrate/math';
