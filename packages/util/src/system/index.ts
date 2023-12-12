@@ -4,7 +4,7 @@ import type { Observable } from '@polkadot/types/types';
 import type { GenericExtrinsic } from '@polkadot/types';
 import type { u32, Vec, u128 } from '@polkadot/types-codec';
 import type { AnyTuple } from '@polkadot/types-codec/types';
-import type { FrameSystemEventRecord } from '@polkadot/types/lookup';
+import type { FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo } from '@polkadot/types/lookup';
 
 import type { Api } from '../api';
 
@@ -20,10 +20,6 @@ export class SystemModule<T> {
 
   public getChainDecimals(api = this.root.api): number {
     return api.registry.chainDecimals[0];
-  }
-
-  public getNetworkFeeMultiplierObservable(apiRx = this.root.apiRx): Observable<number> {
-    return apiRx.query.xorFee.multiplier().pipe(map<u128, number>((codec) => new FPNumber(codec).toNumber()));
   }
 
   public getBlockNumberObservable(apiRx = this.root.apiRx): Observable<number> {
@@ -46,8 +42,19 @@ export class SystemModule<T> {
     );
   }
 
-  public getRuntimeVersionObservable(apiRx = this.root.apiRx): Observable<number> {
-    return apiRx.query.system.lastRuntimeUpgrade().pipe<number>(map((data) => data.value.specVersion.toNumber()));
+  public async getRuntimeVersion(api = this.root.api): Promise<number | null> {
+    const data = await api.query.system.lastRuntimeUpgrade();
+    const systemInfo: FrameSystemLastRuntimeUpgradeInfo | null = data.unwrapOr(null);
+    return systemInfo?.specVersion?.toNumber?.() ?? null;
+  }
+
+  public getRuntimeVersionObservable(apiRx = this.root.apiRx): Observable<number | null> {
+    return apiRx.query.system.lastRuntimeUpgrade().pipe<number>(
+      map((data) => {
+        const systemInfo: FrameSystemLastRuntimeUpgradeInfo | null = data.unwrapOr(null);
+        return systemInfo?.specVersion?.toNumber?.() ?? null;
+      })
+    );
   }
 
   public getEventsObservable(apiRx = this.root.apiRx): Observable<Vec<FrameSystemEventRecord>> {
@@ -79,5 +86,16 @@ export class SystemModule<T> {
   public async getBlockEvents(blockId: string, api = this.root.api): Promise<Array<FrameSystemEventRecord>> {
     const apiInstanceAtBlock = await api.at(blockId);
     return (await apiInstanceAtBlock.query.system.events()).toArray();
+  }
+
+  /** NetworkFeeMultiplier is for the SORA network only */
+  public async getNetworkFeeMultiplier(api = this.root.api): Promise<number> {
+    const u128Data = await api.query.xorFee.multiplier();
+    return new FPNumber(u128Data).toNumber();
+  }
+
+  /** NetworkFeeMultiplier is for the SORA network only */
+  public getNetworkFeeMultiplierObservable(apiRx = this.root.apiRx): Observable<number> {
+    return apiRx.query.xorFee.multiplier().pipe(map<u128, number>((u128Data) => new FPNumber(u128Data).toNumber()));
   }
 }

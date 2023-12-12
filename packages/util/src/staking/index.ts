@@ -684,16 +684,13 @@ export class StakingModule<T> {
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
   public async bondAndNominate(
-    args: { value: NumberLike; controller: string; payee: StakingRewardsDestination | string, validators: string[] },
+    args: { value: NumberLike; controller: string; payee: StakingRewardsDestination | string; validators: string[] },
     signerPair?: KeyringPair
   ): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const params = this.calcBondParams(args.value, args.controller, args.payee);
 
-    const transactions = [
-      this.root.api.tx.staking.bond(...params),
-      this.root.api.tx.staking.nominate(args.validators)
-    ];
+    const transactions = [this.root.api.tx.staking.bond(...params), this.root.api.tx.staking.nominate(args.validators)];
 
     const call = this.root.api.tx.utility.batchAll(transactions);
 
@@ -876,5 +873,13 @@ export class StakingModule<T> {
       type: Operation.StakingPayout,
       payouts: args.payouts,
     });
+  }
+
+  public async getPayoutNetworkFee(args: { payouts: Payouts }): Promise<CodecString> {
+    const transactions = args.payouts
+      .map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era)))
+      .flat();
+    const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
+    return await this.root.getTransactionFee(call);
   }
 }
