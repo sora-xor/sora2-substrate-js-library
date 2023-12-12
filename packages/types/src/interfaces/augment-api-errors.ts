@@ -2110,9 +2110,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TickSizeAndStepLotSizeAreTooBig: AugmentedError<ApiType>;
       /**
-       * Product of tick and step lot sizes goes out of precision. It must be accurately
-       * represented by fixed-precision float to prevent rounding errors. I.e. the product
-       * should not have more than 18 digits after the comma.
+       * Product of tick and step lot sizes goes out of precision. It must be accurately represented by fixed-precision float to prevent rounding errors. I.e. the product should not have more than 18 digits after the comma.
        **/
       TickSizeAndStepLotSizeLosePrecision: AugmentedError<ApiType>;
       /**
@@ -2530,8 +2528,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AlreadyInWhitelist: AugmentedError<ApiType>;
       /**
-       * Did not find an order book with given id to fill. Likely an error with
-       * order book creation.
+       * Did not find an order book with given id to fill. Likely an error with order book creation.
        **/
       CannotFillUnknownOrderBook: AugmentedError<ApiType>;
       /**
@@ -2539,8 +2536,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       EmptyRandomRange: AugmentedError<ApiType>;
       /**
-       * Price step, best price, and worst price must be a multiple of
-       * order book's tick size. Price step must also be non-zero.
+       * Price step, best price, and worst price must be a multiple of order book's tick size. Price step must also be non-zero.
        **/
       IncorrectPrice: AugmentedError<ApiType>;
       /**
