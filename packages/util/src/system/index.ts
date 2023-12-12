@@ -93,6 +93,7 @@ export class SystemModule<T> {
     const u128Data = await api.query.xorFee.multiplier();
     return new FPNumber(u128Data).toNumber();
   }
+
   /** NetworkFeeMultiplier is for the SORA network only */
   public getNetworkFeeMultiplierObservable(apiRx = this.root.apiRx): Observable<number> {
     return apiRx.query.xorFee.multiplier().pipe(map<u128, number>((u128Data) => new FPNumber(u128Data).toNumber()));
