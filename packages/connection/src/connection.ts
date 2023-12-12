@@ -15,8 +15,8 @@ export interface ConnectionRunOptions {
   timeout?: number;
   autoConnectMs?: number;
   eventListeners?: ConnectionEventListener[];
-  getMetadata?: (key: string) => Promise<HexString | null>;
-  setMetadata?: (key: string, metadata: HexString) => Promise<void>;
+  getMetadata?: (genesisHash: string, specVersion: number) => Promise<string | null>;
+  setMetadata?: (genesisHash: string, specVersion: number, metadata: string) => Promise<void>;
 }
 
 const disconnectApi = async (api: ApiPromise, eventListeners: ConnectionEventListener[]): Promise<void> => {
@@ -73,14 +73,18 @@ export class Connection {
 
     let metadata!: Record<string, HexString>;
 
-    const metadataKey = await this.fetchMetadataKey(endpoint);
+    if (getMetadata || setMetadata) {
+      const metadataKeys = await this.fetchMetadataKeys(endpoint);
 
-    if (metadataKey) {
-      const metadataHex = (await getMetadata?.(metadataKey)) ?? (await this.fetchMetadataHex(endpoint));
+      if (metadataKeys) {
+        const { genesisHash, specVersion } = metadataKeys;
+        const metadataHex = (await getMetadata?.(genesisHash, specVersion)) ?? (await this.fetchMetadataHex(endpoint));
 
-      if (metadataHex) {
-        metadata = { [metadataKey]: metadataHex };
-        setMetadata?.(metadataKey, metadataHex);
+        if (metadataHex) {
+          const key = this.generateMetadataKey(genesisHash, specVersion);
+          metadata = { [key]: metadataHex as HexString };
+          setMetadata?.(genesisHash, specVersion, metadataHex);
+        }
       }
     }
 
@@ -148,7 +152,7 @@ export class Connection {
     return `${genesisHash}-${String(specVersion)}`;
   }
 
-  public async fetchMetadataKey(wsEndpoint: string): Promise<string | null> {
+  public async fetchMetadataKeys(wsEndpoint: string): Promise<{ genesisHash: string; specVersion: number } | null> {
     try {
       const rpcEndpoint = getRpcEndpoint(wsEndpoint);
 
@@ -158,7 +162,7 @@ export class Connection {
       ]);
       const { specVersion } = runtimeVersion;
 
-      return this.generateMetadataKey(genesisHash, specVersion);
+      return { genesisHash, specVersion: Number(specVersion) };
     } catch {
       return null;
     }
@@ -167,7 +171,7 @@ export class Connection {
   public async fetchMetadataHex(wsEndpoint: string): Promise<HexString | null> {
     try {
       const rpcEndpoint = getRpcEndpoint(wsEndpoint);
-      const metadataHex = await fetchRpc(rpcEndpoint, 'state_state_getMetadata', []);
+      const metadataHex = await fetchRpc(rpcEndpoint, 'state_getMetadata', []);
 
       return metadataHex;
     } catch {
