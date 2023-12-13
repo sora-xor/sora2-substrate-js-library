@@ -24,7 +24,7 @@ import type {
   PriceToolsAggregatedPriceInfo,
   BandBandRate,
 } from '@polkadot/types/lookup';
-import type { Option, BTreeSet } from '@polkadot/types-codec';
+import type { Option, BTreeSet } from '@polkadot/types';
 
 import { Consts as SwapConsts } from './consts';
 import { XOR, DAI, XSTUSD } from '../assets/consts';
@@ -866,7 +866,8 @@ export class SwapModule<T> {
    * **RPC**
    *
    * Get swap result using `liquidityProxy.quote` rpc call for all DEX IDs (XOR & XSTUSD based).
-   *
+   * It utilizes only 18 decimals assets
+   * __________________
    * It's better to use `getResult` function because of the blockchain performance
    *
    * @param assetAAddress Asset A address
@@ -884,13 +885,8 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
   ): Promise<SwapResultWithDexId> {
-    const [assetA, assetB] = await Promise.all([
-      this.root.assets.getAssetInfo(assetAAddress),
-      this.root.assets.getAssetInfo(assetBAddress),
-    ]);
-    const resultDecimals = (!isExchangeB ? assetB : assetA).decimals;
-    const toCodecString = (value) => new FPNumber(value, resultDecimals).toCodecString();
-    const toFP = (value) => new FPNumber(value, resultDecimals);
+    const toCodecString = (value) => new FPNumber(value).toCodecString();
+    const toFP = (value) => new FPNumber(value);
 
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource) as any;
     const filterMode =
@@ -918,6 +914,63 @@ export class SwapModule<T> {
       route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
       dexId: isDex0Better ? DexId.XOR : DexId.XSTUSD,
     } as SwapResultWithDexId;
+  }
+
+  /**
+   * **RPC**
+   *
+   * Get buy/sell swap results using `liquidityProxy.quote` rpc call for all DEX IDs (XOR & XSTUSD based).
+   * It utilizes only 18 decimals assets
+   * __________________
+   * It's better to use `getResult` function because of the blockchain performance
+   *
+   * @param base Base asset address
+   * @param quote Quote asset address
+   * @param amount Amount value represented by `number` or `string`
+   * @param liquiditySource Selected liquidity source; `''` by default
+   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`); `true` by default
+   */
+  public async getBuySellResultRpc(
+    base: string,
+    quote: string,
+    amount: NumberLike,
+    liquiditySource = LiquiditySourceTypes.Default,
+    allowSelectedSorce = true
+  ): Promise<{ buy: string; sell: string }> {
+    const toFP = (value) => new FPNumber(value);
+
+    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource) as any;
+    const filterMode =
+      liquiditySource !== LiquiditySourceTypes.Default
+        ? allowSelectedSorce
+          ? 'AllowSelected'
+          : 'ForbidSelected'
+        : 'Disabled';
+    const amountFp = toFP(amount);
+    const codecAmount = amountFp.toCodecString();
+    const quoteFn = this.root.api.rpc.liquidityProxy.quote;
+
+    const [sellDex0, /* sellDex1, */ buyDex0 /*, buyDex1*/] = await Promise.all([
+      quoteFn(DexId.XOR, base, quote, codecAmount, 'WithDesiredInput', liquiditySources, filterMode),
+      // quoteFn(DexId.XSTUSD, base, quote, codecAmount, 'WithDesiredInput', liquiditySources, filterMode),
+      quoteFn(DexId.XOR, quote, base, codecAmount, 'WithDesiredOutput', liquiditySources, filterMode),
+      // quoteFn(DexId.XSTUSD, quote, base, codecAmount, 'WithDesiredOutput', liquiditySources, filterMode),
+    ]);
+
+    const valueSellDex0 = sellDex0.unwrapOr(emptySwapResult);
+    // const valueSellDex1 = sellDex1.unwrapOr(emptySwapResult);
+    // const isDex0BetterForSell = FPNumber.gte(toFP(valueSellDex0.amount), toFP(valueSellDex1.amount));
+    const valueSell = toFP(valueSellDex0.amount); // toFP((isDex0BetterForSell ? valueSellDex0 : valueSellDex1).amount);
+
+    const valueBuyDex0 = buyDex0.unwrapOr(emptySwapResult);
+    // const valueBuyDex1 = buyDex1.unwrapOr(emptySwapResult);
+    // const isDex0BetterForBuy = FPNumber.gte(toFP(valueBuyDex0.amount), toFP(valueBuyDex1.amount));
+    const valueBuy = toFP(valueBuyDex0.amount); // toFP((isDex0BetterForBuy ? valueBuyDex0 : valueBuyDex1).amount);
+
+    return {
+      buy: valueBuy.div(amountFp).toString(),
+      sell: valueSell.div(amountFp).toString(),
+    };
   }
 
   /**
