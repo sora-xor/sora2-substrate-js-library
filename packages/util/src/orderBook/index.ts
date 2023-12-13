@@ -232,6 +232,27 @@ export class OrderBookModule<T> {
    * @param quote quote orderbook asset ID
    * @param account account address
    */
+  public async getUserLimitOrdersIds(base: string, quote: string, account: string): Promise<Array<number>> {
+    const dexId = this.root.dex.getDexId(quote);
+    const idsCodec = await this.root.api.query.orderBook.userLimitOrders(account, { dexId, base, quote });
+    return (idsCodec.unwrapOrDefault().toJSON() ?? []) as Array<number>;
+  }
+
+  /**
+   * Get all user's limit order ids
+   * @param account account address
+   */
+  public async getAllUserLimitOrdersIds(account: string): Promise<Array<number>> {
+    const data = await this.root.api.query.orderBook.userLimitOrders.entries(account);
+    return data.flatMap(([_, value]) => (value.unwrapOrDefault().toJSON() ?? []) as Array<number>);
+  }
+
+  /**
+   * Subscribe on user's limit order ids
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param account account address
+   */
   public subscribeOnUserLimitOrdersIds(base: string, quote: string, account: string): Observable<Array<number>> {
     const dexId = this.root.dex.getDexId(quote);
     return this.root.apiRx.query.orderBook
