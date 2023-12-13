@@ -27,3 +27,9 @@ export interface AggregatedOrderBook {
   asks: Array<OrderBookPriceVolume>;
   bids: Array<OrderBookPriceVolume>;
 }
+
+export interface OrderId {
+  id: number;
+  base: string;
+  quote: string;
+}

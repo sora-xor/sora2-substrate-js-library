@@ -17,7 +17,7 @@ import type {
 import { XOR } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import type { Api } from '../api';
-import type { AggregatedOrderBook, LimitOrder } from './types';
+import type { AggregatedOrderBook, LimitOrder, OrderId } from './types';
 
 const toAssetId = (asset: CommonPrimitivesAssetId32) => asset.code.toString();
 
@@ -242,9 +242,15 @@ export class OrderBookModule<T> {
    * Get all user's limit order ids
    * @param account account address
    */
-  public async getAllUserLimitOrdersIds(account: string): Promise<Array<number>> {
+  public async getAllUserLimitOrdersIds(account: string): Promise<Array<OrderId>> {
     const data = await this.root.api.query.orderBook.userLimitOrders.entries(account);
-    return data.flatMap(([_, value]) => (value.unwrapOrDefault().toJSON() ?? []) as Array<number>);
+    return data.flatMap(([key, value]) => {
+      const { base, quote } = key.args[1];
+      const baseId = toAssetId(base);
+      const quoteId = toAssetId(quote);
+      const ids = (value.unwrapOrDefault().toJSON() ?? []) as Array<number>;
+      return ids.map<OrderId>((id) => ({ base: baseId, quote: quoteId, id }));
+    });
   }
 
   /**
