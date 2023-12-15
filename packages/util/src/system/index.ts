@@ -22,10 +22,6 @@ export class SystemModule<T> {
     return api.registry.chainDecimals[0];
   }
 
-  public getNetworkFeeMultiplierObservable(apiRx = this.root.apiRx): Observable<number> {
-    return apiRx.query.xorFee.multiplier().pipe(map<u128, number>((codec) => new FPNumber(codec).toNumber()));
-  }
-
   public getBlockNumberObservable(apiRx = this.root.apiRx): Observable<number> {
     return apiRx.query.system.number().pipe(
       map<u32, number>((codec) => {
@@ -44,6 +40,12 @@ export class SystemModule<T> {
         return hash.isEmpty ? null : hash.toString();
       })
     );
+  }
+
+  public async getRuntimeVersion(api = this.root.api): Promise<number | null> {
+    const data = await api.query.system.lastRuntimeUpgrade();
+    const systemInfo: FrameSystemLastRuntimeUpgradeInfo | null = data.unwrapOr(null);
+    return systemInfo?.specVersion?.toNumber?.() ?? null;
   }
 
   public getRuntimeVersionObservable(apiRx = this.root.apiRx): Observable<number | null> {
@@ -84,5 +86,16 @@ export class SystemModule<T> {
   public async getBlockEvents(blockId: string, api = this.root.api): Promise<Array<FrameSystemEventRecord>> {
     const apiInstanceAtBlock = await api.at(blockId);
     return (await apiInstanceAtBlock.query.system.events()).toArray();
+  }
+
+  /** NetworkFeeMultiplier is for the SORA network only */
+  public async getNetworkFeeMultiplier(api = this.root.api): Promise<number> {
+    const u128Data = await api.query.xorFee.multiplier();
+    return new FPNumber(u128Data).toNumber();
+  }
+
+  /** NetworkFeeMultiplier is for the SORA network only */
+  public getNetworkFeeMultiplierObservable(apiRx = this.root.apiRx): Observable<number> {
+    return apiRx.query.xorFee.multiplier().pipe(map<u128, number>((u128Data) => new FPNumber(u128Data).toNumber()));
   }
 }

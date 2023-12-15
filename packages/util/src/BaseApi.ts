@@ -679,6 +679,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   public validateAddress(address: string): boolean {
     try {
       base58Decode(address);
+      decodeAddress(address, false);
       return true;
     } catch {
       return false;

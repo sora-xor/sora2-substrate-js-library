@@ -7,6 +7,7 @@ import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts'
 import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails, getLockedAssets } from '../methods';
 
 import type { CodecString } from '@sora-substrate/math';
+import type { BridgeTypesGenericNetworkId } from '@polkadot/types/lookup';
 import type { Asset } from '../../assets/types';
 import type { EvmHistory, EvmNetwork, EvmAsset } from './types';
 
@@ -15,8 +16,8 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     super('evmHistory');
   }
 
-  public prepareNetworkParam(evmNetwork: EvmNetwork) {
-    const genericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
+  public prepareNetworkParam(evmNetwork: EvmNetwork): BridgeTypesGenericNetworkId {
+    const genericNetworkId: BridgeTypesGenericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
       [BridgeNetworkType.Evm]: evmNetwork,
     });
 

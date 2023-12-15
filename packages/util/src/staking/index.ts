@@ -874,4 +874,12 @@ export class StakingModule<T> {
       payouts: args.payouts,
     });
   }
+
+  public async getPayoutNetworkFee(args: { payouts: Payouts }): Promise<CodecString> {
+    const transactions = args.payouts
+      .map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era)))
+      .flat();
+    const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
+    return await this.root.getTransactionFee(call);
+  }
 }

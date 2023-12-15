@@ -1,5 +1,5 @@
 import type { FPNumber } from '@sora-substrate/math';
-import type { OrderBookId, PriceVariant } from '@sora-substrate/liquidity-proxy';
+import type { OrderBookId, OrderBookPriceVolume, PriceVariant } from '@sora-substrate/liquidity-proxy';
 
 import type { History } from '../BaseApi';
 
@@ -21,4 +21,15 @@ export interface LimitOrderHistory extends History {
   side?: PriceVariant;
   limitOrderTimestamp?: number;
   limitOrderIds?: number[];
+}
+
+export interface AggregatedOrderBook {
+  asks: Array<OrderBookPriceVolume>;
+  bids: Array<OrderBookPriceVolume>;
+}
+
+export interface OrderId {
+  id: number;
+  base: string;
+  quote: string;
 }

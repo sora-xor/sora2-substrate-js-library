@@ -4,7 +4,6 @@ import { Operation } from '../BaseApi';
 import { MAX_TIMESTAMP } from './consts';
 import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
 import type { OrderBook, OrderBookPriceVolume } from '@sora-substrate/liquidity-proxy';
-
 import type { Observable } from '@polkadot/types/types';
 import type { Option } from '@polkadot/types-codec';
 import type {
@@ -15,10 +14,10 @@ import type {
   OrderBook as OrderBookStruct,
 } from '@polkadot/types/lookup';
 
-import type { Api } from '../api';
-import type { LimitOrder } from './types';
 import { XOR } from '../assets/consts';
 import { DexId } from '../dex/consts';
+import type { Api } from '../api';
+import type { AggregatedOrderBook, LimitOrder, OrderId } from './types';
 
 const toAssetId = (asset: CommonPrimitivesAssetId32) => asset.code.toString();
 
@@ -67,8 +66,7 @@ export class OrderBookModule<T> {
   constructor(private readonly root: Api<T>) {}
 
   /**
-   * Get order books
-   *
+   * Get order books object `Record<serializedKey, OrderBook>`
    */
   public async getOrderBooks(): Promise<Record<string, OrderBook>> {
     const entries = await this.root.api.query.orderBook.orderBooks.entries();
@@ -90,6 +88,7 @@ export class OrderBookModule<T> {
 
   /**
    * Get user's order book addresses
+   * @param account account address
    */
   public async getUserOrderBooks(account: string): Promise<string[]> {
     const entries = await this.root.api.query.orderBook.userLimitOrders.entries(account);
@@ -111,7 +110,8 @@ export class OrderBookModule<T> {
 
   /**
    * Get observable order book data
-   * @param orderBookId base and quote addresses
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
    */
   public getOrderBookObservable(base: string, quote: string): Observable<OrderBook | null> {
     const dexId = this.root.dex.getDexId(quote);
@@ -125,10 +125,32 @@ export class OrderBookModule<T> {
    * Get mappings price to amount of asks
    *
    * Represented as **[[price, amount], [price, amount], ...]**
-   * @param orderBookId base and quote addresses
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param dex (optional) dexId number to avoid unnecessary array search if it's already known before
    */
-  public subscribeOnAggregatedAsks(base: string, quote: string): Observable<Array<OrderBookPriceVolume>> {
-    const dexId = this.root.dex.getDexId(quote);
+  public async getAggregatedAsks(base: string, quote: string, dex?: number): Promise<Array<OrderBookPriceVolume>> {
+    const dexId = dex ?? this.root.dex.getDexId(quote);
+    const data = await this.root.api.query.orderBook.aggregatedAsks({ dexId, base, quote });
+    const asks: Array<[FPNumber, FPNumber]> = [];
+    data.forEach((value, key) => {
+      const price = toFP(key);
+      const amount = toFP(value);
+      asks.push([price, amount]);
+    });
+    return asks;
+  }
+
+  /**
+   * Subscribe on mappings price to amount of asks
+   *
+   * Represented as **[[price, amount], [price, amount], ...]**
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param dex (optional) dexId number to avoid unnecessary array search if it's already known before
+   */
+  public subscribeOnAggregatedAsks(base: string, quote: string, dex?: number): Observable<Array<OrderBookPriceVolume>> {
+    const dexId = dex ?? this.root.dex.getDexId(quote);
     return this.root.apiRx.query.orderBook.aggregatedAsks({ dexId, base, quote }).pipe(
       map((data) => {
         const asks: Array<[FPNumber, FPNumber]> = [];
@@ -148,10 +170,32 @@ export class OrderBookModule<T> {
    * Get mappings price to amount of bids
    *
    * Represented as **[[price, amount], [price, amount], ...]**
-   * @param orderBookId base and quote addresses
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param dex (optional) dexId number to avoid unnecessary array search if it's already known before
    */
-  public subscribeOnAggregatedBids(base: string, quote: string): Observable<Array<OrderBookPriceVolume>> {
-    const dexId = this.root.dex.getDexId(quote);
+  public async getAggregatedBids(base: string, quote: string, dex?: number): Promise<Array<OrderBookPriceVolume>> {
+    const dexId = dex ?? this.root.dex.getDexId(quote);
+    const data = await this.root.api.query.orderBook.aggregatedBids({ dexId, base, quote });
+    const bids: Array<[FPNumber, FPNumber]> = [];
+    data.forEach((value, key) => {
+      const price = toFP(key);
+      const amount = toFP(value);
+      bids.push([price, amount]);
+    });
+    return bids;
+  }
+
+  /**
+   * Subscribe on mappings price to amount of bids
+   *
+   * Represented as **[[price, amount], [price, amount], ...]**
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param dex (optional) dexId number to avoid unnecessary array search if it's already known before
+   */
+  public subscribeOnAggregatedBids(base: string, quote: string, dex?: number): Observable<Array<OrderBookPriceVolume>> {
+    const dexId = dex ?? this.root.dex.getDexId(quote);
     return this.root.apiRx.query.orderBook.aggregatedBids({ dexId, base, quote }).pipe(
       map((data) => {
         const bids: Array<[FPNumber, FPNumber]> = [];
@@ -168,8 +212,51 @@ export class OrderBookModule<T> {
   }
 
   /**
+   * Get mappings price to amount of asks and bids
+   *
+   * Represented as **{ asks: [[price, amount], [price, amount], ...], bids: [[price, amount], [price, amount], ...] }**
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   */
+  public async getAggregatedAsksAndBids(base: string, quote: string): Promise<AggregatedOrderBook> {
+    const dexId = this.root.dex.getDexId(quote);
+    const asks = await this.getAggregatedAsks(base, quote, dexId);
+    const bids = await this.getAggregatedBids(base, quote, dexId);
+
+    return { asks, bids };
+  }
+
+  /**
    * Get user's limit order ids
-   * @param orderBookId base and quote addresses
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param account account address
+   */
+  public async getUserLimitOrdersIds(base: string, quote: string, account: string): Promise<Array<number>> {
+    const dexId = this.root.dex.getDexId(quote);
+    const idsCodec = await this.root.api.query.orderBook.userLimitOrders(account, { dexId, base, quote });
+    return (idsCodec.unwrapOrDefault().toJSON() ?? []) as Array<number>;
+  }
+
+  /**
+   * Get all user's limit order ids
+   * @param account account address
+   */
+  public async getAllUserLimitOrdersIds(account: string): Promise<Array<OrderId>> {
+    const data = await this.root.api.query.orderBook.userLimitOrders.entries(account);
+    return data.flatMap(([key, value]) => {
+      const { base, quote } = key.args[1];
+      const baseId = toAssetId(base);
+      const quoteId = toAssetId(quote);
+      const ids = (value.unwrapOrDefault().toJSON() ?? []) as Array<number>;
+      return ids.map<OrderId>((id) => ({ base: baseId, quote: quoteId, id }));
+    });
+  }
+
+  /**
+   * Subscribe on user's limit order ids
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
    * @param account account address
    */
   public subscribeOnUserLimitOrdersIds(base: string, quote: string, account: string): Observable<Array<number>> {
@@ -181,7 +268,8 @@ export class OrderBookModule<T> {
 
   /**
    * Get user's limit order info
-   * @param orderBookId base and quote addresses
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
    * @param id limit order id
    * @returns formatted limit order info
    */
@@ -208,7 +296,8 @@ export class OrderBookModule<T> {
 
   /**
    * Place limit order
-   * @param orderBookId base and quote addresses
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
    * @param price order price
    * @param amount order amount
    * @param side buy or sell
@@ -247,7 +336,8 @@ export class OrderBookModule<T> {
 
   /**
    * Cancel one limit order by id
-   * @param orderBookId base and quote addresses
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
    * @param orderId number
    */
   public cancelLimitOrder(base: string, quote: string, orderId: number): Promise<T> {
@@ -267,7 +357,8 @@ export class OrderBookModule<T> {
 
   /**
    * Cancel several limit orders at once
-   * @param orderBookId base and quote addresses
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
    * @param orderIds array ids
    */
   public cancelLimitOrderBatch(base: string, quote: string, orderIds: number[]): Promise<T> {
