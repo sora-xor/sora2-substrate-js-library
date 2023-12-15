@@ -10,7 +10,7 @@ export async function delay(ms = 40000): Promise<void> {
 }
 
 export async function connectAndImportAccount(
-  env = SORA_ENV.stage,
+  env: string = SORA_ENV.stage,
   withKeyringLoading = true,
   mnemonic?: string
 ): Promise<void> {
@@ -27,7 +27,7 @@ export async function disconnect(): Promise<void> {
   await connection.close();
 }
 
-export async function withConnectedAccount(fn: Function, env = SORA_ENV.dev, mnemonic?: string): Promise<void> {
+export async function withConnectedAccount(fn: Function, env: string = SORA_ENV.dev, mnemonic?: string): Promise<void> {
   await connectAndImportAccount(env, true, mnemonic);
   await fn();
   await disconnect();
