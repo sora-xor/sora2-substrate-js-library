@@ -20,6 +20,7 @@ import type {
   Relaychain,
   Parachain,
 } from './types';
+import type { BridgeTypesGenericNetworkId } from '@polkadot/types/lookup';
 
 export class SubBridgeApi<T> extends BaseApi<T> {
   constructor() {
@@ -35,9 +36,9 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     [SubNetworkId.AlphanetSora]: 2011,
   };
 
-  public prepareNetworkParam(subNetwork: SubNetwork) {
+  public prepareNetworkParam(subNetwork: SubNetwork): BridgeTypesGenericNetworkId {
     const networkId = this.getSubNetworkChainId(subNetwork);
-    const genericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
+    const genericNetworkId: BridgeTypesGenericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
       [BridgeNetworkType.Sub]: networkId,
     });
 
