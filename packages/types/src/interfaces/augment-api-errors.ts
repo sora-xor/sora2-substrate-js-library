@@ -2080,6 +2080,9 @@ declare module '@polkadot/api-base/types/errors' {
        * Order Book is locked for technical maintenance. Try again later.
        **/
       OrderBookIsLocked: AugmentedError<ApiType>;
+      /**
+       * It is possible to delete only empty order-book
+       **/
       OrderBookIsNotEmpty: AugmentedError<ApiType>;
       /**
        * It is impossible to place the limit order because bounds of the max count of prices for the side have been reached
