@@ -1046,8 +1046,8 @@ declare module '@polkadot/api-base/types/storage' {
       expirationsAgenda: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Vec<ITuple<[OrderBookOrderBookId, u128]>>>, [u32]>;
       /**
        * Earliest block with incomplete expirations;
-       * Weight limit might not allow to finish all expirations for a block, so
-       * they might be operated later.
+       * Weight limit might not allow to finish all expirations for a block
+       * so they might be operated later.
        **/
       incompleteExpirationsSince: AugmentedQuery<ApiType, () => Observable<Option<u32>>, []>;
       limitOrders: AugmentedQuery<ApiType, (arg1: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, arg2: u128 | AnyNumber | Uint8Array) => Observable<Option<OrderBookLimitOrder>>, [OrderBookOrderBookId, u128]>;
