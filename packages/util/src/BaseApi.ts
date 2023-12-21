@@ -5,6 +5,7 @@ import { Observable, Subscriber } from 'rxjs';
 import { decodeAddress, encodeAddress, base58Decode } from '@polkadot/util-crypto';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import { connection } from '@sora-substrate/connection';
+import { PriceVariant } from '@sora-substrate/liquidity-proxy';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
@@ -18,6 +19,7 @@ import { DexId } from './dex/consts';
 import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { ReceiverHistoryItem } from './swap/types';
+import { MAX_TIMESTAMP } from './orderBook/consts';
 import type { EthHistory } from './bridgeProxy/eth/types';
 import type { EvmHistory } from './bridgeProxy/evm/types';
 import type { SubHistory } from './bridgeProxy/sub/types';
@@ -127,6 +129,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.StakingSetPayee]: '0',
     [Operation.StakingSetController]: '0',
     [Operation.StakingPayout]: '0',
+    [Operation.OrderBookPlaceLimitOrder]: '0',
   } as NetworkFeesObject;
 
   public readonly prefix = 69;
@@ -570,6 +573,14 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.staking.setController(mockAccountAddress);
         case Operation.StakingPayout:
           return this.api.tx.staking.payoutStakers(mockAccountAddress, 3449);
+        case Operation.OrderBookPlaceLimitOrder:
+          return this.api.tx.orderBook.placeLimitOrder(
+            { dexId: DexId.XOR, base: XOR.address, quote: XOR.address },
+            0,
+            0,
+            PriceVariant.Buy,
+            MAX_TIMESTAMP
+          );
         default:
           return null;
       }
@@ -584,46 +595,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
    * For example, `api.NetworkFee[Operation.AddLiquidity]`
    */
   public async calcStaticNetworkFees(): Promise<void> {
-    const operations = [
-      Operation.AddLiquidity,
-      Operation.CreatePair,
-      Operation.EthBridgeIncoming,
-      Operation.EthBridgeOutgoing,
-      Operation.EvmIncoming,
-      Operation.EvmOutgoing,
-      Operation.SubstrateIncoming,
-      Operation.SubstrateOutgoing,
-      Operation.RegisterAsset,
-      Operation.RemoveLiquidity,
-      Operation.Swap,
-      Operation.SwapAndSend,
-      Operation.SwapTransferBatch,
-      Operation.Transfer,
-      Operation.ClaimVestedRewards,
-      Operation.ClaimCrowdloanRewards,
-      Operation.ClaimLiquidityProvisionRewards,
-      Operation.ClaimExternalRewards,
-      Operation.ReferralReserveXor,
-      Operation.ReferralUnreserveXor,
-      Operation.ReferralSetInvitedUser,
-      Operation.DemeterFarmingDepositLiquidity,
-      Operation.DemeterFarmingWithdrawLiquidity,
-      Operation.DemeterFarmingStakeToken,
-      Operation.DemeterFarmingUnstakeToken,
-      Operation.DemeterFarmingGetRewards,
-      Operation.CeresLiquidityLockerLockLiquidity,
-      Operation.StakingBond,
-      Operation.StakingBondAndNominate,
-      Operation.StakingBondExtra,
-      Operation.StakingRebond,
-      Operation.StakingUnbond,
-      Operation.StakingWithdrawUnbonded,
-      Operation.StakingNominate,
-      Operation.StakingChill,
-      Operation.StakingSetPayee,
-      Operation.StakingSetController,
-      Operation.StakingPayout,
-    ];
+    const operations = Object.keys(this.NetworkFee) as Operation[];
 
     const operationsPromises = operations.map(async (operation) => {
       const extrinsic = this.getEmptyExtrinsic(operation);
@@ -636,11 +608,19 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     await Promise.allSettled(operationsPromises);
   }
 
-  public async getTransactionFee(extrinsic: SubmittableExtrinsic<'promise'>): Promise<CodecString> {
+  /**
+   * Calc network fee for the extrinsic based on paymentInfo
+   * @param extrinsic Extrinsic entity
+   * @param decimals (Optional) 18 decimals of SORA network is used by default
+   */
+  public async getTransactionFee(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    decimals = XOR.decimals
+  ): Promise<CodecString> {
     try {
       const res = await extrinsic.paymentInfo(mockAccountAddress);
 
-      return new FPNumber(res.partialFee, XOR.decimals).toCodecString();
+      return new FPNumber(res.partialFee, decimals).toCodecString();
     } catch {
       // extrinsic is not supported in chain
       return '0';
