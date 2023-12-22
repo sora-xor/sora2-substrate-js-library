@@ -703,6 +703,19 @@ export class StakingModule<T> {
     });
   }
 
+  public async getBondAndNominateNetworkFee(args: {
+    value: NumberLike;
+    controller: string;
+    payee: StakingRewardsDestination | string;
+    validators: string[];
+  }): Promise<CodecString> {
+    const params = this.calcBondParams(args.value, args.controller, args.payee);
+    const transactions = [this.root.api.tx.staking.bond(...params), this.root.api.tx.staking.nominate(args.validators)];
+    const call = this.root.api.tx.utility.batchAll(transactions);
+
+    return await this.root.getTransactionFee(call);
+  }
+
   /**
    * **STASH**
    * Add more funds to an existing stake
@@ -811,6 +824,10 @@ export class StakingModule<T> {
       type: Operation.StakingNominate,
       validators: args.validators,
     });
+  }
+
+  public async getNominateNetworkFee(args: { validators: string[] }): Promise<CodecString> {
+    return await this.root.getTransactionFee(this.root.api.tx.staking.nominate(args.validators));
   }
 
   /**
