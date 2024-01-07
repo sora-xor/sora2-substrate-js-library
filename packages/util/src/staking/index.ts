@@ -703,6 +703,19 @@ export class StakingModule<T> {
     });
   }
 
+  public async getBondAndNominateNetworkFee(args: {
+    value: NumberLike;
+    controller: string;
+    payee: StakingRewardsDestination | string;
+    validators: string[];
+  }): Promise<CodecString> {
+    const params = this.calcBondParams(args.value, args.controller, args.payee);
+    const transactions = [this.root.api.tx.staking.bond(...params), this.root.api.tx.staking.nominate(args.validators)];
+    const call = this.root.api.tx.utility.batchAll(transactions);
+
+    return await this.root.getTransactionFee(call);
+  }
+
   /**
    * **STASH**
    * Add more funds to an existing stake
@@ -813,6 +826,10 @@ export class StakingModule<T> {
     });
   }
 
+  public async getNominateNetworkFee(args: { validators: string[] }): Promise<CodecString> {
+    return await this.root.getTransactionFee(this.root.api.tx.staking.nominate(args.validators));
+  }
+
   /**
    * **CONTROLLER**
    * Stop nominating or validating from the next era.
@@ -860,13 +877,22 @@ export class StakingModule<T> {
   /**
    * Distribute payout for staking in a given era for given validators
    * @param args.payouts
+   * @param args.payee rewards destination
    * @param signerPair account pair for transaction sign (otherwise the connected account will be used)
    */
-  public async payout(args: { payouts: Payouts }, signerPair?: KeyringPair): Promise<T> {
+  public async payout(
+    args: { payouts: Payouts; payee?: StakingRewardsDestination | string },
+    signerPair?: KeyringPair
+  ): Promise<T> {
     const pair = this.getSignerPair(signerPair);
     const transactions = args.payouts
       .map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era)))
       .flat();
+    const destination = args.payee ? formatPayee(args.payee) : null;
+    const setPayeeTransaction = destination ? this.root.api.tx.staking.setPayee(destination) : null;
+    if (setPayeeTransaction) {
+      transactions.unshift(setPayeeTransaction);
+    }
     const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
 
     return this.root.submitExtrinsic(call, pair, {
@@ -875,10 +901,18 @@ export class StakingModule<T> {
     });
   }
 
-  public async getPayoutNetworkFee(args: { payouts: Payouts }): Promise<CodecString> {
+  public async getPayoutNetworkFee(args: {
+    payouts: Payouts;
+    payee?: StakingRewardsDestination | string;
+  }): Promise<CodecString> {
     const transactions = args.payouts
       .map(({ era, validators }) => validators.map((address) => this.root.api.tx.staking.payoutStakers(address, era)))
       .flat();
+    const destination = args.payee ? formatPayee(args.payee) : null;
+    const setPayeeTransaction = destination ? this.root.api.tx.staking.setPayee(destination) : null;
+    if (setPayeeTransaction) {
+      transactions.unshift(setPayeeTransaction);
+    }
     const call = transactions.length > 1 ? this.root.api.tx.utility.batchAll(transactions) : transactions[0];
     return await this.root.getTransactionFee(call);
   }
