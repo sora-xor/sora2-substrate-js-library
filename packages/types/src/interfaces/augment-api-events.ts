@@ -8,8 +8,8 @@ import '@polkadot/api-base/types/events';
 import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H160, H256, Perbill } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { AccountId32, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
+import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuCollateralRiskParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -646,6 +646,20 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Migrated: AugmentedEvent<ApiType, [Text, AccountId32]>;
     };
+    kensetsu: {
+      CDPClosed: AugmentedEvent<ApiType, [cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32], { cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32 }>;
+      CDPCreated: AugmentedEvent<ApiType, [cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32], { cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32 }>;
+      CollateralDeposit: AugmentedEvent<ApiType, [cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      CollateralRiskParametersUpdated: AugmentedEvent<ApiType, [collateralAssetId: CommonPrimitivesAssetId32, riskParameters: KensetsuCollateralRiskParameters], { collateralAssetId: CommonPrimitivesAssetId32, riskParameters: KensetsuCollateralRiskParameters }>;
+      CollateralWithdrawn: AugmentedEvent<ApiType, [cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      DebtIncreased: AugmentedEvent<ApiType, [cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      DebtPayment: AugmentedEvent<ApiType, [cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: U256, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      Donation: AugmentedEvent<ApiType, [amount: u128], { amount: u128 }>;
+      KusdHardCapUpdated: AugmentedEvent<ApiType, [hardCap: u128], { hardCap: u128 }>;
+      Liquidated: AugmentedEvent<ApiType, [cdpId: U256, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, kusdAmount: u128, penalty: u128], { cdpId: U256, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, kusdAmount: u128, penalty: u128 }>;
+      LiquidationPenaltyUpdated: AugmentedEvent<ApiType, [liquidationPenalty: Percent], { liquidationPenalty: Percent }>;
+      ProfitWithdrawn: AugmentedEvent<ApiType, [amount: u128], { amount: u128 }>;
+    };
     leafProvider: {
     };
     liquidityProxy: {
@@ -792,7 +806,7 @@ declare module '@polkadot/api-base/types/events' {
       /**
        * New order book is created by user
        **/
-      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, creator: Option<AccountId32>], { orderBookId: OrderBookOrderBookId, creator: Option<AccountId32> }>;
+      OrderBookCreated: AugmentedEvent<ApiType, [orderBookId: OrderBookOrderBookId, creator: AccountId32], { orderBookId: OrderBookOrderBookId, creator: AccountId32 }>;
       /**
        * Order book is deleted
        **/

@@ -8,8 +8,7 @@ import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
-import { BaseApi, Operation, KeyringType, OnChainIdentity } from './BaseApi';
-import { Messages } from './logger';
+import { BaseApi, KeyringType, OnChainIdentity } from './BaseApi';
 import { BridgeProxyModule } from './bridgeProxy';
 import { SwapModule } from './swap';
 import { RewardsModule } from './rewards';
@@ -23,11 +22,12 @@ import { StakingModule } from './staking';
 import { DemeterFarmingModule } from './demeterFarming';
 import { DexModule } from './dex';
 import { CeresLiquidityLockerModule } from './ceresLiquidityLocker';
+import { KensetsuModule } from './kensetsu';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
 import type { HistoryItem } from './BaseApi';
-import { OriginalIdentity } from './staking/types';
+import type { OriginalIdentity } from './staking/types';
 
 let keyring!: Keyring;
 
@@ -55,6 +55,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly demeterFarming = new DemeterFarmingModule<T>(this);
   public readonly dex = new DexModule<T>(this);
   public readonly ceresLiquidityLocker = new CeresLiquidityLockerModule<T>(this);
+  public readonly kensetsu = new KensetsuModule<T>(this);
 
   public initAccountStorage() {
     super.initAccountStorage();

@@ -1737,6 +1737,23 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       SignatureVerificationFailed: AugmentedError<ApiType>;
     };
+    kensetsu: {
+      AccrueWrongTime: AugmentedError<ApiType>;
+      ArithmeticError: AugmentedError<ApiType>;
+      BalanceNotEnough: AugmentedError<ApiType>;
+      CDPNotFound: AugmentedError<ApiType>;
+      CDPSafe: AugmentedError<ApiType>;
+      CDPsPerUserLimitReached: AugmentedError<ApiType>;
+      CDPUnsafe: AugmentedError<ApiType>;
+      CollateralInfoNotFound: AugmentedError<ApiType>;
+      HardCapSupply: AugmentedError<ApiType>;
+      NoDebt: AugmentedError<ApiType>;
+      NotEnoughCollateral: AugmentedError<ApiType>;
+      OperationNotPermitted: AugmentedError<ApiType>;
+      OutstandingDebt: AugmentedError<ApiType>;
+      WrongAssetId: AugmentedError<ApiType>;
+      WrongCollateralAssetId: AugmentedError<ApiType>;
+    };
     liquidityProxy: {
       /**
        * Path exists but it's not possible to perform exchange with currently available liquidity on pools.
@@ -2113,7 +2130,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TickSizeAndStepLotSizeAreTooBig: AugmentedError<ApiType>;
       /**
-       * Product of tick and step lot sizes goes out of precision. It must be accurately represented by fixed-precision float to prevent rounding errors. I.e. the product should not have more than 18 digits after the comma.
+       * Product of tick and step lot sizes goes out of precision. It must be accurately
+       * represented by fixed-precision float to prevent rounding errors. I.e. the product
+       * should not have more than 18 digits after the comma.
        **/
       TickSizeAndStepLotSizeLosePrecision: AugmentedError<ApiType>;
       /**
@@ -2531,37 +2550,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AlreadyInWhitelist: AugmentedError<ApiType>;
       /**
-       * Did not find an order book with given id to fill. Likely an error with order book creation.
+       * Did not find an order book with given id to fill. Likely an error with
+       * order book creation.
        **/
       CannotFillUnknownOrderBook: AugmentedError<ApiType>;
-      /**
-       * Provided range is incorrect, check that lower bound is less or equal than the upper one.
-       **/
-      EmptyRandomRange: AugmentedError<ApiType>;
-      /**
-       * Price step, best price, and worst price must be a multiple of order book's tick size. Price step must also be non-zero.
-       **/
-      IncorrectPrice: AugmentedError<ApiType>;
       /**
        * The account intended for removal is not in whitelist
        **/
       NotInWhitelist: AugmentedError<ApiType>;
-      /**
-       * Order Book already exists
-       **/
-      OrderBookAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * The range for generating order amounts must be within order book's accepted values.
-       **/
-      OutOfBoundsRandomRange: AugmentedError<ApiType>;
-      /**
-       * The count of created orders is too large.
-       **/
-      TooManyOrders: AugmentedError<ApiType>;
-      /**
-       * The count of prices to fill is too large.
-       **/
-      TooManyPrices: AugmentedError<ApiType>;
       /**
        * Cannot add an account to the whitelist: it's full
        **/

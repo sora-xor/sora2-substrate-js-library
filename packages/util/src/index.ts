@@ -18,6 +18,7 @@ import './bridgeProxy/evm/types';
 import './bridgeProxy/evm/consts';
 import './bridgeProxy/sub/types';
 import './bridgeProxy/sub/consts';
+import './kensetsu/types';
 
 export * from './api';
 export * from './BaseApi';
