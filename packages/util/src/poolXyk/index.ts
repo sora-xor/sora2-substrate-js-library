@@ -178,14 +178,14 @@ export class PoolXykModule<T> {
       await Promise.all(baseAssetIds.map((baseAssetId) => this.root.api.query.poolXYK.reserves.entries(baseAssetId)))
     ).flat(1);
 
-    allReserves.forEach((item) => {
+    for (const item of allReserves) {
       // [DECIMALS] Decimals = 18 here
       const [key1, key2] = item[0].args;
       if (item[1]?.length == 2) {
         const [value1, value2] = item[1];
         reserves[toKey(key1) + toKey(key2)] = [toReserve(value1), toReserve(value2)];
       }
-    });
+    }
 
     return reserves;
   }
@@ -474,10 +474,10 @@ export class PoolXykModule<T> {
       lists.forEach((list, index) => {
         const baseAssetId = baseAssetIds[index];
 
-        list.forEach((targetAssetId) => {
+        for (const targetAssetId of list) {
           const pair = [baseAssetId, targetAssetId.code.toString()];
           assetIdPairs.push(pair);
-        });
+        }
       });
 
       await this.updateAccountLiquiditySubscriptions(assetIdPairs);
