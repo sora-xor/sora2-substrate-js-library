@@ -1,5 +1,5 @@
 import { map } from 'rxjs';
-import { FPNumber } from '@sora-substrate/math';
+import { CodecString, FPNumber } from '@sora-substrate/math';
 import { Operation } from '../BaseApi';
 import { MAX_TIMESTAMP } from './consts';
 import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
@@ -10,6 +10,7 @@ import type {
   CommonBalanceUnit,
   CommonPrimitivesAssetId32,
   CommonPrimitivesPriceVariant,
+  OrderBookLimitOrder,
   OrderBookOrderBookStatus,
   OrderBook as OrderBookStruct,
 } from '@polkadot/types/lookup';
@@ -266,17 +267,12 @@ export class OrderBookModule<T> {
       .pipe(map((idsCodec) => idsCodec.unwrapOrDefault().toJSON() as Array<number>));
   }
 
-  /**
-   * Get user's limit order info
-   * @param base base orderbook asset ID
-   * @param quote quote orderbook asset ID
-   * @param id limit order id
-   * @returns formatted limit order info
-   */
-  public async getLimitOrder(base: string, quote: string, id: number): Promise<LimitOrder> {
-    const dexId = this.root.dex.getDexId(quote);
-    const orderCodec = await this.root.api.query.orderBook.limitOrders({ dexId, base, quote }, id);
-
+  private formatLimitOrder(
+    orderCodec: Option<OrderBookLimitOrder>,
+    base: string,
+    quote: string,
+    dexId: number
+  ): LimitOrder | null {
     if (!orderCodec.isSome) return null;
     const order = orderCodec.unwrap();
 
@@ -292,6 +288,33 @@ export class OrderBookModule<T> {
       amount: toFP(order.amount),
       originalAmount: toFP(order.originalAmount),
     };
+  }
+
+  /**
+   * Get user's limit order info
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param id limit order id
+   * @returns formatted limit order info
+   */
+  public async getLimitOrder(base: string, quote: string, id: number): Promise<LimitOrder | null> {
+    const dexId = this.root.dex.getDexId(quote);
+    const orderCodec = await this.root.api.query.orderBook.limitOrders({ dexId, base, quote }, id);
+
+    return this.formatLimitOrder(orderCodec, base, quote, dexId);
+  }
+
+  /**
+   * Subscribe on user's limit order info. You can track the % of filling
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param id limit order id
+   */
+  public subscribeOnLimitOrder(base: string, quote: string, id: number): Observable<LimitOrder | null> {
+    const dexId = this.root.dex.getDexId(quote);
+    return this.root.apiRx.query.orderBook
+      .limitOrders({ dexId, base, quote }, id)
+      .pipe(map((orderCodec) => this.formatLimitOrder(orderCodec, base, quote, dexId)));
   }
 
   /**
@@ -388,16 +411,25 @@ export class OrderBookModule<T> {
   }
 
   /**
-   * TODO: use the same logic like blockchain team does it
+   * Estimates the min and max network fees for Place Limit Order operation.
+   * Uses the same approach with the SORA blockchain.
+   *
+   * @see https://github.com/sora-xor/sora2-network/blob/cf0988e4a99384cdf7e6cf438fc26a0088fd6c75/pallets/order-book/src/fee_calculator.rs#L53C15-L53C15
    */
-  // public async getApproxPlaceOrderNetworkFee(timestamp = MAX_TIMESTAMP): Promise<CodecString> {
-  //   const tx = this.root.api.tx.orderBook.placeLimitOrder(
-  //     { dexId: DexId.XOR, base: XOR.address, quote: XOR.address },
-  //     0,
-  //     0,
-  //     PriceVariant.Buy,
-  //     timestamp
-  //   );
-  //   return await this.root.getTransactionFee(tx);
-  // }
+  public estimatePlaceOrderNetworkFee(timestamp = MAX_TIMESTAMP): { max: CodecString; min: CodecString } {
+    const baseFee = this.root.NetworkFee.OrderBookPlaceLimitOrder;
+    const marketMakerMaxFee = FPNumber.fromCodecValue(baseFee).div(FPNumber.TWO).dp(0);
+
+    if (timestamp < MAX_TIMESTAMP) {
+      const lifeRatio = new FPNumber(timestamp / MAX_TIMESTAMP);
+      const part = marketMakerMaxFee.div(FPNumber.SEVEN);
+
+      const constPart = part.mul(FPNumber.FOUR).dp(0);
+      const dynamicPart = part.mul(FPNumber.THREE).mul(lifeRatio).dp(0);
+
+      return { max: baseFee, min: constPart.add(dynamicPart).toCodecString() };
+    } else {
+      return { max: baseFee, min: marketMakerMaxFee.toCodecString() };
+    }
+  }
 }
