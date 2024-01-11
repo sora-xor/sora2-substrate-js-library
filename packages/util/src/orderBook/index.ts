@@ -412,24 +412,30 @@ export class OrderBookModule<T> {
 
   /**
    * Estimates the min and max network fees for Place Limit Order operation.
+   *
+   * **Before the usage** you need to execute `calcStaticNetworkFees` method.
+   *
    * Uses the same approach with the SORA blockchain.
    *
    * @see https://github.com/sora-xor/sora2-network/blob/cf0988e4a99384cdf7e6cf438fc26a0088fd6c75/pallets/order-book/src/fee_calculator.rs#L53C15-L53C15
+   *
+   * If the TX will fail or the order will become market order the `max` fee will be used.
+   * Otherwise, `min` fee should be used.
    */
-  public estimatePlaceOrderNetworkFee(timestamp = MAX_TIMESTAMP): { max: CodecString; min: CodecString } {
-    const baseFee = this.root.NetworkFee.OrderBookPlaceLimitOrder;
-    const marketMakerMaxFee = FPNumber.fromCodecValue(baseFee).div(FPNumber.TWO).dp(0);
+  public estimatePlaceOrderNetworkFee(timestamp = MAX_TIMESTAMP): { max: number; min: number } {
+    const baseFee = FPNumber.fromCodecValue(this.root.NetworkFee.OrderBookPlaceLimitOrder);
+    const marketMakerMaxFee = baseFee.div(FPNumber.TWO).toNumber(0);
 
     if (timestamp < MAX_TIMESTAMP) {
-      const lifeRatio = new FPNumber(timestamp / MAX_TIMESTAMP);
-      const part = marketMakerMaxFee.div(FPNumber.SEVEN);
+      const lifeRatio = timestamp / MAX_TIMESTAMP;
+      const part = marketMakerMaxFee / 7;
 
-      const constPart = part.mul(FPNumber.FOUR).dp(0);
-      const dynamicPart = part.mul(FPNumber.THREE).mul(lifeRatio).dp(0);
+      const constPart = part * 4;
+      const dynamicPart = part * 3 * lifeRatio;
 
-      return { max: baseFee, min: constPart.add(dynamicPart).toCodecString() };
+      return { max: baseFee.toNumber(0), min: Math.floor(constPart + dynamicPart) };
     } else {
-      return { max: baseFee, min: marketMakerMaxFee.toCodecString() };
+      return { max: baseFee.toNumber(0), min: marketMakerMaxFee };
     }
   }
 }
