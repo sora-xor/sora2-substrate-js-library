@@ -309,12 +309,12 @@ export class RewardsModule<T> {
 
     const uniqueTags = [...new Set(crowdloanTags)];
 
-    uniqueTags.forEach((tag) => {
+    for (const tag of uniqueTags) {
       transactions.push({
         extrinsic: this.root.api.tx.vestedRewards.claimCrowdloanRewards,
         args: [tag],
       });
-    });
+    }
 
     // batch or simple tx
     if (transactions.length > 1)

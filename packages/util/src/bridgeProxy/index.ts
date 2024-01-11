@@ -62,7 +62,7 @@ export class BridgeProxyModule<T> {
     try {
       const data = await this.root.api.rpc.bridgeProxy.listApps();
 
-      data.forEach((appInfo) => {
+      for (const appInfo of data) {
         if (appInfo.isEvm) {
           const [genericNetworkId, evmAppInfo] = appInfo.asEvm;
           const id = genericNetworkId.isEvm
@@ -90,7 +90,7 @@ export class BridgeProxyModule<T> {
 
           apps[type].push(name as SubNetworkId);
         }
-      });
+      }
 
       return apps;
     } catch {
