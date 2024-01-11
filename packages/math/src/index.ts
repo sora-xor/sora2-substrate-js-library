@@ -69,8 +69,6 @@ export class FPNumber {
   public static FOUR = FPNumber.fromNatural(4);
   /** Five value (5) */
   public static FIVE = FPNumber.fromNatural(5);
-  /** Seven value (7) */
-  public static SEVEN = FPNumber.fromNatural(7);
   /** Ten value (10) */
   public static TEN = FPNumber.fromNatural(10);
   /** Hundred value (100) */
