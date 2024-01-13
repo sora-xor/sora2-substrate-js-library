@@ -1,7 +1,7 @@
 import { map } from 'rxjs';
 import { CodecString, FPNumber } from '@sora-substrate/math';
 import { Operation } from '../BaseApi';
-import { MAX_TIMESTAMP } from './consts';
+import { MAX_ORDERS_PER_SINGLE_PRICE, MAX_TIMESTAMP } from './consts';
 import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
 import type { OrderBook, OrderBookPriceVolume } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
@@ -302,6 +302,26 @@ export class OrderBookModule<T> {
     const orderCodec = await this.root.api.query.orderBook.limitOrders({ dexId, base, quote }, id);
 
     return this.formatLimitOrder(orderCodec, base, quote, dexId);
+  }
+
+  /**
+   * Checks for order being available to be placed
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param side order side
+   * @param price order price
+   */
+  public async isOrderPlaceable(base: string, quote: string, side: PriceVariant, price: string) {
+    const dexId = this.root.dex.getDexId(quote);
+
+    const query = side === PriceVariant.Sell ? this.root.api.query.orderBook.asks : this.root.api.query.orderBook.bids;
+
+    const idsRaw = await query(
+      { dexId, base, quote },
+      { inner: new FPNumber(price).toCodecString(), isDivisible: true }
+    );
+
+    return ((idsRaw.unwrapOrDefault().toJSON() ?? []) as Array<number>).length < MAX_ORDERS_PER_SINGLE_PRICE;
   }
 
   /**
