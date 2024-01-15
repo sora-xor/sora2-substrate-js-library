@@ -57,21 +57,24 @@ export class FPNumber {
    */
   public static DEFAULT_ROUND_MODE: BigNumber.RoundingMode = 3;
 
-  /**
-   * Zero value (0)
-   */
+  /** Zero value (0) */
   public static ZERO = FPNumber.fromNatural(0);
-
-  /**
-   * One value (1)
-   */
+  /** One value (1) */
   public static ONE = FPNumber.fromNatural(1);
-
-  /**
-   * Hundred value (100)
-   */
+  /** Two value (2) */
+  public static TWO = FPNumber.fromNatural(2);
+  /** Three value (3) */
+  public static THREE = FPNumber.fromNatural(3);
+  /** Four value (4) */
+  public static FOUR = FPNumber.fromNatural(4);
+  /** Five value (5) */
+  public static FIVE = FPNumber.fromNatural(5);
+  /** Ten value (10) */
+  public static TEN = FPNumber.fromNatural(10);
+  /** Hundred value (100) */
   public static HUNDRED = FPNumber.fromNatural(100);
-
+  /** Thousand value (1000) */
+  public static THOUSAND = FPNumber.fromNatural(1000);
   /**
    * Return the **max** value, `null` if an array is empty
    * @param {...FPNumber} numbers
@@ -90,7 +93,7 @@ export class FPNumber {
    * @param {...FPNumber} numbers
    */
   public static min(...numbers: Array<FPNumber>): FPNumber | null {
-    if (!numbers || !numbers.length) {
+    if (!numbers?.length) {
       return null;
     }
     const precision = numbers[0].precision;
@@ -266,28 +269,12 @@ export class FPNumber {
     return format ? formatted.toFormat(format) : formatted.toFormat();
   }
 
-  public toLocaleString(): string {
-    let [integer, decimal] = this.format().split('.');
-
-    if (integer.length > 3) {
-      const integerReversed = integer.split('').reverse();
-      const lastIndex = integerReversed.length - 1;
-      integer = integerReversed
-        .reduce((prev, current, index) => {
-          prev += current;
-          if (++index % 3 === 0 && index !== integerReversed.length) {
-            // Avoid thousands' delimiter for negative numbers
-            if (index === lastIndex && integerReversed[lastIndex] === '-') {
-              return prev;
-            }
-            prev += FPNumber.DELIMITERS_CONFIG.thousand;
-          }
-          return prev;
-        })
-        .split('')
-        .reverse()
-        .join('');
-    }
+  public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES): string {
+    let [integer, decimal] = this.format(dp, {
+      groupSize: 3,
+      groupSeparator: FPNumber.DELIMITERS_CONFIG.thousand,
+      decimalSeparator: FPNumber.DELIMITERS_CONFIG.decimal,
+    }).split(FPNumber.DELIMITERS_CONFIG.decimal);
 
     return decimal ? integer.concat(FPNumber.DELIMITERS_CONFIG.decimal, decimal) : integer;
   }
@@ -348,7 +335,7 @@ export class FPNumber {
    * @param {number} [dp=precision] Decimal places
    */
   public dp(dp: number = this.precision): FPNumber {
-    return FPNumber.fromNatural(this.toNumber(dp));
+    return FPNumber.fromNatural(this.toFixed(dp), dp);
   }
 
   /**
@@ -402,6 +389,35 @@ export class FPNumber {
   }
 
   /**
+   * Mod operator TODO: Add tests
+   * @param {FPNumber} target Target number
+   */
+  public mod(target: FPNumber): FPNumber {
+    return new FPNumber(
+      this.value.mod(equalizedBN(target, this.precision)).dp(0, FPNumber.DEFAULT_ROUND_MODE),
+      this.precision
+    );
+  }
+
+  /**
+   * Returns `true` if mod operation returns zero.
+   *
+   * For instance, 4 % 2 = 0, so it returns `true` in this case.
+   *
+   * TODO: Add tests
+   * @param {FPNumber} target Target number
+   */
+  public isZeroMod(target: FPNumber): boolean {
+    return new FPNumber(
+      this.value
+        .mod(equalizedBN(target, this.precision))
+        .times(10 ** this.precision)
+        .dp(0, FPNumber.DEFAULT_ROUND_MODE),
+      this.precision
+    ).isZero();
+  }
+
+  /**
    * Return the nagetive number
    */
   public negative(): FPNumber {
@@ -441,4 +457,118 @@ export class FPNumber {
   public isZero(): boolean {
     return this.value.isZero();
   }
+
+  /**
+   * Return `true` if the value is less than 0
+   */
+  public isLtZero(): boolean {
+    return this.lt(FPNumber.ZERO);
+  }
+
+  /**
+   * Return `true` if the value is less than or equal to 0
+   */
+  public isLteZero(): boolean {
+    return this.lte(FPNumber.ZERO);
+  }
+
+  /**
+   * Return `true` if the value is greater than 0
+   */
+  public isGtZero(): boolean {
+    return this.gt(FPNumber.ZERO);
+  }
+
+  /**
+   * Return `true` if the value is greater than or equal to 0
+   */
+  public isGteZero(): boolean {
+    return this.gte(FPNumber.ZERO);
+  }
+
+  /**
+   * Return the **max** value (this number or the number from params)
+   * @param {Array<FPNumber>} numbers Other numbers
+   */
+  public max(...numbers: Array<FPNumber>): FPNumber {
+    return FPNumber.max(this, ...numbers);
+  }
+
+  /**
+   * Return the **min** value (this number or the number from params)
+   * @param {Array<FPNumber>} numbers Other numbers
+   */
+  public min(...numbers: Array<FPNumber>): FPNumber {
+    return FPNumber.min(this, ...numbers);
+  }
+
+  /**
+   * Return `true` if this number is less than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public lt(number: FPNumber): boolean {
+    return FPNumber.lt(this, number);
+  }
+
+  /**
+   * Return `true` if this number is less than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public isLessThan = this.lt;
+
+  /**
+   * Return `true` if this number is less of equal than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public lte(number: FPNumber): boolean {
+    return FPNumber.lte(this, number);
+  }
+
+  /**
+   * Return `true` if this number is less of equal than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public isLessThanOrEqualTo = this.lte;
+
+  /**
+   * Return `true` if this number is greater than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public gt(number: FPNumber): boolean {
+    return FPNumber.gt(this, number);
+  }
+
+  /**
+   * Return `true` if this number is greater than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public isGreaterThan = this.gt;
+
+  /**
+   * Return `true` if this number is greater or equal than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public gte(number: FPNumber): boolean {
+    return FPNumber.gte(this, number);
+  }
+
+  /**
+   * Return `true` if this number is greater or equal than the number from param
+   * @param {FPNumber} number Another number
+   */
+  public isGreaterThanOrEqualTo = this.gte;
+
+  /**
+   * Return `true` if values are equal
+   * @param {FPNumber} number Another number
+   */
+  public eq(number: FPNumber): boolean {
+    return FPNumber.eq(this, number);
+  }
+
+  /**
+   * Return `true` if values are equal
+   * @param {FPNumber} number Another number
+   */
+  public isEqualTo = this.eq;
 }

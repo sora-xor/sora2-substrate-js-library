@@ -1,9 +1,8 @@
 import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
-import type { ApiOptions } from '@polkadot/api/types';
+import type { ApiInterfaceEvents, ApiOptions } from '@polkadot/api/types';
 import type { ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
-import type { ApiInterfaceEvents } from '@polkadot/api/types';
 
 type ConnectionEventListener = [ApiInterfaceEvents, ProviderInterfaceEmitCb];
 

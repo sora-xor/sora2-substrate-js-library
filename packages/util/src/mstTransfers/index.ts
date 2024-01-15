@@ -52,8 +52,8 @@ export class MstTransfersModule<T> {
    * Get network fee for Transfer All MST Tx
    * @param extrinsic `api.prepareTransferAllAsMstExtrinsic` result
    */
-  public getNetworkFee(extrinsic: SubmittableExtrinsic): Promise<CodecString> {
-    return this.root.getNetworkFee(Operation.TransferAll, extrinsic);
+  public async getNetworkFee(tx: SubmittableExtrinsic): Promise<CodecString> {
+    return await this.root.getTransactionFee(tx);
   }
 
   /**

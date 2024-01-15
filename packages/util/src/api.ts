@@ -3,22 +3,23 @@ import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, cryptoWaitReady } f
 import { Keyring } from '@polkadot/ui-keyring';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KeypairType } from '@polkadot/util-crypto/types';
-import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
+import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
 import { BaseApi, Operation, KeyringType, OnChainIdentity } from './BaseApi';
 import { Messages } from './logger';
-import { BridgeApi } from './BridgeApi';
 import { BridgeProxyModule } from './bridgeProxy';
 import { SwapModule } from './swap';
 import { RewardsModule } from './rewards';
 import { PoolXykModule } from './poolXyk';
 import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
+import { OrderBookModule } from './orderBook';
 import { MstTransfersModule } from './mstTransfers';
 import { SystemModule } from './system';
+import { StakingModule } from './staking';
 import { DemeterFarmingModule } from './demeterFarming';
 import { DexModule } from './dex';
 import { CeresLiquidityLockerModule } from './ceresLiquidityLocker';
@@ -26,6 +27,7 @@ import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
 import type { HistoryItem } from './BaseApi';
+import { OriginalIdentity } from './staking/types';
 
 let keyring!: Keyring;
 
@@ -38,7 +40,6 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly defaultSlippageTolerancePercent = 0.5;
   public readonly seedLength = 12;
 
-  public readonly bridge = new BridgeApi<T>();
   public readonly bridgeProxy = new BridgeProxyModule<T>(this);
 
   public readonly swap = new SwapModule<T>(this);
@@ -46,16 +47,17 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly poolXyk = new PoolXykModule<T>(this);
   public readonly referralSystem = new ReferralSystemModule<T>(this);
   public readonly assets = new AssetsModule<T>(this);
+  public readonly orderBook = new OrderBookModule<T>(this);
   /** This module is used for internal needs */
   public readonly mstTransfers = new MstTransfersModule<T>(this);
   public readonly system = new SystemModule<T>(this);
+  public readonly staking = new StakingModule<T>(this);
   public readonly demeterFarming = new DemeterFarmingModule<T>(this);
   public readonly dex = new DexModule<T>(this);
   public readonly ceresLiquidityLocker = new CeresLiquidityLockerModule<T>(this);
 
   public initAccountStorage() {
     super.initAccountStorage();
-    this.bridge.initAccountStorage();
     this.bridgeProxy.initAccountStorage();
   }
 
@@ -81,7 +83,6 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public setStorage(storage: Storage): void {
     super.setStorage(storage);
-    this.bridge.setStorage(storage);
     this.bridgeProxy.setStorage(storage);
   }
 
@@ -93,7 +94,6 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public setSigner(signer: Signer): void {
     super.setSigner(signer);
-    this.bridge.setSigner(signer);
     this.bridgeProxy.setSigner(signer);
   }
 
@@ -103,7 +103,6 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public setAccount(account: CreateResult): void {
     super.setAccount(account);
-    this.bridge.setAccount(account);
     this.bridgeProxy.setAccount(account);
   }
 
@@ -148,8 +147,8 @@ export class Api<T = void> extends BaseApi<T> {
       await this.restoreActiveAccount();
     }
 
-    // Update available dex list
-    await this.dex.updateList();
+    // Update dex data
+    await Promise.allSettled([this.dex.update(), this.swap.update()]);
   }
 
   /**
@@ -176,12 +175,15 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public async getAccountOnChainIdentity(address: string): Promise<OnChainIdentity | null> {
     const data = await this.api.query.identity.identityOf(address);
-    if (data.isEmpty) return null;
+
+    if (data.isEmpty || data.isNone) return null;
+
     const result = data.unwrap();
 
     return {
       legalName: result.info.legal.value.toHuman() as string,
       approved: Boolean(result.judgements.length),
+      identity: result.toHuman() as unknown as OriginalIdentity,
     };
   }
 
@@ -217,7 +219,7 @@ export class Api<T = void> extends BaseApi<T> {
       if (isExternal) {
         account = keyring.addExternal(address, meta);
       } else {
-        const accounts = await this.getAccounts();
+        const accounts = this.getAccounts();
 
         if (!accounts.find((acc) => acc.address === address)) {
           // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
@@ -302,9 +304,8 @@ export class Api<T = void> extends BaseApi<T> {
    * Get all imported accounts.
    * It returns list of imported accounts
    * added via api.importAccount()
-   *
    */
-  public async getAccounts(): Promise<KeyringAddress[]> {
+  public getAccounts() {
     return keyring.getAccounts();
   }
 
@@ -421,7 +422,6 @@ export class Api<T = void> extends BaseApi<T> {
     this.poolXyk.clearAccountLiquidity();
 
     super.logout();
-    this.bridge.logout();
     this.bridgeProxy.logout();
   }
 

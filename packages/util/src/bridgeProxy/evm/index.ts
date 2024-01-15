@@ -1,15 +1,27 @@
 import { FPNumber } from '@sora-substrate/math';
+import { assert } from '@polkadot/util';
 
 import { BaseApi, isEvmOperation, Operation } from '../../BaseApi';
+import { Messages } from '../../logger';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
-import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails } from '../methods';
+import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails, getLockedAssets } from '../methods';
 
+import type { CodecString } from '@sora-substrate/math';
+import type { BridgeTypesGenericNetworkId } from '@polkadot/types/lookup';
 import type { Asset } from '../../assets/types';
 import type { EvmHistory, EvmNetwork, EvmAsset } from './types';
 
 export class EvmBridgeApi<T> extends BaseApi<T> {
   constructor() {
     super('evmHistory');
+  }
+
+  public prepareNetworkParam(evmNetwork: EvmNetwork): BridgeTypesGenericNetworkId {
+    const genericNetworkId: BridgeTypesGenericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
+      [BridgeNetworkType.Evm]: evmNetwork,
+    });
+
+    return genericNetworkId;
   }
 
   public generateHistoryItem(params: EvmHistory): EvmHistory | null {
@@ -35,7 +47,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     try {
       const data = await this.api.rpc.bridgeProxy.listAssets({ [BridgeNetworkType.Evm]: evmNetwork });
 
-      data.forEach((assetData) => {
+      for (const assetData of data) {
         const assetInfo = assetData.asEvm;
         const soraAddress = assetInfo.assetId.toString();
         const evmAddress = assetInfo.evmAddress.toString();
@@ -47,7 +59,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
           appKind,
           decimals,
         };
-      });
+      }
 
       return assets;
     } catch {
@@ -56,13 +68,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
   }
 
   public async getUserTransactions(accountAddress: string, evmNetwork: EvmNetwork) {
-    return await getUserTransactions(
-      this.api,
-      accountAddress,
-      { [BridgeNetworkType.Evm]: evmNetwork },
-      evmNetwork,
-      BridgeNetworkType.Evm
-    );
+    return await getUserTransactions(this.api, accountAddress, this.prepareNetworkParam(evmNetwork), evmNetwork);
   }
 
   public async getTransactionDetails(accountAddress: string, evmNetwork: EvmNetwork, hash: string) {
@@ -70,9 +76,8 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       this.api,
       accountAddress,
       hash,
-      { [BridgeNetworkType.Evm]: evmNetwork },
-      evmNetwork,
-      BridgeNetworkType.Evm
+      this.prepareNetworkParam(evmNetwork),
+      evmNetwork
     );
   }
 
@@ -81,21 +86,33 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       this.apiRx,
       accountAddress,
       hash,
-      { [BridgeNetworkType.Evm]: evmNetwork },
-      evmNetwork,
-      BridgeNetworkType.Evm
+      this.prepareNetworkParam(evmNetwork),
+      evmNetwork
     );
+  }
+
+  public async getLockedAssets(evmNetwork: EvmNetwork, assetAddress: string) {
+    return await getLockedAssets(this.api, this.prepareNetworkParam(evmNetwork), assetAddress);
+  }
+
+  /** UNCHECKED */
+  protected getTransferExtrinsic(asset: Asset, recipient: string, amount: string | number, evmNetwork: EvmNetwork) {
+    const network = this.prepareNetworkParam(evmNetwork);
+    const value = new FPNumber(amount, asset.decimals).toCodecString();
+
+    return this.api.tx.bridgeProxy.burn(network, asset.address, { [BridgeAccountType.Evm]: recipient }, value);
   }
 
   public async transfer(
     asset: Asset,
     recipient: string,
     amount: string | number,
-    externalNetwork: EvmNetwork,
+    evmNetwork: EvmNetwork,
     historyId?: string
   ): Promise<void> {
-    // asset should be checked as registered on bridge or not
-    const value = new FPNumber(amount, asset.decimals).toCodecString();
+    assert(this.account, Messages.connectWallet);
+
+    const extrinsic = this.getTransferExtrinsic(asset, recipient, amount, evmNetwork);
     const historyItem = this.getHistory(historyId) || {
       type: Operation.EvmOutgoing,
       symbol: asset.symbol,
@@ -103,15 +120,12 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
       amount: `${amount}`,
     };
 
-    await this.submitExtrinsic(
-      this.api.tx.bridgeProxy.burn(
-        { [BridgeNetworkType.Evm]: externalNetwork },
-        asset.address,
-        { [BridgeAccountType.Evm]: recipient },
-        value
-      ),
-      this.account.pair,
-      historyItem
-    );
+    await this.submitExtrinsic(extrinsic, this.account.pair, historyItem);
+  }
+
+  public async getNetworkFee(asset: Asset, evmNetwork: EvmNetwork): Promise<CodecString> {
+    const tx = this.getTransferExtrinsic(asset, '', '0', evmNetwork);
+
+    return await this.getTransactionFee(tx);
   }
 }

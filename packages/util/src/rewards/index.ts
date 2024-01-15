@@ -309,12 +309,12 @@ export class RewardsModule<T> {
 
     const uniqueTags = [...new Set(crowdloanTags)];
 
-    uniqueTags.forEach((tag) => {
+    for (const tag of uniqueTags) {
       transactions.push({
         extrinsic: this.root.api.tx.vestedRewards.claimCrowdloanRewards,
         args: [tag],
       });
-    });
+    }
 
     // batch or simple tx
     if (transactions.length > 1)
@@ -336,9 +336,9 @@ export class RewardsModule<T> {
    * Get network fee for claim rewards operation
    */
   public async getNetworkFee(rewards: Array<RewardInfo>, signature = ''): Promise<CodecString> {
-    const params = this.calcTxParams(rewards, signature);
+    const { extrinsic, args } = this.calcTxParams(rewards, signature);
 
-    switch (params.extrinsic) {
+    switch (extrinsic) {
       case this.root.api.tx.pswapDistribution.claimIncentive:
         return this.root.NetworkFee[Operation.ClaimLiquidityProvisionRewards];
       case this.root.api.tx.vestedRewards.claimRewards:
@@ -347,8 +347,10 @@ export class RewardsModule<T> {
         return this.root.NetworkFee[Operation.ClaimCrowdloanRewards];
       case this.root.api.tx.rewards.claim:
         return this.root.NetworkFee[Operation.ClaimExternalRewards];
-      default:
-        return this.root.getNetworkFee(Operation.ClaimRewards, params);
+      default: {
+        const tx = extrinsic(...args);
+        return await this.root.getTransactionFee(tx);
+      }
     }
   }
 
@@ -363,12 +365,14 @@ export class RewardsModule<T> {
     externalAddress?: string
   ): Promise<T> {
     const { extrinsic, args } = this.calcTxParams(rewards, signature);
-
-    return this.root.submitExtrinsic(extrinsic(...args), this.root.account.pair, {
+    const tx = extrinsic(...args);
+    const historyItem = {
       type: Operation.ClaimRewards,
       externalAddress,
       soraNetworkFee: fee,
       rewards,
-    });
+    };
+
+    return this.root.submitExtrinsic(tx, this.root.account.pair, historyItem);
   }
 }

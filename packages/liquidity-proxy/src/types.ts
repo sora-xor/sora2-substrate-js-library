@@ -1,5 +1,6 @@
-import type { FPNumber, CodecString } from '@sora-substrate/math';
+import type { FPNumber, CodecString, NumberLike } from '@sora-substrate/math';
 import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
+import type { OrderBookAggregated } from './quote/orderBook/types';
 
 export type PrimaryMarketsEnabledAssets = {
   tbc: string[];
@@ -10,7 +11,6 @@ export type PrimaryMarketsEnabledAssets = {
       feeRatio: FPNumber;
     }
   >;
-  lockedSources: Array<LiquiditySourceTypes>;
 };
 
 export interface LPRewardsInfo {
@@ -46,6 +46,18 @@ export interface SwapResult {
   distribution?: Distribution[][];
 }
 
+export type SwapQuote = (
+  inputAssetAddress: string,
+  outputAssetAddress: string,
+  value: NumberLike,
+  isExchangeB: boolean,
+  selectedSources?: LiquiditySourceTypes[],
+  deduceFee?: boolean
+) => {
+  result: SwapResult;
+  dexId: number;
+};
+
 export type QuotePaths = {
   [key: string]: Array<LiquiditySourceTypes>;
 };
@@ -53,9 +65,14 @@ export type QuotePaths = {
 export type OracleRate = {
   value: CodecString;
   lastUpdated: number;
+  dynamicFee: CodecString;
 };
 
 export type QuotePayload = {
+  enabledAssets: PrimaryMarketsEnabledAssets;
+  enabledSources: Array<LiquiditySourceTypes>;
+  lockedSources: Array<LiquiditySourceTypes>;
+  sources: PathsAndPairLiquiditySources;
   rates: Record<string, OracleRate>;
   reserves: {
     xyk: {
@@ -63,6 +80,9 @@ export type QuotePayload = {
     };
     tbc: {
       [key: string]: CodecString;
+    };
+    orderBook: {
+      [key: string]: OrderBookAggregated | null;
     };
   };
   prices: {
@@ -91,7 +111,6 @@ export type QuotePayload = {
       rateStalePeriod: number;
     };
   };
-  lockedSources: Array<LiquiditySourceTypes>;
 };
 
 export type QuoteResult = {
@@ -102,6 +121,6 @@ export type QuoteResult = {
 };
 
 export type PathsAndPairLiquiditySources = {
-  paths: QuotePaths;
+  assetPaths: QuotePaths;
   liquiditySources: Array<LiquiditySourceTypes>;
 };

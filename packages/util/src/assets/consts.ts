@@ -17,21 +17,25 @@ export enum KnownSymbols {
 }
 
 const ZERO_STR = '0';
-export const ZeroBalance = {
+
+export const ZeroBalance: AccountBalance = {
+  free: ZERO_STR,
+  reserved: ZERO_STR,
   frozen: ZERO_STR,
+  bonded: ZERO_STR,
   locked: ZERO_STR,
   total: ZERO_STR,
   transferable: ZERO_STR,
-  bonded: ZERO_STR,
-} as AccountBalance;
+};
 
 export enum BalanceType {
-  Transferable = 'transferable',
-  Frozen = 'frozen',
-  Locked = 'locked',
+  Free = 'free',
   Reserved = 'reserved',
-  Total = 'total',
+  Frozen = 'frozen',
   Bonded = 'bonded',
+  Locked = 'locked',
+  Total = 'total',
+  Transferable = 'transferable',
 }
 
 class ArrayLike<T> extends Array<T> {

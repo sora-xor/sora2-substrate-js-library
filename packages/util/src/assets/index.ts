@@ -38,21 +38,28 @@ export function formatBalance(
 ): AccountBalance {
   const free = new FPNumber(data.free || 0, assetDecimals);
   const reserved = new FPNumber(data.reserved || 0, assetDecimals);
+  // [Substrate 4: PalletBalancesAccountData]
   const miscFrozen = new FPNumber((data as PalletBalancesAccountData).miscFrozen || 0, assetDecimals);
+  // [Substrate 4: PalletBalancesAccountData]
   const feeFrozen = new FPNumber((data as PalletBalancesAccountData).feeFrozen || 0, assetDecimals);
-  const frozen = new FPNumber((data as OrmlTokensAccountData).frozen || 0, assetDecimals);
-  const locked = FPNumber.max(miscFrozen, feeFrozen) as FPNumber;
-  // bondedData can be NaN, it can be checked by isEmpty===true
+  const frozenDeprecated = FPNumber.max(miscFrozen, feeFrozen);
+  // [Substrate 5: PalletBalancesAccountData] & OrmlTokensAccountData
+  const frozenCurrent = new FPNumber((data as OrmlTokensAccountData).frozen || 0, assetDecimals);
+  const frozen = FPNumber.max(frozenCurrent, frozenDeprecated);
+  // [SORA] bondedData can be NaN, it can be checked by isEmpty===true
   const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
-  const freeAndReserved = free.add(reserved);
+  // [SORA]
+  const locked = reserved.add(frozen).add(bonded);
+
   return {
+    free: free.toCodecString(),
     reserved: reserved.toCodecString(),
-    locked: locked.toCodecString(),
-    total: freeAndReserved.add(bonded).toCodecString(),
-    transferable: free.sub(locked).toCodecString(),
-    frozen: (frozen.isZero() ? locked.add(reserved) : frozen).add(bonded).toCodecString(),
+    frozen: frozen.toCodecString(),
     bonded: bonded.toCodecString(),
-  } as AccountBalance;
+    locked: locked.toCodecString(),
+    total: free.add(locked).toCodecString(),
+    transferable: free.sub(frozen).toCodecString(),
+  };
 }
 
 async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
@@ -81,8 +88,10 @@ export async function getAssetBalance(
   assetDecimals = 18
 ): Promise<AccountBalance> {
   if (assetAddress === XOR.address) {
-    const accountInfo = await api.query.system.account(accountAddress);
-    const bondedBalance = await api.query.referrals.referrerBalances(accountAddress);
+    const [accountInfo, bondedBalance] = await Promise.all([
+      api.query.system.account(accountAddress),
+      api.query.referrals.referrerBalances(accountAddress),
+    ]);
     return formatBalance(accountInfo.data, assetDecimals, bondedBalance);
   }
   const accountData = await api.query.tokens.accounts(accountAddress, assetAddress);
@@ -261,22 +270,14 @@ export class AssetsModule<T> {
   }
 
   private async addToAccountAssetsList(address: string): Promise<void> {
-    // Check asset in account assets list
-    const accountAsset = this.getAsset(address);
-    // If asset is not added to account assets
-    if (!accountAsset) {
-      // Get asset data and balance info
-      const asset = await this.getAccountAsset(address);
-      // During async execution of the method above, asset may have already been added
-      // Check again, that asset is not in account assets list
-      if (!this.getAsset(address)) {
-        this.accountAssets.push(asset);
-        this.subscribeToAssetBalance(asset);
-      }
-    } else {
-      // Move asset to the end of list, keep balance subscription
-      this.removeFromAccountAssets(address);
-      this.accountAssets.push(accountAsset);
+    if (this.getAsset(address)) return;
+    // Get asset data and balance info
+    const asset = await this.getAccountAsset(address);
+    // During async execution of the method above, asset may have already been added
+    // Check again, that asset is not in account assets list
+    if (!this.getAsset(address)) {
+      this.accountAssets.push(asset);
+      this.subscribeToAssetBalance(asset);
     }
   }
 
@@ -291,7 +292,7 @@ export class AssetsModule<T> {
   }
 
   /**
-   * Add account asset & create balance subscription
+   * Add account asset to the end of list & create balance subscription
    * @param address asset address
    */
   public async addAccountAsset(address: string): Promise<void> {
@@ -383,7 +384,9 @@ export class AssetsModule<T> {
     assert(this.root.account, Messages.connectWallet);
 
     if (!this.accountAssetsAddresses.length) {
-      this.accountAssetsAddresses = this.accountDefaultAssetsAddresses;
+      const defaultList = this.accountDefaultAssetsAddresses;
+      const accountList = await this.getAccountTokensAddressesList();
+      this.accountAssetsAddresses = [...new Set([...defaultList, ...accountList])];
     }
 
     const currentAddresses = this.accountAssetsAddresses;
@@ -396,9 +399,14 @@ export class AssetsModule<T> {
       this.removeFromAccountAssetsList(assetAddress);
     }
 
-    for (const assetAddress of currentAddresses) {
-      await this.addToAccountAssetsList(assetAddress);
-    }
+    if (!currentAddresses.length) return;
+
+    const addToAccountAssetsListPromises = currentAddresses.map((assetId) => this.addToAccountAssetsList(assetId));
+    await Promise.allSettled(addToAccountAssetsListPromises);
+    // sort assets by currentAddresses list
+    this.accountAssets.sort((a, b) => {
+      return currentAddresses.indexOf(a.address) - currentAddresses.indexOf(b.address);
+    });
   }
 
   /**
@@ -440,6 +448,25 @@ export class AssetsModule<T> {
     return asset;
   }
 
+  /**
+   * Get account ORML tokens list with any non zero balance
+   */
+  public async getAccountTokensAddressesList(): Promise<string[]> {
+    const data = await this.root.api.query.tokens.accounts.entries(this.root.account.pair.address);
+    const list = [];
+
+    for (const [key, { free, reserved, frozen }] of data) {
+      const assetId = key.args[1].code.toString();
+      const hasAssetAnyBalance = [free, reserved, frozen].some((value) => !new FPNumber(value).isZero());
+
+      if (hasAssetAnyBalance) {
+        list.push(assetId);
+      }
+    }
+
+    return list;
+  }
+
   // # Account assets addresses
 
   public get accountAssetsAddresses(): Array<string> {
@@ -456,12 +483,9 @@ export class AssetsModule<T> {
   }
 
   private addToAccountAssetsAddressesList(assetAddress: string): void {
-    const assetsAddressesCopy = [...this.accountAssetsAddresses];
-    const index = assetsAddressesCopy.findIndex((address) => address === assetAddress);
-
-    ~index ? (assetsAddressesCopy[index] = assetAddress) : assetsAddressesCopy.push(assetAddress);
-
-    this.accountAssetsAddresses = assetsAddressesCopy;
+    if (this.accountAssetsAddresses.includes(assetAddress)) return;
+    // add address to the end of list
+    this.accountAssetsAddresses = [...this.accountAssetsAddresses, assetAddress];
   }
 
   private removeFromAccountAssetsAddressesList(address: string): void {

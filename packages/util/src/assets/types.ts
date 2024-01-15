@@ -21,33 +21,43 @@ export type Blacklist = Array<string>;
 
 /**
  * Account Balance structure. Each value === value * 10 ^ decimals
- *
- * total = free + reserved + bonded
- *
- * locked = max(miscFrozen, feeFrozen)
- *
- * transferable = free - locked
- *
- * frozen = locked + reserved + bonded
  */
 export interface AccountBalance {
+  /** [Substrate] "free" balance */
+  free: CodecString;
+  /** [Substrate] "reserved" balance */
   reserved: CodecString;
-  total: CodecString;
-  locked: CodecString;
-  transferable: CodecString;
+  /** [Substrate] "frozen" balance */
   frozen: CodecString;
+  /** [SORA] "bonded" balance in referral system */
   bonded: CodecString;
+  /** [SORA] "locked" balance ("reserved" + "frozen" + "bonded") */
+  locked: CodecString;
+  /** [SORA] total balance ("free" + "locked") */
+  total: CodecString;
+  /** [SORA] usable balance ("free" - "frozen") */
+  transferable: CodecString;
 }
 
-export interface Asset {
+export type Asset = {
   address: string;
   symbol: string;
   name: string;
   decimals: number;
   content?: string;
   description?: string;
-}
+};
 
-export interface AccountAsset extends Asset {
+export type AccountAsset = Asset & {
   balance: AccountBalance;
-}
+};
+
+export type RegisteredAsset = Asset & {
+  externalAddress: string;
+  externalDecimals: number;
+};
+
+export type RegisteredAccountAsset = RegisteredAsset &
+  AccountAsset & {
+    externalBalance: CodecString;
+  };

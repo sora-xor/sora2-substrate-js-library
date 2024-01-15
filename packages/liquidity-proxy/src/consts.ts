@@ -18,9 +18,8 @@ export class Consts {
   /** TBCD token */
   static readonly TBCD = '0x02000a0000000000000000000000000000000000000000000000000000000000';
 
-  /** XYK, TBC, XST fees the same */
+  /** XYK, TBC fees the same */
   static readonly XYK_FEE = new FPNumber(0.003);
-  static readonly XST_FEE = new FPNumber(0.00666);
   static readonly TBC_FEE = Consts.XYK_FEE;
   /** Max `Rust` number value */
   static readonly MAX = new FPNumber('170141183460469231731.687303715884105727');
@@ -31,11 +30,18 @@ export class Consts {
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
 }
 
+export enum Errors {
+  UnknownOrderBook = 'Order book does not exist for this trading pair',
+  NotEnoughLiquidityInOrderBook = 'Not Enough Liquidity In OrderBook',
+  InvalidOrderAmount = 'Invalid Order Amount',
+}
+
 export enum LiquiditySourceTypes {
   Default = '',
   XYKPool = 'XYKPool',
   XSTPool = 'XSTPool',
   MulticollateralBondingCurvePool = 'MulticollateralBondingCurvePool',
+  OrderBook = 'OrderBook',
 }
 
 export enum RewardReason {
@@ -44,8 +50,8 @@ export enum RewardReason {
 }
 
 export enum PriceVariant {
-  Buy = 'buy',
-  Sell = 'sell',
+  Buy = 'Buy',
+  Sell = 'Sell',
 }
 
 export enum AssetType {

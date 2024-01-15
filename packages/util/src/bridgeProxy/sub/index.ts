@@ -1,30 +1,109 @@
 import { FPNumber } from '@sora-substrate/math';
+import { assert } from '@polkadot/util';
 
 import { BaseApi, isSubstrateOperation, Operation } from '../../BaseApi';
+import { Messages } from '../../logger';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
-import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails } from '../methods';
-import { SubNetwork, XcmVersionedMultiLocation, XcmMultilocationJunction, XcmJunction } from './consts';
+import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails, getLockedAssets } from '../methods';
+import { SubNetworkId, SubAssetKind, XcmVersionedMultiLocation, XcmMultilocationJunction, XcmJunction } from './consts';
+import { SoraParachainApi } from './parachain';
 
+import type { CodecString } from '@sora-substrate/math';
 import type { Asset } from '../../assets/types';
-import type { SubHistory, SubAsset, ParachainIds } from './types';
+import type {
+  SubHistory,
+  SubAsset,
+  ParachainIds,
+  SubNetwork,
+  SubNetworkChainId,
+  SoraParachain,
+  Relaychain,
+  Parachain,
+} from './types';
+import type { BridgeTypesGenericNetworkId } from '@polkadot/types/lookup';
 
 export class SubBridgeApi<T> extends BaseApi<T> {
   constructor() {
     super('subHistory');
   }
 
-  // override it from frontend config
+  public readonly soraParachainApi = new SoraParachainApi();
+
+  // override it from frontend config if needed
   public parachainIds: ParachainIds = {
-    [SubNetwork.Mainnet]: 2011,
-    [SubNetwork.Karura]: 2000,
+    [SubNetworkId.RococoSora]: 2011,
+    [SubNetworkId.KusamaSora]: 2011,
+    [SubNetworkId.AlphanetSora]: 2011,
   };
 
-  private getParachainNetwork(subNetwork: SubNetwork): SubNetwork {
-    if (subNetwork === SubNetwork.Karura) {
-      return SubNetwork.Rococo;
-    }
+  public prepareNetworkParam(subNetwork: SubNetwork): BridgeTypesGenericNetworkId {
+    const networkId = this.getSubNetworkChainId(subNetwork);
+    const genericNetworkId: BridgeTypesGenericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
+      [BridgeNetworkType.Sub]: networkId,
+    });
 
-    return subNetwork;
+    return genericNetworkId;
+  }
+
+  public getRelayChain(subNetwork: SubNetwork): Relaychain {
+    if (this.isRelayChain(subNetwork)) return subNetwork as Relaychain;
+
+    switch (subNetwork) {
+      case SubNetworkId.KusamaSora:
+        return SubNetworkId.Kusama;
+      case SubNetworkId.RococoSora:
+        return SubNetworkId.Rococo;
+      case SubNetworkId.AlphanetSora:
+        return SubNetworkId.Alphanet;
+      default:
+        throw new Error(`"${subNetwork}" has not relaychain`);
+    }
+  }
+
+  public getSoraParachain(subNetwork: SubNetwork): SoraParachain {
+    if (this.isSoraParachain(subNetwork)) return subNetwork as SoraParachain;
+
+    switch (subNetwork) {
+      case SubNetworkId.Kusama:
+        return SubNetworkId.KusamaSora;
+      case SubNetworkId.Rococo:
+        return SubNetworkId.RococoSora;
+      case SubNetworkId.Alphanet:
+        return SubNetworkId.AlphanetSora;
+      default:
+        throw new Error(`"${subNetwork}" has not SORA parachain`);
+    }
+  }
+
+  /** Get value how this network is defined on blockchain */
+  public getSubNetworkChainId(subNetwork: SubNetwork): SubNetworkChainId {
+    // Only relaychains on SORA blockchain yet;
+    const relaychain = this.getRelayChain(subNetwork);
+
+    return relaychain;
+  }
+
+  public getParachainId(parachain: SubNetwork): number {
+    const parachainId = this.parachainIds[parachain];
+
+    if (!parachainId) throw new Error(`Parachain id is not defined for "${parachain}" parachain`);
+
+    return parachainId;
+  }
+
+  public isRelayChain(subNetwork: SubNetwork): boolean {
+    return [SubNetworkId.Kusama, SubNetworkId.Polkadot, SubNetworkId.Rococo, SubNetworkId.Alphanet].includes(
+      subNetwork
+    );
+  }
+
+  public isSoraParachain(subNetwork: SubNetwork): boolean {
+    return [SubNetworkId.KusamaSora, SubNetworkId.RococoSora, SubNetworkId.AlphanetSora].includes(subNetwork);
+  }
+
+  // for future usage
+  public isStandalone(subNetwork: SubNetwork): boolean {
+    return [SubNetworkId.Liberland].includes(subNetwork);
   }
 
   private getRecipientArg(subNetwork: SubNetwork, recipient: string) {
@@ -36,33 +115,32 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       },
     };
 
-    if (subNetwork === SubNetwork.Karura) {
+    if (this.isRelayChain(subNetwork)) {
       return {
         [BridgeAccountType.Parachain]: {
           [XcmVersionedMultiLocation.V3]: {
             parents: 1,
             interior: {
-              [XcmMultilocationJunction.X2]: [
-                // karura parachain
-                {
-                  [XcmJunction.Parachain]: this.parachainIds[SubNetwork.Karura],
-                },
-                // recipient account
-                accountXcmJunction,
-              ],
+              [XcmMultilocationJunction.X1]: accountXcmJunction,
             },
           },
         },
       };
     }
 
-    // Rococo
     return {
       [BridgeAccountType.Parachain]: {
         [XcmVersionedMultiLocation.V3]: {
           parents: 1,
           interior: {
-            [XcmMultilocationJunction.X1]: accountXcmJunction,
+            [XcmMultilocationJunction.X2]: [
+              // parachain id in relaychain
+              {
+                [XcmJunction.Parachain]: this.getParachainId(subNetwork),
+              },
+              // recipient account
+              accountXcmJunction,
+            ],
           },
         },
       },
@@ -86,23 +164,36 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     super.saveHistory(history);
   }
 
-  public async getRegisteredAssets(subNetwork: SubNetwork): Promise<Record<string, SubAsset>> {
-    const assets = {};
-    const network = this.getParachainNetwork(subNetwork);
+  public async getSubAssetDecimals(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<number> {
+    const precision = await this.api.query.parachainBridgeApp.sidechainPrecision(subNetworkId, soraAssetId);
+
+    return precision.unwrap().toNumber();
+  }
+
+  public async getSubAssetKind(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetKind> {
+    const kind = await this.api.query.parachainBridgeApp.assetKinds(subNetworkId, soraAssetId);
+
+    return kind.unwrap().isSidechain ? SubAssetKind.Sidechain : SubAssetKind.Thischain;
+  }
+
+  private async getSubAssetData(relaychain: Relaychain, soraAssetId: string): Promise<SubAsset> {
+    const [decimals, assetKind] = await Promise.all([
+      this.getSubAssetDecimals(relaychain, soraAssetId),
+      this.getSubAssetKind(relaychain, soraAssetId),
+    ]);
+
+    return { decimals, assetKind };
+  }
+
+  private async getRelayChainAssets(relaychain: Relaychain): Promise<Record<string, SubAsset>> {
+    const assets: Record<string, SubAsset> = {};
+
     try {
-      const data = await this.api.rpc.bridgeProxy.listAssets({ [BridgeNetworkType.Sub]: network });
+      const assetCodec = await this.api.query.parachainBridgeApp.relaychainAsset(relaychain);
+      const soraAssetId = assetCodec.unwrap().code.toString();
+      const data = await this.getSubAssetData(relaychain, soraAssetId);
 
-      data.forEach((assetData) => {
-        const assetInfo = assetData.asSub;
-        const soraAddress = assetInfo.assetId.toString();
-        const assetKind = assetInfo.assetKind.toString();
-        const decimals = assetInfo.precision.toNumber();
-
-        assets[soraAddress] = {
-          assetKind,
-          decimals,
-        };
-      });
+      assets[soraAssetId] = data;
 
       return assets;
     } catch {
@@ -110,15 +201,41 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     }
   }
 
+  private async getParaChainAssets(parachain: Parachain): Promise<Record<string, SubAsset>> {
+    const assets: Record<string, SubAsset> = {};
+    const relaychain = this.getRelayChain(parachain);
+    const parachainId = this.getParachainId(parachain);
+
+    try {
+      const assetsCodecs = await this.api.query.parachainBridgeApp.allowedParachainAssets(relaychain, parachainId);
+      const soraAssetIds = assetsCodecs.map((item) => item.code.toString());
+
+      await Promise.all(
+        soraAssetIds.map(async (soraAssetId) => {
+          const data = await this.getSubAssetData(relaychain, soraAssetId);
+
+          assets[soraAssetId] = data;
+        })
+      );
+
+      return assets;
+    } catch {
+      return assets;
+    }
+  }
+
+  public async getRegisteredAssets(subNetwork: SubNetwork): Promise<Record<string, SubAsset>> {
+    return this.isRelayChain(subNetwork)
+      ? await this.getRelayChainAssets(subNetwork as Relaychain)
+      : await this.getParaChainAssets(subNetwork as Parachain);
+  }
+
   public async getUserTransactions(accountAddress: string, subNetwork: SubNetwork) {
     return await getUserTransactions(
       this.api,
       accountAddress,
-      {
-        [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork),
-      },
+      this.prepareNetworkParam(subNetwork),
       subNetwork,
-      BridgeNetworkType.Sub,
       this.parachainIds
     );
   }
@@ -128,9 +245,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       this.api,
       accountAddress,
       hash,
-      { [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork) },
+      this.prepareNetworkParam(subNetwork),
       subNetwork,
-      BridgeNetworkType.Sub,
       this.parachainIds
     );
   }
@@ -140,11 +256,22 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       this.apiRx,
       accountAddress,
       hash,
-      { [BridgeNetworkType.Sub]: this.getParachainNetwork(subNetwork) },
+      this.prepareNetworkParam(subNetwork),
       subNetwork,
-      BridgeNetworkType.Sub,
       this.parachainIds
     );
+  }
+
+  public async getLockedAssets(subNetwork: SubNetwork, assetAddress: string) {
+    return await getLockedAssets(this.api, this.prepareNetworkParam(subNetwork), assetAddress);
+  }
+
+  protected getTransferExtrinsic(asset: Asset, recipient: string, amount: string | number, subNetwork: SubNetwork) {
+    const network = this.prepareNetworkParam(subNetwork);
+    const recipientData = this.getRecipientArg(subNetwork, recipient);
+    const value = new FPNumber(amount, asset.decimals).toCodecString();
+
+    return this.api.tx.bridgeProxy.burn(network, asset.address, recipientData, value);
   }
 
   public async transfer(
@@ -154,21 +281,22 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     subNetwork: SubNetwork,
     historyId?: string
   ): Promise<void> {
-    // asset should be checked as registered on bridge or not
-    const value = new FPNumber(amount, asset.decimals).toCodecString();
+    assert(this.account, Messages.connectWallet);
+
+    const extrinsic = this.getTransferExtrinsic(asset, recipient, amount, subNetwork);
     const historyItem = this.getHistory(historyId) || {
       type: Operation.SubstrateOutgoing,
       symbol: asset.symbol,
       assetAddress: asset.address,
       amount: `${amount}`,
     };
-    const network = this.getParachainNetwork(subNetwork);
-    const recipientData = this.getRecipientArg(subNetwork, recipient);
 
-    await this.submitExtrinsic(
-      this.api.tx.bridgeProxy.burn({ [BridgeNetworkType.Sub]: network }, asset.address, recipientData, value),
-      this.account.pair,
-      historyItem
-    );
+    await this.submitExtrinsic(extrinsic, this.account.pair, historyItem);
+  }
+
+  public async getNetworkFee(asset: Asset, subNetwork: SubNetwork): Promise<CodecString> {
+    const tx = this.getTransferExtrinsic(asset, '', '0', subNetwork);
+
+    return await this.getTransactionFee(tx);
   }
 }
