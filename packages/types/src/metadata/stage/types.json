@@ -62,7 +62,8 @@
     "BridgeSignatureVersion": {
         "_enum": [
             "V1",
-            "V2"
+            "V2",
+            "V3"
         ]
     },
     "BridgeStatus": {

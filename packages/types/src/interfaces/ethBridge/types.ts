@@ -20,7 +20,8 @@ export interface BridgeNetworkId extends u32 {}
 export interface BridgeSignatureVersion extends Enum {
   readonly isV1: boolean;
   readonly isV2: boolean;
-  readonly type: 'V1' | 'V2';
+  readonly isV3: boolean;
+  readonly type: 'V1' | 'V2' | 'V3';
 }
 
 /** @name BridgeStatus */
