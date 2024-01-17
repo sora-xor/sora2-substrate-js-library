@@ -86,6 +86,8 @@ export class BridgeProxyModule<T> {
             apps[type].push(SubNetworkId.RococoSora);
           } else if (subNetwork.isKusama) {
             apps[type].push(SubNetworkId.KusamaSora);
+          } else if (subNetwork.isPolkadot) {
+            apps[type].push(SubNetworkId.PolkadotSora);
           }
 
           apps[type].push(name as SubNetworkId);
