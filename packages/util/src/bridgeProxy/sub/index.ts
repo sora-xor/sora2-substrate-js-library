@@ -5,7 +5,16 @@ import { BaseApi, isSubstrateOperation, Operation } from '../../BaseApi';
 import { Messages } from '../../logger';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
 import { getTransactionDetails, getUserTransactions, subscribeOnTransactionDetails, getLockedAssets } from '../methods';
-import { SubNetworkId, SubAssetKind, XcmVersionedMultiLocation, XcmMultilocationJunction, XcmJunction } from './consts';
+import {
+  SubNetworkId,
+  SubAssetKind,
+  XcmVersionedMultiLocation,
+  XcmMultilocationJunction,
+  XcmJunction,
+  SoraParachains,
+  Relaychains,
+  Standalones,
+} from './consts';
 import { SoraParachainApi } from './parachain';
 
 import type { CodecString } from '@sora-substrate/math';
@@ -19,6 +28,7 @@ import type {
   SoraParachain,
   Relaychain,
   Parachain,
+  Standalone,
 } from './types';
 import type { BridgeTypesGenericNetworkId } from '@polkadot/types/lookup';
 
@@ -31,6 +41,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   // override it from frontend config if needed
   public parachainIds: ParachainIds = {
+    [SubNetworkId.PolkadotSora]: 2025,
     [SubNetworkId.RococoSora]: 2011,
     [SubNetworkId.KusamaSora]: 2011,
     [SubNetworkId.AlphanetSora]: 2011,
@@ -49,6 +60,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     if (this.isRelayChain(subNetwork)) return subNetwork as Relaychain;
 
     switch (subNetwork) {
+      case SubNetworkId.PolkadotSora:
+        return SubNetworkId.Polkadot;
       case SubNetworkId.KusamaSora:
         return SubNetworkId.Kusama;
       case SubNetworkId.RococoSora:
@@ -64,6 +77,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     if (this.isSoraParachain(subNetwork)) return subNetwork as SoraParachain;
 
     switch (subNetwork) {
+      case SubNetworkId.Polkadot:
+        return SubNetworkId.PolkadotSora;
       case SubNetworkId.Kusama:
         return SubNetworkId.KusamaSora;
       case SubNetworkId.Rococo:
@@ -92,18 +107,16 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public isRelayChain(subNetwork: SubNetwork): boolean {
-    return [SubNetworkId.Kusama, SubNetworkId.Polkadot, SubNetworkId.Rococo, SubNetworkId.Alphanet].includes(
-      subNetwork
-    );
+    return Relaychains.includes(subNetwork as Relaychain);
   }
 
   public isSoraParachain(subNetwork: SubNetwork): boolean {
-    return [SubNetworkId.KusamaSora, SubNetworkId.RococoSora, SubNetworkId.AlphanetSora].includes(subNetwork);
+    return SoraParachains.includes(subNetwork as SoraParachain);
   }
 
   // for future usage
   public isStandalone(subNetwork: SubNetwork): boolean {
-    return [SubNetworkId.Liberland].includes(subNetwork);
+    return Standalones.includes(subNetwork as Standalone);
   }
 
   private getRecipientArg(subNetwork: SubNetwork, recipient: string) {

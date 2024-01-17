@@ -6,6 +6,8 @@ export enum SubAssetKind {
 export enum SubNetworkId {
   /** Polkadot relaychain */
   Polkadot = 'Polkadot',
+  /** SORA parachain in Polkadot relaychain */
+  PolkadotSora = 'PolkadotSora',
   /** Kusama relaychain */
   Kusama = 'Kusama',
   /** SORA parachain in Kusama relaychain */
@@ -21,6 +23,22 @@ export enum SubNetworkId {
   /** Standalone Substrate network */
   Liberland = 'Liberland',
 }
+
+export const SoraParachains = [
+  SubNetworkId.PolkadotSora,
+  SubNetworkId.KusamaSora,
+  SubNetworkId.RococoSora,
+  SubNetworkId.AlphanetSora,
+] as const;
+
+export const Relaychains = [
+  SubNetworkId.Polkadot,
+  SubNetworkId.Kusama,
+  SubNetworkId.Rococo,
+  SubNetworkId.Alphanet,
+] as const;
+
+export const Standalones = [SubNetworkId.Liberland] as const;
 
 export enum XcmVersionedMultiLocation {
   V2 = 'V2',

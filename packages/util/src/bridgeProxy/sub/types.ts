@@ -2,18 +2,18 @@ import type { CodecString } from '@sora-substrate/math';
 
 import type { Operation, History } from '../../BaseApi';
 import type { BridgeTxStatus, BridgeNetworkType } from '../consts';
-import type { SubNetworkId, SubAssetKind } from './consts';
+import type { SubAssetKind, SoraParachains, Relaychains, Standalones } from './consts';
 
 export type SubAsset = {
   assetKind: SubAssetKind;
   decimals: number;
 };
 
-export type Standalone = SubNetworkId.Liberland;
+export type Standalone = (typeof Standalones)[number];
 
-export type Relaychain = SubNetworkId.Kusama | SubNetworkId.Rococo | SubNetworkId.Polkadot | SubNetworkId.Alphanet;
+export type Relaychain = (typeof Relaychains)[number];
 
-export type SoraParachain = SubNetworkId.KusamaSora | SubNetworkId.RococoSora | SubNetworkId.AlphanetSora;
+export type SoraParachain = (typeof SoraParachains)[number];
 
 export type Parachain = SoraParachain; // only SORA parachains yet
 /** Used in frontend app */
