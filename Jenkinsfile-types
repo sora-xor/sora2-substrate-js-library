@@ -12,7 +12,7 @@ def pipeline = new org.js.CheckTypes(
     npmLoginEmail:'admin@soramitsu.co.jp',
     sonarSrcPath: 'packages,scripts',
     sonarTestsPath: 'tests',
-    dojoProductType: 'sora',
+    dojoProductType: 'polkaswap',
     prStatusNotif: true,
     typesCheck: true,
     status: true,

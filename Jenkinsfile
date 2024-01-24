@@ -12,6 +12,6 @@ def pipeline = new org.js.LibPipeline(
     npmLoginEmail:'admin@soramitsu.co.jp',
     sonarSrcPath: 'packages,scripts',
     sonarTestsPath: 'tests',
-    dojoProductType: 'sora'
+    dojoProductType: 'polkaswap'
     )
 pipeline.runPipeline()
