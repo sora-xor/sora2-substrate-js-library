@@ -5,6 +5,7 @@ import type { BridgeTxStatus, BridgeNetworkType } from '../consts';
 import type { SubAssetKind, SoraParachains, Relaychains, Standalones } from './consts';
 
 export type SubAsset = {
+  address?: string | number;
   assetKind: SubAssetKind;
   decimals: number;
 };
