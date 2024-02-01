@@ -14,6 +14,7 @@ import {
   SoraParachains,
   Relaychains,
   Standalones,
+  LiberlandAssetType,
 } from './consts';
 import { SoraParachainApi } from './parachain';
 
@@ -22,6 +23,8 @@ import type { Asset } from '../../assets/types';
 import type {
   SubHistory,
   SubAsset,
+  SubAssetId,
+  LiberlandAssetId,
   ParachainIds,
   SubNetwork,
   SubNetworkChainId,
@@ -203,8 +206,17 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     return parseSubBridgeAssetDecimals(precision);
   }
 
-  private async getSubAssetAddress(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<any> {
-    // [TODO]
+  private async getSubAssetAddress(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetId> {
+    if (subNetworkId === SubNetworkId.Liberland) {
+      const result = await this.api.query.liberlandBridgeApp.sidechainAssetId(subNetworkId, soraAssetId);
+
+      if (result.isEmpty) return undefined;
+
+      const assetId = result.unwrap().asLiberland;
+
+      return assetId.isLld ? LiberlandAssetType.LLD : { [LiberlandAssetType.Asset]: assetId.asAsset.toNumber() };
+    }
+
     return undefined;
   }
 

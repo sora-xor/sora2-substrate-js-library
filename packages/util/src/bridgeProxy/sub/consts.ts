@@ -131,3 +131,8 @@ export enum XcmBodyPart {
   AtLeastProportion = 'AtLeastProportion',
   MoreThanProportion = 'MoreThanProportion',
 }
+
+export enum LiberlandAssetType {
+  LLD = 'LLD',
+  Asset = 'Asset',
+}

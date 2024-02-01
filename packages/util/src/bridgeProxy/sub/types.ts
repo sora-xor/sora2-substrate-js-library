@@ -2,10 +2,14 @@ import type { CodecString } from '@sora-substrate/math';
 
 import type { Operation, History } from '../../BaseApi';
 import type { BridgeTxStatus, BridgeNetworkType } from '../consts';
-import type { SubAssetKind, SoraParachains, Relaychains, Standalones } from './consts';
+import type { SubAssetKind, SoraParachains, Relaychains, Standalones, LiberlandAssetType } from './consts';
+
+export type LiberlandAssetId = { [LiberlandAssetType.Asset]: number } | LiberlandAssetType.LLD;
+
+export type SubAssetId = LiberlandAssetId | undefined | null;
 
 export type SubAsset = {
-  address?: string | number;
+  address?: SubAssetId;
   assetKind: SubAssetKind;
   decimals: number;
 };
