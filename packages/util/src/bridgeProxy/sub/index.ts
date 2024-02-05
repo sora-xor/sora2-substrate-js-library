@@ -13,6 +13,7 @@ import {
   XcmJunction,
   SoraParachains,
   Relaychains,
+  Parachains,
   Standalones,
   LiberlandAssetType,
 } from './consts';
@@ -24,7 +25,6 @@ import type {
   SubHistory,
   SubAsset,
   SubAssetId,
-  LiberlandAssetId,
   ParachainIds,
   SubNetwork,
   SubNetworkChainId,
@@ -123,6 +123,10 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   public isSoraParachain(subNetwork: SubNetwork): boolean {
     return SoraParachains.includes(subNetwork as SoraParachain);
+  }
+
+  public isParachain(subNetwork: SubNetwork): boolean {
+    return Parachains.includes(subNetwork as Parachain);
   }
 
   public isStandalone(subNetwork: SubNetwork): boolean {

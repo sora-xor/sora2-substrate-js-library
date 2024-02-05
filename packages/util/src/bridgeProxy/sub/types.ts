@@ -2,7 +2,7 @@ import type { CodecString } from '@sora-substrate/math';
 
 import type { Operation, History } from '../../BaseApi';
 import type { BridgeTxStatus, BridgeNetworkType } from '../consts';
-import type { SubAssetKind, SoraParachains, Relaychains, Standalones, LiberlandAssetType } from './consts';
+import type { SubAssetKind, SoraParachains, Relaychains, Parachains, Standalones, LiberlandAssetType } from './consts';
 
 export type LiberlandAssetId = { [LiberlandAssetType.Asset]: number } | LiberlandAssetType.LLD;
 
@@ -20,7 +20,7 @@ export type Relaychain = (typeof Relaychains)[number];
 
 export type SoraParachain = (typeof SoraParachains)[number];
 
-export type Parachain = SoraParachain; // only SORA parachains yet
+export type Parachain = (typeof Parachains)[number];
 /** Used in frontend app */
 export type SubNetwork = Relaychain | Parachain | Standalone;
 

@@ -67,8 +67,7 @@ function getSubNetworkId(
   usedNetwork: SubNetwork,
   parachainIds: ParachainIds
 ): BridgeNetworkId | null {
-  // we don't know from where are this tx. For now this will be a used network
-  if (data.isUnknown) return usedNetwork;
+  if (!data.isParachain) return usedNetwork;
 
   const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
 
