@@ -14,6 +14,7 @@ import { SubNetworkId } from './sub/consts';
 import type { Api } from '../api';
 import type { Storage } from '../storage';
 import type { SupportedApps } from './types';
+import type { SubNetwork } from './sub/types';
 
 export class BridgeProxyModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -79,7 +80,6 @@ export class BridgeProxyModule<T> {
           const genericNetworkId = appInfo.asSub;
           const type = BridgeNetworkType.Sub;
           const subNetwork = genericNetworkId.asSub;
-          const name = subNetwork.toString() as SubNetworkId;
 
           // adding parachains we work through relaychain
           if (subNetwork.isRococo) {
@@ -88,9 +88,17 @@ export class BridgeProxyModule<T> {
             apps[type].push(SubNetworkId.KusamaSora);
           } else if (subNetwork.isPolkadot) {
             apps[type].push(SubNetworkId.PolkadotSora);
+          } else if (subNetwork.isMainnet) {
+            // SORA-SORA bridge is not exists
+            console.info(`"Mainnet" sub network is not supported app`);
+            continue;
+          } else if (subNetwork.isCustom) {
+            // Custom bridge is not supported yet
+            console.info(`"${subNetwork.asCustom.toNumber()}" sub network is not supported app`);
+            continue;
           }
 
-          apps[type].push(name);
+          apps[type].push(subNetwork.type as SubNetwork);
         }
       }
 
