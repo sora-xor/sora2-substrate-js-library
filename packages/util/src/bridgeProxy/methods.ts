@@ -37,6 +37,9 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   if (data.isSora) {
     return data.asSora.toString();
   }
+  if (data.isLiberland) {
+    return data.asLiberland.toString();
+  }
 
   const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
 
