@@ -406,6 +406,28 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       unsignedPriority: u64 & AugmentedConst<ApiType>;
     };
+    kensetsu: {
+      /**
+       * Accrue() for a single CDP can be called once per this period
+       **/
+      accrueInterestPeriod: u64 & AugmentedConst<ApiType>;
+      /**
+       * Maximum number of CDP that one user can create
+       **/
+      maxCdpsPerOwner: u32 & AugmentedConst<ApiType>;
+      /**
+       * Maximum number of risk manager team members
+       **/
+      maxRiskManagementTeamSize: u32 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for longevity of unsigned transactions.
+       **/
+      unsignedLongevity: u64 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for base priority of unsigned transactions.
+       **/
+      unsignedPriority: u64 & AugmentedConst<ApiType>;
+    };
     multisig: {
       /**
        * The base amount of currency needed to reserve for creating a multisig execution or to
