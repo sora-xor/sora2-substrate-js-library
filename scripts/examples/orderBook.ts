@@ -12,6 +12,9 @@ async function main(): Promise<void> {
     const orderBooks = await api.orderBook.getOrderBooks();
     console.log('orderBooks', orderBooks);
 
+    const isOrderPlaceable = await api.orderBook.isOrderPlaceable(val, xor, PriceVariant.Sell, '5');
+    console.log('isOrderPlaceable', isOrderPlaceable);
+
     await api.orderBook.getUserOrderBooks(account);
 
     api.orderBook.subscribeOnUserLimitOrdersIds(val, xor, account).subscribe((ids) => {

@@ -2,7 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import type { Vec, Result } from '@polkadot/types';
 import type { OutgoingRequestEncoded, SignatureParams } from '@sora-substrate/types';
-import type { EthBridgeRequestsOffchainRequest, CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
+import type { EthBridgeRequestsOffchainRequest } from '@polkadot/types/lookup';
 
 import { BridgeTxDirection, BridgeTxStatus } from '../consts';
 import { EthCurrencyType } from './consts';
@@ -26,7 +26,7 @@ export function formatRequest(request: EthBridgeRequestsOffchainRequest, status:
   if (request.isIncoming) {
     const transferRequest = request.asIncoming[0].asTransfer;
     const assetId = transferRequest.assetId;
-    formattedItem.soraAssetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+    formattedItem.soraAssetAddress = (assetId.code ?? assetId).toString();
     formattedItem.amount = new FPNumber(transferRequest.amount).toString();
     formattedItem.from = transferRequest.author.toString();
     formattedItem.kind = transferRequest.assetKind.toString();
@@ -42,7 +42,7 @@ export function formatRequest(request: EthBridgeRequestsOffchainRequest, status:
     const outgoingRequest = request.asOutgoing;
     const transferRequest = outgoingRequest[0].asTransfer;
     const assetId = transferRequest.assetId;
-    formattedItem.soraAssetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+    formattedItem.soraAssetAddress = (assetId.code ?? assetId).toString();
     formattedItem.amount = new FPNumber(transferRequest.amount).toString();
     formattedItem.from = transferRequest.from.toString();
     formattedItem.to = transferRequest.to.toString();
@@ -73,11 +73,11 @@ export function formatApprovedRequest(
   formattedItem.s = [];
   formattedItem.v = [];
 
-  proofs.forEach((proof) => {
+  for (const proof of proofs) {
     formattedItem.r.push(proof.r.toString());
     formattedItem.s.push(proof.s.toString());
     formattedItem.v.push(proof.v.toNumber() + 27);
-  });
+  }
 
   return formattedItem;
 }

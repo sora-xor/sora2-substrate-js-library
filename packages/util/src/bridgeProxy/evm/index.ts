@@ -47,7 +47,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     try {
       const data = await this.api.rpc.bridgeProxy.listAssets({ [BridgeNetworkType.Evm]: evmNetwork });
 
-      data.forEach((assetData) => {
+      for (const assetData of data) {
         const assetInfo = assetData.asEvm;
         const soraAddress = assetInfo.assetId.toString();
         const evmAddress = assetInfo.evmAddress.toString();
@@ -59,7 +59,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
           appKind,
           decimals,
         };
-      });
+      }
 
       return assets;
     } catch {

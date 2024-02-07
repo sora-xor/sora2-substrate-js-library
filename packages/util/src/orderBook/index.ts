@@ -1,7 +1,7 @@
 import { map } from 'rxjs';
-import { FPNumber } from '@sora-substrate/math';
+import { CodecString, FPNumber } from '@sora-substrate/math';
 import { Operation } from '../BaseApi';
-import { MAX_TIMESTAMP } from './consts';
+import { MAX_ORDERS_PER_SINGLE_PRICE, MAX_TIMESTAMP } from './consts';
 import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
 import type { OrderBook, OrderBookPriceVolume } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
@@ -10,6 +10,7 @@ import type {
   CommonBalanceUnit,
   CommonPrimitivesAssetId32,
   CommonPrimitivesPriceVariant,
+  OrderBookLimitOrder,
   OrderBookOrderBookStatus,
   OrderBook as OrderBookStruct,
 } from '@polkadot/types/lookup';
@@ -266,17 +267,12 @@ export class OrderBookModule<T> {
       .pipe(map((idsCodec) => idsCodec.unwrapOrDefault().toJSON() as Array<number>));
   }
 
-  /**
-   * Get user's limit order info
-   * @param base base orderbook asset ID
-   * @param quote quote orderbook asset ID
-   * @param id limit order id
-   * @returns formatted limit order info
-   */
-  public async getLimitOrder(base: string, quote: string, id: number): Promise<LimitOrder> {
-    const dexId = this.root.dex.getDexId(quote);
-    const orderCodec = await this.root.api.query.orderBook.limitOrders({ dexId, base, quote }, id);
-
+  private formatLimitOrder(
+    orderCodec: Option<OrderBookLimitOrder>,
+    base: string,
+    quote: string,
+    dexId: number
+  ): LimitOrder | null {
     if (!orderCodec.isSome) return null;
     const order = orderCodec.unwrap();
 
@@ -292,6 +288,53 @@ export class OrderBookModule<T> {
       amount: toFP(order.amount),
       originalAmount: toFP(order.originalAmount),
     };
+  }
+
+  /**
+   * Get user's limit order info
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param id limit order id
+   * @returns formatted limit order info
+   */
+  public async getLimitOrder(base: string, quote: string, id: number): Promise<LimitOrder | null> {
+    const dexId = this.root.dex.getDexId(quote);
+    const orderCodec = await this.root.api.query.orderBook.limitOrders({ dexId, base, quote }, id);
+
+    return this.formatLimitOrder(orderCodec, base, quote, dexId);
+  }
+
+  /**
+   * Checks for order being available to be placed
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param side order side
+   * @param price order price
+   */
+  public async isOrderPlaceable(base: string, quote: string, side: PriceVariant, price: string) {
+    const dexId = this.root.dex.getDexId(quote);
+
+    const query = side === PriceVariant.Sell ? this.root.api.query.orderBook.asks : this.root.api.query.orderBook.bids;
+
+    const idsRaw = await query(
+      { dexId, base, quote },
+      { inner: new FPNumber(price).toCodecString(), isDivisible: true }
+    );
+
+    return ((idsRaw.unwrapOrDefault().toJSON() ?? []) as Array<number>).length < MAX_ORDERS_PER_SINGLE_PRICE;
+  }
+
+  /**
+   * Subscribe on user's limit order info. You can track the % of filling
+   * @param base base orderbook asset ID
+   * @param quote quote orderbook asset ID
+   * @param id limit order id
+   */
+  public subscribeOnLimitOrder(base: string, quote: string, id: number): Observable<LimitOrder | null> {
+    const dexId = this.root.dex.getDexId(quote);
+    return this.root.apiRx.query.orderBook
+      .limitOrders({ dexId, base, quote }, id)
+      .pipe(map((orderCodec) => this.formatLimitOrder(orderCodec, base, quote, dexId)));
   }
 
   /**
@@ -388,16 +431,31 @@ export class OrderBookModule<T> {
   }
 
   /**
-   * TODO: use the same logic like blockchain team does it
+   * Estimates the min and max network fees for Place Limit Order operation.
+   *
+   * **Before the usage** you need to execute `calcStaticNetworkFees` method.
+   *
+   * Uses the same approach with the SORA blockchain.
+   *
+   * @see https://github.com/sora-xor/sora2-network/blob/cf0988e4a99384cdf7e6cf438fc26a0088fd6c75/pallets/order-book/src/fee_calculator.rs#L53C15-L53C15
+   *
+   * If the TX will fail or the order will become market order the `max` fee will be used.
+   * Otherwise, `min` fee should be used.
    */
-  // public async getApproxPlaceOrderNetworkFee(timestamp = MAX_TIMESTAMP): Promise<CodecString> {
-  //   const tx = this.root.api.tx.orderBook.placeLimitOrder(
-  //     { dexId: DexId.XOR, base: XOR.address, quote: XOR.address },
-  //     0,
-  //     0,
-  //     PriceVariant.Buy,
-  //     timestamp
-  //   );
-  //   return await this.root.getTransactionFee(tx);
-  // }
+  public estimatePlaceOrderNetworkFee(timestamp = MAX_TIMESTAMP): { max: number; min: number } {
+    const baseFee = FPNumber.fromCodecValue(this.root.NetworkFee.OrderBookPlaceLimitOrder);
+    const marketMakerMaxFee = baseFee.div(FPNumber.TWO).toNumber(0);
+
+    if (timestamp < MAX_TIMESTAMP) {
+      const lifeRatio = timestamp / MAX_TIMESTAMP;
+      const part = marketMakerMaxFee / 7;
+
+      const constPart = part * 4;
+      const dynamicPart = part * 3 * lifeRatio;
+
+      return { max: baseFee.toNumber(0), min: Math.floor(constPart + dynamicPart) };
+    } else {
+      return { max: baseFee.toNumber(0), min: marketMakerMaxFee };
+    }
+  }
 }

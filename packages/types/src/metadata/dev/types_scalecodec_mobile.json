@@ -1,5 +1,5 @@
 {
-    "runtime_id": 70,
+    "runtime_id": 71,
     "types": {},
     "versioning": [
         {
@@ -4657,6 +4657,14 @@
                             "Custom",
                             "u32"
                         ]
+                    ]
+                },
+                "BridgeSignatureVersion": {
+                    "type": "enum",
+                    "value_list": [
+                        "V1",
+                        "V2",
+                        "V3"
                     ]
                 }
             }

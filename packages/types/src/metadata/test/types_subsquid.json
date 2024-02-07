@@ -1651,6 +1651,13 @@
                         "Rococo": null,
                         "Custom": "u32"
                     }
+                },
+                "BridgeSignatureVersion": {
+                    "_enum": [
+                        "V1",
+                        "V2",
+                        "V3"
+                    ]
                 }
             }
         }
@@ -1719,7 +1726,8 @@
         "BridgeSignatureVersion": {
             "_enum": [
                 "V1",
-                "V2"
+                "V2",
+                "V3"
             ]
         },
         "BridgeStatus": {
