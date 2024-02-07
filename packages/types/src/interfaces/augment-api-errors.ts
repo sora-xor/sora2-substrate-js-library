@@ -2834,6 +2834,10 @@ declare module '@polkadot/api-base/types/errors' {
        * No more messages can be queued for the channel during this commit cycle.
        **/
       QueueSizeLimitReached: AugmentedError<ApiType>;
+      /**
+       * Interval cannot be zero.
+       **/
+      ZeroInterval: AugmentedError<ApiType>;
     };
     sudo: {
       /**

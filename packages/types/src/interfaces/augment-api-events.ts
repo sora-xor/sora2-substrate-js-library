@@ -1026,6 +1026,7 @@ declare module '@polkadot/api-base/types/events' {
     substrateBridgeInboundChannel: {
     };
     substrateBridgeOutboundChannel: {
+      IntervalUpdated: AugmentedEvent<ApiType, [interval: u32], { interval: u32 }>;
       MessageAccepted: AugmentedEvent<ApiType, [networkId: BridgeTypesSubNetworkId, batchNonce: u64, messageNonce: u64], { networkId: BridgeTypesSubNetworkId, batchNonce: u64, messageNonce: u64 }>;
     };
     substrateDispatch: {
