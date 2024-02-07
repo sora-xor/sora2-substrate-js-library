@@ -25,6 +25,7 @@ export async function connectAndImportAccount(
 export async function disconnect(): Promise<void> {
   api.logout();
   await connection.close();
+  console.info('Disconnected!');
 }
 
 export async function withConnectedAccount(
