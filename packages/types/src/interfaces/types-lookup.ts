@@ -1736,7 +1736,11 @@ declare module '@polkadot/types/lookup' {
       readonly batchNonce: u64;
       readonly messageNonce: u64;
     } & Struct;
-    readonly type: 'MessageAccepted';
+    readonly isIntervalUpdated: boolean;
+    readonly asIntervalUpdated: {
+      readonly interval: u32;
+    } & Struct;
+    readonly type: 'MessageAccepted' | 'IntervalUpdated';
   }
 
   /** @name ParachainBridgeAppEvent (177) */
@@ -6990,7 +6994,8 @@ declare module '@polkadot/types/lookup' {
     readonly isNoFunds: boolean;
     readonly isOverflow: boolean;
     readonly isChannelExists: boolean;
-    readonly type: 'PayloadTooLarge' | 'QueueSizeLimitReached' | 'MaxGasTooBig' | 'NoFunds' | 'Overflow' | 'ChannelExists';
+    readonly isZeroInterval: boolean;
+    readonly type: 'PayloadTooLarge' | 'QueueSizeLimitReached' | 'MaxGasTooBig' | 'NoFunds' | 'Overflow' | 'ChannelExists' | 'ZeroInterval';
   }
 
   /** @name ParachainBridgeAppError (893) */

@@ -1552,7 +1552,10 @@ export default {
       MessageAccepted: {
         networkId: 'BridgeTypesSubNetworkId',
         batchNonce: 'u64',
-        messageNonce: 'u64'
+        messageNonce: 'u64',
+      },
+      IntervalUpdated: {
+        interval: 'u32'
       }
     }
   },
@@ -6148,7 +6151,7 @@ export default {
    * Lookup890: substrate_bridge_channel::outbound::pallet::Error<T>
    **/
   SubstrateBridgeChannelOutboundPalletError: {
-    _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists']
+    _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists', 'ZeroInterval']
   },
   /**
    * Lookup893: parachain_bridge_app::pallet::Error<T>
