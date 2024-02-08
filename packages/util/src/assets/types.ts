@@ -1,5 +1,7 @@
 import type { CodecString, NumberLike } from '@sora-substrate/math';
 
+import type { History } from '../BaseApi';
+
 export interface WhitelistItem {
   symbol: string;
   name: string;
@@ -64,8 +66,14 @@ export type RegisteredAccountAsset = RegisteredAsset &
   };
 
 export type TransferOptions = {
-  comment?: string;
   feeType: 'xor' | 'asset' | 'partial';
   xorFee?: NumberLike;
   assetFee?: NumberLike;
+  comment?: string;
 };
+
+export interface HistoryElementTransfer extends History {
+  xorFee?: string;
+  assetFee?: string;
+  comment?: string;
+}

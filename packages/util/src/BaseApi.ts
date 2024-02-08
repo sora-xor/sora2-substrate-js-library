@@ -26,6 +26,7 @@ import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 import type { OriginalIdentity, StakingHistory } from './staking/types';
 import type { LimitOrderHistory } from './orderBook/types';
+import { HistoryElementTransfer } from './assets/types';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -48,7 +49,13 @@ export type NetworkFeesObject = {
 
 export type IBridgeTransaction = EvmHistory | SubHistory | EthHistory;
 
-export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory | StakingHistory | LimitOrderHistory;
+export type HistoryItem =
+  | History
+  | IBridgeTransaction
+  | RewardClaimHistory
+  | StakingHistory
+  | LimitOrderHistory
+  | HistoryElementTransfer;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 

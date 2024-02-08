@@ -66,16 +66,11 @@ export function formatBalance(
 }
 
 async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
-  const [symbolBytes, nameBytes, decimalsU8, isMintableBool, contentBytes, descriptionBytes] =
-    await api.query.assets.assetInfos({ code: address });
-  const symbol = symbolBytes.toPrimitive().toString();
-  const name = nameBytes.toPrimitive().toString();
-  const decimals = decimalsU8.toNumber();
-  const isMintable = isMintableBool.isTrue;
-  const content = contentBytes.unwrapOr<undefined>(undefined)?.toPrimitive?.()?.toString?.();
-  const description = descriptionBytes.unwrapOr<undefined>(undefined)?.toPrimitive?.()?.toString?.();
+  const [symbol, name, decimals, isMintable, content, description] = (
+    await api.query.assets.assetInfos({ code: address })
+  ).toHuman() as any;
 
-  return { address, symbol, name, decimals, isMintable, content, description };
+  return { address, symbol, name, decimals: +decimals, isMintable: !!isMintable, content, description } as Asset;
 }
 
 /**
@@ -149,16 +144,9 @@ export function getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist): A
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
   const allAssets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
     const address = key.args[0].code.toString();
-    const [symbolBytes, nameBytes, decimalsU8, isMintableBool, contentBytes, descriptionBytes] = codec;
+    const [symbol, name, decimals, isMintable, content, description] = codec.toHuman() as any;
 
-    const symbol = symbolBytes.toPrimitive().toString();
-    const name = nameBytes.toPrimitive().toString();
-    const decimals = decimalsU8.toNumber();
-    const isMintable = isMintableBool.isTrue;
-    const content = contentBytes.unwrapOr<undefined>(undefined)?.toPrimitive?.()?.toString?.();
-    const description = descriptionBytes.unwrapOr<undefined>(undefined)?.toPrimitive?.()?.toString?.();
-
-    return { address, symbol, name, decimals, isMintable, content, description };
+    return { address, symbol, name, decimals: +decimals, isMintable: !!isMintable, content, description };
   });
 
   const assets = blacklist?.length ? getLegalAssets(allAssets, blacklist) : allAssets;
@@ -654,6 +642,7 @@ export class AssetsModule<T> {
    * @param amount Amount value
    * @param {TransferOptions} options Options object which includes:
    * @param options.comment Comment field (max length: 128 symbols)
+   * @param options.feeType Use 'xor' for now
    */
   public transfer(
     asset: Asset | AccountAsset,
@@ -662,6 +651,7 @@ export class AssetsModule<T> {
     options: TransferOptions = { feeType: 'xor' }
   ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
+    assert(options.comment?.length ?? 0 <= 128, Messages.commentFieldIsTooLong);
     const assetAddress = asset.address;
     const { comment, feeType, assetFee } = options;
     const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.root.formatAddress(toAddress);
@@ -686,6 +676,7 @@ export class AssetsModule<T> {
         amount: `${amount}`,
         assetAddress,
         type: Operation.XorlessTransfer,
+        comment,
       }
     );
   }

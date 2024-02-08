@@ -6,4 +6,5 @@ export const Messages = {
   noTransferData: 'There is no data for transfers',
   provideAccountPair: 'You should provide account pair to sign transaction',
   inabilityOfReferrerToPayFee: 'Your referrer do not have an ability to pay network fee',
+  commentFieldIsTooLong: 'Comment field is too long (128 symbols allowed)',
 };
