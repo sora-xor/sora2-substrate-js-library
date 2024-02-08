@@ -566,24 +566,6 @@ export class AssetsModule<T> {
     return supply.toString();
   }
 
-  private calcRegisterAssetParams(
-    symbol: string,
-    name: string,
-    totalSupply: NumberLike,
-    extensibleSupply: boolean,
-    nonDivisible: boolean,
-    nft = {
-      content: null,
-      description: null,
-    }
-  ) {
-    assert(this.root.account, Messages.connectWallet);
-    const supply = new FPNumber(totalSupply, nonDivisible ? 0 : FPNumber.DEFAULT_PRECISION);
-    return {
-      args: [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description],
-    };
-  }
-
   /**
    * Register asset
    * @param symbol string with asset symbol
@@ -592,6 +574,8 @@ export class AssetsModule<T> {
    * @param extensibleSupply `true` means that token can be mintable any time by the owner of that token. `false` by default
    * @param nonDivisible `false` by default
    * @param nft Nft params object which contains content & description
+   * @param nft.content Nft content string
+   * @param nft.description Nft description string
    */
   public register(
     symbol: string,
@@ -599,20 +583,19 @@ export class AssetsModule<T> {
     totalSupply: NumberLike,
     extensibleSupply = false,
     nonDivisible = false,
-    nft = {
+    nft: { content: string | null; description: string | null } = {
       content: null,
       description: null,
     }
   ): Promise<T> {
-    const params = this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nonDivisible, nft);
-    return this.root.submitExtrinsic(
-      (this.root.api.tx.assets.register as any)(...params.args),
-      this.root.account.pair,
-      {
-        symbol,
-        type: Operation.RegisterAsset,
-      }
-    );
+    assert(this.root.account, Messages.connectWallet);
+    const supply = new FPNumber(totalSupply, nonDivisible ? 0 : FPNumber.DEFAULT_PRECISION);
+    const args = [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description];
+
+    return this.root.submitExtrinsic((this.root.api.tx.assets.register as any)(...args), this.root.account.pair, {
+      symbol,
+      type: Operation.RegisterAsset,
+    });
   }
 
   /**
@@ -622,6 +605,7 @@ export class AssetsModule<T> {
    * @param asset Asset object
    * @param toAddress Account address
    * @param amount Amount value
+   * @deprecated
    */
   public simpleTransfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
@@ -718,6 +702,23 @@ export class AssetsModule<T> {
       this.root.api.tx.assets.burn(assetAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.root.account.pair,
       { type: Operation.Burn, amount: `${amount}`, assetAddress, symbol: asset.symbol }
+    );
+  }
+
+  /**
+   * Update asset info for asset you created. UpdateAssetInfo can be signed **only** by token creator.
+   * @param asset Asset object
+   * @param newSymbol New asset symbol
+   * @param newName: New asset name
+   */
+  public updateAssetInfo(asset: Asset | AccountAsset, newSymbol: string, newName: string): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const assetAddress = asset.address;
+
+    return this.root.submitExtrinsic(
+      this.root.api.tx.assets.updateInfo(assetAddress, newSymbol, newName),
+      this.root.account.pair,
+      { type: Operation.UpdateAssetInfo, assetAddress, symbol: newSymbol }
     );
   }
 }

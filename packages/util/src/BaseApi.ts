@@ -137,6 +137,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.XorlessTransfer]: '0',
     [Operation.Mint]: '0',
     [Operation.Burn]: '0',
+    [Operation.UpdateAssetInfo]: '0',
     [Operation.OrderBookPlaceLimitOrder]: '0',
   } as NetworkFeesObject;
 
@@ -396,7 +397,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 ['balances', 'tokens'].includes(section) &&
                 isLiquidityPoolOperation(type)
               ) {
-                // balances.Transfer hasn't assetId field
+                // balances.Transfer doesn't have assetId field
                 const [amount, to, from, assetId] = data.slice().reverse();
                 const amountFormatted = new FPNumber(amount).toString();
                 const history = this.getHistory(id);
@@ -578,6 +579,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.assets.updateBalance('', '', 0);
         case Operation.Burn:
           return this.api.tx.assets.burn('', 0);
+        case Operation.UpdateAssetInfo:
+          return this.api.tx.assets.updateInfo('', '', '');
         case Operation.OrderBookPlaceLimitOrder:
           return this.api.tx.orderBook.placeLimitOrder(
             { dexId: DexId.XOR, base: XOR.address, quote: XOR.address },
@@ -750,6 +753,7 @@ export enum Operation {
   XorlessTransfer = 'XorlessTransfer',
   Mint = 'Mint',
   Burn = 'Burn',
+  UpdateAssetInfo = 'UpdateAssetInfo',
 }
 
 export interface History {
