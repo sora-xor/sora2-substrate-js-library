@@ -706,12 +706,13 @@ export class AssetsModule<T> {
   }
 
   /**
+   * DON'T USE IT - WORK IN PROGRESS
    * Update asset info for asset you created. UpdateAssetInfo can be signed **only** by token creator.
    * @param asset Asset object
    * @param newSymbol New asset symbol
    * @param newName: New asset name
    */
-  public updateAssetInfo(asset: Asset | AccountAsset, newSymbol: string, newName: string): Promise<T> {
+  private updateAssetInfo(asset: Asset | AccountAsset, newSymbol: string, newName: string): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     const assetAddress = asset.address;
 
