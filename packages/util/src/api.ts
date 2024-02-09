@@ -381,25 +381,6 @@ export class Api<T = void> extends BaseApi<T> {
     };
   }
 
-  // # API methods
-
-  /**
-   * Transfer amount from account
-   * @param asset Asset object
-   * @param toAddress Account address
-   * @param amount Amount value
-   */
-  public transfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<T> {
-    assert(this.account, Messages.connectWallet);
-    const assetAddress = asset.address;
-    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.formatAddress(toAddress);
-    return this.submitExtrinsic(
-      this.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
-      this.account.pair,
-      { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
-    );
-  }
-
   // # Logout & reset methods
 
   /**
