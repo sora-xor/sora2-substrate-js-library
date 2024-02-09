@@ -2,6 +2,7 @@ import type { FPNumber } from '@sora-substrate/math';
 import type { OrderBookId, OrderBookPriceVolume, PriceVariant } from '@sora-substrate/liquidity-proxy';
 
 import type { History } from '../BaseApi';
+import type { AccountAsset, Asset } from '../assets/types';
 
 export interface LimitOrder {
   readonly orderBookId: OrderBookId;
@@ -33,3 +34,5 @@ export interface OrderId {
   base: string;
   quote: string;
 }
+
+export type AssetIdOrAsset = string | Asset | AccountAsset;
