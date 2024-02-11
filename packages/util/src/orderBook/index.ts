@@ -400,7 +400,7 @@ export class OrderBookModule<T> {
 
     return this.root.submitExtrinsic(
       this.root.api.tx.orderBook.placeLimitOrder(
-        { dexId, base, quote },
+        { dexId, base: baseAddress, quote: quoteAddress },
         new FPNumber(price).toCodecString(),
         new FPNumber(amount).toCodecString(),
         side,
@@ -444,7 +444,7 @@ export class OrderBookModule<T> {
     }
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.orderBook.cancelLimitOrder({ dexId, base, quote }, orderId),
+      this.root.api.tx.orderBook.cancelLimitOrder({ dexId, base: baseAddress, quote: quoteAddress }, orderId),
       this.root.account.pair,
       historyItem
     );
@@ -483,7 +483,9 @@ export class OrderBookModule<T> {
     }
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.orderBook.cancelLimitOrdersBatch([[{ dexId, base, quote }, orderIds]]),
+      this.root.api.tx.orderBook.cancelLimitOrdersBatch([
+        [{ dexId, base: baseAddress, quote: quoteAddress }, orderIds],
+      ]),
       this.root.account.pair
     );
   }
