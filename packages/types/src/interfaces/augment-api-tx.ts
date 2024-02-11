@@ -413,6 +413,9 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       removeSignatory: AugmentedSubmittable<(signatory: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
     };
+    bridgeOutboundChannel: {
+      setFee: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+    };
     bridgeProxy: {
       addLimitedAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
       burn: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Parachain: any } | { Unknown: any } | { Root: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32, BridgeTypesGenericAccount, u128]>;
