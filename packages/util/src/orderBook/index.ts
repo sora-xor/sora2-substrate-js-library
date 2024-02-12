@@ -393,7 +393,7 @@ export class OrderBookModule<T> {
       limitOrderTimestamp: timestamp,
     };
 
-    if (areAddresses) {
+    if (!areAddresses) {
       historyItem.symbol = (base as unknown as Asset).symbol;
       historyItem.symbol2 = (quote as unknown as Asset).symbol;
     }
@@ -438,7 +438,7 @@ export class OrderBookModule<T> {
       limitOrderIds: [orderId],
     };
 
-    if (areAddresses) {
+    if (!areAddresses) {
       historyItem.symbol = (base as unknown as Asset).symbol;
       historyItem.symbol2 = (quote as unknown as Asset).symbol;
     }
@@ -477,7 +477,7 @@ export class OrderBookModule<T> {
       limitOrderIds: orderIds,
     };
 
-    if (areAddresses) {
+    if (!areAddresses) {
       historyItem.symbol = (base as unknown as Asset).symbol;
       historyItem.symbol2 = (quote as unknown as Asset).symbol;
     }
