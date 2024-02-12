@@ -2704,6 +2704,9 @@ declare module '@polkadot/api-base/types/submittable' {
     substrateBridgeInboundChannel: {
       submit: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, commitment: BridgeTypesGenericCommitment | { Sub: any } | { EVM: any } | string | Uint8Array, proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, BridgeTypesGenericCommitment, FramenodeRuntimeMultiProof]>;
     };
+    substrateBridgeOutboundChannel: {
+      updateInterval: AugmentedSubmittable<(newInterval: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
+    };
     sudo: {
       /**
        * Authenticates the current sudo key and sets the given AccountId (`new`) as the new sudo
