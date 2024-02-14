@@ -119,10 +119,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.DemeterFarmingGetRewards]: '0',
     [Operation.CeresLiquidityLockerLockLiquidity]: '0',
     [Operation.StakingBond]: '0',
+    [Operation.StakingBondAndNominate]: '0',
     [Operation.StakingBondExtra]: '0',
     [Operation.StakingRebond]: '0',
     [Operation.StakingUnbond]: '0',
     [Operation.StakingWithdrawUnbonded]: '0',
+    [Operation.StakingNominate]: '0',
     [Operation.StakingChill]: '0',
     [Operation.StakingSetPayee]: '0',
     [Operation.StakingSetController]: '0',
@@ -545,6 +547,13 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
         case Operation.StakingBond:
           return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
+        case Operation.StakingBondAndNominate:
+          const transactions = [
+            this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress }),
+            this.api.tx.staking.nominate([mockAccountAddress])
+          ];
+
+          return this.api.tx.utility.batchAll(transactions);
         case Operation.StakingBondExtra:
           return this.api.tx.staking.bondExtra(0);
         case Operation.StakingRebond:
@@ -553,6 +562,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.staking.unbond(0);
         case Operation.StakingWithdrawUnbonded:
           return this.api.tx.staking.withdrawUnbonded(0);
+        case Operation.StakingNominate:
+          return this.api.tx.staking.nominate([mockAccountAddress]);
         case Operation.StakingChill:
           return this.api.tx.staking.chill();
         case Operation.StakingSetPayee:
