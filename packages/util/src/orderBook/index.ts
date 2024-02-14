@@ -486,7 +486,8 @@ export class OrderBookModule<T> {
       this.root.api.tx.orderBook.cancelLimitOrdersBatch([
         [{ dexId, base: baseAddress, quote: quoteAddress }, orderIds],
       ]),
-      this.root.account.pair
+      this.root.account.pair,
+      historyItem
     );
   }
 
