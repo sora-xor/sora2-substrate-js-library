@@ -16,7 +16,7 @@
     "@sora-substrate/type-definitions": "1.30.0"
   },
   "devDependencies": {
-    "@types/websocket": "^1.0.0",
-    "websocket": "^1.0.31"
+    "@types/websocket": "^1.0.10",
+    "websocket": "^1.0.34"
   }
 }
