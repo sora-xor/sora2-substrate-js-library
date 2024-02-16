@@ -129,7 +129,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.StakingRebond]: '0',
     [Operation.StakingUnbond]: '0',
     [Operation.StakingWithdrawUnbonded]: '0',
-    [Operation.StakingNominate]: '0',
     [Operation.StakingChill]: '0',
     [Operation.StakingSetPayee]: '0',
     [Operation.StakingSetController]: '0',
@@ -570,8 +569,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.staking.unbond(0);
         case Operation.StakingWithdrawUnbonded:
           return this.api.tx.staking.withdrawUnbonded(0);
-        case Operation.StakingNominate:
-          return this.api.tx.staking.nominate([mockAccountAddress]);
         case Operation.StakingChill:
           return this.api.tx.staking.chill();
         case Operation.StakingSetPayee:
