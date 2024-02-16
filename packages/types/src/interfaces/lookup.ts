@@ -555,7 +555,7 @@ export default {
    * Lookup68: common::primitives::PredefinedAssetId
    **/
   CommonPrimitivesPredefinedAssetId: {
-    _enum: ['XOR', 'DOT', 'KSM', 'USDT', 'VAL', 'PSWAP', 'DAI', 'ETH', 'XSTUSD', 'XST', 'TBCD']
+    _enum: ['XOR', 'DOT', 'KSM', 'USDT', 'VAL', 'PSWAP', 'DAI', 'ETH', 'XSTUSD', 'XST', 'TBCD', 'KUSD']
   },
   /**
    * Lookup70: trading_pair::pallet::Event<T>
@@ -1344,11 +1344,84 @@ export default {
     _enum: ['Manual', 'Expired', 'Aligned']
   },
   /**
-   * Lookup151: leaf_provider::pallet::Event<T>
+   * Lookup151: kensetsu::pallet::Event<T>
+   **/
+  KensetsuEvent: {
+    _enum: {
+      CDPCreated: {
+        cdpId: 'u128',
+        owner: 'AccountId32',
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+      },
+      CDPClosed: {
+        cdpId: 'u128',
+        owner: 'AccountId32',
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+      },
+      CollateralDeposit: {
+        cdpId: 'u128',
+        owner: 'AccountId32',
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        amount: 'u128',
+      },
+      CollateralWithdrawn: {
+        cdpId: 'u128',
+        owner: 'AccountId32',
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        amount: 'u128',
+      },
+      DebtIncreased: {
+        cdpId: 'u128',
+        owner: 'AccountId32',
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        amount: 'u128',
+      },
+      DebtPayment: {
+        cdpId: 'u128',
+        owner: 'AccountId32',
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        amount: 'u128',
+      },
+      Liquidated: {
+        cdpId: 'u128',
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        collateralAmount: 'u128',
+        proceeds: 'u128',
+        penalty: 'u128',
+      },
+      CollateralRiskParametersUpdated: {
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        riskParameters: 'KensetsuCollateralRiskParameters',
+      },
+      KusdHardCapUpdated: {
+        hardCap: 'u128',
+      },
+      LiquidationPenaltyUpdated: {
+        liquidationPenalty: 'Percent',
+      },
+      ProfitWithdrawn: {
+        amount: 'u128',
+      },
+      Donation: {
+        amount: 'u128'
+      }
+    }
+  },
+  /**
+   * Lookup152: kensetsu::CollateralRiskParameters
+   **/
+  KensetsuCollateralRiskParameters: {
+    hardCap: 'u128',
+    liquidationRatio: 'Perbill',
+    maxLiquidationLot: 'u128',
+    stabilityFeeRate: 'u128'
+  },
+  /**
+   * Lookup154: leaf_provider::pallet::Event<T>
    **/
   LeafProviderEvent: 'Null',
   /**
-   * Lookup152: bridge_proxy::pallet::Event
+   * Lookup155: bridge_proxy::pallet::Event
    **/
   BridgeProxyEvent: {
     _enum: {
@@ -1357,13 +1430,13 @@ export default {
     }
   },
   /**
-   * Lookup153: bridge_types::types::MessageStatus
+   * Lookup156: bridge_types::types::MessageStatus
    **/
   BridgeTypesMessageStatus: {
     _enum: ['InQueue', 'Committed', 'Done', 'Failed', 'Refunded', 'Approved']
   },
   /**
-   * Lookup154: ethereum_light_client::pallet::Event<T>
+   * Lookup157: ethereum_light_client::pallet::Event<T>
    **/
   EthereumLightClientEvent: {
     _enum: {
@@ -1371,7 +1444,7 @@ export default {
     }
   },
   /**
-   * Lookup157: bridge_types::header::HeaderId
+   * Lookup160: bridge_types::header::HeaderId
    **/
   BridgeTypesHeaderHeaderId: {
     _alias: {
@@ -1381,11 +1454,11 @@ export default {
     hash_: 'H256'
   },
   /**
-   * Lookup158: bridge_inbound_channel::pallet::Event<T>
+   * Lookup161: bridge_inbound_channel::pallet::Event<T>
    **/
   BridgeInboundChannelEvent: 'Null',
   /**
-   * Lookup159: bridge_outbound_channel::pallet::Event<T>
+   * Lookup162: bridge_outbound_channel::pallet::Event<T>
    **/
   BridgeOutboundChannelEvent: {
     _enum: {
@@ -1393,7 +1466,7 @@ export default {
     }
   },
   /**
-   * Lookup160: dispatch::pallet::Event<T, I>
+   * Lookup163: dispatch::pallet::Event<T, I>
    **/
   DispatchEvent: {
     _enum: {
@@ -1403,7 +1476,7 @@ export default {
     }
   },
   /**
-   * Lookup161: bridge_types::types::MessageId
+   * Lookup164: bridge_types::types::MessageId
    **/
   BridgeTypesMessageId: {
     sender: 'BridgeTypesGenericNetworkId',
@@ -1412,7 +1485,7 @@ export default {
     messageNonce: 'u64'
   },
   /**
-   * Lookup162: bridge_types::GenericNetworkId
+   * Lookup165: bridge_types::GenericNetworkId
    **/
   BridgeTypesGenericNetworkId: {
     _enum: {
@@ -1422,13 +1495,13 @@ export default {
     }
   },
   /**
-   * Lookup163: bridge_types::SubNetworkId
+   * Lookup166: bridge_types::SubNetworkId
    **/
   BridgeTypesSubNetworkId: {
     _enum: ['Mainnet', 'Kusama', 'Polkadot', 'Rococo', 'Alphanet', 'Liberland']
   },
   /**
-   * Lookup165: eth_app::pallet::Event<T>
+   * Lookup168: eth_app::pallet::Event<T>
    **/
   EthAppEvent: {
     _enum: {
@@ -1438,7 +1511,7 @@ export default {
     }
   },
   /**
-   * Lookup168: erc20_app::pallet::Event<T>
+   * Lookup171: erc20_app::pallet::Event<T>
    **/
   Erc20AppEvent: {
     _enum: {
@@ -1448,7 +1521,7 @@ export default {
     }
   },
   /**
-   * Lookup169: migration_app::pallet::Event<T>
+   * Lookup172: migration_app::pallet::Event<T>
    **/
   MigrationAppEvent: {
     _enum: {
@@ -1458,7 +1531,7 @@ export default {
     }
   },
   /**
-   * Lookup170: beefy_light_client::pallet::Event<T>
+   * Lookup173: beefy_light_client::pallet::Event<T>
    **/
   BeefyLightClientEvent: {
     _enum: {
@@ -1468,23 +1541,26 @@ export default {
     }
   },
   /**
-   * Lookup171: substrate_bridge_channel::inbound::pallet::Event<T>
+   * Lookup174: substrate_bridge_channel::inbound::pallet::Event<T>
    **/
   SubstrateBridgeChannelInboundPalletEvent: 'Null',
   /**
-   * Lookup172: substrate_bridge_channel::outbound::pallet::Event<T>
+   * Lookup175: substrate_bridge_channel::outbound::pallet::Event<T>
    **/
   SubstrateBridgeChannelOutboundPalletEvent: {
     _enum: {
       MessageAccepted: {
         networkId: 'BridgeTypesSubNetworkId',
         batchNonce: 'u64',
-        messageNonce: 'u64'
+        messageNonce: 'u64',
+      },
+      IntervalUpdated: {
+        interval: 'u32'
       }
     }
   },
   /**
-   * Lookup174: parachain_bridge_app::pallet::Event<T>
+   * Lookup177: parachain_bridge_app::pallet::Event<T>
    **/
   ParachainBridgeAppEvent: {
     _enum: {
@@ -1493,7 +1569,7 @@ export default {
     }
   },
   /**
-   * Lookup175: xcm::VersionedMultiLocation
+   * Lookup178: xcm::VersionedMultiLocation
    **/
   XcmVersionedMultiLocation: {
     _enum: {
@@ -1504,14 +1580,14 @@ export default {
     }
   },
   /**
-   * Lookup176: xcm::v2::multilocation::MultiLocation
+   * Lookup179: xcm::v2::multilocation::MultiLocation
    **/
   XcmV2MultiLocation: {
     parents: 'u8',
     interior: 'XcmV2MultilocationJunctions'
   },
   /**
-   * Lookup177: xcm::v2::multilocation::Junctions
+   * Lookup180: xcm::v2::multilocation::Junctions
    **/
   XcmV2MultilocationJunctions: {
     _enum: {
@@ -1527,7 +1603,7 @@ export default {
     }
   },
   /**
-   * Lookup178: xcm::v2::junction::Junction
+   * Lookup181: xcm::v2::junction::Junction
    **/
   XcmV2Junction: {
     _enum: {
@@ -1555,7 +1631,7 @@ export default {
     }
   },
   /**
-   * Lookup180: xcm::v2::NetworkId
+   * Lookup183: xcm::v2::NetworkId
    **/
   XcmV2NetworkId: {
     _enum: {
@@ -1566,7 +1642,7 @@ export default {
     }
   },
   /**
-   * Lookup182: xcm::v2::BodyId
+   * Lookup185: xcm::v2::BodyId
    **/
   XcmV2BodyId: {
     _enum: {
@@ -1583,7 +1659,7 @@ export default {
     }
   },
   /**
-   * Lookup183: xcm::v2::BodyPart
+   * Lookup186: xcm::v2::BodyPart
    **/
   XcmV2BodyPart: {
     _enum: {
@@ -1606,14 +1682,14 @@ export default {
     }
   },
   /**
-   * Lookup184: xcm::v3::multilocation::MultiLocation
+   * Lookup187: xcm::v3::multilocation::MultiLocation
    **/
   XcmV3MultiLocation: {
     parents: 'u8',
     interior: 'XcmV3Junctions'
   },
   /**
-   * Lookup185: xcm::v3::junctions::Junctions
+   * Lookup188: xcm::v3::junctions::Junctions
    **/
   XcmV3Junctions: {
     _enum: {
@@ -1629,7 +1705,7 @@ export default {
     }
   },
   /**
-   * Lookup186: xcm::v3::junction::Junction
+   * Lookup189: xcm::v3::junction::Junction
    **/
   XcmV3Junction: {
     _enum: {
@@ -1661,7 +1737,7 @@ export default {
     }
   },
   /**
-   * Lookup188: xcm::v3::junction::NetworkId
+   * Lookup191: xcm::v3::junction::NetworkId
    **/
   XcmV3JunctionNetworkId: {
     _enum: {
@@ -1683,7 +1759,7 @@ export default {
     }
   },
   /**
-   * Lookup189: xcm::v3::junction::BodyId
+   * Lookup192: xcm::v3::junction::BodyId
    **/
   XcmV3JunctionBodyId: {
     _enum: {
@@ -1700,7 +1776,7 @@ export default {
     }
   },
   /**
-   * Lookup190: xcm::v3::junction::BodyPart
+   * Lookup193: xcm::v3::junction::BodyPart
    **/
   XcmV3JunctionBodyPart: {
     _enum: {
@@ -1723,7 +1799,7 @@ export default {
     }
   },
   /**
-   * Lookup192: bridge_data_signer::pallet::Event<T>
+   * Lookup195: bridge_data_signer::pallet::Event<T>
    **/
   BridgeDataSignerEvent: {
     _enum: {
@@ -1752,15 +1828,15 @@ export default {
     }
   },
   /**
-   * Lookup194: sp_core::ecdsa::Public
+   * Lookup197: sp_core::ecdsa::Public
    **/
   SpCoreEcdsaPublic: '[u8;33]',
   /**
-   * Lookup197: sp_core::ecdsa::Signature
+   * Lookup200: sp_core::ecdsa::Signature
    **/
   SpCoreEcdsaSignature: '[u8;65]',
   /**
-   * Lookup201: multisig_verifier::pallet::Event<T>
+   * Lookup204: multisig_verifier::pallet::Event<T>
    **/
   MultisigVerifierEvent: {
     _enum: {
@@ -4325,7 +4401,66 @@ export default {
     }
   },
   /**
-   * Lookup556: bridge_proxy::pallet::Call<T>
+   * Lookup550: kensetsu::pallet::Call<T>
+   **/
+  KensetsuCall: {
+    _enum: {
+      create_cdp: {
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        collateralAmount: 'u128',
+        borrowAmount: 'u128',
+      },
+      close_cdp: {
+        cdpId: 'u128',
+      },
+      deposit_collateral: {
+        cdpId: 'u128',
+        collateralAmount: 'u128',
+      },
+      withdraw_collateral: {
+        cdpId: 'u128',
+        collateralAmount: 'u128',
+      },
+      borrow: {
+        cdpId: 'u128',
+        willToBorrowAmount: 'u128',
+      },
+      repay_debt: {
+        cdpId: 'u128',
+        amount: 'u128',
+      },
+      liquidate: {
+        cdpId: 'u128',
+      },
+      accrue: {
+        cdpId: 'u128',
+      },
+      update_collateral_risk_parameters: {
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        newRiskParameters: 'KensetsuCollateralRiskParameters',
+      },
+      update_hard_cap_total_supply: {
+        newHardCap: 'u128',
+      },
+      update_liquidation_penalty: {
+        newLiquidationPenalty: 'Percent',
+      },
+      withdraw_profit: {
+        kusdAmount: 'u128',
+      },
+      donate: {
+        kusdAmount: 'u128',
+      },
+      add_risk_manager: {
+        accountId: 'AccountId32',
+      },
+      remove_risk_manager: {
+        accountId: 'AccountId32'
+      }
+    }
+  },
+  /**
+   * Lookup551: bridge_proxy::pallet::Call<T>
    **/
   BridgeProxyCall: {
     _enum: {
@@ -4347,7 +4482,7 @@ export default {
     }
   },
   /**
-   * Lookup557: bridge_proxy::TransferLimitSettings<BlockNumber>
+   * Lookup553: bridge_proxy::TransferLimitSettings<BlockNumber>
    **/
   BridgeProxyTransferLimitSettings: {
     maxAmount: 'u128',
@@ -4516,7 +4651,17 @@ export default {
     data: 'Vec<Bytes>'
   },
   /**
-   * Lookup577: eth_app::pallet::Call<T>
+   * Lookup573: bridge_outbound_channel::pallet::Call<T>
+   **/
+  BridgeOutboundChannelCall: {
+    _enum: {
+      set_fee: {
+        amount: 'u128'
+      }
+    }
+  },
+  /**
+   * Lookup574: eth_app::pallet::Call<T>
    **/
   EthAppCall: {
     _enum: {
@@ -4782,7 +4927,17 @@ export default {
     proof: 'Vec<SpCoreEcdsaSignature>'
   },
   /**
-   * Lookup615: parachain_bridge_app::pallet::Call<T>
+   * Lookup612: substrate_bridge_channel::outbound::pallet::Call<T>
+   **/
+  SubstrateBridgeChannelOutboundPalletCall: {
+    _enum: {
+      update_interval: {
+        newInterval: 'u32'
+      }
+    }
+  },
+  /**
+   * Lookup613: parachain_bridge_app::pallet::Call<T>
    **/
   ParachainBridgeAppCall: {
     _enum: {
@@ -6000,7 +6155,32 @@ export default {
     _enum: ['UnknownOrderBook', 'InvalidOrderBookId', 'OrderBookAlreadyExists', 'UnknownLimitOrder', 'LimitOrderAlreadyExists', 'LimitOrderStorageOverflow', 'UpdateLimitOrderError', 'DeleteLimitOrderError', 'BlockScheduleFull', 'ExpirationNotFound', 'NoDataForPrice', 'NoAggregatedData', 'NotEnoughLiquidityInOrderBook', 'ForbiddenToCreateOrderBookWithSameAssets', 'NotAllowedQuoteAsset', 'NotAllowedDEXId', 'SyntheticAssetIsForbidden', 'UserHasNoNft', 'InvalidLifespan', 'InvalidOrderAmount', 'InvalidLimitOrderPrice', 'LimitOrderPriceIsTooFarFromSpread', 'TradingIsForbidden', 'PlacementOfLimitOrdersIsForbidden', 'CancellationOfLimitOrdersIsForbidden', 'UserHasMaxCountOfOpenedOrders', 'PriceReachedMaxCountOfLimitOrders', 'OrderBookReachedMaxCountOfPricesForSide', 'AmountCalculationFailed', 'PriceCalculationFailed', 'Unauthorized', 'InvalidAsset', 'InvalidTickSize', 'InvalidStepLotSize', 'InvalidMinLotSize', 'InvalidMaxLotSize', 'TickSizeAndStepLotSizeAreTooBig', 'TickSizeAndStepLotSizeLosePrecision', 'MaxLotSizeIsMoreThanTotalSupply', 'SlippageLimitExceeded', 'MarketOrdersAllowedOnlyForIndivisibleAssets', 'ForbiddenStatusToDeleteOrderBook', 'OrderBookIsNotEmpty', 'ForbiddenStatusToUpdateOrderBook', 'OrderBookIsLocked']
   },
   /**
-   * Lookup864: bridge_proxy::BridgeRequest<common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
+   * Lookup861: kensetsu::CollateralInfo<Moment>
+   **/
+  KensetsuCollateralInfo: {
+    riskParameters: 'KensetsuCollateralRiskParameters',
+    kusdSupply: 'u128',
+    lastFeeUpdateTime: 'u64',
+    interestCoefficient: 'u128'
+  },
+  /**
+   * Lookup862: kensetsu::CollateralizedDebtPosition<sp_core::crypto::AccountId32, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
+   **/
+  KensetsuCollateralizedDebtPosition: {
+    owner: 'AccountId32',
+    collateralAssetId: 'CommonPrimitivesAssetId32',
+    collateralAmount: 'u128',
+    debt: 'u128',
+    interestCoefficient: 'u128'
+  },
+  /**
+   * Lookup865: kensetsu::pallet::Error<T>
+   **/
+  KensetsuError: {
+    _enum: ['ArithmeticError', 'WrongAssetId', 'CDPNotFound', 'CollateralInfoNotFound', 'CDPSafe', 'CDPUnsafe', 'CDPLimitPerUser', 'TooManyManagers', 'NotEnoughCollateral', 'OperationNotPermitted', 'OutstandingDebt', 'NoDebt', 'CDPsPerUserLimitReached', 'HardCapSupply', 'BalanceNotEnough', 'WrongCollateralAssetId', 'AccrueWrongTime', 'ZeroLiquidationLot']
+  },
+  /**
+   * Lookup868: bridge_proxy::BridgeRequest<sp_core::crypto::AccountId32, common::primitives::AssetId32<common::primitives::PredefinedAssetId>>
    **/
   BridgeProxyBridgeRequest: {
     source: 'BridgeTypesGenericAccount',
@@ -6099,7 +6279,7 @@ export default {
    * Lookup888: substrate_bridge_channel::outbound::pallet::Error<T>
    **/
   SubstrateBridgeChannelOutboundPalletError: {
-    _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists']
+    _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists', 'ZeroInterval']
   },
   /**
    * Lookup891: parachain_bridge_app::pallet::Error<T>

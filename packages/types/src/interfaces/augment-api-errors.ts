@@ -1763,6 +1763,32 @@ declare module '@polkadot/api-base/types/errors' {
       WrongAmount: AugmentedError<ApiType>;
       WrongAssetId: AugmentedError<ApiType>;
     };
+    kensetsu: {
+      AccrueWrongTime: AugmentedError<ApiType>;
+      ArithmeticError: AugmentedError<ApiType>;
+      BalanceNotEnough: AugmentedError<ApiType>;
+      /**
+       * Too many CDPs per user
+       **/
+      CDPLimitPerUser: AugmentedError<ApiType>;
+      CDPNotFound: AugmentedError<ApiType>;
+      CDPSafe: AugmentedError<ApiType>;
+      CDPsPerUserLimitReached: AugmentedError<ApiType>;
+      CDPUnsafe: AugmentedError<ApiType>;
+      CollateralInfoNotFound: AugmentedError<ApiType>;
+      HardCapSupply: AugmentedError<ApiType>;
+      NoDebt: AugmentedError<ApiType>;
+      NotEnoughCollateral: AugmentedError<ApiType>;
+      OperationNotPermitted: AugmentedError<ApiType>;
+      OutstandingDebt: AugmentedError<ApiType>;
+      TooManyManagers: AugmentedError<ApiType>;
+      WrongAssetId: AugmentedError<ApiType>;
+      WrongCollateralAssetId: AugmentedError<ApiType>;
+      /**
+       * Liquidation lot set in risk parameters is zero, cannot liquidate
+       **/
+      ZeroLiquidationLot: AugmentedError<ApiType>;
+    };
     liquidityProxy: {
       /**
        * Path exists but it's not possible to perform exchange with currently available liquidity on pools.
@@ -2834,6 +2860,10 @@ declare module '@polkadot/api-base/types/errors' {
        * No more messages can be queued for the channel during this commit cycle.
        **/
       QueueSizeLimitReached: AugmentedError<ApiType>;
+      /**
+       * Interval cannot be zero.
+       **/
+      ZeroInterval: AugmentedError<ApiType>;
     };
     sudo: {
       /**

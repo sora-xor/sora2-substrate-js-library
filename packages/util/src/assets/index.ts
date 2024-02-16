@@ -1,6 +1,6 @@
 import { assert } from '@polkadot/util';
 import { Subscription, Subject, combineLatest, map } from 'rxjs';
-import { FPNumber, NumberLike } from '@sora-substrate/math';
+import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { BalanceInfo } from '@sora-substrate/types';
 import type { ApiPromise } from '@polkadot/api';
 import type { Observable } from '@polkadot/types/types';
@@ -8,6 +8,7 @@ import type { OrmlTokensAccountData, PalletBalancesAccountData } from '@polkadot
 import type { Option, u128 } from '@polkadot/types-codec';
 
 import { KnownAssets, NativeAssets, XOR } from './consts';
+import { DexId } from '../dex/consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
@@ -16,6 +17,7 @@ import type {
   AccountBalance,
   Asset,
   Blacklist,
+  TransferOptions,
   Whitelist,
   WhitelistArrayItem,
   WhitelistIdsBySymbol,
@@ -46,6 +48,7 @@ export function formatBalance(
   // [Substrate 5: PalletBalancesAccountData] & OrmlTokensAccountData
   const frozenCurrent = new FPNumber((data as OrmlTokensAccountData).frozen || 0, assetDecimals);
   const frozen = FPNumber.max(frozenCurrent, frozenDeprecated);
+  const transferable = free.sub(frozen);
   // [SORA] bondedData can be NaN, it can be checked by isEmpty===true
   const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
   // [SORA]
@@ -57,16 +60,17 @@ export function formatBalance(
     frozen: frozen.toCodecString(),
     bonded: bonded.toCodecString(),
     locked: locked.toCodecString(),
-    total: free.add(locked).toCodecString(),
-    transferable: free.sub(frozen).toCodecString(),
+    total: transferable.add(locked).toCodecString(),
+    transferable: transferable.toCodecString(),
   };
 }
 
 async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
-  const [symbol, name, decimals, _, content, description] = (
+  const [symbol, name, decimals, isMintable, content, description] = (
     await api.query.assets.assetInfos({ code: address })
   ).toHuman() as any;
-  return { address, symbol, name, decimals: +decimals, content, description } as Asset;
+
+  return { address, symbol, name, decimals: +decimals, isMintable: !!isMintable, content, description } as Asset;
 }
 
 /**
@@ -140,15 +144,16 @@ export function getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist): A
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
   const allAssets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
     const address = key.args[0].code.toString();
-    const [symbol, name, decimals, _, content, description] = codec.toHuman() as any;
-    return { address, symbol, name, decimals: +decimals, content, description };
-  }) as Array<Asset>;
+    const [symbol, name, decimals, isMintable, content, description] = codec.toHuman() as any;
+
+    return { address, symbol, name, decimals: +decimals, isMintable: !!isMintable, content, description };
+  });
 
   const assets = blacklist?.length ? getLegalAssets(allAssets, blacklist) : allAssets;
 
   return !whitelist
     ? assets
-    : assets.sort((a, b) => {
+    : assets.sort((a: Asset, b: Asset) => {
         const isNativeA = isNativeAsset(a);
         const isNativeB = isNativeAsset(b);
         const isRegisteredA = isRegisteredAsset(a, whitelist);
@@ -515,22 +520,50 @@ export class AssetsModule<T> {
     return filtered;
   }
 
-  private calcRegisterAssetParams(
-    symbol: string,
-    name: string,
-    totalSupply: NumberLike,
-    extensibleSupply: boolean,
-    nonDivisible: boolean,
-    nft = {
-      content: null,
-      description: null,
+  /**
+   * Get asset IDs of the asset owner (creator).
+   *
+   * @param accountId Account ID of the asset owner. If not set - the selected account ID is used.
+   */
+  public async getOwnedAssetIds(accountId = this.root.account.pair.address): Promise<Array<string>> {
+    try {
+      const assets = await this.root.api.query.assets.assetOwners.entries();
+
+      return assets.reduce<Array<string>>((buffer, item) => {
+        const accountIdItem = item[1].unwrapOr('').toString();
+        if (!accountIdItem || accountIdItem !== accountId) {
+          return buffer;
+        }
+        const newAsset: string = item[0]?.args?.[0]?.code?.toString?.() ?? '';
+        if (!newAsset) {
+          return buffer;
+        }
+        return [...buffer, newAsset];
+      }, []);
+    } catch {
+      return [];
     }
-  ) {
-    assert(this.root.account, Messages.connectWallet);
-    const supply = new FPNumber(totalSupply, nonDivisible ? 0 : FPNumber.DEFAULT_PRECISION);
-    return {
-      args: [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description],
-    };
+  }
+
+  public subscribeOnAssetSupply(assetId: string): Observable<CodecString> {
+    let rxQuery: () => Observable<u128>;
+    if (assetId === XOR.address) {
+      rxQuery = this.root.apiRx.query.balances.totalIssuance;
+    } else {
+      rxQuery = () => this.root.apiRx.query.tokens.totalIssuance(assetId);
+    }
+    return rxQuery().pipe(map((res) => res.toString()));
+  }
+
+  public async getAssetSupply(assetId: string): Promise<CodecString> {
+    let query: () => Promise<u128>;
+    if (assetId === XOR.address) {
+      query = this.root.api.query.balances.totalIssuance;
+    } else {
+      query = () => this.root.api.query.tokens.totalIssuance(assetId);
+    }
+    const supply = await query();
+    return supply.toString();
   }
 
   /**
@@ -541,6 +574,8 @@ export class AssetsModule<T> {
    * @param extensibleSupply `true` means that token can be mintable any time by the owner of that token. `false` by default
    * @param nonDivisible `false` by default
    * @param nft Nft params object which contains content & description
+   * @param nft.content Nft content string
+   * @param nft.description Nft description string
    */
   public register(
     symbol: string,
@@ -548,19 +583,143 @@ export class AssetsModule<T> {
     totalSupply: NumberLike,
     extensibleSupply = false,
     nonDivisible = false,
-    nft = {
+    nft: { content: string | null; description: string | null } = {
       content: null,
       description: null,
     }
   ): Promise<T> {
-    const params = this.calcRegisterAssetParams(symbol, name, totalSupply, extensibleSupply, nonDivisible, nft);
+    assert(this.root.account, Messages.connectWallet);
+    const supply = new FPNumber(totalSupply, nonDivisible ? 0 : FPNumber.DEFAULT_PRECISION);
+    const args = [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description];
+
+    return this.root.submitExtrinsic((this.root.api.tx.assets.register as any)(...args), this.root.account.pair, {
+      symbol,
+      type: Operation.RegisterAsset,
+    });
+  }
+
+  /**
+   * **DEPRECATED** use `transfer` instead
+   *
+   * Transfer amount from account
+   * @param asset Asset object
+   * @param toAddress Account address
+   * @param amount Amount value
+   * @deprecated
+   */
+  public simpleTransfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const assetAddress = asset.address;
+    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.root.formatAddress(toAddress);
+
     return this.root.submitExtrinsic(
-      (this.root.api.tx.assets.register as any)(...params.args),
+      this.root.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
+      this.root.account.pair,
+      { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
+    );
+  }
+
+  /**
+   * Transfer amount from account
+   * @param asset Asset object
+   * @param toAddress Account address
+   * @param amount Amount value
+   * @param {TransferOptions} options Options object which includes:
+   * @param options.comment Comment field (max length: 128 symbols)
+   * @param options.feeType Use 'xor' for now
+   */
+  public transfer(
+    asset: Asset | AccountAsset,
+    toAddress: string,
+    amount: NumberLike,
+    options: TransferOptions = { feeType: 'xor' }
+  ): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    assert(options.comment?.length ?? 0 <= 128, Messages.commentFieldIsTooLong);
+    const assetAddress = asset.address;
+    const { comment, feeType, assetFee } = options;
+    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.root.formatAddress(toAddress);
+    const desiredXorAmount = feeType === 'xor' ? 0 : assetFee; // Set it later to have real XOR less transfers
+    const maxAmountIn = feeType === 'xor' ? 0 : assetFee; // Set it later to have real XOR less transfers
+    return this.root.submitExtrinsic(
+      this.root.api.tx.liquidityProxy.xorlessTransfer(
+        DexId.XOR,
+        assetAddress,
+        toAddress,
+        new FPNumber(amount, asset.decimals).toCodecString(),
+        desiredXorAmount,
+        maxAmountIn,
+        [],
+        'Disabled',
+        comment
+      ),
       this.root.account.pair,
       {
-        symbol,
-        type: Operation.RegisterAsset,
+        symbol: asset.symbol,
+        to: formattedToAddress,
+        amount: `${amount}`,
+        assetAddress,
+        type: Operation.XorlessTransfer,
+        comment,
       }
+    );
+  }
+
+  /**
+   * Mint tokens for the selected account. Mint can be signed **only** by token creator.
+   * Also, the selected token should have extensible supply.
+   * @param asset Asset object
+   * @param amount Amount value
+   * @param toAddress Account address who will receive minted tokens. If not set - signer account ID will be used
+   */
+  public mint(asset: Asset | AccountAsset, amount: NumberLike, toAddress?: string): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const assetAddress = asset.address;
+    const address = toAddress || this.root.account.pair.address;
+    const formattedAddress = address.slice(0, 2) === 'cn' ? address : this.root.formatAddress(address);
+
+    return this.root.submitExtrinsic(
+      this.root.api.tx.assets.updateBalance(
+        address,
+        assetAddress,
+        new FPNumber(amount, asset.decimals).toCodecString()
+      ),
+      this.root.account.pair,
+      { type: Operation.Mint, to: formattedAddress, amount: `${amount}`, assetAddress, symbol: asset.symbol }
+    );
+  }
+
+  /**
+   * Burn tokens you own.
+   * @param asset Asset object
+   * @param amount Amount value
+   */
+  public burn(asset: Asset | AccountAsset, amount: NumberLike): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const assetAddress = asset.address;
+
+    return this.root.submitExtrinsic(
+      this.root.api.tx.assets.burn(assetAddress, new FPNumber(amount, asset.decimals).toCodecString()),
+      this.root.account.pair,
+      { type: Operation.Burn, amount: `${amount}`, assetAddress, symbol: asset.symbol }
+    );
+  }
+
+  /**
+   * DON'T USE IT - WORK IN PROGRESS
+   * Update asset info for asset you created. UpdateAssetInfo can be signed **only** by token creator.
+   * @param asset Asset object
+   * @param newSymbol New asset symbol
+   * @param newName: New asset name
+   */
+  private updateAssetInfo(asset: Asset | AccountAsset, newSymbol: string, newName: string): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const assetAddress = asset.address;
+
+    return this.root.submitExtrinsic(
+      this.root.api.tx.assets.updateInfo(assetAddress, newSymbol, newName),
+      this.root.account.pair,
+      { type: Operation.UpdateAssetInfo, assetAddress, symbol: newSymbol }
     );
   }
 }

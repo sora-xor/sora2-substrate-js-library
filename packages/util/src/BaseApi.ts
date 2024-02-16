@@ -26,6 +26,7 @@ import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 import type { OriginalIdentity, StakingHistory } from './staking/types';
 import type { LimitOrderHistory } from './orderBook/types';
+import { HistoryElementTransfer } from './assets/types';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -48,7 +49,13 @@ export type NetworkFeesObject = {
 
 export type IBridgeTransaction = EvmHistory | SubHistory | EthHistory;
 
-export type HistoryItem = History | IBridgeTransaction | RewardClaimHistory | StakingHistory | LimitOrderHistory;
+export type HistoryItem =
+  | History
+  | IBridgeTransaction
+  | RewardClaimHistory
+  | StakingHistory
+  | LimitOrderHistory
+  | HistoryElementTransfer;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
@@ -99,12 +106,10 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.EvmOutgoing]: '0',
     [Operation.SubstrateIncoming]: '0',
     [Operation.SubstrateOutgoing]: '0',
-    [Operation.RegisterAsset]: '0',
     [Operation.RemoveLiquidity]: '0',
     [Operation.Swap]: '0',
     [Operation.SwapAndSend]: '0',
     [Operation.SwapTransferBatch]: '0',
-    [Operation.Transfer]: '0',
     [Operation.ClaimVestedRewards]: '0',
     [Operation.ClaimCrowdloanRewards]: '0',
     [Operation.ClaimLiquidityProvisionRewards]: '0',
@@ -119,6 +124,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.DemeterFarmingGetRewards]: '0',
     [Operation.CeresLiquidityLockerLockLiquidity]: '0',
     [Operation.StakingBond]: '0',
+    [Operation.StakingBondAndNominate]: '0',
     [Operation.StakingBondExtra]: '0',
     [Operation.StakingRebond]: '0',
     [Operation.StakingUnbond]: '0',
@@ -126,6 +132,13 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.StakingChill]: '0',
     [Operation.StakingSetPayee]: '0',
     [Operation.StakingSetController]: '0',
+    [Operation.StakingPayout]: '0',
+    [Operation.RegisterAsset]: '0',
+    [Operation.Transfer]: '0',
+    [Operation.XorlessTransfer]: '0',
+    [Operation.Mint]: '0',
+    [Operation.Burn]: '0',
+    [Operation.UpdateAssetInfo]: '0',
     [Operation.OrderBookPlaceLimitOrder]: '0',
   } as NetworkFeesObject;
 
@@ -385,7 +398,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 ['balances', 'tokens'].includes(section) &&
                 isLiquidityPoolOperation(type)
               ) {
-                // balances.Transfer hasn't assetId field
+                // balances.Transfer doesn't have assetId field
                 const [amount, to, from, assetId] = data.slice().reverse();
                 const amountFormatted = new FPNumber(amount).toString();
                 const history = this.getHistory(id);
@@ -488,8 +501,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return null;
         case Operation.EthBridgeOutgoing:
           return this.api.tx.ethBridge.transferToSidechain('', '', 0, 0);
-        case Operation.RegisterAsset:
-          return this.api.tx.assets.register('', '', 0, false, false, null, null);
         case Operation.RemoveLiquidity:
           return this.api.tx.poolXYK.withdrawLiquidity(DexId.XOR, '', '', 0, 0, 0);
         case Operation.Swap:
@@ -513,8 +524,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           );
         case Operation.SwapTransferBatch:
           return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled');
-        case Operation.Transfer:
-          return this.api.tx.assets.transfer('', '', 0);
         case Operation.ClaimVestedRewards:
           return this.api.tx.vestedRewards.claimRewards();
         case Operation.ClaimCrowdloanRewards:
@@ -545,6 +554,11 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
         case Operation.StakingBond:
           return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
+        case Operation.StakingBondAndNominate:
+          return this.api.tx.utility.batchAll([
+            this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress }),
+            this.api.tx.staking.nominate([mockAccountAddress]),
+          ]);
         case Operation.StakingBondExtra:
           return this.api.tx.staking.bondExtra(0);
         case Operation.StakingRebond:
@@ -559,6 +573,20 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.staking.setPayee({ Account: mockAccountAddress });
         case Operation.StakingSetController:
           return this.api.tx.staking.setController(mockAccountAddress);
+        case Operation.StakingPayout:
+          return this.api.tx.staking.payoutStakers(mockAccountAddress, 3449);
+        case Operation.RegisterAsset:
+          return this.api.tx.assets.register('', '', 0, false, false, null, null);
+        case Operation.Transfer:
+          return this.api.tx.assets.transfer('', '', 0);
+        case Operation.XorlessTransfer:
+          return this.api.tx.liquidityProxy.xorlessTransfer(DexId.XOR, '', '', 0, 0, 0, [], 'Disabled', undefined);
+        case Operation.Mint:
+          return this.api.tx.assets.updateBalance('', '', 0);
+        case Operation.Burn:
+          return this.api.tx.assets.burn('', 0);
+        case Operation.UpdateAssetInfo:
+          return this.api.tx.assets.updateInfo('', '', '');
         case Operation.OrderBookPlaceLimitOrder:
           return this.api.tx.orderBook.placeLimitOrder(
             { dexId: DexId.XOR, base: XOR.address, quote: XOR.address },
@@ -673,12 +701,10 @@ export enum TransactionStatus {
 
 export enum Operation {
   Swap = 'Swap',
-  Transfer = 'Transfer',
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
   CreatePair = 'CreatePair',
   Faucet = 'Faucet',
-  RegisterAsset = 'RegisterAsset',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
   EvmOutgoing = 'EvmOutgoing',
@@ -727,6 +753,13 @@ export enum Operation {
   OrderBookPlaceLimitOrder = 'OrderBookPlaceLimitOrder',
   OrderBookCancelLimitOrder = 'OrderBookCancelLimitOrder',
   OrderBookCancelLimitOrders = 'OrderBookCancelLimitOrders',
+  /** Asset management */
+  RegisterAsset = 'RegisterAsset',
+  Transfer = 'Transfer',
+  XorlessTransfer = 'XorlessTransfer',
+  Mint = 'Mint',
+  Burn = 'Burn',
+  UpdateAssetInfo = 'UpdateAssetInfo',
 }
 
 export interface History {

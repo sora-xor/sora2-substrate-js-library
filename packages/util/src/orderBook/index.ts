@@ -1,5 +1,5 @@
 import { map } from 'rxjs';
-import { CodecString, FPNumber } from '@sora-substrate/math';
+import { FPNumber } from '@sora-substrate/math';
 import { Operation } from '../BaseApi';
 import { MAX_ORDERS_PER_SINGLE_PRICE, MAX_TIMESTAMP } from './consts';
 import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
@@ -15,10 +15,9 @@ import type {
   OrderBook as OrderBookStruct,
 } from '@polkadot/types/lookup';
 
-import { XOR } from '../assets/consts';
-import { DexId } from '../dex/consts';
 import type { Api } from '../api';
-import type { AggregatedOrderBook, LimitOrder, OrderId } from './types';
+import type { AggregatedOrderBook, AssetIdOrAsset, LimitOrder, LimitOrderHistory, OrderId } from './types';
+import type { AccountAsset, Asset } from '../assets/types';
 
 const toAssetId = (asset: CommonPrimitivesAssetId32) => asset.code.toString();
 
@@ -352,28 +351,63 @@ export class OrderBookModule<T> {
     price: string,
     amount: string,
     side: PriceVariant,
+    timestamp?: number
+  ): Promise<T>;
+  /**
+   * Place limit order
+   * @param base base orderbook Asset or AccountAsset structure
+   * @param quote quote orderbook Asset or AccountAsset structure
+   * @param price order price
+   * @param amount order amount
+   * @param side buy or sell
+   * @param timestamp order expiration
+   */
+  public placeLimitOrder(
+    base: Asset | AccountAsset,
+    quote: Asset | AccountAsset,
+    price: string,
+    amount: string,
+    side: PriceVariant,
+    timestamp?: number
+  ): Promise<T>;
+  public placeLimitOrder(
+    base: AssetIdOrAsset,
+    quote: AssetIdOrAsset,
+    price: string,
+    amount: string,
+    side: PriceVariant,
     timestamp = MAX_TIMESTAMP
   ): Promise<T> {
-    const dexId = this.root.dex.getDexId(quote);
+    const areAddresses = typeof base === 'string' && typeof quote === 'string';
+    const baseAddress = areAddresses ? base : (base as Asset).address;
+    const quoteAddress = areAddresses ? quote : (quote as Asset).address;
+    const dexId = this.root.dex.getDexId(quoteAddress);
+
+    const historyItem: LimitOrderHistory = {
+      type: Operation.OrderBookPlaceLimitOrder,
+      assetAddress: baseAddress,
+      asset2Address: quoteAddress,
+      price,
+      amount,
+      side,
+      limitOrderTimestamp: timestamp,
+    };
+
+    if (!areAddresses) {
+      historyItem.symbol = (base as unknown as Asset).symbol;
+      historyItem.symbol2 = (quote as unknown as Asset).symbol;
+    }
 
     return this.root.submitExtrinsic(
       this.root.api.tx.orderBook.placeLimitOrder(
-        { dexId, base, quote },
+        { dexId, base: baseAddress, quote: quoteAddress },
         new FPNumber(price).toCodecString(),
         new FPNumber(amount).toCodecString(),
         side,
         timestamp
       ),
       this.root.account.pair,
-      {
-        type: Operation.OrderBookPlaceLimitOrder,
-        assetAddress: base,
-        asset2Address: quote,
-        price,
-        amount,
-        side,
-        limitOrderTimestamp: timestamp,
-      }
+      historyItem
     );
   }
 
@@ -383,18 +417,36 @@ export class OrderBookModule<T> {
    * @param quote quote orderbook asset ID
    * @param orderId number
    */
-  public cancelLimitOrder(base: string, quote: string, orderId: number): Promise<T> {
-    const dexId = this.root.dex.getDexId(quote);
+  public cancelLimitOrder(base: string, quote: string, orderId: number): Promise<T>;
+  /**
+   * Cancel one limit order by id
+   * @param base base orderbook Asset or AccountAsset structure
+   * @param quote quote orderbook Asset or AccountAsset structure
+   * @param orderId number
+   */
+  public cancelLimitOrder(base: Asset | AccountAsset, quote: Asset | AccountAsset, orderId: number): Promise<T>;
+  public cancelLimitOrder(base: AssetIdOrAsset, quote: AssetIdOrAsset, orderId: number): Promise<T> {
+    const areAddresses = typeof base === 'string' && typeof quote === 'string';
+    const baseAddress = areAddresses ? base : (base as Asset).address;
+    const quoteAddress = areAddresses ? quote : (quote as Asset).address;
+    const dexId = this.root.dex.getDexId(quoteAddress);
+
+    const historyItem: LimitOrderHistory = {
+      type: Operation.OrderBookCancelLimitOrder,
+      assetAddress: baseAddress,
+      asset2Address: quoteAddress,
+      limitOrderIds: [orderId],
+    };
+
+    if (!areAddresses) {
+      historyItem.symbol = (base as unknown as Asset).symbol;
+      historyItem.symbol2 = (quote as unknown as Asset).symbol;
+    }
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.orderBook.cancelLimitOrder({ dexId, base, quote }, orderId),
+      this.root.api.tx.orderBook.cancelLimitOrder({ dexId, base: baseAddress, quote: quoteAddress }, orderId),
       this.root.account.pair,
-      {
-        type: Operation.OrderBookCancelLimitOrder,
-        assetAddress: base,
-        asset2Address: quote,
-        limitOrderIds: [orderId],
-      }
+      historyItem
     );
   }
 
@@ -404,18 +456,38 @@ export class OrderBookModule<T> {
    * @param quote quote orderbook asset ID
    * @param orderIds array ids
    */
-  public cancelLimitOrderBatch(base: string, quote: string, orderIds: number[]): Promise<T> {
-    const dexId = this.root.dex.getDexId(quote);
+  public cancelLimitOrderBatch(base: string, quote: string, orderIds: number[]): Promise<T>;
+  /**
+   * Cancel several limit orders at once
+   * @param base base orderbook Asset or AccountAsset structure
+   * @param quote quote orderbook Asset or AccountAsset structure
+   * @param orderIds array ids
+   */
+  public cancelLimitOrderBatch(base: Asset | AccountAsset, quote: Asset | AccountAsset, orderIds: number[]): Promise<T>;
+  public cancelLimitOrderBatch(base: AssetIdOrAsset, quote: AssetIdOrAsset, orderIds: number[]): Promise<T> {
+    const areAddresses = typeof base === 'string' && typeof quote === 'string';
+    const baseAddress = areAddresses ? base : (base as Asset).address;
+    const quoteAddress = areAddresses ? quote : (quote as Asset).address;
+    const dexId = this.root.dex.getDexId(quoteAddress);
+
+    const historyItem: LimitOrderHistory = {
+      type: Operation.OrderBookCancelLimitOrders,
+      assetAddress: baseAddress,
+      asset2Address: quoteAddress,
+      limitOrderIds: orderIds,
+    };
+
+    if (!areAddresses) {
+      historyItem.symbol = (base as unknown as Asset).symbol;
+      historyItem.symbol2 = (quote as unknown as Asset).symbol;
+    }
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.orderBook.cancelLimitOrdersBatch([[{ dexId, base, quote }, orderIds]]),
+      this.root.api.tx.orderBook.cancelLimitOrdersBatch([
+        [{ dexId, base: baseAddress, quote: quoteAddress }, orderIds],
+      ]),
       this.root.account.pair,
-      {
-        type: Operation.OrderBookCancelLimitOrders,
-        assetAddress: base,
-        asset2Address: quote,
-        limitOrderIds: orderIds,
-      }
+      historyItem
     );
   }
 
