@@ -16,6 +16,7 @@ import type {
   SwapQuote,
   OracleRate,
   OrderBookAggregated,
+  LPRewardsInfo,
 } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
 import type {
@@ -97,7 +98,7 @@ const getAggregatedOrderBook = <T>(
   assetAddress: string,
   baseAssetId: string,
   root: Api<T>
-): Observable<OrderBookAggregated> => {
+): Observable<OrderBookAggregated | null> => {
   return combineLatest([
     root.orderBook.getOrderBookObservable(assetAddress, baseAssetId),
     root.orderBook.subscribeOnAggregatedAsks(assetAddress, baseAssetId),
@@ -336,7 +337,7 @@ export class SwapModule<T> {
     // Assets for which we need to know the total supply
     const assetsWithIssuances = [xor];
     // Tickers with rates in oracle (except USD ticker, because it is the same as DAI)
-    const tickersWithOracleRates = assetsInPaths.reduce((buffer, address) => {
+    const tickersWithOracleRates = assetsInPaths.reduce<string[]>((buffer, address) => {
       if (address !== xstusd && !!xstAssets[address]) {
         buffer.push(xstAssets[address].referenceSymbol);
       }
@@ -667,6 +668,8 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     dexId = DexId.XOR
   ): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     const params = this.calcTxParams(
       assetA,
       assetB,
@@ -718,6 +721,8 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     dexId = DexId.XOR
   ): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     const params = this.calcTxParams(
       assetA,
       assetB,
@@ -780,6 +785,8 @@ export class SwapModule<T> {
     maxInputAmount: NumberLike,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     const params = this.calcTxParamsSwapTransferBatch(inputAsset, maxInputAmount, liquiditySource);
 
     const recipients = receivers.reduce((acc, curr) => {
@@ -857,7 +864,7 @@ export class SwapModule<T> {
     return {
       amount: toCodecString(value.amount),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
-      rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
+      rewards: ('toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards) as unknown as LPRewardsInfo[],
       route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
     } as SwapResult;
   }
@@ -910,7 +917,7 @@ export class SwapModule<T> {
     return {
       amount: toCodecString(value.amount),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
-      rewards: 'toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards,
+      rewards: ('toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards) as unknown as LPRewardsInfo[],
       route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
       dexId: isDex0Better ? DexId.XOR : DexId.XSTUSD,
     } as SwapResultWithDexId;

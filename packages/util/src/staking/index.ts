@@ -33,6 +33,8 @@ import type {
   StakeReturn,
   NominatorReward,
   Payouts,
+  Others,
+  Identity,
   // EraElectionStatus,
 } from './types';
 
@@ -56,7 +58,9 @@ const COUNT_DAYS_IN_YEAR = 365;
 export class StakingModule<T> {
   constructor(private readonly root: Api<T>) {}
 
-  public getSignerPair(signerPair?: KeyringPair) {
+  public getSignerPair(signerPair?: KeyringPair): KeyringPair {
+    assert(this.root.account, Messages.connectWallet);
+
     const pair = signerPair || this.root.account.pair;
     assert(pair, Messages.provideAccountPair);
 
@@ -347,7 +351,7 @@ export class StakingModule<T> {
   public async getAverageRewards(eraIndex?: number): Promise<FPNumber> {
     const erasValidatorRewardPallet = this.root.api.query.staking.erasValidatorReward;
 
-    if (Number.isInteger(eraIndex)) {
+    if (eraIndex && Number.isInteger(eraIndex)) {
       const erasValidatorReward = await erasValidatorRewardPallet(eraIndex);
 
       return new FPNumber(erasValidatorReward.value);
@@ -425,7 +429,22 @@ export class StakingModule<T> {
       const total = electedValidator?.total ?? '0';
       const rewardPoints = eraRewardPoints[address];
 
-      const identity = (await this.root.getAccountOnChainIdentity(address))?.identity;
+      const originalIdentity = (await this.root.getAccountOnChainIdentity(address))?.identity;
+      const identity: Identity | null =
+        originalIdentity !== null && originalIdentity !== undefined
+          ? {
+              ...originalIdentity,
+              info: Object.fromEntries(
+                Object.entries(originalIdentity?.info ?? {}).map(([key, value]) => {
+                  if (value === 'None') return [key, ''];
+
+                  if (!Array.isArray(value) && value?.Raw !== undefined) return [key, value?.Raw];
+
+                  return [key, value];
+                })
+              ),
+            }
+          : null;
       const { apy, stakeReturn } = await this.calculatingStakeReturn(
         total,
         rewardToStakeRatio,
@@ -434,18 +453,19 @@ export class StakingModule<T> {
         commission
       );
 
-      const nominators = electedValidator?.others ?? [];
+      const nominators: Others = electedValidator?.others ?? [];
       const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
       const isOversubscribed = nominators.length > maxNominatorRewardedPerValidator;
-      const knownGoodIndex = identity?.judgements?.findIndex(([, type]) => type === 'KnownGood');
-      const isKnownGood = knownGoodIndex && knownGoodIndex !== -1;
+      const knownGoodIndex = originalIdentity?.judgements?.findIndex(([, type]) => type === 'KnownGood');
+      const isKnownGood = !!(knownGoodIndex && knownGoodIndex !== -1);
 
       return {
         address,
-        apy,
-        rewardPoints,
         commission: commission ?? '',
-        nominators: electedValidator?.others ?? [],
+        rewardPoints,
+        nominators,
+        identity,
+        apy,
         isOversubscribed,
         isKnownGood,
         stake: {
@@ -453,21 +473,6 @@ export class StakingModule<T> {
           total,
           own: electedValidator?.own ?? '0',
         },
-        identity:
-          identity !== null
-            ? {
-                ...identity,
-                info: Object.fromEntries(
-                  Object.entries(identity?.info ?? {}).map(([key, value]) => {
-                    if (value === 'None') return [key, ''];
-
-                    if (!Array.isArray(value) && value?.Raw !== undefined) return [key, value?.Raw];
-
-                    return [key, value];
-                  })
-                ),
-              }
-            : null,
       };
     });
 
@@ -524,7 +529,7 @@ export class StakingModule<T> {
     const totalStake = FPNumber.fromCodecValue(stakingLedger.total.toString(), XOR.decimals).toString();
 
     const myValidators = stakingDerive.nominators.map((item) => item.toHuman());
-    const redeemAmount = FPNumber.fromCodecValue(stakingDerive.redeemable?.toString(), XOR.decimals).toString();
+    const redeemAmount = FPNumber.fromCodecValue(stakingDerive.redeemable?.toString() ?? 0, XOR.decimals).toString();
     const controller = stakingDerive.controllerId?.toString() ?? '';
 
     const rewardDestination = (stakingDerive.rewardDestination?.toHuman() as string | { Account: string }) ?? '';

@@ -99,7 +99,7 @@ const getOrderBook = (id: OrderBookId, payload: QuotePayload) => {
 };
 
 // assemble_order_book_id
-const assembleOrderBookId = (baseAssetId: string, inputAsset: string, outputAsset: string): OrderBookId => {
+const assembleOrderBookId = (baseAssetId: string, inputAsset: string, outputAsset: string): OrderBookId | null => {
   // trick
   const dexId = isAssetAddress(baseAssetId, Consts.XOR) ? 0 : 1;
 
@@ -164,12 +164,12 @@ const sumMarket = (
   let enoughLiquidity = false;
 
   for (const [price, baseVolume] of marketData) {
-    let quoteVolume = price.mul(baseVolume);
-    let limit = depthLimit;
+    const quoteVolume = price.mul(baseVolume);
+    const limit = depthLimit;
 
     if (depthLimit) {
-      if (limit.isBase) {
-        let baseLimit = limit.value;
+      if (limit?.isBase) {
+        const baseLimit = limit.value;
         if (FPNumber.isGreaterThanOrEqualTo(marketBaseVolume.add(baseVolume), baseLimit)) {
           const delta = alignAmount(baseLimit.sub(marketBaseVolume), book);
           marketBaseVolume = marketBaseVolume.add(delta);
@@ -178,7 +178,7 @@ const sumMarket = (
           break;
         }
       } else {
-        let quoteLimit = limit.value;
+        const quoteLimit = limit?.value ?? FPNumber.ZERO;
         if (FPNumber.isGreaterThanOrEqualTo(marketQuoteVolume.add(quoteLimit), quoteLimit)) {
           const delta = alignAmount(safeDivide(quoteLimit.sub(marketQuoteVolume), price), book);
           marketBaseVolume = marketBaseVolume.add(delta);

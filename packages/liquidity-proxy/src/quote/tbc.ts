@@ -54,7 +54,7 @@ const idealReservesReferencePrice = (
   const initialPrice = FPNumber.fromCodecValue(payload.consts.tbc.initialPrice);
   const currentState = tbcBuyFunction(collateralAssetId, priceVariant, delta, payload);
 
-  return safeDivide(initialPrice.add(currentState), new FPNumber(2)).mul(xorIssuance.add(delta));
+  return safeDivide(initialPrice.add(currentState), FPNumber.TWO).mul(xorIssuance.add(delta));
 };
 
 /**
@@ -139,7 +139,7 @@ const checkRewards = (collateralAsset: string, xorAmount: FPNumber, payload: Quo
   const a = safeDivide(unfundedLiabilities, idealBefore);
   const b = safeDivide(unfundedLiabilities, idealAfter);
 
-  const mean = safeDivide(a.add(b), new FPNumber(2));
+  const mean = safeDivide(a.add(b), FPNumber.TWO);
   const amount = safeDivide(
     a.sub(b).mul(Consts.initialPswapTbcRewardsAmount).mul(mean),
     Consts.incentivizedCurrenciesNum
@@ -323,7 +323,7 @@ const tbcBuyPrice = (
       const sqrt = currentState
         .mul(currentState)
         .mul(priceChangeCoeff)
-        .add(new FPNumber(2).mul(collateralReferenceIn))
+        .add(FPNumber.TWO.mul(collateralReferenceIn))
         .mul(priceChangeCoeff)
         .sqrt();
       mainOut = sqrt.sub(currentState.mul(priceChangeCoeff));
@@ -331,7 +331,7 @@ const tbcBuyPrice = (
     return getMaxPositive(mainOut);
   } else {
     const newState = tbcBuyFunction(collateralAsset, PriceVariant.Buy, amount, payload);
-    const collateralReferenceIn = safeDivide(currentState.add(newState).mul(amount), new FPNumber(2));
+    const collateralReferenceIn = safeDivide(currentState.add(newState).mul(amount), FPNumber.TWO);
     const collateralQuantity = safeDivide(collateralReferenceIn, collateralPricePerReferenceUnit);
     return getMaxPositive(collateralQuantity);
   }

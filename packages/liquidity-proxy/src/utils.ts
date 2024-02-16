@@ -6,7 +6,7 @@ import type { QuoteResult } from './types';
 
 // UTILS
 export const toFp = (item: CodecString): FPNumber => FPNumber.fromCodecValue(item);
-export const getMaxPositive = (value: FPNumber) => FPNumber.max(value, FPNumber.ZERO);
+export const getMaxPositive = (value: FPNumber) => value.max(FPNumber.ZERO);
 export const isAssetAddress = (a: string, b: string) => a === b;
 export const isXorAsset = (asset: string, dexBaseAsset = Consts.XOR) => isAssetAddress(asset, dexBaseAsset);
 export const matchType =

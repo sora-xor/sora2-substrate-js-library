@@ -25,9 +25,9 @@ export class Consts {
   static readonly MAX = new FPNumber('170141183460469231731.687303715884105727');
 
   /** 4 registered - pswap and val which are not incentivized */
-  static readonly incentivizedCurrenciesNum = new FPNumber(2);
+  static readonly incentivizedCurrenciesNum = FPNumber.TWO;
   /** 2.5 billion pswap reserved for tbc rewards */
-  static readonly initialPswapTbcRewardsAmount = new FPNumber(2500000000);
+  static readonly initialPswapTbcRewardsAmount = new FPNumber(2_500_000_000);
 }
 
 export enum Errors {

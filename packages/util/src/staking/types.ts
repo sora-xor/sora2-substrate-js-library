@@ -55,7 +55,7 @@ export type MyStakingInfo = {
   };
 };
 
-type Others = {
+export type Others = {
   who: string;
   value: string;
 }[];
@@ -169,8 +169,6 @@ export interface OriginalIdentity extends CommonIdentity {
   info: OriginalInfo;
 }
 
-export interface Identity {
-  judgements: [1 | 0, JudgementsType][];
-  deposit: string;
+export interface Identity extends CommonIdentity {
   info: Info;
 }

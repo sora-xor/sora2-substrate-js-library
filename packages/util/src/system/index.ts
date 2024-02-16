@@ -49,7 +49,7 @@ export class SystemModule<T> {
   }
 
   public getRuntimeVersionObservable(apiRx = this.root.apiRx): Observable<number | null> {
-    return apiRx.query.system.lastRuntimeUpgrade().pipe<number>(
+    return apiRx.query.system.lastRuntimeUpgrade().pipe<number | null>(
       map((data) => {
         const systemInfo: FrameSystemLastRuntimeUpgradeInfo | null = data.unwrapOr(null);
         return systemInfo?.specVersion?.toNumber?.() ?? null;

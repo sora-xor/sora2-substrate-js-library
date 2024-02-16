@@ -18,7 +18,7 @@ export function assertRequest(result: Result<any, any>, message: string): void {
   }
 }
 
-export function formatRequest(request: EthBridgeRequestsOffchainRequest, status: BridgeTxStatus): EthRequest {
+export function formatRequest(request: EthBridgeRequestsOffchainRequest, status: BridgeTxStatus): EthRequest | null {
   const formattedItem = {} as EthRequest;
   formattedItem.status = status.toString() as BridgeTxStatus;
   formattedItem.direction = BridgeTxDirection.Incoming;

@@ -65,7 +65,7 @@ function getSubNetworkId(
   data: BridgeTypesGenericAccount,
   networkParam: BridgeTypesGenericNetworkId,
   usedNetwork: SubNetwork,
-  parachainIds: ParachainIds
+  parachainIds?: ParachainIds
 ): BridgeNetworkId | null {
   // we don't know from where are this tx. For now this will be a used network
   if (data.isUnknown) return usedNetwork;
@@ -83,7 +83,7 @@ function getSubNetworkId(
     if (networkJunction.isParachain) {
       const paraId = networkJunction.asParachain.toNumber();
 
-      if (parachainIds[usedNetwork] === paraId) {
+      if (parachainIds?.[usedNetwork] === paraId) {
         return usedNetwork;
       }
     }

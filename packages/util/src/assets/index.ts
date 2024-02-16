@@ -44,10 +44,10 @@ export function formatBalance(
   const miscFrozen = new FPNumber((data as PalletBalancesAccountData).miscFrozen || 0, assetDecimals);
   // [Substrate 4: PalletBalancesAccountData]
   const feeFrozen = new FPNumber((data as PalletBalancesAccountData).feeFrozen || 0, assetDecimals);
-  const frozenDeprecated = FPNumber.max(miscFrozen, feeFrozen);
+  const frozenDeprecated = miscFrozen.max(feeFrozen);
   // [Substrate 5: PalletBalancesAccountData] & OrmlTokensAccountData
   const frozenCurrent = new FPNumber((data as OrmlTokensAccountData).frozen || 0, assetDecimals);
-  const frozen = FPNumber.max(frozenCurrent, frozenDeprecated);
+  const frozen = frozenCurrent.max(frozenDeprecated);
   const transferable = free.sub(frozen);
   // [SORA] bondedData can be NaN, it can be checked by isEmpty===true
   const bonded = new FPNumber(!bondedData || bondedData.isEmpty ? 0 : bondedData, assetDecimals);
@@ -333,7 +333,8 @@ export class AssetsModule<T> {
   }
 
   public getAssetBalanceObservable(asset: AccountAsset | Asset): Observable<AccountBalance> {
-    const accountAddress = this.root.account.pair.address;
+    const accountAddress = this.root.account?.pair.address;
+    assert(accountAddress, Messages.connectWallet);
     const assetAddress = asset.address;
     if (assetAddress === XOR.address) {
       const accountInfo = this.root.apiRx.query.system.account(accountAddress);
@@ -457,8 +458,9 @@ export class AssetsModule<T> {
    * Get account ORML tokens list with any non zero balance
    */
   public async getAccountTokensAddressesList(): Promise<string[]> {
+    assert(this.root.account, Messages.connectWallet);
     const data = await this.root.api.query.tokens.accounts.entries(this.root.account.pair.address);
-    const list = [];
+    const list: string[] = [];
 
     for (const [key, { free, reserved, frozen }] of data) {
       const assetId = key.args[1].code.toString();
@@ -525,7 +527,7 @@ export class AssetsModule<T> {
    *
    * @param accountId Account ID of the asset owner. If not set - the selected account ID is used.
    */
-  public async getOwnedAssetIds(accountId = this.root.account.pair.address): Promise<Array<string>> {
+  public async getOwnedAssetIds(accountId = this.root.account?.pair.address): Promise<Array<string>> {
     try {
       const assets = await this.root.api.query.assets.assetOwners.entries();
 
@@ -647,11 +649,11 @@ export class AssetsModule<T> {
         assetAddress,
         toAddress,
         new FPNumber(amount, asset.decimals).toCodecString(),
-        desiredXorAmount,
-        maxAmountIn,
+        desiredXorAmount as NumberLike,
+        maxAmountIn as NumberLike,
         [],
         'Disabled',
-        comment
+        comment as string | null
       ),
       this.root.account.pair,
       {
@@ -702,24 +704,6 @@ export class AssetsModule<T> {
       this.root.api.tx.assets.burn(assetAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.root.account.pair,
       { type: Operation.Burn, amount: `${amount}`, assetAddress, symbol: asset.symbol }
-    );
-  }
-
-  /**
-   * DON'T USE IT - WORK IN PROGRESS
-   * Update asset info for asset you created. UpdateAssetInfo can be signed **only** by token creator.
-   * @param asset Asset object
-   * @param newSymbol New asset symbol
-   * @param newName: New asset name
-   */
-  private updateAssetInfo(asset: Asset | AccountAsset, newSymbol: string, newName: string): Promise<T> {
-    assert(this.root.account, Messages.connectWallet);
-    const assetAddress = asset.address;
-
-    return this.root.submitExtrinsic(
-      this.root.api.tx.assets.updateInfo(assetAddress, newSymbol, newName),
-      this.root.account.pair,
-      { type: Operation.UpdateAssetInfo, assetAddress, symbol: newSymbol }
     );
   }
 }
