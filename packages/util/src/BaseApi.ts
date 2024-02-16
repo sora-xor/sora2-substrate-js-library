@@ -555,12 +555,10 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         case Operation.StakingBond:
           return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
         case Operation.StakingBondAndNominate:
-          const transactions = [
+          return this.api.tx.utility.batchAll([
             this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress }),
             this.api.tx.staking.nominate([mockAccountAddress])
-          ];
-
-          return this.api.tx.utility.batchAll(transactions);
+          ]);
         case Operation.StakingBondExtra:
           return this.api.tx.staking.bondExtra(0);
         case Operation.StakingRebond:
