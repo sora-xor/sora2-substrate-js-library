@@ -124,6 +124,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.DemeterFarmingGetRewards]: '0',
     [Operation.CeresLiquidityLockerLockLiquidity]: '0',
     [Operation.StakingBond]: '0',
+    [Operation.StakingBondAndNominate]: '0',
     [Operation.StakingBondExtra]: '0',
     [Operation.StakingRebond]: '0',
     [Operation.StakingUnbond]: '0',
@@ -553,6 +554,11 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
         case Operation.StakingBond:
           return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
+        case Operation.StakingBondAndNominate:
+          return this.api.tx.utility.batchAll([
+            this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress }),
+            this.api.tx.staking.nominate([mockAccountAddress])
+          ]);
         case Operation.StakingBondExtra:
           return this.api.tx.staking.bondExtra(0);
         case Operation.StakingRebond:
