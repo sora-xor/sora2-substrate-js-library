@@ -5,6 +5,7 @@ import type { Observable, Codec } from '@polkadot/types/types';
 import type { Vec, u128 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
+import type { SubmittableExtrinsic, AugmentedSubmittable } from '@polkadot/api-base/types';
 
 import { RewardingEvents, RewardType } from './consts';
 import { VAL, PSWAP } from '../assets/consts';
@@ -259,34 +260,34 @@ export class RewardsModule<T> {
   }
 
   /**
-   * Returns a params object { extrinsic, args }
+   * Returns a params object { tx, type }
    * @param rewards claiming rewards
    * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
    */
   private calcTxParams(rewards: Array<RewardInfo | RewardsInfo>, signature = '') {
-    const transactions = [];
+    const transactions: { tx: SubmittableExtrinsic<'promise'>; type: AugmentedSubmittable<any> }[] = [];
 
     // liquidity provision
     if (this.containsRewardsForType(rewards, RewardType.Provision)) {
       transactions.push({
-        extrinsic: this.root.api.tx.pswapDistribution.claimIncentive,
-        args: [],
+        tx: this.root.api.tx.pswapDistribution.claimIncentive(),
+        type: this.root.api.tx.pswapDistribution.claimIncentive,
       });
     }
 
     // vested
     if (this.containsRewardsForType(rewards, RewardType.Strategic)) {
       transactions.push({
-        extrinsic: this.root.api.tx.vestedRewards.claimRewards,
-        args: [],
+        tx: this.root.api.tx.vestedRewards.claimRewards(),
+        type: this.root.api.tx.vestedRewards.claimRewards,
       });
     }
 
     // external
     if (this.containsRewardsForType(rewards, RewardType.External)) {
       transactions.push({
-        extrinsic: this.root.api.tx.rewards.claim,
-        args: [signature],
+        tx: this.root.api.tx.rewards.claim(signature),
+        type: this.root.api.tx.rewards.claim,
       });
     }
 
@@ -311,24 +312,24 @@ export class RewardsModule<T> {
 
     for (const tag of uniqueTags) {
       transactions.push({
-        extrinsic: this.root.api.tx.vestedRewards.claimCrowdloanRewards,
-        args: [tag],
+        tx: this.root.api.tx.vestedRewards.claimCrowdloanRewards(tag),
+        type: this.root.api.tx.vestedRewards.claimCrowdloanRewards,
       });
     }
 
     // batch or simple tx
     if (transactions.length > 1)
       return {
-        extrinsic: this.root.api.tx.utility.batchAll,
-        args: [transactions.map(({ extrinsic, args }) => extrinsic(...args))],
+        tx: this.root.api.tx.utility.batchAll(transactions.map(({ tx }) => tx)),
+        type: this.root.api.tx.utility.batchAll,
       };
 
     if (transactions.length === 1) return transactions[0];
 
     // for current compability
     return {
-      extrinsic: this.root.api.tx.rewards.claim,
-      args: [signature],
+      tx: this.root.api.tx.rewards.claim(signature),
+      type: this.root.api.tx.rewards.claim,
     };
   }
 
@@ -336,9 +337,9 @@ export class RewardsModule<T> {
    * Get network fee for claim rewards operation
    */
   public async getNetworkFee(rewards: Array<RewardInfo>, signature = ''): Promise<CodecString> {
-    const { extrinsic, args } = this.calcTxParams(rewards, signature);
+    const { tx, type } = this.calcTxParams(rewards, signature);
 
-    switch (extrinsic) {
+    switch (type) {
       case this.root.api.tx.pswapDistribution.claimIncentive:
         return this.root.NetworkFee[Operation.ClaimLiquidityProvisionRewards];
       case this.root.api.tx.vestedRewards.claimRewards:
@@ -348,7 +349,6 @@ export class RewardsModule<T> {
       case this.root.api.tx.rewards.claim:
         return this.root.NetworkFee[Operation.ClaimExternalRewards];
       default: {
-        const tx = extrinsic(...args);
         return await this.root.getTransactionFee(tx);
       }
     }
@@ -364,8 +364,10 @@ export class RewardsModule<T> {
     fee?: CodecString,
     externalAddress?: string
   ): Promise<T> {
-    const { extrinsic, args } = this.calcTxParams(rewards, signature);
-    const tx = extrinsic(...args);
+    assert(this.root.account, Messages.connectWallet);
+
+    const { tx } = this.calcTxParams(rewards, signature);
+
     const historyItem = {
       type: Operation.ClaimRewards,
       externalAddress,

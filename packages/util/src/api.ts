@@ -214,7 +214,7 @@ export class Api<T = void> extends BaseApi<T> {
     try {
       const meta = { name: name || '' };
 
-      let account!: CreateResult;
+      let account!: CreateResult | { pair: KeyringPair; json: null };
 
       if (isExternal) {
         account = keyring.addExternal(address, meta);
@@ -228,11 +228,11 @@ export class Api<T = void> extends BaseApi<T> {
 
         account = {
           pair: this.getAccountPair(address),
-          json: null,
+          json: null, // we don't need json here
         };
       }
 
-      this.updateAccountData(account, name, source, isExternal);
+      this.updateAccountData(account as CreateResult, name, source, isExternal);
     } catch (error) {
       console.error(error);
       this.logout();
@@ -316,6 +316,8 @@ export class Api<T = void> extends BaseApi<T> {
    * @param newPassword
    */
   public changeAccountPassword(oldPassword: string, newPassword: string): void {
+    assert(this.accountPair, Messages.connectWallet);
+
     const pair = this.accountPair;
     try {
       if (!pair.isLocked) {

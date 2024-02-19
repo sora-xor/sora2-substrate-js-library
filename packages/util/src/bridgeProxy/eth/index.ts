@@ -76,7 +76,8 @@ export class EthBridgeApi<T> extends BaseApi<T> {
     assert(this.account, Messages.connectWallet);
 
     const extrinsic = this.getTransferExtrinsic(asset, recipient, amount);
-    const historyItem = this.getHistory(historyId) || {
+    const historyParam = historyId ? this.getHistory(historyId) : undefined;
+    const historyItem = historyParam || {
       symbol: asset.symbol,
       assetAddress: asset.address,
       amount: `${amount}`,
@@ -104,7 +105,7 @@ export class EthBridgeApi<T> extends BaseApi<T> {
       const soraAssetId = soraAsset[0].toString();
 
       let externalAddress = '';
-      let externalDecimals = undefined;
+      let externalDecimals: number | undefined = undefined;
 
       if (externalAsset.isSome) {
         const [externalAssetId, externalAssetDecimals] = externalAsset.unwrap();
@@ -130,7 +131,8 @@ export class EthBridgeApi<T> extends BaseApi<T> {
   public async getApprovedRequest(hash: string): Promise<EthApprovedRequest> {
     const data = await this.api.rpc.ethBridge.getApprovedRequests([hash], this.externalNetwork);
     assertRequest(data, 'api.bridge.getApprovedRequest');
-    return first(data.asOk.map(([request, proofs]) => formatApprovedRequest(request, proofs)));
+    // TODO: add null checks cuz it might be null
+    return first(data.asOk.map(([request, proofs]) => formatApprovedRequest(request, proofs))) as EthApprovedRequest;
   }
 
   /**

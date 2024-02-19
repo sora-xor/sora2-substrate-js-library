@@ -113,7 +113,8 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     assert(this.account, Messages.connectWallet);
 
     const extrinsic = this.getTransferExtrinsic(asset, recipient, amount, evmNetwork);
-    const historyItem = this.getHistory(historyId) || {
+    const historyParam = historyId ? this.getHistory(historyId) : undefined;
+    const historyItem = historyParam || {
       type: Operation.EvmOutgoing,
       symbol: asset.symbol,
       assetAddress: asset.address,

@@ -26,6 +26,7 @@ export class ReferralSystemModule<T> {
    * @returns referrer
    */
   public async getAccountReferrer(): Promise<string> {
+    assert(this.root.account, Messages.connectWallet);
     return this.getReferrer(this.root.account.pair.address);
   }
 
@@ -43,6 +44,7 @@ export class ReferralSystemModule<T> {
    * Returns the referrer subscription
    */
   public subscribeOnAccountReferrer(): Observable<null | string> {
+    assert(this.root.account, Messages.connectWallet);
     return this.subscribeOnReferrer(this.root.account.pair.address);
   }
 
@@ -69,6 +71,7 @@ export class ReferralSystemModule<T> {
    * Account's invited users subscription
    */
   public subscribeOnAccountInvitedUsers(): Observable<Array<string>> {
+    assert(this.root.account, Messages.connectWallet);
     return this.subscribeOnInvitedUsers(this.root.account.pair.address);
   }
 

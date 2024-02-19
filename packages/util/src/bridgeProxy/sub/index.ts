@@ -297,7 +297,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     assert(this.account, Messages.connectWallet);
 
     const extrinsic = this.getTransferExtrinsic(asset, recipient, amount, subNetwork);
-    const historyItem = this.getHistory(historyId) || {
+    const historyParam = historyId ? this.getHistory(historyId) : undefined;
+    const historyItem = historyParam || {
       type: Operation.SubstrateOutgoing,
       symbol: asset.symbol,
       assetAddress: asset.address,
