@@ -18,13 +18,18 @@ const disconnectApi = async (api: ApiPromise, eventListeners: ConnectionEventLis
 
   eventListeners.forEach(([eventName, eventHandler]) => api.off(eventName, eventHandler));
 
-  // close the connection manually
-  if (api.isConnected) {
-    try {
+  try {
+    // wait until the api connection is completed to check the "isConnected" flag
+    await api.isReadyOrError;
+  } catch {}
+
+  try {
+    // close the connection manually
+    if (api.isConnected) {
       await api.disconnect();
-    } catch (error) {
-      console.error(error);
     }
+  } catch (error) {
+    console.error(error);
   }
 };
 
