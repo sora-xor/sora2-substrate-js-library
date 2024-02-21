@@ -27,7 +27,7 @@ import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
 import type { HistoryItem } from './BaseApi';
-import { OriginalIdentity } from './staking/types';
+import type { OriginalIdentity } from './staking/types';
 
 let keyring!: Keyring;
 
@@ -56,7 +56,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly dex = new DexModule<T>(this);
   public readonly ceresLiquidityLocker = new CeresLiquidityLockerModule<T>(this);
 
-  public initAccountStorage() {
+  public override initAccountStorage() {
     super.initAccountStorage();
     this.bridgeProxy.initAccountStorage();
   }
@@ -66,7 +66,7 @@ export class Api<T = void> extends BaseApi<T> {
    * Remove all history
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
-  public clearHistory(assetAddress?: string) {
+  public override clearHistory(assetAddress?: string) {
     if (assetAddress) {
       const filterFn = (item: HistoryItem) =>
         !!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress);
@@ -81,7 +81,7 @@ export class Api<T = void> extends BaseApi<T> {
    * Set storage if it should be used as data storage
    * @param storage
    */
-  public setStorage(storage: Storage): void {
+  public override setStorage(storage: Storage): void {
     super.setStorage(storage);
     this.bridgeProxy.setStorage(storage);
   }
@@ -92,7 +92,7 @@ export class Api<T = void> extends BaseApi<T> {
    * Set signer if the pair is locked (For polkadot js extension usage)
    * @param signer
    */
-  public setSigner(signer: Signer): void {
+  public override setSigner(signer: Signer): void {
     super.setSigner(signer);
     this.bridgeProxy.setSigner(signer);
   }
@@ -101,7 +101,7 @@ export class Api<T = void> extends BaseApi<T> {
    * Set account data
    * @param account
    */
-  public setAccount(account: CreateResult): void {
+  public override setAccount(account: CreateResult): void {
     super.setAccount(account);
     this.bridgeProxy.setAccount(account);
   }
@@ -400,7 +400,7 @@ export class Api<T = void> extends BaseApi<T> {
   /**
    * Remove all wallet data
    */
-  public logout(): void {
+  public override logout(): void {
     this.assets.clearAccountAssets();
     this.poolXyk.clearAccountLiquidity();
 

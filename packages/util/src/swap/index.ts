@@ -18,7 +18,8 @@ import type {
   OrderBookAggregated,
   LPRewardsInfo,
 } from '@sora-substrate/liquidity-proxy';
-import type { Observable } from '@polkadot/types/types';
+import type { Balance } from '@sora-substrate/types';
+import type { Observable, Codec } from '@polkadot/types/types';
 import type {
   CommonPrimitivesAssetId32,
   FixnumFixedPoint,
@@ -39,6 +40,12 @@ import type { ReceiverHistoryItem, SwapTransferBatchData, SwapQuoteData } from '
 interface SwapResultWithDexId extends SwapResult {
   dexId: DexId;
 }
+
+const toCodecString = (value: NumberLike | Codec | Balance, decimals = XOR.decimals) =>
+  new FPNumber(value, decimals).toCodecString();
+const toFP = (value: NumberLike | Codec | Balance, decimals = XOR.decimals) => new FPNumber(value, decimals);
+const toParamCodecString = (value: NumberLike | Codec | Balance, assetA: Asset, assetB: Asset, isExchangeB: boolean) =>
+  new FPNumber(value, (!isExchangeB ? assetB : assetA).decimals).toCodecString();
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
 
@@ -250,7 +257,7 @@ export class SwapModule<T> {
   public async getXstAssets(): Promise<Record<string, { referenceSymbol: string; feeRatio: FPNumber }>> {
     const entries = await this.root.api.query.xstPool.enabledSynthetics.entries();
 
-    return entries.reduce((buffer, [key, value]) => {
+    return entries.reduce<Record<string, { referenceSymbol: string; feeRatio: FPNumber }>>((buffer, [key, value]) => {
       const id = key.args[0].code.toString();
       const data = value.unwrap();
       const referenceSymbol = new TextDecoder().decode(data.referenceSymbol);
@@ -841,8 +848,6 @@ export class SwapModule<T> {
       this.root.assets.getAssetInfo(assetAAddress),
       this.root.assets.getAssetInfo(assetBAddress),
     ]);
-    const toCodecString = (value) => new FPNumber(value, (!isExchangeB ? assetB : assetA).decimals).toCodecString();
-
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
     const filterMode =
       liquiditySource !== LiquiditySourceTypes.Default
@@ -855,14 +860,14 @@ export class SwapModule<T> {
       dexId,
       assetAAddress,
       assetBAddress,
-      toCodecString(amount),
+      toParamCodecString(amount, assetA, assetB, isExchangeB),
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
       liquiditySources as any,
       filterMode
     );
     const value = result.unwrapOr(emptySwapResult);
     return {
-      amount: toCodecString(value.amount),
+      amount: toParamCodecString(value.amount, assetA, assetB, isExchangeB),
       fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
       rewards: ('toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards) as unknown as LPRewardsInfo[],
       route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
@@ -892,9 +897,6 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
   ): Promise<SwapResultWithDexId> {
-    const toCodecString = (value) => new FPNumber(value).toCodecString();
-    const toFP = (value) => new FPNumber(value);
-
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource) as any;
     const filterMode =
       liquiditySource !== LiquiditySourceTypes.Default
@@ -916,7 +918,7 @@ export class SwapModule<T> {
     const value = isDex0Better ? valueDex0 : valueDex1;
     return {
       amount: toCodecString(value.amount),
-      fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
+      fee: toCodecString(value.fee),
       rewards: ('toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards) as unknown as LPRewardsInfo[],
       route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
       dexId: isDex0Better ? DexId.XOR : DexId.XSTUSD,
@@ -944,8 +946,6 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
   ): Promise<{ buy: string; sell: string }> {
-    const toFP = (value) => new FPNumber(value);
-
     const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource) as any;
     const filterMode =
       liquiditySource !== LiquiditySourceTypes.Default

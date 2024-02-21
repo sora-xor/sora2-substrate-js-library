@@ -83,7 +83,7 @@ function getSubNetworkId(
     if (networkJunction.isParachain) {
       const paraId = networkJunction.asParachain.toNumber();
 
-      if (parachainIds?.[usedNetwork] === paraId) {
+      if (parachainIds?.[usedNetwork as keyof ParachainIds] === paraId) {
         return usedNetwork;
       }
     }

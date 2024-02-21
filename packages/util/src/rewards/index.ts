@@ -25,7 +25,7 @@ type CrowdloanInfo = {
 };
 
 const getCrowdloanRewardsMap = (data: Vec<ITuple<[CommonPrimitivesAssetId32, u128]>>): Record<string, FPNumber> => {
-  return data.reduce((buffer, tuple) => {
+  return data.reduce<Record<string, FPNumber>>((buffer, tuple) => {
     if (!tuple.isEmpty) {
       const [assetId, amount] = tuple;
 
@@ -79,7 +79,7 @@ export class RewardsModule<T> {
       RewardingEvents.BuyOnBondingCurve,
       RewardingEvents.LiquidityProvisionFarming,
       RewardingEvents.MarketMakerVolume,
-    ].reduce((result, key) => {
+    ].reduce<Record<string, RewardInfo>>((result, key) => {
       return {
         ...result,
         [key]: this.prepareRewardInfo([RewardType.Strategic, key], 0, asset),

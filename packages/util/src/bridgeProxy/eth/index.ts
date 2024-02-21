@@ -31,7 +31,7 @@ export class EthBridgeApi<T> extends BaseApi<T> {
     return genericNetworkId;
   }
 
-  public initAccountStorage(): void {
+  public override initAccountStorage(): void {
     super.initAccountStorage();
     // 1.18 migration
     // "bridgeHistory" -> "ethBridgeHistory"
@@ -52,8 +52,8 @@ export class EthBridgeApi<T> extends BaseApi<T> {
     return historyItem;
   }
 
-  public saveHistory(history: EthHistory): void {
-    if (!(history && history.id && isEthOperation(history.type))) {
+  public override saveHistory(history: EthHistory): void {
+    if (!(history?.id && isEthOperation(history.type))) {
       return;
     }
     super.saveHistory(history);
@@ -100,7 +100,7 @@ export class EthBridgeApi<T> extends BaseApi<T> {
       return {};
     }
 
-    return data.asOk.reduce((buffer, [kind, soraAsset, externalAsset]) => {
+    return data.asOk.reduce<Record<string, EthAsset>>((buffer, [kind, soraAsset, externalAsset]) => {
       const assetKind = kind.toString() as EthAssetKind;
       const soraAssetId = soraAsset[0].toString();
 

@@ -73,7 +73,7 @@ export class OrderBookModule<T> {
   public async getOrderBooks(): Promise<Record<string, OrderBook>> {
     const entries = await this.root.api.query.orderBook.orderBooks.entries();
 
-    const orderBooks: Record<string, OrderBook> = entries.reduce((buffer, [_, value]) => {
+    const orderBooks = entries.reduce<Record<string, OrderBook>>((buffer, [_, value]) => {
       const book = formatOrderBookOption(value);
 
       if (!book) return buffer;
