@@ -9,9 +9,9 @@ import { LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
 export class DexModule<T> {
   constructor(private readonly root: Api<T>) {}
 
-  public static defaultDexId = DexId.XOR;
-  public static defaultBaseAssetId = XOR.address;
-  public static defaultSyntheticAssetId = XST.address;
+  public static readonly defaultDexId = DexId.XOR;
+  public static readonly defaultBaseAssetId = XOR.address;
+  public static readonly defaultSyntheticAssetId = XST.address;
 
   public dexList: DexInfo[] = [];
   public lockedSources: LiquiditySourceTypes[] = [];
