@@ -1,7 +1,7 @@
 import { assert } from '@polkadot/util';
 import { map, combineLatest } from 'rxjs';
 import { FPNumber, CodecString } from '@sora-substrate/math';
-import type { Observable, Codec } from '@polkadot/types/types';
+import type { Observable, Codec, AnyFunction } from '@polkadot/types/types';
 import type { Vec, u128 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
@@ -265,7 +265,7 @@ export class RewardsModule<T> {
    * @param signature message signed in external wallet (if want to claim external rewards), otherwise empty string
    */
   private calcTxParams(rewards: Array<RewardInfo | RewardsInfo>, signature = '') {
-    const transactions: { tx: SubmittableExtrinsic<'promise'>; type: AugmentedSubmittable<any> }[] = [];
+    const transactions: { tx: SubmittableExtrinsic<'promise'>; type: AugmentedSubmittable<AnyFunction> }[] = [];
 
     // liquidity provision
     if (this.containsRewardsForType(rewards, RewardType.Provision)) {
