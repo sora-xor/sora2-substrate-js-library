@@ -495,7 +495,7 @@ export class FPNumber {
    * @param {Array<FPNumber>} numbers Other numbers
    */
   public max(...numbers: Array<FPNumber>): FPNumber {
-    return FPNumber.max(this, ...numbers); // cuz it cannot be null here
+    return FPNumber.max(this, ...numbers);
   }
 
   /**
@@ -503,7 +503,7 @@ export class FPNumber {
    * @param {Array<FPNumber>} numbers Other numbers
    */
   public min(...numbers: Array<FPNumber>): FPNumber {
-    return FPNumber.min(this, ...numbers); // cuz it cannot be null here
+    return FPNumber.min(this, ...numbers);
   }
 
   /**
