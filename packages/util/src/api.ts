@@ -8,7 +8,7 @@ import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
-import { BaseApi, Operation, KeyringType, OnChainIdentity } from './BaseApi';
+import { BaseApi, KeyringType, OnChainIdentity } from './BaseApi';
 import { Messages } from './logger';
 import { BridgeProxyModule } from './bridgeProxy';
 import { SwapModule } from './swap';
@@ -66,10 +66,9 @@ export class Api<T = void> extends BaseApi<T> {
    * Remove all history
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
-  public override clearHistory(assetAddress?: string) {
+  public override clearHistory(assetAddress?: string): void {
     if (assetAddress) {
-      const filterFn = (item: HistoryItem) =>
-        !!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress);
+      const filterFn = (item: HistoryItem) => ![item.assetAddress, item.asset2Address].includes(assetAddress);
 
       this.history = this.getFilteredHistory(filterFn);
     } else {
@@ -358,7 +357,7 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public restoreAccountFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
     const pair = keyring.restoreAccount(json, password);
-    return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
+    return { address: pair.address, name: (pair.meta?.name ?? '') as string };
   }
 
   /**
