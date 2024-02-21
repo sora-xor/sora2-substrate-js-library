@@ -128,11 +128,10 @@ export class EthBridgeApi<T> extends BaseApi<T> {
    * @param hash Bridge hash
    * @returns Approved request with proofs
    */
-  public async getApprovedRequest(hash: string): Promise<EthApprovedRequest> {
+  public async getApprovedRequest(hash: string): Promise<EthApprovedRequest | undefined> {
     const data = await this.api.rpc.ethBridge.getApprovedRequests([hash], this.externalNetwork);
     assertRequest(data, 'api.bridge.getApprovedRequest');
-    // TODO: add null checks cuz it might be null
-    return first(data.asOk.map(([request, proofs]) => formatApprovedRequest(request, proofs))) as EthApprovedRequest;
+    return first(data.asOk.map(([request, proofs]) => formatApprovedRequest(request, proofs)));
   }
 
   /**

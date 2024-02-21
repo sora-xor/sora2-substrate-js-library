@@ -17,7 +17,6 @@ import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
 
 import type { BridgeNetworkId, BridgeTransactionData } from './types';
 import type { SubNetwork, ParachainIds } from './sub/types';
-import type { EvmNetwork } from './evm/types';
 
 function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
   if (junction.isAccountId32) {
@@ -57,7 +56,7 @@ function getNetworkType(network: BridgeTypesGenericNetworkId): BridgeNetworkType
 
 function getNetworkId(network: BridgeTypesGenericNetworkId): BridgeNetworkId {
   if (network.isSub) return network.asSub.toString() as SubNetwork;
-  if (network.isEvm) return network.asEvm.toNumber() as EvmNetwork;
+  if (network.isEvm) return network.asEvm.toNumber();
   return network.asEvmLegacy.toNumber();
 }
 
