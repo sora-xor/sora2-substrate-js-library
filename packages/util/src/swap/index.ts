@@ -41,10 +41,11 @@ interface SwapResultWithDexId extends SwapResult {
   dexId: DexId;
 }
 
-const toCodecString = (value: NumberLike | Codec | Balance, decimals = XOR.decimals) =>
-  new FPNumber(value, decimals).toCodecString();
-const toFP = (value: NumberLike | Codec | Balance, decimals = XOR.decimals) => new FPNumber(value, decimals);
-const toParamCodecString = (value: NumberLike | Codec | Balance, assetA: Asset, assetB: Asset, isExchangeB: boolean) =>
+type AnyBalance = NumberLike | Codec | Balance;
+
+const toCodecString = (value: AnyBalance, decimals = XOR.decimals) => new FPNumber(value, decimals).toCodecString();
+const toFP = (value: AnyBalance, decimals = XOR.decimals) => new FPNumber(value, decimals);
+const toParamCodecString = (value: AnyBalance, assetA: Asset, assetB: Asset, isExchangeB: boolean) =>
   new FPNumber(value, (!isExchangeB ? assetB : assetA).decimals).toCodecString();
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
@@ -743,7 +744,7 @@ export class SwapModule<T> {
 
     this.root.assets.addAccountAsset(assetB.address);
 
-    const formattedToAddress = receiver.slice(0, 2) === 'cn' ? receiver : this.root.formatAddress(receiver);
+    const formattedToAddress = receiver.startsWith('cn') ? receiver : this.root.formatAddress(receiver);
 
     return this.root.submitExtrinsic(
       (this.root.api.tx.liquidityProxy as any).swapTransfer(receiver, ...params.args),
