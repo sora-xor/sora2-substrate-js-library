@@ -79,6 +79,8 @@ export class FPNumber {
    * Return the **max** value, `null` if an array is empty
    * @param {...FPNumber} numbers
    */
+  public static max(...numbers: Array<FPNumber>): FPNumber;
+  public static max(...numbers: []): null;
   public static max(...numbers: Array<FPNumber>): FPNumber | null {
     if (!numbers?.length) {
       return null;
@@ -92,6 +94,8 @@ export class FPNumber {
    * Return the **min** value, `null` if an array is empty
    * @param {...FPNumber} numbers
    */
+  public static min(...numbers: Array<FPNumber>): FPNumber;
+  public static min(...numbers: []): null;
   public static min(...numbers: Array<FPNumber>): FPNumber | null {
     if (!numbers?.length) {
       return null;
@@ -491,7 +495,7 @@ export class FPNumber {
    * @param {Array<FPNumber>} numbers Other numbers
    */
   public max(...numbers: Array<FPNumber>): FPNumber {
-    return FPNumber.max(this, ...numbers) as FPNumber; // cuz it cannot be null here
+    return FPNumber.max(this, ...numbers); // cuz it cannot be null here
   }
 
   /**
@@ -499,7 +503,7 @@ export class FPNumber {
    * @param {Array<FPNumber>} numbers Other numbers
    */
   public min(...numbers: Array<FPNumber>): FPNumber {
-    return FPNumber.min(this, ...numbers) as FPNumber; // cuz it cannot be null here
+    return FPNumber.min(this, ...numbers); // cuz it cannot be null here
   }
 
   /**
