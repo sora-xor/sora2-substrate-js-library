@@ -211,7 +211,7 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public async loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): Promise<void> {
     try {
-      const meta = { name: name || '' };
+      const meta = { name: name ?? '' };
 
       let account!: CreateResult | { pair: KeyringPair; json: null };
 
@@ -264,7 +264,7 @@ export class Api<T = void> extends BaseApi<T> {
    * @param name Name of the account
    */
   public createAccountPair(suri: string, name?: string): KeyringPair {
-    const meta = { name: name || '' };
+    const meta = { name: name ?? '' };
 
     return keyring.createFromUri(suri, meta, this.type);
   }
