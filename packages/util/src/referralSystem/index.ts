@@ -117,7 +117,7 @@ export class ReferralSystemModule<T> {
     const requiredFeeValue = FPNumber.fromCodecValue(this.root.NetworkFee.ReferralSetInvitedUser || 0);
     assert(FPNumber.gte(bonded, requiredFeeValue), Messages.inabilityOfReferrerToPayFee);
 
-    const formattedToAddress = referrerId.slice(0, 2) === 'cn' ? referrerId : this.root.formatAddress(referrerId);
+    const formattedToAddress = referrerId.startsWith('cn') ? referrerId : this.root.formatAddress(referrerId);
     return this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referrerId), this.root.account.pair, {
       to: formattedToAddress,
       type: Operation.ReferralSetInvitedUser,
