@@ -118,11 +118,13 @@ export const newTrivial = (
 
 /**
  * Get available list of liquidity sources for the selected asset
- * @param address Asset ID
- * @param payload Quote payload
- * @param enabledAssets Primary markets enabled assets
  * @param baseAssetId Dex base asset id
  * @param syntheticBaseAssetId Dex synthetic base asset id
+ * @param address Asset ID
+ * @param enabledAssets Primary markets enabled assets
+ * @param xykReserves Xyk reserves of assets in exchange paths
+ * @param orderBookReserves Order Book reserves of assets in exchange paths
+ *
  */
 const getAssetLiquiditySources = (
   baseAssetId: string,
@@ -140,7 +142,8 @@ const getAssetLiquiditySources = (
       (Array.isArray(xykReserves[address]) && xykReserves[address].every((tokenReserve) => !!Number(tokenReserve))),
     [LiquiditySourceTypes.XSTPool]: () =>
       baseAssetId === Consts.XOR && (address === syntheticBaseAssetId || !!enabledAssets.xst[address]),
-    [LiquiditySourceTypes.OrderBook]: () => baseAssetId === Consts.XOR && !!orderBookReserves[address],
+    [LiquiditySourceTypes.OrderBook]: () =>
+      baseAssetId === Consts.XOR && (address === baseAssetId || !!orderBookReserves[address]),
   };
 
   return Object.entries(rules).reduce((acc: LiquiditySourceTypes[], [source, rule]) => {
@@ -179,13 +182,13 @@ const listLiquiditySources = (
 };
 
 /**
- * Get available liquidity sources for the tokens & exchange pair\
- * @param inputAssetId Input asset address
- * @param outputAssetId Output asset address
- * @param enabledAssets List of enabled assets
- * @param xykReserves Xyk reserves of assets in exchange paths
+ * Get available liquidity sources for the assets exchange paths
  * @param baseAssetId Dex base asset id
  * @param syntheticBaseAssetId Dex synthetic base asset id
+ * @param exchangePaths Assets exchange paths
+ * @param enabledAssets Primary markets enabled assets
+ * @param xykReserves Xyk reserves of assets in exchange paths
+ * @param orderBookReserves Order Book reserves of assets in exchange paths
  */
 export const getAssetsLiquiditySources = (
   baseAssetId: string,
