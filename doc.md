@@ -56,6 +56,7 @@
 - [hermesGovernancePlatform](#hermesgovernanceplatform-pallet)
 - [preimage](#preimage-pallet)
 - [orderBook](#orderbook-pallet)
+- [kensetsu](#kensetsu-pallet)
 - [leafProvider](#leafprovider-pallet)
 - [bridgeProxy](#bridgeproxy-pallet)
 - [ethereumLightClient](#ethereumlightclient-pallet)
@@ -9455,8 +9456,8 @@ returns: `u128`
 #### **api.query.orderBook.incompleteExpirationsSince**
 
 > Earliest block with incomplete expirations;
-> Weight limit might not allow to finish all expirations for a block, so
-> they might be operated later.
+> Weight limit might not allow to finish all expirations for a block
+> so they might be operated later.
 
 arguments: -
 
@@ -9536,6 +9537,334 @@ arguments:
 - orderBookId: `OrderBookOrderBookId`
 - direction: `CommonPrimitivesPriceVariant`
 - amount: `u128`
+<hr>
+
+## Kensetsu pallet
+
+### _State Queries_
+
+#### **api.query.kensetsu.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.kensetsu.badDebt**
+
+> System bad debt, the amount of KUSD not secured with collateral.
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.kensetsu.collateralInfos**
+
+> Parametes for collaterals, include risk parameters and interest recalculation coefficients
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `KensetsuCollateralInfo`
+
+<hr>
+
+#### **api.query.kensetsu.kusdHardCap**
+
+> Risk parameter
+> Hard cap of KUSD may be minted by the system
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.kensetsu.liquidationPenalty**
+
+> Risk parameter
+> Liquidation penalty
+
+arguments: -
+
+returns: `Percent`
+
+<hr>
+
+#### **api.query.kensetsu.nextCDPId**
+
+> CDP counter used for CDP id
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.kensetsu.cdpDepository**
+
+> Storage of all CDPs, where key is an unique CDP identifier
+
+arguments:
+
+- key: `u128`
+
+returns: `KensetsuCollateralizedDebtPosition`
+
+<hr>
+
+#### **api.query.kensetsu.cdpOwnerIndex**
+
+> Index links owner to CDP ids, not needed by protocol, but used by front-end
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `Vec<u128>`
+
+<hr>
+
+#### **api.query.kensetsu.riskManagers**
+
+> Accounts of risk management team
+
+arguments: -
+
+returns: `BTreeSet<AccountId32>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.kensetsu.createCdp**
+
+> Creates a Collateralized Debt Position (CDP) allowing users to lock collateral assets and borrow against them.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `collateral_asset_id`: The identifier of the asset used as collateral.
+> - `collateral_amount`: The amount of collateral to be deposited.
+> - `borrow_amount`: The amount the user wants to borrow.
+
+arguments:
+
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- collateralAmount: `u128`
+- borrowAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.closeCdp**
+
+> Closes a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `cdp_id`: The ID of the CDP to be closed.
+
+arguments:
+
+- cdpId: `u128`
+<hr>
+
+#### **api.tx.kensetsu.depositCollateral**
+
+> Deposits collateral into a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `cdp_id`: The ID of the CDP to deposit collateral into.
+> - `collateral_amount`: The amount of collateral to deposit.
+
+arguments:
+
+- cdpId: `u128`
+- collateralAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.withdrawCollateral**
+
+> Withdraws collateral from a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `cdp_id`: The ID of the CDP to withdraw collateral from.
+> - `collateral_amount`: The amount of collateral to withdraw.
+
+arguments:
+
+- cdpId: `u128`
+- collateralAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.borrow**
+
+> Borrows funds against a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `cdp_id`: The ID of the CDP to borrow against.
+> - `will_to_borrow_amount`: The amount the user intends to borrow.
+
+arguments:
+
+- cdpId: `u128`
+- willToBorrowAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.repayDebt**
+
+> Repays debt against a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `cdp_id`: The ID of the CDP to repay debt for.
+> - `amount`: The amount to repay against the CDP's debt.
+
+arguments:
+
+- cdpId: `u128`
+- amount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.liquidate**
+
+> Liquidates a Collateralized Debt Position (CDP) if it becomes unsafe.
+>
+> ## Parameters
+>
+> - `_origin`: The origin of the transaction (unused).
+> - `cdp_id`: The ID of the CDP to be liquidated.
+
+arguments:
+
+- cdpId: `u128`
+<hr>
+
+#### **api.tx.kensetsu.accrue**
+
+> Accrues interest on a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `_origin`: The origin of the transaction (unused).
+> - `cdp_id`: The ID of the CDP to accrue interest on.
+
+arguments:
+
+- cdpId: `u128`
+<hr>
+
+#### **api.tx.kensetsu.updateCollateralRiskParameters**
+
+> Updates the risk parameters for a specific collateral asset.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `collateral_asset_id`: The identifier of the collateral asset.
+> - `new_risk_parameters`: The new risk parameters to be set for the collateral asset.
+
+arguments:
+
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- newRiskParameters: `KensetsuCollateralRiskParameters`
+<hr>
+
+#### **api.tx.kensetsu.updateHardCapTotalSupply**
+
+> Updates the hard cap for the total supply of a stablecoin.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `new_hard_cap`: The new hard cap value to be set for the total supply.
+
+arguments:
+
+- newHardCap: `u128`
+<hr>
+
+#### **api.tx.kensetsu.updateLiquidationPenalty**
+
+> Updates the liquidation penalty applied during CDP liquidation.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `new_liquidation_penalty`: The new liquidation penalty percentage to be set.
+
+arguments:
+
+- newLiquidationPenalty: `Percent`
+<hr>
+
+#### **api.tx.kensetsu.withdrawProfit**
+
+> Withdraws protocol profit in the form of stablecoin (KUSD).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `kusd_amount`: The amount of stablecoin (KUSD) to withdraw as protocol profit.
+
+arguments:
+
+- kusdAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.donate**
+
+> Donates stablecoin (KUSD) to cover protocol bad debt.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `kusd_amount`: The amount of stablecoin (KUSD) to donate to cover bad debt.
+
+arguments:
+
+- kusdAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.addRiskManager**
+
+> Adds a new account ID to the set of risk managers.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `account_id`: The account ID to be added as a risk manager.
+
+arguments:
+
+- accountId: `AccountId32`
+<hr>
+
+#### **api.tx.kensetsu.removeRiskManager**
+
+> Removes an account ID from the set of risk managers.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `account_id`: The account ID to be removed from the set of risk managers.
+
+arguments:
+
+- accountId: `AccountId32`
 <hr>
 
 ## LeafProvider pallet
@@ -10050,6 +10379,15 @@ returns: `BridgeTypesGenericCommitmentWithBlock`
 
 <hr>
 
+### _Extrinsics_
+
+#### **api.tx.bridgeOutboundChannel.setFee**
+
+arguments:
+
+- amount: `u128`
+<hr>
+
 ## Dispatch pallet
 
 ### _State Queries_
@@ -10510,6 +10848,15 @@ arguments:
 
 returns: `BridgeTypesGenericCommitmentWithBlock`
 
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.substrateBridgeOutboundChannel.updateInterval**
+
+arguments:
+
+- newInterval: `u32`
 <hr>
 
 ## SubstrateDispatch pallet
@@ -12283,7 +12630,8 @@ returns: `Option<SwapOutcomeInfo>`
 {
     _enum: [
         "V1",
-        "V2"
+        "V2",
+        "V3"
     ]
 }
 ```
