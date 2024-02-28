@@ -154,13 +154,12 @@ const bestBid = (book: OrderBookAggregated): FPNumber | null => {
 };
 
 /** sum_market */
+// prettier-ignore
 const sumMarket = (
   book: OrderBook,
   marketData: OrderBookPriceVolume[],
   depthLimit: OrderAmount | null
-  // prettier-ignore
-): [OrderAmount, OrderAmount] => {
-  // NOSONAR
+): [OrderAmount, OrderAmount] => { // NOSONAR
   let marketBaseVolume = FPNumber.ZERO;
   let marketQuoteVolume = FPNumber.ZERO;
   let enoughLiquidity = false;
