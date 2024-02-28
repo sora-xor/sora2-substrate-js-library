@@ -247,6 +247,7 @@ const quotePrimaryMarket = (
  * the base asset and the collateral asset in the secondary market (e.g., an XYK pool)
  * provided the base asset is being bought.
  */
+// prettier-ignore
 const primaryMarketAmountBuyingBaseAsset = (
   collateralAsset: string,
   amount: FPNumber,
@@ -254,9 +255,7 @@ const primaryMarketAmountBuyingBaseAsset = (
   baseReserve: FPNumber,
   otherReserve: FPNumber,
   payload: QuotePayload
-  // prettier-ignore
-): FPNumber => {
-  // NOSONAR
+): FPNumber => { // NOSONAR
   try {
     const secondaryPrice = baseReserve.isGtZero() ? safeDivide(otherReserve, baseReserve) : Consts.MAX;
 
@@ -307,6 +306,7 @@ const primaryMarketAmountBuyingBaseAsset = (
  * the base asset and the collateral asset in the secondary market (e.g. an XYK pool)
  * provided the base asset is being sold.
  */
+// prettier-ignore
 const primaryMarketAmountSellingBaseAsset = (
   collateralAsset: string,
   amount: FPNumber,
@@ -314,9 +314,7 @@ const primaryMarketAmountSellingBaseAsset = (
   xorReserve: FPNumber,
   otherReserve: FPNumber,
   payload: QuotePayload
-  // prettier-ignore
-): FPNumber => {
-  // NOSONAR
+): FPNumber => { // NOSONAR
   try {
     const secondaryPrice = xorReserve.isGtZero() ? safeDivide(otherReserve, xorReserve) : FPNumber.ZERO;
 
@@ -450,6 +448,7 @@ const smartSplit = (
  * Computes the optimal distribution across available liquidity sources to exectute the requested trade
  * given the input and output assets, the trade amount and a liquidity sources filter.
  */
+// prettier-ignore
 const quoteSingle = (
   inputAsset: string,
   outputAsset: string,
@@ -459,9 +458,7 @@ const quoteSingle = (
   payload: QuotePayload,
   deduceFee: boolean,
   baseAssetId = Consts.XOR
-  // prettier-ignore
-): QuoteResult => {
-  // NOSONAR
+): QuoteResult => { // NOSONAR
   const allSources = listLiquiditySources(
     inputAsset,
     outputAsset,
@@ -514,6 +511,7 @@ const quoteSingle = (
   throw new Error('[liquidityProxy] Unsupported operation');
 };
 
+// prettier-ignore
 export const quote = (
   firstAssetAddress: string,
   secondAssetAddress: string,
@@ -524,9 +522,7 @@ export const quote = (
   deduceFee: boolean,
   baseAssetId = Consts.XOR,
   syntheticBaseAssetId = Consts.XST
-  // prettier-ignore
-): SwapResult => {
-  // NOSONAR
+): SwapResult => { // NOSONAR
   let bestQuote: QuoteIntermediate = {
     amount: FPNumber.ZERO,
     amountWithoutImpact: FPNumber.ZERO,
