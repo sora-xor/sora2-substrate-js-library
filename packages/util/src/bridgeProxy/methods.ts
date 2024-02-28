@@ -130,12 +130,12 @@ function formatBridgeTx(
   formatted.soraHash = hash;
   formatted.amount = unwrapped.amount.toString();
   formatted.soraAssetAddress = unwrapped.assetId.code.toString();
-  formatted.status =
-    unwrapped.status.isFailed || unwrapped.status.isRefunded
-      ? BridgeTxStatus.Failed
-      : unwrapped.status.isDone || unwrapped.status.isCommitted
-      ? BridgeTxStatus.Done
-      : BridgeTxStatus.Pending;
+  formatted.status = BridgeTxStatus.Pending;
+  if (unwrapped.status.isFailed || unwrapped.status.isRefunded) {
+    formatted.status = BridgeTxStatus.Failed;
+  } else if (unwrapped.status.isDone || unwrapped.status.isCommitted) {
+    formatted.status = BridgeTxStatus.Done;
+  }
   formatted.startBlock = getBlock(unwrapped.startTimepoint);
   formatted.endBlock = getBlock(unwrapped.endTimepoint);
 

@@ -18,7 +18,7 @@ import type {
   OrderBookAggregated,
   LPRewardsInfo,
 } from '@sora-substrate/liquidity-proxy';
-import type { Balance } from '@sora-substrate/types';
+import type { Balance, LiquiditySourceType } from '@sora-substrate/types';
 import type { Observable, Codec } from '@polkadot/types/types';
 import type {
   CommonPrimitivesAssetId32,
@@ -35,7 +35,7 @@ import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
-import type { ReceiverHistoryItem, SwapTransferBatchData, SwapQuoteData } from './types';
+import type { ReceiverHistoryItem, SwapTransferBatchData, SwapQuoteData, FilterMode } from './types';
 
 interface SwapResultWithDexId extends SwapResult {
   dexId: DexId;
@@ -224,6 +224,7 @@ export class SwapModule<T> {
    * @param payload Quote payload
    */
   public getResult(
+    // NOSONAR
     assetAAddress: string,
     assetBAddress: string,
     value: NumberLike,
@@ -293,6 +294,7 @@ export class SwapModule<T> {
    * @param dexId Selected dex id for swap
    */
   public subscribeOnReserves(
+    // NOSONAR
     firstAssetAddress: string,
     secondAssetAddress: string,
     selectedSources: LiquiditySourceTypes[] = [],
@@ -537,6 +539,7 @@ export class SwapModule<T> {
    * @param sources Liquidity sources for swap (all sources by default)
    */
   public getDexesSwapQuoteObservable(
+    // NOSONAR
     firstAssetAddress: string,
     secondAssetAddress: string,
     sources: LiquiditySourceTypes[] = []
@@ -616,6 +619,7 @@ export class SwapModule<T> {
   }
 
   private calcTxParams(
+    // NOSONAR
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -667,6 +671,7 @@ export class SwapModule<T> {
    * @param dexId dex id to detect base asset (XOR or XSTUSD)
    */
   public execute(
+    // NOSONAR
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -719,6 +724,7 @@ export class SwapModule<T> {
    * @param dexId dex id to detect base asset (XOR or XSTUSD)
    */
   public executeSwapAndSend(
+    // NOSONAR
     receiver: string,
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
@@ -821,6 +827,17 @@ export class SwapModule<T> {
     );
   }
 
+  private getSourcesAndFilterMode(liquiditySource: LiquiditySourceTypes, allowSelectedSorce: boolean) {
+    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource) as unknown as LiquiditySourceType[];
+
+    let filterMode: FilterMode = 'Disabled';
+    if (liquiditySource !== LiquiditySourceTypes.Default) {
+      filterMode = allowSelectedSorce ? 'AllowSelected' : 'ForbidSelected';
+    }
+
+    return { liquiditySources, filterMode };
+  }
+
   /**
    * **RPC**
    *
@@ -849,13 +866,7 @@ export class SwapModule<T> {
       this.root.assets.getAssetInfo(assetAAddress),
       this.root.assets.getAssetInfo(assetBAddress),
     ]);
-    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource);
-    const filterMode =
-      liquiditySource !== LiquiditySourceTypes.Default
-        ? allowSelectedSorce
-          ? 'AllowSelected'
-          : 'ForbidSelected'
-        : 'Disabled';
+    const { liquiditySources, filterMode } = this.getSourcesAndFilterMode(liquiditySource, allowSelectedSorce);
 
     const result = await this.root.api.rpc.liquidityProxy.quote(
       dexId,
@@ -863,7 +874,7 @@ export class SwapModule<T> {
       assetBAddress,
       toParamCodecString(amount, assetA, assetB, isExchangeB),
       !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
-      liquiditySources as any,
+      liquiditySources,
       filterMode
     );
     const value = result.unwrapOr(emptySwapResult);
@@ -898,13 +909,8 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
   ): Promise<SwapResultWithDexId> {
-    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource) as any;
-    const filterMode =
-      liquiditySource !== LiquiditySourceTypes.Default
-        ? allowSelectedSorce
-          ? 'AllowSelected'
-          : 'ForbidSelected'
-        : 'Disabled';
+    const { liquiditySources, filterMode } = this.getSourcesAndFilterMode(liquiditySource, allowSelectedSorce);
+
     const codecAmount = toCodecString(amount);
     const swapVariant = !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput';
     const quote = this.root.api.rpc.liquidityProxy.quote;
@@ -947,13 +953,8 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
   ): Promise<{ buy: string; sell: string }> {
-    const liquiditySources = this.prepareSourcesForSwapParams(liquiditySource) as any;
-    const filterMode =
-      liquiditySource !== LiquiditySourceTypes.Default
-        ? allowSelectedSorce
-          ? 'AllowSelected'
-          : 'ForbidSelected'
-        : 'Disabled';
+    const { liquiditySources, filterMode } = this.getSourcesAndFilterMode(liquiditySource, allowSelectedSorce);
+
     const amountFp = toFP(amount);
     const codecAmount = amountFp.toCodecString();
     const quoteFn = this.root.api.rpc.liquidityProxy.quote;

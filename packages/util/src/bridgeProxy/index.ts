@@ -54,6 +54,7 @@ export class BridgeProxyModule<T> {
   }
 
   public async getListApps(): Promise<SupportedApps> {
+    // NOSONAR
     const apps: SupportedApps = {
       [BridgeNetworkType.Eth]: {},
       [BridgeNetworkType.Evm]: {},
