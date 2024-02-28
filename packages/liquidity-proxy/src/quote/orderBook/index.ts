@@ -153,11 +153,12 @@ const bestBid = (book: OrderBookAggregated): FPNumber | null => {
   return FPNumber.max(...bids.map(([price, _]) => price));
 };
 
-// sum_market
+/** sum_market */
 const sumMarket = (
   book: OrderBook,
   marketData: OrderBookPriceVolume[],
   depthLimit: OrderAmount | null
+  // prettier-ignore
 ): [OrderAmount, OrderAmount] => {
   // NOSONAR
   let marketBaseVolume = FPNumber.ZERO;
@@ -233,8 +234,8 @@ const calculateDeal = (
       );
     }
   } else {
-    if (isBuyDirection) {
-      // NOSONAR
+    // prettier-ignore
+    if (isBuyDirection) { // NOSONAR
       [base, quote] = sumMarket(
         book,
         book.aggregated.asks,
@@ -366,8 +367,8 @@ export const orderBookQuoteWithoutImpact = (
         targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
       }
     } else {
-      if (isBuyDirection) {
-        // NOSONAR
+      // prettier-ignore
+      if (isBuyDirection) { // NOSONAR
         targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
       } else {
         targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);

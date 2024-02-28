@@ -31,8 +31,8 @@ export class FPNumber {
   /**
    * Numbers' delimiters config. Might be edited to support different locales
    */
-  public static DELIMITERS_CONFIG = {
-    // NOSONAR
+  // prettier-ignore
+  public static DELIMITERS_CONFIG = { // NOSONAR
     thousand: ',',
     decimal: '.',
   };

@@ -223,8 +223,8 @@ export class SwapModule<T> {
    * @param selectedSources Selected liquidity sources
    * @param payload Quote payload
    */
-  public getResult(
-    // NOSONAR
+  // prettier-ignore
+  public getResult( // NOSONAR
     assetAAddress: string,
     assetBAddress: string,
     value: NumberLike,
@@ -293,8 +293,8 @@ export class SwapModule<T> {
    * @param selectedSources Selected liquidity sources
    * @param dexId Selected dex id for swap
    */
-  public subscribeOnReserves(
-    // NOSONAR
+  // prettier-ignore
+  public subscribeOnReserves( // NOSONAR
     firstAssetAddress: string,
     secondAssetAddress: string,
     selectedSources: LiquiditySourceTypes[] = [],
@@ -538,8 +538,8 @@ export class SwapModule<T> {
    * @param secondAssetAddress Second swap token address
    * @param sources Liquidity sources for swap (all sources by default)
    */
-  public getDexesSwapQuoteObservable(
-    // NOSONAR
+  // prettier-ignore
+  public getDexesSwapQuoteObservable( // NOSONAR
     firstAssetAddress: string,
     secondAssetAddress: string,
     sources: LiquiditySourceTypes[] = []
@@ -618,8 +618,8 @@ export class SwapModule<T> {
     );
   }
 
-  private calcTxParams(
-    // NOSONAR
+  // prettier-ignore
+  private calcTxParams( // NOSONAR
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -670,8 +670,8 @@ export class SwapModule<T> {
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param dexId dex id to detect base asset (XOR or XSTUSD)
    */
-  public execute(
-    // NOSONAR
+  // prettier-ignore
+  public execute( // NOSONAR
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
     amountA: NumberLike,
@@ -723,8 +723,8 @@ export class SwapModule<T> {
    * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
    * @param dexId dex id to detect base asset (XOR or XSTUSD)
    */
-  public executeSwapAndSend(
-    // NOSONAR
+  // prettier-ignore
+  public executeSwapAndSend( // NOSONAR
     receiver: string,
     assetA: Asset | AccountAsset,
     assetB: Asset | AccountAsset,
@@ -967,14 +967,16 @@ export class SwapModule<T> {
     ]);
 
     const valueSellDex0 = sellDex0.unwrapOr(emptySwapResult);
+    // NOSONAR
     // const valueSellDex1 = sellDex1.unwrapOr(emptySwapResult);
     // const isDex0BetterForSell = FPNumber.gte(toFP(valueSellDex0.amount), toFP(valueSellDex1.amount));
-    const valueSell = toFP(valueSellDex0.amount); // toFP((isDex0BetterForSell ? valueSellDex0 : valueSellDex1).amount);
+    const valueSell = toFP(valueSellDex0.amount); // toFP((isDex0BetterForSell ? valueSellDex0 : valueSellDex1).amount); NOSONAR
 
     const valueBuyDex0 = buyDex0.unwrapOr(emptySwapResult);
+    // NOSONAR
     // const valueBuyDex1 = buyDex1.unwrapOr(emptySwapResult);
     // const isDex0BetterForBuy = FPNumber.gte(toFP(valueBuyDex0.amount), toFP(valueBuyDex1.amount));
-    const valueBuy = toFP(valueBuyDex0.amount); // toFP((isDex0BetterForBuy ? valueBuyDex0 : valueBuyDex1).amount);
+    const valueBuy = toFP(valueBuyDex0.amount); // toFP((isDex0BetterForBuy ? valueBuyDex0 : valueBuyDex1).amount); NOSONAR
 
     return {
       buy: valueBuy.div(amountFp).toString(),

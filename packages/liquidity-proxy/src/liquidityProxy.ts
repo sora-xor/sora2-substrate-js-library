@@ -254,6 +254,7 @@ const primaryMarketAmountBuyingBaseAsset = (
   baseReserve: FPNumber,
   otherReserve: FPNumber,
   payload: QuotePayload
+  // prettier-ignore
 ): FPNumber => {
   // NOSONAR
   try {
@@ -280,8 +281,8 @@ const primaryMarketAmountBuyingBaseAsset = (
         return amount;
       }
     } else {
-      if (FPNumber.isLessThan(secondaryPrice, primaryBuyPrice)) {
-        // NOSONAR
+      // prettier-ignore
+      if (FPNumber.isLessThan(secondaryPrice, primaryBuyPrice)) { // NOSONAR
         const amountSecondary = baseReserve.sub(safeDivide(k, primaryBuyPrice).sqrt());
 
         if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
@@ -313,6 +314,7 @@ const primaryMarketAmountSellingBaseAsset = (
   xorReserve: FPNumber,
   otherReserve: FPNumber,
   payload: QuotePayload
+  // prettier-ignore
 ): FPNumber => {
   // NOSONAR
   try {
@@ -339,8 +341,8 @@ const primaryMarketAmountSellingBaseAsset = (
         return amount;
       }
     } else {
-      if (FPNumber.isGreaterThan(secondaryPrice, primarySellPrice)) {
-        // NOSONAR
+      // prettier-ignore
+      if (FPNumber.isGreaterThan(secondaryPrice, primarySellPrice)) { // NOSONAR
         const amountSecondary = otherReserve.sub(k.mul(primarySellPrice).sqrt());
 
         if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
@@ -457,6 +459,7 @@ const quoteSingle = (
   payload: QuotePayload,
   deduceFee: boolean,
   baseAssetId = Consts.XOR
+  // prettier-ignore
 ): QuoteResult => {
   // NOSONAR
   const allSources = listLiquiditySources(
@@ -521,6 +524,7 @@ export const quote = (
   deduceFee: boolean,
   baseAssetId = Consts.XOR,
   syntheticBaseAssetId = Consts.XST
+  // prettier-ignore
 ): SwapResult => {
   // NOSONAR
   let bestQuote: QuoteIntermediate = {
