@@ -8,7 +8,7 @@ import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/
 import type { Signer } from '@polkadot/types/types';
 
 import { decrypt, encrypt } from './crypto';
-import { BaseApi, Operation, KeyringType, OnChainIdentity } from './BaseApi';
+import { BaseApi, KeyringType, OnChainIdentity } from './BaseApi';
 import { Messages } from './logger';
 import { BridgeProxyModule } from './bridgeProxy';
 import { SwapModule } from './swap';
@@ -27,7 +27,7 @@ import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
 import type { HistoryItem } from './BaseApi';
-import { OriginalIdentity } from './staking/types';
+import type { OriginalIdentity } from './staking/types';
 
 let keyring!: Keyring;
 
@@ -56,7 +56,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly dex = new DexModule<T>(this);
   public readonly ceresLiquidityLocker = new CeresLiquidityLockerModule<T>(this);
 
-  public initAccountStorage() {
+  public override initAccountStorage() {
     super.initAccountStorage();
     this.bridgeProxy.initAccountStorage();
   }
@@ -66,10 +66,9 @@ export class Api<T = void> extends BaseApi<T> {
    * Remove all history
    * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
    */
-  public clearHistory(assetAddress?: string) {
+  public override clearHistory(assetAddress?: string): void {
     if (assetAddress) {
-      const filterFn = (item: HistoryItem) =>
-        !!assetAddress && ![item.assetAddress, item.asset2Address].includes(assetAddress);
+      const filterFn = (item: HistoryItem) => ![item.assetAddress, item.asset2Address].includes(assetAddress);
 
       this.history = this.getFilteredHistory(filterFn);
     } else {
@@ -81,7 +80,7 @@ export class Api<T = void> extends BaseApi<T> {
    * Set storage if it should be used as data storage
    * @param storage
    */
-  public setStorage(storage: Storage): void {
+  public override setStorage(storage: Storage): void {
     super.setStorage(storage);
     this.bridgeProxy.setStorage(storage);
   }
@@ -92,7 +91,7 @@ export class Api<T = void> extends BaseApi<T> {
    * Set signer if the pair is locked (For polkadot js extension usage)
    * @param signer
    */
-  public setSigner(signer: Signer): void {
+  public override setSigner(signer: Signer): void {
     super.setSigner(signer);
     this.bridgeProxy.setSigner(signer);
   }
@@ -101,7 +100,7 @@ export class Api<T = void> extends BaseApi<T> {
    * Set account data
    * @param account
    */
-  public setAccount(account: CreateResult): void {
+  public override setAccount(account: CreateResult): void {
     super.setAccount(account);
     this.bridgeProxy.setAccount(account);
   }
@@ -212,7 +211,7 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public async loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): Promise<void> {
     try {
-      const meta = { name: name || '' };
+      const meta = { name: name ?? '' };
 
       let account!: CreateResult | { pair: KeyringPair; json: null };
 
@@ -265,7 +264,7 @@ export class Api<T = void> extends BaseApi<T> {
    * @param name Name of the account
    */
   public createAccountPair(suri: string, name?: string): KeyringPair {
-    const meta = { name: name || '' };
+    const meta = { name: name ?? '' };
 
     return keyring.createFromUri(suri, meta, this.type);
   }
@@ -358,7 +357,7 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public restoreAccountFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
     const pair = keyring.restoreAccount(json, password);
-    return { address: pair.address, name: ((pair.meta || {}).name || '') as string };
+    return { address: pair.address, name: (pair.meta?.name ?? '') as string };
   }
 
   /**
@@ -400,7 +399,7 @@ export class Api<T = void> extends BaseApi<T> {
   /**
    * Remove all wallet data
    */
-  public logout(): void {
+  public override logout(): void {
     this.assets.clearAccountAssets();
     this.poolXyk.clearAccountLiquidity();
 

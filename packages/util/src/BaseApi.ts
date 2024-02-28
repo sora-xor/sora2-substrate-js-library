@@ -408,7 +408,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 isLiquidityPoolOperation(type as Operation)
               ) {
                 // balances.Transfer doesn't have assetId field
-                const [amount, to, from, assetId] = data.slice().reverse();
+                const [amount] = data.slice().reverse();
                 const amountFormatted = new FPNumber(amount).toString();
                 const history = this.getHistory(id);
                 // events for 1st token and 2nd token are ordered in extrinsic

@@ -141,8 +141,28 @@ export function getLegalAssets(allAssets: Array<Asset>, blacklist: Blacklist): A
   return allAssets.filter(({ address }) => !isBlacklistedAssetAddress(address, blacklist));
 }
 
+const sort = (a: Asset, b: Asset, whitelist: Whitelist) => {
+  const isNativeA = isNativeAsset(a);
+  const isNativeB = isNativeAsset(b);
+  const isRegisteredA = isRegisteredAsset(a, whitelist);
+  const isRegisteredB = isRegisteredAsset(b, whitelist);
+  if ((isNativeA && !isNativeB) || (isRegisteredA && !isRegisteredB)) {
+    return -1;
+  }
+  if ((!isNativeA && isNativeB) || (!isRegisteredA && isRegisteredB)) {
+    return 1;
+  }
+  if (a.symbol < b.symbol) {
+    return -1;
+  }
+  if (a.symbol > b.symbol) {
+    return 1;
+  }
+  return 0;
+};
+
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
-  const allAssets = (await api.query.assets.assetInfos.entries()).map(([key, codec]) => {
+  const allAssets = (await api.query.assets.assetInfos.entries()).map<Asset>(([key, codec]) => {
     const address = key.args[0].code.toString();
     const [symbol, name, decimals, isMintable, content, description] = codec.toHuman() as any;
 
@@ -151,27 +171,7 @@ export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklis
 
   const assets = blacklist?.length ? getLegalAssets(allAssets, blacklist) : allAssets;
 
-  return !whitelist
-    ? assets
-    : assets.sort((a: Asset, b: Asset) => {
-        const isNativeA = isNativeAsset(a);
-        const isNativeB = isNativeAsset(b);
-        const isRegisteredA = isRegisteredAsset(a, whitelist);
-        const isRegisteredB = isRegisteredAsset(b, whitelist);
-        if ((isNativeA && !isNativeB) || (isRegisteredA && !isRegisteredB)) {
-          return -1;
-        }
-        if ((!isNativeA && isNativeB) || (!isRegisteredA && isRegisteredB)) {
-          return 1;
-        }
-        if (a.symbol < b.symbol) {
-          return -1;
-        }
-        if (a.symbol > b.symbol) {
-          return 1;
-        }
-        return 0;
-      });
+  return !whitelist ? assets : assets.sort((a: Asset, b: Asset) => sort(a, b, whitelist));
 }
 
 export class AssetsModule<T> {
@@ -217,7 +217,7 @@ export class AssetsModule<T> {
    */
   isBlacklist(asset: Partial<Asset>, whitelistIdsBySymbol: WhitelistIdsBySymbol): boolean {
     const { address, symbol } = asset;
-    if (!address || !symbol) {
+    if (!(address && symbol)) {
       return false;
     }
     const foundAddress = whitelistIdsBySymbol[symbol];
@@ -425,7 +425,7 @@ export class AssetsModule<T> {
       return knownAsset;
     }
     const existingAsset =
-      this.getAsset(address) || this.root.poolXyk.accountLiquidity.find((asset) => asset.address === address);
+      this.getAsset(address) ?? this.root.poolXyk.accountLiquidity.find((asset) => asset.address === address);
     if (existingAsset) {
       return {
         address: existingAsset.address,
@@ -612,7 +612,7 @@ export class AssetsModule<T> {
   public simpleTransfer(asset: Asset | AccountAsset, toAddress: string, amount: NumberLike): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     const assetAddress = asset.address;
-    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.root.formatAddress(toAddress);
+    const formattedToAddress = toAddress.startsWith('cn') ? toAddress : this.root.formatAddress(toAddress);
 
     return this.root.submitExtrinsic(
       this.root.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
@@ -640,20 +640,22 @@ export class AssetsModule<T> {
     assert(options.comment?.length ?? 0 <= 128, Messages.commentFieldIsTooLong);
     const assetAddress = asset.address;
     const { comment, feeType, assetFee } = options;
-    const formattedToAddress = toAddress.slice(0, 2) === 'cn' ? toAddress : this.root.formatAddress(toAddress);
-    const desiredXorAmount = feeType === 'xor' ? 0 : assetFee; // Set it later to have real XOR less transfers
-    const maxAmountIn = feeType === 'xor' ? 0 : assetFee; // Set it later to have real XOR less transfers
+    const commentStr = comment ?? null;
+    const assetFeeParam = assetFee ?? 0;
+    const formattedToAddress = toAddress.startsWith('cn') ? toAddress : this.root.formatAddress(toAddress);
+    const desiredXorAmount = feeType === 'xor' ? 0 : assetFeeParam; // Set it later to have real XOR less transfers
+    const maxAmountIn = feeType === 'xor' ? 0 : assetFeeParam; // Set it later to have real XOR less transfers
     return this.root.submitExtrinsic(
       this.root.api.tx.liquidityProxy.xorlessTransfer(
         DexId.XOR,
         assetAddress,
         toAddress,
         new FPNumber(amount, asset.decimals).toCodecString(),
-        desiredXorAmount as NumberLike,
-        maxAmountIn as NumberLike,
+        desiredXorAmount,
+        maxAmountIn,
         [],
         'Disabled',
-        comment as string | null
+        commentStr
       ),
       this.root.account.pair,
       {
@@ -678,7 +680,7 @@ export class AssetsModule<T> {
     assert(this.root.account, Messages.connectWallet);
     const assetAddress = asset.address;
     const address = toAddress || this.root.account.pair.address;
-    const formattedAddress = address.slice(0, 2) === 'cn' ? address : this.root.formatAddress(address);
+    const formattedAddress = address.startsWith('cn') ? address : this.root.formatAddress(address);
 
     return this.root.submitExtrinsic(
       this.root.api.tx.assets.updateBalance(

@@ -28,6 +28,8 @@ import intentivizedChannel from './intentivizedChannel';
 
 import versionedOverrides from './versioned';
 
+export type { SoraDefinitions } from './types';
+
 const soraDefs = {
   assets,
   ceresGovernancePlatform,

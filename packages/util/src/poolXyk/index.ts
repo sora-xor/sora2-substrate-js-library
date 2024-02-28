@@ -54,7 +54,11 @@ export class PoolXykModule<T> {
     const liquidityCopy = [...this.accountLiquidity];
     const index = liquidityCopy.findIndex((item) => item.address === asset.address);
 
-    ~index ? (liquidityCopy[index] = asset) : liquidityCopy.push(asset);
+    if (~index) {
+      liquidityCopy[index] = asset;
+    } else {
+      liquidityCopy.push(asset);
+    }
 
     this.accountLiquidity = liquidityCopy;
   }
@@ -194,8 +198,6 @@ export class PoolXykModule<T> {
   /**
    * Estimate tokens retrieved.
    * Also it returns the total supply as `result[2]`
-   * @param firstAssetAddress
-   * @param secondAssetAddress
    * @param amount
    * @param firstTotal Reserve A from `getReserves()[0]`
    * @param secondTotal Reserve B from `getReserves()[1]`
@@ -204,8 +206,8 @@ export class PoolXykModule<T> {
    * @param secondAssetDecimals If it's not set then request about asset info will be performed
    */
   public estimateTokensRetrieved(
-    firstAssetAddress: string,
-    secondAssetAddress: string,
+    // firstAssetAddress: string,
+    // secondAssetAddress: string,
     amount: CodecString,
     firstTotal: CodecString,
     secondTotal: CodecString,
@@ -258,9 +260,9 @@ export class PoolXykModule<T> {
       const inaccuracy = new FPNumber('0.000000000000001');
       return [aIn.mul(bIn).sqrt().sub(inaccuracy).toCodecString()];
     }
-    const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
-    const pts = FPNumber.fromCodecValue(totalSupply, poolToken.decimals);
-    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b)) as FPNumber;
+    const poolToken = this.getInfo(firstAsset.address, secondAsset.address);
+    const pts = FPNumber.fromCodecValue(totalSupply, poolToken?.decimals);
+    const result = FPNumber.min(aIn.mul(pts).div(a), bIn.mul(pts).div(b));
     return [result.toCodecString(), pts.toCodecString()];
   }
 
@@ -366,8 +368,6 @@ export class PoolXykModule<T> {
     const decimals2 = decimals;
     const [reserveA, reserveB] = reserves;
     const [balanceA, balanceB] = this.estimateTokensRetrieved(
-      firstAddress,
-      secondAddress,
       balance,
       reserveA,
       reserveB,
@@ -665,11 +665,11 @@ export class PoolXykModule<T> {
   ) {
     assert(this.root.account, Messages.connectWallet);
 
-    const poolToken = this.getInfo(firstAsset.address, secondAsset.address) as Asset;
-    const desired = new FPNumber(desiredMarker, poolToken.decimals);
+    const poolToken = this.getInfo(firstAsset.address, secondAsset.address);
+    const desired = new FPNumber(desiredMarker, poolToken?.decimals);
     const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals);
     const reserveB = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals);
-    const pts = FPNumber.fromCodecValue(totalSupply, poolToken.decimals);
+    const pts = FPNumber.fromCodecValue(totalSupply, poolToken?.decimals);
     const desiredA = desired.mul(reserveA).div(pts);
     const desiredB = desired.mul(reserveB).div(pts);
     const slippage = new FPNumber(Number(slippageTolerance) / 100);

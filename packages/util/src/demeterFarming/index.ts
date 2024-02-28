@@ -1,9 +1,10 @@
 import { map, combineLatest } from 'rxjs';
 import { assert } from '@polkadot/util';
-import type { Observable } from '@polkadot/types/types';
-import type { NumberLike } from '@sora-substrate/math';
-
 import { FPNumber } from '@sora-substrate/math';
+import type { Observable } from '@polkadot/types/types';
+import type { StorageKey } from '@polkadot/types';
+import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
+import type { NumberLike } from '@sora-substrate/math';
 
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
@@ -47,9 +48,15 @@ export class DemeterFarmingModule<T> {
    * @returns Observable list of pools
    */
   public async getPoolsObservable(): Promise<Observable<DemeterPool[]> | null> {
-    // TODO: resolve double map keys type issue
-    // @ts-ignore
-    const storageKeys = await this.root.api.query.demeterFarmingPlatform.pools.keys();
+    // According to this type
+    // @polkadot/api-base/types/storage.ts
+    // keys: <K extends AnyTuple = A>(...args: DropLast<Parameters<F>>) => PromiseOrObs<ApiType, StorageKey<K>[]>;
+    // entries, keys and keyPrefix methods should have the same params DoubleMap has minus last parameter.
+    // But it's technically possible to use these methods without params.
+    // Polkadot has done it mostly to avoid performance-based issues so we need to ignore that
+    const storageKeys: StorageKey<[CommonPrimitivesAssetId32, CommonPrimitivesAssetId32]>[] = await (
+      this.root.api.query.demeterFarmingPlatform.pools.keys as any
+    )();
 
     if (!storageKeys.length) return null;
 

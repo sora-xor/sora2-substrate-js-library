@@ -99,7 +99,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public getParachainId(parachain: SubNetwork): number {
-    const parachainId = this.parachainIds[parachain];
+    const parachainId = this.parachainIds[parachain as keyof typeof this.parachainIds];
 
     if (!parachainId) throw new Error(`Parachain id is not defined for "${parachain}" parachain`);
 
@@ -172,7 +172,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     return historyItem;
   }
 
-  public saveHistory(history: SubHistory): void {
+  public override saveHistory(history: SubHistory): void {
     if (!isSubstrateOperation(history.type)) return;
     super.saveHistory(history);
   }

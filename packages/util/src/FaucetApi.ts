@@ -42,7 +42,7 @@ export class FaucetApi<T = void> extends BaseApi<T> {
   public async getBalance(assetAddress: string, accountAddress: string): Promise<string> {
     const asset = KnownAssets.get(assetAddress);
     const result = await getBalance(this.api, accountAddress, assetAddress);
-    return new FPNumber(result, asset.decimals).toCodecString();
+    return new FPNumber(result, asset?.decimals).toCodecString();
   }
 
   public send(assetAddress: string, accountAddress: string, amount: NumberLike): Promise<T> {
@@ -50,9 +50,9 @@ export class FaucetApi<T = void> extends BaseApi<T> {
     const asset = KnownAssets.get(assetAddress);
     // For now it will be signed transaction with the fake account
     return this.submitExtrinsic(
-      this.api.tx.faucet.transfer(assetAddress, accountAddress, new FPNumber(amount, asset.decimals).toCodecString()),
+      this.api.tx.faucet.transfer(assetAddress, accountAddress, new FPNumber(amount, asset?.decimals).toCodecString()),
       this.faucetSigner.pair,
-      { type: Operation.Faucet, amount: `${amount}`, symbol: asset.symbol, from: accountAddress }
+      { type: Operation.Faucet, amount: `${amount}`, symbol: asset?.symbol, from: accountAddress }
     );
   }
 }

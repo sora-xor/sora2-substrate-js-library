@@ -1,6 +1,6 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import type { AccountBalance, Asset } from './types';
+import type { AccountBalance, Asset, KnownSymbol, NativeSymbol } from './types';
 
 export const MaxRustNumber = '170141183460469231731.687303715884105727';
 export const MaxTotalSupply = '100000000000000000000'; // It's better to round it for UX
@@ -42,7 +42,7 @@ export enum BalanceType {
   Transferable = 'transferable',
 }
 
-class ArrayLike<T> extends Array<T> {
+class ArrayLike<T, U> extends Array<T> {
   constructor(items?: Array<T>) {
     super();
     items && this.addItems(items);
@@ -59,12 +59,14 @@ class ArrayLike<T> extends Array<T> {
   /**
    * **ONLY** for known assets
    */
-  public get(info: string): T {
-    return this.find((asset: any) => [asset.address, asset.symbol].includes(info)) as T;
+  public get(info: U): T;
+  public get(info: string): T | undefined;
+  public get(info: U | string): T | undefined {
+    return this.find((asset: any) => [asset.address, asset.symbol].includes(info));
   }
 }
 
-export const NativeAssets = new ArrayLike<Asset>([
+export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
   {
     address: '0x0200000000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XOR,
@@ -109,7 +111,7 @@ export const NativeAssets = new ArrayLike<Asset>([
   },
 ]);
 
-export const KnownAssets = new ArrayLike<Asset>([
+export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
   ...NativeAssets,
   {
     address: '0x0200060000000000000000000000000000000000000000000000000000000000',

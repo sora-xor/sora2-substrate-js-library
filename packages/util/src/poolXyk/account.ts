@@ -2,15 +2,16 @@ import { xxhashAsU8a } from '@polkadot/util-crypto/xxhash';
 import type { ApiPromise } from '@polkadot/api';
 
 import { types } from '@sora-substrate/type-definitions';
+import type { SoraDefinitions } from '@sora-substrate/type-definitions';
 import type { Api } from '../api';
 import type { AssetId, AccountId, TechAssetId, TechAccountId } from '@sora-substrate/types';
 
-const predefinedAssets = types['PredefinedAssetId']['_enum'];
+const predefinedAssets = (types as unknown as SoraDefinitions).PredefinedAssetId._enum;
 
 function bytesToUint(bytes: Uint8Array): number {
   let value = 0;
-  for (var i = 0; i < bytes.length; i++) {
-    value = value * 256 + bytes[i];
+  for (const element of bytes) {
+    value = value * 256 + element;
   }
   return value;
 }
