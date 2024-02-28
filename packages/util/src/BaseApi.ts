@@ -346,8 +346,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     };
   }
 
-  public async submitApiExtrinsic(
-    // NOSONAR
+  // prettier-ignore
+  public async submitApiExtrinsic( // NOSONAR
     api: ApiPromise,
     extrinsic: SubmittableExtrinsic<'promise'>,
     signer: KeyringPair,
@@ -498,9 +498,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
    */
   private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic<'promise'> | null {
     try {
-      switch (
-        operation // NOSONAR
-      ) {
+      // prettier-ignore
+      switch (operation) { // NOSONAR
         case Operation.AddLiquidity:
           return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', 0, 0, 0, 0);
         case Operation.CreatePair:

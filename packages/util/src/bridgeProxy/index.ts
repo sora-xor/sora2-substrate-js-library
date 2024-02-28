@@ -53,8 +53,8 @@ export class BridgeProxyModule<T> {
     this.sub.logout();
   }
 
-  public async getListApps(): Promise<SupportedApps> {
-    // NOSONAR
+  // prettier-ignore
+  public async getListApps(): Promise<SupportedApps> { // NOSONAR
     const apps: SupportedApps = {
       [BridgeNetworkType.Eth]: {},
       [BridgeNetworkType.Evm]: {},

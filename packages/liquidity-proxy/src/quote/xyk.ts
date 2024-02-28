@@ -202,8 +202,8 @@ export const xykQuote = (
         return xykQuoteB(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
       }
     } else {
-      if (isBaseAssetInput) {
-        // NOSONAR
+      // prettier-ignore
+      if (isBaseAssetInput) { // NOSONAR
         return xykQuoteC(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
       } else {
         return xykQuoteD(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
@@ -239,8 +239,8 @@ export const xykQuoteWithoutImpact = (
         return amountWithFee.mul(FPNumber.ONE.sub(feeRatio));
       }
     } else {
-      if (isBaseAssetInput) {
-        // NOSONAR
+      // prettier-ignore
+      if (isBaseAssetInput) { // NOSONAR
         const amountWithoutFee = safeDivide(amount.mul(inputReserves), outputReserves);
 
         return safeDivide(amountWithoutFee, FPNumber.ONE.sub(feeRatio));
