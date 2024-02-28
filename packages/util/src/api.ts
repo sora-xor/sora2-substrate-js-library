@@ -23,6 +23,7 @@ import { StakingModule } from './staking';
 import { DemeterFarmingModule } from './demeterFarming';
 import { DexModule } from './dex';
 import { CeresLiquidityLockerModule } from './ceresLiquidityLocker';
+import { KensetsuModule } from './kensetsu';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
@@ -55,6 +56,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly demeterFarming = new DemeterFarmingModule<T>(this);
   public readonly dex = new DexModule<T>(this);
   public readonly ceresLiquidityLocker = new CeresLiquidityLockerModule<T>(this);
+  public readonly kensetsu = new KensetsuModule<T>(this);
 
   public override initAccountStorage() {
     super.initAccountStorage();
@@ -436,9 +438,9 @@ export class Api<T = void> extends BaseApi<T> {
     const one = new FPNumber(1, decimals);
     const firstAmountNum = new FPNumber(firstAmount, decimals);
     const secondAmountNum = new FPNumber(secondAmount, decimals);
-    const result = !reversed
-      ? firstAmountNum.div(!secondAmountNum.isZero() ? secondAmountNum : one)
-      : secondAmountNum.div(!firstAmountNum.isZero() ? firstAmountNum : one);
+    const nonReversedSecond = !secondAmountNum.isZero() ? secondAmountNum : one;
+    const reversedSecond = !firstAmountNum.isZero() ? firstAmountNum : one;
+    const result = !reversed ? firstAmountNum.div(nonReversedSecond) : secondAmountNum.div(reversedSecond);
     return result.format();
   }
 
