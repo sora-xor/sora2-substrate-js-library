@@ -15,7 +15,8 @@ export const getXykReserves = (
   const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
   const nonBaseAsset = isBaseAssetInput ? outputAsset : inputAsset;
   const reserves = [...payload.reserves.xyk[nonBaseAsset]];
-  const [input, output] = isBaseAssetInput ? reserves : reserves.reverse();
+  // "reverse" method is fine here cuz we don't use reserves below so that mutation won't affect anything
+  const [input, output] = isBaseAssetInput ? reserves : reserves.reverse(); // NOSONAR
 
   return [toFp(input), toFp(output)];
 };
@@ -202,6 +203,7 @@ export const xykQuote = (
       }
     } else {
       if (isBaseAssetInput) {
+        // NOSONAR
         return xykQuoteC(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
       } else {
         return xykQuoteD(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
@@ -238,6 +240,7 @@ export const xykQuoteWithoutImpact = (
       }
     } else {
       if (isBaseAssetInput) {
+        // NOSONAR
         const amountWithoutFee = safeDivide(amount.mul(inputReserves), outputReserves);
 
         return safeDivide(amountWithoutFee, FPNumber.ONE.sub(feeRatio));

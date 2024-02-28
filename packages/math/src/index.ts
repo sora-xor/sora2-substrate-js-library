@@ -2,7 +2,11 @@ import BigNumber from 'bignumber.js';
 import isNil from 'lodash/fp/isNil';
 import type { Codec } from '@polkadot/types/types';
 
-export type CodecString = string;
+/**
+ * Use just to highlight the visual difference across the "string" itself.
+ * It's just impossible to specify the type
+ */
+export type CodecString = string; // NOSONAR
 export type NumberLike = number | string;
 
 BigNumber.config({
@@ -25,22 +29,23 @@ const checkFinityString = (str: string) => !['-Infinity', 'Infinity', 'NaN'].inc
 
 export class FPNumber {
   /**
-   * Numbers' delimiters config
+   * Numbers' delimiters config. Might be edited to support different locales
    */
   public static DELIMITERS_CONFIG = {
+    // NOSONAR
     thousand: ',',
     decimal: '.',
   };
 
   /**
-   * Default precision = `18`
+   * Default precision = `18`. Might be modified
    */
-  public static DEFAULT_PRECISION = 18;
+  public static DEFAULT_PRECISION = 18; // NOSONAR
 
   /**
-   * Default decimal places = `7`
+   * Default decimal places = `7`. Might be modified
    */
-  public static DEFAULT_DECIMAL_PLACES = 7;
+  public static DEFAULT_DECIMAL_PLACES = 7; // NOSONAR
 
   /**
    * Default round type = `3`

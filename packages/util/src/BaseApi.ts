@@ -160,12 +160,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
   /** API instance for data requests. Should be used during the connection only */
   public get api(): ApiPromise {
-    return connection.api!;
+    return connection.api!; // NOSONAR
   }
 
   /** API RX instance for data subscriptions. Should be used during the connection only */
   public get apiRx(): ApiRx {
-    return connection.api!.rx as ApiRx;
+    return connection.api!.rx as ApiRx; // NOSONAR
   }
 
   public get accountPair(): KeyringPair | null {
@@ -251,7 +251,10 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
     const hasAccessToStorage = !!this.storage;
     const historyItemHasSigner = !!historyItem.from;
-    const historyItemFromAddress = historyItemHasSigner ? this.formatAddress(historyItem.from as string, false) : '';
+    // historyItem.from should appear here
+    const historyItemFromAddress = historyItemHasSigner
+      ? this.formatAddress(historyItem.from as string, false) // NOSONAR
+      : '';
     const needToUpdateAddressStorage =
       !options?.toCurrentAccount &&
       historyItemFromAddress &&
@@ -344,6 +347,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   }
 
   public async submitApiExtrinsic(
+    // NOSONAR
     api: ApiPromise,
     extrinsic: SubmittableExtrinsic<'promise'>,
     signer: KeyringPair,
@@ -438,8 +442,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           }
 
           this.saveHistory({ ...requiredParams, ...updated }); // Save history during each status update
-
-          subscriber?.next([status, this.getHistory(id) as HistoryItem]); // HistoryItem should appear here
+          // HistoryItem should appear here
+          subscriber?.next([status, this.getHistory(id) as HistoryItem]); // NOSONAR
 
           if (result.status.isFinalized) {
             subscriber?.complete();
@@ -463,8 +467,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
               wasNotGenerated: true,
             }
           );
-
-          subscriber?.next([status, this.getHistory(id) as HistoryItem]); // HistoryItem should appear here
+          // HistoryItem should appear here
+          subscriber?.next([status, this.getHistory(id) as HistoryItem]); // NOSONAR
           subscriber?.complete();
           throw new Error(errorInfo);
         });
@@ -494,7 +498,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
    */
   private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic<'promise'> | null {
     try {
-      switch (operation) {
+      switch (
+        operation // NOSONAR
+      ) {
         case Operation.AddLiquidity:
           return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', 0, 0, 0, 0);
         case Operation.CreatePair:

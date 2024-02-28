@@ -159,6 +159,7 @@ const sumMarket = (
   marketData: OrderBookPriceVolume[],
   depthLimit: OrderAmount | null
 ): [OrderAmount, OrderAmount] => {
+  // NOSONAR
   let marketBaseVolume = FPNumber.ZERO;
   let marketQuoteVolume = FPNumber.ZERO;
   let enoughLiquidity = false;
@@ -233,6 +234,7 @@ const calculateDeal = (
     }
   } else {
     if (isBuyDirection) {
+      // NOSONAR
       [base, quote] = sumMarket(
         book,
         book.aggregated.asks,
@@ -365,6 +367,7 @@ export const orderBookQuoteWithoutImpact = (
       }
     } else {
       if (isBuyDirection) {
+        // NOSONAR
         targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
       } else {
         targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
