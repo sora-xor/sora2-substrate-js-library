@@ -75,6 +75,10 @@ export class SystemModule<T> {
     return (await apiInstanceAtBlock.query.timestamp.now()).toNumber();
   }
 
+  public async getCurrentTimestamp(api = this.root.api): Promise<number> {
+    return (await api.query.timestamp.now()).toNumber();
+  }
+
   public async getExtrinsicsFromBlock(
     blockId: string,
     api = this.root.api
