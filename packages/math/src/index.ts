@@ -261,7 +261,7 @@ export class FPNumber {
     return this.value.toFormat();
   }
 
-  public format(dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format): string {
+  public format(dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format, preserveOrder = false): string {
     const value = this.value.div(10 ** this.precision);
     if (value.isZero()) {
       return format ? value.toFormat(format) : value.toFormat();
@@ -271,15 +271,22 @@ export class FPNumber {
       // First significant character
       formatted = new BigNumber(value.toFormat().replace(/(0\.0*[1-9])(\d*)/, '$1'));
     }
+    if (format && preserveOrder) {
+      return formatted.toFormat(dp, format);
+    }
     return format ? formatted.toFormat(format) : formatted.toFormat();
   }
 
-  public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES): string {
-    let [integer, decimal] = this.format(dp, {
-      groupSize: 3,
-      groupSeparator: FPNumber.DELIMITERS_CONFIG.thousand,
-      decimalSeparator: FPNumber.DELIMITERS_CONFIG.decimal,
-    }).split(FPNumber.DELIMITERS_CONFIG.decimal);
+  public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES, preserveOrder = false): string {
+    let [integer, decimal] = this.format(
+      dp,
+      {
+        groupSize: 3,
+        groupSeparator: FPNumber.DELIMITERS_CONFIG.thousand,
+        decimalSeparator: FPNumber.DELIMITERS_CONFIG.decimal,
+      },
+      preserveOrder
+    ).split(FPNumber.DELIMITERS_CONFIG.decimal);
 
     return decimal ? integer.concat(FPNumber.DELIMITERS_CONFIG.decimal, decimal) : integer;
   }
