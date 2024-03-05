@@ -202,6 +202,29 @@ describe('FPNumber', () => {
   );
 
   it.each([
+    ['-Infinity', 8, '-Infinity'],
+    ['Infinity', 8, 'Infinity'],
+    ['0', 8, '0'],
+    ['10', 0, '10'],
+    ['10.9', 0, '109'],
+    ['10,9', 0, '109'],
+    ['1 0 9', 1, '10.9'],
+    ['-10', 0, '-10'],
+    ['NaN', 8, 'NaN'],
+    ['-1234567890', 8, '-12.3456789'],
+    ['1234567890', 8, '12.3456789'],
+    ['12345678912', 10, '1.2345678912'],
+    ['1000000000', 9, '1'],
+    ['1000000000', 10, '0.1'],
+  ])(
+    '[FPNumber.fromCodecValue] instance of "%s" with precision "%s" should display "%s"',
+    (value, precision, result) => {
+      const instance = FPNumber.fromCodecValue(value, precision);
+      expect(instance.toString()).toBe(result);
+    }
+  );
+
+  it.each([
     ['0', 18, '0'],
     ['-0', 18, '0'],
     [0, 18, '0'],
@@ -244,6 +267,41 @@ describe('FPNumber', () => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
     expect(instance1.add(instance2).toString()).toBe(result);
+  });
+
+  it.each([
+    [1, 18, 2, 18, '1'],
+    [2, 18, 3, 5, '8'],
+    [2, 18, 0, 5, '1'],
+    [1, 18, -2, 18, '1'],
+    [1, 18, 0, 18, '1'],
+    [1.5, 10, 2, 18, '2.25'],
+    [1.5, 10, -2, 18, '0.4444444444'],
+    [-1.5, 10, 2, 18, '2.25'],
+    [-1.5, 10, -2, 18, '0.4444444444'],
+    [1.00001, 10, 200_000, 18, '7.3889822093'],
+    [1.00001, 10, 2_000_000, 18, '485116681.7029644'],
+    [1, 10, '-Infinity', 18, 'NaN'],
+    [1, 10, 'Infinity', 18, 'NaN'],
+    [1, 10, 'NaN', 18, 'NaN'],
+    ['-Infinity', 10, 1, 18, '-Infinity'],
+    ['-Infinity', 10, 2, 18, 'Infinity'],
+    ['-Infinity', 10, 0, 18, '1'],
+    ['-Infinity', 10, -1, 18, '0'],
+    ['Infinity', 10, 1, 18, 'Infinity'],
+    ['Infinity', 10, 2, 18, 'Infinity'],
+    ['Infinity', 10, 0, 18, '1'],
+    ['Infinity', 10, -1, 18, '0'],
+    ['NaN', 10, 1, 18, 'NaN'],
+    ['Infinity', 10, 'Infinity', 18, 'Infinity'],
+    ['Infinity', 10, '-Infinity', 18, '0'],
+    ['-Infinity', 10, 'Infinity', 18, 'Infinity'],
+    ['-Infinity', 10, '-Infinity', 18, '0'],
+    ['NaN', 10, 'NaN', 18, 'NaN'],
+  ])('[pow] (value "%s", precision "%s") ** (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
+    const instance1 = new FPNumber(num1, pr1);
+    const instance2 = new FPNumber(num2, pr2);
+    expect(instance1.pow(instance2).toString()).toBe(result);
   });
 
   it.each([
