@@ -298,12 +298,15 @@ export class FPNumber {
    * Returns a string representation of the value using the custom formatting.
    * @param dp max decimal places
    * @param format BigNumber.Format object
-   * @param preserveOrder (default: false) Keep empty decimals related to the dp param
+   * @param preserveOrder (default: false) Keep empty decimals related to the **dp** param
    */
   public format(dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format, preserveOrder = false): string {
     const value = this.value;
     if (value.isZero()) {
-      return format ? value.toFormat(format) : value.toFormat();
+      if (format) {
+        return preserveOrder ? value.toFormat(dp, format) : value.toFormat(format);
+      }
+      return value.toFormat();
     }
     let formatted = value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
     if (formatted.isZero()) {
@@ -316,12 +319,21 @@ export class FPNumber {
     return formatted.toFormat();
   }
 
-  public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES): string {
-    let [integer, decimal] = this.format(dp, {
-      groupSize: 3,
-      groupSeparator: FPNumber.DELIMITERS_CONFIG.thousand,
-      decimalSeparator: FPNumber.DELIMITERS_CONFIG.decimal,
-    }).split(FPNumber.DELIMITERS_CONFIG.decimal);
+  /**
+   * Converts a number to a string by using the current locale params.
+   * @param dp max decimal places
+   * @param preserveOrder (default: false) Keep empty decimals related to the **dp** param
+   */
+  public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES, preserveOrder = false): string {
+    let [integer, decimal] = this.format(
+      dp,
+      {
+        groupSize: 3,
+        groupSeparator: FPNumber.DELIMITERS_CONFIG.thousand,
+        decimalSeparator: FPNumber.DELIMITERS_CONFIG.decimal,
+      },
+      preserveOrder
+    ).split(FPNumber.DELIMITERS_CONFIG.decimal);
 
     return decimal ? integer.concat(FPNumber.DELIMITERS_CONFIG.decimal, decimal) : integer;
   }
