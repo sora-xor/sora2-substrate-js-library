@@ -108,6 +108,35 @@ describe('FPNumber', () => {
   );
 
   it.each([
+    [1234.5678, 6, '1,234.567800'],
+    ['1234.5678', 6, '1,234.567800'],
+    [-1234.5678, 6, '-1,234.567800'],
+    ['-1234.5678', 6, '-1,234.567800'],
+    [12341234.5678, 5, '12,341,234.56780'],
+    ['12341234.5678', 5, '12,341,234.56780'],
+    [234.5678, 3, '234.567'],
+    ['234.5678', 3, '234.567'],
+    [0.0009, 3, '0.001'],
+    ['0.0009', 3, '0.001'],
+    [0.0019, 3, '0.001'],
+    ['0.0019', 3, '0.001'],
+    [0.0019, 8, '0.00190000'],
+    ['-0.0019', 8, '-0.00190000'],
+  ])(
+    '[format with preserveOrder: dp "%s", custom formatting] instance of "%s" with precision "4" should display "%s"',
+    (value, dp, result) => {
+      const format = {
+        decimalSeparator: '.',
+        groupSeparator: ',',
+        groupSize: 3,
+        fractionGroupSeparator: '',
+      };
+      const instance = new FPNumber(value, 4);
+      expect(instance.format(dp, format, true)).toBe(result);
+    }
+  );
+
+  it.each([
     ['0', 18, '0.000'],
     ['-0', 18, '0.000'],
     [0, 18, '0.000'],

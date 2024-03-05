@@ -294,7 +294,13 @@ export class FPNumber {
     return this.codec;
   }
 
-  public format(dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format): string {
+  /**
+   * Returns a string representation of the value using the custom formatting.
+   * @param dp max decimal places
+   * @param format BigNumber.Format object
+   * @param preserveOrder (default: false) Keep empty decimals related to the dp param
+   */
+  public format(dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format, preserveOrder = false): string {
     const value = this.value;
     if (value.isZero()) {
       return format ? value.toFormat(format) : value.toFormat();
@@ -304,7 +310,10 @@ export class FPNumber {
       // First significant character
       formatted = new BigNumber(value.toFormat().replace(/(0\.0*[1-9])(\d*)/, '$1'));
     }
-    return format ? formatted.toFormat(format) : formatted.toFormat();
+    if (format) {
+      return preserveOrder ? formatted.toFormat(dp, format) : formatted.toFormat(format);
+    }
+    return formatted.toFormat();
   }
 
   public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES): string {
