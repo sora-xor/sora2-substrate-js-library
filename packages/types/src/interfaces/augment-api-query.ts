@@ -1017,7 +1017,7 @@ declare module '@polkadot/api-base/types/storage' {
       pendingFreeReserves: AugmentedQuery<ApiType, () => Observable<Vec<ITuple<[CommonPrimitivesAssetId32, u128]>>>, []>;
       priceChangeRate: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
-       * Cofficients in buy price function.
+       * Coefficients in buy price function.
        **/
       priceChangeStep: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
