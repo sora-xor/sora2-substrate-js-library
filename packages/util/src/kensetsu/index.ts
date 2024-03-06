@@ -157,6 +157,7 @@ export class KensetsuModule<T> {
 
   /**
    * Usage: statistical information, for instance, Explore page
+   *
    * @todo Use entriesPaged cuz it might become complex to request all entries per one request
    */
   async getCollaterals(): Promise<Record<string, Collateral>> {
