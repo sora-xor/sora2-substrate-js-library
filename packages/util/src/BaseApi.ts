@@ -102,6 +102,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   public NetworkFee = {
     [Operation.AddLiquidity]: '0',
     [Operation.CreatePair]: '0',
+    [Operation.CreateVault]: '0',
     [Operation.EthBridgeIncoming]: '0',
     [Operation.EthBridgeOutgoing]: '0',
     [Operation.EvmIncoming]: '0',
@@ -508,6 +509,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             this.api.tx.poolXYK.initializePool(DexId.XOR, '', ''),
             this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', 0, 0, 0, 0),
           ]);
+        case Operation.CreateVault:
+          return this.api.tx.kensetsu.createCdp('', 0, 0);
         case Operation.EthBridgeIncoming:
         case Operation.EvmIncoming:
         case Operation.SubstrateIncoming:
@@ -716,8 +719,8 @@ export enum Operation {
   Swap = 'Swap',
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
-  CreateVault = 'CreateVault',
   CreatePair = 'CreatePair',
+  CreateVault = 'CreateVault',
   Faucet = 'Faucet',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',

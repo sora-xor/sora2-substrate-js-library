@@ -1,4 +1,4 @@
-import { api } from '@sora-substrate/util';
+import { FPNumber, api } from '@sora-substrate/util';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 import { XOR } from '@sora-substrate/util/assets/consts';
 
@@ -72,7 +72,8 @@ async function main(): Promise<void> {
     console.info('newDebt for selected vault (+ 5 seconds)', newDebt.toString());
 
     console.info('\n\nVault Creation__________________________');
-    await api.kensetsu.createVault(XOR, 10, 10);
+    console.info(`Network fee: ${FPNumber.fromCodecValue(api.NetworkFee.CreateVault).toString()} XOR`);
+    await api.kensetsu.createVault(XOR, 10, 20);
     await delay();
     console.info('History:', api.historyList[0]);
   }, SORA_ENV.predev);
