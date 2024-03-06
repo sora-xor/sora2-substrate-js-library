@@ -597,9 +597,6 @@ declare module '@polkadot/types/lookup' {
   /** @name CommonPrimitivesPredefinedAssetId (68) */
   interface CommonPrimitivesPredefinedAssetId extends Enum {
     readonly isXor: boolean;
-    readonly isDot: boolean;
-    readonly isKsm: boolean;
-    readonly isUsdt: boolean;
     readonly isVal: boolean;
     readonly isPswap: boolean;
     readonly isDai: boolean;
@@ -608,7 +605,7 @@ declare module '@polkadot/types/lookup' {
     readonly isXst: boolean;
     readonly isTbcd: boolean;
     readonly isKusd: boolean;
-    readonly type: 'Xor' | 'Dot' | 'Ksm' | 'Usdt' | 'Val' | 'Pswap' | 'Dai' | 'Eth' | 'Xstusd' | 'Xst' | 'Tbcd' | 'Kusd';
+    readonly type: 'Xor' | 'Val' | 'Pswap' | 'Dai' | 'Eth' | 'Xstusd' | 'Xst' | 'Tbcd' | 'Kusd';
   }
 
   /** @name TradingPairEvent (70) */
