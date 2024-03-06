@@ -716,6 +716,7 @@ export enum Operation {
   Swap = 'Swap',
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
+  CreateVault = 'CreateVault',
   CreatePair = 'CreatePair',
   Faucet = 'Faucet',
   EthBridgeOutgoing = 'EthBridgeOutgoing',

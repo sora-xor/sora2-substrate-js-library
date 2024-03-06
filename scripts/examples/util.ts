@@ -5,7 +5,7 @@ import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 const TST_MNEMONIC = 'street firm worth record skin taste legend lobster magnet stove drive side';
 
-export async function delay(ms = 40000): Promise<void> {
+export async function delay(ms = 40_000): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 

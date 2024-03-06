@@ -1,14 +1,15 @@
 import { map } from 'rxjs';
 import { assert } from '@polkadot/util';
-import { FPNumber } from '@sora-substrate/math';
+import { FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 import type { Vec, u128 } from '@polkadot/types-codec';
 
 import { Messages } from '../logger';
 import type { Api } from '../api';
-import type { Asset } from '../assets/types';
+import type { AccountAsset, Asset } from '../assets/types';
 import type { Collateral, Vault } from './types';
+import { Operation } from '../BaseApi';
 
 export class KensetsuModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -273,6 +274,26 @@ export class KensetsuModule<T> {
         }
         return vaults;
       })
+    );
+  }
+
+  createVault(asset: Asset | AccountAsset, collateralAmount: NumberLike, borrowAmount: NumberLike): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
+    const assetAddress = asset.address;
+    const collateralCodec = new FPNumber(collateralAmount).codec;
+    const borrowCodec = new FPNumber(borrowAmount).codec;
+
+    return this.root.submitExtrinsic(
+      this.root.api.tx.kensetsu.createCdp(assetAddress, collateralCodec, borrowCodec),
+      this.root.account.pair,
+      {
+        type: Operation.CreateVault,
+        amount: `${collateralAmount}`,
+        amount2: `${borrowAmount}`,
+        assetAddress,
+        symbol: asset.symbol,
+      }
     );
   }
 }

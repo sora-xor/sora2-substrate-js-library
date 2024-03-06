@@ -70,6 +70,11 @@ async function main(): Promise<void> {
     console.info('calcNewCoeff for selected collateral (+ 5 seconds)', newCoeff.toString());
     newDebt = api.kensetsu.calcNewDebt(collateral, vault);
     console.info('newDebt for selected vault (+ 5 seconds)', newDebt.toString());
+
+    console.info('\n\nVault Creation__________________________');
+    await api.kensetsu.createVault(XOR, 10, 10);
+    await delay();
+    console.info('History:', api.historyList[0]);
   }, SORA_ENV.predev);
 }
 
