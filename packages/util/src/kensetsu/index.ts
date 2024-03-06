@@ -283,7 +283,7 @@ export class KensetsuModule<T> {
     const assetAddress = asset.address;
     const collateralCodec = new FPNumber(collateralAmount).codec;
     const borrowCodec = new FPNumber(borrowAmount).codec;
-
+    // add asset2Address and symbol2 in future
     return this.root.submitExtrinsic(
       this.root.api.tx.kensetsu.createCdp(assetAddress, collateralCodec, borrowCodec),
       this.root.account.pair,
