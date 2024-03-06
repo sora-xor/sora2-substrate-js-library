@@ -211,54 +211,65 @@ export class FPNumber {
 
   public readonly value: BigNumber;
 
+  private formatInitialDataString(data: string): string {
+    if (!isFinityString(data)) return data; // '-Infinity', 'Infinity', 'NaN'
+
+    if (isZeroString(data)) return '0';
+
+    const withoutFormatting = data.replace(/[, ]/g, '');
+    const [integer, fractional] = withoutFormatting.split('.') as [string, string | undefined];
+
+    if (!(integer && Number.isFinite(+integer)) || (fractional && !Number.isFinite(+fractional))) {
+      return 'NaN';
+    }
+
+    return `${integer ?? 0}.${fractional ?? 0}`;
+  }
+
+  private formatInitialDataCodec(data: Codec, precision: number): string {
+    const json = data.toJSON() as (AnyJson & { balance: string }) | null;
+    // `BalanceInfo` or `Balance` check
+    let str = json && !isNil(json.balance) ? `${json.balance}`.replace(/[,. ]/g, '') : data.toString();
+
+    if (!isFinityString(str)) return str; // '-Infinity', 'Infinity', 'NaN'
+
+    if (isZeroString(str)) return '0';
+
+    const isNegative = str.startsWith('-');
+    if (isNegative) {
+      str.replace('-', '');
+    }
+
+    let fractionalPart = '';
+    let integerPart = '';
+    const zerosLeftInFractionalPart = precision - str.length;
+
+    if (zerosLeftInFractionalPart >= 0) {
+      // only fractional part
+      integerPart = '0';
+      fractionalPart = `${Array(zerosLeftInFractionalPart).fill(0).join('')}${str}`;
+    } else {
+      const integerLength = str.length - precision;
+      integerPart = str.slice(0, integerLength);
+      fractionalPart = str.slice(integerLength);
+    }
+
+    if (!(Number.isFinite(+integerPart) && Number.isFinite(+fractionalPart))) {
+      return 'NaN';
+    }
+
+    return `${isNegative ? '-' : ''}${integerPart}.${fractionalPart}`;
+  }
+
   private formatInitialData(data: string | number | Codec, precision: number): string | number {
     if (typeof data === 'number') {
       return data;
     }
     if (typeof data === 'string') {
-      if (!isFinityString(data)) return data; // '-Infinity', 'Infinity', 'NaN'
-
-      if (isZeroString(data)) return '0';
-
-      const withoutFormatting = data.replace(/[, ]/g, '');
-      const [integer, fractional] = withoutFormatting.split('.') as [string, string | undefined];
-
-      if (!(integer && Number.isFinite(+integer))) return 'NaN';
-      if (fractional && !Number.isFinite(+fractional)) return 'NaN';
-
-      return `${integer ?? 0}.${fractional ?? 0}`;
+      return this.formatInitialDataString(data);
     }
     if ('toString' in data) {
-      const json = data.toJSON() as (AnyJson & { balance: string }) | null;
-      // `BalanceInfo` or `Balance` check
-      let str = json && !isNil(json.balance) ? `${json.balance}`.replace(/[,. ]/g, '') : data.toString();
-
-      if (!isFinityString(str)) return str; // '-Infinity', 'Infinity', 'NaN'
-
-      if (isZeroString(str)) return '0';
-
-      const isNegative = str.startsWith('-');
-      if (isNegative) {
-        str.replace('-', '');
-      }
-
-      let fractionalPart = '';
-      let integerPart = '';
-      const zerosLeftInFractionalPart = precision - str.length;
-
-      if (zerosLeftInFractionalPart >= 0) {
-        // only fractional part
-        integerPart = '0';
-        fractionalPart = `${Array(zerosLeftInFractionalPart).fill(0).join('')}${str}`;
-      } else {
-        const integerLength = str.length - precision;
-        integerPart = str.slice(0, integerLength);
-        fractionalPart = str.slice(integerLength);
-      }
-
-      if (!(Number.isFinite(+integerPart) && Number.isFinite(+fractionalPart))) return 'NaN';
-
-      return `${isNegative ? '-' : ''}${integerPart}.${fractionalPart}`;
+      return this.formatInitialDataCodec(data, precision);
     }
     return 0;
   }
