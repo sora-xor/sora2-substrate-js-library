@@ -3845,7 +3845,7 @@ returns: `FixnumFixedPoint`
 
 #### **api.query.multicollateralBondingCurvePool.priceChangeStep**
 
-> Cofficients in buy price function.
+> Coefficients in buy price function.
 
 arguments: -
 
@@ -11641,6 +11641,7 @@ arguments:
 > - `selected_source_types`: list of selected LiquiditySource types, selection effect is
 >   determined by filter_mode,
 > - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
+> - `additional_data`: data to include in swap success event.
 
 arguments:
 
@@ -11649,6 +11650,7 @@ arguments:
 - maxInputAmount: `u128`
 - selectedSourceTypes: `Vec<CommonPrimitivesLiquiditySourceType>`
 - filterMode: `CommonPrimitivesFilterMode`
+- additionalData: `Option<Bytes>`
 <hr>
 
 #### **api.tx.liquidityProxy.enableLiquiditySource**
@@ -11812,7 +11814,7 @@ arguments:
 
 - bidsOwner: `AccountId32`
 - asksOwner: `AccountId32`
-- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookSettingsOrderBookAttributes,QaToolsPalletToolsOrderBookSettingsOrderBookFill)>`
+- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookOrderBookAttributes,QaToolsPalletToolsOrderBookFillInput)>`
 <hr>
 
 #### **api.tx.qaTools.orderBookFillBatch**
@@ -11832,7 +11834,63 @@ arguments:
 
 - bidsOwner: `AccountId32`
 - asksOwner: `AccountId32`
-- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookSettingsOrderBookFill)>`
+- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookFillInput)>`
+<hr>
+
+#### **api.tx.qaTools.xykInitialize**
+
+> Initialize xyk pool liquidity source.
+>
+> Parameters:
+>
+> - `origin`: Root
+> - `account`: Some account to use during the initialization
+> - `pairs`: Asset pairs to initialize.
+
+arguments:
+
+- account: `AccountId32`
+- pairs: `Vec<QaToolsPalletToolsPoolXykAssetPairInput>`
+<hr>
+
+#### **api.tx.qaTools.xstInitialize**
+
+> Initialize xst liquidity source. In xst's `quote`, one of the assets is the synthetic base
+> (XST) and the other one is a synthetic asset.
+>
+> Parameters:
+>
+> - `origin`: Root
+> - `base_prices`: Synthetic base asset price update. Usually buy price > sell.
+> - `synthetics_prices`: Synthetic initialization;
+>   registration of an asset + setting up prices for target quotes.
+> - `relayer`: Account which will be the author of prices fed to `band` pallet;
+>
+> Emits events with actual quotes achieved after initialization;
+> more details in [`liquidity_sources::initialize_xst`]
+
+arguments:
+
+- basePrices: `Option<QaToolsPalletToolsXstBaseInput>`
+- syntheticsPrices: `Vec<QaToolsPalletToolsXstSyntheticInput>`
+- relayer: `AccountId32`
+<hr>
+
+#### **api.tx.qaTools.priceToolsSetAssetPrice**
+
+> Set prices of an asset in `price_tools` pallet.
+> Ignores pallet restrictions on price speed change.
+>
+> Parameters:
+>
+> - `origin`: Root
+> - `asset_per_xor`: Prices (1 XOR in terms of the corresponding asset).
+> - `asset_id`: Asset identifier; can be some common constant for easier input.
+
+arguments:
+
+- assetPerXor: `QaToolsPalletToolsPriceToolsAssetPrices`
+- assetId: `QaToolsInputAssetId`
 <hr>
 
 ## Author pallet
