@@ -17,7 +17,9 @@ BigNumber.config({
   },
 });
 
-type NumberType = Codec | string | number | BigNumber | FPNumber;
+type OperatorParam = string | number | BigNumber;
+type OperatorParamFull = FPNumber | string | number | BigNumber;
+type NumberType = Codec | FPNumber | string | number | BigNumber;
 
 const isFinityString = (str: string) => !['-Infinity', 'Infinity', 'NaN'].includes(str);
 const isZeroString = (str: string) => str === '0' || str === '-0';
@@ -380,8 +382,8 @@ export class FPNumber {
    * Addition (+) operator
    * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
    */
-  public add(target: string | number | BigNumber): FPNumber;
-  public add(target: FPNumber | string | number | BigNumber): FPNumber {
+  public add(target: OperatorParam): FPNumber;
+  public add(target: OperatorParamFull): FPNumber {
     const value = target instanceof FPNumber ? target.value : target;
     return new FPNumber(this.value.plus(value), this.precision);
   }
@@ -395,8 +397,8 @@ export class FPNumber {
    * Subtraction (-) operator
    * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
    */
-  public sub(target: string | number | BigNumber): FPNumber;
-  public sub(target: FPNumber | string | number | BigNumber): FPNumber {
+  public sub(target: OperatorParam): FPNumber;
+  public sub(target: OperatorParamFull): FPNumber {
     const value = target instanceof FPNumber ? target.value : target;
     return new FPNumber(this.value.minus(value), this.precision);
   }
@@ -410,8 +412,8 @@ export class FPNumber {
    * Multiplication (*) operator
    * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
    */
-  public mul(target: string | number | BigNumber): FPNumber;
-  public mul(target: FPNumber | string | number | BigNumber): FPNumber {
+  public mul(target: OperatorParam): FPNumber;
+  public mul(target: OperatorParamFull): FPNumber {
     const value = target instanceof FPNumber ? target.value : target;
     return new FPNumber(this.value.times(value), this.precision);
   }
@@ -425,8 +427,8 @@ export class FPNumber {
    * Div (/) operator
    * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
    */
-  public div(target: string | number | BigNumber): FPNumber;
-  public div(target: FPNumber | string | number | BigNumber): FPNumber {
+  public div(target: OperatorParam): FPNumber;
+  public div(target: OperatorParamFull): FPNumber {
     const value = target instanceof FPNumber ? target.value : target;
     return new FPNumber(this.value.div(value), this.precision);
   }
@@ -440,8 +442,8 @@ export class FPNumber {
    * Mod (%) operator
    * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
    */
-  public mod(target: string | number | BigNumber): FPNumber;
-  public mod(target: FPNumber | string | number | BigNumber): FPNumber {
+  public mod(target: OperatorParam): FPNumber;
+  public mod(target: OperatorParamFull): FPNumber {
     const value = target instanceof FPNumber ? target.value : target;
     return new FPNumber(this.value.mod(value), this.precision);
   }
@@ -461,8 +463,8 @@ export class FPNumber {
    *
    * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
    */
-  public isZeroMod(target: string | number | BigNumber): boolean;
-  public isZeroMod(target: FPNumber | string | number | BigNumber): boolean {
+  public isZeroMod(target: OperatorParam): boolean;
+  public isZeroMod(target: OperatorParamFull): boolean {
     const value = target instanceof FPNumber ? target.value : target;
     return new FPNumber(this.value.mod(value), this.precision).isZero();
   }
@@ -490,8 +492,8 @@ export class FPNumber {
    * Pow (**) operator
    * @param {string | number | BigNumber} exp Exponent number represented by 'string', 'number' or 'BigNumber' type
    */
-  public pow(exp: string | number | BigNumber): FPNumber;
-  public pow(exp: FPNumber | string | number | BigNumber): FPNumber {
+  public pow(exp: OperatorParam): FPNumber;
+  public pow(exp: OperatorParamFull): FPNumber {
     const value = exp instanceof FPNumber ? exp.value : exp;
     const numValue = value instanceof BigNumber ? value.toNumber() : +value;
     // BigNumber.pow works really slow so Math.pow should be used here
