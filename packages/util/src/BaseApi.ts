@@ -538,7 +538,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             'Disabled'
           );
         case Operation.SwapTransferBatch:
-          return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled');
+          return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled', null);
         case Operation.ClaimVestedRewards:
           return this.api.tx.vestedRewards.claimRewards();
         case Operation.ClaimCrowdloanRewards:

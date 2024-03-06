@@ -670,9 +670,9 @@ declare module '@polkadot/api-base/types/events' {
       ADARFeeWithdrawn: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, u128]>;
       /**
        * Batch of swap transfers has been performed
-       * [Input asset ADAR Fee, Input amount]
+       * [Input asset ADAR Fee, Input amount, Additional Data]
        **/
-      BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128]>;
+      BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128, Option<Bytes>]>;
       /**
        * Exchange of tokens has been performed
        * [Caller Account, DEX Id, Input Asset Id, Output Asset Id, Input Amount, Output Amount, Fee Amount]

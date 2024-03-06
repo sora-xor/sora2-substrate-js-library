@@ -769,24 +769,6 @@ export class SwapModule<T> {
     );
   }
 
-  private calcTxParamsSwapTransferBatch(
-    asset: Asset | AccountAsset,
-    maxAmount: NumberLike,
-    liquiditySource = LiquiditySourceTypes.Default
-  ) {
-    assert(this.root.account, Messages.connectWallet);
-    const amount = FPNumber.fromCodecValue(maxAmount, asset.decimals).toCodecString();
-    const liquiditySources = liquiditySource ? [liquiditySource] : [];
-    return {
-      args: [
-        asset.address,
-        amount,
-        liquiditySources,
-        liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected',
-      ],
-    };
-  }
-
   /**
    * Run swap transfers batch operation
    * @param receivers the ordered map, which maps the asset id and dexId being bought to the vector of batch receivers
@@ -801,9 +783,12 @@ export class SwapModule<T> {
   ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
 
-    const params = this.calcTxParamsSwapTransferBatch(inputAsset, maxInputAmount, liquiditySource);
+    const assetAddress = inputAsset.address;
+    const amount = new FPNumber(maxInputAmount, inputAsset.decimals).toCodecString();
+    const liquiditySources = liquiditySource ? [liquiditySource] : [];
+    const filterMode = liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected';
 
-    const recipients = receivers.reduce((acc, curr) => {
+    const recipients = receivers.reduce<Array<ReceiverHistoryItem>>((acc, curr) => {
       const arr = curr.receivers.map((item) => {
         return {
           accountId: item.accountId,
@@ -813,14 +798,21 @@ export class SwapModule<T> {
       });
       acc.push(...arr);
       return acc;
-    }, [] as Array<ReceiverHistoryItem>);
+    }, []);
 
     return this.root.submitExtrinsic(
-      (this.root.api.tx.liquidityProxy as any).swapTransferBatch(receivers, ...params.args),
+      this.root.api.tx.liquidityProxy.swapTransferBatch(
+        receivers,
+        assetAddress,
+        amount,
+        liquiditySources,
+        filterMode,
+        null
+      ),
       this.root.account.pair,
       {
         symbol: inputAsset.symbol,
-        assetAddress: inputAsset.address,
+        assetAddress,
         receivers: recipients,
         type: Operation.SwapTransferBatch,
       }
