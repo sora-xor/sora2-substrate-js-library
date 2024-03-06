@@ -92,9 +92,7 @@ export class KensetsuModule<T> {
     const collateralInterestCoeff = collateral.interestCoefficient;
     const rateSecondlyCoeff = collateral.riskParams.rateSecondlyCoeff;
 
-    const newCoefficient = collateralInterestCoeff.mul(FPNumber.ONE.add(rateSecondlyCoeff).pow(timePassed));
-
-    return newCoefficient;
+    return collateralInterestCoeff.mul(FPNumber.ONE.add(rateSecondlyCoeff).pow(timePassed));
   }
 
   // accrue_internal
@@ -107,9 +105,7 @@ export class KensetsuModule<T> {
 
     const interestPercent = newCoefficient.sub(vaultInterestCoefficient).div(vaultInterestCoefficient);
     const stabilityFee = vaultDebt.mul(interestPercent);
-    const newDebt = vaultDebt.add(stabilityFee);
-
-    return newDebt;
+    return vaultDebt.add(stabilityFee);
   }
 
   private formatCollateral(collateralInfo: KensetsuCollateralInfo): Collateral {
