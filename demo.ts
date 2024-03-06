@@ -1,7 +1,6 @@
-import { ApiPromise } from '@polkadot/api';
+import { ApiPromise, Keyring } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
-import { Keyring } from '@polkadot/api';
 import { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 async function demo(): Promise<void> {
