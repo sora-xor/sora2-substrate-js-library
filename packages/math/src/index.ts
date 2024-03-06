@@ -495,7 +495,8 @@ export class FPNumber {
     const value = exp instanceof FPNumber ? exp.value : exp;
     const numValue = value instanceof BigNumber ? value.toNumber() : +value;
     // BigNumber.pow works really slow so Math.pow should be used here
-    return new FPNumber(Math.pow(this.toNumber(), numValue), this.precision);
+    // value.toNumber() is used to keep the value as is
+    return new FPNumber(Math.pow(this.value.toNumber(), numValue), this.precision);
   }
 
   /**
