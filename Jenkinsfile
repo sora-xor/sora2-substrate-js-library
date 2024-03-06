@@ -10,7 +10,7 @@ def pipeline = new org.js.LibPipeline(
     sonarProjectName: 'sora2-substrate-js-library',
     sonarProjectKey: 'sora2:sora2-substrate-js-library',
     npmLoginEmail:'admin@soramitsu.co.jp',
-    sonarSrcPath: 'packages,scripts',
+    sonarSrcPath: 'packages/api,packages/connection,packages/liquidity-proxy,packages/math,packages/util',
     sonarTestsPath: 'tests',
     dojoProductType: 'polkaswap'
     )
