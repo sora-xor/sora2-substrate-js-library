@@ -33,7 +33,11 @@ import type {
   Parachain,
   Standalone,
 } from './types';
-import type { BridgeTypesGenericNetworkId, BridgeTypesAssetKind } from '@polkadot/types/lookup';
+import type {
+  BridgeTypesGenericNetworkId,
+  BridgeTypesAssetKind,
+  BridgeTypesGenericAccount,
+} from '@polkadot/types/lookup';
 import type { Option, u8 } from '@polkadot/types-codec';
 
 const parseSubBridgeAssetKind = (kind: Option<BridgeTypesAssetKind>): SubAssetKind => {
@@ -133,7 +137,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     return Standalones.includes(subNetwork as Standalone);
   }
 
-  private getRecipientArg(subNetwork: SubNetwork, recipient: string) {
+  private getRecipientArg(subNetwork: SubNetwork, recipient: string): BridgeTypesGenericAccount {
     const accountId32 = this.api.createType('AccountId32', recipient);
 
     if (this.isStandalone(subNetwork)) {
@@ -200,7 +204,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   public async getSubAssetDecimals(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<number> {
     if (subNetworkId === SubNetworkId.Liberland) {
-      const precision = await this.api.query.liberlandBridgeApp.sidechainPrecision(subNetworkId, soraAssetId);
+      // [TODO: liberlandBridgeApp] remove any
+      const precision = await (this.api.query.liberlandBridgeApp as any).sidechainPrecision(subNetworkId, soraAssetId);
       return parseSubBridgeAssetDecimals(precision);
     } else {
       const precision = await this.api.query.parachainBridgeApp.sidechainPrecision(subNetworkId, soraAssetId);
@@ -210,7 +215,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   private async getSubAssetAddress(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetId> {
     if (subNetworkId === SubNetworkId.Liberland) {
-      const result = await this.api.query.liberlandBridgeApp.sidechainAssetId(subNetworkId, soraAssetId);
+      // [TODO: liberlandBridgeApp] remove any
+      const result = await (this.api.query.liberlandBridgeApp as any).sidechainAssetId(subNetworkId, soraAssetId);
 
       if (result.isEmpty) return undefined;
 
@@ -224,7 +230,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   private async getSubAssetKind(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetKind> {
     if (subNetworkId === SubNetworkId.Liberland) {
-      const kind = await this.api.query.liberlandBridgeApp.assetKinds(subNetworkId, soraAssetId);
+      // [TODO: liberlandBridgeApp] remove any
+      const kind = await (this.api.query.liberlandBridgeApp as any).assetKinds(subNetworkId, soraAssetId);
       return parseSubBridgeAssetKind(kind);
     } else {
       const kind = await this.api.query.parachainBridgeApp.assetKinds(subNetworkId, soraAssetId);
@@ -293,8 +300,9 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     const assets: Record<string, SubAsset> = {};
 
     try {
-      const keys = await this.api.query.liberlandBridgeApp.assetKinds.keys(SubNetworkId.Liberland);
-      const soraAssetIds = keys.map((key) => key.args[1].code.toString());
+      // [TODO: liberlandBridgeApp] remove any
+      const keys: any[] = await (this.api.query.liberlandBridgeApp as any).assetKinds.keys(SubNetworkId.Liberland);
+      const soraAssetIds: string[] = keys.map((key) => key.args[1].code.toString());
 
       await Promise.all(
         soraAssetIds.map(async (soraAssetId) => {
