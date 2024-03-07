@@ -36,20 +36,23 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   if (data.isSora) {
     return data.asSora.toString();
   }
+  if (data.isParachain) {
+    const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
+
+    if (interior.isX1) {
+      return accountFromJunction(interior.asX1);
+    } else if (interior.isX2) {
+      return accountFromJunction(interior.asX2[1]);
+    } else {
+      return '';
+    }
+  }
   // [TODO: liberlandBridgeApp] remove any
   if ((data as any).isLiberland) {
     return (data as any).asLiberland.toString();
   }
 
-  const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
-
-  if (interior.isX1) {
-    return accountFromJunction(interior.asX1);
-  } else if (interior.isX2) {
-    return accountFromJunction(interior.asX2[1]);
-  } else {
-    return '';
-  }
+  return '';
 }
 
 function getNetworkType(network: BridgeTypesGenericNetworkId): BridgeNetworkType {
