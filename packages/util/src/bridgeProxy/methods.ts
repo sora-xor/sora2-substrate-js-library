@@ -36,8 +36,9 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   if (data.isSora) {
     return data.asSora.toString();
   }
-  if (data.isLiberland) {
-    return data.asLiberland.toString();
+  // [TODO: liberlandBridgeApp] remove any
+  if ((data as any).isLiberland) {
+    return (data as any).asLiberland.toString();
   }
 
   const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
