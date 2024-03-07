@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesGenericAccount, BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesSubstrateSubstrateAppCall, CommonBalanceUnit, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuCollateralRiskParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuCollateralRiskParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsXstSyntheticOutput, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -662,18 +662,6 @@ declare module '@polkadot/api-base/types/events' {
     };
     leafProvider: {
     };
-    liberlandBridgeApp: {
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Burned: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, AccountId32, BridgeTypesGenericAccount, u128]>;
-      FailedToMint: AugmentedEvent<ApiType, [H256, SpRuntimeDispatchError]>;
-      MessageSent: AugmentedEvent<ApiType, [BridgeTypesSubstrateSubstrateAppCall]>;
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Minted: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, BridgeTypesGenericAccount, AccountId32, u128]>;
-    };
     liquidityProxy: {
       /**
        * ADAR fee which is withdrawn from reused outcome asset amount
@@ -682,9 +670,9 @@ declare module '@polkadot/api-base/types/events' {
       ADARFeeWithdrawn: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, u128]>;
       /**
        * Batch of swap transfers has been performed
-       * [Input asset ADAR Fee, Input amount]
+       * [Input asset ADAR Fee, Input amount, Additional Data]
        **/
-      BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128]>;
+      BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128, Option<Bytes>]>;
       /**
        * Exchange of tokens has been performed
        * [Caller Account, DEX Id, Input Asset Id, Output Asset Id, Input Amount, Output Amount, Fee Amount]
@@ -922,6 +910,24 @@ declare module '@polkadot/api-base/types/events' {
        * [DEX Id, Fees Account Id]
        **/
       NothingToExchange: AugmentedEvent<ApiType, [u32, AccountId32]>;
+    };
+    qaTools: {
+      /**
+       * Requested order books have been created.
+       **/
+      OrderBooksCreated: AugmentedEvent<ApiType, []>;
+      /**
+       * Requested order book have been filled.
+       **/
+      OrderBooksFilled: AugmentedEvent<ApiType, []>;
+      /**
+       * XST liquidity source has been initialized successfully.
+       **/
+      XstInitialized: AugmentedEvent<ApiType, [quotesAchieved: Vec<QaToolsPalletToolsXstSyntheticOutput>], { quotesAchieved: Vec<QaToolsPalletToolsXstSyntheticOutput> }>;
+      /**
+       * Xyk liquidity source has been initialized successfully.
+       **/
+      XykInitialized: AugmentedEvent<ApiType, [pricesAchieved: Vec<QaToolsPalletToolsPoolXykAssetPairInput>], { pricesAchieved: Vec<QaToolsPalletToolsPoolXykAssetPairInput> }>;
     };
     rewards: {
       /**

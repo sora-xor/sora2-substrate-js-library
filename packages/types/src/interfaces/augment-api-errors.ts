@@ -1737,32 +1737,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       SignatureVerificationFailed: AugmentedError<ApiType>;
     };
-    liberlandBridgeApp: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidDestinationParachain: AugmentedError<ApiType>;
-      InvalidDestinationParams: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      MessageIdNotFound: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      NotRelayTransferableAsset: AugmentedError<ApiType>;
-      RelaychainAssetNotRegistered: AugmentedError<ApiType>;
-      RelaychainAssetRegistered: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-      TransferLimitReached: AugmentedError<ApiType>;
-      UnknownPrecision: AugmentedError<ApiType>;
-      WrongAccountId: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-      WrongAssetId: AugmentedError<ApiType>;
-    };
     kensetsu: {
       AccrueWrongTime: AugmentedError<ApiType>;
       ArithmeticError: AugmentedError<ApiType>;
@@ -2579,9 +2553,21 @@ declare module '@polkadot/api-base/types/errors' {
     };
     qaTools: {
       /**
-       * The account is already in the whitelist
+       * Error in calculations.
        **/
-      AlreadyInWhitelist: AugmentedError<ApiType>;
+      ArithmeticError: AugmentedError<ApiType>;
+      /**
+       * Cannot register new asset because it already exists.
+       **/
+      AssetAlreadyExists: AugmentedError<ApiType>;
+      /**
+       * Cannot initialize pool with for non-divisible assets.
+       **/
+      AssetsMustBeDivisible: AugmentedError<ApiType>;
+      /**
+       * Buy price cannot be lower than sell price of an asset
+       **/
+      BuyLessThanSell: AugmentedError<ApiType>;
       /**
        * Did not find an order book with given id to fill. Likely an error with order book creation.
        **/
@@ -2591,13 +2577,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       EmptyRandomRange: AugmentedError<ApiType>;
       /**
-       * Price step, best price, and worst price must be a multiple of order book's tick size. Price step must also be non-zero.
+       * Price step, best price, and worst price must be a multiple of order book's tick size.
+       * Price step must also be non-zero.
        **/
       IncorrectPrice: AugmentedError<ApiType>;
-      /**
-       * The account intended for removal is not in whitelist
-       **/
-      NotInWhitelist: AugmentedError<ApiType>;
       /**
        * Order Book already exists
        **/
@@ -2607,6 +2590,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       OutOfBoundsRandomRange: AugmentedError<ApiType>;
       /**
+       * Cannot deduce price of synthetic base asset because there is no existing price for reference asset.
+       **/
+      ReferenceAssetPriceNotFound: AugmentedError<ApiType>;
+      /**
        * The count of created orders is too large.
        **/
       TooManyOrders: AugmentedError<ApiType>;
@@ -2615,9 +2602,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TooManyPrices: AugmentedError<ApiType>;
       /**
-       * Cannot add an account to the whitelist: it's full
+       * Could not find already existing synthetic.
        **/
-      WhitelistFull: AugmentedError<ApiType>;
+      UnknownSynthetic: AugmentedError<ApiType>;
     };
     referrals: {
       /**
