@@ -26,6 +26,7 @@ export class ReferralSystemModule<T> {
    * @returns referrer
    */
   public async getAccountReferrer(): Promise<string> {
+    assert(this.root.account, Messages.connectWallet);
     return this.getReferrer(this.root.account.pair.address);
   }
 
@@ -43,6 +44,7 @@ export class ReferralSystemModule<T> {
    * Returns the referrer subscription
    */
   public subscribeOnAccountReferrer(): Observable<null | string> {
+    assert(this.root.account, Messages.connectWallet);
     return this.subscribeOnReferrer(this.root.account.pair.address);
   }
 
@@ -69,6 +71,7 @@ export class ReferralSystemModule<T> {
    * Account's invited users subscription
    */
   public subscribeOnAccountInvitedUsers(): Observable<Array<string>> {
+    assert(this.root.account, Messages.connectWallet);
     return this.subscribeOnInvitedUsers(this.root.account.pair.address);
   }
 
@@ -114,7 +117,7 @@ export class ReferralSystemModule<T> {
     const requiredFeeValue = FPNumber.fromCodecValue(this.root.NetworkFee.ReferralSetInvitedUser || 0);
     assert(FPNumber.gte(bonded, requiredFeeValue), Messages.inabilityOfReferrerToPayFee);
 
-    const formattedToAddress = referrerId.slice(0, 2) === 'cn' ? referrerId : this.root.formatAddress(referrerId);
+    const formattedToAddress = referrerId.startsWith('cn') ? referrerId : this.root.formatAddress(referrerId);
     return this.root.submitExtrinsic(this.root.api.tx.referrals.setReferrer(referrerId), this.root.account.pair, {
       to: formattedToAddress,
       type: Operation.ReferralSetInvitedUser,

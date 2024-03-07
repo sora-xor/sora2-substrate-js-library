@@ -10,6 +10,7 @@ import type { CodecString } from '@sora-substrate/math';
 import type { BridgeTypesGenericNetworkId } from '@polkadot/types/lookup';
 import type { Asset } from '../../assets/types';
 import type { EvmHistory, EvmNetwork, EvmAsset } from './types';
+import type { EvmAppKinds } from './consts';
 
 export class EvmBridgeApi<T> extends BaseApi<T> {
   constructor() {
@@ -36,13 +37,13 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     return historyItem;
   }
 
-  public saveHistory(history: EvmHistory): void {
+  public override saveHistory(history: EvmHistory): void {
     if (!isEvmOperation(history.type)) return;
     super.saveHistory(history);
   }
 
   public async getRegisteredAssets(evmNetwork: EvmNetwork): Promise<Record<string, EvmAsset>> {
-    const assets = {};
+    const assets: Record<string, EvmAsset> = {};
 
     try {
       const data = await this.api.rpc.bridgeProxy.listAssets({ [BridgeNetworkType.Evm]: evmNetwork });
@@ -51,7 +52,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
         const assetInfo = assetData.asEvm;
         const soraAddress = assetInfo.assetId.toString();
         const evmAddress = assetInfo.evmAddress.toString();
-        const appKind = assetInfo.appKind.toString();
+        const appKind = assetInfo.appKind.toString() as EvmAppKinds;
         const decimals = assetInfo.precision.toNumber();
 
         assets[soraAddress] = {
@@ -113,7 +114,8 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
     assert(this.account, Messages.connectWallet);
 
     const extrinsic = this.getTransferExtrinsic(asset, recipient, amount, evmNetwork);
-    const historyItem = this.getHistory(historyId) || {
+    const historyParam = historyId ? this.getHistory(historyId) : undefined;
+    const historyItem = historyParam || {
       type: Operation.EvmOutgoing,
       symbol: asset.symbol,
       assetAddress: asset.address,

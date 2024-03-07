@@ -118,11 +118,13 @@ export const newTrivial = (
 
 /**
  * Get available list of liquidity sources for the selected asset
- * @param address Asset ID
- * @param payload Quote payload
- * @param enabledAssets Primary markets enabled assets
  * @param baseAssetId Dex base asset id
  * @param syntheticBaseAssetId Dex synthetic base asset id
+ * @param address Asset ID
+ * @param enabledAssets Primary markets enabled assets
+ * @param xykReserves Xyk reserves of assets in exchange paths
+ * @param orderBookReserves Order Book reserves of assets in exchange paths
+ *
  */
 const getAssetLiquiditySources = (
   baseAssetId: string,
@@ -140,7 +142,8 @@ const getAssetLiquiditySources = (
       (Array.isArray(xykReserves[address]) && xykReserves[address].every((tokenReserve) => !!Number(tokenReserve))),
     [LiquiditySourceTypes.XSTPool]: () =>
       baseAssetId === Consts.XOR && (address === syntheticBaseAssetId || !!enabledAssets.xst[address]),
-    [LiquiditySourceTypes.OrderBook]: () => baseAssetId === Consts.XOR && !!orderBookReserves[address],
+    [LiquiditySourceTypes.OrderBook]: () =>
+      baseAssetId === Consts.XOR && (address === baseAssetId || !!orderBookReserves[address]),
   };
 
   return Object.entries(rules).reduce((acc: LiquiditySourceTypes[], [source, rule]) => {
@@ -179,13 +182,13 @@ const listLiquiditySources = (
 };
 
 /**
- * Get available liquidity sources for the tokens & exchange pair\
- * @param inputAssetId Input asset address
- * @param outputAssetId Output asset address
- * @param enabledAssets List of enabled assets
- * @param xykReserves Xyk reserves of assets in exchange paths
+ * Get available liquidity sources for the assets exchange paths
  * @param baseAssetId Dex base asset id
  * @param syntheticBaseAssetId Dex synthetic base asset id
+ * @param exchangePaths Assets exchange paths
+ * @param enabledAssets Primary markets enabled assets
+ * @param xykReserves Xyk reserves of assets in exchange paths
+ * @param orderBookReserves Order Book reserves of assets in exchange paths
  */
 export const getAssetsLiquiditySources = (
   baseAssetId: string,
@@ -244,6 +247,7 @@ const quotePrimaryMarket = (
  * the base asset and the collateral asset in the secondary market (e.g., an XYK pool)
  * provided the base asset is being bought.
  */
+// prettier-ignore
 const primaryMarketAmountBuyingBaseAsset = (
   collateralAsset: string,
   amount: FPNumber,
@@ -251,7 +255,7 @@ const primaryMarketAmountBuyingBaseAsset = (
   baseReserve: FPNumber,
   otherReserve: FPNumber,
   payload: QuotePayload
-): FPNumber => {
+): FPNumber => { // NOSONAR
   try {
     const secondaryPrice = baseReserve.isGtZero() ? safeDivide(otherReserve, baseReserve) : Consts.MAX;
 
@@ -276,7 +280,8 @@ const primaryMarketAmountBuyingBaseAsset = (
         return amount;
       }
     } else {
-      if (FPNumber.isLessThan(secondaryPrice, primaryBuyPrice)) {
+      // prettier-ignore
+      if (FPNumber.isLessThan(secondaryPrice, primaryBuyPrice)) { // NOSONAR
         const amountSecondary = baseReserve.sub(safeDivide(k, primaryBuyPrice).sqrt());
 
         if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
@@ -301,6 +306,7 @@ const primaryMarketAmountBuyingBaseAsset = (
  * the base asset and the collateral asset in the secondary market (e.g. an XYK pool)
  * provided the base asset is being sold.
  */
+// prettier-ignore
 const primaryMarketAmountSellingBaseAsset = (
   collateralAsset: string,
   amount: FPNumber,
@@ -308,7 +314,7 @@ const primaryMarketAmountSellingBaseAsset = (
   xorReserve: FPNumber,
   otherReserve: FPNumber,
   payload: QuotePayload
-): FPNumber => {
+): FPNumber => { // NOSONAR
   try {
     const secondaryPrice = xorReserve.isGtZero() ? safeDivide(otherReserve, xorReserve) : FPNumber.ZERO;
 
@@ -333,7 +339,8 @@ const primaryMarketAmountSellingBaseAsset = (
         return amount;
       }
     } else {
-      if (FPNumber.isGreaterThan(secondaryPrice, primarySellPrice)) {
+      // prettier-ignore
+      if (FPNumber.isGreaterThan(secondaryPrice, primarySellPrice)) { // NOSONAR
         const amountSecondary = otherReserve.sub(k.mul(primarySellPrice).sqrt());
 
         if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
@@ -441,6 +448,7 @@ const smartSplit = (
  * Computes the optimal distribution across available liquidity sources to exectute the requested trade
  * given the input and output assets, the trade amount and a liquidity sources filter.
  */
+// prettier-ignore
 const quoteSingle = (
   inputAsset: string,
   outputAsset: string,
@@ -450,7 +458,7 @@ const quoteSingle = (
   payload: QuotePayload,
   deduceFee: boolean,
   baseAssetId = Consts.XOR
-): QuoteResult => {
+): QuoteResult => { // NOSONAR
   const allSources = listLiquiditySources(
     inputAsset,
     outputAsset,
@@ -503,6 +511,7 @@ const quoteSingle = (
   throw new Error('[liquidityProxy] Unsupported operation');
 };
 
+// prettier-ignore
 export const quote = (
   firstAssetAddress: string,
   secondAssetAddress: string,
@@ -513,7 +522,7 @@ export const quote = (
   deduceFee: boolean,
   baseAssetId = Consts.XOR,
   syntheticBaseAssetId = Consts.XST
-): SwapResult => {
+): SwapResult => { // NOSONAR
   let bestQuote: QuoteIntermediate = {
     amount: FPNumber.ZERO,
     amountWithoutImpact: FPNumber.ZERO,

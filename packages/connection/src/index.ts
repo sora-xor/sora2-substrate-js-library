@@ -18,19 +18,24 @@ const disconnectApi = async (api: ApiPromise, eventListeners: ConnectionEventLis
 
   eventListeners.forEach(([eventName, eventHandler]) => api.off(eventName, eventHandler));
 
-  // close the connection manually
-  if (api.isConnected) {
-    try {
+  try {
+    // wait until the api connection is completed to check the "isConnected" flag
+    await api.isReadyOrError;
+  } catch {}
+
+  try {
+    // close the connection manually
+    if (api.isConnected) {
       await api.disconnect();
-    } catch (error) {
-      console.error(error);
     }
+  } catch (error) {
+    console.error(error);
   }
 };
 
 const createConnectionTimeout = (timeout: number): Promise<void> => {
   return new Promise((_, reject) => {
-    setTimeout(() => reject('Connection Timeout'), timeout);
+    setTimeout(() => reject(new Error('Connection Timeout')), timeout);
   });
 };
 
@@ -47,15 +52,13 @@ class Connection {
     this.loading = true;
     try {
       return await func();
-    } catch (e) {
-      throw e;
     } finally {
       this.loading = false;
     }
   }
 
   private async run(endpoint: string, runOptions?: ConnectionRunOptions): Promise<void> {
-    const { once = false, timeout = 0, autoConnectMs = 5000, eventListeners = [] } = runOptions || {};
+    const { once = false, timeout = 0, autoConnectMs = 5000, eventListeners = [] } = runOptions ?? {};
 
     const providerAutoConnectMs = once ? false : autoConnectMs;
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady';
@@ -87,14 +90,16 @@ class Connection {
   }
 
   private async stop(): Promise<void> {
-    await disconnectApi(this.api, this.eventListeners);
+    if (this.api) {
+      await disconnectApi(this.api, this.eventListeners);
+    }
     this.api = null;
     this.endpoint = '';
     this.eventListeners = [];
   }
 
   public addEventListener(eventName: ApiInterfaceEvents, eventHandler: ProviderInterfaceEmitCb) {
-    this.api.on(eventName, eventHandler);
+    this.api?.on(eventName, eventHandler);
     this.eventListeners.push([eventName, eventHandler]);
   }
 
@@ -109,7 +114,7 @@ class Connection {
    */
   public async open(endpoint?: string, options?: ConnectionRunOptions): Promise<void> {
     if (!(endpoint || this.endpoint)) throw new Error('You should set endpoint for connection');
-    await this.withLoading(async () => await this.run(endpoint || this.endpoint, options));
+    await this.withLoading(async () => await this.run(endpoint ?? this.endpoint, options));
   }
 
   /**

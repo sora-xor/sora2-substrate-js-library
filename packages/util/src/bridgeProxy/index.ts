@@ -15,6 +15,7 @@ import type { Api } from '../api';
 import type { Storage } from '../storage';
 import type { SupportedApps } from './types';
 import type { SubNetwork } from './sub/types';
+import type { EvmSupportedApp } from './evm/types';
 
 export class BridgeProxyModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -53,7 +54,8 @@ export class BridgeProxyModule<T> {
     this.sub.logout();
   }
 
-  public async getListApps(): Promise<SupportedApps> {
+  // prettier-ignore
+  public async getListApps(): Promise<SupportedApps> { // NOSONAR
     const apps: SupportedApps = {
       [BridgeNetworkType.Eth]: {},
       [BridgeNetworkType.Evm]: {},
@@ -75,7 +77,7 @@ export class BridgeProxyModule<T> {
 
           if (!apps[type][id]) apps[type][id] = {};
 
-          apps[type][id][kind] = address;
+          apps[type][id][kind as keyof Partial<EvmSupportedApp>] = address;
         } else {
           const genericNetworkId = appInfo.asSub;
           const type = BridgeNetworkType.Sub;

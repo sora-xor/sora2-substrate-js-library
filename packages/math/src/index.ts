@@ -1,8 +1,12 @@
 import BigNumber from 'bignumber.js';
 import isNil from 'lodash/fp/isNil';
-import type { Codec } from '@polkadot/types/types';
+import type { AnyJson, Codec } from '@polkadot/types/types';
 
-export type CodecString = string;
+/**
+ * Use just to highlight the visual difference across the "string" itself.
+ * It's just impossible to specify the type
+ */
+export type CodecString = string; // NOSONAR
 export type NumberLike = number | string;
 
 BigNumber.config({
@@ -13,34 +17,32 @@ BigNumber.config({
   },
 });
 
-type NumberType = Codec | string | number | BigNumber | FPNumber;
+type OperatorParam = string | number | BigNumber;
+type OperatorParamFull = FPNumber | string | number | BigNumber;
+type NumberType = Codec | FPNumber | string | number | BigNumber;
 
-const equalizedBN = (target: FPNumber, precision: number) => {
-  return target.precision === precision
-    ? target.value
-    : target.value.times(10 ** precision).div(10 ** target.precision);
-};
-
-const checkFinityString = (str: string) => !['-Infinity', 'Infinity', 'NaN'].includes(str);
+const isFinityString = (str: string) => !['-Infinity', 'Infinity', 'NaN'].includes(str);
+const isZeroString = (str: string) => str === '0' || str === '-0';
 
 export class FPNumber {
   /**
-   * Numbers' delimiters config
+   * Numbers' delimiters config. Might be edited to support different locales
    */
-  public static DELIMITERS_CONFIG = {
+  // prettier-ignore
+  public static DELIMITERS_CONFIG = { // NOSONAR
     thousand: ',',
     decimal: '.',
   };
 
   /**
-   * Default precision = `18`
+   * Default precision = `18`. Might be modified
    */
-  public static DEFAULT_PRECISION = 18;
+  public static DEFAULT_PRECISION = 18; // NOSONAR
 
   /**
-   * Default decimal places = `7`
+   * Default decimal places = `7`. Might be modified
    */
-  public static DEFAULT_DECIMAL_PLACES = 7;
+  public static DEFAULT_DECIMAL_PLACES = 7; // NOSONAR
 
   /**
    * Default round type = `3`
@@ -55,36 +57,40 @@ export class FPNumber {
    * `7` Rounds towards nearest neighbour. If equidistant, rounds towards Infinity
    * `8` Rounds towards nearest neighbour. If equidistant, rounds towards -Infinity
    */
-  public static DEFAULT_ROUND_MODE: BigNumber.RoundingMode = 3;
+  public static DEFAULT_ROUND_MODE: BigNumber.RoundingMode = 3; // NOSONAR
 
   /** Zero value (0) */
-  public static ZERO = FPNumber.fromNatural(0);
+  public static readonly ZERO = FPNumber.fromNatural(0);
   /** One value (1) */
-  public static ONE = FPNumber.fromNatural(1);
+  public static readonly ONE = FPNumber.fromNatural(1);
   /** Two value (2) */
-  public static TWO = FPNumber.fromNatural(2);
+  public static readonly TWO = FPNumber.fromNatural(2);
   /** Three value (3) */
-  public static THREE = FPNumber.fromNatural(3);
+  public static readonly THREE = FPNumber.fromNatural(3);
   /** Four value (4) */
-  public static FOUR = FPNumber.fromNatural(4);
+  public static readonly FOUR = FPNumber.fromNatural(4);
   /** Five value (5) */
-  public static FIVE = FPNumber.fromNatural(5);
+  public static readonly FIVE = FPNumber.fromNatural(5);
   /** Ten value (10) */
-  public static TEN = FPNumber.fromNatural(10);
+  public static readonly TEN = FPNumber.fromNatural(10);
   /** Hundred value (100) */
-  public static HUNDRED = FPNumber.fromNatural(100);
-  /** Thousand value (1000) */
-  public static THOUSAND = FPNumber.fromNatural(1000);
+  public static readonly HUNDRED = FPNumber.fromNatural(100);
+  /** Thousand value (1_000) */
+  public static readonly THOUSAND = FPNumber.fromNatural(1000);
+  /** Ten thousands value (10_000) */
+  public static readonly TEN_THOUSANDS = FPNumber.fromNatural(10_000);
   /**
    * Return the **max** value, `null` if an array is empty
    * @param {...FPNumber} numbers
    */
+  public static max(...numbers: Array<FPNumber>): FPNumber;
+  public static max(...numbers: []): null;
   public static max(...numbers: Array<FPNumber>): FPNumber | null {
-    if (!numbers || !numbers.length) {
+    if (!numbers?.length) {
       return null;
     }
     const precision = numbers[0].precision;
-    const filtered = numbers.map((item) => equalizedBN(item, precision));
+    const filtered = numbers.map((item) => item.value);
     return new FPNumber(BigNumber.max(...filtered), precision);
   }
 
@@ -92,12 +98,14 @@ export class FPNumber {
    * Return the **min** value, `null` if an array is empty
    * @param {...FPNumber} numbers
    */
+  public static min(...numbers: Array<FPNumber>): FPNumber;
+  public static min(...numbers: []): null;
   public static min(...numbers: Array<FPNumber>): FPNumber | null {
     if (!numbers?.length) {
       return null;
     }
     const precision = numbers[0].precision;
-    const filtered = numbers.map((item) => equalizedBN(item, precision));
+    const filtered = numbers.map((item) => item.value);
     return new FPNumber(BigNumber.min(...filtered), precision);
   }
 
@@ -107,7 +115,7 @@ export class FPNumber {
    * @param {FPNumber} second Second number
    */
   public static lt(first: FPNumber, second: FPNumber): boolean {
-    return first.value.lt(equalizedBN(second, first.precision));
+    return first.value.lt(second.value);
   }
 
   /**
@@ -115,7 +123,7 @@ export class FPNumber {
    * @param {FPNumber} first First number
    * @param {FPNumber} second Second number
    */
-  public static isLessThan = FPNumber.lt;
+  public static readonly isLessThan = FPNumber.lt;
 
   /**
    * Return `true` if the first value is less of equal than the second
@@ -123,7 +131,7 @@ export class FPNumber {
    * @param {FPNumber} second Second number
    */
   public static lte(first: FPNumber, second: FPNumber): boolean {
-    return first.value.lte(equalizedBN(second, first.precision));
+    return first.value.lte(second.value);
   }
 
   /**
@@ -131,7 +139,7 @@ export class FPNumber {
    * @param {FPNumber} first First number
    * @param {FPNumber} second Second number
    */
-  public static isLessThanOrEqualTo = FPNumber.lte;
+  public static readonly isLessThanOrEqualTo = FPNumber.lte;
 
   /**
    * Return `true` if the first value is greater than the second
@@ -139,7 +147,7 @@ export class FPNumber {
    * @param {FPNumber} second Second number
    */
   public static gt(first: FPNumber, second: FPNumber): boolean {
-    return first.value.gt(equalizedBN(second, first.precision));
+    return first.value.gt(second.value);
   }
 
   /**
@@ -147,7 +155,7 @@ export class FPNumber {
    * @param {FPNumber} first First number
    * @param {FPNumber} second Second number
    */
-  public static isGreaterThan = FPNumber.gt;
+  public static readonly isGreaterThan = FPNumber.gt;
 
   /**
    * Return `true` if the first value is greater or equal than the second
@@ -155,7 +163,7 @@ export class FPNumber {
    * @param {FPNumber} second Second number
    */
   public static gte(first: FPNumber, second: FPNumber): boolean {
-    return first.value.gte(equalizedBN(second, first.precision));
+    return first.value.gte(second.value);
   }
 
   /**
@@ -163,7 +171,7 @@ export class FPNumber {
    * @param {FPNumber} first First number
    * @param {FPNumber} second Second number
    */
-  public static isGreaterThanOrEqualTo = FPNumber.gte;
+  public static readonly isGreaterThanOrEqualTo = FPNumber.gte;
 
   /**
    * Return `true` if values are equal
@@ -171,7 +179,7 @@ export class FPNumber {
    * @param {FPNumber} second Second number
    */
   public static eq(first: FPNumber, second: FPNumber): boolean {
-    return first.value.eq(equalizedBN(second, first.precision));
+    return first.value.eq(second.value);
   }
 
   /**
@@ -179,7 +187,7 @@ export class FPNumber {
    * @param {FPNumber} first First number
    * @param {FPNumber} second Second number
    */
-  public static isEqualTo = FPNumber.eq;
+  public static readonly isEqualTo = FPNumber.eq;
 
   /**
    * Get FPNumber from real number, will multiply by precision
@@ -196,11 +204,75 @@ export class FPNumber {
    * @param {number} precision Precision
    */
   public static fromCodecValue(value: number | string, precision: number = FPNumber.DEFAULT_PRECISION): FPNumber {
-    const filtered = typeof value === 'string' ? value.replace(/[, ]/g, '') : value;
-    return new FPNumber(new BigNumber(filtered), precision);
+    const filtered = typeof value === 'string' ? value.replace(/[,. ]/g, '') : value;
+    const bn = new BigNumber(filtered);
+    return new FPNumber(bn.div(10 ** precision), precision);
   }
 
-  public value: BigNumber;
+  public readonly value: BigNumber;
+
+  private formatInitialDataString(data: string): string {
+    if (!isFinityString(data)) return data; // '-Infinity', 'Infinity', 'NaN'
+
+    if (isZeroString(data)) return '0';
+
+    const withoutFormatting = data.replace(/[, ]/g, '');
+    const [integer, fractional] = withoutFormatting.split('.') as [string, string | undefined];
+
+    if (!(integer && Number.isFinite(+integer)) || (fractional && !Number.isFinite(+fractional))) {
+      return 'NaN';
+    }
+
+    return `${integer ?? 0}.${fractional ?? 0}`;
+  }
+
+  private formatInitialDataCodec(data: Codec, precision: number): string {
+    const json = data.toJSON() as (AnyJson & { balance: string }) | null;
+    // `BalanceInfo` or `Balance` check
+    let str = json && !isNil(json.balance) ? `${json.balance}`.replace(/[,. ]/g, '') : data.toString();
+
+    if (!isFinityString(str)) return str; // '-Infinity', 'Infinity', 'NaN'
+
+    if (isZeroString(str)) return '0';
+
+    const isNegative = str.startsWith('-');
+    if (isNegative) {
+      str.replace('-', '');
+    }
+
+    let fractionalPart = '';
+    let integerPart = '';
+    const zerosLeftInFractionalPart = precision - str.length;
+
+    if (zerosLeftInFractionalPart >= 0) {
+      // only fractional part
+      integerPart = '0';
+      fractionalPart = `${Array(zerosLeftInFractionalPart).fill(0).join('')}${str}`;
+    } else {
+      const integerLength = str.length - precision;
+      integerPart = str.slice(0, integerLength);
+      fractionalPart = str.slice(integerLength);
+    }
+
+    if (!(Number.isFinite(+integerPart) && Number.isFinite(+fractionalPart))) {
+      return 'NaN';
+    }
+
+    return `${isNegative ? '-' : ''}${integerPart}.${fractionalPart}`;
+  }
+
+  private formatInitialData(data: string | number | Codec, precision: number): string | number {
+    if (typeof data === 'number') {
+      return data;
+    }
+    if (typeof data === 'string') {
+      return this.formatInitialDataString(data);
+    }
+    if ('toString' in data) {
+      return this.formatInitialDataCodec(data, precision);
+    }
+    return 0;
+  }
 
   /**
    * Supports `data` as `string`, `number`, `BigNumber`, `FPNumber` and `Codec` data types.
@@ -209,124 +281,97 @@ export class FPNumber {
    * @param precision
    */
   constructor(data: NumberType, public precision = FPNumber.DEFAULT_PRECISION) {
+    let value: BigNumber;
     if (data instanceof BigNumber) {
-      this.value = data;
+      value = data;
     } else if (data instanceof FPNumber) {
-      this.value = data.value;
+      value = data.value;
       this.precision = data.precision;
     } else {
-      const formatted = () => {
-        if (typeof data === 'number') {
-          return (data * 10 ** precision).toFixed();
-        }
-        if (typeof data === 'string') {
-          if (!checkFinityString(data)) {
-            return data;
-          }
-          const withoutFormatting = data.replace(/[, ]/g, '');
-          const [integer, fractional] = withoutFormatting.split('.');
-          let fractionalPart = '';
-          if (fractional) {
-            fractionalPart =
-              fractional.length > precision
-                ? fractional.substring(0, precision)
-                : `${fractional}${Array(precision - fractional.length)
-                    .fill(0)
-                    .join('')}`;
-          } else {
-            fractionalPart = `${Array(precision).fill(0).join('')}`;
-          }
-          return `${integer}${fractionalPart}`;
-        }
-        if ('toString' in (data as any)) {
-          const json = data.toJSON() as any;
-          // `BalanceInfo` or `Balance` check
-          return json && !isNil(json.balance) ? `${json.balance}`.replace(/[, ]/g, '') : data.toString();
-        }
-        return 0;
-      };
-      this.value = new BigNumber(formatted()).dp(0, FPNumber.DEFAULT_ROUND_MODE);
+      value = new BigNumber(this.formatInitialData(data, precision));
     }
+    this.value = value.dp(this.precision, 1); // `1` Rounds towards zero
+  }
+
+  /**
+   * Formatted codec string representation
+   */
+  get codec(): string {
+    return this.value.times(10 ** this.precision).toFormat(0);
   }
 
   /**
    * Format number to Codec string
    */
   public toCodecString(): string {
-    return this.value.toFormat();
+    return this.codec;
   }
 
-  public format(dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format): string {
-    const value = this.value.div(10 ** this.precision);
+  /**
+   * Returns a string representation of the value using the custom formatting.
+   * @param dp max decimal places
+   * @param format BigNumber.Format object
+   * @param preserveOrder (default: false) Keep empty decimals related to the **dp** param
+   */
+  public format(dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format, preserveOrder = false): string {
+    const value = this.value;
     if (value.isZero()) {
-      return format ? value.toFormat(format) : value.toFormat();
+      if (format) {
+        return preserveOrder ? value.toFormat(dp, format) : value.toFormat(format);
+      }
+      return value.toFormat();
     }
     let formatted = value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
     if (formatted.isZero()) {
       // First significant character
-      formatted = new BigNumber(value.toFormat().replace(/(0\.0*[1-9])([0-9]*)/, '$1'));
+      formatted = new BigNumber(value.toFormat().replace(/(0\.0*[1-9])(\d*)/, '$1'));
     }
-    return format ? formatted.toFormat(format) : formatted.toFormat();
+    if (format) {
+      return preserveOrder ? formatted.toFormat(dp, format) : formatted.toFormat(format);
+    }
+    return formatted.toFormat();
   }
 
-  public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES): string {
-    let [integer, decimal] = this.format(dp, {
-      groupSize: 3,
-      groupSeparator: FPNumber.DELIMITERS_CONFIG.thousand,
-      decimalSeparator: FPNumber.DELIMITERS_CONFIG.decimal,
-    }).split(FPNumber.DELIMITERS_CONFIG.decimal);
+  /**
+   * Converts a number to a string by using the current locale params.
+   * @param dp max decimal places
+   * @param preserveOrder (default: false) Keep empty decimals related to the **dp** param
+   */
+  public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES, preserveOrder = false): string {
+    let [integer, decimal] = this.format(
+      dp,
+      {
+        groupSize: 3,
+        groupSeparator: FPNumber.DELIMITERS_CONFIG.thousand,
+        decimalSeparator: FPNumber.DELIMITERS_CONFIG.decimal,
+      },
+      preserveOrder
+    ).split(FPNumber.DELIMITERS_CONFIG.decimal);
 
     return decimal ? integer.concat(FPNumber.DELIMITERS_CONFIG.decimal, decimal) : integer;
   }
 
   /**
-   * Format real number (divided by precision) to string
+   * Format real number to string
    */
   public toString(): string {
-    const result = this.value.div(10 ** this.precision);
-    return result.toFormat();
+    return this.value.toFormat();
   }
 
   /**
-   * Format real number string (divided by precision) to fixed string (like `Number.toFixed`)
+   * Format real number to fixed string (like `Number.toFixed`)
    * @param {number} [dp=4] Decimal places deafult is 4
    */
   public toFixed(dp: number = 4): string {
-    const result = this.value.div(10 ** this.precision);
-    return result.toFixed(dp, FPNumber.DEFAULT_ROUND_MODE);
+    return this.value.toFixed(dp, FPNumber.DEFAULT_ROUND_MODE);
   }
 
   /**
-   * Format inner BigNumber value to string
-   * @param {number} [dp=0] Decimal places deafult is 0
-   */
-  public bnToString(dp: number = 0): string {
-    // Return 0 if the value is Infinity, -Infinity and NaN
-    if (!this.isFinity()) {
-      return '0';
-    }
-    return this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE).toFixed();
-  }
-
-  /**
-   * Format inner BigNumber value to number
-   * @param {number} [dp=0] - Decimal places deafult is 0
-   */
-  public bnToNumber(dp: number = 0): number {
-    // Return 0 if the value is Infinity, -Infinity and NaN
-    if (!this.isFinity()) {
-      return 0;
-    }
-    return this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE).toNumber();
-  }
-
-  /**
-   * Format real number (divided by precision) to number
+   * Format FPNumber to number
    * @param {number} [dp=6] Decimal places
    */
   public toNumber(dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): number {
-    let result = this.value.div(10 ** this.precision);
-    result = result.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
+    const result = this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
     return result.toNumber();
   }
 
@@ -335,68 +380,83 @@ export class FPNumber {
    * @param {number} [dp=precision] Decimal places
    */
   public dp(dp: number = this.precision): FPNumber {
-    return FPNumber.fromNatural(this.toFixed(dp), dp);
+    const newValue = this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
+    return new FPNumber(newValue, dp);
   }
 
   /**
-   * Addition operator
+   * Addition (+) operator
    * @param {FPNumber} target Target number
    */
-  public add(target: FPNumber): FPNumber {
-    return new FPNumber(
-      this.value.plus(equalizedBN(target, this.precision)).dp(0, FPNumber.DEFAULT_ROUND_MODE),
-      this.precision
-    );
+  public add(target: FPNumber): FPNumber;
+  /**
+   * Addition (+) operator
+   * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
+   */
+  public add(target: OperatorParam): FPNumber;
+  public add(target: OperatorParamFull): FPNumber {
+    const value = target instanceof FPNumber ? target.value : target;
+    return new FPNumber(this.value.plus(value), this.precision);
   }
 
   /**
-   * Subtraction operator
+   * Subtraction (-) operator
    * @param {FPNumber} target Target number
    */
-  public sub(target: FPNumber): FPNumber {
-    return new FPNumber(
-      this.value.minus(equalizedBN(target, this.precision)).dp(0, FPNumber.DEFAULT_ROUND_MODE),
-      this.precision
-    );
+  public sub(target: FPNumber): FPNumber;
+  /**
+   * Subtraction (-) operator
+   * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
+   */
+  public sub(target: OperatorParam): FPNumber;
+  public sub(target: OperatorParamFull): FPNumber {
+    const value = target instanceof FPNumber ? target.value : target;
+    return new FPNumber(this.value.minus(value), this.precision);
   }
 
   /**
-   * Multiplication operator
+   * Multiplication (*) operator
    * @param {FPNumber} target Target number
    */
-  public mul(target: FPNumber): FPNumber {
-    return new FPNumber(
-      this.value
-        .times(equalizedBN(target, this.precision))
-        .div(10 ** this.precision)
-        .dp(0, FPNumber.DEFAULT_ROUND_MODE),
-      this.precision
-    );
+  public mul(target: FPNumber): FPNumber;
+  /**
+   * Multiplication (*) operator
+   * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
+   */
+  public mul(target: OperatorParam): FPNumber;
+  public mul(target: OperatorParamFull): FPNumber {
+    const value = target instanceof FPNumber ? target.value : target;
+    return new FPNumber(this.value.times(value), this.precision);
   }
 
   /**
-   * Dividion operator
+   * Div (/) operator
    * @param {FPNumber} target Target number
    */
-  public div(target: FPNumber): FPNumber {
-    return new FPNumber(
-      this.value
-        .div(equalizedBN(target, this.precision))
-        .times(10 ** this.precision)
-        .dp(0, FPNumber.DEFAULT_ROUND_MODE),
-      this.precision
-    );
+  public div(target: FPNumber): FPNumber;
+  /**
+   * Div (/) operator
+   * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
+   */
+  public div(target: OperatorParam): FPNumber;
+  public div(target: OperatorParamFull): FPNumber {
+    const value = target instanceof FPNumber ? target.value : target;
+    return new FPNumber(this.value.div(value), this.precision);
   }
 
   /**
-   * Mod operator TODO: Add tests
+   * Mod (%) operator
    * @param {FPNumber} target Target number
    */
-  public mod(target: FPNumber): FPNumber {
-    return new FPNumber(
-      this.value.mod(equalizedBN(target, this.precision)).dp(0, FPNumber.DEFAULT_ROUND_MODE),
-      this.precision
-    );
+  public mod(target: FPNumber): FPNumber;
+  /**
+   * Mod (%) operator
+   * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
+   */
+  public mod(target: OperatorParam): FPNumber;
+  public mod(target: OperatorParamFull): FPNumber {
+    const value = target instanceof FPNumber ? target.value : target;
+    return new FPNumber(this.value.mod(value), this.precision);
   }
 
   /**
@@ -404,17 +464,20 @@ export class FPNumber {
    *
    * For instance, 4 % 2 = 0, so it returns `true` in this case.
    *
-   * TODO: Add tests
    * @param {FPNumber} target Target number
    */
-  public isZeroMod(target: FPNumber): boolean {
-    return new FPNumber(
-      this.value
-        .mod(equalizedBN(target, this.precision))
-        .times(10 ** this.precision)
-        .dp(0, FPNumber.DEFAULT_ROUND_MODE),
-      this.precision
-    ).isZero();
+  public isZeroMod(target: FPNumber): boolean;
+  /**
+   * Returns `true` if mod operation returns zero.
+   *
+   * For instance, 4 % 2 = 0, so it returns `true` in this case.
+   *
+   * @param {string | number | BigNumber} target Target number, might be represented by 'string', 'number' or 'BigNumber' type
+   */
+  public isZeroMod(target: OperatorParam): boolean;
+  public isZeroMod(target: OperatorParamFull): boolean {
+    const value = target instanceof FPNumber ? target.value : target;
+    return new FPNumber(this.value.mod(value), this.precision).isZero();
   }
 
   /**
@@ -428,13 +491,25 @@ export class FPNumber {
    * Return the sqrt number
    */
   public sqrt(): FPNumber {
-    return new FPNumber(
-      this.value
-        .times(10 ** this.precision)
-        .sqrt()
-        .dp(0, FPNumber.DEFAULT_ROUND_MODE),
-      this.precision
-    );
+    return new FPNumber(this.value.sqrt(), this.precision);
+  }
+
+  /**
+   * Pow (**) operator
+   * @param {FPNumber} exp Exponent number
+   */
+  public pow(exp: FPNumber): FPNumber;
+  /**
+   * Pow (**) operator
+   * @param {string | number | BigNumber} exp Exponent number represented by 'string', 'number' or 'BigNumber' type
+   */
+  public pow(exp: OperatorParam): FPNumber;
+  public pow(exp: OperatorParamFull): FPNumber {
+    const value = exp instanceof FPNumber ? exp.value : exp;
+    const numValue = value instanceof BigNumber ? value.toNumber() : +value;
+    // BigNumber.pow works really slow so Math.pow should be used here
+    // value.toNumber() is used to keep the value as is
+    return new FPNumber(Math.pow(this.value.toNumber(), numValue), this.precision);
   }
 
   /**

@@ -17,7 +17,6 @@ import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
 
 import type { BridgeNetworkId, BridgeTransactionData } from './types';
 import type { SubNetwork, ParachainIds } from './sub/types';
-import type { EvmNetwork } from './evm/types';
 
 function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
   if (junction.isAccountId32) {
@@ -60,7 +59,7 @@ function getNetworkType(network: BridgeTypesGenericNetworkId): BridgeNetworkType
 
 function getNetworkId(network: BridgeTypesGenericNetworkId): BridgeNetworkId {
   if (network.isSub) return network.asSub.toString() as SubNetwork;
-  if (network.isEvm) return network.asEvm.toNumber() as EvmNetwork;
+  if (network.isEvm) return network.asEvm.toNumber();
   return network.asEvmLegacy.toNumber();
 }
 
@@ -68,7 +67,7 @@ function getSubNetworkId(
   data: BridgeTypesGenericAccount,
   networkParam: BridgeTypesGenericNetworkId,
   usedNetwork: SubNetwork,
-  parachainIds: ParachainIds
+  parachainIds?: ParachainIds
 ): BridgeNetworkId | null {
   if (!data.isParachain) return usedNetwork;
 
@@ -85,7 +84,7 @@ function getSubNetworkId(
     if (networkJunction.isParachain) {
       const paraId = networkJunction.asParachain.toNumber();
 
-      if (parachainIds[usedNetwork] === paraId) {
+      if (parachainIds?.[usedNetwork as keyof ParachainIds] === paraId) {
         return usedNetwork;
       }
     }
@@ -133,12 +132,12 @@ function formatBridgeTx(
   formatted.soraHash = hash;
   formatted.amount = unwrapped.amount.toString();
   formatted.soraAssetAddress = unwrapped.assetId.code.toString();
-  formatted.status =
-    unwrapped.status.isFailed || unwrapped.status.isRefunded
-      ? BridgeTxStatus.Failed
-      : unwrapped.status.isDone || unwrapped.status.isCommitted
-      ? BridgeTxStatus.Done
-      : BridgeTxStatus.Pending;
+  formatted.status = BridgeTxStatus.Pending;
+  if (unwrapped.status.isFailed || unwrapped.status.isRefunded) {
+    formatted.status = BridgeTxStatus.Failed;
+  } else if (unwrapped.status.isDone || unwrapped.status.isCommitted) {
+    formatted.status = BridgeTxStatus.Done;
+  }
   formatted.startBlock = getBlock(unwrapped.startTimepoint);
   formatted.endBlock = getBlock(unwrapped.endTimepoint);
 

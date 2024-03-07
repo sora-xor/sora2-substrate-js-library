@@ -99,7 +99,7 @@ const getOrderBook = (id: OrderBookId, payload: QuotePayload) => {
 };
 
 // assemble_order_book_id
-const assembleOrderBookId = (baseAssetId: string, inputAsset: string, outputAsset: string): OrderBookId => {
+const assembleOrderBookId = (baseAssetId: string, inputAsset: string, outputAsset: string): OrderBookId | null => {
   // trick
   const dexId = isAssetAddress(baseAssetId, Consts.XOR) ? 0 : 1;
 
@@ -153,23 +153,24 @@ const bestBid = (book: OrderBookAggregated): FPNumber | null => {
   return FPNumber.max(...bids.map(([price, _]) => price));
 };
 
-// sum_market
+/** sum_market */
+// prettier-ignore
 const sumMarket = (
   book: OrderBook,
   marketData: OrderBookPriceVolume[],
   depthLimit: OrderAmount | null
-): [OrderAmount, OrderAmount] => {
+): [OrderAmount, OrderAmount] => { // NOSONAR
   let marketBaseVolume = FPNumber.ZERO;
   let marketQuoteVolume = FPNumber.ZERO;
   let enoughLiquidity = false;
 
   for (const [price, baseVolume] of marketData) {
-    let quoteVolume = price.mul(baseVolume);
-    let limit = depthLimit;
+    const quoteVolume = price.mul(baseVolume);
+    const limit = depthLimit;
 
     if (depthLimit) {
-      if (limit.isBase) {
-        let baseLimit = limit.value;
+      if (limit?.isBase) {
+        const baseLimit = limit.value;
         if (FPNumber.isGreaterThanOrEqualTo(marketBaseVolume.add(baseVolume), baseLimit)) {
           const delta = alignAmount(baseLimit.sub(marketBaseVolume), book);
           marketBaseVolume = marketBaseVolume.add(delta);
@@ -178,7 +179,7 @@ const sumMarket = (
           break;
         }
       } else {
-        let quoteLimit = limit.value;
+        const quoteLimit = limit?.value ?? FPNumber.ZERO;
         if (FPNumber.isGreaterThanOrEqualTo(marketQuoteVolume.add(quoteLimit), quoteLimit)) {
           const delta = alignAmount(safeDivide(quoteLimit.sub(marketQuoteVolume), price), book);
           marketBaseVolume = marketBaseVolume.add(delta);
@@ -232,7 +233,8 @@ const calculateDeal = (
       );
     }
   } else {
-    if (isBuyDirection) {
+    // prettier-ignore
+    if (isBuyDirection) { // NOSONAR
       [base, quote] = sumMarket(
         book,
         book.aggregated.asks,
@@ -364,7 +366,8 @@ export const orderBookQuoteWithoutImpact = (
         targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
       }
     } else {
-      if (isBuyDirection) {
+      // prettier-ignore
+      if (isBuyDirection) { // NOSONAR
         targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
       } else {
         targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);

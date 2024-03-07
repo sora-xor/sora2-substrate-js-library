@@ -23,3 +23,5 @@ export type SwapQuoteData = {
   isAvailable: boolean;
   liquiditySources: LiquiditySourceTypes[];
 };
+
+export type FilterMode = 'Disabled' | 'AllowSelected' | 'ForbidSelected';

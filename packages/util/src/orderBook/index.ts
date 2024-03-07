@@ -1,7 +1,6 @@
 import { map } from 'rxjs';
+import { assert } from '@polkadot/util';
 import { FPNumber } from '@sora-substrate/math';
-import { Operation } from '../BaseApi';
-import { MAX_ORDERS_PER_SINGLE_PRICE, MAX_TIMESTAMP } from './consts';
 import { OrderBookStatus, PriceVariant } from '@sora-substrate/liquidity-proxy';
 import type { OrderBook, OrderBookPriceVolume } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
@@ -15,6 +14,9 @@ import type {
   OrderBook as OrderBookStruct,
 } from '@polkadot/types/lookup';
 
+import { Operation } from '../BaseApi';
+import { MAX_ORDERS_PER_SINGLE_PRICE, MAX_TIMESTAMP } from './consts';
+import { Messages } from '../logger';
 import type { Api } from '../api';
 import type { AggregatedOrderBook, AssetIdOrAsset, LimitOrder, LimitOrderHistory, OrderId } from './types';
 import type { AccountAsset, Asset } from '../assets/types';
@@ -71,14 +73,14 @@ export class OrderBookModule<T> {
   public async getOrderBooks(): Promise<Record<string, OrderBook>> {
     const entries = await this.root.api.query.orderBook.orderBooks.entries();
 
-    const orderBooks: Record<string, OrderBook> = entries.reduce((buffer, [_, value]) => {
+    const orderBooks = entries.reduce<Record<string, OrderBook>>((buffer, [_, value]) => {
       const book = formatOrderBookOption(value);
 
       if (!book) return buffer;
 
       const { base, quote } = book.orderBookId;
 
-      buffer[this.serializedKey(base, quote)] = book;
+      buffer[this.serializeKey(base, quote)] = book;
 
       return buffer;
     }, {});
@@ -95,7 +97,7 @@ export class OrderBookModule<T> {
 
     return entries.map(([key, _]) => {
       const { base, quote } = key.args[1];
-      return this.serializedKey(toAssetId(base), toAssetId(quote));
+      return this.serializeKey(toAssetId(base), toAssetId(quote));
     });
   }
 
@@ -378,6 +380,8 @@ export class OrderBookModule<T> {
     side: PriceVariant,
     timestamp = MAX_TIMESTAMP
   ): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     const areAddresses = typeof base === 'string' && typeof quote === 'string';
     const baseAddress = areAddresses ? base : (base as Asset).address;
     const quoteAddress = areAddresses ? quote : (quote as Asset).address;
@@ -426,6 +430,8 @@ export class OrderBookModule<T> {
    */
   public cancelLimitOrder(base: Asset | AccountAsset, quote: Asset | AccountAsset, orderId: number): Promise<T>;
   public cancelLimitOrder(base: AssetIdOrAsset, quote: AssetIdOrAsset, orderId: number): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     const areAddresses = typeof base === 'string' && typeof quote === 'string';
     const baseAddress = areAddresses ? base : (base as Asset).address;
     const quoteAddress = areAddresses ? quote : (quote as Asset).address;
@@ -465,6 +471,8 @@ export class OrderBookModule<T> {
    */
   public cancelLimitOrderBatch(base: Asset | AccountAsset, quote: Asset | AccountAsset, orderIds: number[]): Promise<T>;
   public cancelLimitOrderBatch(base: AssetIdOrAsset, quote: AssetIdOrAsset, orderIds: number[]): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     const areAddresses = typeof base === 'string' && typeof quote === 'string';
     const baseAddress = areAddresses ? base : (base as Asset).address;
     const quoteAddress = areAddresses ? quote : (quote as Asset).address;
@@ -491,12 +499,14 @@ export class OrderBookModule<T> {
     );
   }
 
-  public serializedKey(base: string, quote: string): string {
+  /** {baseAssetId},{quoteAssetId} serialization */
+  public serializeKey(base: string, quote: string): string {
     if (!(base && quote)) return '';
     return `${base},${quote}`;
   }
 
-  public deserializeKey(key: string): Partial<{ base: string; quote: string }> {
+  /** {baseAssetId},{quoteAssetId} deserialization -> { base: string; quote: string; } */
+  public deserializeKey(key: string): Partial<{ base: string; quote: string }> | null {
     if (!key) return null;
     const [base, quote] = key.split(',');
     return { base, quote };

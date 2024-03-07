@@ -110,7 +110,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public getParachainId(parachain: SubNetwork): number {
-    const parachainId = this.parachainIds[parachain];
+    const parachainId = this.parachainIds[parachain as keyof typeof this.parachainIds];
 
     if (!parachainId) throw new Error(`Parachain id is not defined for "${parachain}" parachain`);
 
@@ -193,7 +193,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     return historyItem;
   }
 
-  public saveHistory(history: SubHistory): void {
+  public override saveHistory(history: SubHistory): void {
     if (!isSubstrateOperation(history.type)) return;
     super.saveHistory(history);
   }
@@ -375,7 +375,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     assert(this.account, Messages.connectWallet);
 
     const extrinsic = this.getTransferExtrinsic(asset, recipient, amount, subNetwork);
-    const historyItem = this.getHistory(historyId) || {
+    const historyParam = historyId ? this.getHistory(historyId) : undefined;
+    const historyItem = historyParam || {
       type: Operation.SubstrateOutgoing,
       symbol: asset.symbol,
       assetAddress: asset.address,
