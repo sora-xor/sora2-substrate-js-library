@@ -4,6 +4,8 @@ export enum SubAssetKind {
 }
 
 export enum SubNetworkId {
+  /** SORA  */
+  Mainnet = 'Mainnet',
   /** Polkadot relaychain */
   Polkadot = 'Polkadot',
   /** SORA parachain in Polkadot relaychain */
@@ -37,6 +39,8 @@ export const Relaychains = [
   SubNetworkId.Rococo,
   SubNetworkId.Alphanet,
 ] as const;
+
+export const Parachains = [...SoraParachains] as const;
 
 export const Standalones = [SubNetworkId.Liberland] as const;
 
@@ -130,4 +134,9 @@ export enum XcmBodyPart {
   Fraction = 'Fraction',
   AtLeastProportion = 'AtLeastProportion',
   MoreThanProportion = 'MoreThanProportion',
+}
+
+export enum LiberlandAssetType {
+  LLD = 'LLD',
+  Asset = 'Asset',
 }

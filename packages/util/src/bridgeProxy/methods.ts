@@ -36,16 +36,23 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   if (data.isSora) {
     return data.asSora.toString();
   }
+  if (data.isParachain) {
+    const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
 
-  const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
-
-  if (interior.isX1) {
-    return accountFromJunction(interior.asX1);
-  } else if (interior.isX2) {
-    return accountFromJunction(interior.asX2[1]);
-  } else {
-    return '';
+    if (interior.isX1) {
+      return accountFromJunction(interior.asX1);
+    } else if (interior.isX2) {
+      return accountFromJunction(interior.asX2[1]);
+    } else {
+      return '';
+    }
   }
+  // [TODO: liberlandBridgeApp] remove any
+  if ((data as any).isLiberland) {
+    return (data as any).asLiberland.toString();
+  }
+
+  return '';
 }
 
 function getNetworkType(network: BridgeTypesGenericNetworkId): BridgeNetworkType {
@@ -66,8 +73,7 @@ function getSubNetworkId(
   usedNetwork: SubNetwork,
   parachainIds?: ParachainIds
 ): BridgeNetworkId | null {
-  // we don't know from where are this tx. For now this will be a used network
-  if (data.isUnknown) return usedNetwork;
+  if (!data.isParachain) return usedNetwork;
 
   const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
 

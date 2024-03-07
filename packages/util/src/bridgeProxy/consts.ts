@@ -24,5 +24,6 @@ export enum BridgeAccountType {
   Evm = 'EVM',
   Sora = 'Sora',
   Parachain = 'Parachain',
+  Liberland = 'Liberland',
   Unknown = 'Unknown',
 }

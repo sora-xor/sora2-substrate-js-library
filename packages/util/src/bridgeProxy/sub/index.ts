@@ -13,7 +13,9 @@ import {
   XcmJunction,
   SoraParachains,
   Relaychains,
+  Parachains,
   Standalones,
+  LiberlandAssetType,
 } from './consts';
 import { SoraParachainApi } from './parachain';
 
@@ -22,6 +24,7 @@ import type { Asset } from '../../assets/types';
 import type {
   SubHistory,
   SubAsset,
+  SubAssetId,
   ParachainIds,
   SubNetwork,
   SubNetworkChainId,
@@ -30,7 +33,20 @@ import type {
   Parachain,
   Standalone,
 } from './types';
-import type { BridgeTypesGenericNetworkId } from '@polkadot/types/lookup';
+import type {
+  BridgeTypesGenericNetworkId,
+  BridgeTypesAssetKind,
+  BridgeTypesGenericAccount,
+} from '@polkadot/types/lookup';
+import type { Option, u8 } from '@polkadot/types-codec';
+
+const parseSubBridgeAssetKind = (kind: Option<BridgeTypesAssetKind>): SubAssetKind => {
+  return kind.unwrap().isSidechain ? SubAssetKind.Sidechain : SubAssetKind.Thischain;
+};
+
+const parseSubBridgeAssetDecimals = (precision: Option<u8>) => {
+  return precision.unwrap().toNumber();
+};
 
 export class SubBridgeApi<T> extends BaseApi<T> {
   constructor() {
@@ -92,10 +108,9 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   /** Get value how this network is defined on blockchain */
   public getSubNetworkChainId(subNetwork: SubNetwork): SubNetworkChainId {
-    // Only relaychains on SORA blockchain yet;
-    const relaychain = this.getRelayChain(subNetwork);
+    if (this.isStandalone(subNetwork)) return subNetwork as Standalone;
 
-    return relaychain;
+    return this.getRelayChain(subNetwork);
   }
 
   public getParachainId(parachain: SubNetwork): number {
@@ -114,22 +129,35 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     return SoraParachains.includes(subNetwork as SoraParachain);
   }
 
-  // for future usage
+  public isParachain(subNetwork: SubNetwork): boolean {
+    return Parachains.includes(subNetwork as Parachain);
+  }
+
   public isStandalone(subNetwork: SubNetwork): boolean {
     return Standalones.includes(subNetwork as Standalone);
   }
 
-  private getRecipientArg(subNetwork: SubNetwork, recipient: string) {
-    const recipientPublicKey = this.api.createType('AccountId32', recipient).toHex();
+  private getRecipientArg(subNetwork: SubNetwork, recipient: string): BridgeTypesGenericAccount {
+    const accountId32 = this.api.createType('AccountId32', recipient);
+
+    if (this.isStandalone(subNetwork)) {
+      if (subNetwork === SubNetworkId.Liberland) {
+        return this.api.createType('BridgeTypesGenericAccount', {
+          [BridgeAccountType.Liberland]: accountId32,
+        });
+      }
+
+      throw new Error(`Unsupported BridgeAccountType for "${subNetwork}" Standalone network`);
+    }
 
     const accountXcmJunction = {
       [XcmJunction.AccountId32]: {
-        id: recipientPublicKey,
+        id: accountId32.toHex(), // account public key
       },
     };
 
     if (this.isRelayChain(subNetwork)) {
-      return {
+      return this.api.createType('BridgeTypesGenericAccount', {
         [BridgeAccountType.Parachain]: {
           [XcmVersionedMultiLocation.V3]: {
             parents: 1,
@@ -138,26 +166,23 @@ export class SubBridgeApi<T> extends BaseApi<T> {
             },
           },
         },
-      };
+      });
     }
 
-    return {
+    const parachainXcmJunction = {
+      [XcmJunction.Parachain]: this.getParachainId(subNetwork), // parachain id in relaychain
+    };
+
+    return this.api.createType('BridgeTypesGenericAccount', {
       [BridgeAccountType.Parachain]: {
         [XcmVersionedMultiLocation.V3]: {
           parents: 1,
           interior: {
-            [XcmMultilocationJunction.X2]: [
-              // parachain id in relaychain
-              {
-                [XcmJunction.Parachain]: this.getParachainId(subNetwork),
-              },
-              // recipient account
-              accountXcmJunction,
-            ],
+            [XcmMultilocationJunction.X2]: [parachainXcmJunction, accountXcmJunction],
           },
         },
       },
-    };
+    });
   }
 
   public generateHistoryItem(params: SubHistory): SubHistory | null {
@@ -178,24 +203,50 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   }
 
   public async getSubAssetDecimals(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<number> {
-    const precision = await this.api.query.parachainBridgeApp.sidechainPrecision(subNetworkId, soraAssetId);
-
-    return precision.unwrap().toNumber();
+    if (subNetworkId === SubNetworkId.Liberland) {
+      // [TODO: liberlandBridgeApp] remove any
+      const precision = await (this.api.query.liberlandBridgeApp as any).sidechainPrecision(subNetworkId, soraAssetId);
+      return parseSubBridgeAssetDecimals(precision);
+    } else {
+      const precision = await this.api.query.parachainBridgeApp.sidechainPrecision(subNetworkId, soraAssetId);
+      return parseSubBridgeAssetDecimals(precision);
+    }
   }
 
-  public async getSubAssetKind(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetKind> {
-    const kind = await this.api.query.parachainBridgeApp.assetKinds(subNetworkId, soraAssetId);
+  private async getSubAssetAddress(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetId> {
+    if (subNetworkId === SubNetworkId.Liberland) {
+      // [TODO: liberlandBridgeApp] remove any
+      const result = await (this.api.query.liberlandBridgeApp as any).sidechainAssetId(subNetworkId, soraAssetId);
 
-    return kind.unwrap().isSidechain ? SubAssetKind.Sidechain : SubAssetKind.Thischain;
+      if (result.isEmpty) return undefined;
+
+      const assetId = result.unwrap().asLiberland;
+
+      return assetId.isLld ? LiberlandAssetType.LLD : { [LiberlandAssetType.Asset]: assetId.asAsset.toNumber() };
+    }
+
+    return undefined;
   }
 
-  private async getSubAssetData(relaychain: Relaychain, soraAssetId: string): Promise<SubAsset> {
-    const [decimals, assetKind] = await Promise.all([
-      this.getSubAssetDecimals(relaychain, soraAssetId),
-      this.getSubAssetKind(relaychain, soraAssetId),
+  private async getSubAssetKind(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetKind> {
+    if (subNetworkId === SubNetworkId.Liberland) {
+      // [TODO: liberlandBridgeApp] remove any
+      const kind = await (this.api.query.liberlandBridgeApp as any).assetKinds(subNetworkId, soraAssetId);
+      return parseSubBridgeAssetKind(kind);
+    } else {
+      const kind = await this.api.query.parachainBridgeApp.assetKinds(subNetworkId, soraAssetId);
+      return parseSubBridgeAssetKind(kind);
+    }
+  }
+
+  private async getSubAssetData(chain: Relaychain | Standalone, soraAssetId: string): Promise<SubAsset> {
+    const [address, decimals, assetKind] = await Promise.all([
+      this.getSubAssetAddress(chain, soraAssetId),
+      this.getSubAssetDecimals(chain, soraAssetId),
+      this.getSubAssetKind(chain, soraAssetId),
     ]);
 
-    return { decimals, assetKind };
+    return { address, decimals, assetKind };
   }
 
   private async getRelayChainAssets(relaychain: Relaychain): Promise<Record<string, SubAsset>> {
@@ -237,10 +288,45 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     }
   }
 
+  private async getStandaloneAssets(standalone: Standalone): Promise<Record<string, SubAsset>> {
+    if (standalone === SubNetworkId.Liberland) {
+      return await this.getLiberlandAssets();
+    }
+
+    throw new Error(`"${standalone}" network registered assets request not supported`);
+  }
+
+  private async getLiberlandAssets(): Promise<Record<string, SubAsset>> {
+    const assets: Record<string, SubAsset> = {};
+
+    try {
+      // [TODO: liberlandBridgeApp] remove any
+      const keys: any[] = await (this.api.query.liberlandBridgeApp as any).assetKinds.keys(SubNetworkId.Liberland);
+      const soraAssetIds: string[] = keys.map((key) => key.args[1].code.toString());
+
+      await Promise.all(
+        soraAssetIds.map(async (soraAssetId) => {
+          const data = await this.getSubAssetData(SubNetworkId.Liberland, soraAssetId);
+
+          assets[soraAssetId] = data;
+        })
+      );
+
+      return assets;
+    } catch {
+      return assets;
+    }
+  }
+
   public async getRegisteredAssets(subNetwork: SubNetwork): Promise<Record<string, SubAsset>> {
-    return this.isRelayChain(subNetwork)
-      ? await this.getRelayChainAssets(subNetwork as Relaychain)
-      : await this.getParaChainAssets(subNetwork as Parachain);
+    if (this.isStandalone(subNetwork)) {
+      return await this.getStandaloneAssets(subNetwork as Standalone);
+    }
+    if (this.isRelayChain(subNetwork)) {
+      return await this.getRelayChainAssets(subNetwork as Relaychain);
+    }
+
+    return await this.getParaChainAssets(subNetwork as Parachain);
   }
 
   public async getUserTransactions(accountAddress: string, subNetwork: SubNetwork) {
