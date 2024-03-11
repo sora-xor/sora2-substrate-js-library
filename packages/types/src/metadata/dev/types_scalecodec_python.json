@@ -4689,6 +4689,47 @@
                     ]
                 }
             }
+        },
+        {
+            "runtime_range": [
+                72,
+                null
+            ],
+            "types": {
+                "SubNetworkId": {
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "Mainnet",
+                            null
+                        ],
+                        [
+                            "Kusama",
+                            null
+                        ],
+                        [
+                            "Polkadot",
+                            null
+                        ],
+                        [
+                            "Rococo",
+                            null
+                        ],
+                        [
+                            "Liberland",
+                            null
+                        ],
+                        [
+                            "Alphanet",
+                            null
+                        ],
+                        [
+                            "Custom",
+                            "u32"
+                        ]
+                    ]
+                }
+            }
         }
     ]
 }
