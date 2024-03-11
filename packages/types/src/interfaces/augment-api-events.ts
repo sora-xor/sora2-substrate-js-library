@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuCollateralRiskParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsXstSyntheticOutput, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuCollateralRiskParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstSyntheticOutput, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -912,6 +912,10 @@ declare module '@polkadot/api-base/types/events' {
       NothingToExchange: AugmentedEvent<ApiType, [u32, AccountId32]>;
     };
     qaTools: {
+      /**
+       * Multicollateral bonding curve liquidity source has been initialized successfully.
+       **/
+      McbcInitialized: AugmentedEvent<ApiType, [collateralRefPrices: Vec<ITuple<[CommonPrimitivesAssetId32, QaToolsPalletToolsPriceToolsAssetPrices]>>], { collateralRefPrices: Vec<ITuple<[CommonPrimitivesAssetId32, QaToolsPalletToolsPriceToolsAssetPrices]>> }>;
       /**
        * Requested order books have been created.
        **/

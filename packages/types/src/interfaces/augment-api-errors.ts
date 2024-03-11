@@ -2577,6 +2577,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       EmptyRandomRange: AugmentedError<ApiType>;
       /**
+       * TBCD must be initialized using different field/function (see `tbcd_collateral` and `TbcdCollateralInput`).
+       **/
+      IncorrectCollateralAsset: AugmentedError<ApiType>;
+      /**
        * Price step, best price, and worst price must be a multiple of order book's tick size.
        * Price step must also be non-zero.
        **/
@@ -2591,6 +2595,7 @@ declare module '@polkadot/api-base/types/errors' {
       OutOfBoundsRandomRange: AugmentedError<ApiType>;
       /**
        * Cannot deduce price of synthetic base asset because there is no existing price for reference asset.
+       * You can use `price_tools_set_asset_price` extrinsic to set its price.
        **/
       ReferenceAssetPriceNotFound: AugmentedError<ApiType>;
       /**
@@ -2601,6 +2606,10 @@ declare module '@polkadot/api-base/types/errors' {
        * The count of prices to fill is too large.
        **/
       TooManyPrices: AugmentedError<ApiType>;
+      /**
+       * Cannot initialize MCBC for unknown asset.
+       **/
+      UnknownMcbcAsset: AugmentedError<ApiType>;
       /**
        * Could not find already existing synthetic.
        **/

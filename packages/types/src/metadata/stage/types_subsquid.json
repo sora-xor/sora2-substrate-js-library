@@ -1585,7 +1585,7 @@
         {
             "minmax": [
                 54,
-                null
+                71
             ],
             "types": {
                 "BridgeAppInfo": {
@@ -1674,6 +1674,25 @@
                         "V2",
                         "V3"
                     ]
+                }
+            }
+        },
+        {
+            "minmax": [
+                72,
+                null
+            ],
+            "types": {
+                "SubNetworkId": {
+                    "_enum": {
+                        "Mainnet": null,
+                        "Kusama": null,
+                        "Polkadot": null,
+                        "Rococo": null,
+                        "Liberland": null,
+                        "Alphanet": null,
+                        "Custom": "u32"
+                    }
                 }
             }
         }
@@ -2408,6 +2427,8 @@
                 "Kusama": null,
                 "Polkadot": null,
                 "Rococo": null,
+                "Liberland": null,
+                "Alphanet": null,
                 "Custom": "u32"
             }
         },
