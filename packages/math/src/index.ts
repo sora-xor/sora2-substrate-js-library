@@ -19,7 +19,7 @@ BigNumber.config({
 
 type OperatorParam = string | number | BigNumber;
 type OperatorParamFull = FPNumber | string | number | BigNumber;
-type NumberType = Codec | FPNumber | string | number | BigNumber;
+type NumberType = Codec | FPNumber | string | number | BigNumber | bigint;
 
 const isFinityString = (str: string) => !['-Infinity', 'Infinity', 'NaN'].includes(str);
 const isZeroString = (str: string) => str === '0' || str === '-0';
@@ -200,11 +200,26 @@ export class FPNumber {
 
   /**
    * Get FPNumber from codec value
-   * @param {(string | number)} value Codec value `(value * 10^precision)`
+   * @param {(string | number | bigint)} value Codec value `(value * 10^precision)`
    * @param {number} precision Precision
    */
-  public static fromCodecValue(value: number | string, precision: number = FPNumber.DEFAULT_PRECISION): FPNumber {
-    const filtered = typeof value === 'string' ? value.replace(/[,. ]/g, '') : value;
+  public static fromCodecValue(
+    value: number | string | bigint,
+    precision: number = FPNumber.DEFAULT_PRECISION
+  ): FPNumber {
+    let filtered: number | string;
+    switch (typeof value) {
+      case 'string':
+        filtered = value.replace(/[,. ]/g, '');
+        break;
+      case 'bigint':
+        filtered = value.toString();
+        break;
+      default:
+        filtered = value;
+        break;
+    }
+
     const bn = new BigNumber(filtered);
     return new FPNumber(bn.div(10 ** precision), precision);
   }
@@ -261,12 +276,14 @@ export class FPNumber {
     return `${isNegative ? '-' : ''}${integerPart}.${fractionalPart}`;
   }
 
-  private formatInitialData(data: string | number | Codec, precision: number): string | number {
-    if (typeof data === 'number') {
-      return data;
-    }
-    if (typeof data === 'string') {
-      return this.formatInitialDataString(data);
+  private formatInitialData(data: string | number | Codec | bigint, precision: number): string | number {
+    switch (typeof data) {
+      case 'number':
+        return data;
+      case 'string':
+        return this.formatInitialDataString(data);
+      case 'bigint':
+        return this.formatInitialDataString(data.toString());
     }
     if ('toString' in data) {
       return this.formatInitialDataCodec(data, precision);
@@ -275,7 +292,7 @@ export class FPNumber {
   }
 
   /**
-   * Supports `data` as `string`, `number`, `BigNumber`, `FPNumber` and `Codec` data types.
+   * Supports `data` as `string`, `number`, `BigNumber`, `FPNumber`, `BigInt` and `Codec` data types.
    * It's better not to use `number` parameter as data if you want the strict rules for rounding
    * @param data
    * @param precision
@@ -300,6 +317,9 @@ export class FPNumber {
     return this.value.times(10 ** this.precision).toFormat(0);
   }
 
+  /**
+   * Formatted codec BigInt representation
+   */
   get codecBigInt(): BigInt {
     return BigInt(this.codec);
   }
