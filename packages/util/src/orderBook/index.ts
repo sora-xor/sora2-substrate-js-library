@@ -317,10 +317,7 @@ export class OrderBookModule<T> {
 
     const query = side === PriceVariant.Sell ? this.root.api.query.orderBook.asks : this.root.api.query.orderBook.bids;
 
-    const idsRaw = await query(
-      { dexId, base, quote },
-      { inner: new FPNumber(price).toCodecString(), isDivisible: true }
-    );
+    const idsRaw = await query({ dexId, base, quote }, new FPNumber(price).toCodecString());
 
     return ((idsRaw.unwrapOrDefault().toJSON() ?? []) as Array<number>).length < MAX_ORDERS_PER_SINGLE_PRICE;
   }
