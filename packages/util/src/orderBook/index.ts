@@ -312,14 +312,15 @@ export class OrderBookModule<T> {
    * @param side order side
    * @param price order price
    */
-  public async isOrderPlaceable(base: string, quote: string, side: PriceVariant, price: string) {
+  public async isOrderPlaceable(base: string, quote: string, side: PriceVariant, price: string): Promise<boolean> {
     const dexId = this.root.dex.getDexId(quote);
 
     const query = side === PriceVariant.Sell ? this.root.api.query.orderBook.asks : this.root.api.query.orderBook.bids;
+    const inner = new FPNumber(price).toCodecBigInt();
 
-    const idsRaw = await query({ dexId, base, quote }, new FPNumber(price).toCodecString());
+    const idsRaw = await query({ dexId, base, quote }, { inner, isDivisible: false });
 
-    return ((idsRaw.unwrapOrDefault().toJSON() ?? []) as Array<number>).length < MAX_ORDERS_PER_SINGLE_PRICE;
+    return (idsRaw.unwrapOrDefault() ?? []).length < MAX_ORDERS_PER_SINGLE_PRICE;
   }
 
   /**
