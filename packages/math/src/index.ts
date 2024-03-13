@@ -300,11 +300,22 @@ export class FPNumber {
     return this.value.times(10 ** this.precision).toFormat(0);
   }
 
+  get codecBigInt(): BigInt {
+    return BigInt(this.codec);
+  }
+
   /**
    * Format number to Codec string
    */
   public toCodecString(): string {
     return this.codec;
+  }
+
+  /**
+   * Format number to Codec string wrapped with `BigInt`
+   */
+  public toCodecBigInt(): BigInt {
+    return this.codecBigInt;
   }
 
   /**
