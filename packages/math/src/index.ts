@@ -407,6 +407,15 @@ export class FPNumber {
   }
 
   /**
+   * Format FPNumber to bigint
+   * @param {number} [dp=6] Decimal places
+   */
+  public toBigInt(dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): bigint {
+    const result = this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
+    return BigInt(result.toString());
+  }
+
+  /**
    * Returns a FPNumber whose value is the value of this FPNumber to a maximum of decimalPlaces decimal places.
    * @param {number} [dp=precision] Decimal places
    */
