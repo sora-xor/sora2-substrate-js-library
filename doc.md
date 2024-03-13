@@ -11876,6 +11876,24 @@ arguments:
 - relayer: `AccountId32`
 <hr>
 
+#### **api.tx.qaTools.mcbcInitialize**
+
+> Initialize mcbc liquidity source.
+>
+> Parameters:
+>
+> - `origin`: Root
+> - `base_supply`: Control supply of XOR,
+> - `other_collaterals`: Variables related to arbitrary collateral-specific pricing,
+> - `tbcd_collateral`: TBCD-specific pricing variables.
+
+arguments:
+
+- baseSupply: `Option<QaToolsPalletToolsMcbcBaseSupply>`
+- otherCollaterals: `Vec<QaToolsPalletToolsMcbcOtherCollateralInput>`
+- tbcdCollateral: `Option<QaToolsPalletToolsMcbcTbcdCollateralInput>`
+<hr>
+
 #### **api.tx.qaTools.priceToolsSetAssetPrice**
 
 > Set prices of an asset in `price_tools` pallet.
@@ -13944,6 +13962,8 @@ returns: `Option<SwapOutcomeInfo>`
         Kusama: null,
         Polkadot: null,
         Rococo: null,
+        Liberland: null,
+        Alphanet: null,
         Custom: "u32"
     }
 }
