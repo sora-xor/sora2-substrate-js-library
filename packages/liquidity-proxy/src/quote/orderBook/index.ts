@@ -170,18 +170,18 @@ const sumMarket = (
 
     if (depthLimit) {
       if (limit?.isBase) {
-        const baseLimit = limit.value;
-        if (FPNumber.isGreaterThanOrEqualTo(marketBaseVolume.add(baseVolume), baseLimit)) {
-          const delta = alignAmount(baseLimit.sub(marketBaseVolume), book);
+        const baseTarget = limit.value;
+        if (FPNumber.isGreaterThanOrEqualTo(marketBaseVolume.add(baseVolume), baseTarget)) {
+          const delta = alignAmount(baseTarget.sub(marketBaseVolume), book);
           marketBaseVolume = marketBaseVolume.add(delta);
           marketQuoteVolume = marketQuoteVolume.add(price.mul(delta));
           enoughLiquidity = true;
           break;
         }
       } else {
-        const quoteLimit = limit?.value ?? FPNumber.ZERO;
-        if (FPNumber.isGreaterThanOrEqualTo(marketQuoteVolume.add(quoteLimit), quoteLimit)) {
-          const delta = alignAmount(safeDivide(quoteLimit.sub(marketQuoteVolume), price), book);
+        const quoteTarget = limit?.value ?? FPNumber.ZERO;
+        if (FPNumber.isGreaterThanOrEqualTo(marketQuoteVolume.add(quoteVolume), quoteTarget)) {
+          const delta = alignAmount(safeDivide(quoteTarget.sub(marketQuoteVolume), price), book);
           marketBaseVolume = marketBaseVolume.add(delta);
           marketQuoteVolume = marketQuoteVolume.add(price.mul(delta));
           enoughLiquidity = true;
@@ -228,7 +228,7 @@ const calculateDeal = (
     } else {
       [base, quote] = sumMarket(
         book,
-        book.aggregated.bids,
+        [...book.aggregated.bids].reverse(),
         new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision))
       );
     }
@@ -243,7 +243,7 @@ const calculateDeal = (
     } else {
       [base, quote] = sumMarket(
         book,
-        book.aggregated.bids,
+        [...book.aggregated.bids].reverse(),
         new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision))
       );
     }
