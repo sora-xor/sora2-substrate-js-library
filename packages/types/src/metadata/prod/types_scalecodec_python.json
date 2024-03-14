@@ -5048,6 +5048,31 @@
                             "u32"
                         ]
                     ]
+                },
+                "LPSwapOutcomeInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "amountWithoutImpact",
+                            "Balance"
+                        ],
+                        [
+                            "fee",
+                            "BTreeMap<AssetId, Balance>"
+                        ],
+                        [
+                            "rewards",
+                            "Vec<LPRewardsInfo>"
+                        ],
+                        [
+                            "route",
+                            "Vec<AssetId>"
+                        ]
+                    ]
                 }
             }
         }

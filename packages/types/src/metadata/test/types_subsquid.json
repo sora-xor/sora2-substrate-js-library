@@ -1677,6 +1677,13 @@
                         "Alphanet": null,
                         "Custom": "u32"
                     }
+                },
+                "LPSwapOutcomeInfo": {
+                    "amount": "Balance",
+                    "amountwithoutimpact": "Balance",
+                    "fee": "BTreeMap<AssetId, Balance>",
+                    "rewards": "Vec<LPRewardsInfo>",
+                    "route": "Vec<AssetId>"
                 }
             }
         }
@@ -2059,7 +2066,8 @@
         },
         "LPSwapOutcomeInfo": {
             "amount": "Balance",
-            "fee": "Balance",
+            "amountWithoutImpact": "Balance",
+            "fee": "BTreeMap<AssetId, Balance>",
             "rewards": "Vec<LPRewardsInfo>",
             "route": "Vec<AssetId>"
         },

@@ -1582,7 +1582,7 @@
         {
             "minmax": [
                 72,
-                null
+                72
             ],
             "types": {
                 "SubNetworkId": {
@@ -1595,6 +1595,21 @@
                         "Alphanet": null,
                         "Custom": "u32"
                     }
+                }
+            }
+        },
+        {
+            "minmax": [
+                73,
+                null
+            ],
+            "types": {
+                "LPSwapOutcomeInfo": {
+                    "amount": "Balance",
+                    "amountwithoutimpact": "Balance",
+                    "fee": "BTreeMap<AssetId, Balance>",
+                    "rewards": "Vec<LPRewardsInfo>",
+                    "route": "Vec<AssetId>"
                 }
             }
         }
@@ -1977,7 +1992,8 @@
         },
         "LPSwapOutcomeInfo": {
             "amount": "Balance",
-            "fee": "Balance",
+            "amountWithoutImpact": "Balance",
+            "fee": "BTreeMap<AssetId, Balance>",
             "rewards": "Vec<LPRewardsInfo>",
             "route": "Vec<AssetId>"
         },
