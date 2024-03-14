@@ -158,7 +158,7 @@ const bestBid = (book: OrderBookAggregated): FPNumber | null => {
 const sumMarket = (
   book: OrderBook,
   marketData: OrderBookPriceVolume[],
-  depthLimit: OrderAmount | null
+  targetDepth: OrderAmount | null
 ): [OrderAmount, OrderAmount] => { // NOSONAR
   let marketBaseVolume = FPNumber.ZERO;
   let marketQuoteVolume = FPNumber.ZERO;
@@ -166,22 +166,21 @@ const sumMarket = (
 
   for (const [price, baseVolume] of marketData) {
     const quoteVolume = price.mul(baseVolume);
-    const limit = depthLimit;
 
-    if (depthLimit) {
-      if (limit?.isBase) {
-        const baseLimit = limit.value;
-        if (FPNumber.isGreaterThanOrEqualTo(marketBaseVolume.add(baseVolume), baseLimit)) {
-          const delta = alignAmount(baseLimit.sub(marketBaseVolume), book);
+    if (targetDepth) {
+      if (targetDepth.isBase) {
+        const baseTarget = targetDepth.value;
+        if (FPNumber.isGreaterThanOrEqualTo(marketBaseVolume.add(baseVolume), baseTarget)) {
+          const delta = alignAmount(baseTarget.sub(marketBaseVolume), book);
           marketBaseVolume = marketBaseVolume.add(delta);
           marketQuoteVolume = marketQuoteVolume.add(price.mul(delta));
           enoughLiquidity = true;
           break;
         }
       } else {
-        const quoteLimit = limit?.value ?? FPNumber.ZERO;
-        if (FPNumber.isGreaterThanOrEqualTo(marketQuoteVolume.add(quoteLimit), quoteLimit)) {
-          const delta = alignAmount(safeDivide(quoteLimit.sub(marketQuoteVolume), price), book);
+        const quoteTarget = targetDepth.value ?? FPNumber.ZERO;
+        if (FPNumber.isGreaterThanOrEqualTo(marketQuoteVolume.add(quoteVolume), quoteTarget)) {
+          const delta = alignAmount(safeDivide(quoteTarget.sub(marketQuoteVolume), price), book);
           marketBaseVolume = marketBaseVolume.add(delta);
           marketQuoteVolume = marketQuoteVolume.add(price.mul(delta));
           enoughLiquidity = true;
@@ -194,7 +193,7 @@ const sumMarket = (
     marketQuoteVolume = marketQuoteVolume.add(quoteVolume);
   }
 
-  if (!(!depthLimit || enoughLiquidity)) {
+  if (!(!targetDepth || enoughLiquidity)) {
     throw new Error(Errors.NotEnoughLiquidityInOrderBook);
   }
 
@@ -228,7 +227,7 @@ const calculateDeal = (
     } else {
       [base, quote] = sumMarket(
         book,
-        book.aggregated.bids,
+        [...book.aggregated.bids].reverse(),
         new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision))
       );
     }
@@ -243,7 +242,7 @@ const calculateDeal = (
     } else {
       [base, quote] = sumMarket(
         book,
-        book.aggregated.bids,
+        [...book.aggregated.bids].reverse(),
         new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision))
       );
     }
@@ -363,12 +362,12 @@ export const orderBookQuoteWithoutImpact = (
       if (isBuyDirection) {
         targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
       } else {
-        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
+        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision), book).mul(price);
       }
     } else {
       // prettier-ignore
       if (isBuyDirection) { // NOSONAR
-        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
+        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision), book).mul(price);
       } else {
         targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
       }
