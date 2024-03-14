@@ -362,12 +362,12 @@ export const orderBookQuoteWithoutImpact = (
       if (isBuyDirection) {
         targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
       } else {
-        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
+        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision), book).mul(price);
       }
     } else {
       // prettier-ignore
       if (isBuyDirection) { // NOSONAR
-        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision).mul(price), book);
+        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision), book).mul(price);
       } else {
         targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
       }
