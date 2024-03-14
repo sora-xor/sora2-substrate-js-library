@@ -166,11 +166,10 @@ const sumMarket = (
 
   for (const [price, baseVolume] of marketData) {
     const quoteVolume = price.mul(baseVolume);
-    const limit = targetDepth;
 
     if (targetDepth) {
-      if (limit?.isBase) {
-        const baseTarget = limit.value;
+      if (targetDepth.isBase) {
+        const baseTarget = targetDepth.value;
         if (FPNumber.isGreaterThanOrEqualTo(marketBaseVolume.add(baseVolume), baseTarget)) {
           const delta = alignAmount(baseTarget.sub(marketBaseVolume), book);
           marketBaseVolume = marketBaseVolume.add(delta);
@@ -179,7 +178,7 @@ const sumMarket = (
           break;
         }
       } else {
-        const quoteTarget = limit?.value ?? FPNumber.ZERO;
+        const quoteTarget = targetDepth.value ?? FPNumber.ZERO;
         if (FPNumber.isGreaterThanOrEqualTo(marketQuoteVolume.add(quoteVolume), quoteTarget)) {
           const delta = alignAmount(safeDivide(quoteTarget.sub(marketQuoteVolume), price), book);
           marketBaseVolume = marketBaseVolume.add(delta);
