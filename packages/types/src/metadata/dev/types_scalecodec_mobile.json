@@ -4709,6 +4709,39 @@
                     ]
                 }
             }
+        },
+        {
+            "runtime_range": [
+                73,
+                null
+            ],
+            "types": {
+                "LPSwapOutcomeInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "amountWithoutImpact",
+                            "Balance"
+                        ],
+                        [
+                            "fee",
+                            "BTreeMap<AssetId, Balance>"
+                        ],
+                        [
+                            "rewards",
+                            "Vec<LPRewardsInfo>"
+                        ],
+                        [
+                            "route",
+                            "Vec<AssetId>"
+                        ]
+                    ]
+                }
+            }
         }
     ]
 }
