@@ -17,8 +17,10 @@ import type {
   OracleRate,
   OrderBookAggregated,
   LPRewardsInfo,
+  SwapResultV2,
+  LiquidityProviderFee,
 } from '@sora-substrate/liquidity-proxy';
-import type { Balance, LiquiditySourceType } from '@sora-substrate/types';
+import type { Balance, LPSwapOutcomeInfo, LiquiditySourceType } from '@sora-substrate/types';
 import type { Observable, Codec } from '@polkadot/types/types';
 import type {
   CommonPrimitivesAssetId32,
@@ -40,6 +42,8 @@ import type { SwapTransferBatchData, SwapQuoteData, FilterMode } from './types';
 interface SwapResultWithDexId extends SwapResult {
   dexId: DexId;
 }
+
+type SwapResultWithDexIdV2 = Omit<SwapResultWithDexId, 'fee'> & { fee: LiquidityProviderFee[] };
 
 type AnyBalance = NumberLike | Codec | Balance;
 
@@ -136,7 +140,7 @@ const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key
     {}
   );
 
-const emptySwapResult = { amount: 0, fee: 0, rewards: [], amountWithoutImpact: 0, route: [] };
+const emptySwapResult = { amount: 0, fee: [], rewards: [], amountWithoutImpact: 0, route: [] };
 
 export class SwapModule<T> {
   public enabledAssets!: PrimaryMarketsEnabledAssets;
@@ -871,7 +875,7 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true,
     dexId = DexId.XOR
-  ): Promise<SwapResult> {
+  ): Promise<SwapResultV2> {
     const [assetA, assetB] = await Promise.all([
       this.root.assets.getAssetInfo(assetAAddress),
       this.root.assets.getAssetInfo(assetBAddress),
@@ -887,13 +891,20 @@ export class SwapModule<T> {
       liquiditySources,
       filterMode
     );
-    const value = result.unwrapOr(emptySwapResult);
+    const value = result.unwrapOr(emptySwapResult) as LPSwapOutcomeInfo;
+
+    const fee: LiquidityProviderFee[] = [];
+    value.fee.forEach((value, key) => {
+      fee.push({ assetId: key.toString(), value: new FPNumber(value).codec });
+    });
+
     return {
       amount: toParamCodecString(value.amount, assetA, assetB, isExchangeB),
-      fee: new FPNumber(value.fee, XOR.decimals).toCodecString(),
+      amountWithoutImpact: toParamCodecString(value.amountWithoutImpact, assetA, assetB, isExchangeB),
+      fee,
       rewards: ('toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards) as unknown as LPRewardsInfo[],
       route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
-    } as SwapResult;
+    } as SwapResultV2;
   }
 
   /**
@@ -918,7 +929,7 @@ export class SwapModule<T> {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
-  ): Promise<SwapResultWithDexId> {
+  ): Promise<SwapResultWithDexIdV2> {
     const { liquiditySources, filterMode } = this.getSourcesAndFilterMode(liquiditySource, allowSelectedSorce);
 
     const codecAmount = toCodecString(amount);
@@ -933,13 +944,20 @@ export class SwapModule<T> {
     const valueDex1 = resDex1.unwrapOr(emptySwapResult);
     const isDex0Better = FPNumber.gte(toFP(valueDex0.amount), toFP(valueDex1.amount));
     const value = isDex0Better ? valueDex0 : valueDex1;
+
+    const fee: LiquidityProviderFee[] = [];
+    value.fee.forEach((value, key) => {
+      fee.push({ assetId: key.toString(), value: new FPNumber(value).codec });
+    });
+
     return {
       amount: toCodecString(value.amount),
-      fee: toCodecString(value.fee),
+      amountWithoutImpact: toCodecString(value.amountWithoutImpact),
+      fee,
       rewards: ('toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards) as unknown as LPRewardsInfo[],
       route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
       dexId: isDex0Better ? DexId.XOR : DexId.XSTUSD,
-    } as SwapResultWithDexId;
+    } as SwapResultWithDexIdV2;
   }
 
   /**
@@ -1013,7 +1031,7 @@ export class SwapModule<T> {
     isExchangeB = false,
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
-  ): Observable<Promise<SwapResultWithDexId>> {
+  ): Observable<Promise<SwapResultWithDexIdV2>> {
     return this.root.system
       .getBlockNumberObservable()
       .pipe(
