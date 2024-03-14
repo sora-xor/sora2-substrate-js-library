@@ -89,7 +89,8 @@ export default {
   types: {
     LPSwapOutcomeInfo: {
       amount: 'Balance',
-      fee: 'Balance',
+      amountWithoutImpact: 'Balance',
+      fee: 'BTreeMap<AssetId, Balance>',
       rewards: 'Vec<LPRewardsInfo>',
       route: 'Vec<AssetId>',
     },

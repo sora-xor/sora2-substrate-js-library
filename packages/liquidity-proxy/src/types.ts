@@ -46,6 +46,10 @@ export interface SwapResult {
   distribution?: Distribution[][];
 }
 
+export type LiquidityProviderFee = { assetId: string; value: CodecString };
+
+export type SwapResultV2 = Omit<SwapResult, 'fee'> & { fee: LiquidityProviderFee[] };
+
 export type SwapQuote = (
   inputAssetAddress: string,
   outputAssetAddress: string,
