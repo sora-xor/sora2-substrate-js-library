@@ -158,7 +158,7 @@ const bestBid = (book: OrderBookAggregated): FPNumber | null => {
 const sumMarket = (
   book: OrderBook,
   marketData: OrderBookPriceVolume[],
-  depthLimit: OrderAmount | null
+  targetDepth: OrderAmount | null
 ): [OrderAmount, OrderAmount] => { // NOSONAR
   let marketBaseVolume = FPNumber.ZERO;
   let marketQuoteVolume = FPNumber.ZERO;
@@ -166,9 +166,9 @@ const sumMarket = (
 
   for (const [price, baseVolume] of marketData) {
     const quoteVolume = price.mul(baseVolume);
-    const limit = depthLimit;
+    const limit = targetDepth;
 
-    if (depthLimit) {
+    if (targetDepth) {
       if (limit?.isBase) {
         const baseTarget = limit.value;
         if (FPNumber.isGreaterThanOrEqualTo(marketBaseVolume.add(baseVolume), baseTarget)) {
@@ -194,7 +194,7 @@ const sumMarket = (
     marketQuoteVolume = marketQuoteVolume.add(quoteVolume);
   }
 
-  if (!(!depthLimit || enoughLiquidity)) {
+  if (!(!targetDepth || enoughLiquidity)) {
     throw new Error(Errors.NotEnoughLiquidityInOrderBook);
   }
 
