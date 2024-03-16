@@ -600,7 +600,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         case Operation.XorlessTransfer:
           return this.api.tx.liquidityProxy.xorlessTransfer(DexId.XOR, '', '', 0, 0, 0, [], 'Disabled', null);
         case Operation.Mint:
-          return this.api.tx.assets.updateBalance('', '', 0);
+          return this.api.tx.assets.mint('', '', 0);
         case Operation.Burn:
           return this.api.tx.assets.burn('', 0);
         case Operation.OrderBookPlaceLimitOrder:
