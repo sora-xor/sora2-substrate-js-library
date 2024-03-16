@@ -683,11 +683,7 @@ export class AssetsModule<T> {
     const formattedAddress = address.startsWith('cn') ? address : this.root.formatAddress(address);
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.assets.updateBalance(
-        address,
-        assetAddress,
-        new FPNumber(amount, asset.decimals).toCodecString()
-      ),
+      this.root.api.tx.assets.mint(address, assetAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.root.account.pair,
       { type: Operation.Mint, to: formattedAddress, amount: `${amount}`, assetAddress, symbol: asset.symbol }
     );
