@@ -651,7 +651,6 @@ declare module '@polkadot/api-base/types/events' {
       CDPCreated: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32 }>;
       CollateralDeposit: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
       CollateralRiskParametersUpdated: AugmentedEvent<ApiType, [collateralAssetId: CommonPrimitivesAssetId32, riskParameters: KensetsuCollateralRiskParameters], { collateralAssetId: CommonPrimitivesAssetId32, riskParameters: KensetsuCollateralRiskParameters }>;
-      CollateralWithdrawn: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
       DebtIncreased: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
       DebtPayment: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
       Donation: AugmentedEvent<ApiType, [amount: u128], { amount: u128 }>;
