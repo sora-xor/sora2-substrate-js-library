@@ -799,24 +799,43 @@ export class SwapModule<T> {
       acc.push(...arr);
       return acc;
     }, []);
-
-    return this.root.submitExtrinsic(
-      this.root.api.tx.liquidityProxy.swapTransferBatch(
-        receivers,
-        assetAddress,
-        amount,
-        liquiditySources,
-        filterMode,
-        null
-      ),
-      this.root.account.pair,
-      {
-        symbol: inputAsset.symbol,
-        assetAddress,
-        receivers: recipients,
-        type: Operation.SwapTransferBatch,
-      }
-    );
+    try {
+      return this.root.submitExtrinsic(
+        this.root.api.tx.liquidityProxy.swapTransferBatch(
+          receivers,
+          assetAddress,
+          amount,
+          liquiditySources,
+          filterMode,
+          null
+        ),
+        this.root.account.pair,
+        {
+          symbol: inputAsset.symbol,
+          assetAddress,
+          receivers: recipients,
+          type: Operation.SwapTransferBatch,
+        }
+      );
+    } catch {
+      // TODO: Should be removed in @sora-substrate/util v.1.33.
+      return this.root.submitExtrinsic(
+        (this.root.api.tx.liquidityProxy as any).swapTransferBatch(
+          receivers,
+          assetAddress,
+          amount,
+          liquiditySources,
+          filterMode
+        ),
+        this.root.account.pair,
+        {
+          symbol: inputAsset.symbol,
+          assetAddress,
+          receivers: recipients,
+          type: Operation.SwapTransferBatch,
+        }
+      );
+    }
   }
 
   private getSourcesAndFilterMode(liquiditySource: LiquiditySourceTypes, allowSelectedSorce: boolean) {

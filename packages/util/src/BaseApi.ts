@@ -541,7 +541,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             'Disabled'
           );
         case Operation.SwapTransferBatch:
-          return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled', null);
+          try {
+            return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled', null);
+          } catch {
+            // TODO: Should be removed in @sora-substrate/util v.1.33.
+            return (this.api.tx.liquidityProxy as any).swapTransferBatch([], '', '', [], 'Disabled');
+          }
         case Operation.ClaimVestedRewards:
           return this.api.tx.vestedRewards.claimRewards();
         case Operation.ClaimCrowdloanRewards:
