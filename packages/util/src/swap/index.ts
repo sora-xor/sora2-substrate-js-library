@@ -35,7 +35,7 @@ import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
-import type { ReceiverHistoryItem, SwapTransferBatchData, SwapQuoteData, FilterMode } from './types';
+import type { SwapTransferBatchData, SwapQuoteData, FilterMode } from './types';
 
 interface SwapResultWithDexId extends SwapResult {
   dexId: DexId;
@@ -778,7 +778,7 @@ export class SwapModule<T> {
   public executeSwapTransferBatch(
     receivers: Array<SwapTransferBatchData>,
     inputAsset: Asset | AccountAsset,
-    maxInputAmount: NumberLike,
+    maxInputAmount: FPNumber | NumberLike,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
@@ -788,21 +788,22 @@ export class SwapModule<T> {
     const liquiditySources = liquiditySource ? [liquiditySource] : [];
     const filterMode = liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected';
 
-    const recipients = receivers.reduce<Array<ReceiverHistoryItem>>((acc, curr) => {
-      const arr = curr.receivers.map((item) => {
-        return {
-          accountId: item.accountId,
-          amount: item.targetAmount,
-          assetId: curr.outcomeAssetId,
-        };
-      });
-      acc.push(...arr);
-      return acc;
-    }, []);
+    const data = receivers.map((item) => {
+      return {
+        outcomeAssetId: item.outcomeAssetId,
+        outcomeAssetReuse: new FPNumber(item.outcomeAssetReuse).toCodecString(),
+        dexId: item.dexId,
+        receivers: item.receivers.map((receiver) => ({
+          accountId: receiver.accountId,
+          targetAmount: new FPNumber(receiver.targetAmount).toCodecString(),
+        })),
+      };
+    });
+
     try {
       return this.root.submitExtrinsic(
         this.root.api.tx.liquidityProxy.swapTransferBatch(
-          receivers,
+          data,
           assetAddress,
           amount,
           liquiditySources,
@@ -813,7 +814,6 @@ export class SwapModule<T> {
         {
           symbol: inputAsset.symbol,
           assetAddress,
-          receivers: recipients,
           type: Operation.SwapTransferBatch,
         }
       );
@@ -821,7 +821,7 @@ export class SwapModule<T> {
       // TODO: Should be removed in @sora-substrate/util v.1.33.
       return this.root.submitExtrinsic(
         (this.root.api.tx.liquidityProxy as any).swapTransferBatch(
-          receivers,
+          data,
           assetAddress,
           amount,
           liquiditySources,
@@ -831,7 +831,6 @@ export class SwapModule<T> {
         {
           symbol: inputAsset.symbol,
           assetAddress,
-          receivers: recipients,
           type: Operation.SwapTransferBatch,
         }
       );
