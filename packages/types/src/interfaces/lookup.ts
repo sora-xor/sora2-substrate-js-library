@@ -1368,12 +1368,6 @@ export default {
         collateralAssetId: 'CommonPrimitivesAssetId32',
         amount: 'u128',
       },
-      CollateralWithdrawn: {
-        cdpId: 'u128',
-        owner: 'AccountId32',
-        collateralAssetId: 'CommonPrimitivesAssetId32',
-        amount: 'u128',
-      },
       DebtIncreased: {
         cdpId: 'u128',
         owner: 'AccountId32',
@@ -4395,10 +4389,6 @@ export default {
         cdpId: 'u128',
         collateralAmount: 'u128',
       },
-      withdraw_collateral: {
-        cdpId: 'u128',
-        collateralAmount: 'u128',
-      },
       borrow: {
         cdpId: 'u128',
         willToBorrowAmount: 'u128',
@@ -6227,7 +6217,7 @@ export default {
    * Lookup895: kensetsu::pallet::Error<T>
    **/
   KensetsuError: {
-    _enum: ['ArithmeticError', 'WrongAssetId', 'CDPNotFound', 'CollateralInfoNotFound', 'CDPSafe', 'CDPUnsafe', 'CDPLimitPerUser', 'TooManyManagers', 'NotEnoughCollateral', 'OperationNotPermitted', 'OutstandingDebt', 'NoDebt', 'CDPsPerUserLimitReached', 'HardCapSupply', 'BalanceNotEnough', 'WrongCollateralAssetId', 'AccrueWrongTime', 'ZeroLiquidationLot']
+    _enum: ['ArithmeticError', 'WrongAssetId', 'CDPNotFound', 'CollateralInfoNotFound', 'CDPSafe', 'CDPUnsafe', 'CDPLimitPerUser', 'TooManyManagers', 'OperationNotPermitted', 'OutstandingDebt', 'NoDebt', 'CDPsPerUserLimitReached', 'HardCapSupply', 'BalanceNotEnough', 'WrongCollateralAssetId', 'AccrueWrongTime', 'ZeroLiquidationLot']
   },
   /**
    * Lookup898: bridge_proxy::BridgeRequest<sp_core::crypto::AccountId32, common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>>
