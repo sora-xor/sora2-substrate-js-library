@@ -1752,7 +1752,6 @@ declare module '@polkadot/api-base/types/errors' {
       CollateralInfoNotFound: AugmentedError<ApiType>;
       HardCapSupply: AugmentedError<ApiType>;
       NoDebt: AugmentedError<ApiType>;
-      NotEnoughCollateral: AugmentedError<ApiType>;
       OperationNotPermitted: AugmentedError<ApiType>;
       OutstandingDebt: AugmentedError<ApiType>;
       TooManyManagers: AugmentedError<ApiType>;
