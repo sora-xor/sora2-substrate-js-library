@@ -263,10 +263,10 @@ export class KensetsuModule<T> {
 
   subscribeOnVaults(ids: number[]): Observable<Vault[]> {
     return this.root.apiRx.query.kensetsu.cdpDepository.multi(ids).pipe(
-      map((data, index) => {
-        const id = ids[index];
+      map((data) => {
         const vaults: Vault[] = [];
-        for (const item of data) {
+        for (const [index, item] of data.entries()) {
+          const id = ids[index];
           const vault = item.unwrapOr(null);
           if (vault) {
             vaults.push(this.formatVault(vault, id));

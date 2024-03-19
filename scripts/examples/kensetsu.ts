@@ -1,3 +1,4 @@
+import { firstValueFrom } from 'rxjs';
 import { FPNumber, api } from '@sora-substrate/util';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 import { XOR } from '@sora-substrate/util/assets/consts';
@@ -76,7 +77,7 @@ async function main(): Promise<void> {
     await api.kensetsu.createVault(XOR, 10, 20);
     await delay();
     console.info('History:', api.historyList[0]);
-  }, SORA_ENV.predev);
+  }, SORA_ENV.dev);
 }
 
 main()
