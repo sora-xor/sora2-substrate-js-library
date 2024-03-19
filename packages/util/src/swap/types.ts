@@ -1,15 +1,17 @@
 import type { SwapQuote, LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
 import type { DexId } from '../dex/consts';
+import { FPNumber, NumberLike } from '@sora-substrate/math';
 
 export interface SwapTransferBatchData {
   outcomeAssetId: string;
+  outcomeAssetReuse: FPNumber | NumberLike;
   receivers: Array<SwapTransferBatchReceiver>;
   dexId: DexId;
 }
 
 export interface SwapTransferBatchReceiver {
   accountId: string;
-  targetAmount: string;
+  targetAmount: FPNumber | NumberLike;
 }
 
 export interface ReceiverHistoryItem {

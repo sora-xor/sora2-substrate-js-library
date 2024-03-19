@@ -525,9 +525,11 @@ export class AssetsModule<T> {
   /**
    * Get asset IDs of the asset owner (creator).
    *
-   * @param accountId Account ID of the asset owner. If not set - the selected account ID is used.
+   * @param account Account ID of the asset owner. If not set - the selected account ID is used.
    */
-  public async getOwnedAssetIds(accountId = this.root.account?.pair.address): Promise<Array<string>> {
+  public async getOwnedAssetIds(account?: string): Promise<Array<string>> {
+    const accountId = account ?? this.root.account?.pair.address;
+    assert(accountId, Messages.connectWallet);
     try {
       const assets = await this.root.api.query.assets.assetOwners.entries();
 
@@ -683,11 +685,7 @@ export class AssetsModule<T> {
     const formattedAddress = address.startsWith('cn') ? address : this.root.formatAddress(address);
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.assets.updateBalance(
-        address,
-        assetAddress,
-        new FPNumber(amount, asset.decimals).toCodecString()
-      ),
+      this.root.api.tx.assets.mint(address, assetAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.root.account.pair,
       { type: Operation.Mint, to: formattedAddress, amount: `${amount}`, assetAddress, symbol: asset.symbol }
     );

@@ -1536,13 +1536,6 @@ declare module '@polkadot/types/lookup' {
       readonly collateralAssetId: CommonPrimitivesAssetId32;
       readonly amount: u128;
     } & Struct;
-    readonly isCollateralWithdrawn: boolean;
-    readonly asCollateralWithdrawn: {
-      readonly cdpId: u128;
-      readonly owner: AccountId32;
-      readonly collateralAssetId: CommonPrimitivesAssetId32;
-      readonly amount: u128;
-    } & Struct;
     readonly isDebtIncreased: boolean;
     readonly asDebtIncreased: {
       readonly cdpId: u128;
@@ -1586,7 +1579,7 @@ declare module '@polkadot/types/lookup' {
     readonly asDonation: {
       readonly amount: u128;
     } & Struct;
-    readonly type: 'CdpCreated' | 'CdpClosed' | 'CollateralDeposit' | 'CollateralWithdrawn' | 'DebtIncreased' | 'DebtPayment' | 'Liquidated' | 'CollateralRiskParametersUpdated' | 'KusdHardCapUpdated' | 'LiquidationPenaltyUpdated' | 'ProfitWithdrawn' | 'Donation';
+    readonly type: 'CdpCreated' | 'CdpClosed' | 'CollateralDeposit' | 'DebtIncreased' | 'DebtPayment' | 'Liquidated' | 'CollateralRiskParametersUpdated' | 'KusdHardCapUpdated' | 'LiquidationPenaltyUpdated' | 'ProfitWithdrawn' | 'Donation';
   }
 
   /** @name KensetsuCollateralRiskParameters (158) */
@@ -4596,11 +4589,6 @@ declare module '@polkadot/types/lookup' {
       readonly cdpId: u128;
       readonly collateralAmount: u128;
     } & Struct;
-    readonly isWithdrawCollateral: boolean;
-    readonly asWithdrawCollateral: {
-      readonly cdpId: u128;
-      readonly collateralAmount: u128;
-    } & Struct;
     readonly isBorrow: boolean;
     readonly asBorrow: {
       readonly cdpId: u128;
@@ -4648,7 +4636,7 @@ declare module '@polkadot/types/lookup' {
     readonly asRemoveRiskManager: {
       readonly accountId: AccountId32;
     } & Struct;
-    readonly type: 'CreateCdp' | 'CloseCdp' | 'DepositCollateral' | 'WithdrawCollateral' | 'Borrow' | 'RepayDebt' | 'Liquidate' | 'Accrue' | 'UpdateCollateralRiskParameters' | 'UpdateHardCapTotalSupply' | 'UpdateLiquidationPenalty' | 'WithdrawProfit' | 'Donate' | 'AddRiskManager' | 'RemoveRiskManager';
+    readonly type: 'CreateCdp' | 'CloseCdp' | 'DepositCollateral' | 'Borrow' | 'RepayDebt' | 'Liquidate' | 'Accrue' | 'UpdateCollateralRiskParameters' | 'UpdateHardCapTotalSupply' | 'UpdateLiquidationPenalty' | 'WithdrawProfit' | 'Donate' | 'AddRiskManager' | 'RemoveRiskManager';
   }
 
   /** @name BridgeProxyCall (566) */
@@ -6968,7 +6956,6 @@ declare module '@polkadot/types/lookup' {
     readonly isCdpUnsafe: boolean;
     readonly isCdpLimitPerUser: boolean;
     readonly isTooManyManagers: boolean;
-    readonly isNotEnoughCollateral: boolean;
     readonly isOperationNotPermitted: boolean;
     readonly isOutstandingDebt: boolean;
     readonly isNoDebt: boolean;
@@ -6978,7 +6965,7 @@ declare module '@polkadot/types/lookup' {
     readonly isWrongCollateralAssetId: boolean;
     readonly isAccrueWrongTime: boolean;
     readonly isZeroLiquidationLot: boolean;
-    readonly type: 'ArithmeticError' | 'WrongAssetId' | 'CdpNotFound' | 'CollateralInfoNotFound' | 'CdpSafe' | 'CdpUnsafe' | 'CdpLimitPerUser' | 'TooManyManagers' | 'NotEnoughCollateral' | 'OperationNotPermitted' | 'OutstandingDebt' | 'NoDebt' | 'CdPsPerUserLimitReached' | 'HardCapSupply' | 'BalanceNotEnough' | 'WrongCollateralAssetId' | 'AccrueWrongTime' | 'ZeroLiquidationLot';
+    readonly type: 'ArithmeticError' | 'WrongAssetId' | 'CdpNotFound' | 'CollateralInfoNotFound' | 'CdpSafe' | 'CdpUnsafe' | 'CdpLimitPerUser' | 'TooManyManagers' | 'OperationNotPermitted' | 'OutstandingDebt' | 'NoDebt' | 'CdPsPerUserLimitReached' | 'HardCapSupply' | 'BalanceNotEnough' | 'WrongCollateralAssetId' | 'AccrueWrongTime' | 'ZeroLiquidationLot';
   }
 
   /** @name BridgeProxyBridgeRequest (898) */

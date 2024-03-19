@@ -1857,16 +1857,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       updateLiquidationPenalty: AugmentedSubmittable<(newLiquidationPenalty: Percent | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent]>;
       /**
-       * Withdraws collateral from a Collateralized Debt Position (CDP).
-       * 
-       * ## Parameters
-       * 
-       * - `origin`: The origin of the transaction.
-       * - `cdp_id`: The ID of the CDP to withdraw collateral from.
-       * - `collateral_amount`: The amount of collateral to withdraw.
-       **/
-      withdrawCollateral: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, u128]>;
-      /**
        * Withdraws protocol profit in the form of stablecoin (KUSD).
        * 
        * ## Parameters
