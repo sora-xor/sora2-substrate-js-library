@@ -894,9 +894,15 @@ export class SwapModule<T> {
     const value = result.unwrapOr(emptySwapResult) as LPSwapOutcomeInfo;
 
     const fee: LiquidityProviderFee[] = [];
-    value.fee.forEach((value, key) => {
-      fee.push({ assetId: key.toString(), value: new FPNumber(value).codec });
-    });
+    // TODO: Should be removed in @sora-substrate/util v.1.33.
+    if (typeof value.fee.forEach === 'function') {
+      // is BTreeMap
+      value.fee.forEach((value, key) => {
+        fee.push({ assetId: key.toString(), value: new FPNumber(value).codec });
+      });
+    } else {
+      fee.push({ assetId: XOR.address, value: toCodecString(value.fee as unknown as Balance) });
+    }
 
     return {
       amount: toParamCodecString(value.amount, assetA, assetB, isExchangeB),
@@ -946,9 +952,15 @@ export class SwapModule<T> {
     const value = isDex0Better ? valueDex0 : valueDex1;
 
     const fee: LiquidityProviderFee[] = [];
-    value.fee.forEach((value, key) => {
-      fee.push({ assetId: key.toString(), value: new FPNumber(value).codec });
-    });
+    // TODO: Should be removed in @sora-substrate/util v.1.33.
+    if (typeof value.fee.forEach === 'function') {
+      // is BTreeMap
+      value.fee.forEach((value, key) => {
+        fee.push({ assetId: key.toString(), value: new FPNumber(value).codec });
+      });
+    } else {
+      fee.push({ assetId: XOR.address, value: toCodecString(value.fee as unknown as Balance) });
+    }
 
     return {
       amount: toCodecString(value.amount),
