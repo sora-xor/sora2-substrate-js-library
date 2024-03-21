@@ -97,7 +97,8 @@ export class KensetsuModule<T> {
   }
 
   // accrue_internal
-  calcNewDebt(collateral: Collateral, vault: Vault): FPNumber | null {
+  calcNewDebt(collateral: Collateral, vault: Vault | null): FPNumber | null {
+    if (!vault) return null;
     const newCoefficient = this.updateCollateralInterestCoefficient(collateral);
     if (!newCoefficient) return null;
 
@@ -115,7 +116,7 @@ export class KensetsuModule<T> {
     const ratio = FPNumber.ONE.div(ratioReversed).mul(FPNumber.TEN_THOUSANDS);
     // rate_annual = (1 + rate_secondly) ^ 31_556_952 - 1
     const rateSecondlyCoeff = new FPNumber(collateralInfo.riskParameters.stabilityFeeRate);
-    const rateAnnual = FPNumber.ONE.add(rateSecondlyCoeff).pow(31_556_952).sub(1).mul(100).dp(0);
+    const rateAnnual = FPNumber.ONE.add(rateSecondlyCoeff).pow(31_556_952).sub(1).mul(100).dp(2);
     const formatted: Collateral = {
       lastFeeUpdateTime: collateralInfo.lastFeeUpdateTime.toNumber(),
       interestCoefficient: new FPNumber(collateralInfo.interestCoefficient),
