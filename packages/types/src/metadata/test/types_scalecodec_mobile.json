@@ -1,5 +1,5 @@
 {
-    "runtime_id": 72,
+    "runtime_id": 73,
     "types": {},
     "versioning": [
         {
@@ -5034,6 +5034,32 @@
                             "route",
                             "Vec<AssetId>"
                         ]
+                    ]
+                }
+            }
+        },
+        {
+            "runtime_range": [
+                73,
+                null
+            ],
+            "types": {
+                "PredefinedAssetId": {
+                    "type": "enum",
+                    "value_list": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST",
+                        "TBCD",
+                        "KEN",
+                        "KUSD"
                     ]
                 }
             }

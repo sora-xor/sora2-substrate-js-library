@@ -649,7 +649,9 @@
             "ETH",
             "XSTUSD",
             "XST",
-            "TBCD"
+            "TBCD",
+            "KEN",
+            "KUSD"
         ]
     },
     "PriceInfo": {

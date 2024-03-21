@@ -1664,7 +1664,7 @@
         {
             "minmax": [
                 72,
-                null
+                72
             ],
             "types": {
                 "SubNetworkId": {
@@ -1684,6 +1684,31 @@
                     "fee": "BTreeMap<AssetId, Balance>",
                     "rewards": "Vec<LPRewardsInfo>",
                     "route": "Vec<AssetId>"
+                }
+            }
+        },
+        {
+            "minmax": [
+                73,
+                null
+            ],
+            "types": {
+                "PredefinedAssetId": {
+                    "_enum": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST",
+                        "TBCD",
+                        "KEN",
+                        "KUSD"
+                    ]
                 }
             }
         }
@@ -2339,7 +2364,9 @@
                 "ETH",
                 "XSTUSD",
                 "XST",
-                "TBCD"
+                "TBCD",
+                "KEN",
+                "KUSD"
             ]
         },
         "PriceInfo": {

@@ -1700,6 +1700,23 @@
                     "fee": "BTreeMap<AssetId, Balance>",
                     "rewards": "Vec<LPRewardsInfo>",
                     "route": "Vec<AssetId>"
+                },
+                "PredefinedAssetId": {
+                    "_enum": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST",
+                        "TBCD",
+                        "KEN",
+                        "KUSD"
+                    ]
                 }
             }
         }
@@ -2355,7 +2372,9 @@
                 "ETH",
                 "XSTUSD",
                 "XST",
-                "TBCD"
+                "TBCD",
+                "KEN",
+                "KUSD"
             ]
         },
         "PriceInfo": {
