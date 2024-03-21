@@ -9691,22 +9691,6 @@ arguments:
 - collateralAmount: `u128`
 <hr>
 
-#### **api.tx.kensetsu.withdrawCollateral**
-
-> Withdraws collateral from a Collateralized Debt Position (CDP).
->
-> ## Parameters
->
-> - `origin`: The origin of the transaction.
-> - `cdp_id`: The ID of the CDP to withdraw collateral from.
-> - `collateral_amount`: The amount of collateral to withdraw.
-
-arguments:
-
-- cdpId: `u128`
-- collateralAmount: `u128`
-<hr>
-
 #### **api.tx.kensetsu.borrow**
 
 > Borrows funds against a Collateralized Debt Position (CDP).
@@ -13798,7 +13782,9 @@ returns: `Option<SwapOutcomeInfo>`
         "ETH",
         "XSTUSD",
         "XST",
-        "TBCD"
+        "TBCD",
+        "KEN",
+        "KUSD"
     ]
 }
 ```
