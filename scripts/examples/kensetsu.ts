@@ -1,4 +1,3 @@
-import { firstValueFrom } from 'rxjs';
 import { FPNumber, api } from '@sora-substrate/util';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 import { XOR } from '@sora-substrate/util/assets/consts';
