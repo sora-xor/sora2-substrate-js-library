@@ -898,7 +898,7 @@ export class SwapModule<T> {
     // value.fee.forEach((value: string, key: string) => {
     //   fee.push({ assetId: key.toString(), value: value.toString() });
     // });
-    const resultFee = (value.fee as OutcomeFee).toJSON();
+    const resultFee = Array.isArray(value.fee) ? value.fee : (value.fee as OutcomeFee).toJSON();
     if (resultFee[0]) {
       // old format represented as object - join string values to CodecString
       fee = [{ assetId: XOR.address, value: Object.values(resultFee).join('') }];
@@ -961,7 +961,7 @@ export class SwapModule<T> {
     // value.fee.forEach((value: string, key: string) => {
     //   fee.push({ assetId: key.toString(), value: value.toString() });
     // });
-    const resultFee = (value.fee as OutcomeFee).toJSON();
+    const resultFee = Array.isArray(value.fee) ? value.fee : (value.fee as OutcomeFee).toJSON();
     if (resultFee[0]) {
       // old format represented as object - join string values to CodecString
       fee = [{ assetId: XOR.address, value: Object.values(resultFee).join('') }];
