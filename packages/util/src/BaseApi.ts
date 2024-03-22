@@ -13,7 +13,6 @@ import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types';
-import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { AccountStorage, Storage } from './storage';
 import { DexId } from './dex/consts';
@@ -21,14 +20,15 @@ import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { ReceiverHistoryItem } from './swap/types';
 import { MAX_TIMESTAMP } from './orderBook/consts';
+import { Messages } from './logger';
 import type { EthHistory } from './bridgeProxy/eth/types';
 import type { EvmHistory } from './bridgeProxy/evm/types';
 import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 import type { OriginalIdentity, StakingHistory } from './staking/types';
 import type { LimitOrderHistory } from './orderBook/types';
-import { HistoryElementTransfer } from './assets/types';
-import { Messages } from './logger';
+import type { HistoryElementTransfer } from './assets/types';
+import type { CommonPrimitivesAssetId32Override } from './typeOverrides';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -406,7 +406,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 updated.soraNetworkFee = soraNetworkFee.toString();
               } else if (method === 'AssetRegistered' && section === 'assets') {
                 const [assetId, _] = data;
-                updated.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+                updated.assetAddress = ((assetId as CommonPrimitivesAssetId32Override).code ?? assetId).toString();
               } else if (
                 method === 'Transfer' &&
                 ['balances', 'tokens'].includes(section) &&
