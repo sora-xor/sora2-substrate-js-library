@@ -81,7 +81,7 @@ import type { HermesPollInfo, HermesVotingInfo, VotingOption } from '@sora-subst
 import type { IntentivizedChannelMessage } from '@sora-substrate/types/interfaces/intentivizedChannel';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
 import type { AuxiliaryDigest, AuxiliaryDigestItem, ChannelId, EthNetworkId } from '@sora-substrate/types/interfaces/leafProvider';
-import type { LPRewardsInfo, LPSwapOutcomeInfo, LiquiditySourceIdOf } from '@sora-substrate/types/interfaces/liquidityProxy';
+import type { LPRewardsInfo, LPSwapOutcomeInfo, LiquiditySourceIdOf, OutcomeFee } from '@sora-substrate/types/interfaces/liquidityProxy';
 import type { AccountId, AccountId20, AccountId32, AccountId33, AccountIdOf, AccountIndex, Address, Amount, AmountOf, AssetId, AssetId32, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BasisPoints, Block, BlockNumber, BlockNumberFor, BlockNumberOf, Call, CallHash, CallHashOf, ChangesTrieConfiguration, ChangesTrieSignal, ChargeFeeInfo, CodecHash, Consensus, ConsensusEngineId, ContentSource, CrateVersion, CrowdloanReward, CurrencyId, CurrencyIdOf, DEXId, DEXIdOf, DEXInfo, Description, Digest, DigestItem, DispatchErrorWithPostInfoTPostDispatchInfo, DispatchResultWithPostInfo, DistributionAccounts, Duration, EncodedJustification, ExtrinsicsWeight, Farm, FarmId, Farmer, FilterMode, Fixed, Fixed128, Fixed64, FixedI128, FixedI64, FixedU128, FixedU64, H1024, H128, H160, H2048, H256, H32, H512, H64, Hash, Header, HeaderPartial, HolderId, I32F32, Index, IndicesLookupSource, Justification, Justifications, KeyTypeId, KeyValue, LiquiditySourceType, LockIdentifier, LookupSource, LookupTarget, MarketMakerInfo, Mode, ModuleId, Moment, MultiAddress, MultiCurrencyBalanceOf, MultiSigner, MultisigAccount, OpaqueCall, OracleKey, Origin, OriginCaller, OwnerId, PalletId, PalletVersion, PalletsOrigin, Pays, PerU16, Perbill, Percent, Permill, Permission, PermissionId, Perquintill, Phantom, PhantomData, PostDispatchInfo, PreRuntime, PredefinedAssetId, PriceInfo, Public, QuoteAmount, QuoteWithDesiredInput, QuoteWithDesiredOutput, Releases, RewardInfo, RewardReason, RuntimeCall, RuntimeDbWeight, RuntimeEvent, Scope, Seal, SealV0, SignedBlock, SignedBlockWithJustification, SignedBlockWithJustifications, Slot, SlotDuration, SmoothPriceState, StorageData, StorageInfo, StorageProof, StorageVersion, SwapAction, SwapAmount, SwapOutcome, SwapOutcomeInfo, SwapVariant, SwapWithDesiredInput, SwapWithDesiredOutput, TechAccountId, TechAmount, TechAssetId, TechBalance, TechPurpose, TechTradingPair, TradingPair, TransactionInfo, TransactionLongevity, TransactionPriority, TransactionStorageProof, TransactionTag, U32F32, ValidationFunction, ValidatorId, ValidatorIdOf, Weight, WeightMultiplier, WeightV0, WeightV1, WeightV2 } from '@sora-substrate/types/interfaces/runtime';
 import type { CustomInfo } from '@sora-substrate/types/interfaces/template';
 import type { TP } from '@sora-substrate/types/interfaces/tradingPair';
@@ -833,6 +833,7 @@ declare module '@polkadot/types/types/registry' {
     OutboundPayload: OutboundPayload;
     OutboundStatus: OutboundStatus;
     Outcome: Outcome;
+    OutcomeFee: OutcomeFee;
     OutgoingAddAsset: OutgoingAddAsset;
     OutgoingAddAssetEncoded: OutgoingAddAssetEncoded;
     OutgoingAddPeer: OutgoingAddPeer;
