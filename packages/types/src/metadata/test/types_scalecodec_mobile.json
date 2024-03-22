@@ -5061,7 +5061,33 @@
                         "KEN",
                         "KUSD"
                     ]
-                }
+                },
+                "LPSwapOutcomeInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "amountWithoutImpact",
+                            "Balance"
+                        ],
+                        [
+                            "fee",
+                            "OutcomeFee"
+                        ],
+                        [
+                            "rewards",
+                            "Vec<LPRewardsInfo>"
+                        ],
+                        [
+                            "route",
+                            "Vec<AssetId>"
+                        ]
+                    ]
+                },
+                "OutcomeFee": "Json"
             }
         }
     ]

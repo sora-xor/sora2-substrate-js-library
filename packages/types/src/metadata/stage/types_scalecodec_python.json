@@ -5062,7 +5062,7 @@
                         ],
                         [
                             "fee",
-                            "BTreeMap<AssetId, Balance>"
+                            "OutcomeFee"
                         ],
                         [
                             "rewards",
@@ -5091,7 +5091,8 @@
                         "KEN",
                         "KUSD"
                     ]
-                }
+                },
+                "OutcomeFee": "Json"
             }
         }
     ],
