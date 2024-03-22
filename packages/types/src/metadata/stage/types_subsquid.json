@@ -1697,7 +1697,7 @@
                 "LPSwapOutcomeInfo": {
                     "amount": "Balance",
                     "amountwithoutimpact": "Balance",
-                    "fee": "BTreeMap<AssetId, Balance>",
+                    "fee": "OutcomeFee",
                     "rewards": "Vec<LPRewardsInfo>",
                     "route": "Vec<AssetId>"
                 },
@@ -1717,7 +1717,8 @@
                         "KEN",
                         "KUSD"
                     ]
-                }
+                },
+                "OutcomeFee": "Json"
             }
         }
     ],
@@ -2100,7 +2101,7 @@
         "LPSwapOutcomeInfo": {
             "amount": "Balance",
             "amountWithoutImpact": "Balance",
-            "fee": "BTreeMap<AssetId, Balance>",
+            "fee": "OutcomeFee",
             "rewards": "Vec<LPRewardsInfo>",
             "route": "Vec<AssetId>"
         },
@@ -2179,6 +2180,7 @@
             }
         },
         "OracleKey": "AssetId",
+        "OutcomeFee": "Json",
         "OutgoingAddAsset": {
             "author": "AccountId",
             "assetId": "AssetId",
