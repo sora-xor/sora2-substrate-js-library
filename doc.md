@@ -13295,7 +13295,7 @@ returns: `Option<SwapOutcomeInfo>`
 {
     amount: "Balance",
     amountWithoutImpact: "Balance",
-    fee: "BTreeMap<AssetId, Balance>",
+    fee: "OutcomeFee",
     rewards: "Vec<LPRewardsInfo>",
     route: "Vec<AssetId>"
 }
@@ -13454,6 +13454,12 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 "AssetId"
+```
+
+### OutcomeFee
+
+```
+"Json"
 ```
 
 ### OutgoingAddAsset
