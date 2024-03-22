@@ -20,7 +20,7 @@ import type {
   SwapResultV2,
   LiquidityProviderFee,
 } from '@sora-substrate/liquidity-proxy';
-import type { Balance, LPSwapOutcomeInfo, LiquiditySourceType } from '@sora-substrate/types';
+import type { Balance, LPSwapOutcomeInfo, LiquiditySourceType, OutcomeFee } from '@sora-substrate/types';
 import type { Observable, Codec } from '@polkadot/types/types';
 import type {
   CommonPrimitivesAssetId32,
@@ -893,15 +893,20 @@ export class SwapModule<T> {
     );
     const value = result.unwrapOr(emptySwapResult) as LPSwapOutcomeInfo;
 
-    const fee: LiquidityProviderFee[] = [];
-    // TODO: Should be removed in @sora-substrate/util v.1.33.
-    if (typeof value.fee.forEach === 'function') {
-      // is BTreeMap
-      value.fee.forEach((value, key) => {
-        fee.push({ assetId: key.toString(), value: new FPNumber(value).codec });
-      });
+    let fee: LiquidityProviderFee[] = [];
+    // TODO [v.1.33]: Should be removed in @sora-substrate/util v.1.33.
+    // value.fee.forEach((value: string, key: string) => {
+    //   fee.push({ assetId: key.toString(), value: value.toString() });
+    // });
+    const resultFee = (value.fee as OutcomeFee).toJSON();
+    if (resultFee[0]) {
+      // old format represented as object - join string values to CodecString
+      fee = [{ assetId: XOR.address, value: Object.values(resultFee).join('') }];
     } else {
-      fee.push({ assetId: XOR.address, value: toCodecString(value.fee as unknown as Balance) });
+      fee = Object.entries(resultFee).reduce<LiquidityProviderFee[]>((arr, [assetId, codec]) => {
+        arr.push({ assetId, value: codec?.toString() ?? '0' });
+        return arr;
+      }, []);
     }
 
     return {
@@ -951,15 +956,20 @@ export class SwapModule<T> {
     const isDex0Better = FPNumber.gte(toFP(valueDex0.amount), toFP(valueDex1.amount));
     const value = isDex0Better ? valueDex0 : valueDex1;
 
-    const fee: LiquidityProviderFee[] = [];
-    // TODO: Should be removed in @sora-substrate/util v.1.33.
-    if (typeof value.fee.forEach === 'function') {
-      // is BTreeMap
-      value.fee.forEach((value, key) => {
-        fee.push({ assetId: key.toString(), value: new FPNumber(value).codec });
-      });
+    let fee: LiquidityProviderFee[] = [];
+    // TODO [v.1.33]: Should be removed in @sora-substrate/util v.1.33.
+    // value.fee.forEach((value: string, key: string) => {
+    //   fee.push({ assetId: key.toString(), value: value.toString() });
+    // });
+    const resultFee = (value.fee as OutcomeFee).toJSON();
+    if (resultFee[0]) {
+      // old format represented as object - join string values to CodecString
+      fee = [{ assetId: XOR.address, value: Object.values(resultFee).join('') }];
     } else {
-      fee.push({ assetId: XOR.address, value: toCodecString(value.fee as unknown as Balance) });
+      fee = Object.entries(resultFee).reduce<LiquidityProviderFee[]>((arr, [assetId, codec]) => {
+        arr.push({ assetId, value: codec?.toString() ?? '0' });
+        return arr;
+      }, []);
     }
 
     return {
