@@ -318,13 +318,6 @@ export class FPNumber {
   }
 
   /**
-   * Formatted codec BigInt representation
-   */
-  get codecBigInt(): BigInt {
-    return BigInt(this.codec);
-  }
-
-  /**
    * Format number to Codec string
    */
   public toCodecString(): string {
@@ -335,7 +328,12 @@ export class FPNumber {
    * Format number to Codec string wrapped with `BigInt`
    */
   public toCodecBigInt(): BigInt {
-    return this.codecBigInt;
+    try {
+      return BigInt(this.codec);
+    } catch (error) {
+      console.error(`[FPNumber] FPNumber.toCodecBigInt: conver "${this.codec}" to BigInt error, return "0"...`, error);
+      return BigInt(0);
+    }
   }
 
   /**
@@ -411,8 +409,13 @@ export class FPNumber {
    * @param {number} [dp=6] Decimal places
    */
   public toBigInt(dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): bigint {
-    const result = this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
-    return BigInt(result.toString());
+    const result = this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE).toString();
+    try {
+      return BigInt(result);
+    } catch (error) {
+      console.error(`[FPNumber] FPNumber.toBigInt: conver "${result}" to BigInt error, return "0"...`, error);
+      return BigInt(0);
+    }
   }
 
   /**
