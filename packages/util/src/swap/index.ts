@@ -899,7 +899,7 @@ export class SwapModule<T> {
     //   fee.push({ assetId: key.toString(), value: value.toString() });
     // });
     const resultFee = Array.isArray(value.fee) ? value.fee : (value.fee as OutcomeFee).toJSON();
-    if (resultFee[0]) {
+    if ((resultFee as any[])[0]) {
       // old format represented as object - join string values to CodecString
       fee = [{ assetId: XOR.address, value: Object.values(resultFee).join('') }];
     } else {
@@ -962,7 +962,7 @@ export class SwapModule<T> {
     //   fee.push({ assetId: key.toString(), value: value.toString() });
     // });
     const resultFee = Array.isArray(value.fee) ? value.fee : (value.fee as OutcomeFee).toJSON();
-    if (resultFee[0]) {
+    if ((resultFee as any[])[0]) {
       // old format represented as object - join string values to CodecString
       fee = [{ assetId: XOR.address, value: Object.values(resultFee).join('') }];
     } else {

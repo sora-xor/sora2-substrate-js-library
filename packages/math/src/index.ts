@@ -227,6 +227,8 @@ export class FPNumber {
   public readonly value: BigNumber;
 
   private formatInitialDataString(data: string): string {
+    if (!data) return '0'; // backward compatibility with +'' === 0
+
     if (!isFinityString(data)) return data; // '-Infinity', 'Infinity', 'NaN'
 
     if (isZeroString(data)) return '0';
@@ -331,7 +333,7 @@ export class FPNumber {
     try {
       return BigInt(this.codec);
     } catch (error) {
-      console.error(`[FPNumber] FPNumber.toCodecBigInt: conver "${this.codec}" to BigInt error, return "0"...`, error);
+      console.warn(`[FPNumber] FPNumber.toCodecBigInt: convert "${this.codec}" to BigInt error -> return "0"`, error);
       return BigInt(0);
     }
   }
@@ -413,7 +415,7 @@ export class FPNumber {
     try {
       return BigInt(result);
     } catch (error) {
-      console.error(`[FPNumber] FPNumber.toBigInt: conver "${result}" to BigInt error, return "0"...`, error);
+      console.warn(`[FPNumber] FPNumber.toBigInt: convert "${result}" to BigInt error -> return "0"`, error);
       return BigInt(0);
     }
   }
