@@ -6,10 +6,11 @@ import type { Observable } from '@polkadot/types/types';
 import type { Vec, u128 } from '@polkadot/types-codec';
 
 import { Messages } from '../logger';
+import { Operation } from '../BaseApi';
+import { KUSD } from '../assets/consts';
 import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 import type { Collateral, Vault } from './types';
-import { Operation } from '../BaseApi';
 
 export class KensetsuModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -155,8 +156,6 @@ export class KensetsuModule<T> {
 
   /**
    * Usage: statistical information, for instance, Explore page
-   *
-   * @todo Use entriesPaged cuz it might become complex to request all entries per one request
    */
   async getCollaterals(): Promise<Record<string, Collateral>> {
     const data = await this.root.api.query.kensetsu.collateralInfos.entries();
@@ -284,7 +283,7 @@ export class KensetsuModule<T> {
     const assetAddress = asset.address;
     const collateralCodec = new FPNumber(collateralAmount).codec;
     const borrowCodec = new FPNumber(borrowAmount).codec;
-    // add asset2Address and symbol2 in future
+
     return this.root.submitExtrinsic(
       this.root.api.tx.kensetsu.createCdp(assetAddress, collateralCodec, borrowCodec),
       this.root.account.pair,
@@ -294,6 +293,107 @@ export class KensetsuModule<T> {
         amount2: `${borrowAmount}`,
         assetAddress,
         symbol: asset.symbol,
+        asset2Address: KUSD.address,
+        symbol2: KUSD.symbol,
+      }
+    );
+  }
+
+  /**
+   * Close user's vault (repay full debt & close vault)
+   *
+   * Be sure that the account has enough KUSD for covering all the debt
+   *
+   * @param vault User's vault
+   * @param collateralAsset Collateral asset; it's required to set it as well to have correct asset symbol in a history
+   */
+  closeVault(vault: Vault, collateralAsset: Asset): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const vaultId = vault.id;
+    const symbol = collateralAsset?.symbol ?? '';
+
+    return this.root.submitExtrinsic(this.root.api.tx.kensetsu.closeCdp(vaultId), this.root.account.pair, {
+      type: Operation.CloseVault,
+      vaultId,
+      amount: vault.lockedAmount.toString(),
+      amount2: vault.debt.toString(),
+      assetAddress: vault.lockedAssetId,
+      symbol,
+      asset2Address: KUSD.address,
+      symbol2: KUSD.symbol,
+    });
+  }
+
+  /**
+   * Manual repay vault debt.
+   *
+   * If you want to repay everything and close vault then it's better to use `closeVault`
+   *
+   * @param vault User's vault
+   * @param amount Amount in KUSD from the account which will cover the debt in KUSD
+   */
+  repayVaultDebt(vault: Vault, amount: NumberLike): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const repayDebt = new FPNumber(amount);
+    assert(vault.debt.gte(repayDebt), Messages.repayVaultDebtMoreThanDebt);
+
+    return this.root.submitExtrinsic(
+      this.root.api.tx.kensetsu.repayDebt(vault.id, repayDebt.codec),
+      this.root.account.pair,
+      {
+        type: Operation.RepayVaultDebt,
+        vaultId: vault.id,
+        amount: `${amount}`,
+        assetAddress: KUSD.address,
+        symbol: KUSD.symbol,
+      }
+    );
+  }
+
+  /**
+   * Deposit extra collateral to the existing vault
+   *
+   * @param vault User's vault
+   * @param amount Collateral amount which will be deposited to the existing vault
+   * @param collateralAsset Collateral asset; it's required to set it as well to have correct asset symbol in a history
+   */
+  depositCollateral(vault: Vault, amount: NumberLike, collateralAsset: Asset): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const extraCollateralCodec = new FPNumber(amount).codec;
+    const symbol = collateralAsset?.symbol ?? '';
+
+    return this.root.submitExtrinsic(
+      this.root.api.tx.kensetsu.depositCollateral(vault.id, extraCollateralCodec),
+      this.root.account.pair,
+      {
+        type: Operation.DepositCollateral,
+        vaultId: vault.id,
+        amount: `${amount}`,
+        assetAddress: vault.lockedAssetId,
+        symbol,
+      }
+    );
+  }
+
+  /**
+   * Borrow extra KUSD from the existing vault
+   *
+   * @param vault User's vault
+   * @param amount Amount which will be borrowed to the existing vault
+   */
+  borrow(vault: Vault, amount: NumberLike): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const willToBorrowCodec = new FPNumber(amount).codec;
+
+    return this.root.submitExtrinsic(
+      this.root.api.tx.kensetsu.borrow(vault.id, willToBorrowCodec),
+      this.root.account.pair,
+      {
+        type: Operation.BorrowVaultDebt,
+        vaultId: vault.id,
+        amount: `${amount}`,
+        assetAddress: KUSD.address,
+        symbol: KUSD.symbol,
       }
     );
   }

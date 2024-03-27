@@ -7,4 +7,5 @@ export const Messages = {
   provideAccountPair: 'You should provide account pair to sign transaction',
   inabilityOfReferrerToPayFee: 'Your referrer do not have an ability to pay network fee',
   commentFieldIsTooLong: 'Comment field is too long (128 symbols allowed)',
+  repayVaultDebtMoreThanDebt: 'The amount of the repay vault debt is greater than the debt itself',
 };
