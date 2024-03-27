@@ -1,5 +1,7 @@
 import type { FPNumber } from '@sora-substrate/math';
 
+import type { History } from '../BaseApi';
+
 export type Vault = {
   owner?: string;
   lockedAssetId: string;
@@ -24,3 +26,7 @@ export type Collateral = {
   lastFeeUpdateTime: number;
   interestCoefficient: FPNumber;
 };
+
+export interface VaultHistory extends History {
+  vaultId: number;
+}

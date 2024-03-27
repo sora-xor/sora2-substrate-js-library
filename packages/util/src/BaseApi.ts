@@ -29,6 +29,7 @@ import type { OriginalIdentity, StakingHistory } from './staking/types';
 import type { LimitOrderHistory } from './orderBook/types';
 import type { HistoryElementTransfer } from './assets/types';
 import type { CommonPrimitivesAssetId32Override } from './typeOverrides';
+import type { VaultHistory } from './kensetsu/types';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -49,6 +50,33 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
+export interface History {
+  txId?: string;
+  type: Operation;
+  amount?: string;
+  symbol?: string;
+  assetAddress?: string;
+  id?: string;
+  blockId?: string;
+  blockHeight?: number;
+  to?: string;
+  receivers?: Array<ReceiverHistoryItem>;
+  amount2?: string;
+  symbol2?: string;
+  asset2Address?: string;
+  decimals?: number;
+  decimals2?: number;
+  startTime?: number;
+  endTime?: number;
+  from?: string;
+  status?: string;
+  errorMessage?: ErrorMessageFields | string;
+  liquiditySource?: string;
+  liquidityProviderFee?: CodecString;
+  soraNetworkFee?: CodecString;
+  payload?: any; // can be used to integrate with third-party services
+}
+
 export type IBridgeTransaction = EvmHistory | SubHistory | EthHistory;
 
 export type HistoryItem =
@@ -57,7 +85,16 @@ export type HistoryItem =
   | RewardClaimHistory
   | StakingHistory
   | LimitOrderHistory
+  | VaultHistory
   | HistoryElementTransfer;
+
+type CombinedHistoryItem = History &
+  IBridgeTransaction &
+  RewardClaimHistory &
+  StakingHistory &
+  LimitOrderHistory &
+  VaultHistory &
+  HistoryElementTransfer;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
@@ -102,7 +139,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   public NetworkFee = {
     [Operation.AddLiquidity]: '0',
     [Operation.CreatePair]: '0',
-    [Operation.CreateVault]: '0',
     [Operation.EthBridgeIncoming]: '0',
     [Operation.EthBridgeOutgoing]: '0',
     [Operation.EvmIncoming]: '0',
@@ -142,6 +178,11 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.Mint]: '0',
     [Operation.Burn]: '0',
     [Operation.OrderBookPlaceLimitOrder]: '0',
+    [Operation.CreateVault]: '0',
+    [Operation.CloseVault]: '0',
+    [Operation.RepayVaultDebt]: '0',
+    [Operation.DepositCollateral]: '0',
+    [Operation.BorrowVaultDebt]: '0',
   } as NetworkFeesObject;
 
   public readonly prefix = 69;
@@ -384,7 +425,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           const status = first<string>(
             Object.keys(result.status.toJSON() as object)
           )?.toLowerCase() as TransactionStatus;
-          const updated: any = {};
+          const updated: Partial<CombinedHistoryItem> = {};
+          
 
           updated.status = status;
 
@@ -425,7 +467,9 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                   (isEvmOperation(type as Operation) || isSubstrateOperation(type as Operation)))
               ) {
                 updated.hash = first(data.toJSON() as any);
-              } else if (section === 'system' && method === 'ExtrinsicFailed') {
+              } else if (method === 'CDPCreated' && section === 'kensetsu') {
+                updated.vaultId = first(data.toJSON() as any);
+              } else if (method === 'ExtrinsicFailed' && section === 'system') {
                 updated.status = TransactionStatus.Error;
                 updated.endTime = Date.now();
 
@@ -509,8 +553,6 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             this.api.tx.poolXYK.initializePool(DexId.XOR, '', ''),
             this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', 0, 0, 0, 0),
           ]);
-        case Operation.CreateVault:
-          return this.api.tx.kensetsu.createCdp('', 0, 0);
         case Operation.EthBridgeIncoming:
         case Operation.EvmIncoming:
         case Operation.SubstrateIncoming:
@@ -616,6 +658,16 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             PriceVariant.Buy,
             MAX_TIMESTAMP
           );
+        case Operation.CreateVault:
+          return this.api.tx.kensetsu.createCdp('', 0, 0);
+        case Operation.CloseVault:
+          return this.api.tx.kensetsu.closeCdp(0);
+        case Operation.RepayVaultDebt:
+          return this.api.tx.kensetsu.repayDebt(0, 0);
+        case Operation.DepositCollateral:
+          return this.api.tx.kensetsu.depositCollateral(0, 0);
+        case Operation.BorrowVaultDebt:
+          return this.api.tx.kensetsu.borrow(0, 0);
         default:
           return null;
       }
@@ -725,7 +777,6 @@ export enum Operation {
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
   CreatePair = 'CreatePair',
-  CreateVault = 'CreateVault',
   Faucet = 'Faucet',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
@@ -781,33 +832,12 @@ export enum Operation {
   XorlessTransfer = 'XorlessTransfer',
   Mint = 'Mint',
   Burn = 'Burn',
-}
-
-export interface History {
-  txId?: string;
-  type: Operation;
-  amount?: string;
-  symbol?: string;
-  assetAddress?: string;
-  id?: string;
-  blockId?: string;
-  blockHeight?: number;
-  to?: string;
-  receivers?: Array<ReceiverHistoryItem>;
-  amount2?: string;
-  symbol2?: string;
-  asset2Address?: string;
-  decimals?: number;
-  decimals2?: number;
-  startTime?: number;
-  endTime?: number;
-  from?: string;
-  status?: string;
-  errorMessage?: ErrorMessageFields | string;
-  liquiditySource?: string;
-  liquidityProviderFee?: CodecString;
-  soraNetworkFee?: CodecString;
-  payload?: any; // can be used to integrate with third-party services
+  /** Kensetsu */
+  CreateVault = 'CreateVault',
+  CloseVault = 'CloseVault',
+  RepayVaultDebt = 'RepayVaultDebt',
+  DepositCollateral = 'DepositCollateral',
+  BorrowVaultDebt = 'BorrowVaultDebt',
 }
 
 export interface OnChainIdentity {
