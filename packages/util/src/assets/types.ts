@@ -9,7 +9,9 @@ export type NativeSymbol =
   | KnownSymbols.PSWAP
   | KnownSymbols.XSTUSD
   | KnownSymbols.XST
-  | KnownSymbols.TBCD;
+  | KnownSymbols.TBCD
+  | KnownSymbols.KEN
+  | KnownSymbols.KUSD;
 export type KnownSymbol = keyof typeof KnownSymbols;
 
 export interface WhitelistItem {

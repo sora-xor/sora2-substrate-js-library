@@ -18,6 +18,8 @@ export enum KnownSymbols {
   XSTUSD = 'XSTUSD',
   XST = 'XST',
   TBCD = 'TBCD',
+  KEN = 'KEN',
+  KUSD = 'KUSD',
 }
 
 const ZERO_STR = '0';
@@ -109,6 +111,20 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
   },
+  {
+    address: '0x02000b0000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.KEN,
+    name: 'Kensetsu incentive token',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
+  },
+  {
+    address: '0x02000b0000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.KUSD,
+    name: 'Kensetsu USD',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
+  },
 ]);
 
 export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
@@ -137,3 +153,5 @@ export const DAI = KnownAssets.get(KnownSymbols.DAI);
 export const ETH = KnownAssets.get(KnownSymbols.ETH);
 export const XST = KnownAssets.get(KnownSymbols.XST);
 export const TBCD = KnownAssets.get(KnownSymbols.TBCD);
+export const KEN = KnownAssets.get(KnownSymbols.KEN);
+export const KUSD = KnownAssets.get(KnownSymbols.KUSD);
