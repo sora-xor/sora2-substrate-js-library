@@ -29,7 +29,6 @@ export interface ValidatorInfoFull extends ValidatorInfo {
   isOversubscribed: boolean;
   isKnownGood: boolean;
   stake: {
-    stakeReturn: string;
     total: string;
     own: string;
   };
@@ -103,11 +102,6 @@ export type AccountStakingLedger = {
   total: string; // active + unlocking (XOR)
   active: string; // still bonded (XOR)
   unlocking: AccountStakingLedgerUnlock[]; // redeemable + unbounding
-};
-
-export type StakeReturn = {
-  apy: string; // per year
-  stakeReturn: string; // per era
 };
 
 export type NominatorReward = {
