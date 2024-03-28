@@ -2800,6 +2800,22 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TooManyValidators: AugmentedError<ApiType>;
     };
+    substrateBridgeApp: {
+      /**
+       * Call encoding failed.
+       **/
+      CallEncodeFailed: AugmentedError<ApiType>;
+      InvalidNetwork: AugmentedError<ApiType>;
+      TokenAlreadyRegistered: AugmentedError<ApiType>;
+      TokenIsNotRegistered: AugmentedError<ApiType>;
+      UnknownPrecision: AugmentedError<ApiType>;
+      WrongAccountId: AugmentedError<ApiType>;
+      /**
+       * Amount must be > 0
+       **/
+      WrongAmount: AugmentedError<ApiType>;
+      WrongAssetId: AugmentedError<ApiType>;
+    };
     substrateBridgeInboundChannel: {
       /**
        * Call encoding failed.
