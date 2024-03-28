@@ -30,7 +30,6 @@ import type {
   RewardPointsIndividual,
   ValidatorInfoFull,
   MyStakingInfo,
-  StakeReturn,
   NominatorReward,
   Payouts,
   Others,
@@ -364,14 +363,14 @@ export class StakingModule<T> {
       return sum.add(FPNumber.fromCodecValue(eraRewardValue));
     }, FPNumber.ZERO);
 
-    const averageRewards = summaryRewards.div(new FPNumber(erasValidatorReward.length));
+    if (!erasValidatorReward.length) return FPNumber.ZERO; // to avoid division by zero
+    const averageRewards = summaryRewards.div(erasValidatorReward.length);
 
     return averageRewards;
   }
 
   /**
-   * Calculating validator apy
-   * @returns apy
+   * Calculating validator `apy: string`
    */
   public async calculatingStakeReturn(
     totalStakeValidator: string,
@@ -379,14 +378,12 @@ export class StakingModule<T> {
     eraTotalStake: string,
     eraAverageRewards: FPNumber,
     commission: string
-  ): Promise<StakeReturn> {
+  ): Promise<string> {
     const validatorTotalStake = FPNumber.fromCodecValue(totalStakeValidator);
 
-    if (validatorTotalStake.isZero())
-      return {
-        stakeReturn: '0',
-        apy: '0',
-      };
+    if (!validatorTotalStake.isFinity() || validatorTotalStake.isZero()) {
+      return '0';
+    }
 
     const validatorShareStake = validatorTotalStake.div(FPNumber.fromCodecValue(eraTotalStake));
     const stakeReturnReward = eraAverageRewards.mul(validatorShareStake);
@@ -394,15 +391,12 @@ export class StakingModule<T> {
     const stakeReturn = stakeReturnReward.mul(FPNumber.fromCodecValue(rewardToStakeRatio));
     const ratioReturnStakeToTotalStake = stakeReturn
       .div(validatorTotalStake)
-      .mul(new FPNumber(COUNT_ERAS_IN_DAILY))
-      .mul(new FPNumber(COUNT_DAYS_IN_YEAR));
+      .mul(COUNT_ERAS_IN_DAILY)
+      .mul(COUNT_DAYS_IN_YEAR);
     const nominatorShare = FPNumber.ONE.sub(FPNumber.fromCodecValue(commission, COMMISSION_DECIMALS));
-    const apy = ratioReturnStakeToTotalStake.mul(FPNumber.HUNDRED).mul(nominatorShare);
+    const apy = ratioReturnStakeToTotalStake.mul(100).mul(nominatorShare);
 
-    return {
-      stakeReturn: stakeReturn.toCodecString(),
-      apy: apy.toFixed(2),
-    };
+    return apy.toFixed(2);
   }
 
   /**
@@ -445,7 +439,7 @@ export class StakingModule<T> {
               ),
             }
           : null;
-      const { apy, stakeReturn } = await this.calculatingStakeReturn(
+      const apy = await this.calculatingStakeReturn(
         total,
         rewardToStakeRatio,
         eraTotalStake,
@@ -469,7 +463,6 @@ export class StakingModule<T> {
         isOversubscribed,
         isKnownGood,
         stake: {
-          stakeReturn,
           total,
           own: electedValidator?.own ?? '0',
         },
@@ -485,11 +478,11 @@ export class StakingModule<T> {
       const { apy: apy1, commission: commission1, isKnownGood: isKnownGood1 } = validator1;
       const { apy: apy2, commission: commission2, isKnownGood: isKnownGood2 } = validator2;
 
-      const subtractionApy = new FPNumber(apy2).sub(new FPNumber(apy1));
+      const subtractionApy = new FPNumber(apy2).sub(apy1);
 
       if (!subtractionApy.isZero()) return subtractionApy.toNumber();
 
-      const subtractionCommission = new FPNumber(commission1).sub(new FPNumber(commission2));
+      const subtractionCommission = new FPNumber(commission1).sub(commission2);
 
       if (!subtractionCommission.isZero()) return subtractionCommission.toNumber();
 
@@ -511,8 +504,8 @@ export class StakingModule<T> {
     const unlocking =
       stakingDerive.unlocking?.map(({ value, remainingEras: _remainingEras }) => {
         const remainingEras = new FPNumber(_remainingEras.toString());
-        const remainingHours = remainingEras.mul(new FPNumber(COUNT_HOURS_IN_ERA)).toString();
-        const remainingDays = remainingEras.div(new FPNumber(COUNT_ERAS_IN_DAILY)).toString();
+        const remainingHours = remainingEras.mul(COUNT_HOURS_IN_ERA).toString();
+        const remainingDays = remainingEras.div(COUNT_ERAS_IN_DAILY).toString();
 
         return {
           value: FPNumber.fromCodecValue(value.toString(), XOR.decimals).toString(),
@@ -522,7 +515,7 @@ export class StakingModule<T> {
         };
       }) ?? [];
 
-    const sum = unlocking.reduce((sum, { value }) => sum.add(new FPNumber(value)), FPNumber.ZERO).toString();
+    const sum = unlocking.reduce((sum, { value }) => sum.add(value), FPNumber.ZERO).toString();
 
     const stakingLedger = stakingDerive.stakingLedger;
     const activeStake = FPNumber.fromCodecValue(stakingLedger.active.toString(), XOR.decimals).toString();
@@ -561,7 +554,7 @@ export class StakingModule<T> {
 
       return {
         era: era.toString(),
-        sumRewards: validators.reduce((sum, { value }) => sum.add(new FPNumber(value)), FPNumber.ZERO).toString(),
+        sumRewards: validators.reduce((sum, { value }) => sum.add(value), FPNumber.ZERO).toString(),
         validators,
       };
     });
