@@ -73,6 +73,7 @@
 - [parachainBridgeApp](#parachainbridgeapp-pallet)
 - [bridgeDataSigner](#bridgedatasigner-pallet)
 - [multisigVerifier](#multisigverifier-pallet)
+- [substrateBridgeApp](#substratebridgeapp-pallet)
 - [mmr](#mmr-pallet)
 - [beefy](#beefy-pallet)
 - [mmrLeaf](#mmrleaf-pallet)
@@ -11145,6 +11146,142 @@ arguments:
 arguments:
 
 - peer: `SpCoreEcdsaPublic`
+<hr>
+
+## SubstrateBridgeApp pallet
+
+### _State Queries_
+
+#### **api.query.substrateBridgeApp.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.assetKinds**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,CommonPrimitivesAssetId32)`
+
+returns: `BridgeTypesAssetKind`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.sidechainPrecision**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,CommonPrimitivesAssetId32)`
+
+returns: `u8`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.sidechainAssetId**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,CommonPrimitivesAssetId32)`
+
+returns: `BridgeTypesGenericAssetId`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.thischainAssetId**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,BridgeTypesGenericAssetId)`
+
+returns: `CommonPrimitivesAssetId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.substrateBridgeApp.mint**
+
+> Function used to mint or unlock tokens
+> The Origin for this call is the Bridge Origin
+> Only the relayer can call this function
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- sender: `BridgeTypesGenericAccount`
+- recipient: `AccountId32`
+- amount: `BridgeTypesGenericBalance`
+<hr>
+
+#### **api.tx.substrateBridgeApp.finalizeAssetRegistration**
+
+> Function used to finalize asset registration if everything went well on the sidechain
+> The Origin for this call is the Bridge Origin
+> Only the relayer can call this function
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- sidechainAssetId: `BridgeTypesGenericAssetId`
+- assetKind: `BridgeTypesAssetKind`
+- sidechainPrecision: `u8`
+<hr>
+
+#### **api.tx.substrateBridgeApp.incomingThischainAssetRegistration**
+
+> Function used to register this chain asset
+> The Origin for this call is the Bridge Origin
+> Only the relayer can call this function
+> Sends the message to sidechain to finalize asset registration
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- sidechainAssetId: `BridgeTypesGenericAssetId`
+<hr>
+
+#### **api.tx.substrateBridgeApp.burn**
+
+> Function used by users to send tokens to the sidechain
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- recipient: `BridgeTypesGenericAccount`
+- amount: `u128`
+<hr>
+
+#### **api.tx.substrateBridgeApp.registerSidechainAsset**
+
+> Function used to register sidechain asset
+> The Origin for this call is the Root Origin
+> Only the root can call this function
+> Sends the message to sidechain to register asset
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- sidechainAsset: `BridgeTypesGenericAssetId`
+- symbol: `Bytes`
+- name: `Bytes`
+<hr>
+
+#### **api.tx.substrateBridgeApp.updateTransactionStatus**
+
+> Function used to update transaction status
+> The Origin for this call is the Bridge Origin
+> Only the relayer can call this function
+
+arguments:
+
+- messageId: `H256`
+- messageStatus: `BridgeTypesMessageStatus`
 <hr>
 
 ## Mmr pallet
