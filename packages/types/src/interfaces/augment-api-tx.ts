@@ -1764,9 +1764,12 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Closes a Collateralized Debt Position (CDP).
        * 
+       * If a CDP has outstanding debt, this amount is covered with owner balance. Collateral
+       * then is returned to the owner and CDP is deleted.
+       * 
        * ## Parameters
        * 
-       * - `origin`: The origin of the transaction.
+       * - `origin`: The origin of the transaction, only CDP owner is allowed.
        * - `cdp_id`: The ID of the CDP to be closed.
        **/
       closeCdp: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
@@ -1837,7 +1840,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `collateral_asset_id`: The identifier of the collateral asset.
        * - `new_risk_parameters`: The new risk parameters to be set for the collateral asset.
        **/
-      updateCollateralRiskParameters: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newRiskParameters: KensetsuCollateralRiskParameters | { hardCap?: any; liquidationRatio?: any; maxLiquidationLot?: any; stabilityFeeRate?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, KensetsuCollateralRiskParameters]>;
+      updateCollateralRiskParameters: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newRiskParameters: KensetsuCollateralRiskParameters | { hardCap?: any; liquidationRatio?: any; maxLiquidationLot?: any; stabilityFeeRate?: any; minimalCollateralDeposit?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, KensetsuCollateralRiskParameters]>;
       /**
        * Updates the hard cap for the total supply of a stablecoin.
        * 
