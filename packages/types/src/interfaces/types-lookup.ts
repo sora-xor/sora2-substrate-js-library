@@ -1589,6 +1589,7 @@ declare module '@polkadot/types/lookup' {
     readonly liquidationRatio: Perbill;
     readonly maxLiquidationLot: u128;
     readonly stabilityFeeRate: u128;
+    readonly minimalCollateralDeposit: u128;
   }
 
   /** @name LeafProviderEvent (160) */
@@ -7055,12 +7056,12 @@ declare module '@polkadot/types/lookup' {
     readonly isWrongAssetId: boolean;
     readonly isCdpNotFound: boolean;
     readonly isCollateralInfoNotFound: boolean;
+    readonly isCollateralBelowMinimal: boolean;
     readonly isCdpSafe: boolean;
     readonly isCdpUnsafe: boolean;
     readonly isCdpLimitPerUser: boolean;
     readonly isTooManyManagers: boolean;
     readonly isOperationNotPermitted: boolean;
-    readonly isOutstandingDebt: boolean;
     readonly isNoDebt: boolean;
     readonly isCdPsPerUserLimitReached: boolean;
     readonly isHardCapSupply: boolean;
@@ -7068,7 +7069,7 @@ declare module '@polkadot/types/lookup' {
     readonly isWrongCollateralAssetId: boolean;
     readonly isAccrueWrongTime: boolean;
     readonly isZeroLiquidationLot: boolean;
-    readonly type: 'ArithmeticError' | 'WrongAssetId' | 'CdpNotFound' | 'CollateralInfoNotFound' | 'CdpSafe' | 'CdpUnsafe' | 'CdpLimitPerUser' | 'TooManyManagers' | 'OperationNotPermitted' | 'OutstandingDebt' | 'NoDebt' | 'CdPsPerUserLimitReached' | 'HardCapSupply' | 'BalanceNotEnough' | 'WrongCollateralAssetId' | 'AccrueWrongTime' | 'ZeroLiquidationLot';
+    readonly type: 'ArithmeticError' | 'WrongAssetId' | 'CdpNotFound' | 'CollateralInfoNotFound' | 'CollateralBelowMinimal' | 'CdpSafe' | 'CdpUnsafe' | 'CdpLimitPerUser' | 'TooManyManagers' | 'OperationNotPermitted' | 'NoDebt' | 'CdPsPerUserLimitReached' | 'HardCapSupply' | 'BalanceNotEnough' | 'WrongCollateralAssetId' | 'AccrueWrongTime' | 'ZeroLiquidationLot';
   }
 
   /** @name BridgeProxyBridgeRequest (903) */

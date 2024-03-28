@@ -1412,7 +1412,8 @@ export default {
     hardCap: 'u128',
     liquidationRatio: 'Perbill',
     maxLiquidationLot: 'u128',
-    stabilityFeeRate: 'u128'
+    stabilityFeeRate: 'u128',
+    minimalCollateralDeposit: 'u128'
   },
   /**
    * Lookup160: leaf_provider::pallet::Event<T>
@@ -6310,7 +6311,7 @@ export default {
    * Lookup900: kensetsu::pallet::Error<T>
    **/
   KensetsuError: {
-    _enum: ['ArithmeticError', 'WrongAssetId', 'CDPNotFound', 'CollateralInfoNotFound', 'CDPSafe', 'CDPUnsafe', 'CDPLimitPerUser', 'TooManyManagers', 'OperationNotPermitted', 'OutstandingDebt', 'NoDebt', 'CDPsPerUserLimitReached', 'HardCapSupply', 'BalanceNotEnough', 'WrongCollateralAssetId', 'AccrueWrongTime', 'ZeroLiquidationLot']
+    _enum: ['ArithmeticError', 'WrongAssetId', 'CDPNotFound', 'CollateralInfoNotFound', 'CollateralBelowMinimal', 'CDPSafe', 'CDPUnsafe', 'CDPLimitPerUser', 'TooManyManagers', 'OperationNotPermitted', 'NoDebt', 'CDPsPerUserLimitReached', 'HardCapSupply', 'BalanceNotEnough', 'WrongCollateralAssetId', 'AccrueWrongTime', 'ZeroLiquidationLot']
   },
   /**
    * Lookup903: bridge_proxy::BridgeRequest<common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>>

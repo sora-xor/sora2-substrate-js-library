@@ -1749,11 +1749,14 @@ declare module '@polkadot/api-base/types/errors' {
       CDPSafe: AugmentedError<ApiType>;
       CDPsPerUserLimitReached: AugmentedError<ApiType>;
       CDPUnsafe: AugmentedError<ApiType>;
+      CollateralBelowMinimal: AugmentedError<ApiType>;
       CollateralInfoNotFound: AugmentedError<ApiType>;
       HardCapSupply: AugmentedError<ApiType>;
       NoDebt: AugmentedError<ApiType>;
       OperationNotPermitted: AugmentedError<ApiType>;
-      OutstandingDebt: AugmentedError<ApiType>;
+      /**
+       * Risk management team size exceeded
+       **/
       TooManyManagers: AugmentedError<ApiType>;
       WrongAssetId: AugmentedError<ApiType>;
       WrongCollateralAssetId: AugmentedError<ApiType>;
