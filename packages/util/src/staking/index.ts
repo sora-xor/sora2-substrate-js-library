@@ -370,9 +370,9 @@ export class StakingModule<T> {
   }
 
   /**
-   * Calculating validator `apy: string`
+   * Calculate validator `apy: string`
    */
-  public async calculatingStakeReturn(
+  public async calculateApy(
     totalStakeValidator: string,
     rewardToStakeRatio: string,
     eraTotalStake: string,
@@ -439,13 +439,7 @@ export class StakingModule<T> {
               ),
             }
           : null;
-      const apy = await this.calculatingStakeReturn(
-        total,
-        rewardToStakeRatio,
-        eraTotalStake,
-        eraAverageRewards,
-        commission
-      );
+      const apy = await this.calculateApy(total, rewardToStakeRatio, eraTotalStake, eraAverageRewards, commission);
 
       const nominators: Others = electedValidator?.others ?? [];
       const maxNominatorRewardedPerValidator = this.getMaxNominatorRewardedPerValidator();
