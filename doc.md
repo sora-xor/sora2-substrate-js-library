@@ -5200,7 +5200,6 @@ arguments:
 > - be delegating already; or
 > - have no voting activity (if there is, then it will need to be removed/consolidated
 >   through `reap_vote` or `unvote`).
->
 > - `to`: The account whose voting the `target` account's voting power will follow.
 > - `conviction`: The conviction that will be attached to the delegated votes. When the
 >   account is undelegated, the funds will be locked for the corresponding period.
@@ -9666,9 +9665,12 @@ arguments:
 
 > Closes a Collateralized Debt Position (CDP).
 >
+> If a CDP has outstanding debt, this amount is covered with owner balance. Collateral
+> then is returned to the owner and CDP is deleted.
+>
 > ## Parameters
 >
-> - `origin`: The origin of the transaction.
+> - `origin`: The origin of the transaction, only CDP owner is allowed.
 > - `cdp_id`: The ID of the CDP to be closed.
 
 arguments:
