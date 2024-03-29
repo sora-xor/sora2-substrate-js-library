@@ -14,13 +14,13 @@
     "@sora-substrate/liquidity-proxy": "1.33.0",
     "@sora-substrate/math": "1.33.0",
     "@sora-substrate/types": "1.33.0",
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "crypto-js": "^4.2.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
-    "@types/lodash": "^4.14.202",
+    "@types/lodash": "^4.17.0",
     "@types/websocket": "^1.0.10",
     "websocket": "^1.0.34"
   }
