@@ -129,6 +129,7 @@ export class KensetsuModule<T> {
         maxLiquidationLot: new FPNumber(collateralInfo.riskParameters.maxLiquidationLot),
         rateSecondlyCoeff,
         rateAnnual,
+        minDeposit: new FPNumber(collateralInfo.riskParameters.minimalCollateralDeposit),
       },
     };
     return formatted;

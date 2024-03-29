@@ -18,6 +18,7 @@ type RiskParameters = {
   maxLiquidationLot: FPNumber;
   rateSecondlyCoeff: FPNumber;
   rateAnnual: FPNumber;
+  minDeposit: FPNumber;
 };
 
 export type Collateral = {

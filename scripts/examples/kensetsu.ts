@@ -40,6 +40,7 @@ async function main(): Promise<void> {
     console.info('collateral.riskParams.rateSecondly', collateral.riskParams.rateSecondlyCoeff.toString());
     console.info('collateral.riskParams.rateSecondly (%)', collateral.riskParams.rateSecondlyCoeff.mul(100).toString());
     console.info('collateral.riskParams.rateAnnual (%)', collateral.riskParams.rateAnnual.toString());
+    console.info('collateral.riskParams.minDeposit (XOR)', collateral.riskParams.minDeposit.toString());
 
     const vault = vaults[0];
     console.info(`\n\nSelected Vault with ID=${vault.id}________________`);
