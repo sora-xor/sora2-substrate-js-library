@@ -3,14 +3,12 @@ import { connection } from '@sora-substrate/connection';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 describe('FPNumber', () => {
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     await connection.open(SORA_ENV.stage);
-    done();
   });
 
-  afterAll(async (done) => {
+  afterAll(async () => {
     await connection.close();
-    done();
   });
 
   it.each([
