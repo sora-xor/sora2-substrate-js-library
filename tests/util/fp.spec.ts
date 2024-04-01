@@ -466,6 +466,12 @@ describe('FPNumber', () => {
     ['-Infinity', 10, 'Infinity', 18, 'Infinity'],
     ['-Infinity', 10, '-Infinity', 18, '0'],
     ['NaN', 10, 'NaN', 18, 'NaN'],
+    [0, 18, 0, 18, '1'], // 0 to the power of 0 is undefined
+    [0, 18, 1, 18, '0'], // 0 to the power of any positive number is 0
+    [0, 18, -1, 18, 'Infinity'], // 0 to the power of any negative number is Infinity
+    [2, 18, 0.5, 18, '1.4142135623730951'], // square root of 2
+    [-1, 18, 0.5, 18, 'NaN'], // square root of -1 is NaN in real numbers
+    [2, 18, -0.5, 18, '0.7071067811865475'], // reciprocal of square root of 2
   ])('[pow] (value "%s", precision "%s") ** (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
@@ -493,6 +499,16 @@ describe('FPNumber', () => {
     ['Infinity', 10, '-Infinity', 18, 'Infinity'],
     ['-Infinity', 10, '-Infinity', 18, 'NaN'],
     ['NaN', 10, 'NaN', 18, 'NaN'],
+    // Additional test cases
+    [0, 18, 0, 18, '0'],
+    ['0', 18, '0', 18, '0'],
+    ['Infinity', 18, 'Infinity', 18, 'NaN'],
+    ['-Infinity', 18, '-Infinity', 18, 'NaN'],
+    ['NaN', 18, 'NaN', 18, 'NaN'],
+    [Number.MAX_SAFE_INTEGER, 18, Number.MAX_SAFE_INTEGER, 18, '0'],
+    [Number.MIN_SAFE_INTEGER, 18, Number.MIN_SAFE_INTEGER, 18, '0'],
+    [Number.MAX_SAFE_INTEGER, 18, Number.MIN_SAFE_INTEGER, 18, '18014398509481982'],
+    [Number.MIN_SAFE_INTEGER, 18, Number.MAX_SAFE_INTEGER, 18, '-18014398509481982'],
   ])('[sub] (value "%s", precision "%s") - (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
@@ -518,6 +534,12 @@ describe('FPNumber', () => {
     ['-Infinity', 10, '-Infinity', 10, 'Infinity'],
     ['Infinity', 10, 'NaN', 10, 'NaN'],
     ['NaN', 10, 'NaN', 10, 'NaN'],
+    [0.5, 18, 2, 18, '1'], // edge case: fractional number
+    [-0.5, 18, 2, 18, '-1'], // edge case: negative fractional number
+    [1, 18, 0.5, 18, '0.5'], // edge case: multiplication with fractional number
+    [1, 18, -0.5, 18, '-0.5'], // edge case: multiplication with negative fractional number
+    [Number.MAX_SAFE_INTEGER, 18, 1, 18, String(Number.MAX_SAFE_INTEGER)], // edge case: max safe integer
+    [Number.MIN_SAFE_INTEGER, 18, 1, 18, String(Number.MIN_SAFE_INTEGER)], // edge case: min safe integer
   ])('[mul] (value "%s", precision "%s") * (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
@@ -544,6 +566,17 @@ describe('FPNumber', () => {
     ['Infinity', 10, 'Infinity', 10, 'NaN'],
     ['Infinity', 10, '-Infinity', 10, 'NaN'],
     ['Infinity', 10, 'NaN', 10, 'NaN'],
+    // Additional test cases
+    [0, 18, -1, 18, '0'],
+    [-0, 18, 1, 18, '0'],
+    [1, 18, 'Infinity', 18, '0'],
+    [1, 18, '-Infinity', 18, '0'],
+    ['Infinity', 18, 1, 18, 'Infinity'],
+    ['-Infinity', 18, 1, 18, '-Infinity'],
+    ['NaN', 18, 1, 18, 'NaN'],
+    ['Infinity', 18, 'Infinity', 18, 'NaN'],
+    ['Infinity', 18, '-Infinity', 18, 'NaN'],
+    ['Infinity', 18, 'NaN', 18, 'NaN'],
   ])('[div] (value "%s", precision "%s") / (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
@@ -577,6 +610,18 @@ describe('FPNumber', () => {
     ['Infinity', 10, 'Infinity', 10, 'NaN'],
     ['Infinity', 10, '-Infinity', 10, 'NaN'],
     ['Infinity', 10, 'NaN', 10, 'NaN'],
+    // Additional test cases
+    [0, 18, -1, 18, '0'],
+    [1, 18, 1, 18, '0'],
+    [-1, 18, -1, 18, '0'],
+    [1.5, 18, 0.5, 18, '0'],
+    [-1.5, 18, 0.5, 18, '0'],
+    [1.5, 18, -0.5, 18, '0'],
+    [-1.5, 18, -0.5, 18, '0'],
+    ['Infinity', 18, 'Infinity', 18, 'NaN'],
+    ['-Infinity', 18, 'Infinity', 18, 'NaN'],
+    ['Infinity', 18, '-Infinity', 18, 'NaN'],
+    ['-Infinity', 18, '-Infinity', 18, 'NaN'],
   ])('[mod] (value "%s", precision "%s") % (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
@@ -610,6 +655,16 @@ describe('FPNumber', () => {
     ['Infinity', 10, 'Infinity', 10, false],
     ['Infinity', 10, '-Infinity', 10, false],
     ['Infinity', 10, 'NaN', 10, false],
+    // Additional test cases
+    [0, 18, 0, 18, false],
+    [1, 18, 1, 18, true],
+    [-1, 18, -1, 18, true],
+    [1.5, 18, 0.5, 18, true],
+    [1.5, 18, 0.6, 18, false],
+    [Number.MAX_VALUE, 18, Number.MAX_VALUE, 18, true],
+    [Number.MIN_VALUE, 18, Number.MIN_VALUE, 18, false], // Number.MIN_VALUE (equals zero because of 18 decimals) is the smallest positive number
+    [Number.MAX_VALUE, 18, Number.MIN_VALUE, 18, false],
+    [Number.MIN_VALUE, 18, Number.MAX_VALUE, 18, true],
   ])(
     '[isZeroMod] (value "%s", precision "%s") % (value "%s", precision "%s") = "%s"',
     (num1, pr1, num2, pr2, result) => {
@@ -636,6 +691,29 @@ describe('FPNumber', () => {
     [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, 'NaN'],
     [Number.POSITIVE_INFINITY, 10, 'NaN', 10, 'NaN'],
     [Number.NaN, 10, 'NaN', 10, 'NaN'],
+    // Additional test cases
+    [0, 18, 0, 18, '0'],
+    [-1, 18, 1, 18, '1'],
+    [1.5, 18, 1.4, 18, '1.5'],
+    [-1.5, 18, -1.4, 18, '-1.4'],
+    [
+      Number.MAX_VALUE,
+      18,
+      Number.MIN_VALUE,
+      18,
+      '179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+    ],
+    [
+      Number.MIN_VALUE,
+      18,
+      Number.MAX_VALUE,
+      18,
+      '179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+    ],
+    [Number.POSITIVE_INFINITY, 18, Number.NEGATIVE_INFINITY, 18, 'Infinity'],
+    [Number.NEGATIVE_INFINITY, 18, Number.POSITIVE_INFINITY, 18, 'Infinity'],
+    [Number.NaN, 18, 1, 18, 'NaN'],
+    [1, 18, Number.NaN, 18, 'NaN'],
   ])('[max] max (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
@@ -662,6 +740,17 @@ describe('FPNumber', () => {
     [Number.NEGATIVE_INFINITY, 10, 'NaN', 10, 'NaN'],
     [Number.POSITIVE_INFINITY, 10, 'NaN', 10, 'NaN'],
     [Number.NaN, 10, 'NaN', 10, 'NaN'],
+    // Additional test cases
+    [0, 18, 0, 18, '0'],
+    [0, 18, -0, 18, '0'],
+    [0, 18, Number.NEGATIVE_INFINITY, 18, '-Infinity'],
+    [0, 18, Number.POSITIVE_INFINITY, 18, '0'],
+    [Number.NEGATIVE_INFINITY, 18, Number.POSITIVE_INFINITY, 18, '-Infinity'],
+    [Number.POSITIVE_INFINITY, 18, Number.POSITIVE_INFINITY, 18, 'Infinity'],
+    [Number.NaN, 18, Number.NaN, 18, 'NaN'],
+    // [Number.NaN, 18, 0, 18, '0'], // TODO: bugs? check how should it work for min/max
+    // [Number.NaN, 18, Number.POSITIVE_INFINITY, 18, 'Infinity'],
+    // [Number.NaN, 18, Number.NEGATIVE_INFINITY, 18, '-Infinity'],
   ])('[min] min (value "%s", precision "%s") (value "%s", precision "%s") -> "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
@@ -880,6 +969,13 @@ describe('FPNumber', () => {
     ['Infinity', 18, '-Infinity'],
     ['-Infinity', 18, 'Infinity'],
     ['NaN', 18, 'NaN'],
+    // Additional test cases
+    [1.23456789123456789, 18, '-1.234567891234568'],
+    [-1.23456789123456789, 18, '1.234567891234568'],
+    ['123456789123456789', 18, '-123456789123456789'],
+    ['-123456789123456789', 18, '123456789123456789'],
+    ['1.23456789123456789', 18, '-1.23456789123456789'],
+    ['-1.23456789123456789', 18, '1.23456789123456789'],
   ])('[negative] !(value "%s", precision "%s") = "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.negative().toString()).toBe(result);
@@ -902,6 +998,19 @@ describe('FPNumber', () => {
     ['Infinity', 17, 'Infinity'],
     ['-Infinity', 17, 'NaN'],
     ['NaN', 17, 'NaN'],
+    [1, 17, '1'],
+    [0.25, 17, '0.5'],
+    [0.0625, 17, '0.25'],
+    [2.718281828459045, 17, '1.64872127070012807'],
+    [7.389056098930649, 17, '2.718281828459045'],
+    [54.598150033144236, 17, '7.38905609893065001'],
+    [403.4287934927351, 17, '20.08553692318766717'],
+    [2980.9579870417283, 17, '54.5981500331442393'],
+    [22026.465794806718, 17, '148.41315910257660841'],
+    [8103.083927575384, 17, '90.0171313005218135'],
+    [444.8580662229411, 17, '21.09165868828104045'],
+    [1.2345678910111213, 17, '1.11111110651056013'],
+    [0.9876543210987654, 17, '0.99380799005580821'],
   ])('[sqrt] sqrt(value "%s", precision "%s") = "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.sqrt().toString()).toBe(result);
