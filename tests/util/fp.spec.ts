@@ -12,32 +12,44 @@ describe('FPNumber', () => {
   });
 
   it.each([
-    ['', 18, '0'],
-    ['0', 18, '0'],
-    ['-0', 18, '0'],
-    [0, 18, '0'],
-    ['0.000001', 18, '0.000001'],
-    [0.000001, 18, '0.000001'],
-    ['-123.456', 18, '-123.456'],
-    [-123.456, 18, '-123.456'],
-    ['123456.123456', 1, '123456.1'],
-    [123456.123456, 1, '123456.1'],
-    [Number.POSITIVE_INFINITY, 1, 'Infinity'],
-    [Number.NEGATIVE_INFINITY, 1, '-Infinity'],
-    [Number.NaN, 1, 'NaN'],
-    ['Infinity', 1, 'Infinity'],
-    ['-Infinity', 1, '-Infinity'],
-    ['NaN', 1, 'NaN'],
+    ['', 18, '0'], // Edge case: empty string
+    ['0', 18, '0'], // Edge case: zero
+    ['-0', 18, '0'], // Edge case: negative zero
+    [0, 18, '0'], // Edge case: zero
+    ['0.000001', 18, '0.000001'], // Edge case: smallest positive number
+    [0.000001, 18, '0.000001'], // Edge case: smallest positive number
+    ['-123.456', 18, '-123.456'], // Edge case: negative number
+    [-123.456, 18, '-123.456'], // Edge case: negative number
+    ['123456.123456', 1, '123456.1'], // Edge case: rounding
+    [123456.123456, 1, '123456.1'], // Edge case: rounding
+    [Number.POSITIVE_INFINITY, 1, 'Infinity'], // Edge case: positive infinity
+    [Number.NEGATIVE_INFINITY, 1, '-Infinity'], // Edge case: negative infinity
+    [Number.NaN, 1, 'NaN'], // Edge case: NaN
+    ['Infinity', 1, 'Infinity'], // Edge case: positive infinity
+    ['-Infinity', 1, '-Infinity'], // Edge case: negative infinity
+    ['NaN', 1, 'NaN'], // Edge case: NaN
+    ['0.9999999999999999', 18, '0.9999999999999999'], // Edge case: rounding
+    ['-0.9999999999999999', 18, '-0.9999999999999999'], // Edge case: negative rounding
+    ['1.0000000000000001', 18, '1.0000000000000001'], // Edge case: rounding up
+    ['-1.0000000000000001', 18, '-1.0000000000000001'], // Edge case: negative rounding up
+    ['1e-18', 18, '0.000000000000000001'], // Edge case: smallest positive number
+    ['-1e-18', 18, '-0.000000000000000001'], // Edge case: smallest negative number
+    ['1e18', 18, '1000000000000000000'], // Edge case: largest number
+    ['-1e18', 18, '-1000000000000000000'], // Edge case: largest negative number
+    ['-1e+18', 18, '-1000000000000000000'], // Edge case: largest negative number
+    [-1e18, 18, '-1000000000000000000'], // Edge case: largest negative number
   ])('[toString] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.toString()).toBe(result);
   });
 
   it.each([
-    ['0', 18, '0'],
-    ['-0', 18, '0'],
-    [0, 18, '0'],
+    ['0', 18, '0'], // Edge case: zero
+    ['-0', 18, '0'], // Edge case: negative zero
+    [0, 18, '0'], // Edge case: zero
     ['0.000001', 18, '0.000001'],
+
+    // Edge case: rounding
     [0.000001, 18, '0.000001'],
     ['-123.456', 18, '-123.456'],
     [-123.456, 18, '-123.456'],
@@ -49,50 +61,75 @@ describe('FPNumber', () => {
     ['0.0000000123', 10, '0.00000001'],
     [0.123456789, 10, '0.1234567'],
     ['0.123456789', 10, '0.1234567'],
-    [Number.POSITIVE_INFINITY, 1, 'Infinity'],
-    [Number.NEGATIVE_INFINITY, 1, '-Infinity'],
-    [Number.NaN, 1, 'NaN'],
-    ['Infinity', 1, 'Infinity'],
-    ['-Infinity', 1, '-Infinity'],
-    ['NaN', 1, 'NaN'],
+
+    [Number.POSITIVE_INFINITY, 1, 'Infinity'], // Edge case: positive infinity
+    [Number.NEGATIVE_INFINITY, 1, '-Infinity'], // Edge case: negative infinity
+    [Number.NaN, 1, 'NaN'], // Edge case: NaN
+    ['Infinity', 1, 'Infinity'], // Edge case: positive infinity
+    ['-Infinity', 1, '-Infinity'], // Edge case: negative infinity
+    ['NaN', 1, 'NaN'], // Edge case: NaN
+    ['1234567890123456789', 18, '1234567890123456789'], // Edge case: large positive number
+    ['-1234567890123456789', 18, '-1234567890123456789'], // Edge case: large negative number
+    [0.000000000000000001, 18, '0.000000000000000001'], // Edge case: smallest positive number
+    [-0.000000000000000001, 18, '-0.0000001'], // Edge case: smallest negative number, rounding mode = 3, dp = 7
+    [0.9999999999999999, 18, '0.9999999'], // Edge case: largest number less than 1, rounding mode = 3, dp = 7
+    ['-0.9999999999999999', 18, '-1'], // Edge case: largest negative number less than 1, rounding mode = 3, dp = 7
+    ['1.0000000000000001', 18, '1'], // Edge case: smallest number greater than 1, rounding mode = 3, dp = 7
+    ['-1.0000000000000001', 18, '-1.0000001'], // Edge case: smallest negative number greater than 1, rounding mode = 3, dp = 7
   ])('[format] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.format()).toBe(result);
   });
 
   it.each([
-    ['0', 18, '0'],
-    ['-0', 18, '0'],
-    [0, 18, '0'],
-    ['0.000001', 18, '0.000001'],
-    [0.000001, 18, '0.000001'],
-    ['-123.456', 18, '-123.456'],
-    [-123.456, 18, '-123.456'],
-    ['-12.3', 18, '-12.3'],
-    [-12.3, 18, '-12.3'],
-    ['1234.123456', 1, '1,234.1'],
-    [1234.123456, 1, '1,234.1'],
-    ['1234567.123456', undefined, '1,234,567.123456'],
-    [1234567.123456, undefined, '1,234,567.123456'],
+    ['0', 18, '0'], // Edge case: zero
+    ['-0', 18, '0'], // Edge case: negative zero
+    [0, 18, '0'], // Edge case: zero
+    ['0.000001', 18, '0.000001'], // Edge case: smallest positive number
+    [0.000001, 18, '0.000001'], // Edge case: smallest positive number
+    ['-123.456', 18, '-123.456'], // Edge case: negative number
+    [-123.456, 18, '-123.456'], // Edge case: negative number
+    ['-12.3', 18, '-12.3'], // Edge case: negative number
+    [-12.3, 18, '-12.3'], // Edge case: negative number
+    ['1234.123456', 1, '1,234.1'], // Edge case: rounding
+    [1234.123456, 1, '1,234.1'], // Edge case: rounding
+    ['1234567.123456', undefined, '1,234,567.123456'], // Edge case: large number
+    [1234567.123456, undefined, '1,234,567.123456'], // Edge case: large number
+    ['0.9999999999999999', 18, '0.9999999'], // Edge case: rounding
+    ['-0.9999999999999999', 18, '-1'], // Edge case: negative rounding
+    ['1.0000000000000001', 18, '1'], // Edge case: rounding up
+    ['-1.0000000000000001', 18, '-1.0000001'], // Edge case: negative rounding up
+    ['1e-18', 18, '0.000000000000000001'], // Edge case: smallest positive number
+    ['-1e-18', 18, '-0.0000001'], // Edge case: smallest negative number
+    ['1e18', 18, '1,000,000,000,000,000,000'], // Edge case: largest number
+    ['-1e18', 18, '-1,000,000,000,000,000,000'], // Edge case: largest negative number
+    ['-1e+18', 18, '-1,000,000,000,000,000,000'], // Edge case: largest negative number
+    [-1e18, 18, '-1,000,000,000,000,000,000'], // Edge case: largest negative number
   ])('[toLocaleString] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.toLocaleString()).toBe(result);
   });
 
   it.each([
-    ['0', 18, 2, '0.00'],
-    ['-0', 18, 2, '0.00'],
-    [0, 18, 2, '0.00'],
-    ['0.000001', 18, 2, '0.00'],
-    [0.000001, 18, 2, '0.00'],
-    ['-123.456', 18, 6, '-123.456000'],
-    [-123.456, 18, 6, '-123.456000'],
-    ['-12.3', 18, 2, '-12.30'],
-    [-12.3, 18, 2, '-12.30'],
-    ['1234.123456', 1, 2, '1,234.10'],
-    [1234.123456, 1, 2, '1,234.10'],
-    ['1234567.123456', undefined, 6, '1,234,567.123456'],
-    [1234567.123456, undefined, 6, '1,234,567.123456'],
+    ['0', 18, 2, '0.00'], // Edge case: zero
+    ['-0', 18, 2, '0.00'], // Edge case: negative zero
+    [0, 18, 2, '0.00'], // Edge case: zero
+    ['0.000001', 18, 2, '0.00'], // Edge case: smallest positive number
+    [0.000001, 18, 2, '0.00'], // Edge case: smallest positive number
+    ['-123.456', 18, 6, '-123.456000'], // Edge case: negative number
+    [-123.456, 18, 6, '-123.456000'], // Edge case: negative number
+    ['-12.3', 18, 2, '-12.30'], // Edge case: negative number
+    [-12.3, 18, 2, '-12.30'], // Edge case: negative number
+    ['1234.123456', 1, 2, '1,234.10'], // Edge case: rounding
+    [1234.123456, 1, 2, '1,234.10'], // Edge case: rounding
+    ['1234567.123456', undefined, 6, '1,234,567.123456'], // Edge case: large number
+    [1234567.123456, undefined, 6, '1,234,567.123456'], // Edge case: large number
+    ['0.0000001', 18, 7, '0.0000001'], // Edge case: small number kept as is
+    ['0.00000001', 18, 7, '0.0000000'], // Edge case: small number rounded down
+    ['0.00000005', 18, 7, '0.0000001'], // Edge case: small number rounded up
+    ['1234567.1234567', undefined, 7, '1,234,567.1234567'], // Edge case: default dp
+    ['1234567.12345675', undefined, 7, '1,234,567.1234567'], // Edge case: default rounding mode
+    ['1234567.12345674', undefined, 7, '1,234,567.1234567'], // Edge case: default rounding mode
   ])(
     '[toLocaleString with preserveOrder] instance of "%s" with precision "%s" and dp="%s" should display "%s"',
     (value, precision, dp, result) => {
