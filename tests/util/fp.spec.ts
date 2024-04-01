@@ -3,13 +3,13 @@ import { connection } from '@sora-substrate/connection';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 describe('FPNumber', () => {
-  beforeAll(async () => {
-    await connection.open(SORA_ENV.stage);
-  });
+  // beforeAll(async () => {
+  //   await connection.open(SORA_ENV.stage);
+  // });
 
-  afterAll(async () => {
-    await connection.close();
-  });
+  // afterAll(async () => {
+  //   await connection.close();
+  // });
 
   it.each([
     ['', 18, '0'], // Edge case: empty string
@@ -139,18 +139,30 @@ describe('FPNumber', () => {
   );
 
   it.each([
-    [1234.5678, 4, '1,234.5678'],
-    ['1234.5678', 4, '1,234.5678'],
-    [-1234.5678, 4, '-1,234.5678'],
-    ['-1234.5678', 4, '-1,234.5678'],
-    [12341234.5678, 5, '12,341,234.5678'],
-    ['12341234.5678', 5, '12,341,234.5678'],
-    [234.5678, 3, '234.567'],
-    ['234.5678', 3, '234.567'],
-    [0.0009, 3, '0.0009'],
-    ['0.0009', 3, '0.0009'],
-    [0.0019, 3, '0.001'],
-    ['0.0019', 3, '0.001'],
+    [1234.5678, 4, '1,234.5678'], // Edge case: positive number
+    ['1234.5678', 4, '1,234.5678'], // Edge case: positive number
+    [-1234.5678, 4, '-1,234.5678'], // Edge case: negative number
+    ['-1234.5678', 4, '-1,234.5678'], // Edge case: negative number
+    [12341234.5678, 5, '12,341,234.5678'], // Edge case: large number
+    ['12341234.5678', 5, '12,341,234.5678'], // Edge case: large number
+    [234.5678, 3, '234.567'], // Edge case: rounding
+    ['234.5678', 3, '234.567'], // Edge case: rounding
+    [0.0009, 3, '0.0009'], // Edge case: smallest positive number
+    ['0.0009', 3, '0.0009'], // Edge case: smallest positive number
+    [0.0019, 3, '0.001'], // Edge case: rounding
+    ['0.0019', 3, '0.001'], // Edge case: rounding
+    [0, 4, '0'], // Edge case: zero
+    ['-0', 4, '0'], // Edge case: negative zero
+    [0.000000000000000001, 4, '0'], // Edge case: smallest positive number
+    [-0.000000000000000001, 4, '0'], // Edge case: smallest negative number
+    [0.9999999999999999, 4, '0.9999'], // Edge case: largest number less than 1
+    ['-0.9999999999999999', 4, '-0.9999'], // Edge case: largest negative number less than 1
+    ['1.0000000000000001', 4, '1'], // Edge case: smallest number greater than 1
+    ['-1.0000000000000001', 4, '-1'], // Edge case: smallest negative number greater than 1
+    [1e-18, 4, '0'], // Edge case: smallest positive number
+    [-1e-18, 4, '0'], // Edge case: smallest negative number
+    [1e18, 4, '1,000,000,000,000,000,000'], // Edge case: largest number
+    [-1e18, 4, '-1,000,000,000,000,000,000'], // Edge case: largest negative number
   ])(
     '[format with params: dp "%s", custom formatting] instance of "%s" with precision "4" should display "%s"',
     (value, dp, result) => {
