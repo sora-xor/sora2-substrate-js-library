@@ -4,20 +4,12 @@ sora-substrate-js-library
 
 ### Requirements
 
-- node version at least v14.14.0
+- node version at least v20.8.1
 
 ### Prepare
 
 ```
 yarn
-yarn build
-```
-
-additionally to get latest definitions for extrinsics, state queries and consts:\
-(local test net should be running)
-
-```
-yarn pull-metadata
 yarn build
 ```
 
@@ -59,11 +51,11 @@ yarn test:all
 ### Demo
 
 ```
-yarn demo
+yarn example <fileName from scripts/examples>
 ```
 
 or
 
 ```
-node -r ts-node/register -r tsconfig-paths/register demo.ts
+yarn demo
 ```
