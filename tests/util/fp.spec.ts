@@ -229,21 +229,29 @@ describe('FPNumber', () => {
   );
 
   it.each([
-    ['0', 18, '0.000'],
-    ['-0', 18, '0.000'],
-    [0, 18, '0.000'],
-    ['0.000001', 18, '0.000'],
-    [0.000001, 18, '0.000'],
-    ['-123.456', 18, '-123.456'],
-    [-123.456, 18, '-123.456'],
-    ['123456.123456', 1, '123456.100'],
-    [123456.123456, 1, '123456.100'],
-    [Number.POSITIVE_INFINITY, 1, 'Infinity'],
-    [Number.NEGATIVE_INFINITY, 1, '-Infinity'],
-    [Number.NaN, 1, 'NaN'],
-    ['Infinity', 1, 'Infinity'],
-    ['-Infinity', 1, '-Infinity'],
-    ['NaN', 1, 'NaN'],
+    ['0', 18, '0.000'], // Edge case: zero
+    ['-0', 18, '0.000'], // Edge case: negative zero
+    [0, 18, '0.000'], // Edge case: zero
+    ['0.000001', 18, '0.000'], // Edge case: smallest positive number
+    [0.000001, 18, '0.000'], // Edge case: smallest positive number
+    ['-123.456', 18, '-123.456'], // Edge case: negative number
+    [-123.456, 18, '-123.456'], // Edge case: negative number
+    ['123456.123456', 1, '123456.100'], // Edge case: rounding
+    [123456.123456, 1, '123456.100'], // Edge case: rounding
+    [Number.POSITIVE_INFINITY, 1, 'Infinity'], // Edge case: positive infinity
+    [Number.NEGATIVE_INFINITY, 1, '-Infinity'], // Edge case: negative infinity
+    [Number.NaN, 1, 'NaN'], // Edge case: NaN
+    ['Infinity', 1, 'Infinity'], // Edge case: positive infinity
+    ['-Infinity', 1, '-Infinity'], // Edge case: negative infinity
+    ['NaN', 1, 'NaN'], // Edge case: NaN
+    [0.000000000000000001, 18, '0.000'], // Additional edge case: smallest positive number
+    [-0.000000000000000001, 18, '-0.001'], // Additional edge case: smallest negative number
+    [1e-18, 18, '0.000'], // Additional edge case: smallest positive number
+    [-1e-18, 18, '-0.001'], // Additional edge case: smallest negative number
+    [1e18, 18, '1000000000000000000.000'], // Additional edge case: largest number
+    [-1e18, 18, '-1000000000000000000.000'], // Additional edge case: largest negative number
+    [Number.MAX_SAFE_INTEGER, 18, '9007199254740991.000'], // Additional edge case: maximum safe integer
+    [Number.MIN_SAFE_INTEGER, 18, '-9007199254740991.000'], // Additional edge case: minimum safe integer
   ])('[toFixed] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.toFixed(3)).toBe(result);
