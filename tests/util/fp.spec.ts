@@ -399,7 +399,6 @@ describe('FPNumber', () => {
   it.each([
     [1, 18, 2, 18, '3'],
     [1, 18, -2, 18, '-1'],
-    [1, 18, 0, 18, '1'],
     [1.5, 10, 2.5, 18, '4'],
     [1.5, 10, -2.5, 18, '-1'],
     [1.5, 10, -2, 18, '-0.5'],
@@ -414,6 +413,24 @@ describe('FPNumber', () => {
     ['-Infinity', 10, 'Infinity', 18, 'NaN'],
     ['-Infinity', 10, '-Infinity', 18, '-Infinity'],
     ['NaN', 10, 'NaN', 18, 'NaN'],
+    [0, 18, 0, 18, '0'],
+    [0, 18, 1, 18, '1'],
+    [1, 18, 0, 18, '1'],
+    [0, 18, -1, 18, '-1'],
+    [-1, 18, 0, 18, '-1'],
+    [0, 18, 0.5, 18, '0.5'],
+    [0.5, 18, 0, 18, '0.5'],
+    [0, 18, -0.5, 18, '-0.5'],
+    [-0.5, 18, 0, 18, '-0.5'],
+    [0, 18, 'Infinity', 18, 'Infinity'],
+    ['Infinity', 18, 0, 18, 'Infinity'],
+    [0, 18, '-Infinity', 18, '-Infinity'],
+    ['-Infinity', 18, 0, 18, '-Infinity'],
+    [0, 18, 'NaN', 18, 'NaN'],
+    ['NaN', 18, 0, 18, 'NaN'],
+    ['Infinity', 18, 'Infinity', 18, 'Infinity'],
+    ['-Infinity', 18, '-Infinity', 18, '-Infinity'],
+    ['NaN', 18, 'NaN', 18, 'NaN'],
   ])('[add] (value "%s", precision "%s") + (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
