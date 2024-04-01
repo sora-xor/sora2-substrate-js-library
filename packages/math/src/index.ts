@@ -35,17 +35,24 @@ export class FPNumber {
   };
 
   /**
-   * Default precision = `18`. Might be modified
+   * The default precision used in mathematical calculations.
+   * @default 18
    */
   public static DEFAULT_PRECISION = 18; // NOSONAR
 
   /**
-   * Default decimal places = `7`. Might be modified
+   * The default number of decimal places used in calculations. Might be modified
+   *
+   * @default 7
    */
   public static DEFAULT_DECIMAL_PLACES = 7; // NOSONAR
 
   /**
-   * Default round type = `3`
+   * The default rounding mode used by the BigNumber class.
+   * @default 3
+   *
+   * @remarks
+   * The value of this property represents the rounding mode used when performing arithmetic operations with BigNumber instances.
    *
    * `0` Rounds away from zero
    * `1` Rounds towards zero
@@ -80,8 +87,10 @@ export class FPNumber {
   /** Ten thousands value (10_000) */
   public static readonly TEN_THOUSANDS = FPNumber.fromNatural(10_000);
   /**
-   * Return the **max** value, `null` if an array is empty
-   * @param {...FPNumber} numbers
+   * Returns the maximum value from the given array of `FPNumber` instances.
+   * If the array is empty or `null`, it returns `null`.
+   * @param numbers - An array of `FPNumber` instances.
+   * @returns The maximum value from the array or `null` if the array is empty or `null`.
    */
   public static max(...numbers: Array<FPNumber>): FPNumber;
   public static max(...numbers: []): null;
@@ -95,8 +104,10 @@ export class FPNumber {
   }
 
   /**
-   * Return the **min** value, `null` if an array is empty
-   * @param {...FPNumber} numbers
+   * Returns the minimum value from the given array of `FPNumber` instances.
+   * If the array is empty or `null`, it returns `null`.
+   * @param numbers An array of `FPNumber` instances.
+   * @returns The minimum value from the array as an `FPNumber` instance, or `null` if the array is empty or `null`.
    */
   public static min(...numbers: Array<FPNumber>): FPNumber;
   public static min(...numbers: []): null;
@@ -110,98 +121,113 @@ export class FPNumber {
   }
 
   /**
-   * Return `true` if the first value is less than the second
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if the first `FPNumber` is less than the second `FPNumber`.
+   * @param first - The first `FPNumber` to compare.
+   * @param second - The second `FPNumber` to compare.
+   * @returns `true` if the first `FPNumber` is less than the second `FPNumber`, `false` otherwise.
    */
   public static lt(first: FPNumber, second: FPNumber): boolean {
     return first.value.lt(second.value);
   }
 
   /**
-   * Return `true` if the first value is less than the second
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if the first `FPNumber` is less than the second `FPNumber`.
+   * @param first - The first `FPNumber` to compare.
+   * @param second - The second `FPNumber` to compare.
+   * @returns `true` if the first `FPNumber` is less than the second `FPNumber`, `false` otherwise.
    */
   public static readonly isLessThan = FPNumber.lt;
 
   /**
-   * Return `true` if the first value is less of equal than the second
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if the value of the first `FPNumber` is less than or equal to the value of the second `FPNumber`.
+   * @param first - The first `FPNumber` to compare.
+   * @param second - The second `FPNumber` to compare.
+   * @returns `true` if the value of the first `FPNumber` is less than or equal to the value of the second `FPNumber`, `false` otherwise.
    */
   public static lte(first: FPNumber, second: FPNumber): boolean {
     return first.value.lte(second.value);
   }
 
   /**
-   * Return `true` if the first value is less of equal than the second
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if the value of the first `FPNumber` is less than or equal to the value of the second `FPNumber`.
+   * @param first - The first `FPNumber` to compare.
+   * @param second - The second `FPNumber` to compare.
+   * @returns `true` if the value of the first `FPNumber` is less than or equal to the value of the second `FPNumber`, `false` otherwise.
    */
   public static readonly isLessThanOrEqualTo = FPNumber.lte;
 
   /**
-   * Return `true` if the first value is greater than the second
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if the first `FPNumber` is greater than the second `FPNumber`.
+   * @param first - The first `FPNumber` to compare.
+   * @param second - The second `FPNumber` to compare.
+   * @returns `true` if the first `FPNumber` is greater than the second `FPNumber`, `false` otherwise.
    */
   public static gt(first: FPNumber, second: FPNumber): boolean {
     return first.value.gt(second.value);
   }
 
   /**
-   * Return `true` if the first value is greater than the second
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if the first `FPNumber` is greater than the second `FPNumber`.
+   * @param first - The first `FPNumber` to compare.
+   * @param second - The second `FPNumber` to compare.
+   * @returns `true` if the first `FPNumber` is greater than the second `FPNumber`, `false` otherwise.
    */
   public static readonly isGreaterThan = FPNumber.gt;
 
   /**
-   * Return `true` if the first value is greater or equal than the second
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if the first `FPNumber` is greater than or equal to the second `FPNumber`.
+   * @param first - The first `FPNumber` to compare.
+   * @param second - The second `FPNumber` to compare.
+   * @returns `true` if the first `FPNumber` is greater than or equal to the second `FPNumber`, `false` otherwise.
    */
   public static gte(first: FPNumber, second: FPNumber): boolean {
     return first.value.gte(second.value);
   }
 
   /**
-   * Return `true` if the first value is greater or equal than the second
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if the first `FPNumber` is greater than or equal to the second `FPNumber`.
+   * @param first - The first `FPNumber` to compare.
+   * @param second - The second `FPNumber` to compare.
+   * @returns `true` if the first `FPNumber` is greater than or equal to the second `FPNumber`, `false` otherwise.
    */
   public static readonly isGreaterThanOrEqualTo = FPNumber.gte;
 
   /**
-   * Return `true` if values are equal
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if two `FPNumber` instances are equal.
+   * @param first - The first `FPNumber` instance.
+   * @param second - The second `FPNumber` instance.
+   * @returns `true` if the two `FPNumber` instances are equal, `false` otherwise.
    */
   public static eq(first: FPNumber, second: FPNumber): boolean {
     return first.value.eq(second.value);
   }
 
   /**
-   * Return `true` if values are equal
-   * @param {FPNumber} first First number
-   * @param {FPNumber} second Second number
+   * Checks if two `FPNumber` instances are equal.
+   * @param first - The first `FPNumber` instance.
+   * @param second - The second `FPNumber` instance.
+   * @returns `true` if the two `FPNumber` instances are equal, `false` otherwise.
    */
   public static readonly isEqualTo = FPNumber.eq;
 
   /**
-   * Get FPNumber from real number, will multiply by precision
-   * @param {(string | number)} value Target number
-   * @param {number} precision Precision
+   * Creates a new `FPNumber` instance from a natural number.
+   *
+   * @param value - The value of the natural number.
+   * @param precision - The precision of the `FPNumber` instance (default: `FPNumber.DEFAULT_PRECISION`).
+   * @returns A new `FPNumber` instance representing the natural number.
    */
   public static fromNatural(value: number | string, precision: number = FPNumber.DEFAULT_PRECISION): FPNumber {
     return new FPNumber(value, precision);
   }
 
   /**
-   * Get FPNumber from codec value
-   * @param {(string | number | bigint)} value Codec value `(value * 10^precision)`
-   * @param {number} precision Precision
+   * Creates an instance of `FPNumber` from a codec value.
+   *
+   * @param value - `(value * 10^precision)` to create the `FPNumber` from. It can be a number,
+   * string, or bigint represented by `(value * 10^precision)`.
+   * @param precision - The precision to use for the `FPNumber`. Defaults to `FPNumber.DEFAULT_PRECISION`.
+   * @returns An instance of `FPNumber` created from the given value.
    */
   public static fromCodecValue(
     value: number | string | bigint,
@@ -226,7 +252,7 @@ export class FPNumber {
 
   public readonly value: BigNumber;
 
-  private formatInitialDataString(data: string): string {
+  private formatInitialDataString(data: string): string | number {
     if (!data) return '0'; // backward compatibility with +'' === 0
 
     if (!isFinityString(data)) return data; // '-Infinity', 'Infinity', 'NaN'
@@ -234,6 +260,11 @@ export class FPNumber {
     if (isZeroString(data)) return '0';
 
     const withoutFormatting = data.replace(/[, ]/g, '');
+
+    if (withoutFormatting.includes('e')) {
+      return +withoutFormatting; // For numbers with epsilon 1.123e+3 -> 1123
+    }
+
     const [integer, fractional] = withoutFormatting.split('.') as [string, string | undefined];
 
     if (!(integer && Number.isFinite(+integer)) || (fractional && !Number.isFinite(+fractional))) {
@@ -299,7 +330,10 @@ export class FPNumber {
    * @param data
    * @param precision
    */
-  constructor(data: NumberType, public precision = FPNumber.DEFAULT_PRECISION) {
+  constructor(
+    data: NumberType,
+    public precision = FPNumber.DEFAULT_PRECISION
+  ) {
     let value: BigNumber;
     if (data instanceof BigNumber) {
       value = data;
@@ -313,21 +347,29 @@ export class FPNumber {
   }
 
   /**
-   * Formatted codec string representation
+   * Gets the codec value as a string.
+   * The codec value is calculated by multiplying the `value` property by 10 raised to the power of `precision`,
+   * and then formatting the result as a string with no decimal places.
+   * @returns The codec value as a string.
    */
   get codec(): string {
     return this.value.times(10 ** this.precision).toFormat(0);
   }
 
   /**
-   * Format number to Codec string
+   * Gets the codec value as a string.
+   * The codec value is calculated by multiplying the `value` property by 10 raised to the power of `precision`,
+   * and then formatting the result as a string with no decimal places.
+   * @returns The codec value as a string.
    */
   public toCodecString(): string {
     return this.codec;
   }
 
   /**
-   * Format number to Codec string wrapped with `BigInt`
+   * Converts the `codec` property of the `FPNumber` instance to a `BigInt`.
+   * If the conversion fails, it returns `BigInt(0)` and logs a warning message.
+   * @returns The `BigInt` representation of the `codec` property.
    */
   public toCodecBigInt(): BigInt {
     try {
@@ -339,10 +381,11 @@ export class FPNumber {
   }
 
   /**
-   * Returns a string representation of the value using the custom formatting.
-   * @param dp max decimal places
-   * @param format BigNumber.Format object
-   * @param preserveOrder (default: false) Keep empty decimals related to the **dp** param
+   * Formats the value of the BigNumber instance as a string.
+   * @param dp - The number of decimal places to round the value to. Defaults to `FPNumber.DEFAULT_DECIMAL_PLACES`.
+   * @param format - The format to use for formatting the value. Optional.
+   * @param preserveOrder - Specifies whether to preserve the order of the formatted value. Defaults to `false`.
+   * @returns The formatted value as a string.
    */
   public format(dp = FPNumber.DEFAULT_DECIMAL_PLACES, format?: BigNumber.Format, preserveOrder = false): string {
     const value = this.value;
@@ -364,9 +407,10 @@ export class FPNumber {
   }
 
   /**
-   * Converts a number to a string by using the current locale params.
-   * @param dp max decimal places
-   * @param preserveOrder (default: false) Keep empty decimals related to the **dp** param
+   * Converts the number to a localized string representation.
+   * @param dp - The number of decimal places to include in the string. Defaults to `FPNumber.DEFAULT_DECIMAL_PLACES`.
+   * @param preserveOrder - Specifies whether to preserve the order of the number. Defaults to `false`.
+   * @returns A string representation of the number in the localized format.
    */
   public toLocaleString(dp = FPNumber.DEFAULT_DECIMAL_PLACES, preserveOrder = false): string {
     let [integer, decimal] = this.format(
@@ -383,23 +427,26 @@ export class FPNumber {
   }
 
   /**
-   * Format real number to string
+   * Returns a string representation of the value.
+   * @returns A string representation of the value.
    */
   public toString(): string {
     return this.value.toFormat();
   }
 
   /**
-   * Format real number to fixed string (like `Number.toFixed`)
-   * @param {number} [dp=4] Decimal places deafult is 4
+   * Returns a string representation of the number with a fixed number of decimal places.
+   * @param dp The number of decimal places to round to. Defaults to 4.
+   * @returns A string representation of the number with the specified number of decimal places.
    */
   public toFixed(dp: number = 4): string {
     return this.value.toFixed(dp, FPNumber.DEFAULT_ROUND_MODE);
   }
 
   /**
-   * Format FPNumber to number
-   * @param {number} [dp=6] Decimal places
+   * Converts the value of the `FPNumber` instance to a JavaScript number.
+   * @param dp The number of decimal places to round the value to. Defaults to `FPNumber.DEFAULT_DECIMAL_PLACES`.
+   * @returns The value of the `FPNumber` instance as a JavaScript number.
    */
   public toNumber(dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): number {
     const result = this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
@@ -407,8 +454,10 @@ export class FPNumber {
   }
 
   /**
-   * Format FPNumber to bigint
-   * @param {number} [dp=6] Decimal places
+   * Converts the current FPNumber instance to a BigInt.
+   * If the conversion fails, it returns `BigInt(0)` and logs a warning message.
+   * @param dp The number of decimal places to round the value to. Defaults to `FPNumber.DEFAULT_DECIMAL_PLACES`.
+   * @returns The BigInt representation of the current FPNumber instance.
    */
   public toBigInt(dp: number = FPNumber.DEFAULT_DECIMAL_PLACES): bigint {
     const result = this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE).toString();
@@ -421,8 +470,9 @@ export class FPNumber {
   }
 
   /**
-   * Returns a FPNumber whose value is the value of this FPNumber to a maximum of decimalPlaces decimal places.
-   * @param {number} [dp=precision] Decimal places
+   * Returns a new `FPNumber` instance with the specified number of decimal places.
+   * @param dp The number of decimal places to round the value to. Defaults to the precision of the current `FPNumber` instance.
+   * @returns A new `FPNumber` instance with the specified number of decimal places.
    */
   public dp(dp: number = this.precision): FPNumber {
     const newValue = this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
@@ -558,65 +608,74 @@ export class FPNumber {
   }
 
   /**
-   * Return `true` if the value of inner is NaN
+   * Checks if the value of this object is NaN (not a number).
+   * @returns {boolean} True if the value is NaN, false otherwise.
    */
   public isNaN(): boolean {
     return this.value.isNaN();
   }
 
   /**
-   * Return `true` if the value of inner is finity, only return `false` when the value is `NaN`, `-Infinity` or `Infinity`.
+   * Checks if the value of this object is a finite number.
+   * @returns {boolean} Returns `true` if the value is finite, `false` otherwise (`NaN`, `-Infinity` or `Infinity`).
    */
   public isFinity(): boolean {
     return this.value.isFinite();
   }
 
   /**
-   * Return `true` if the value is 0
+   * Checks if the value of this object is zero.
+   * @returns {boolean} True if the value is zero, false otherwise.
    */
   public isZero(): boolean {
     return this.value.isZero();
   }
 
   /**
-   * Return `true` if the value is less than 0
+   * Checks if the value is less than zero.
+   * @returns {boolean} True if the value is less than zero, false otherwise.
    */
   public isLtZero(): boolean {
     return this.lt(FPNumber.ZERO);
   }
 
   /**
-   * Return `true` if the value is less than or equal to 0
+   * Checks if the value is less than or equal to zero.
+   * @returns {boolean} True if the value is less than or equal to zero, false otherwise.
    */
   public isLteZero(): boolean {
     return this.lte(FPNumber.ZERO);
   }
 
   /**
-   * Return `true` if the value is greater than 0
+   * Checks if the value is greater than zero.
+   * @returns {boolean} True if the value is greater than zero, false otherwise.
    */
   public isGtZero(): boolean {
     return this.gt(FPNumber.ZERO);
   }
 
   /**
-   * Return `true` if the value is greater than or equal to 0
+   * Checks if the value is greater than or equal to zero.
+   * @returns {boolean} True if the value is greater than or equal to zero, false otherwise.
    */
   public isGteZero(): boolean {
     return this.gte(FPNumber.ZERO);
   }
 
   /**
-   * Return the **max** value (this number or the number from params)
-   * @param {Array<FPNumber>} numbers Other numbers
+   * Returns the maximum value among the given numbers.
+   * @param numbers - An array of numbers to compare.
+   * @returns The maximum value among the given numbers.
    */
   public max(...numbers: Array<FPNumber>): FPNumber {
     return FPNumber.max(this, ...numbers);
   }
 
   /**
-   * Return the **min** value (this number or the number from params)
-   * @param {Array<FPNumber>} numbers Other numbers
+   * Returns the minimum value among the given numbers.
+   * @param numbers - The numbers to compare.
+   * @returns The minimum value.
    */
   public min(...numbers: Array<FPNumber>): FPNumber {
     return FPNumber.min(this, ...numbers);
