@@ -3,13 +3,13 @@ import { connection } from '@sora-substrate/connection';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 describe('FPNumber', () => {
-  // beforeAll(async () => {
-  //   await connection.open(SORA_ENV.stage);
-  // });
+  beforeAll(async () => {
+    await connection.open(SORA_ENV.stage);
+  });
 
-  // afterAll(async () => {
-  //   await connection.close();
-  // });
+  afterAll(async () => {
+    await connection.close();
+  });
 
   it.each([
     ['', 18, '0'], // Edge case: empty string
