@@ -9,6 +9,12 @@ import type { XcmV3MultiLocation } from '@polkadot/types/lookup';
 import type { Asset } from '../../assets/types';
 
 export class SoraParachainApi {
+  public async getParachainId(api: ApiPromise): Promise<number> {
+    const id = (await api.query.parachainInfo.parachainId()) as u32;
+
+    return id.toNumber();
+  }
+
   public async getRelayChainBlockNumber(blockHash: string, api: ApiPromise): Promise<number> {
     const apiInstanceAtBlock = await api.at(blockHash);
     const blockNumber = (await apiInstanceAtBlock.query.parachainSystem.lastRelayChainBlockNumber()) as u32;
