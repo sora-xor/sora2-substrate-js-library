@@ -61,6 +61,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     [SubNetworkId.RococoSora]: 2011,
     [SubNetworkId.KusamaSora]: 2011,
     [SubNetworkId.AlphanetSora]: 2011,
+    [SubNetworkId.AlphanetMoonbase]: 1000,
   };
 
   public prepareNetworkParam(subNetwork: SubNetwork): BridgeTypesGenericNetworkId {
@@ -83,6 +84,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       case SubNetworkId.RococoSora:
         return SubNetworkId.Rococo;
       case SubNetworkId.AlphanetSora:
+      case SubNetworkId.AlphanetMoonbase:
         return SubNetworkId.Alphanet;
       default:
         throw new Error(`"${subNetwork}" has not relaychain`);
@@ -100,6 +102,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       case SubNetworkId.Rococo:
         return SubNetworkId.RococoSora;
       case SubNetworkId.Alphanet:
+      case SubNetworkId.AlphanetMoonbase:
         return SubNetworkId.AlphanetSora;
       default:
         throw new Error(`"${subNetwork}" has not SORA parachain`);
