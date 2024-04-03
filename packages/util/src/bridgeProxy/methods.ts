@@ -47,9 +47,8 @@ function getAccount(data: BridgeTypesGenericAccount): string {
       return '';
     }
   }
-  // [TODO: liberlandBridgeApp] remove any
-  if ((data as any).isLiberland) {
-    return (data as any).asLiberland.toString();
+  if (data.isLiberland) {
+    return data.asLiberland.toString();
   }
 
   return '';
