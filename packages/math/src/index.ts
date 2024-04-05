@@ -246,7 +246,7 @@ export class FPNumber {
         break;
     }
 
-    const bn = new BigNumber(filtered);
+    const bn = new BigNumber(filtered || 0);
     return new FPNumber(bn.div(10 ** precision), precision);
   }
 
