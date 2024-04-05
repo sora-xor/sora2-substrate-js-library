@@ -14,6 +14,16 @@ export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>
 
 declare module '@polkadot/api-base/types/consts' {
   interface AugmentedConsts<ApiType extends ApiTypes> {
+    apolloPlatform: {
+      /**
+       * A configuration for longevity of unsigned transactions.
+       **/
+      unsignedLongevity: u64 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for base priority of unsigned transactions.
+       **/
+      unsignedPriority: u64 & AugmentedConst<ApiType>;
+    };
     babe: {
       /**
        * The amount of time, in slots, that each epoch should last.
