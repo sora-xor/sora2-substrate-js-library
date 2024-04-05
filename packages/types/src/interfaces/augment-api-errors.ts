@@ -11,6 +11,132 @@ export type __AugmentedError<ApiType extends ApiTypes> = AugmentedError<ApiType>
 
 declare module '@polkadot/api-base/types/errors' {
   interface AugmentedErrors<ApiType extends ApiTypes> {
+    apolloPlatform: {
+      /**
+       * Asset already listed
+       **/
+      AssetAlreadyListed: AugmentedError<ApiType>;
+      /**
+       * Can not transfer amount to developers
+       **/
+      CanNotTransferAmountToDevelopers: AugmentedError<ApiType>;
+      /**
+       * Can not transfer amount to repay
+       **/
+      CanNotTransferAmountToRepay: AugmentedError<ApiType>;
+      /**
+       * Can not transfer borrowing amount
+       **/
+      CanNotTransferBorrowingAmount: AugmentedError<ApiType>;
+      /**
+       * Can not transfer borrowing rewards
+       **/
+      CanNotTransferBorrowingRewards: AugmentedError<ApiType>;
+      /**
+       * Can not transfer collateral amount
+       **/
+      CanNotTransferCollateralAmount: AugmentedError<ApiType>;
+      /**
+       * Can not transfer lending amount
+       **/
+      CanNotTransferLendingAmount: AugmentedError<ApiType>;
+      /**
+       * Can not transfer lending interest
+       **/
+      CanNotTransferLendingInterest: AugmentedError<ApiType>;
+      /**
+       * Can not withdraw lending amount
+       **/
+      CanNotWithdrawLendingAmount: AugmentedError<ApiType>;
+      /**
+       * Collateral token does not exists
+       **/
+      CollateralTokenDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Insufficient lending amount
+       **/
+      InsufficientLendingAmount: AugmentedError<ApiType>;
+      /**
+       * Invalid borrowing amount
+       **/
+      InvalidBorrowingAmount: AugmentedError<ApiType>;
+      /**
+       * Invalid collateral amount
+       **/
+      InvalidCollateralAmount: AugmentedError<ApiType>;
+      /**
+       * The amount that is being lended is invalid
+       **/
+      InvalidLendingAmount: AugmentedError<ApiType>;
+      /**
+       * User should not be liquidated
+       **/
+      InvalidLiquidation: AugmentedError<ApiType>;
+      /**
+       * Invalid pool parameters
+       **/
+      InvalidPoolParameters: AugmentedError<ApiType>;
+      /**
+       * Lending amount exceeded
+       **/
+      LendingAmountExceeded: AugmentedError<ApiType>;
+      /**
+       * No lending amount to borrow
+       **/
+      NoLendingAmountToBorrow: AugmentedError<ApiType>;
+      /**
+       * No liquidity for borrowing asset
+       **/
+      NoLiquidityForBorrowingAsset: AugmentedError<ApiType>;
+      /**
+       * Nonexistent borrowing position
+       **/
+      NonexistentBorrowingPosition: AugmentedError<ApiType>;
+      /**
+       * No rewards to claim
+       **/
+      NoRewardsToClaim: AugmentedError<ApiType>;
+      /**
+       * Nothing borrowed
+       **/
+      NothingBorrowed: AugmentedError<ApiType>;
+      /**
+       * Nothing lended
+       **/
+      NothingLended: AugmentedError<ApiType>;
+      /**
+       * Nothing to repay
+       **/
+      NothingToRepay: AugmentedError<ApiType>;
+      /**
+       * Pool does not exist
+       **/
+      PoolDoesNotExist: AugmentedError<ApiType>;
+      /**
+       * Pool is removed
+       **/
+      PoolIsRemoved: AugmentedError<ApiType>;
+      /**
+       * Same borrowing and collateral assets
+       **/
+      SameCollateralAndBorrowingAssets: AugmentedError<ApiType>;
+      /**
+       * Unable to transfer amount to repay
+       **/
+      UnableToTransferAmountToRepay: AugmentedError<ApiType>;
+      /**
+       * Unable to transfer collateral
+       **/
+      UnableToTransferCollateral: AugmentedError<ApiType>;
+      /**
+       * Unable to transfer rewards
+       **/
+      UnableToTransferRewards: AugmentedError<ApiType>;
+      /**
+       * Unauthorized
+       **/
+      Unauthorized: AugmentedError<ApiType>;
+    };
     assets: {
       /**
        * An asset with a given ID already exists.

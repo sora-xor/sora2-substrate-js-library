@@ -18,6 +18,48 @@ export type __SubmittableExtrinsicFunction<ApiType extends ApiTypes> = Submittab
 
 declare module '@polkadot/api-base/types/submittable' {
   interface AugmentedSubmittables<ApiType extends ApiTypes> {
+    apolloPlatform: {
+      /**
+       * Add pool
+       **/
+      addPool: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, loanToValue: u128 | AnyNumber | Uint8Array, liquidationThreshold: u128 | AnyNumber | Uint8Array, optimalUtilizationRate: u128 | AnyNumber | Uint8Array, baseRate: u128 | AnyNumber | Uint8Array, slopeRate1: u128 | AnyNumber | Uint8Array, slopeRate2: u128 | AnyNumber | Uint8Array, reserveFactor: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128]>;
+      /**
+       * Borrow token
+       **/
+      borrow: AugmentedSubmittable<(collateralAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Change rewards amount
+       **/
+      changeRewardsAmount: AugmentedSubmittable<(isLending: bool | boolean | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [bool, u128]>;
+      /**
+       * Change rewards per block
+       **/
+      changeRewardsPerBlock: AugmentedSubmittable<(isLending: bool | boolean | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [bool, u128]>;
+      /**
+       * Get rewards
+       **/
+      getRewards: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, isLending: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, bool]>;
+      /**
+       * Lend token
+       **/
+      lend: AugmentedSubmittable<(lendingAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, lendingAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Liquidate
+       **/
+      liquidate: AugmentedSubmittable<(user: AccountId32 | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Remove pool
+       **/
+      removePool: AugmentedSubmittable<(assetIdToRemove: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      /**
+       * Repay
+       **/
+      repay: AugmentedSubmittable<(collateralAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amountToRepay: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Withdraw
+       **/
+      withdraw: AugmentedSubmittable<(withdrawnAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, withdrawnAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128]>;
+    };
     assets: {
       /**
        * Performs a checked Asset burn, can only be done
@@ -1374,6 +1416,9 @@ declare module '@polkadot/api-base/types/submittable' {
       registerNetwork: AugmentedSubmittable<(networkConfig: BridgeTypesNetworkConfig | { Mainnet: any } | { Ropsten: any } | { Sepolia: any } | { Rinkeby: any } | { Goerli: any } | { Classic: any } | { Mordor: any } | { Custom: any } | string | Uint8Array, header: BridgeTypesHeader | { parentHash?: any; timestamp?: any; number?: any; author?: any; transactionsRoot?: any; ommersHash?: any; extraData?: any; stateRoot?: any; receiptsRoot?: any; logsBloom?: any; gasUsed?: any; gasLimit?: any; difficulty?: any; seal?: any; baseFee?: any } | string | Uint8Array, initialDifficulty: U256 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesNetworkConfig, BridgeTypesHeader, U256]>;
       updateDifficultyConfig: AugmentedSubmittable<(networkConfig: BridgeTypesNetworkConfig | { Mainnet: any } | { Ropsten: any } | { Sepolia: any } | { Rinkeby: any } | { Goerli: any } | { Classic: any } | { Mordor: any } | { Custom: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesNetworkConfig]>;
     };
+    farming: {
+      setLpMinXorForBonusReward: AugmentedSubmittable<(newLpMinXorForBonusReward: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+    };
     faucet: {
       resetRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
@@ -2125,13 +2170,175 @@ declare module '@polkadot/api-base/types/submittable' {
       enableOracle: AugmentedSubmittable<(oracle: CommonPrimitivesOracle | 'BandChainFeed' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOracle]>;
     };
     orderBook: {
+      /**
+       * Cancels the limit order
+       * 
+       * # Parameters:
+       * - `origin`: caller account who owns the limit order
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `order_id`: `id` of the limit order
+       * 
+       * # Rules:
+       * - only the order owner can cancel the limit order
+       * 
+       * # Note:
+       * Network fee isn't charged if the order is successfully cancelled by the owner
+       **/
       cancelLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, orderId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128]>;
+      /**
+       * Cancels the list of limit orders
+       * 
+       * # Parameters:
+       * - `origin`: caller account who owns the limit orders
+       * - `limit_orders_to_cancel`: the list with [`order_book_id`](OrderBookId) & `order_id` pairs to cancel
+       * 
+       * # Rules:
+       * - only the owner of **all** orders can cancel all limit orders from the list
+       * 
+       * # Note:
+       * Network fee isn't charged if orders are successfully cancelled by the owner
+       **/
       cancelLimitOrdersBatch: AugmentedSubmittable<(limitOrdersToCancel: Vec<ITuple<[OrderBookOrderBookId, Vec<u128>]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, Vec<u128> | (u128 | AnyNumber | Uint8Array)[]])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[OrderBookOrderBookId, Vec<u128>]>>]>;
+      /**
+       * Sets the order book status
+       * 
+       * # Parameters:
+       * - `origin`: caller account who must have permissions to change the order book status
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `status`: one of the statuses from [OrderBookStatus]
+       * 
+       * # Rules:
+       * - only root & tech committee can set the order book status
+       * - if the order book is locked by updating (tech status is [`Updating`](OrderBookTechStatus::Updating)), the allowed statues to set:
+       * - [`OnlyCancel`](OrderBookStatus::OnlyCancel)
+       * - [`Stop`](OrderBookStatus::Stop)
+       **/
       changeOrderbookStatus: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, status: OrderBookOrderBookStatus | 'Trade' | 'PlaceAndCancel' | 'OnlyCancel' | 'Stop' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, OrderBookOrderBookStatus]>;
+      /**
+       * Creates a new order book for the pair of assets.
+       * 
+       * # Parameters:
+       * - `origin`: caller account who must have permissions to create the order book
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `tick_size`: price step
+       * - `step_lot_size`: amount step
+       * - `min_lot_size`: minimal order amount
+       * - `max_lot_size`: maximal order amount
+       * 
+       * # Rules:
+       * - root & tech committee can create any order book
+       * - a regular user can create an order book only for indivisible base assets (most likely NFT) and only if they have this asset on their balance
+       * - trading pair for the assets must be registered before the creating an order book
+       * 
+       * # Attribute rules (for `tick_size`, `step_lot_size`, `min_lot_size` & `max_lot_size`):
+       * - all attributes must be non-zero
+       * - `min_lot_size` <= `max_lot_size`
+       * - `step_lot_size` <= `min_lot_size`
+       * - `min_lot_size` & `max_lot_size` must be a multiple of `step_lot_size`
+       * - `max_lot_size` <= `min_lot_size` * `SOFT_MIN_MAX_RATIO`, now `SOFT_MIN_MAX_RATIO` = 1 000
+       * - `max_lot_size` <= total supply of `base` asset
+       * - precision of `tick_size` * `step_lot_size` must not overflow **18 digits**
+       **/
       createOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, u128, u128]>;
+      /**
+       * Deletes the order book
+       * 
+       * # Parameters:
+       * - `origin`: caller account who must have permissions to delete the order book
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * 
+       * # Rules:
+       * - only root & tech committee can delete the order book
+       * - status of the order book must be [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+       * - the order book must be empty - doesn't contain any orders
+       * 
+       * # Real life delete process:
+       * 1. Announce that the order book will be deleted.
+       * 2. Stop the order book by changing the status to [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+       * 3. Wait until users cancel their orders or their lifetime just expires (maximum 1 month).
+       * 4. Delete the empty order book.
+       **/
       deleteOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId]>;
+      /**
+       * Executes the market order
+       * 
+       * # Parameters:
+       * - `origin`: caller account
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `direction`: [direction](PriceVariant) of the market order
+       * - `amount`: volume of the `base asset` to trade
+       * 
+       * # Rules:
+       * - works only for order books with indivisible `base asset`, because there is no other ability to trade such assets. All other divisible assets must be traded by `liquidity_proxy::swap`
+       * - `amount` >= [`OrderBook::min_lot_size`]
+       * - `amount` <= [`OrderBook::max_lot_size`]
+       * - `amount` must be a multiple of [`OrderBook::step_lot_size`]
+       **/
       executeMarketOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, direction: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, CommonPrimitivesPriceVariant, u128]>;
+      /**
+       * Places the limit order into the order book
+       * 
+       * # Parameters:
+       * - `origin`: caller account, the limit order owner
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `price`: price in the `quote asset`
+       * - `amount`: volume of the limit order in the `base asset`
+       * - `side`: [side](PriceVariant) where to place the limit order
+       * - `lifespan`: life duration of the limit order in millisecs, if not defined the default value 30 days is set
+       * 
+       * # Rules:
+       * - `price` must be a multiple of [`OrderBook::tick_size`]
+       * - `amount` >= [`OrderBook::min_lot_size`]
+       * - `amount` <= [`OrderBook::max_lot_size`]
+       * - `amount` must be a multiple of [`OrderBook::step_lot_size`]
+       * - if the `price` crosses the spread (the opposite `side`):
+       * - if [`OrderBook::status`] allows to trade - the limit order is converted into market order and the exchange occurs
+       * - if [`OrderBook::status`] doesn't allow to trade - transaction fails
+       **/
       placeLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, price: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array, side: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, lifespan: Option<u64> | null | Uint8Array | u64 | AnyNumber) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, CommonPrimitivesPriceVariant, Option<u64>]>;
+      /**
+       * Updates the attributes of the order book
+       * 
+       * # Parameters:
+       * - `origin`: caller account who must have permissions to update the order book
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `tick_size`: price step
+       * - `step_lot_size`: amount step
+       * - `min_lot_size`: minimal order amount
+       * - `max_lot_size`: maximal order amount
+       * 
+       * # Rules:
+       * - only root & tech committee can update the order book
+       * - status of the order book must be [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+       * - inernal tech status of the order book must be [`Ready`](OrderBookTechStatus::Ready), that means the previos update is completed
+       * 
+       * # Attribute rules (for `tick_size`, `step_lot_size`, `min_lot_size` & `max_lot_size`):
+       * - all attributes must be non-zero
+       * - `min_lot_size` <= `max_lot_size`
+       * - `step_lot_size` <= `min_lot_size`
+       * - `min_lot_size` & `max_lot_size` must be a multiple of `step_lot_size`
+       * - `max_lot_size` <= total supply of `base` asset
+       * - precision of `tick_size` * `step_lot_size` must not overflow 18 digits
+       * - `max_lot_size` <= `min_lot_size` * `SOFT_MIN_MAX_RATIO`, now `SOFT_MIN_MAX_RATIO` = 1 000
+       * - `max_lot_size` <= **old** `min_lot_size` * `HARD_MIN_MAX_RATIO`, now `HARD_MIN_MAX_RATIO` = 4 000
+       * 
+       * # Real life update process:
+       * 1. Announce that the order book will be updated.
+       * 2. Stop the order book by changing the status to [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+       * 3. Update the order book attributes according to the rules[^note].
+       * 4. Wait the orders alignment if it is necessary - the order book tech status must become [`Ready`](OrderBookTechStatus::Ready).
+       * 5. Change the order book status back to [`Trade`](OrderBookStatus::Trade) or other necessary status.
+       * 6. Announce that the order book update is completed.
+       * 
+       * [^note]: according to tech reasons it is forbidden to update `max_lot_size` with too large a value (see last 2 rules).
+       * For example, if the current values `min_lot_size` = 1 & `max_lot_size` = 1 000,
+       * we cannot change it to `min_lot_size` = 1 000 & `max_lot_size` = 1 000 000.
+       * In this case it is necessary to do several update rounds:
+       * 1. `min_lot_size`: 1 --> 1 000, `max_lot_size`: 1 000 --> 4 000
+       * 2. `max_lot_size`: 4 000 --> 1 000 000
+       * 
+       * It is also not recommended to batch these updates, because the tech status of the order book can be changed after the 1st update and the 2nd update will be declined in this case.
+       **/
       updateOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, u128, u128]>;
     };
     parachainBridgeApp: {
