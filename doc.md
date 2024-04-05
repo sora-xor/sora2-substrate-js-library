@@ -78,6 +78,7 @@
 - [beefy](#beefy-pallet)
 - [mmrLeaf](#mmrleaf-pallet)
 - [sudo](#sudo-pallet)
+- [apolloPlatform](#apolloplatform-pallet)
 - [utility](#utility-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
 - [faucet](#faucet-pallet)
@@ -7579,6 +7580,23 @@ returns: `Vec<FarmingPoolFarmer>`
 
 <hr>
 
+#### **api.query.farming.lpMinXorForBonusReward**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.farming.setLpMinXorForBonusReward**
+
+arguments:
+
+- newLpMinXorForBonusReward: `u128`
+<hr>
+
 ### _Custom RPCs_
 
 #### **api.rpc.farming.rewardDoublingAssets**
@@ -9365,6 +9383,8 @@ returns: `u16`
 
 #### **api.query.orderBook.orderBooks**
 
+> The storage contains the information about order book, it's parameters and statuses.
+
 arguments:
 
 - key: `OrderBookOrderBookId`
@@ -9374,6 +9394,8 @@ returns: `OrderBook`
 <hr>
 
 #### **api.query.orderBook.limitOrders**
+
+> The storage contains the information about all limit orders in all order books.
 
 arguments:
 
@@ -9385,6 +9407,8 @@ returns: `OrderBookLimitOrder`
 
 #### **api.query.orderBook.bids**
 
+> The index contains the list with the bid order `id` for each price.
+
 arguments:
 
 - key: `(OrderBookOrderBookId,CommonBalanceUnit)`
@@ -9394,6 +9418,8 @@ returns: `Vec<u128>`
 <hr>
 
 #### **api.query.orderBook.asks**
+
+> The index contains the list with the ask order `id` for each price.
 
 arguments:
 
@@ -9405,6 +9431,8 @@ returns: `Vec<u128>`
 
 #### **api.query.orderBook.aggregatedBids**
 
+> The index contains the aggregated information about bids with total volume of orders for each price.
+
 arguments:
 
 - key: `OrderBookOrderBookId`
@@ -9414,6 +9442,8 @@ returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 <hr>
 
 #### **api.query.orderBook.aggregatedAsks**
+
+> The index contains the aggregated information about asks with total volume of orders for each price.
 
 arguments:
 
@@ -9425,6 +9455,8 @@ returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 
 #### **api.query.orderBook.userLimitOrders**
 
+> The index contains the list with the order `id` for the user in different order books.
+
 arguments:
 
 - key: `(AccountId32,OrderBookOrderBookId)`
@@ -9435,6 +9467,8 @@ returns: `Vec<u128>`
 
 #### **api.query.orderBook.expirationsAgenda**
 
+> The tech storage that is used in the order expiration mechanism.
+
 arguments:
 
 - key: `u32`
@@ -9444,6 +9478,8 @@ returns: `Vec<(OrderBookOrderBookId,u128)>`
 <hr>
 
 #### **api.query.orderBook.alignmentCursor**
+
+> The tech storage that is used during the process of updating the order book.
 
 arguments:
 
@@ -9469,6 +9505,33 @@ returns: `u32`
 
 #### **api.tx.orderBook.createOrderbook**
 
+> Creates a new order book for the pair of assets.
+>
+> # Parameters:
+>
+> - `origin`: caller account who must have permissions to create the order book
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `tick_size`: price step
+> - `step_lot_size`: amount step
+> - `min_lot_size`: minimal order amount
+> - `max_lot_size`: maximal order amount
+>
+> # Rules:
+>
+> - root & tech committee can create any order book
+> - a regular user can create an order book only for indivisible base assets (most likely NFT) and only if they have this asset on their balance
+> - trading pair for the assets must be registered before the creating an order book
+>
+> # Attribute rules (for `tick_size`, `step_lot_size`, `min_lot_size` & `max_lot_size`):
+>
+> - all attributes must be non-zero
+> - `min_lot_size` <= `max_lot_size`
+> - `step_lot_size` <= `min_lot_size`
+> - `min_lot_size` & `max_lot_size` must be a multiple of `step_lot_size`
+> - `max_lot_size` <= `min_lot_size` \* `SOFT_MIN_MAX_RATIO`, now `SOFT_MIN_MAX_RATIO` = 1 000
+> - `max_lot_size` <= total supply of `base` asset
+> - precision of `tick_size` \* `step_lot_size` must not overflow **18 digits**
+
 arguments:
 
 - orderBookId: `OrderBookOrderBookId`
@@ -9480,12 +9543,80 @@ arguments:
 
 #### **api.tx.orderBook.deleteOrderbook**
 
+> Deletes the order book
+>
+> # Parameters:
+>
+> - `origin`: caller account who must have permissions to delete the order book
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+>
+> # Rules:
+>
+> - only root & tech committee can delete the order book
+> - status of the order book must be [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+> - the order book must be empty - doesn't contain any orders
+>
+> # Real life delete process:
+>
+> 1.  Announce that the order book will be deleted.
+> 2.  Stop the order book by changing the status to [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+> 3.  Wait until users cancel their orders or their lifetime just expires (maximum 1 month).
+> 4.  Delete the empty order book.
+
 arguments:
 
 - orderBookId: `OrderBookOrderBookId`
 <hr>
 
 #### **api.tx.orderBook.updateOrderbook**
+
+> Updates the attributes of the order book
+>
+> # Parameters:
+>
+> - `origin`: caller account who must have permissions to update the order book
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `tick_size`: price step
+> - `step_lot_size`: amount step
+> - `min_lot_size`: minimal order amount
+> - `max_lot_size`: maximal order amount
+>
+> # Rules:
+>
+> - only root & tech committee can update the order book
+> - status of the order book must be [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+> - inernal tech status of the order book must be [`Ready`](OrderBookTechStatus::Ready), that means the previos update is completed
+>
+> # Attribute rules (for `tick_size`, `step_lot_size`, `min_lot_size` & `max_lot_size`):
+>
+> - all attributes must be non-zero
+> - `min_lot_size` <= `max_lot_size`
+> - `step_lot_size` <= `min_lot_size`
+> - `min_lot_size` & `max_lot_size` must be a multiple of `step_lot_size`
+> - `max_lot_size` <= total supply of `base` asset
+> - precision of `tick_size` \* `step_lot_size` must not overflow 18 digits
+> - `max_lot_size` <= `min_lot_size` \* `SOFT_MIN_MAX_RATIO`, now `SOFT_MIN_MAX_RATIO` = 1 000
+> - `max_lot_size` <= **old** `min_lot_size` \* `HARD_MIN_MAX_RATIO`, now `HARD_MIN_MAX_RATIO` = 4 000
+>
+> # Real life update process:
+>
+> 1.  Announce that the order book will be updated.
+> 2.  Stop the order book by changing the status to [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+> 3.  Update the order book attributes according to the rules[^note].
+> 4.  Wait the orders alignment if it is necessary - the order book tech status must become [`Ready`](OrderBookTechStatus::Ready).
+> 5.  Change the order book status back to [`Trade`](OrderBookStatus::Trade) or other necessary status.
+> 6.  Announce that the order book update is completed.
+>
+> [^note]:
+>     according to tech reasons it is forbidden to update `max_lot_size` with too large a value (see last 2 rules).
+>     For example, if the current values `min_lot_size` = 1 & `max_lot_size` = 1 000,
+>     we cannot change it to `min_lot_size` = 1 000 & `max_lot_size` = 1 000 000.
+>     In this case it is necessary to do several update rounds:
+>
+> 1.  `min_lot_size`: 1 --> 1 000, `max_lot_size`: 1 000 --> 4 000
+> 2.  `max_lot_size`: 4 000 --> 1 000 000
+>
+> It is also not recommended to batch these updates, because the tech status of the order book can be changed after the 1st update and the 2nd update will be declined in this case.
 
 arguments:
 
@@ -9498,6 +9629,21 @@ arguments:
 
 #### **api.tx.orderBook.changeOrderbookStatus**
 
+> Sets the order book status
+>
+> # Parameters:
+>
+> - `origin`: caller account who must have permissions to change the order book status
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `status`: one of the statuses from [OrderBookStatus]
+>
+> # Rules:
+>
+> - only root & tech committee can set the order book status
+> - if the order book is locked by updating (tech status is [`Updating`](OrderBookTechStatus::Updating)), the allowed statues to set:
+>   - [`OnlyCancel`](OrderBookStatus::OnlyCancel)
+>   - [`Stop`](OrderBookStatus::Stop)
+
 arguments:
 
 - orderBookId: `OrderBookOrderBookId`
@@ -9505,6 +9651,27 @@ arguments:
 <hr>
 
 #### **api.tx.orderBook.placeLimitOrder**
+
+> Places the limit order into the order book
+>
+> # Parameters:
+>
+> - `origin`: caller account, the limit order owner
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `price`: price in the `quote asset`
+> - `amount`: volume of the limit order in the `base asset`
+> - `side`: [side](PriceVariant) where to place the limit order
+> - `lifespan`: life duration of the limit order in millisecs, if not defined the default value 30 days is set
+>
+> # Rules:
+>
+> - `price` must be a multiple of [`OrderBook::tick_size`]
+> - `amount` >= [`OrderBook::min_lot_size`]
+> - `amount` <= [`OrderBook::max_lot_size`]
+> - `amount` must be a multiple of [`OrderBook::step_lot_size`]
+> - if the `price` crosses the spread (the opposite `side`):
+>   - if [`OrderBook::status`] allows to trade - the limit order is converted into market order and the exchange occurs
+>   - if [`OrderBook::status`] doesn't allow to trade - transaction fails
 
 arguments:
 
@@ -9517,6 +9684,22 @@ arguments:
 
 #### **api.tx.orderBook.cancelLimitOrder**
 
+> Cancels the limit order
+>
+> # Parameters:
+>
+> - `origin`: caller account who owns the limit order
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `order_id`: `id` of the limit order
+>
+> # Rules:
+>
+> - only the order owner can cancel the limit order
+>
+> # Note:
+>
+> Network fee isn't charged if the order is successfully cancelled by the owner
+
 arguments:
 
 - orderBookId: `OrderBookOrderBookId`
@@ -9525,12 +9708,43 @@ arguments:
 
 #### **api.tx.orderBook.cancelLimitOrdersBatch**
 
+> Cancels the list of limit orders
+>
+> # Parameters:
+>
+> - `origin`: caller account who owns the limit orders
+> - `limit_orders_to_cancel`: the list with [`order_book_id`](OrderBookId) & `order_id` pairs to cancel
+>
+> # Rules:
+>
+> - only the owner of **all** orders can cancel all limit orders from the list
+>
+> # Note:
+>
+> Network fee isn't charged if orders are successfully cancelled by the owner
+
 arguments:
 
 - limitOrdersToCancel: `Vec<(OrderBookOrderBookId,Vec<u128>)>`
 <hr>
 
 #### **api.tx.orderBook.executeMarketOrder**
+
+> Executes the market order
+>
+> # Parameters:
+>
+> - `origin`: caller account
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `direction`: [direction](PriceVariant) of the market order
+> - `amount`: volume of the `base asset` to trade
+>
+> # Rules:
+>
+> - works only for order books with indivisible `base asset`, because there is no other ability to trade such assets. All other divisible assets must be traded by `liquidity_proxy::swap`
+> - `amount` >= [`OrderBook::min_lot_size`]
+> - `amount` <= [`OrderBook::max_lot_size`]
+> - `amount` must be a multiple of [`OrderBook::step_lot_size`]
 
 arguments:
 
@@ -11559,6 +11773,231 @@ arguments:
 
 - who: `AccountId32`
 - call: `Call`
+<hr>
+
+## ApolloPlatform pallet
+
+### _State Queries_
+
+#### **api.query.apolloPlatform.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.apolloPlatform.userLendingInfo**
+
+> Lended asset -> AccountId -> LendingPosition
+
+arguments:
+
+- key: `(CommonPrimitivesAssetId32,AccountId32)`
+
+returns: `ApolloPlatformLendingPosition`
+
+<hr>
+
+#### **api.query.apolloPlatform.userBorrowingInfo**
+
+> Borrowed asset -> AccountId -> (Collateral asset, BorrowingPosition)
+
+arguments:
+
+- key: `(CommonPrimitivesAssetId32,AccountId32)`
+
+returns: `BTreeMap<CommonPrimitivesAssetId32, ApolloPlatformBorrowingPosition>`
+
+<hr>
+
+#### **api.query.apolloPlatform.poolData**
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `ApolloPlatformPoolInfo`
+
+<hr>
+
+#### **api.query.apolloPlatform.poolsByBlock**
+
+> BlockNumber -> AssetId (for updating pools interests by block)
+
+arguments:
+
+- key: `u32`
+
+returns: `CommonPrimitivesAssetId32`
+
+<hr>
+
+#### **api.query.apolloPlatform.authorityAccount**
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.apolloPlatform.treasuryAccount**
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.apolloPlatform.lendingRewards**
+
+> Default lending rewards
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.apolloPlatform.borrowingRewards**
+
+> Default borrowing rewards
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.apolloPlatform.lendingRewardsPerBlock**
+
+> Default lending rewards per block
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.apolloPlatform.borrowingRewardsPerBlock**
+
+> Default borrowing rewards
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.apolloPlatform.addPool**
+
+> Add pool
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- loanToValue: `u128`
+- liquidationThreshold: `u128`
+- optimalUtilizationRate: `u128`
+- baseRate: `u128`
+- slopeRate1: `u128`
+- slopeRate2: `u128`
+- reserveFactor: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.lend**
+
+> Lend token
+
+arguments:
+
+- lendingAsset: `CommonPrimitivesAssetId32`
+- lendingAmount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.borrow**
+
+> Borrow token
+
+arguments:
+
+- collateralAsset: `CommonPrimitivesAssetId32`
+- borrowingAsset: `CommonPrimitivesAssetId32`
+- borrowingAmount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.getRewards**
+
+> Get rewards
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- isLending: `bool`
+<hr>
+
+#### **api.tx.apolloPlatform.withdraw**
+
+> Withdraw
+
+arguments:
+
+- withdrawnAsset: `CommonPrimitivesAssetId32`
+- withdrawnAmount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.repay**
+
+> Repay
+
+arguments:
+
+- collateralAsset: `CommonPrimitivesAssetId32`
+- borrowingAsset: `CommonPrimitivesAssetId32`
+- amountToRepay: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.changeRewardsAmount**
+
+> Change rewards amount
+
+arguments:
+
+- isLending: `bool`
+- amount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.changeRewardsPerBlock**
+
+> Change rewards per block
+
+arguments:
+
+- isLending: `bool`
+- amount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.liquidate**
+
+> Liquidate
+
+arguments:
+
+- user: `AccountId32`
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.apolloPlatform.removePool**
+
+> Remove pool
+
+arguments:
+
+- assetIdToRemove: `CommonPrimitivesAssetId32`
 <hr>
 
 ## Utility pallet
