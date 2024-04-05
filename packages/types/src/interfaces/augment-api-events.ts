@@ -15,6 +15,46 @@ export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>
 
 declare module '@polkadot/api-base/types/events' {
   interface AugmentedEvents<ApiType extends ApiTypes> {
+    apolloPlatform: {
+      /**
+       * Borrowed [who, collateral_asset, collateral_amount, borrow_asset, borrow_amount]
+       **/
+      Borrowed: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32, u128]>;
+      ChangedRewardsAmount: AugmentedEvent<ApiType, [AccountId32, bool, u128]>;
+      ChangedRewardsAmountPerBlock: AugmentedEvent<ApiType, [AccountId32, bool, u128]>;
+      /**
+       * ClaimedBorrowingRewards [who, asset_id, amount]
+       **/
+      ClaimedBorrowingRewards: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * ClaimedLendingRewards [who, asset_id, amount]
+       **/
+      ClaimedLendingRewards: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Lended [who, asset_id, amount]
+       **/
+      Lended: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Liquidated [who, asset_id]
+       **/
+      Liquidated: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Pool added [who, asset_id]
+       **/
+      PoolAdded: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Pool removed [who, asset_id]
+       **/
+      PoolRemoved: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Repaid [who, asset_id, amount]
+       **/
+      Repaid: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Withdrawn [who, asset_id, amount]
+       **/
+      Withdrawn: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+    };
     assets: {
       /**
        * New asset has been registered. [Asset Id, Asset Owner Account]
@@ -538,6 +578,12 @@ declare module '@polkadot/api-base/types/events' {
     };
     ethereumLightClient: {
       Finalized: AugmentedEvent<ApiType, [U256, BridgeTypesHeaderHeaderId]>;
+    };
+    farming: {
+      /**
+       * When Minimum XOR amount for Liquidity Provider Bonus Reward is updated
+       **/
+      LpMinXorForBonusRewardUpdated: AugmentedEvent<ApiType, [newLpMinXorForBonusReward: u128, oldLpMinXorForBonusReward: u128], { newLpMinXorForBonusReward: u128, oldLpMinXorForBonusReward: u128 }>;
     };
     faucet: {
       LimitUpdated: AugmentedEvent<ApiType, [u128]>;
