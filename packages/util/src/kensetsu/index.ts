@@ -115,8 +115,9 @@ export class KensetsuModule<T> {
     // ratioReversed has Perbill type = 1_000_000_000 decimals * 100 because of %
     const ratioReversed = new FPNumber(collateralInfo.riskParameters.liquidationRatio, 7);
     const ratio = FPNumber.ONE.div(ratioReversed).mul(FPNumber.TEN_THOUSANDS);
+    // collateralInfo.riskParameters.stabilityFeeRate is presented in ms
+    const rateSecondlyCoeff = new FPNumber(collateralInfo.riskParameters.stabilityFeeRate).div(1000);
     // rate_annual = (1 + rate_secondly) ^ 31_556_952 - 1
-    const rateSecondlyCoeff = new FPNumber(collateralInfo.riskParameters.stabilityFeeRate);
     const rateAnnual = FPNumber.ONE.add(rateSecondlyCoeff).pow(31_556_952).sub(1).mul(100).dp(2);
     const formatted: Collateral = {
       lastFeeUpdateTime: collateralInfo.lastFeeUpdateTime.toNumber(),
