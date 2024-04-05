@@ -90,6 +90,9 @@ export class BridgeProxyModule<T> {
             apps[type].push(SubNetworkId.KusamaSora);
           } else if (subNetwork.isPolkadot) {
             apps[type].push(SubNetworkId.PolkadotSora);
+          } else if (subNetwork.isAlphanet) {
+            apps[type].push(SubNetworkId.AlphanetSora);
+            apps[type].push(SubNetworkId.AlphanetMoonbase);
           } else if (subNetwork.isMainnet) {
             // SORA-SORA bridge is not exists
             console.info(`"Mainnet" sub network is not supported app`);
