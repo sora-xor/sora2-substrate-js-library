@@ -353,6 +353,7 @@ describe('FPNumber', () => {
   );
 
   it.each([
+    ['', 8, '0'],
     ['-Infinity', 8, '-Infinity'],
     ['Infinity', 8, 'Infinity'],
     ['0', 8, '0'],
