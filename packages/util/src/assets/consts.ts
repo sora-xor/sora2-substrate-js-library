@@ -114,14 +114,14 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
   {
     address: '0x02000b0000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.KEN,
-    name: 'Kensetsu incentive token',
+    name: 'Kensetsu',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
   },
   {
     address: '0x02000c0000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.KUSD,
-    name: 'Kensetsu Stable Dollar',
+    name: 'Kensetsu Dollar',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
   },
