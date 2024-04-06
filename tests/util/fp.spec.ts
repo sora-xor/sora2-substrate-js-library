@@ -753,7 +753,7 @@ describe('FPNumber', () => {
     [Number.POSITIVE_INFINITY, 18, 'Infinity'],
     [Number.NEGATIVE_INFINITY, 18, 'Infinity'],
     [Number.NaN, 18, 'NaN'],
-    ['Infinity', 18, '-Infinity'],
+    ['Infinity', 18, 'Infinity'],
     ['-Infinity', 18, 'Infinity'],
     ['NaN', 18, 'NaN'],
   ])('[abs] abs(value "%s", precision "%s") = "%s"', (value, precision, result) => {
