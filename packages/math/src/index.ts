@@ -299,7 +299,10 @@ export class FPNumber {
    * @param data
    * @param precision
    */
-  constructor(data: NumberType, public precision = FPNumber.DEFAULT_PRECISION) {
+  constructor(
+    data: NumberType,
+    public precision = FPNumber.DEFAULT_PRECISION
+  ) {
     let value: BigNumber;
     if (data instanceof BigNumber) {
       value = data;
@@ -523,6 +526,13 @@ export class FPNumber {
   public isZeroMod(target: OperatorParamFull): boolean {
     const value = target instanceof FPNumber ? target.value : target;
     return new FPNumber(this.value.mod(value), this.precision).isZero();
+  }
+
+  /**
+   * Return absolute number
+   */
+  public abs(): FPNumber {
+    return new FPNumber(this.value.abs());
   }
 
   /**
