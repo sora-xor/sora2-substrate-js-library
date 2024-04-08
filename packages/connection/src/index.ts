@@ -140,8 +140,8 @@ class Connection {
 }
 
 /**
- * Base SORA connection object
+ * Base SORA connection object (without cache by default)
  */
-const connection = new Connection(options());
+const connection = new Connection(options(), false);
 
 export { connection, Connection };
