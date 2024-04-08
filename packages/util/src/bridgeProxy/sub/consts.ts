@@ -18,11 +18,19 @@ export enum SubNetworkId {
   Rococo = 'Rococo',
   /** SORA parachain in Rococo relaychain */
   RococoSora = 'RococoSora',
-  /** Alphanet relaychain (testnet) */
+  /** `Alphanet` relaychain (testnet) */
   Alphanet = 'Alphanet',
-  /** SORA parachain in Alphanet relaychain */
+  /** SORA parachain in `Alphanet` relaychain */
   AlphanetSora = 'AlphanetSora',
-  /** Standalone Substrate network */
+  /** Moonbase parachain in Alphanet relaychain.
+   *  Account address in Moonbase parachain has EVM like format.
+   *
+   * Token transfer routes between Mainnet `SORA` & `AlphanetMoonbase`:
+   * 1. Native for Alphanet relaychain: `Mainnet` <-> `AlphanetSora` <-> `Alphanet` <-> `AlphanetMoonbase`
+   * 2. Another: `Mainnet` <-> `AlphanetSora` <-> `AlphanetMoonbase`
+   */
+  AlphanetMoonbase = 'AlphanetMoonbase',
+  /** `Liberland` - Standalone Substrate network */
   Liberland = 'Liberland',
 }
 
@@ -33,6 +41,8 @@ export const SoraParachains = [
   SubNetworkId.AlphanetSora,
 ] as const;
 
+export const AlphanetParachains = [SubNetworkId.AlphanetMoonbase] as const;
+
 export const Relaychains = [
   SubNetworkId.Polkadot,
   SubNetworkId.Kusama,
@@ -40,7 +50,7 @@ export const Relaychains = [
   SubNetworkId.Alphanet,
 ] as const;
 
-export const Parachains = [...SoraParachains] as const;
+export const Parachains = [...SoraParachains, ...AlphanetParachains] as const;
 
 export const Standalones = [SubNetworkId.Liberland] as const;
 

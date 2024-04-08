@@ -14,18 +14,18 @@ export type SubAsset = {
   decimals: number;
 };
 
-export type Standalone = (typeof Standalones)[number];
+export type Standalone = typeof Standalones[number];
 
-export type Relaychain = (typeof Relaychains)[number];
+export type Relaychain = typeof Relaychains[number];
 
-export type SoraParachain = (typeof SoraParachains)[number];
+export type SoraParachain = typeof SoraParachains[number];
 
-export type Parachain = (typeof Parachains)[number];
+export type Parachain = typeof Parachains[number];
 /** Used in frontend app */
 export type SubNetwork = Relaychain | Parachain | Standalone;
 
 /** Defined on SORA blockchain enum */
-export type SubNetworkChainId = Exclude<SubNetwork, SoraParachain>;
+export type SubNetworkChainId = Exclude<SubNetwork, Parachain>;
 
 export type ParachainIds = Partial<{
   [key in Parachain]: number;
@@ -36,11 +36,12 @@ export type ParachainIds = Partial<{
  * 1) "external" - Any Substrate network as the starting (SubstrateIncoming) or ending (SubstrateOutgoing) point for transfer
  * 2) "parachain" - SORA parachain network as an intermediate point for transfer
  * 3) "relaychain" - Relaychain network as an intermediate point for transfer
+ * 4) "internal" - SORA network
  *
  * Examples:
- * 1) AssetHub("external") <-> Kusama ("relaychain") <-> KusamaSora ("parachain") <-> SORA ("internal")
- * 2) Kusama ("external") <-> KusamaSora ("parachain") <-> SORA ("internal")
- * 3) KusamaSora ("external") <-> SORA ("internal")
+ * 1) `AlphanetMoonbase` ("external") <-> `Alphanet` ("relaychain") <-> `AlphanetSora` ("parachain") <-> `SORA` ("internal")
+ * 2) `Kusama` ("external") <-> `KusamaSora` ("parachain") <-> `SORA` ("internal")
+ * 3) `KusamaSora` ("external") <-> `SORA` ("internal")
  */
 export interface SubHistory extends History {
   type: Operation.SubstrateIncoming | Operation.SubstrateOutgoing;
@@ -53,22 +54,24 @@ export interface SubHistory extends History {
   parachainBlockHeight?: number;
   /** SORA parachain transaction hash */
   parachainHash?: string;
-  /** SORA parachain XCM message fee */
-  parachainTransferFee?: CodecString;
+  /** SORA parachain transfer event index */
+  parachainEventIndex?: number;
   /** Relaychain block hash */
   relaychainBlockId?: string;
   /** Relaychain block number */
   relaychainBlockHeight?: number;
   /** Relaychain transaction hash */
   relaychainHash?: string;
-  /** Relaychain XCM message fee */
-  relaychainTransferFee?: CodecString;
+  /** Relaychain transfer event index */
+  relaychainEventIndex?: number;
   /** External network block hash */
   externalBlockId?: string;
   /** External network block number */
   externalBlockHeight?: number;
   /** External network transaction hash */
   externalHash?: string;
+  /** External network transfer event index */
+  externalEventIndex?: number;
   /** External network XCM message fee */
   externalTransferFee?: CodecString;
   externalNetwork?: SubNetwork;

@@ -61,6 +61,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     [SubNetworkId.RococoSora]: 2011,
     [SubNetworkId.KusamaSora]: 2011,
     [SubNetworkId.AlphanetSora]: 2011,
+    [SubNetworkId.AlphanetMoonbase]: 1000,
   };
 
   public prepareNetworkParam(subNetwork: SubNetwork): BridgeTypesGenericNetworkId {
@@ -83,6 +84,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       case SubNetworkId.RococoSora:
         return SubNetworkId.Rococo;
       case SubNetworkId.AlphanetSora:
+      case SubNetworkId.AlphanetMoonbase:
         return SubNetworkId.Alphanet;
       default:
         throw new Error(`"${subNetwork}" has not relaychain`);
@@ -100,6 +102,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       case SubNetworkId.Rococo:
         return SubNetworkId.RococoSora;
       case SubNetworkId.Alphanet:
+      case SubNetworkId.AlphanetMoonbase:
         return SubNetworkId.AlphanetSora;
       default:
         throw new Error(`"${subNetwork}" has not SORA parachain`);
@@ -204,8 +207,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   public async getSubAssetDecimals(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<number> {
     if (subNetworkId === SubNetworkId.Liberland) {
-      // [TODO: liberlandBridgeApp] remove any
-      const precision = await (this.api.query.liberlandBridgeApp as any).sidechainPrecision(subNetworkId, soraAssetId);
+      const precision = await this.api.query.substrateBridgeApp.sidechainPrecision(subNetworkId, soraAssetId);
       return parseSubBridgeAssetDecimals(precision);
     } else {
       const precision = await this.api.query.parachainBridgeApp.sidechainPrecision(subNetworkId, soraAssetId);
@@ -215,8 +217,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   private async getSubAssetAddress(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetId> {
     if (subNetworkId === SubNetworkId.Liberland) {
-      // [TODO: liberlandBridgeApp] remove any
-      const result = await (this.api.query.liberlandBridgeApp as any).sidechainAssetId(subNetworkId, soraAssetId);
+      const result = await this.api.query.substrateBridgeApp.sidechainAssetId(subNetworkId, soraAssetId);
 
       if (result.isEmpty) return undefined;
 
@@ -230,8 +231,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   private async getSubAssetKind(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetKind> {
     if (subNetworkId === SubNetworkId.Liberland) {
-      // [TODO: liberlandBridgeApp] remove any
-      const kind = await (this.api.query.liberlandBridgeApp as any).assetKinds(subNetworkId, soraAssetId);
+      const kind = await this.api.query.substrateBridgeApp.assetKinds(subNetworkId, soraAssetId);
       return parseSubBridgeAssetKind(kind);
     } else {
       const kind = await this.api.query.parachainBridgeApp.assetKinds(subNetworkId, soraAssetId);
@@ -300,8 +300,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     const assets: Record<string, SubAsset> = {};
 
     try {
-      // [TODO: liberlandBridgeApp] remove any
-      const keys: any[] = await (this.api.query.liberlandBridgeApp as any).assetKinds.keys(SubNetworkId.Liberland);
+      const keys = await this.api.query.substrateBridgeApp.assetKinds.keys(SubNetworkId.Liberland);
       const soraAssetIds: string[] = keys.map((key) => key.args[1].code.toString());
 
       await Promise.all(
