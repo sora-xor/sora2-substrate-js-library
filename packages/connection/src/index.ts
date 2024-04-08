@@ -52,6 +52,11 @@ class Connection {
 
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
 
+  /**
+   * @param apiOptions ApiOptions object
+   * @param isCacheable flag to enable cache for the provider requests (default: false)
+   * @see https://github.com/polkadot-js/api/blob/56fb5c9985fd9c97bcd2a6086cbb972780e94fd4/packages/rpc-core/src/bundle.ts#L470-L473
+   */
   constructor(
     private readonly apiOptions: ApiOptions,
     private readonly isCacheable = false
