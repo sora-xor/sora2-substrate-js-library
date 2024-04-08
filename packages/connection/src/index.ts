@@ -2,7 +2,13 @@ import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import type { ApiInterfaceEvents, ApiOptions } from '@polkadot/api/types';
-import type { ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
+import type { ProviderInterfaceEmitCb, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
+
+// Non-exported types from `@polkadot/rpc-provider/types`
+interface SubscriptionHandler {
+  callback: ProviderInterfaceCallback;
+  type: string;
+}
 
 type ConnectionEventListener = [ApiInterfaceEvents, ProviderInterfaceEmitCb];
 
@@ -46,7 +52,15 @@ class Connection {
 
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
 
-  constructor(private readonly apiOptions: ApiOptions) {}
+  /**
+   * @param apiOptions ApiOptions object
+   * @param isCacheable flag to enable cache for the provider requests (default: false)
+   * @see https://github.com/polkadot-js/api/blob/56fb5c9985fd9c97bcd2a6086cbb972780e94fd4/packages/rpc-core/src/bundle.ts#L470-L473
+   */
+  constructor(
+    private readonly apiOptions: ApiOptions,
+    private readonly isCacheable = false
+  ) {}
 
   private async withLoading(func: Function): Promise<any> {
     this.loading = true;
@@ -64,6 +78,12 @@ class Connection {
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady';
 
     const provider = new WsProvider(endpoint, providerAutoConnectMs);
+    if (!this.isCacheable) {
+      const send = (method: string, params: unknown[], isCacheable?: boolean, subscription?: SubscriptionHandler) =>
+        provider.send(method, params, false, subscription);
+      // durty hack to disable cache
+      provider.send = send;
+    }
 
     this.api = new ApiPromise({ ...this.apiOptions, provider, noInitWarn: true });
     this.endpoint = endpoint;
@@ -126,7 +146,7 @@ class Connection {
 }
 
 /**
- * Base SORA connection object
+ * Base SORA connection object (without cache by default)
  */
 const connection = new Connection(options());
 
