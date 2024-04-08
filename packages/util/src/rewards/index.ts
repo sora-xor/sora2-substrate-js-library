@@ -108,9 +108,8 @@ export class RewardsModule<T> {
    * @returns rewards array with not zero amount
    */
   public async checkForExternalAccount(externalAddress: string): Promise<Array<RewardInfo>> {
-    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await this.root.api.rpc.rewards.claimables(
-      externalAddress
-    );
+    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] =
+      await this.root.api.rpc.rewards.claimables(externalAddress);
 
     const rewards = [
       this.prepareRewardInfo([RewardType.External, RewardingEvents.SoraFarmHarvest], soraFarmHarvestAmount, PSWAP),
