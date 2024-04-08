@@ -54,7 +54,7 @@ class Connection {
 
   constructor(
     private readonly apiOptions: ApiOptions,
-    private readonly isCacheable = true
+    private readonly isCacheable = false
   ) {}
 
   private async withLoading(func: Function): Promise<any> {
@@ -76,7 +76,8 @@ class Connection {
     if (!this.isCacheable) {
       const send = (method: string, params: unknown[], isCacheable?: boolean, subscription?: SubscriptionHandler) =>
         provider.send(method, params, false, subscription);
-      provider.send = send; // durty hack to disable cache
+      // durty hack to disable cache
+      provider.send = send;
     }
 
     this.api = new ApiPromise({ ...this.apiOptions, provider, noInitWarn: true });
@@ -142,6 +143,6 @@ class Connection {
 /**
  * Base SORA connection object (without cache by default)
  */
-const connection = new Connection(options(), false);
+const connection = new Connection(options());
 
 export { connection, Connection };
