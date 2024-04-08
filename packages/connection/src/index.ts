@@ -2,7 +2,13 @@ import { ApiPromise } from '@polkadot/api';
 import { WsProvider } from '@polkadot/rpc-provider';
 import { options } from '@sora-substrate/api';
 import type { ApiInterfaceEvents, ApiOptions } from '@polkadot/api/types';
-import type { ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
+import type { ProviderInterfaceEmitCb, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
+
+// Non-exported types from `@polkadot/rpc-provider/types`
+interface SubscriptionHandler {
+  callback: ProviderInterfaceCallback;
+  type: string;
+}
 
 type ConnectionEventListener = [ApiInterfaceEvents, ProviderInterfaceEmitCb];
 
@@ -46,7 +52,10 @@ class Connection {
 
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
 
-  constructor(private readonly apiOptions: ApiOptions) {}
+  constructor(
+    private readonly apiOptions: ApiOptions,
+    private readonly isCacheable = true
+  ) {}
 
   private async withLoading(func: Function): Promise<any> {
     this.loading = true;
@@ -64,6 +73,11 @@ class Connection {
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady';
 
     const provider = new WsProvider(endpoint, providerAutoConnectMs);
+    if (!this.isCacheable) {
+      const send = (method: string, params: unknown[], isCacheable?: boolean, subscription?: SubscriptionHandler) =>
+        provider.send(method, params, false, subscription);
+      provider.send = send; // durty hack to disable cache
+    }
 
     this.api = new ApiPromise({ ...this.apiOptions, provider, noInitWarn: true });
     this.endpoint = endpoint;
