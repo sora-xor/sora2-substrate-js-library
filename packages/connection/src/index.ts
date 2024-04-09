@@ -52,15 +52,7 @@ class Connection {
 
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
 
-  /**
-   * @param apiOptions ApiOptions object
-   * @param isCacheable flag to enable cache for the provider requests (default: false)
-   * @see https://github.com/polkadot-js/api/blob/56fb5c9985fd9c97bcd2a6086cbb972780e94fd4/packages/rpc-core/src/bundle.ts#L470-L473
-   */
-  constructor(
-    private readonly apiOptions: ApiOptions,
-    private readonly isCacheable = false
-  ) {}
+  constructor(private readonly apiOptions: ApiOptions) {}
 
   private async withLoading(func: Function): Promise<any> {
     this.loading = true;
@@ -78,12 +70,13 @@ class Connection {
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady';
 
     const provider = new WsProvider(endpoint, providerAutoConnectMs);
-    if (!this.isCacheable) {
-      const send = (method: string, params: unknown[], isCacheable?: boolean, subscription?: SubscriptionHandler) =>
-        provider.send(method, params, false, subscription);
-      // durty hack to disable cache
-      provider.send = send;
-    }
+    // https://github.com/polkadot-js/api/issues/5798
+    // Seems that the issue isn't related to the cache itself
+
+    // const originalSend = provider.send;
+    // provider.send = function <T>(method: string, params: unknown[], isCacheable?: boolean, subscription?: SubscriptionHandler): ReturnType<typeof originalSend<T>> {
+    //   return originalSend.call(provider, method, params, false, subscription) as ReturnType<typeof originalSend<T>>;
+    // };
 
     this.api = new ApiPromise({ ...this.apiOptions, provider, noInitWarn: true });
     this.endpoint = endpoint;
