@@ -4,7 +4,7 @@ import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 describe('FPNumber', () => {
   beforeAll(async () => {
-    await connection.open(SORA_ENV.stage);
+    await connection.open(SORA_ENV.prod);
   });
 
   afterAll(async () => {

@@ -14,7 +14,7 @@ describe('Connection', () => {
   });
 
   it('should open connection successfully', async () => {
-    const endpoint = SORA_ENV.stage;
+    const endpoint = SORA_ENV.prod;
     const options: ConnectionRunOptions = {
       once: true,
       timeout: 5000,
@@ -35,7 +35,7 @@ describe('Connection', () => {
   });
 
   it('should close connection successfully', async () => {
-    await connection.open(SORA_ENV.stage);
+    await connection.open(SORA_ENV.prod);
     await connection.close();
 
     expect(connection.opened).toBe(false);
