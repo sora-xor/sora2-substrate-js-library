@@ -1,7 +1,7 @@
 import { map } from 'rxjs';
 import { assert } from '@polkadot/util';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
-import type { KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
+// import type { KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 import type { Vec, u128 } from '@polkadot/types-codec';
 
@@ -55,7 +55,7 @@ export class KensetsuModule<T> {
    * if liquidationPenalty = 10%
    */
   async getLiquidationPenalty(): Promise<number> {
-    const liquidationPenalty = await this.root.api.query.kensetsu.liquidationPenalty();
+    const liquidationPenalty = await (this.root.api.query.kensetsu as any).liquidationPenalty();
     return liquidationPenalty.toNumber();
   }
 
@@ -65,7 +65,7 @@ export class KensetsuModule<T> {
    * if liquidationPenalty = 10%
    */
   subscribeOnLiquidationPenalty(): Observable<number> {
-    return this.root.apiRx.query.kensetsu.liquidationPenalty().pipe(map((res) => res.toNumber()));
+    return (this.root.apiRx.query.kensetsu as any).liquidationPenalty().pipe(map((res: any) => res.toNumber()));
   }
 
   /**
@@ -73,7 +73,7 @@ export class KensetsuModule<T> {
    * Returns the number about how much cdp were created
    */
   async getCdpCount(): Promise<number> {
-    const nextCDPId = await this.root.api.query.kensetsu.nextCDPId();
+    const nextCDPId = await (this.root.api.query.kensetsu as any).nextCDPId();
     return nextCDPId.toNumber();
   }
 
@@ -82,7 +82,7 @@ export class KensetsuModule<T> {
    * Returns the subscription on the number about how much cdp were created
    */
   subscribeOnCdpCount(): Observable<number> {
-    return this.root.apiRx.query.kensetsu.nextCDPId().pipe(map((res) => res.toNumber()));
+    return (this.root.apiRx.query.kensetsu as any).nextCDPId().pipe(map((res: any) => res.toNumber()));
   }
 
   // update_collateral_interest_coefficient
@@ -111,7 +111,7 @@ export class KensetsuModule<T> {
     return vaultDebt.add(stabilityFee);
   }
 
-  private formatCollateral(collateralInfo: KensetsuCollateralInfo): Collateral {
+  private formatCollateral(collateralInfo: any): Collateral {
     // ratioReversed has Perbill type = 1_000_000_000 decimals * 100 because of %
     const ratioReversed = new FPNumber(collateralInfo.riskParameters.liquidationRatio, 7);
     const ratio = FPNumber.ONE.div(ratioReversed).mul(FPNumber.TEN_THOUSANDS);
@@ -140,16 +140,16 @@ export class KensetsuModule<T> {
    * Usage: statistical information, for instance, Explore page
    */
   async getCollateral(asset: Asset): Promise<Collateral | null> {
-    const data = await this.root.api.query.kensetsu.collateralInfos(asset.address);
-    const collateralInfo: KensetsuCollateralInfo | null = data.unwrapOr(null);
+    const data = await (this.root.api.query.kensetsu as any).collateralInfos(asset.address);
+    const collateralInfo: any | null = data.unwrapOr(null);
     if (!collateralInfo) return null;
     return this.formatCollateral(collateralInfo);
   }
 
   subscribeOnCollateral(asset: Asset): Observable<Collateral | null> {
-    return this.root.apiRx.query.kensetsu.collateralInfos(asset.address).pipe(
-      map((data) => {
-        const collateralInfo: KensetsuCollateralInfo | null = data.unwrapOr(null);
+    return (this.root.apiRx.query.kensetsu as any).collateralInfos(asset.address).pipe(
+      map((data: any) => {
+        const collateralInfo: any | null = data.unwrapOr(null);
         if (!collateralInfo) return null;
         return this.formatCollateral(collateralInfo);
       })
@@ -160,10 +160,10 @@ export class KensetsuModule<T> {
    * Usage: statistical information, for instance, Explore page
    */
   async getCollaterals(): Promise<Record<string, Collateral>> {
-    const data = await this.root.api.query.kensetsu.collateralInfos.entries();
+    const data = await (this.root.api.query.kensetsu.collateralInfos as any).entries();
     const infos: Record<string, Collateral> = {};
-    data.forEach((item) => {
-      const info: KensetsuCollateralInfo | null = item[1].unwrapOr(null);
+    data.forEach((item: any) => {
+      const info: any | null = item[1].unwrapOr(null);
       if (info) {
         infos[item[0].args[0].code.toString()] = this.formatCollateral(info);
       }
@@ -171,7 +171,7 @@ export class KensetsuModule<T> {
     return infos;
   }
 
-  private formatVault(data: KensetsuCollateralizedDebtPosition, id: number): Vault {
+  private formatVault(data: any, id: number): Vault {
     const vault: Vault = {
       lockedAmount: new FPNumber(data.collateralAmount),
       debt: new FPNumber(data.debt),
@@ -184,7 +184,7 @@ export class KensetsuModule<T> {
   }
 
   async getVault(id: number): Promise<Vault | null> {
-    const data = await this.root.api.query.kensetsu.cdpDepository(id);
+    const data = await (this.root.api.query.kensetsu as any).cdpDepository(id);
     const vault = data.unwrapOr(null);
     if (!vault) return null;
     return this.formatVault(vault, id);
@@ -196,7 +196,7 @@ export class KensetsuModule<T> {
    * It utilizes a lot of resources
    */
   async getVaults(): Promise<Vault[]> {
-    const data = await this.root.api.query.kensetsu.cdpDepository.entries();
+    const data = await (this.root.api.query.kensetsu.cdpDepository as any).entries();
     const vaults: Vault[] = [];
     for (const item of data) {
       const vault = item[1].unwrapOr(null);
@@ -211,8 +211,8 @@ export class KensetsuModule<T> {
    * Usage: the main entity for checking the vaults.
    */
   subscribeOnVault(id: number): Observable<Vault | null> {
-    return this.root.apiRx.query.kensetsu.cdpDepository(id).pipe(
-      map((data) => {
+    return (this.root.apiRx.query.kensetsu as any).cdpDepository(id).pipe(
+      map((data: any) => {
         const vault = data.unwrapOr(null);
         if (!vault) return null;
         return this.formatVault(vault, id);
@@ -223,21 +223,21 @@ export class KensetsuModule<T> {
   async getAccountVaultIds(): Promise<number[]> {
     assert(this.root.account, Messages.connectWallet);
 
-    const data = await this.root.api.query.kensetsu.cdpOwnerIndex(this.root.account.pair.address);
-    const ids = data.unwrapOr([]) as Vec<u128>;
+    const data = await (this.root.api.query.kensetsu as any).cdpOwnerIndex(this.root.account.pair.address);
+    const ids = data.unwrapOr([]);
 
-    return ids.map((id) => id.toNumber());
+    return ids.map((id: { toNumber: () => any }) => id.toNumber());
   }
 
   async getAccountVaults(): Promise<Vault[]> {
     assert(this.root.account, Messages.connectWallet);
 
-    const data = await this.root.api.query.kensetsu.cdpOwnerIndex(this.root.account.pair.address);
-    const ids = data.unwrapOr([]) as Vec<u128>;
+    const data = await (this.root.api.query.kensetsu as any).cdpOwnerIndex(this.root.account.pair.address);
+    const ids = data.unwrapOr([]);
     if (!ids.length) return [];
 
-    const vaultsPromises = ids.map(async (id) => {
-      const item = await this.root.api.query.kensetsu.cdpDepository(id);
+    const vaultsPromises = ids.map(async (id: { toNumber: () => any }) => {
+      const item = await (this.root.api.query.kensetsu as any).cdpDepository(id);
       return { id: id.toNumber(), item };
     });
     const vaultsData = await Promise.all(vaultsPromises);
@@ -255,10 +255,10 @@ export class KensetsuModule<T> {
   subscribeOnAccountVaultIds(): Observable<number[]> {
     assert(this.root.account, Messages.connectWallet);
 
-    return this.root.apiRx.query.kensetsu.cdpOwnerIndex(this.root.account.pair.address).pipe(
-      map((data) => {
+    return (this.root.apiRx.query.kensetsu as any).cdpOwnerIndex(this.root.account.pair.address).pipe(
+      map((data: any) => {
         const ids = data.unwrapOr([]) as Vec<u128>;
-        return ids.map((item) => item.toNumber());
+        return ids.map((item: any) => item.toNumber());
       })
     );
   }
@@ -269,7 +269,7 @@ export class KensetsuModule<T> {
         const vaults: Vault[] = [];
         for (const [index, item] of data.entries()) {
           const id = ids[index];
-          const vault = item.unwrapOr(null);
+          const vault = (item as any).unwrapOr(null);
           if (vault) {
             vaults.push(this.formatVault(vault, id));
           }

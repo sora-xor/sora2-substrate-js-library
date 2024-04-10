@@ -14,16 +14,6 @@ export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>
 
 declare module '@polkadot/api-base/types/consts' {
   interface AugmentedConsts<ApiType extends ApiTypes> {
-    apolloPlatform: {
-      /**
-       * A configuration for longevity of unsigned transactions.
-       **/
-      unsignedLongevity: u64 & AugmentedConst<ApiType>;
-      /**
-       * A configuration for base priority of unsigned transactions.
-       **/
-      unsignedPriority: u64 & AugmentedConst<ApiType>;
-    };
     babe: {
       /**
        * The amount of time, in slots, that each epoch should last.
@@ -131,12 +121,6 @@ declare module '@polkadot/api-base/types/consts' {
        * A configuration for base priority of unsigned transactions.
        **/
       unsignedPriority: u64 & AugmentedConst<ApiType>;
-    };
-    bridgeInboundChannel: {
-      thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
-    };
-    bridgeOutboundChannel: {
-      thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
     };
     currencies: {
       getNativeCurrencyId: CommonPrimitivesAssetId32 & AugmentedConst<ApiType>;
@@ -342,26 +326,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       votingBondFactor: u128 & AugmentedConst<ApiType>;
     };
-    ethereumLightClient: {
-      /**
-       * The number of descendants, in the highest difficulty chain, a block
-       * needs to have in order to be considered final.
-       **/
-      descendantsUntilFinalized: u8 & AugmentedConst<ApiType>;
-      /**
-       * A configuration for longevity of unsigned transactions.
-       **/
-      unsignedLongevity: u64 & AugmentedConst<ApiType>;
-      /**
-       * A configuration for base priority of unsigned transactions.
-       **/
-      unsignedPriority: u64 & AugmentedConst<ApiType>;
-      /**
-       * Determines whether Ethash PoW is verified for headers
-       * NOTE: Should only be false for dev
-       **/
-      verifyPoW: bool & AugmentedConst<ApiType>;
-    };
     grandpa: {
       /**
        * Max Authorities in use
@@ -413,28 +377,6 @@ declare module '@polkadot/api-base/types/consts' {
        * 
        * This is exposed so that it can be tuned for particular runtime, when
        * multiple pallets send unsigned transactions.
-       **/
-      unsignedPriority: u64 & AugmentedConst<ApiType>;
-    };
-    kensetsu: {
-      /**
-       * Accrue() for a single CDP can be called once per this period
-       **/
-      accrueInterestPeriod: u64 & AugmentedConst<ApiType>;
-      /**
-       * Maximum number of CDP that one user can create
-       **/
-      maxCdpsPerOwner: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum number of risk manager team members
-       **/
-      maxRiskManagementTeamSize: u32 & AugmentedConst<ApiType>;
-      /**
-       * A configuration for longevity of unsigned transactions.
-       **/
-      unsignedLongevity: u64 & AugmentedConst<ApiType>;
-      /**
-       * A configuration for base priority of unsigned transactions.
        **/
       unsignedPriority: u64 & AugmentedConst<ApiType>;
     };

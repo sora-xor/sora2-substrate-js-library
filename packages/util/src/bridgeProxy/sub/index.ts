@@ -207,7 +207,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   public async getSubAssetDecimals(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<number> {
     if (subNetworkId === SubNetworkId.Liberland) {
-      const precision = await this.api.query.substrateBridgeApp.sidechainPrecision(subNetworkId, soraAssetId);
+      const precision = await (this.api.query.substrateBridgeApp as any).sidechainPrecision(subNetworkId, soraAssetId);
       return parseSubBridgeAssetDecimals(precision);
     } else {
       const precision = await this.api.query.parachainBridgeApp.sidechainPrecision(subNetworkId, soraAssetId);
@@ -217,7 +217,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   private async getSubAssetAddress(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetId> {
     if (subNetworkId === SubNetworkId.Liberland) {
-      const result = await this.api.query.substrateBridgeApp.sidechainAssetId(subNetworkId, soraAssetId);
+      const result = await (this.api.query.substrateBridgeApp as any).sidechainAssetId(subNetworkId, soraAssetId);
 
       if (result.isEmpty) return undefined;
 
@@ -231,7 +231,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   private async getSubAssetKind(subNetworkId: SubNetworkChainId, soraAssetId: string): Promise<SubAssetKind> {
     if (subNetworkId === SubNetworkId.Liberland) {
-      const kind = await this.api.query.substrateBridgeApp.assetKinds(subNetworkId, soraAssetId);
+      const kind = await (this.api.query.substrateBridgeApp as any).assetKinds(subNetworkId, soraAssetId);
       return parseSubBridgeAssetKind(kind);
     } else {
       const kind = await this.api.query.parachainBridgeApp.assetKinds(subNetworkId, soraAssetId);
@@ -300,8 +300,8 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     const assets: Record<string, SubAsset> = {};
 
     try {
-      const keys = await this.api.query.substrateBridgeApp.assetKinds.keys(SubNetworkId.Liberland);
-      const soraAssetIds: string[] = keys.map((key) => key.args[1].code.toString());
+      const keys = await (this.api.query.substrateBridgeApp as any).assetKinds.keys(SubNetworkId.Liberland);
+      const soraAssetIds: string[] = keys.map((key: any) => key.args[1].code.toString());
 
       await Promise.all(
         soraAssetIds.map(async (soraAssetId) => {

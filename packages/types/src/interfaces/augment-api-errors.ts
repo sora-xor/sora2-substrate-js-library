@@ -11,132 +11,6 @@ export type __AugmentedError<ApiType extends ApiTypes> = AugmentedError<ApiType>
 
 declare module '@polkadot/api-base/types/errors' {
   interface AugmentedErrors<ApiType extends ApiTypes> {
-    apolloPlatform: {
-      /**
-       * Asset already listed
-       **/
-      AssetAlreadyListed: AugmentedError<ApiType>;
-      /**
-       * Can not transfer amount to developers
-       **/
-      CanNotTransferAmountToDevelopers: AugmentedError<ApiType>;
-      /**
-       * Can not transfer amount to repay
-       **/
-      CanNotTransferAmountToRepay: AugmentedError<ApiType>;
-      /**
-       * Can not transfer borrowing amount
-       **/
-      CanNotTransferBorrowingAmount: AugmentedError<ApiType>;
-      /**
-       * Can not transfer borrowing rewards
-       **/
-      CanNotTransferBorrowingRewards: AugmentedError<ApiType>;
-      /**
-       * Can not transfer collateral amount
-       **/
-      CanNotTransferCollateralAmount: AugmentedError<ApiType>;
-      /**
-       * Can not transfer lending amount
-       **/
-      CanNotTransferLendingAmount: AugmentedError<ApiType>;
-      /**
-       * Can not transfer lending interest
-       **/
-      CanNotTransferLendingInterest: AugmentedError<ApiType>;
-      /**
-       * Can not withdraw lending amount
-       **/
-      CanNotWithdrawLendingAmount: AugmentedError<ApiType>;
-      /**
-       * Collateral token does not exists
-       **/
-      CollateralTokenDoesNotExist: AugmentedError<ApiType>;
-      /**
-       * Insufficient lending amount
-       **/
-      InsufficientLendingAmount: AugmentedError<ApiType>;
-      /**
-       * Invalid borrowing amount
-       **/
-      InvalidBorrowingAmount: AugmentedError<ApiType>;
-      /**
-       * Invalid collateral amount
-       **/
-      InvalidCollateralAmount: AugmentedError<ApiType>;
-      /**
-       * The amount that is being lended is invalid
-       **/
-      InvalidLendingAmount: AugmentedError<ApiType>;
-      /**
-       * User should not be liquidated
-       **/
-      InvalidLiquidation: AugmentedError<ApiType>;
-      /**
-       * Invalid pool parameters
-       **/
-      InvalidPoolParameters: AugmentedError<ApiType>;
-      /**
-       * Lending amount exceeded
-       **/
-      LendingAmountExceeded: AugmentedError<ApiType>;
-      /**
-       * No lending amount to borrow
-       **/
-      NoLendingAmountToBorrow: AugmentedError<ApiType>;
-      /**
-       * No liquidity for borrowing asset
-       **/
-      NoLiquidityForBorrowingAsset: AugmentedError<ApiType>;
-      /**
-       * Nonexistent borrowing position
-       **/
-      NonexistentBorrowingPosition: AugmentedError<ApiType>;
-      /**
-       * No rewards to claim
-       **/
-      NoRewardsToClaim: AugmentedError<ApiType>;
-      /**
-       * Nothing borrowed
-       **/
-      NothingBorrowed: AugmentedError<ApiType>;
-      /**
-       * Nothing lended
-       **/
-      NothingLended: AugmentedError<ApiType>;
-      /**
-       * Nothing to repay
-       **/
-      NothingToRepay: AugmentedError<ApiType>;
-      /**
-       * Pool does not exist
-       **/
-      PoolDoesNotExist: AugmentedError<ApiType>;
-      /**
-       * Pool is removed
-       **/
-      PoolIsRemoved: AugmentedError<ApiType>;
-      /**
-       * Same borrowing and collateral assets
-       **/
-      SameCollateralAndBorrowingAssets: AugmentedError<ApiType>;
-      /**
-       * Unable to transfer amount to repay
-       **/
-      UnableToTransferAmountToRepay: AugmentedError<ApiType>;
-      /**
-       * Unable to transfer collateral
-       **/
-      UnableToTransferCollateral: AugmentedError<ApiType>;
-      /**
-       * Unable to transfer rewards
-       **/
-      UnableToTransferRewards: AugmentedError<ApiType>;
-      /**
-       * Unauthorized
-       **/
-      Unauthorized: AugmentedError<ApiType>;
-    };
     assets: {
       /**
        * An asset with a given ID already exists.
@@ -283,28 +157,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnauthorizedRelayer: AugmentedError<ApiType>;
     };
-    beefyLightClient: {
-      CannotSwitchOldValidatorSet: AugmentedError<ApiType>;
-      CommitmentNotFoundInDigest: AugmentedError<ApiType>;
-      InvalidDigestHash: AugmentedError<ApiType>;
-      InvalidMMRProof: AugmentedError<ApiType>;
-      InvalidNetworkId: AugmentedError<ApiType>;
-      InvalidNumberOfPositions: AugmentedError<ApiType>;
-      InvalidNumberOfPublicKeys: AugmentedError<ApiType>;
-      InvalidNumberOfSignatures: AugmentedError<ApiType>;
-      InvalidSignature: AugmentedError<ApiType>;
-      InvalidValidatorSetId: AugmentedError<ApiType>;
-      MerklePositionTooHigh: AugmentedError<ApiType>;
-      MerkleProofTooHigh: AugmentedError<ApiType>;
-      MerkleProofTooShort: AugmentedError<ApiType>;
-      MMRPayloadNotFound: AugmentedError<ApiType>;
-      NotEnoughValidatorSignatures: AugmentedError<ApiType>;
-      PalletNotInitialized: AugmentedError<ApiType>;
-      PayloadBlocknumberTooNew: AugmentedError<ApiType>;
-      PayloadBlocknumberTooOld: AugmentedError<ApiType>;
-      ValidatorNotOnceInbitfield: AugmentedError<ApiType>;
-      ValidatorSetIncorrectPosition: AugmentedError<ApiType>;
-    };
     bridgeDataSigner: {
       ApprovalsNotFound: AugmentedError<ApiType>;
       DontHavePendingPeerUpdates: AugmentedError<ApiType>;
@@ -320,40 +172,6 @@ declare module '@polkadot/api-base/types/errors' {
       SignaturesNotFound: AugmentedError<ApiType>;
       TooMuchApprovals: AugmentedError<ApiType>;
       TooMuchPeers: AugmentedError<ApiType>;
-    };
-    bridgeInboundChannel: {
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * This contract already exists
-       **/
-      ContractExists: AugmentedError<ApiType>;
-      /**
-       * Malformed BatchDispatched event
-       **/
-      InvalidBatchDispatchedEvent: AugmentedError<ApiType>;
-      /**
-       * Message has an invalid envelope.
-       **/
-      InvalidEnvelope: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid network.
-       **/
-      InvalidNetwork: AugmentedError<ApiType>;
-      /**
-       * Message has an unexpected nonce.
-       **/
-      InvalidNonce: AugmentedError<ApiType>;
-      /**
-       * Incorrect reward fraction
-       **/
-      InvalidRewardFraction: AugmentedError<ApiType>;
-      /**
-       * Message came from an invalid outbound channel on the Ethereum side.
-       **/
-      InvalidSourceChannel: AugmentedError<ApiType>;
     };
     bridgeMultisig: {
       /**
@@ -440,28 +258,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Threshold should not be zero.
        **/
       ZeroThreshold: AugmentedError<ApiType>;
-    };
-    bridgeOutboundChannel: {
-      /**
-       * This channel already exists
-       **/
-      ChannelExists: AugmentedError<ApiType>;
-      /**
-       * Maximum gas for queued batch exceeds limit.
-       **/
-      MaxGasTooBig: AugmentedError<ApiType>;
-      /**
-       * Cannot increment nonce
-       **/
-      Overflow: AugmentedError<ApiType>;
-      /**
-       * The message payload exceeds byte limit.
-       **/
-      PayloadTooLarge: AugmentedError<ApiType>;
-      /**
-       * No more messages can be queued for the channel during this commit cycle.
-       **/
-      QueueSizeLimitReached: AugmentedError<ApiType>;
     };
     bridgeProxy: {
       AssetAlreadyLimited: AugmentedError<ApiType>;
@@ -1128,68 +924,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnableToVote: AugmentedError<ApiType>;
     };
-    erc20App: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request for refund
-       **/
-      WrongRequest: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request status, must be Failed
-       **/
-      WrongRequestStatus: AugmentedError<ApiType>;
-    };
-    ethApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Destination account is not set.
-       **/
-      DestAccountIsNotSet: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request for refund
-       **/
-      WrongRequest: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request status, must be Failed
-       **/
-      WrongRequestStatus: AugmentedError<ApiType>;
-    };
     ethBridge: {
       /**
        * Account not found.
@@ -1536,96 +1270,11 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongPendingPeer: AugmentedError<ApiType>;
     };
-    ethereumLightClient: {
-      /**
-       * Header is same height or older than finalized block (we don't support forks).
-       **/
-      AncientHeader: AugmentedError<ApiType>;
-      /**
-       * Unsupported consensus engine
-       **/
-      ConsensusNotSupported: AugmentedError<ApiType>;
-      /**
-       * Log could not be decoded
-       **/
-      DecodeFailed: AugmentedError<ApiType>;
-      /**
-       * Difficulty is too low comparing to last blocks difficulty
-       **/
-      DifficultyTooLow: AugmentedError<ApiType>;
-      /**
-       * Header has already been imported.
-       **/
-      DuplicateHeader: AugmentedError<ApiType>;
-      /**
-       * Header referenced in inclusion proof is not final yet.
-       **/
-      HeaderNotFinalized: AugmentedError<ApiType>;
-      /**
-       * Header not found for block number
-       **/
-      HeaderNotFound: AugmentedError<ApiType>;
-      /**
-       * Header is on a stale fork, i.e. it's not a descendant of the latest finalized block
-       **/
-      HeaderOnStaleFork: AugmentedError<ApiType>;
-      /**
-       * One or more header fields are invalid.
-       **/
-      InvalidHeader: AugmentedError<ApiType>;
-      /**
-       * Proof could not be applied / verified.
-       **/
-      InvalidProof: AugmentedError<ApiType>;
-      /**
-       * Signature provided inside unsigned extrinsic is not correct
-       **/
-      InvalidSignature: AugmentedError<ApiType>;
-      /**
-       * Header referenced in inclusion proof doesn't exist, e.g. because it's
-       * pruned or older than genesis.
-       **/
-      MissingHeader: AugmentedError<ApiType>;
-      /**
-       * Header's parent has not been imported.
-       **/
-      MissingParentHeader: AugmentedError<ApiType>;
-      /**
-       * Network with given id already registered
-       **/
-      NetworkAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * Unknown network id passed
-       **/
-      NetworkNotFound: AugmentedError<ApiType>;
-      /**
-       * Network state is not suitable to proceed transacton
-       **/
-      NetworkStateInvalid: AugmentedError<ApiType>;
-      /**
-       * This should never be returned - indicates a bug
-       **/
-      Unknown: AugmentedError<ApiType>;
-    };
     farming: {
       /**
        * Increment account reference error.
        **/
       IncRefError: AugmentedError<ApiType>;
-    };
-    faucet: {
-      /**
-       * Amount is above limit.
-       **/
-      AmountAboveLimit: AugmentedError<ApiType>;
-      /**
-       * Asset is not supported.
-       **/
-      AssetNotSupported: AugmentedError<ApiType>;
-      /**
-       * Not enough reserves.
-       **/
-      NotEnoughReserves: AugmentedError<ApiType>;
     };
     grandpa: {
       /**
@@ -1863,34 +1512,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       SignatureVerificationFailed: AugmentedError<ApiType>;
     };
-    kensetsu: {
-      AccrueWrongTime: AugmentedError<ApiType>;
-      ArithmeticError: AugmentedError<ApiType>;
-      BalanceNotEnough: AugmentedError<ApiType>;
-      /**
-       * Too many CDPs per user
-       **/
-      CDPLimitPerUser: AugmentedError<ApiType>;
-      CDPNotFound: AugmentedError<ApiType>;
-      CDPSafe: AugmentedError<ApiType>;
-      CDPsPerUserLimitReached: AugmentedError<ApiType>;
-      CDPUnsafe: AugmentedError<ApiType>;
-      CollateralBelowMinimal: AugmentedError<ApiType>;
-      CollateralInfoNotFound: AugmentedError<ApiType>;
-      HardCapSupply: AugmentedError<ApiType>;
-      NoDebt: AugmentedError<ApiType>;
-      OperationNotPermitted: AugmentedError<ApiType>;
-      /**
-       * Risk management team size exceeded
-       **/
-      TooManyManagers: AugmentedError<ApiType>;
-      WrongAssetId: AugmentedError<ApiType>;
-      WrongCollateralAssetId: AugmentedError<ApiType>;
-      /**
-       * Liquidation lot set in risk parameters is zero, cannot liquidate
-       **/
-      ZeroLiquidationLot: AugmentedError<ApiType>;
-    };
     liquidityProxy: {
       /**
        * Path exists but it's not possible to perform exchange with currently available liquidity on pools.
@@ -1953,32 +1574,6 @@ declare module '@polkadot/api-base/types/errors' {
        * No route exists in a given DEX for given parameters to carry out the swap
        **/
       UnavailableExchangePath: AugmentedError<ApiType>;
-    };
-    migrationApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-      /**
-       * Token already registered with another address.
-       **/
-      TokenRegisteredWithAnotherAddress: AugmentedError<ApiType>;
     };
     multicollateralBondingCurvePool: {
       /**
@@ -2679,70 +2274,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ZeroClaimableIncentives: AugmentedError<ApiType>;
     };
-    qaTools: {
-      /**
-       * Error in calculations.
-       **/
-      ArithmeticError: AugmentedError<ApiType>;
-      /**
-       * Cannot register new asset because it already exists.
-       **/
-      AssetAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * Cannot initialize pool with for non-divisible assets.
-       **/
-      AssetsMustBeDivisible: AugmentedError<ApiType>;
-      /**
-       * Buy price cannot be lower than sell price of an asset
-       **/
-      BuyLessThanSell: AugmentedError<ApiType>;
-      /**
-       * Did not find an order book with given id to fill. Likely an error with order book creation.
-       **/
-      CannotFillUnknownOrderBook: AugmentedError<ApiType>;
-      /**
-       * Provided range is incorrect, check that lower bound is less or equal than the upper one.
-       **/
-      EmptyRandomRange: AugmentedError<ApiType>;
-      /**
-       * TBCD must be initialized using different field/function (see `tbcd_collateral` and `TbcdCollateralInput`).
-       **/
-      IncorrectCollateralAsset: AugmentedError<ApiType>;
-      /**
-       * Price step, best price, and worst price must be a multiple of order book's tick size.
-       * Price step must also be non-zero.
-       **/
-      IncorrectPrice: AugmentedError<ApiType>;
-      /**
-       * Order Book already exists
-       **/
-      OrderBookAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * The range for generating order amounts must be within order book's accepted values.
-       **/
-      OutOfBoundsRandomRange: AugmentedError<ApiType>;
-      /**
-       * Cannot deduce price of synthetic base asset because there is no existing price for reference asset.
-       * You can use `price_tools_set_asset_price` extrinsic to set its price.
-       **/
-      ReferenceAssetPriceNotFound: AugmentedError<ApiType>;
-      /**
-       * The count of created orders is too large.
-       **/
-      TooManyOrders: AugmentedError<ApiType>;
-      /**
-       * The count of prices to fill is too large.
-       **/
-      TooManyPrices: AugmentedError<ApiType>;
-      /**
-       * Cannot initialize MCBC for unknown asset.
-       **/
-      UnknownMcbcAsset: AugmentedError<ApiType>;
-      /**
-       * Could not find already existing synthetic.
-       **/
-      UnknownSynthetic: AugmentedError<ApiType>;
-    };
     referrals: {
       /**
        * Account already has a referrer.
@@ -2929,22 +2460,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TooManyValidators: AugmentedError<ApiType>;
     };
-    substrateBridgeApp: {
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-      UnknownPrecision: AugmentedError<ApiType>;
-      WrongAccountId: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-      WrongAssetId: AugmentedError<ApiType>;
-    };
     substrateBridgeInboundChannel: {
       /**
        * Call encoding failed.
@@ -3004,12 +2519,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Interval cannot be zero.
        **/
       ZeroInterval: AugmentedError<ApiType>;
-    };
-    sudo: {
-      /**
-       * Sender must be the Sudo account
-       **/
-      RequireSudo: AugmentedError<ApiType>;
     };
     system: {
       /**
