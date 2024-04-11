@@ -8,6 +8,7 @@ import type { Vec, u128 } from '@polkadot/types-codec';
 import { Messages } from '../logger';
 import { Operation } from '../BaseApi';
 import { KUSD } from '../assets/consts';
+import { VaultTypes } from './consts';
 import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 import type { Collateral, Vault } from './types';
@@ -174,6 +175,8 @@ export class KensetsuModule<T> {
   private formatVault(data: KensetsuCollateralizedDebtPosition, id: number): Vault {
     const vault: Vault = {
       lockedAmount: new FPNumber(data.collateralAmount),
+      debtAssetId: KUSD.address,
+      vaultType: VaultTypes.V2,
       debt: new FPNumber(data.debt),
       interestCoefficient: new FPNumber(data.interestCoefficient),
       owner: data.owner.toString(),
