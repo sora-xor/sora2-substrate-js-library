@@ -1878,6 +1878,10 @@ declare module '@polkadot/api-base/types/errors' {
       CollateralBelowMinimal: AugmentedError<ApiType>;
       CollateralInfoNotFound: AugmentedError<ApiType>;
       HardCapSupply: AugmentedError<ApiType>;
+      /**
+       * Liquidation limit reached
+       **/
+      LiquidationLimit: AugmentedError<ApiType>;
       NoDebt: AugmentedError<ApiType>;
       OperationNotPermitted: AugmentedError<ApiType>;
       /**

@@ -953,6 +953,11 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       kusdHardCap: AugmentedQuery<ApiType, () => Observable<u128>, []>;
       /**
+       * Flag indicates that liquidation took place in this block. Only one liquidation per block is
+       * allowed, the flag is dropped every block.
+       **/
+      liquidatedThisBlock: AugmentedQuery<ApiType, () => Observable<bool>, []>;
+      /**
        * Risk parameter
        * Liquidation penalty
        **/

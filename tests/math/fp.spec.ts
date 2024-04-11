@@ -3,14 +3,6 @@ import { connection } from '@sora-substrate/connection';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 describe('FPNumber', () => {
-  beforeAll(async () => {
-    await connection.open(SORA_ENV.stage);
-  });
-
-  afterAll(async () => {
-    await connection.close();
-  });
-
   it.each([
     ['', 18, '0'], // Edge case: empty string
     ['0', 18, '0'], // Edge case: zero
@@ -333,22 +325,6 @@ describe('FPNumber', () => {
       const instance2 = new FPNumber(value, decimals);
       expect(instance1.dp(decimals).toString()).toBe(result1);
       expect(instance2.dp(precision).toString()).toBe(result2);
-    }
-  );
-
-  it.each([
-    ['1234567890', 8, '12.3456789'],
-    ['12345678912', 10, '1.2345678912'],
-    ['1000000000', 9, '1'],
-    ['1000000000', 10, '0.1'],
-  ])(
-    '[toString from Codec object] instance of "%s" with precision "%s" should display "%s"',
-    (value, precision, result) => {
-      const codec = connection?.api?.createType('Balance', value);
-      if (codec) {
-        const instance = new FPNumber(codec, precision);
-        expect(instance.toString()).toBe(result);
-      }
     }
   );
 
@@ -1178,4 +1154,30 @@ describe('FPNumber', () => {
     expect(instance.toLocaleString()).toBe(staticValue.toLocaleString());
     expect(instance.toFixed()).toBe(staticValue.toFixed());
   });
+});
+
+describe('FPNumber codec', () => {
+  beforeAll(async () => {
+    await connection.open(SORA_ENV.stage);
+  });
+
+  afterAll(async () => {
+    await connection.close();
+  });
+
+  it.each([
+    ['1234567890', 8, '12.3456789'],
+    ['12345678912', 10, '1.2345678912'],
+    ['1000000000', 9, '1'],
+    ['1000000000', 10, '0.1'],
+  ])(
+    '[toString from Codec object] instance of "%s" with precision "%s" should display "%s"',
+    (value, precision, result) => {
+      const codec = connection?.api?.createType('Balance', value);
+      if (codec) {
+        const instance = new FPNumber(codec, precision);
+        expect(instance.toString()).toBe(result);
+      }
+    }
+  );
 });
