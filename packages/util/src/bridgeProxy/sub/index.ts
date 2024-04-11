@@ -57,6 +57,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   // override it from frontend config if needed
   public parachainIds: ParachainIds = {
+    [SubNetworkId.PolkadotAcala]: 2000,
     [SubNetworkId.PolkadotSora]: 2025,
     [SubNetworkId.RococoSora]: 2011,
     [SubNetworkId.KusamaSora]: 2011,
@@ -77,6 +78,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     if (this.isRelayChain(subNetwork)) return subNetwork as Relaychain;
 
     switch (subNetwork) {
+      case SubNetworkId.PolkadotAcala:
       case SubNetworkId.PolkadotSora:
         return SubNetworkId.Polkadot;
       case SubNetworkId.KusamaSora:
@@ -96,6 +98,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
     switch (subNetwork) {
       case SubNetworkId.Polkadot:
+      case SubNetworkId.PolkadotAcala:
         return SubNetworkId.PolkadotSora;
       case SubNetworkId.Kusama:
         return SubNetworkId.KusamaSora;

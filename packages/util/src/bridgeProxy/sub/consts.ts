@@ -10,6 +10,8 @@ export enum SubNetworkId {
   Polkadot = 'Polkadot',
   /** SORA parachain in Polkadot relaychain */
   PolkadotSora = 'PolkadotSora',
+  /** Acala parachain in Polkadot relaychain */
+  PolkadotAcala = 'PolkadotAcala',
   /** Kusama relaychain */
   Kusama = 'Kusama',
   /** SORA parachain in Kusama relaychain */
@@ -41,8 +43,6 @@ export const SoraParachains = [
   SubNetworkId.AlphanetSora,
 ] as const;
 
-export const AlphanetParachains = [SubNetworkId.AlphanetMoonbase] as const;
-
 export const Relaychains = [
   SubNetworkId.Polkadot,
   SubNetworkId.Kusama,
@@ -50,7 +50,7 @@ export const Relaychains = [
   SubNetworkId.Alphanet,
 ] as const;
 
-export const Parachains = [...SoraParachains, ...AlphanetParachains] as const;
+export const Parachains = [...SoraParachains, SubNetworkId.AlphanetMoonbase, SubNetworkId.PolkadotAcala] as const;
 
 export const Standalones = [SubNetworkId.Liberland] as const;
 
