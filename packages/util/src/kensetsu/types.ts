@@ -1,10 +1,15 @@
 import type { FPNumber } from '@sora-substrate/math';
 
 import type { History } from '../BaseApi';
+import type { VaultTypes } from './consts';
+
+export type VaultType = (typeof VaultTypes)[keyof typeof VaultTypes];
 
 export type Vault = {
   owner?: string;
+  vaultType: VaultType;
   lockedAssetId: string;
+  debtAssetId: string;
   lockedAmount: FPNumber;
   debt: FPNumber;
   interestCoefficient: FPNumber;
