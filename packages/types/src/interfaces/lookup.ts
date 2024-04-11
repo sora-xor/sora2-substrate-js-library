@@ -6404,7 +6404,7 @@ export default {
    * Lookup904: kensetsu::pallet::Error<T>
    **/
   KensetsuError: {
-    _enum: ['ArithmeticError', 'WrongAssetId', 'CDPNotFound', 'CollateralInfoNotFound', 'CollateralBelowMinimal', 'CDPSafe', 'CDPUnsafe', 'CDPLimitPerUser', 'TooManyManagers', 'OperationNotPermitted', 'NoDebt', 'CDPsPerUserLimitReached', 'HardCapSupply', 'BalanceNotEnough', 'WrongCollateralAssetId', 'AccrueWrongTime', 'ZeroLiquidationLot']
+    _enum: ['ArithmeticError', 'WrongAssetId', 'CDPNotFound', 'CollateralInfoNotFound', 'CollateralBelowMinimal', 'CDPSafe', 'CDPUnsafe', 'CDPLimitPerUser', 'TooManyManagers', 'OperationNotPermitted', 'NoDebt', 'CDPsPerUserLimitReached', 'HardCapSupply', 'BalanceNotEnough', 'WrongCollateralAssetId', 'AccrueWrongTime', 'ZeroLiquidationLot', 'LiquidationLimit']
   },
   /**
    * Lookup907: bridge_proxy::BridgeRequest<common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>>
