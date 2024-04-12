@@ -310,6 +310,10 @@ export class FPNumber {
   }
 
   private formatInitialData(data: string | number | Codec | bigint, precision: number): string | number {
+    if (isNil(data)) {
+      console.warn('[FPNumber] formatInitialData: data is nil -> return "0"');
+      return 0;
+    }
     switch (typeof data) {
       case 'number':
         return data;
