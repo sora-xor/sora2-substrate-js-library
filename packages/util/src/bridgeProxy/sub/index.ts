@@ -57,6 +57,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
   // override it from frontend config if needed
   public parachainIds: ParachainIds = {
+    [SubNetworkId.PolkadotAcala]: 2000,
     [SubNetworkId.PolkadotSora]: 2025,
     [SubNetworkId.RococoSora]: 2011,
     [SubNetworkId.KusamaSora]: 2011,
@@ -77,6 +78,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     if (this.isRelayChain(subNetwork)) return subNetwork as Relaychain;
 
     switch (subNetwork) {
+      case SubNetworkId.PolkadotAcala:
       case SubNetworkId.PolkadotSora:
         return SubNetworkId.Polkadot;
       case SubNetworkId.KusamaSora:
@@ -96,6 +98,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
     switch (subNetwork) {
       case SubNetworkId.Polkadot:
+      case SubNetworkId.PolkadotAcala:
         return SubNetworkId.PolkadotSora;
       case SubNetworkId.Kusama:
         return SubNetworkId.KusamaSora;
@@ -140,24 +143,32 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     return Standalones.includes(subNetwork as Standalone);
   }
 
-  private getRecipientArg(subNetwork: SubNetwork, recipient: string): BridgeTypesGenericAccount {
-    const accountId32 = this.api.createType('AccountId32', recipient);
+  public isEvmAccount(subNetwork: SubNetwork): boolean {
+    return [SubNetworkId.AlphanetMoonbase].includes(subNetwork);
+  }
 
+  private getRecipientArg(subNetwork: SubNetwork, recipient: string): BridgeTypesGenericAccount {
     if (this.isStandalone(subNetwork)) {
       if (subNetwork === SubNetworkId.Liberland) {
         return this.api.createType('BridgeTypesGenericAccount', {
-          [BridgeAccountType.Liberland]: accountId32,
+          [BridgeAccountType.Liberland]: this.api.createType('AccountId32', recipient),
         });
       }
 
       throw new Error(`Unsupported BridgeAccountType for "${subNetwork}" Standalone network`);
     }
 
-    const accountXcmJunction = {
-      [XcmJunction.AccountId32]: {
-        id: accountId32.toHex(), // account public key
-      },
-    };
+    const accountXcmJunction = this.isEvmAccount(subNetwork)
+      ? {
+          [XcmJunction.AccountKey20]: {
+            key: this.api.createType('AccountId20', recipient).toHex(), // evm address
+          },
+        }
+      : {
+          [XcmJunction.AccountId32]: {
+            id: this.api.createType('AccountId32', recipient).toHex(), // substrate public key
+          },
+        };
 
     if (this.isRelayChain(subNetwork)) {
       return this.api.createType('BridgeTypesGenericAccount', {

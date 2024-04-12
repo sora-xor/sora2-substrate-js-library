@@ -337,22 +337,6 @@ describe('FPNumber', () => {
   );
 
   it.each([
-    ['1234567890', 8, '12.3456789'],
-    ['12345678912', 10, '1.2345678912'],
-    ['1000000000', 9, '1'],
-    ['1000000000', 10, '0.1'],
-  ])(
-    '[toString from Codec object] instance of "%s" with precision "%s" should display "%s"',
-    (value, precision, result) => {
-      const codec = connection?.api?.createType('Balance', value);
-      if (codec) {
-        const instance = new FPNumber(codec, precision);
-        expect(instance.toString()).toBe(result);
-      }
-    }
-  );
-
-  it.each([
     ['', 8, '0'],
     ['-Infinity', 8, '-Infinity'],
     ['Infinity', 8, 'Infinity'],
@@ -1178,4 +1162,30 @@ describe('FPNumber', () => {
     expect(instance.toLocaleString()).toBe(staticValue.toLocaleString());
     expect(instance.toFixed()).toBe(staticValue.toFixed());
   });
+});
+
+describe('FPNumber codec', () => {
+  beforeAll(async () => {
+    await connection.open(SORA_ENV.stage);
+  });
+
+  afterAll(async () => {
+    await connection.close();
+  });
+
+  it.each([
+    ['1234567890', 8, '12.3456789'],
+    ['12345678912', 10, '1.2345678912'],
+    ['1000000000', 9, '1'],
+    ['1000000000', 10, '0.1'],
+  ])(
+    '[toString from Codec object] instance of "%s" with precision "%s" should display "%s"',
+    (value, precision, result) => {
+      const codec = connection?.api?.createType('Balance', value);
+      if (codec) {
+        const instance = new FPNumber(codec, precision);
+        expect(instance.toString()).toBe(result);
+      }
+    }
+  );
 });
