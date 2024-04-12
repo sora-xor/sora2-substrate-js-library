@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/types",
-  "version": "1.32.11-beta",
+  "version": "1.32.11-beta.1",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -13,7 +13,7 @@
     "@polkadot/api": "9.14.2",
     "@polkadot/typegen": "9.14.2",
     "@polkadot/types": "9.14.2",
-    "@sora-substrate/type-definitions": "1.32.11-beta"
+    "@sora-substrate/type-definitions": "1.32.11-beta.1"
   },
   "devDependencies": {
     "@types/websocket": "^1.0.10",
