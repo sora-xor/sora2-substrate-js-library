@@ -1798,14 +1798,16 @@ declare module '@polkadot/api-base/types/submittable' {
       addRiskManager: AugmentedSubmittable<(accountId: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       /**
        * Borrows funds against a Collateralized Debt Position (CDP).
-       * 
+       * Borrow amount will be as max as possible in the range
+       * `[borrow_amount_min, borrow_amount_max]` in order to confrom the slippage tolerance.
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
        * - `cdp_id`: The ID of the CDP to borrow against.
-       * - `will_to_borrow_amount`: The amount the user intends to borrow.
+       * - `borrow_amount_min`: The minimum amount the user wants to borrow.
+       * - `borrow_amount_max`: The maximum amount the user wants to borrow.
        **/
-      borrow: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array, willToBorrowAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, u128]>;
+      borrow: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array, borrowAmountMin: u128 | AnyNumber | Uint8Array, borrowAmountMax: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, u128, u128]>;
       /**
        * Closes a Collateralized Debt Position (CDP).
        * 
@@ -1819,16 +1821,20 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       closeCdp: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
-       * Creates a Collateralized Debt Position (CDP) allowing users to lock collateral assets and borrow against them.
+       * Creates a Collateralized Debt Position (CDP).
+       * The extrinsic combines depositing collateral and borrowing.
+       * Borrow amount will be as max as possible in the range
+       * `[borrow_amount_min, borrow_amount_max]` in order to confrom the slippage tolerance.
        * 
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
        * - `collateral_asset_id`: The identifier of the asset used as collateral.
        * - `collateral_amount`: The amount of collateral to be deposited.
-       * - `borrow_amount`: The amount the user wants to borrow.
+       * - `borrow_amount_min`: The minimum amount the user wants to borrow.
+       * - `borrow_amount_max`: The maximum amount the user wants to borrow.
        **/
-      createCdp: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array, borrowAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128]>;
+      createCdp: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array, borrowAmountMin: u128 | AnyNumber | Uint8Array, borrowAmountMax: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128]>;
       /**
        * Deposits collateral into a Collateralized Debt Position (CDP).
        * 
@@ -1876,6 +1882,15 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `amount`: The amount to repay against the CDP's debt.
        **/
       repayDebt: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, u128]>;
+      /**
+       * Updates the borrow tax applied during borrow.
+       * 
+       * ## Parameters
+       * 
+       * - `origin`: The origin of the transaction.
+       * - `new_borrow_tax`: The new borrow tax percentage to be set.
+       **/
+      updateBorrowTax: AugmentedSubmittable<(newBorrowTax: Percent | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent]>;
       /**
        * Updates the risk parameters for a specific collateral asset.
        * 

@@ -1873,6 +1873,9 @@ declare module '@polkadot/api-base/types/errors' {
       CDPLimitPerUser: AugmentedError<ApiType>;
       CDPNotFound: AugmentedError<ApiType>;
       CDPSafe: AugmentedError<ApiType>;
+      /**
+       * Too many CDPs per user
+       **/
       CDPsPerUserLimitReached: AugmentedError<ApiType>;
       CDPUnsafe: AugmentedError<ApiType>;
       CollateralBelowMinimal: AugmentedError<ApiType>;
@@ -1889,6 +1892,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TooManyManagers: AugmentedError<ApiType>;
       WrongAssetId: AugmentedError<ApiType>;
+      /**
+       * Wrong borrow amounts
+       **/
+      WrongBorrowAmounts: AugmentedError<ApiType>;
       WrongCollateralAssetId: AugmentedError<ApiType>;
       /**
        * Liquidation lot set in risk parameters is zero, cannot liquidate

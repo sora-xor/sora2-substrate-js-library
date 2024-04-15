@@ -659,7 +659,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             MAX_TIMESTAMP
           );
         case Operation.CreateVault:
-          return this.api.tx.kensetsu.createCdp('', 0, 0);
+          return this.api.tx.kensetsu.createCdp('', 0, 0, 0);
         case Operation.CloseVault:
           return this.api.tx.kensetsu.closeCdp(0);
         case Operation.RepayVaultDebt:
@@ -667,7 +667,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         case Operation.DepositCollateral:
           return this.api.tx.kensetsu.depositCollateral(0, 0);
         case Operation.BorrowVaultDebt:
-          return this.api.tx.kensetsu.borrow(0, 0);
+          return this.api.tx.kensetsu.borrow(0, 0, 0);
         default:
           return null;
       }

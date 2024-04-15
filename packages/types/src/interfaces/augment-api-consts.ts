@@ -7,7 +7,7 @@ import '@polkadot/api-base/types/consts';
 
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
 import type { U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
-import type { AccountId32, Perbill } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
 import type { BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight, SpWeightsWeightV2Weight } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
@@ -421,6 +421,10 @@ declare module '@polkadot/api-base/types/consts' {
        * Accrue() for a single CDP can be called once per this period
        **/
       accrueInterestPeriod: u64 & AugmentedConst<ApiType>;
+      /**
+       * Percent of KEN that is reminted and goes to Demeter farming incentivization
+       **/
+      kenIncentiveRemintPercent: Percent & AugmentedConst<ApiType>;
       /**
        * Maximum number of CDP that one user can create
        **/
