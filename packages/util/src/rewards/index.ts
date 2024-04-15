@@ -62,7 +62,7 @@ export class RewardsModule<T> {
     rewardAsset?: Asset
   ): RewardInfo {
     const asset = rewardAsset ?? PSWAP;
-    const fpAmount = amount instanceof FPNumber ? amount : new FPNumber(amount, asset?.decimals);
+    const fpAmount = new FPNumber(amount, asset?.decimals);
     const rewardInfo = {
       type,
       asset,

@@ -274,42 +274,14 @@ export class FPNumber {
     return `${integer ?? 0}.${fractional ?? 0}`;
   }
 
-  private formatInitialDataCodec(data: Codec, precision: number): string {
+  private formatInitialDataCodec(data: Codec, precision: number): BigNumber {
     const json = data.toJSON() as (AnyJson & { balance: string }) | null;
     // `BalanceInfo` or `Balance` check
-    let str = json && !isNil(json.balance) ? `${json.balance}`.replace(/[,. ]/g, '') : data.toString();
-
-    if (!isFinityString(str)) return str; // '-Infinity', 'Infinity', 'NaN'
-
-    if (isZeroString(str)) return '0';
-
-    const isNegative = str.startsWith('-');
-    if (isNegative) {
-      str.replace('-', '');
-    }
-
-    let fractionalPart = '';
-    let integerPart = '';
-    const zerosLeftInFractionalPart = precision - str.length;
-
-    if (zerosLeftInFractionalPart >= 0) {
-      // only fractional part
-      integerPart = '0';
-      fractionalPart = `${Array(zerosLeftInFractionalPart).fill(0).join('')}${str}`;
-    } else {
-      const integerLength = str.length - precision;
-      integerPart = str.slice(0, integerLength);
-      fractionalPart = str.slice(integerLength);
-    }
-
-    if (!(Number.isFinite(+integerPart) && Number.isFinite(+fractionalPart))) {
-      return 'NaN';
-    }
-
-    return `${isNegative ? '-' : ''}${integerPart}.${fractionalPart}`;
+    const str = json && !isNil(json.balance) ? `${json.balance}`.replace(/[,. ]/g, '') : data.toString();
+    return new BigNumber(str).div(10 ** precision);
   }
 
-  private formatInitialData(data: string | number | Codec | bigint, precision: number): string | number {
+  private formatInitialData(data: string | number | Codec | bigint, precision: number): OperatorParam {
     if (isNil(data)) {
       console.warn('[FPNumber] formatInitialData: data is nil -> return "0"');
       return 0;
@@ -345,7 +317,8 @@ export class FPNumber {
       value = data.value;
       this.precision = data.precision;
     } else {
-      value = new BigNumber(this.formatInitialData(data, precision));
+      const initialData = this.formatInitialData(data, precision);
+      value = initialData instanceof BigNumber ? initialData : new BigNumber(initialData);
     }
     this.value = value.dp(this.precision, 1); // `1` Rounds towards zero
   }
