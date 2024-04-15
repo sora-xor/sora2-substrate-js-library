@@ -134,9 +134,9 @@ export class KensetsuModule<T> {
     const ratioReversed = new FPNumber(collateralInfo.riskParameters.liquidationRatio, 7);
     const ratio = FPNumber.ONE.div(ratioReversed).mul(FPNumber.TEN_THOUSANDS);
     // collateralInfo.riskParameters.stabilityFeeRate is presented in ms
-    const rateSecondlyCoeff = new FPNumber(collateralInfo.riskParameters.stabilityFeeRate).div(1_000);
+    const rateCoeffMs = new FPNumber(collateralInfo.riskParameters.stabilityFeeRate);
     // rate_annual = (1 + rate_secondly) ^ 31_556_952 - 1; 31_556_952 - seconds in a year (an average Gregorian year has 365.2425 days)
-    const rateAnnual = FPNumber.ONE.add(rateSecondlyCoeff).pow(31_556_952).sub(1).mul(100).dp(2);
+    const rateAnnual = FPNumber.ONE.add(rateCoeffMs).pow(31_556_952).sub(1).mul(100_000).dp(2); // * 100 (to %) * 1000 (ms to seconds)
     const formatted: Collateral = {
       lastFeeUpdateTime: collateralInfo.lastFeeUpdateTime.toNumber(),
       interestCoefficient: new FPNumber(collateralInfo.interestCoefficient),
@@ -146,7 +146,7 @@ export class KensetsuModule<T> {
         liquidationRatioReversed: ratioReversed.toNumber(2),
         hardCap: new FPNumber(collateralInfo.riskParameters.hardCap),
         maxLiquidationLot: new FPNumber(collateralInfo.riskParameters.maxLiquidationLot),
-        rateSecondlyCoeff,
+        rateSecondlyCoeff: rateCoeffMs.mul(1_000), // ms to seconds
         rateAnnual,
         minDeposit: new FPNumber(collateralInfo.riskParameters.minimalCollateralDeposit),
       },
