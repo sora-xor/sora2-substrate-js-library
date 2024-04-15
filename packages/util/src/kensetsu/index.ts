@@ -86,6 +86,23 @@ export class KensetsuModule<T> {
     return this.root.apiRx.query.kensetsu.nextCDPId().pipe(map((res) => res.toNumber()));
   }
 
+  /**
+   * Usage: general system parameters, debt calculation, statistical information
+   *
+   * Returns the tax for borrowing KUSD in %
+   */
+  async getBorrowTax(): Promise<number> {
+    const borrowTax = await this.root.api.query.kensetsu.borrowTax();
+    return borrowTax.toNumber();
+  }
+
+  /**
+   * Returns the subscription on the tax for borrowing KUSD in %
+   */
+  subscribeOnBorrowTax(): Observable<number> {
+    return this.root.apiRx.query.kensetsu.borrowTax().pipe(map((res) => res.toNumber()));
+  }
+
   // update_collateral_interest_coefficient
   updateCollateralInterestCoefficient(collateral: Collateral): FPNumber | null {
     const now = Date.now();
@@ -113,12 +130,12 @@ export class KensetsuModule<T> {
   }
 
   private formatCollateral(collateralInfo: KensetsuCollateralInfo): Collateral {
-    // ratioReversed has Perbill type = 1_000_000_000 decimals * 100 because of %
+    // ratioReversed has Perbill type = 1_000_000_000 decimals * 100 because of %, so we set decimals = 9 - 2 = 7
     const ratioReversed = new FPNumber(collateralInfo.riskParameters.liquidationRatio, 7);
     const ratio = FPNumber.ONE.div(ratioReversed).mul(FPNumber.TEN_THOUSANDS);
     // collateralInfo.riskParameters.stabilityFeeRate is presented in ms
-    const rateSecondlyCoeff = new FPNumber(collateralInfo.riskParameters.stabilityFeeRate).div(1000);
-    // rate_annual = (1 + rate_secondly) ^ 31_556_952 - 1
+    const rateSecondlyCoeff = new FPNumber(collateralInfo.riskParameters.stabilityFeeRate).div(1_000);
+    // rate_annual = (1 + rate_secondly) ^ 31_556_952 - 1; 31_556_952 - seconds in a year (an average Gregorian year has 365.2425 days)
     const rateAnnual = FPNumber.ONE.add(rateSecondlyCoeff).pow(31_556_952).sub(1).mul(100).dp(2);
     const formatted: Collateral = {
       lastFeeUpdateTime: collateralInfo.lastFeeUpdateTime.toNumber(),
@@ -282,15 +299,31 @@ export class KensetsuModule<T> {
     );
   }
 
-  createVault(asset: Asset | AccountAsset, collateralAmount: NumberLike, borrowAmount: NumberLike): Promise<T> {
+  /**
+   * Create a new vault
+   *
+   * @param asset Collateral asset
+   * @param collateralAmount Amount of collateral asset
+   * @param borrowAmount Amount of KUSD which will be borrowed
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
+   */
+  createVault(
+    asset: Asset | AccountAsset,
+    collateralAmount: NumberLike,
+    borrowAmount: NumberLike,
+    slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
+  ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
 
     const assetAddress = asset.address;
     const collateralCodec = new FPNumber(collateralAmount).codec;
-    const borrowCodec = new FPNumber(borrowAmount).codec;
+    const borrow = new FPNumber(borrowAmount);
+
+    const slippage = borrow.mul(Number(slippageTolerance) / 100);
+    const minBorrowAmountCodec = borrow.sub(slippage).codec;
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.kensetsu.createCdp(assetAddress, collateralCodec, borrowCodec),
+      this.root.api.tx.kensetsu.createCdp(assetAddress, collateralCodec, minBorrowAmountCodec, borrow.codec),
       this.root.account.pair,
       {
         type: Operation.CreateVault,
@@ -385,13 +418,21 @@ export class KensetsuModule<T> {
    *
    * @param vault User's vault
    * @param amount Amount which will be borrowed to the existing vault
+   * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
-  borrow(vault: Vault, amount: NumberLike): Promise<T> {
+  borrow(
+    vault: Vault,
+    amount: NumberLike,
+    slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
+  ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
-    const willToBorrowCodec = new FPNumber(amount).codec;
+    const willToBorrow = new FPNumber(amount);
+
+    const slippage = willToBorrow.mul(Number(slippageTolerance) / 100);
+    const minWillToBorrowCodec = willToBorrow.sub(slippage).codec;
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.kensetsu.borrow(vault.id, willToBorrowCodec),
+      this.root.api.tx.kensetsu.borrow(vault.id, minWillToBorrowCodec, willToBorrow.codec),
       this.root.account.pair,
       {
         type: Operation.BorrowVaultDebt,

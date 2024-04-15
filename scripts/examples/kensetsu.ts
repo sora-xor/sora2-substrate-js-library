@@ -1,12 +1,15 @@
 import { FPNumber, api } from '@sora-substrate/util';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
-import { XOR } from '@sora-substrate/util/assets/consts';
+import { DAI, XOR } from '@sora-substrate/util/assets/consts';
 
 import { withConnectedAccount, delay } from './util';
 
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {
     console.info('\n\nKensetsu Stats____________________________');
+    const borrowTax = await api.kensetsu.getBorrowTax();
+    console.info('borrowTax (%)', borrowTax.toLocaleString());
+
     const badDebt = await api.kensetsu.getBadDebt();
     console.info('badDebt (KUSD)', badDebt.toLocaleString());
 
@@ -74,7 +77,7 @@ async function main(): Promise<void> {
 
     console.info('\n\nVault Creation__________________________');
     console.info(`Network fee: ${FPNumber.fromCodecValue(api.NetworkFee.CreateVault).toString()} XOR`);
-    await api.kensetsu.createVault(XOR, 10, 20);
+    await api.kensetsu.createVault(DAI, 100, 20);
     await delay();
     console.info('History:', api.historyList[0]);
   }, SORA_ENV.dev);

@@ -936,6 +936,11 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       badDebt: AugmentedQuery<ApiType, () => Observable<u128>, []>;
       /**
+       * Risk parameter
+       * Borrows tax to buy back and burn KEN
+       **/
+      borrowTax: AugmentedQuery<ApiType, () => Observable<Percent>, []>;
+      /**
        * Storage of all CDPs, where key is an unique CDP identifier
        **/
       cdpDepository: AugmentedQuery<ApiType, (arg: u128 | AnyNumber | Uint8Array) => Observable<Option<KensetsuCollateralizedDebtPosition>>, [u128]>;
@@ -958,7 +963,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       liquidatedThisBlock: AugmentedQuery<ApiType, () => Observable<bool>, []>;
       /**
-       * Risk parameter
        * Liquidation penalty
        **/
       liquidationPenalty: AugmentedQuery<ApiType, () => Observable<Percent>, []>;
