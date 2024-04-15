@@ -1156,7 +1156,7 @@ describe('FPNumber', () => {
   });
 });
 
-describe('FPNumber codec', () => {
+describe('FPNumber Rust types', () => {
   beforeAll(async () => {
     await connection.open(SORA_ENV.stage);
   });
@@ -1170,10 +1170,37 @@ describe('FPNumber codec', () => {
     ['12345678912', 10, '1.2345678912'],
     ['1000000000', 9, '1'],
     ['1000000000', 10, '0.1'],
+    ['0x0000000000000006046f37e5945c0000', 18, '111'],
+    ['0x0000000000000274ab6796cd06183000', 18, '11596.9062846'],
+    ['0x000000000000152d02c7e14af6800000', 18, '100000'],
+    ['0x00000000000000056a9e1c4dcbf2dd23', 18, '99.916329503348153635'],
+    ['0x000000000000003055f16fb2d56af279', 18, '891.636569314545037945'],
   ])(
-    '[toString from Codec object] instance of "%s" with precision "%s" should display "%s"',
+    '[toString from Balance type] instance of "%s" with precision "%s" should display "%s"',
     (value, precision, result) => {
       const codec = connection?.api?.createType('Balance', value);
+      if (codec) {
+        const instance = new FPNumber(codec, precision);
+        expect(instance.toString()).toBe(result);
+      }
+    }
+  );
+
+  it.each([
+    ['1234567890', 8, '12.3456789'],
+    ['12345678912', 10, '1.2345678912'],
+    ['1000000000', 9, '1'],
+    ['1000000000', 10, '0.1'],
+    ['0x0000000000000006046f37e5945c0000', 18, '111'],
+    ['0x0000000000000274ab6796cd06183000', 18, '11596.9062846'],
+    ['0x000000000000152d02c7e14af6800000', 18, '100000'],
+    ['0x00000000000000056a9e1c4dcbf2dd23', 18, '99.916329503348153635'],
+    ['0x000000000000003055f16fb2d56af279', 18, '891.636569314545037945'],
+  ])(
+    '[toString from BalanceInfo type] instance of "%s" with precision "%s" should display "%s"',
+    (value, precision, result) => {
+      const balance = connection?.api?.createType('Balance', value);
+      const codec = connection?.api?.createType('BalanceInfo', { balance });
       if (codec) {
         const instance = new FPNumber(codec, precision);
         expect(instance.toString()).toBe(result);
