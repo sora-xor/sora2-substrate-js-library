@@ -40,9 +40,9 @@ async function main(): Promise<void> {
     console.info('collateral.riskParams.maxLiquidationLot', collateral.riskParams.maxLiquidationLot.toString());
     console.info('collateral.riskParams.liquidationRatio (%)', collateral.riskParams.liquidationRatio);
     console.info('collateral.riskParams.liquidationRatioReversed (%)', collateral.riskParams.liquidationRatioReversed);
-    console.info('collateral.riskParams.rateSecondly', collateral.riskParams.rateSecondlyCoeff.toString());
-    console.info('collateral.riskParams.rateSecondly (%)', collateral.riskParams.rateSecondlyCoeff.mul(100).toString());
-    console.info('collateral.riskParams.rateAnnual (%)', collateral.riskParams.rateAnnual.toString());
+    console.info('collateral.riskParams.stabilityFeeMs', collateral.riskParams.stabilityFeeMs.toString());
+    console.info('collateral.riskParams.stabilityFeeMs (%)', collateral.riskParams.stabilityFeeMs.mul(100).toString());
+    console.info('collateral.riskParams.stabilityFeeAnnual (%)', collateral.riskParams.stabilityFeeAnnual.toString());
     console.info('collateral.riskParams.minDeposit (XOR)', collateral.riskParams.minDeposit.toString());
 
     const vault = vaults[0];
