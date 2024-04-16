@@ -21,8 +21,8 @@ type RiskParameters = {
   liquidationRatioReversed: number;
   liquidationRatio: number;
   maxLiquidationLot: FPNumber;
-  rateSecondlyCoeff: FPNumber;
-  rateAnnual: FPNumber;
+  stabilityFeeMs: FPNumber;
+  stabilityFeeAnnual: FPNumber;
   minDeposit: FPNumber;
 };
 
