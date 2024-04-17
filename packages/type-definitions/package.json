@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/type-definitions",
-  "version": "1.33.12",
+  "version": "1.33.13",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
