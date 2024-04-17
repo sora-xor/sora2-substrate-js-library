@@ -941,7 +941,7 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       borrowTax: AugmentedQuery<ApiType, () => Observable<Percent>, []>;
       /**
-       * Storage of all CDPs, where key is an unique CDP identifier
+       * Storage of all CDPs, where key is a unique CDP identifier
        **/
       cdpDepository: AugmentedQuery<ApiType, (arg: u128 | AnyNumber | Uint8Array) => Observable<Option<KensetsuCollateralizedDebtPosition>>, [u128]>;
       /**

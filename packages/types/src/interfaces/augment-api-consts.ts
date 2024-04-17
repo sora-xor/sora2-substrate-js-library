@@ -418,10 +418,6 @@ declare module '@polkadot/api-base/types/consts' {
     };
     kensetsu: {
       /**
-       * Accrue() for a single CDP can be called once per this period
-       **/
-      accrueInterestPeriod: u64 & AugmentedConst<ApiType>;
-      /**
        * Percent of KEN that is reminted and goes to Demeter farming incentivization
        **/
       kenIncentiveRemintPercent: Percent & AugmentedConst<ApiType>;
@@ -433,6 +429,10 @@ declare module '@polkadot/api-base/types/consts' {
        * Maximum number of risk manager team members
        **/
       maxRiskManagementTeamSize: u32 & AugmentedConst<ApiType>;
+      /**
+       * Minimal uncollected fee in KUSD that triggers offchain worker to call accrue.
+       **/
+      minimalStabilityFeeAccrue: u128 & AugmentedConst<ApiType>;
       /**
        * A configuration for longevity of unsigned transactions.
        **/

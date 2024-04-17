@@ -1609,9 +1609,9 @@ declare module '@polkadot/types/lookup' {
 
   /** @name KensetsuCdpType (159) */
   interface KensetsuCdpType extends Enum {
-    readonly isV1: boolean;
-    readonly isV2: boolean;
-    readonly type: 'V1' | 'V2';
+    readonly isType1: boolean;
+    readonly isType2: boolean;
+    readonly type: 'Type1' | 'Type2';
   }
 
   /** @name KensetsuCollateralRiskParameters (160) */
@@ -7197,16 +7197,13 @@ declare module '@polkadot/types/lookup' {
     readonly isCdpLimitPerUser: boolean;
     readonly isTooManyManagers: boolean;
     readonly isOperationNotPermitted: boolean;
-    readonly isNoDebt: boolean;
-    readonly isCdPsPerUserLimitReached: boolean;
+    readonly isUncollectedStabilityFeeTooSmall: boolean;
     readonly isHardCapSupply: boolean;
-    readonly isBalanceNotEnough: boolean;
-    readonly isWrongCollateralAssetId: boolean;
     readonly isAccrueWrongTime: boolean;
     readonly isZeroLiquidationLot: boolean;
     readonly isLiquidationLimit: boolean;
     readonly isWrongBorrowAmounts: boolean;
-    readonly type: 'ArithmeticError' | 'WrongAssetId' | 'CdpNotFound' | 'CollateralInfoNotFound' | 'CollateralBelowMinimal' | 'CdpSafe' | 'CdpUnsafe' | 'CdpLimitPerUser' | 'TooManyManagers' | 'OperationNotPermitted' | 'NoDebt' | 'CdPsPerUserLimitReached' | 'HardCapSupply' | 'BalanceNotEnough' | 'WrongCollateralAssetId' | 'AccrueWrongTime' | 'ZeroLiquidationLot' | 'LiquidationLimit' | 'WrongBorrowAmounts';
+    readonly type: 'ArithmeticError' | 'WrongAssetId' | 'CdpNotFound' | 'CollateralInfoNotFound' | 'CollateralBelowMinimal' | 'CdpSafe' | 'CdpUnsafe' | 'CdpLimitPerUser' | 'TooManyManagers' | 'OperationNotPermitted' | 'UncollectedStabilityFeeTooSmall' | 'HardCapSupply' | 'AccrueWrongTime' | 'ZeroLiquidationLot' | 'LiquidationLimit' | 'WrongBorrowAmounts';
   }
 
   /** @name BridgeProxyBridgeRequest (908) */

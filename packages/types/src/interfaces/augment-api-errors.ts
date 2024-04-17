@@ -1866,17 +1866,12 @@ declare module '@polkadot/api-base/types/errors' {
     kensetsu: {
       AccrueWrongTime: AugmentedError<ApiType>;
       ArithmeticError: AugmentedError<ApiType>;
-      BalanceNotEnough: AugmentedError<ApiType>;
       /**
        * Too many CDPs per user
        **/
       CDPLimitPerUser: AugmentedError<ApiType>;
       CDPNotFound: AugmentedError<ApiType>;
       CDPSafe: AugmentedError<ApiType>;
-      /**
-       * Too many CDPs per user
-       **/
-      CDPsPerUserLimitReached: AugmentedError<ApiType>;
       CDPUnsafe: AugmentedError<ApiType>;
       CollateralBelowMinimal: AugmentedError<ApiType>;
       CollateralInfoNotFound: AugmentedError<ApiType>;
@@ -1885,18 +1880,20 @@ declare module '@polkadot/api-base/types/errors' {
        * Liquidation limit reached
        **/
       LiquidationLimit: AugmentedError<ApiType>;
-      NoDebt: AugmentedError<ApiType>;
       OperationNotPermitted: AugmentedError<ApiType>;
       /**
        * Risk management team size exceeded
        **/
       TooManyManagers: AugmentedError<ApiType>;
+      /**
+       * Uncollected stability fee is too small for accrue
+       **/
+      UncollectedStabilityFeeTooSmall: AugmentedError<ApiType>;
       WrongAssetId: AugmentedError<ApiType>;
       /**
        * Wrong borrow amounts
        **/
       WrongBorrowAmounts: AugmentedError<ApiType>;
-      WrongCollateralAssetId: AugmentedError<ApiType>;
       /**
        * Liquidation lot set in risk parameters is zero, cannot liquidate
        **/
