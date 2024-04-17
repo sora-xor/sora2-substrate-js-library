@@ -126,9 +126,7 @@ export class KensetsuModule<T> {
 
     const interestPercent = newCoefficient.sub(vaultInterestCoefficient).div(vaultInterestCoefficient);
     const stabilityFee = vaultDebt.mul(interestPercent);
-    const newDebt = vaultDebt.add(stabilityFee);
-    console.log('old', vaultDebt.toString(), 'new', newDebt.toString());
-    return newDebt;
+    return vaultDebt.add(stabilityFee);
   }
 
   private formatCollateral(collateralInfo: KensetsuCollateralInfo): Collateral {
