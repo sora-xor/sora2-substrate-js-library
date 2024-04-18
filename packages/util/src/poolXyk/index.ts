@@ -130,16 +130,15 @@ export class PoolXykModule<T> {
     );
   }
 
-  public getTotalSupply(firstAddress: string, secondAddress: string): string | null{
+  public getTotalSupply(firstAddress: string, secondAddress: string): CodecString  | null {
     const poolAccount = poolAccountIdFromAssetPair(this.root, firstAddress, secondAddress).toString();
 
     const result = this.root.api.query.poolXYK.totalIssuances(poolAccount);
 
-    if (!result || !result.isSome) return null;
+    if (!result?.isSome) return null;
 
     return toReserve(result.value);
   }
-
 
   /**
    * Get pool properties observable
