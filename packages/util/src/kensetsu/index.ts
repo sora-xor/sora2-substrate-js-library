@@ -122,7 +122,7 @@ export class KensetsuModule<T> {
     if (!newCoefficient) return null;
 
     const vaultInterestCoefficient = vault.interestCoefficient;
-    const vaultDebt = vault.debt;
+    const vaultDebt = vault.internalDebt;
 
     const interestPercent = newCoefficient.sub(vaultInterestCoefficient).div(vaultInterestCoefficient);
     const stabilityFee = vaultDebt.mul(interestPercent);
@@ -195,6 +195,7 @@ export class KensetsuModule<T> {
       debtAssetId: KUSD.address,
       vaultType: VaultTypes.V2,
       debt: new FPNumber(data.debt),
+      internalDebt: new FPNumber(data.debt),
       interestCoefficient: new FPNumber(data.interestCoefficient),
       owner: data.owner.toString(),
       lockedAssetId: data.collateralAssetId.code.toString(),

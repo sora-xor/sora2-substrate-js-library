@@ -12,6 +12,7 @@ export type Vault = {
   debtAssetId: string;
   lockedAmount: FPNumber;
   debt: FPNumber;
+  internalDebt: FPNumber;
   interestCoefficient: FPNumber;
   id: number;
 };
