@@ -130,10 +130,10 @@ export class PoolXykModule<T> {
     );
   }
 
-  public getTotalSupply(firstAddress: string, secondAddress: string): CodecString  | null {
+  public async getTotalSupply(firstAddress: string, secondAddress: string): Promise<CodecString | null> {
     const poolAccount = poolAccountIdFromAssetPair(this.root, firstAddress, secondAddress).toString();
 
-    const result = this.root.api.query.poolXYK.totalIssuances(poolAccount);
+    const result = await this.root.api.query.poolXYK.totalIssuances(poolAccount);
 
     if (!result?.isSome) return null;
 
