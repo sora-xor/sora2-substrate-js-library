@@ -130,6 +130,16 @@ export class PoolXykModule<T> {
     );
   }
 
+  public async getTotalSupply(firstAddress: string, secondAddress: string): Promise<CodecString | null> {
+    const poolAccount = poolAccountIdFromAssetPair(this.root, firstAddress, secondAddress).toString();
+
+    const result = await this.root.api.query.poolXYK.totalIssuances(poolAccount);
+
+    if (!result?.isSome) return null;
+
+    return toReserve(result.value);
+  }
+
   /**
    * Get pool properties observable
    * @param firstAssetAddress
