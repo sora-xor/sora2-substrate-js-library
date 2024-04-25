@@ -841,6 +841,7 @@ export enum Operation {
   BorrowVaultDebt = 'BorrowVaultDebt',
   /** Governance */
   GovernanceVoteOnReferendum = 'GovernanceVoteOnReferendum',
+  GovernanceNotePreimage = 'GovernanceNotePreimage',
   GovernanceSubmitProposal = 'GovernanceSubmitProposal',
   GovernanceVoteOnCandidate = 'GovernanceVoteOnCandidate',
   GovernanceSubmitCandidacy = 'GovernanceSubmitCandidacy',

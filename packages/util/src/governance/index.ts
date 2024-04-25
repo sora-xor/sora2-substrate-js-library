@@ -38,6 +38,12 @@ export class GovernanceModule<T> {
     return this.root.apiRx.derive.democracy.proposals();
   }
 
+  public notePreimage(proposal: any): Promise<T> {
+    return this.root.submitExtrinsic(this.root.api.tx.preimage.notePreimage(proposal), this.root.account.pair, {
+      type: Operation.GovernanceNotePreimage,
+    });
+  }
+
   public submitProposal(proposal: any, value: number): Promise<T> {
     return this.root.submitExtrinsic(this.root.api.tx.democracy.propose(proposal, value), this.root.account.pair, {
       type: Operation.GovernanceSubmitProposal,
