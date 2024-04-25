@@ -1,9 +1,11 @@
 import type { Observable } from '@polkadot/types/types';
 
+import { assert } from '@polkadot/util';
 import { Operation } from '../BaseApi';
 import type { Api } from '../api';
 import { CollectiveProposal, ElectionsInfo, Proposal, Referendum, ReferendumExt } from './types';
 import { AccountId } from '@sora-substrate/types';
+import { Messages } from '../logger';
 
 export class GovernanceModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -25,6 +27,7 @@ export class GovernanceModule<T> {
   }
 
   public voteOnReferendum(referendumIndex: number, vote: string): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
     return this.root.submitExtrinsic(this.root.api.tx.democracy.vote(referendumIndex, vote), this.root.account.pair, {
       type: Operation.GovernanceVoteOnReferendum,
     });
@@ -39,12 +42,14 @@ export class GovernanceModule<T> {
   }
 
   public notePreimage(proposal: any): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
     return this.root.submitExtrinsic(this.root.api.tx.preimage.notePreimage(proposal), this.root.account.pair, {
       type: Operation.GovernanceNotePreimage,
     });
   }
 
   public submitProposal(proposal: any, value: number): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
     return this.root.submitExtrinsic(this.root.api.tx.democracy.propose(proposal, value), this.root.account.pair, {
       type: Operation.GovernanceSubmitProposal,
     });
@@ -59,6 +64,7 @@ export class GovernanceModule<T> {
   }
 
   public voteOnCandidate(candidates: AccountId[], value: number): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
     return this.root.submitExtrinsic(
       this.root.api.tx.electionsPhragmen.vote(candidates, value),
       this.root.account.pair,
@@ -69,6 +75,7 @@ export class GovernanceModule<T> {
   }
 
   public submitCandidacy(value: number): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
     return this.root.submitExtrinsic(
       this.root.api.tx.electionsPhragmen.submitCandidacy(value),
       this.root.account.pair,
