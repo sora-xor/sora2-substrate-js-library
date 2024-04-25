@@ -754,6 +754,11 @@ export enum Operation {
   Mint = 'Mint',
   Burn = 'Burn',
   UpdateAssetInfo = 'UpdateAssetInfo',
+  /** Governance */
+  GovernanceVoteOnReferendum = 'GovernanceVoteOnReferendum',
+  GovernanceSubmitProposal = 'GovernanceSubmitProposal',
+  GovernanceVoteOnCandidate = 'GovernanceVoteOnCandidate',
+  GovernanceSubmitCandidacy = 'GovernanceSubmitCandidacy',
 }
 
 export interface History {

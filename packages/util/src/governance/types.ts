@@ -1,4 +1,4 @@
-import type { Vec } from '@polkadot/types';
+import type { Vec, u32 } from '@polkadot/types';
 import type {
   AccountId,
   Balance,
@@ -8,10 +8,14 @@ import type {
   ReferendumIndex,
   ReferendumInfoTo239,
   Vote,
+  SetIndex,
+  VoteIndex,
+  Votes,
 } from '@polkadot/types/interfaces';
 import type { PalletDemocracyReferendumStatus, PalletDemocracyVoteThreshold } from '@polkadot/types/lookup';
 import type { BN } from '@polkadot/util';
 import type { HexString } from '@polkadot/util/types';
+import { BlockNumber } from '@sora-substrate/types';
 
 export interface AtBlock {
   at: BN;
@@ -77,3 +81,24 @@ export interface ReferendumVotes extends ReferendumVoteState {
   votes: ReferendumVote[];
 }
 export interface ReferendumExt extends Referendum, ReferendumVotes {}
+
+export interface ElectionsInfo {
+  candidates: AccountId[];
+  candidateCount: u32;
+  candidacyBond?: Balance;
+  desiredRunnersUp?: u32;
+  desiredSeats?: u32;
+  members: [AccountId, Balance][];
+  nextVoterSet?: SetIndex;
+  runnersUp: [AccountId, Balance][];
+  termDuration?: BlockNumber;
+  voteCount?: VoteIndex;
+  voterCount?: SetIndex;
+  votingBond?: Balance;
+}
+
+export interface CollectiveProposal {
+  hash: Hash;
+  proposal: Proposal | null;
+  votes: Votes | null;
+}
