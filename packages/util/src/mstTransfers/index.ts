@@ -61,6 +61,7 @@ export class MstTransfersModule<T> {
    * @param extrinsic `api.prepareTransferAllAsMstExtrinsic` result
    */
   public submit(extrinsic: SubmittableExtrinsic): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
     return this.root.submitExtrinsic(extrinsic, this.root.account.pair, {
       type: Operation.TransferAll,
     });

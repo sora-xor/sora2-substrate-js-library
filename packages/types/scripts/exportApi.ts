@@ -193,8 +193,8 @@ async function main(): Promise<void> {
 
     for (let callType in subgroup) {
       apiDoc += makeCallTypeTitle(callType);
-      for (let i = 0; i < subgroup[callType].length; i++) {
-        apiDoc += subgroup[callType][i].makeMd();
+      for (const element of subgroup[callType]) {
+        apiDoc += element.makeMd();
       }
     }
   }

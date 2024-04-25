@@ -54,7 +54,7 @@ const idealReservesReferencePrice = (
   const initialPrice = FPNumber.fromCodecValue(payload.consts.tbc.initialPrice);
   const currentState = tbcBuyFunction(collateralAssetId, priceVariant, delta, payload);
 
-  return safeDivide(initialPrice.add(currentState), new FPNumber(2)).mul(xorIssuance.add(delta));
+  return safeDivide(initialPrice.add(currentState), FPNumber.TWO).mul(xorIssuance.add(delta));
 };
 
 /**
@@ -139,7 +139,7 @@ const checkRewards = (collateralAsset: string, xorAmount: FPNumber, payload: Quo
   const a = safeDivide(unfundedLiabilities, idealBefore);
   const b = safeDivide(unfundedLiabilities, idealAfter);
 
-  const mean = safeDivide(a.add(b), new FPNumber(2));
+  const mean = safeDivide(a.add(b), FPNumber.TWO);
   const amount = safeDivide(
     a.sub(b).mul(Consts.initialPswapTbcRewardsAmount).mul(mean),
     Consts.incentivizedCurrenciesNum
@@ -320,18 +320,20 @@ const tbcBuyPrice = (
     if (collateralAsset === Consts.TBCD) {
       mainOut = safeDivide(collateralReferenceIn, currentState);
     } else {
-      const sqrt = currentState
+      // multiply_and_sqrt
+      const a = currentState
         .mul(currentState)
         .mul(priceChangeCoeff)
-        .add(new FPNumber(2).mul(collateralReferenceIn))
-        .mul(priceChangeCoeff)
+        .add(FPNumber.TWO.mul(collateralReferenceIn))
         .sqrt();
+      const b = priceChangeCoeff.sqrt();
+      const sqrt = a.mul(b);
       mainOut = sqrt.sub(currentState.mul(priceChangeCoeff));
     }
     return getMaxPositive(mainOut);
   } else {
     const newState = tbcBuyFunction(collateralAsset, PriceVariant.Buy, amount, payload);
-    const collateralReferenceIn = safeDivide(currentState.add(newState).mul(amount), new FPNumber(2));
+    const collateralReferenceIn = safeDivide(currentState.add(newState).mul(amount), FPNumber.TWO);
     const collateralQuantity = safeDivide(collateralReferenceIn, collateralPricePerReferenceUnit);
     return getMaxPositive(collateralQuantity);
   }
@@ -345,10 +347,10 @@ const tbcSellPriceWithFee = (
   payload: QuotePayload,
   deduceFee = true
 ): QuoteResult => {
-  const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(collateralAsset, payload)) : FPNumber.ZERO;
+  const feeRatio = deduceFee ? Consts.TBC_FEE.add(sellPenalty(collateralAsset, payload)) : FPNumber.ZERO;
 
   if (isDesiredInput) {
-    const fee = amount.mul(newFee);
+    const fee = amount.mul(feeRatio);
     const outputAmount = tbcSellPrice(collateralAsset, amount.sub(fee), isDesiredInput, payload);
 
     return {
@@ -368,7 +370,7 @@ const tbcSellPriceWithFee = (
     };
   } else {
     const inputAmount = tbcSellPrice(collateralAsset, amount, isDesiredInput, payload);
-    const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(newFee));
+    const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
     const fee = inputAmountWithFee.sub(inputAmount);
 
     return {
@@ -468,16 +470,16 @@ export const tbcQuoteWithoutImpact = (
   try {
     if (isXorAsset(inputAsset)) {
       const xorPrice = tbcSellPriceNoVolume(outputAsset, payload);
-      const newFee = deduceFee ? Consts.TBC_FEE.add(sellPenalty(outputAsset, payload)) : FPNumber.ZERO;
+      const feeRatio = deduceFee ? Consts.TBC_FEE.add(sellPenalty(outputAsset, payload)) : FPNumber.ZERO;
 
       if (isDesiredinput) {
-        const feeAmount = newFee.mul(amount);
+        const feeAmount = feeRatio.mul(amount);
         const collateralOut = amount.sub(feeAmount).mul(xorPrice);
 
         return collateralOut;
       } else {
         const xorIn = safeDivide(amount, xorPrice);
-        const inputAmountWithFee = safeDivide(xorIn, FPNumber.ONE.sub(newFee));
+        const inputAmountWithFee = safeDivide(xorIn, FPNumber.ONE.sub(feeRatio));
 
         return inputAmountWithFee;
       }

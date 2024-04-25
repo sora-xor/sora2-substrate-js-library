@@ -152,6 +152,8 @@ export default {
         'XSTUSD',
         'XST',
         'TBCD',
+        'KEN',
+        'KUSD',
       ],
     },
     RewardInfo: {

@@ -60,7 +60,7 @@ const xstReferencePrice = (assetAddress: string, priceVariant: PriceVariant, pay
     const averagePrice = getAveragePrice(assetAddress, referenceAssetId, priceVariant, payload);
     const floorPrice = FPNumber.fromCodecValue(payload.consts.xst.floorPrice);
 
-    return FPNumber.max(averagePrice, floorPrice);
+    return averagePrice.max(floorPrice);
   } else {
     const symbol = payload.enabledAssets.xst[assetAddress].referenceSymbol;
     const rate = oracleProxyQuoteUnchecked(symbol, payload);

@@ -49,7 +49,7 @@ export class SystemModule<T> {
   }
 
   public getRuntimeVersionObservable(apiRx = this.root.apiRx): Observable<number | null> {
-    return apiRx.query.system.lastRuntimeUpgrade().pipe<number>(
+    return apiRx.query.system.lastRuntimeUpgrade().pipe<number | null>(
       map((data) => {
         const systemInfo: FrameSystemLastRuntimeUpgradeInfo | null = data.unwrapOr(null);
         return systemInfo?.specVersion?.toNumber?.() ?? null;
@@ -73,6 +73,10 @@ export class SystemModule<T> {
   public async getBlockTimestamp(blockHash: string, api = this.root.api): Promise<number> {
     const apiInstanceAtBlock = await api.at(blockHash);
     return (await apiInstanceAtBlock.query.timestamp.now()).toNumber();
+  }
+
+  public async getCurrentTimestamp(api = this.root.api): Promise<number> {
+    return (await api.query.timestamp.now()).toNumber();
   }
 
   public async getExtrinsicsFromBlock(

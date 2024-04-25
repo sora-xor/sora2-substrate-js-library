@@ -1,6 +1,18 @@
 import type { CodecString, NumberLike } from '@sora-substrate/math';
 
 import type { History } from '../BaseApi';
+import type { KnownSymbols } from './consts';
+
+export type NativeSymbol =
+  | KnownSymbols.XOR
+  | KnownSymbols.VAL
+  | KnownSymbols.PSWAP
+  | KnownSymbols.XSTUSD
+  | KnownSymbols.XST
+  | KnownSymbols.TBCD
+  | KnownSymbols.KEN
+  | KnownSymbols.KUSD;
+export type KnownSymbol = keyof typeof KnownSymbols;
 
 export interface WhitelistItem {
   symbol: string;

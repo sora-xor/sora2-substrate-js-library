@@ -56,6 +56,7 @@
 - [hermesGovernancePlatform](#hermesgovernanceplatform-pallet)
 - [preimage](#preimage-pallet)
 - [orderBook](#orderbook-pallet)
+- [kensetsu](#kensetsu-pallet)
 - [leafProvider](#leafprovider-pallet)
 - [bridgeProxy](#bridgeproxy-pallet)
 - [ethereumLightClient](#ethereumlightclient-pallet)
@@ -72,10 +73,12 @@
 - [parachainBridgeApp](#parachainbridgeapp-pallet)
 - [bridgeDataSigner](#bridgedatasigner-pallet)
 - [multisigVerifier](#multisigverifier-pallet)
+- [substrateBridgeApp](#substratebridgeapp-pallet)
 - [mmr](#mmr-pallet)
 - [beefy](#beefy-pallet)
 - [mmrLeaf](#mmrleaf-pallet)
 - [sudo](#sudo-pallet)
+- [apolloPlatform](#apolloplatform-pallet)
 - [utility](#utility-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
 - [faucet](#faucet-pallet)
@@ -3844,7 +3847,7 @@ returns: `FixnumFixedPoint`
 
 #### **api.query.multicollateralBondingCurvePool.priceChangeStep**
 
-> Cofficients in buy price function.
+> Coefficients in buy price function.
 
 arguments: -
 
@@ -5198,7 +5201,6 @@ arguments:
 > - be delegating already; or
 > - have no voting activity (if there is, then it will need to be removed/consolidated
 >   through `reap_vote` or `unvote`).
->
 > - `to`: The account whose voting the `target` account's voting power will follow.
 > - `conviction`: The conviction that will be attached to the delegated votes. When the
 >   account is undelegated, the funds will be locked for the corresponding period.
@@ -7578,6 +7580,23 @@ returns: `Vec<FarmingPoolFarmer>`
 
 <hr>
 
+#### **api.query.farming.lpMinXorForBonusReward**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.farming.setLpMinXorForBonusReward**
+
+arguments:
+
+- newLpMinXorForBonusReward: `u128`
+<hr>
+
 ### _Custom RPCs_
 
 #### **api.rpc.farming.rewardDoublingAssets**
@@ -9364,6 +9383,8 @@ returns: `u16`
 
 #### **api.query.orderBook.orderBooks**
 
+> The storage contains the information about order book, it's parameters and statuses.
+
 arguments:
 
 - key: `OrderBookOrderBookId`
@@ -9373,6 +9394,8 @@ returns: `OrderBook`
 <hr>
 
 #### **api.query.orderBook.limitOrders**
+
+> The storage contains the information about all limit orders in all order books.
 
 arguments:
 
@@ -9384,6 +9407,8 @@ returns: `OrderBookLimitOrder`
 
 #### **api.query.orderBook.bids**
 
+> The index contains the list with the bid order `id` for each price.
+
 arguments:
 
 - key: `(OrderBookOrderBookId,CommonBalanceUnit)`
@@ -9393,6 +9418,8 @@ returns: `Vec<u128>`
 <hr>
 
 #### **api.query.orderBook.asks**
+
+> The index contains the list with the ask order `id` for each price.
 
 arguments:
 
@@ -9404,6 +9431,8 @@ returns: `Vec<u128>`
 
 #### **api.query.orderBook.aggregatedBids**
 
+> The index contains the aggregated information about bids with total volume of orders for each price.
+
 arguments:
 
 - key: `OrderBookOrderBookId`
@@ -9413,6 +9442,8 @@ returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 <hr>
 
 #### **api.query.orderBook.aggregatedAsks**
+
+> The index contains the aggregated information about asks with total volume of orders for each price.
 
 arguments:
 
@@ -9424,6 +9455,8 @@ returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 
 #### **api.query.orderBook.userLimitOrders**
 
+> The index contains the list with the order `id` for the user in different order books.
+
 arguments:
 
 - key: `(AccountId32,OrderBookOrderBookId)`
@@ -9434,6 +9467,8 @@ returns: `Vec<u128>`
 
 #### **api.query.orderBook.expirationsAgenda**
 
+> The tech storage that is used in the order expiration mechanism.
+
 arguments:
 
 - key: `u32`
@@ -9443,6 +9478,8 @@ returns: `Vec<(OrderBookOrderBookId,u128)>`
 <hr>
 
 #### **api.query.orderBook.alignmentCursor**
+
+> The tech storage that is used during the process of updating the order book.
 
 arguments:
 
@@ -9455,8 +9492,8 @@ returns: `u128`
 #### **api.query.orderBook.incompleteExpirationsSince**
 
 > Earliest block with incomplete expirations;
-> Weight limit might not allow to finish all expirations for a block, so
-> they might be operated later.
+> Weight limit might not allow to finish all expirations for a block
+> so they might be operated later.
 
 arguments: -
 
@@ -9467,6 +9504,33 @@ returns: `u32`
 ### _Extrinsics_
 
 #### **api.tx.orderBook.createOrderbook**
+
+> Creates a new order book for the pair of assets.
+>
+> # Parameters:
+>
+> - `origin`: caller account who must have permissions to create the order book
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `tick_size`: price step
+> - `step_lot_size`: amount step
+> - `min_lot_size`: minimal order amount
+> - `max_lot_size`: maximal order amount
+>
+> # Rules:
+>
+> - root & tech committee can create any order book
+> - a regular user can create an order book only for indivisible base assets (most likely NFT) and only if they have this asset on their balance
+> - trading pair for the assets must be registered before the creating an order book
+>
+> # Attribute rules (for `tick_size`, `step_lot_size`, `min_lot_size` & `max_lot_size`):
+>
+> - all attributes must be non-zero
+> - `min_lot_size` <= `max_lot_size`
+> - `step_lot_size` <= `min_lot_size`
+> - `min_lot_size` & `max_lot_size` must be a multiple of `step_lot_size`
+> - `max_lot_size` <= `min_lot_size` \* `SOFT_MIN_MAX_RATIO`, now `SOFT_MIN_MAX_RATIO` = 1 000
+> - `max_lot_size` <= total supply of `base` asset
+> - precision of `tick_size` \* `step_lot_size` must not overflow **18 digits**
 
 arguments:
 
@@ -9479,12 +9543,80 @@ arguments:
 
 #### **api.tx.orderBook.deleteOrderbook**
 
+> Deletes the order book
+>
+> # Parameters:
+>
+> - `origin`: caller account who must have permissions to delete the order book
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+>
+> # Rules:
+>
+> - only root & tech committee can delete the order book
+> - status of the order book must be [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+> - the order book must be empty - doesn't contain any orders
+>
+> # Real life delete process:
+>
+> 1.  Announce that the order book will be deleted.
+> 2.  Stop the order book by changing the status to [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+> 3.  Wait until users cancel their orders or their lifetime just expires (maximum 1 month).
+> 4.  Delete the empty order book.
+
 arguments:
 
 - orderBookId: `OrderBookOrderBookId`
 <hr>
 
 #### **api.tx.orderBook.updateOrderbook**
+
+> Updates the attributes of the order book
+>
+> # Parameters:
+>
+> - `origin`: caller account who must have permissions to update the order book
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `tick_size`: price step
+> - `step_lot_size`: amount step
+> - `min_lot_size`: minimal order amount
+> - `max_lot_size`: maximal order amount
+>
+> # Rules:
+>
+> - only root & tech committee can update the order book
+> - status of the order book must be [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+> - inernal tech status of the order book must be [`Ready`](OrderBookTechStatus::Ready), that means the previos update is completed
+>
+> # Attribute rules (for `tick_size`, `step_lot_size`, `min_lot_size` & `max_lot_size`):
+>
+> - all attributes must be non-zero
+> - `min_lot_size` <= `max_lot_size`
+> - `step_lot_size` <= `min_lot_size`
+> - `min_lot_size` & `max_lot_size` must be a multiple of `step_lot_size`
+> - `max_lot_size` <= total supply of `base` asset
+> - precision of `tick_size` \* `step_lot_size` must not overflow 18 digits
+> - `max_lot_size` <= `min_lot_size` \* `SOFT_MIN_MAX_RATIO`, now `SOFT_MIN_MAX_RATIO` = 1 000
+> - `max_lot_size` <= **old** `min_lot_size` \* `HARD_MIN_MAX_RATIO`, now `HARD_MIN_MAX_RATIO` = 4 000
+>
+> # Real life update process:
+>
+> 1.  Announce that the order book will be updated.
+> 2.  Stop the order book by changing the status to [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+> 3.  Update the order book attributes according to the rules[^note].
+> 4.  Wait the orders alignment if it is necessary - the order book tech status must become [`Ready`](OrderBookTechStatus::Ready).
+> 5.  Change the order book status back to [`Trade`](OrderBookStatus::Trade) or other necessary status.
+> 6.  Announce that the order book update is completed.
+>
+> [^note]:
+>     according to tech reasons it is forbidden to update `max_lot_size` with too large a value (see last 2 rules).
+>     For example, if the current values `min_lot_size` = 1 & `max_lot_size` = 1 000,
+>     we cannot change it to `min_lot_size` = 1 000 & `max_lot_size` = 1 000 000.
+>     In this case it is necessary to do several update rounds:
+>
+> 1.  `min_lot_size`: 1 --> 1 000, `max_lot_size`: 1 000 --> 4 000
+> 2.  `max_lot_size`: 4 000 --> 1 000 000
+>
+> It is also not recommended to batch these updates, because the tech status of the order book can be changed after the 1st update and the 2nd update will be declined in this case.
 
 arguments:
 
@@ -9497,6 +9629,21 @@ arguments:
 
 #### **api.tx.orderBook.changeOrderbookStatus**
 
+> Sets the order book status
+>
+> # Parameters:
+>
+> - `origin`: caller account who must have permissions to change the order book status
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `status`: one of the statuses from [OrderBookStatus]
+>
+> # Rules:
+>
+> - only root & tech committee can set the order book status
+> - if the order book is locked by updating (tech status is [`Updating`](OrderBookTechStatus::Updating)), the allowed statues to set:
+>   - [`OnlyCancel`](OrderBookStatus::OnlyCancel)
+>   - [`Stop`](OrderBookStatus::Stop)
+
 arguments:
 
 - orderBookId: `OrderBookOrderBookId`
@@ -9504,6 +9651,27 @@ arguments:
 <hr>
 
 #### **api.tx.orderBook.placeLimitOrder**
+
+> Places the limit order into the order book
+>
+> # Parameters:
+>
+> - `origin`: caller account, the limit order owner
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `price`: price in the `quote asset`
+> - `amount`: volume of the limit order in the `base asset`
+> - `side`: [side](PriceVariant) where to place the limit order
+> - `lifespan`: life duration of the limit order in millisecs, if not defined the default value 30 days is set
+>
+> # Rules:
+>
+> - `price` must be a multiple of [`OrderBook::tick_size`]
+> - `amount` >= [`OrderBook::min_lot_size`]
+> - `amount` <= [`OrderBook::max_lot_size`]
+> - `amount` must be a multiple of [`OrderBook::step_lot_size`]
+> - if the `price` crosses the spread (the opposite `side`):
+>   - if [`OrderBook::status`] allows to trade - the limit order is converted into market order and the exchange occurs
+>   - if [`OrderBook::status`] doesn't allow to trade - transaction fails
 
 arguments:
 
@@ -9516,6 +9684,22 @@ arguments:
 
 #### **api.tx.orderBook.cancelLimitOrder**
 
+> Cancels the limit order
+>
+> # Parameters:
+>
+> - `origin`: caller account who owns the limit order
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `order_id`: `id` of the limit order
+>
+> # Rules:
+>
+> - only the order owner can cancel the limit order
+>
+> # Note:
+>
+> Network fee isn't charged if the order is successfully cancelled by the owner
+
 arguments:
 
 - orderBookId: `OrderBookOrderBookId`
@@ -9524,6 +9708,21 @@ arguments:
 
 #### **api.tx.orderBook.cancelLimitOrdersBatch**
 
+> Cancels the list of limit orders
+>
+> # Parameters:
+>
+> - `origin`: caller account who owns the limit orders
+> - `limit_orders_to_cancel`: the list with [`order_book_id`](OrderBookId) & `order_id` pairs to cancel
+>
+> # Rules:
+>
+> - only the owner of **all** orders can cancel all limit orders from the list
+>
+> # Note:
+>
+> Network fee isn't charged if orders are successfully cancelled by the owner
+
 arguments:
 
 - limitOrdersToCancel: `Vec<(OrderBookOrderBookId,Vec<u128>)>`
@@ -9531,11 +9730,342 @@ arguments:
 
 #### **api.tx.orderBook.executeMarketOrder**
 
+> Executes the market order
+>
+> # Parameters:
+>
+> - `origin`: caller account
+> - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+> - `direction`: [direction](PriceVariant) of the market order
+> - `amount`: volume of the `base asset` to trade
+>
+> # Rules:
+>
+> - works only for order books with indivisible `base asset`, because there is no other ability to trade such assets. All other divisible assets must be traded by `liquidity_proxy::swap`
+> - `amount` >= [`OrderBook::min_lot_size`]
+> - `amount` <= [`OrderBook::max_lot_size`]
+> - `amount` must be a multiple of [`OrderBook::step_lot_size`]
+
 arguments:
 
 - orderBookId: `OrderBookOrderBookId`
 - direction: `CommonPrimitivesPriceVariant`
 - amount: `u128`
+<hr>
+
+## Kensetsu pallet
+
+### _State Queries_
+
+#### **api.query.kensetsu.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.kensetsu.badDebt**
+
+> System bad debt, the amount of KUSD not secured with collateral.
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.kensetsu.collateralInfos**
+
+> Parametes for collaterals, include risk parameters and interest recalculation coefficients
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `KensetsuCollateralInfo`
+
+<hr>
+
+#### **api.query.kensetsu.kusdHardCap**
+
+> Risk parameter
+> Hard cap of KUSD may be minted by the system
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.kensetsu.liquidationPenalty**
+
+> Risk parameter
+> Liquidation penalty
+
+arguments: -
+
+returns: `Percent`
+
+<hr>
+
+#### **api.query.kensetsu.nextCDPId**
+
+> CDP counter used for CDP id
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.kensetsu.cdpDepository**
+
+> Storage of all CDPs, where key is an unique CDP identifier
+
+arguments:
+
+- key: `u128`
+
+returns: `KensetsuCollateralizedDebtPosition`
+
+<hr>
+
+#### **api.query.kensetsu.cdpOwnerIndex**
+
+> Index links owner to CDP ids, not needed by protocol, but used by front-end
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `Vec<u128>`
+
+<hr>
+
+#### **api.query.kensetsu.riskManagers**
+
+> Accounts of risk management team
+
+arguments: -
+
+returns: `BTreeSet<AccountId32>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.kensetsu.createCdp**
+
+> Creates a Collateralized Debt Position (CDP) allowing users to lock collateral assets and borrow against them.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `collateral_asset_id`: The identifier of the asset used as collateral.
+> - `collateral_amount`: The amount of collateral to be deposited.
+> - `borrow_amount`: The amount the user wants to borrow.
+
+arguments:
+
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- collateralAmount: `u128`
+- borrowAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.closeCdp**
+
+> Closes a Collateralized Debt Position (CDP).
+>
+> If a CDP has outstanding debt, this amount is covered with owner balance. Collateral
+> then is returned to the owner and CDP is deleted.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction, only CDP owner is allowed.
+> - `cdp_id`: The ID of the CDP to be closed.
+
+arguments:
+
+- cdpId: `u128`
+<hr>
+
+#### **api.tx.kensetsu.depositCollateral**
+
+> Deposits collateral into a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `cdp_id`: The ID of the CDP to deposit collateral into.
+> - `collateral_amount`: The amount of collateral to deposit.
+
+arguments:
+
+- cdpId: `u128`
+- collateralAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.borrow**
+
+> Borrows funds against a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `cdp_id`: The ID of the CDP to borrow against.
+> - `will_to_borrow_amount`: The amount the user intends to borrow.
+
+arguments:
+
+- cdpId: `u128`
+- willToBorrowAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.repayDebt**
+
+> Repays debt against a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `cdp_id`: The ID of the CDP to repay debt for.
+> - `amount`: The amount to repay against the CDP's debt.
+
+arguments:
+
+- cdpId: `u128`
+- amount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.liquidate**
+
+> Liquidates a Collateralized Debt Position (CDP) if it becomes unsafe.
+>
+> ## Parameters
+>
+> - `_origin`: The origin of the transaction (unused).
+> - `cdp_id`: The ID of the CDP to be liquidated.
+
+arguments:
+
+- cdpId: `u128`
+<hr>
+
+#### **api.tx.kensetsu.accrue**
+
+> Accrues interest on a Collateralized Debt Position (CDP).
+>
+> ## Parameters
+>
+> - `_origin`: The origin of the transaction (unused).
+> - `cdp_id`: The ID of the CDP to accrue interest on.
+
+arguments:
+
+- cdpId: `u128`
+<hr>
+
+#### **api.tx.kensetsu.updateCollateralRiskParameters**
+
+> Updates the risk parameters for a specific collateral asset.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `collateral_asset_id`: The identifier of the collateral asset.
+> - `new_risk_parameters`: The new risk parameters to be set for the collateral asset.
+
+arguments:
+
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- newRiskParameters: `KensetsuCollateralRiskParameters`
+<hr>
+
+#### **api.tx.kensetsu.updateHardCapTotalSupply**
+
+> Updates the hard cap for the total supply of a stablecoin.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `new_hard_cap`: The new hard cap value to be set for the total supply.
+
+arguments:
+
+- newHardCap: `u128`
+<hr>
+
+#### **api.tx.kensetsu.updateLiquidationPenalty**
+
+> Updates the liquidation penalty applied during CDP liquidation.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `new_liquidation_penalty`: The new liquidation penalty percentage to be set.
+
+arguments:
+
+- newLiquidationPenalty: `Percent`
+<hr>
+
+#### **api.tx.kensetsu.withdrawProfit**
+
+> Withdraws protocol profit in the form of stablecoin (KUSD).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `kusd_amount`: The amount of stablecoin (KUSD) to withdraw as protocol profit.
+
+arguments:
+
+- kusdAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.donate**
+
+> Donates stablecoin (KUSD) to cover protocol bad debt.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `kusd_amount`: The amount of stablecoin (KUSD) to donate to cover bad debt.
+
+arguments:
+
+- kusdAmount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.addRiskManager**
+
+> Adds a new account ID to the set of risk managers.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `account_id`: The account ID to be added as a risk manager.
+
+arguments:
+
+- accountId: `AccountId32`
+<hr>
+
+#### **api.tx.kensetsu.removeRiskManager**
+
+> Removes an account ID from the set of risk managers.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `account_id`: The account ID to be removed from the set of risk managers.
+
+arguments:
+
+- accountId: `AccountId32`
 <hr>
 
 ## LeafProvider pallet
@@ -10050,6 +10580,15 @@ returns: `BridgeTypesGenericCommitmentWithBlock`
 
 <hr>
 
+### _Extrinsics_
+
+#### **api.tx.bridgeOutboundChannel.setFee**
+
+arguments:
+
+- amount: `u128`
+<hr>
+
 ## Dispatch pallet
 
 ### _State Queries_
@@ -10512,6 +11051,15 @@ returns: `BridgeTypesGenericCommitmentWithBlock`
 
 <hr>
 
+### _Extrinsics_
+
+#### **api.tx.substrateBridgeOutboundChannel.updateInterval**
+
+arguments:
+
+- newInterval: `u32`
+<hr>
+
 ## SubstrateDispatch pallet
 
 ### _State Queries_
@@ -10816,6 +11364,142 @@ arguments:
 - peer: `SpCoreEcdsaPublic`
 <hr>
 
+## SubstrateBridgeApp pallet
+
+### _State Queries_
+
+#### **api.query.substrateBridgeApp.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.assetKinds**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,CommonPrimitivesAssetId32)`
+
+returns: `BridgeTypesAssetKind`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.sidechainPrecision**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,CommonPrimitivesAssetId32)`
+
+returns: `u8`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.sidechainAssetId**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,CommonPrimitivesAssetId32)`
+
+returns: `BridgeTypesGenericAssetId`
+
+<hr>
+
+#### **api.query.substrateBridgeApp.thischainAssetId**
+
+arguments:
+
+- key: `(BridgeTypesSubNetworkId,BridgeTypesGenericAssetId)`
+
+returns: `CommonPrimitivesAssetId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.substrateBridgeApp.mint**
+
+> Function used to mint or unlock tokens
+> The Origin for this call is the Bridge Origin
+> Only the relayer can call this function
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- sender: `BridgeTypesGenericAccount`
+- recipient: `AccountId32`
+- amount: `BridgeTypesGenericBalance`
+<hr>
+
+#### **api.tx.substrateBridgeApp.finalizeAssetRegistration**
+
+> Function used to finalize asset registration if everything went well on the sidechain
+> The Origin for this call is the Bridge Origin
+> Only the relayer can call this function
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- sidechainAssetId: `BridgeTypesGenericAssetId`
+- assetKind: `BridgeTypesAssetKind`
+- sidechainPrecision: `u8`
+<hr>
+
+#### **api.tx.substrateBridgeApp.incomingThischainAssetRegistration**
+
+> Function used to register this chain asset
+> The Origin for this call is the Bridge Origin
+> Only the relayer can call this function
+> Sends the message to sidechain to finalize asset registration
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- sidechainAssetId: `BridgeTypesGenericAssetId`
+<hr>
+
+#### **api.tx.substrateBridgeApp.burn**
+
+> Function used by users to send tokens to the sidechain
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- recipient: `BridgeTypesGenericAccount`
+- amount: `u128`
+<hr>
+
+#### **api.tx.substrateBridgeApp.registerSidechainAsset**
+
+> Function used to register sidechain asset
+> The Origin for this call is the Root Origin
+> Only the root can call this function
+> Sends the message to sidechain to register asset
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- sidechainAsset: `BridgeTypesGenericAssetId`
+- symbol: `Bytes`
+- name: `Bytes`
+<hr>
+
+#### **api.tx.substrateBridgeApp.updateTransactionStatus**
+
+> Function used to update transaction status
+> The Origin for this call is the Bridge Origin
+> Only the relayer can call this function
+
+arguments:
+
+- messageId: `H256`
+- messageStatus: `BridgeTypesMessageStatus`
+<hr>
+
 ## Mmr pallet
 
 ### _State Queries_
@@ -11091,6 +11775,231 @@ arguments:
 - call: `Call`
 <hr>
 
+## ApolloPlatform pallet
+
+### _State Queries_
+
+#### **api.query.apolloPlatform.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.apolloPlatform.userLendingInfo**
+
+> Lended asset -> AccountId -> LendingPosition
+
+arguments:
+
+- key: `(CommonPrimitivesAssetId32,AccountId32)`
+
+returns: `ApolloPlatformLendingPosition`
+
+<hr>
+
+#### **api.query.apolloPlatform.userBorrowingInfo**
+
+> Borrowed asset -> AccountId -> (Collateral asset, BorrowingPosition)
+
+arguments:
+
+- key: `(CommonPrimitivesAssetId32,AccountId32)`
+
+returns: `BTreeMap<CommonPrimitivesAssetId32, ApolloPlatformBorrowingPosition>`
+
+<hr>
+
+#### **api.query.apolloPlatform.poolData**
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `ApolloPlatformPoolInfo`
+
+<hr>
+
+#### **api.query.apolloPlatform.poolsByBlock**
+
+> BlockNumber -> AssetId (for updating pools interests by block)
+
+arguments:
+
+- key: `u32`
+
+returns: `CommonPrimitivesAssetId32`
+
+<hr>
+
+#### **api.query.apolloPlatform.authorityAccount**
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.apolloPlatform.treasuryAccount**
+
+arguments: -
+
+returns: `AccountId32`
+
+<hr>
+
+#### **api.query.apolloPlatform.lendingRewards**
+
+> Default lending rewards
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.apolloPlatform.borrowingRewards**
+
+> Default borrowing rewards
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.apolloPlatform.lendingRewardsPerBlock**
+
+> Default lending rewards per block
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.apolloPlatform.borrowingRewardsPerBlock**
+
+> Default borrowing rewards
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.apolloPlatform.addPool**
+
+> Add pool
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- loanToValue: `u128`
+- liquidationThreshold: `u128`
+- optimalUtilizationRate: `u128`
+- baseRate: `u128`
+- slopeRate1: `u128`
+- slopeRate2: `u128`
+- reserveFactor: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.lend**
+
+> Lend token
+
+arguments:
+
+- lendingAsset: `CommonPrimitivesAssetId32`
+- lendingAmount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.borrow**
+
+> Borrow token
+
+arguments:
+
+- collateralAsset: `CommonPrimitivesAssetId32`
+- borrowingAsset: `CommonPrimitivesAssetId32`
+- borrowingAmount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.getRewards**
+
+> Get rewards
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- isLending: `bool`
+<hr>
+
+#### **api.tx.apolloPlatform.withdraw**
+
+> Withdraw
+
+arguments:
+
+- withdrawnAsset: `CommonPrimitivesAssetId32`
+- withdrawnAmount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.repay**
+
+> Repay
+
+arguments:
+
+- collateralAsset: `CommonPrimitivesAssetId32`
+- borrowingAsset: `CommonPrimitivesAssetId32`
+- amountToRepay: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.changeRewardsAmount**
+
+> Change rewards amount
+
+arguments:
+
+- isLending: `bool`
+- amount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.changeRewardsPerBlock**
+
+> Change rewards per block
+
+arguments:
+
+- isLending: `bool`
+- amount: `u128`
+<hr>
+
+#### **api.tx.apolloPlatform.liquidate**
+
+> Liquidate
+
+arguments:
+
+- user: `AccountId32`
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.apolloPlatform.removePool**
+
+> Remove pool
+
+arguments:
+
+- assetIdToRemove: `CommonPrimitivesAssetId32`
+<hr>
+
 ## Utility pallet
 
 ### _Extrinsics_
@@ -11294,6 +12203,7 @@ arguments:
 > - `selected_source_types`: list of selected LiquiditySource types, selection effect is
 >   determined by filter_mode,
 > - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
+> - `additional_data`: data to include in swap success event.
 
 arguments:
 
@@ -11302,6 +12212,7 @@ arguments:
 - maxInputAmount: `u128`
 - selectedSourceTypes: `Vec<CommonPrimitivesLiquiditySourceType>`
 - filterMode: `CommonPrimitivesFilterMode`
+- additionalData: `Option<Bytes>`
 <hr>
 
 #### **api.tx.liquidityProxy.enableLiquiditySource**
@@ -11465,7 +12376,7 @@ arguments:
 
 - bidsOwner: `AccountId32`
 - asksOwner: `AccountId32`
-- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookSettingsOrderBookAttributes,QaToolsPalletToolsOrderBookSettingsOrderBookFill)>`
+- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookOrderBookAttributes,QaToolsPalletToolsOrderBookFillInput)>`
 <hr>
 
 #### **api.tx.qaTools.orderBookFillBatch**
@@ -11485,7 +12396,81 @@ arguments:
 
 - bidsOwner: `AccountId32`
 - asksOwner: `AccountId32`
-- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookSettingsOrderBookFill)>`
+- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookFillInput)>`
+<hr>
+
+#### **api.tx.qaTools.xykInitialize**
+
+> Initialize xyk pool liquidity source.
+>
+> Parameters:
+>
+> - `origin`: Root
+> - `account`: Some account to use during the initialization
+> - `pairs`: Asset pairs to initialize.
+
+arguments:
+
+- account: `AccountId32`
+- pairs: `Vec<QaToolsPalletToolsPoolXykAssetPairInput>`
+<hr>
+
+#### **api.tx.qaTools.xstInitialize**
+
+> Initialize xst liquidity source. In xst's `quote`, one of the assets is the synthetic base
+> (XST) and the other one is a synthetic asset.
+>
+> Parameters:
+>
+> - `origin`: Root
+> - `base_prices`: Synthetic base asset price update. Usually buy price > sell.
+> - `synthetics_prices`: Synthetic initialization;
+>   registration of an asset + setting up prices for target quotes.
+> - `relayer`: Account which will be the author of prices fed to `band` pallet;
+>
+> Emits events with actual quotes achieved after initialization;
+> more details in [`liquidity_sources::initialize_xst`]
+
+arguments:
+
+- basePrices: `Option<QaToolsPalletToolsXstBaseInput>`
+- syntheticsPrices: `Vec<QaToolsPalletToolsXstSyntheticInput>`
+- relayer: `AccountId32`
+<hr>
+
+#### **api.tx.qaTools.mcbcInitialize**
+
+> Initialize mcbc liquidity source.
+>
+> Parameters:
+>
+> - `origin`: Root
+> - `base_supply`: Control supply of XOR,
+> - `other_collaterals`: Variables related to arbitrary collateral-specific pricing,
+> - `tbcd_collateral`: TBCD-specific pricing variables.
+
+arguments:
+
+- baseSupply: `Option<QaToolsPalletToolsMcbcBaseSupply>`
+- otherCollaterals: `Vec<QaToolsPalletToolsMcbcOtherCollateralInput>`
+- tbcdCollateral: `Option<QaToolsPalletToolsMcbcTbcdCollateralInput>`
+<hr>
+
+#### **api.tx.qaTools.priceToolsSetAssetPrice**
+
+> Set prices of an asset in `price_tools` pallet.
+> Ignores pallet restrictions on price speed change.
+>
+> Parameters:
+>
+> - `origin`: Root
+> - `asset_per_xor`: Prices (1 XOR in terms of the corresponding asset).
+> - `asset_id`: Asset identifier; can be some common constant for easier input.
+
+arguments:
+
+- assetPerXor: `QaToolsPalletToolsPriceToolsAssetPrices`
+- assetId: `QaToolsInputAssetId`
 <hr>
 
 ## Author pallet
@@ -12283,7 +13268,8 @@ returns: `Option<SwapOutcomeInfo>`
 {
     _enum: [
         "V1",
-        "V2"
+        "V2",
+        "V3"
     ]
 }
 ```
@@ -12886,7 +13872,8 @@ returns: `Option<SwapOutcomeInfo>`
 ```
 {
     amount: "Balance",
-    fee: "Balance",
+    amountWithoutImpact: "Balance",
+    fee: "OutcomeFee",
     rewards: "Vec<LPRewardsInfo>",
     route: "Vec<AssetId>"
 }
@@ -13045,6 +14032,12 @@ returns: `Option<SwapOutcomeInfo>`
 
 ```
 "AssetId"
+```
+
+### OutcomeFee
+
+```
+"Json"
 ```
 
 ### OutgoingAddAsset
@@ -13373,7 +14366,9 @@ returns: `Option<SwapOutcomeInfo>`
         "ETH",
         "XSTUSD",
         "XST",
-        "TBCD"
+        "TBCD",
+        "KEN",
+        "KUSD"
     ]
 }
 ```
@@ -13538,6 +14533,8 @@ returns: `Option<SwapOutcomeInfo>`
         Kusama: null,
         Polkadot: null,
         Rococo: null,
+        Liberland: null,
+        Alphanet: null,
         Custom: "u32"
     }
 }

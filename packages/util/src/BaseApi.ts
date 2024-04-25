@@ -1,6 +1,7 @@
 import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
+import { assert } from '@polkadot/util';
 import { Observable, Subscriber } from 'rxjs';
 import { decodeAddress, encodeAddress, base58Decode } from '@polkadot/util-crypto';
 import { CodecString, FPNumber } from '@sora-substrate/math';
@@ -12,7 +13,6 @@ import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 import type { AddressOrPair, SignerOptions } from '@polkadot/api/submittable/types';
-import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 import { AccountStorage, Storage } from './storage';
 import { DexId } from './dex/consts';
@@ -20,13 +20,16 @@ import { XOR } from './assets/consts';
 import { encrypt, toHmacSHA256 } from './crypto';
 import { ReceiverHistoryItem } from './swap/types';
 import { MAX_TIMESTAMP } from './orderBook/consts';
+import { Messages } from './logger';
 import type { EthHistory } from './bridgeProxy/eth/types';
 import type { EvmHistory } from './bridgeProxy/evm/types';
 import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 import type { OriginalIdentity, StakingHistory } from './staking/types';
 import type { LimitOrderHistory } from './orderBook/types';
-import { HistoryElementTransfer } from './assets/types';
+import type { HistoryElementTransfer } from './assets/types';
+import type { CommonPrimitivesAssetId32Override } from './typeOverrides';
+import type { VaultHistory } from './kensetsu/types';
 
 type AccountWithOptions = {
   account: AddressOrPair;
@@ -47,6 +50,33 @@ export type NetworkFeesObject = {
   [key in Operation]: CodecString;
 };
 
+export interface History {
+  txId?: string;
+  type: Operation;
+  amount?: string;
+  symbol?: string;
+  assetAddress?: string;
+  id?: string;
+  blockId?: string;
+  blockHeight?: number;
+  to?: string;
+  receivers?: Array<ReceiverHistoryItem>;
+  amount2?: string;
+  symbol2?: string;
+  asset2Address?: string;
+  decimals?: number;
+  decimals2?: number;
+  startTime?: number;
+  endTime?: number;
+  from?: string;
+  status?: string;
+  errorMessage?: ErrorMessageFields | string;
+  liquiditySource?: string;
+  liquidityProviderFee?: CodecString;
+  soraNetworkFee?: CodecString;
+  payload?: any; // can be used to integrate with third-party services
+}
+
 export type IBridgeTransaction = EvmHistory | SubHistory | EthHistory;
 
 export type HistoryItem =
@@ -55,7 +85,16 @@ export type HistoryItem =
   | RewardClaimHistory
   | StakingHistory
   | LimitOrderHistory
+  | VaultHistory
   | HistoryElementTransfer;
+
+type CombinedHistoryItem = History &
+  IBridgeTransaction &
+  RewardClaimHistory &
+  StakingHistory &
+  LimitOrderHistory &
+  VaultHistory &
+  HistoryElementTransfer;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
@@ -124,6 +163,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.DemeterFarmingGetRewards]: '0',
     [Operation.CeresLiquidityLockerLockLiquidity]: '0',
     [Operation.StakingBond]: '0',
+    [Operation.StakingBondAndNominate]: '0', // Min network fee
     [Operation.StakingBondExtra]: '0',
     [Operation.StakingRebond]: '0',
     [Operation.StakingUnbond]: '0',
@@ -137,8 +177,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     [Operation.XorlessTransfer]: '0',
     [Operation.Mint]: '0',
     [Operation.Burn]: '0',
-    [Operation.UpdateAssetInfo]: '0',
     [Operation.OrderBookPlaceLimitOrder]: '0',
+    [Operation.CreateVault]: '0',
+    [Operation.CloseVault]: '0',
+    [Operation.RepayVaultDebt]: '0',
+    [Operation.DepositCollateral]: '0',
+    [Operation.BorrowVaultDebt]: '0',
   } as NetworkFeesObject;
 
   public readonly prefix = 69;
@@ -148,7 +192,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   protected signer?: Signer;
   public storage?: Storage; // common data storage
   public accountStorage?: AccountStorage; // account data storage
-  public account: CreateResult;
+  public account?: CreateResult;
   /** If `true` you might subscribe on extrinsic statuses (`false` by default) */
   public shouldObservableBeUsed = false;
   /** If `true` it'll be locked during extrinsics submit (`false` by default) */
@@ -156,15 +200,17 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
 
   constructor(public readonly historyNamespace = 'history') {}
 
+  /** API instance for data requests. Should be used during the connection only */
   public get api(): ApiPromise {
-    return connection.api;
+    return connection.api!; // NOSONAR
   }
 
+  /** API RX instance for data subscriptions. Should be used during the connection only */
   public get apiRx(): ApiRx {
-    return connection.api.rx as ApiRx;
+    return connection.api!.rx as ApiRx; // NOSONAR
   }
 
-  public get accountPair(): KeyringPair {
+  public get accountPair(): KeyringPair | null {
     if (!this.account) {
       return null;
     }
@@ -178,7 +224,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     return this.formatAddress(this.account.pair.address);
   }
 
-  public get accountJson(): KeyringPair$Json {
+  public get accountJson(): KeyringPair$Json | null {
     if (!this.account) {
       return null;
     }
@@ -243,11 +289,14 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     if (!historyItem?.id) return;
 
     let historyCopy: AccountHistory<HistoryItem>;
-    let addressStorage: Storage;
+    let addressStorage: Storage | undefined = undefined;
 
     const hasAccessToStorage = !!this.storage;
     const historyItemHasSigner = !!historyItem.from;
-    const historyItemFromAddress = historyItemHasSigner ? this.formatAddress(historyItem.from, false) : '';
+    // historyItem.from should appear here
+    const historyItemFromAddress = historyItemHasSigner
+      ? this.formatAddress(historyItem.from as string, false) // NOSONAR
+      : '';
     const needToUpdateAddressStorage =
       !options?.toCurrentAccount &&
       historyItemFromAddress &&
@@ -301,15 +350,15 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
    * @param password
    */
   public unlockPair(password: string): void {
-    this.account.pair.unlock(password);
+    this.account?.pair.unlock(password);
   }
 
   /**
    * Lock pair
    */
   public lockPair(): void {
-    if (!this.account.pair?.isLocked) {
-      this.account.pair.lock();
+    if (!this.account?.pair?.isLocked) {
+      this.account?.pair.lock();
     }
   }
 
@@ -330,14 +379,17 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     this.storage = storage;
   }
 
-  private getAccountWithOptions(): AccountWithOptions {
+  private getAccountWithOptions(): AccountWithOptions | { account: undefined; options: {} } {
+    if (!this.accountPair) return { account: undefined, options: {} };
+
     return {
       account: this.accountPair.isLocked ? this.accountPair.address : this.accountPair,
       options: { signer: this.signer },
     };
   }
 
-  public async submitApiExtrinsic(
+  // prettier-ignore
+  public async submitApiExtrinsic( // NOSONAR
     api: ApiPromise,
     extrinsic: SubmittableExtrinsic<'promise'>,
     signer: KeyringPair,
@@ -346,6 +398,7 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
   ): Promise<T> {
     const nonce = await api.rpc.system.accountNextIndex(signer.address);
     const { account, options } = this.getAccountWithOptions();
+    assert(account, Messages.connectWallet);
     // Signing the transaction
     const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
 
@@ -357,19 +410,23 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
     // history initial params
     const from = isNotFaucetOperation && signer ? this.address : undefined;
     const txId = signedTx.hash.toString();
-    const id = historyData.id ?? txId;
-    const type = historyData.type;
-    const startTime = historyData.startTime ?? Date.now();
+    const id = historyData?.id ?? txId;
+    const type = historyData?.type;
+    const startTime = historyData?.startTime ?? Date.now();
     // history required params for each update
-    const requiredParams = { id, from, type };
+    const requiredParams = { id, from, type } as HistoryItem;
 
     this.saveHistory({ ...historyData, ...requiredParams, txId, startTime });
 
     const extrinsicFn = async (subscriber?: Subscriber<ExtrinsicEvent>) => {
       const unsub = await extrinsic
         .send((result: ISubmittableResult) => {
-          const status = first(Object.keys(result.status.toJSON())).toLowerCase() as TransactionStatus;
-          const updated: any = {};
+          // Status cannot be null
+          const status = first<string>(
+            Object.keys(result.status.toJSON() as object)
+          )?.toLowerCase() as TransactionStatus;
+          const updated: Partial<CombinedHistoryItem> = {};
+          
 
           updated.status = status;
 
@@ -391,25 +448,28 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
                 updated.soraNetworkFee = soraNetworkFee.toString();
               } else if (method === 'AssetRegistered' && section === 'assets') {
                 const [assetId, _] = data;
-                updated.assetAddress = ((assetId as CommonPrimitivesAssetId32).code ?? assetId).toString();
+                updated.assetAddress = ((assetId as CommonPrimitivesAssetId32Override).code ?? assetId).toString();
               } else if (
                 method === 'Transfer' &&
                 ['balances', 'tokens'].includes(section) &&
-                isLiquidityPoolOperation(type)
+                isLiquidityPoolOperation(type as Operation)
               ) {
                 // balances.Transfer doesn't have assetId field
-                const [amount, to, from, assetId] = data.slice().reverse();
+                const [amount] = data.slice().reverse();
                 const amountFormatted = new FPNumber(amount).toString();
                 const history = this.getHistory(id);
                 // events for 1st token and 2nd token are ordered in extrinsic
-                const amountKey = !history.amount ? 'amount' : 'amount2';
+                const amountKey = !history?.amount ? 'amount' : 'amount2';
                 updated[amountKey] = amountFormatted;
               } else if (
-                (method === 'RequestRegistered' && isEthOperation(type)) ||
-                (method === 'RequestStatusUpdate' && (isEvmOperation(type) || isSubstrateOperation(type)))
+                (method === 'RequestRegistered' && isEthOperation(type as Operation)) ||
+                (method === 'RequestStatusUpdate' &&
+                  (isEvmOperation(type as Operation) || isSubstrateOperation(type as Operation)))
               ) {
                 updated.hash = first(data.toJSON() as any);
-              } else if (section === 'system' && method === 'ExtrinsicFailed') {
+              } else if (method === 'CDPCreated' && section === 'kensetsu') {
+                updated.vaultId = first(data.toJSON() as any);
+              } else if (method === 'ExtrinsicFailed' && section === 'system') {
                 updated.status = TransactionStatus.Error;
                 updated.endTime = Date.now();
 
@@ -427,8 +487,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           }
 
           this.saveHistory({ ...requiredParams, ...updated }); // Save history during each status update
-
-          subscriber?.next([status, this.getHistory(id)]);
+          // HistoryItem should appear here
+          subscriber?.next([status, this.getHistory(id) as HistoryItem]); // NOSONAR
 
           if (result.status.isFinalized) {
             subscriber?.complete();
@@ -452,8 +512,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
               wasNotGenerated: true,
             }
           );
-
-          subscriber?.next([status, this.getHistory(id)]);
+          // HistoryItem should appear here
+          subscriber?.next([status, this.getHistory(id) as HistoryItem]); // NOSONAR
           subscriber?.complete();
           throw new Error(errorInfo);
         });
@@ -483,7 +543,8 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
    */
   private getEmptyExtrinsic(operation: Operation): SubmittableExtrinsic<'promise'> | null {
     try {
-      switch (operation) {
+      // prettier-ignore
+      switch (operation) { // NOSONAR
         case Operation.AddLiquidity:
           return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', 0, 0, 0, 0);
         case Operation.CreatePair:
@@ -522,7 +583,12 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             'Disabled'
           );
         case Operation.SwapTransferBatch:
-          return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled');
+          try {
+            return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled', null);
+          } catch {
+            // TODO: Should be removed in @sora-substrate/util v.1.33.
+            return (this.api.tx.liquidityProxy as any).swapTransferBatch([], '', '', [], 'Disabled');
+          }
         case Operation.ClaimVestedRewards:
           return this.api.tx.vestedRewards.claimRewards();
         case Operation.ClaimCrowdloanRewards:
@@ -553,6 +619,11 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
           return this.api.tx.ceresLiquidityLocker.lockLiquidity(XOR.address, XOR.address, 0, 100, false);
         case Operation.StakingBond:
           return this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress });
+        case Operation.StakingBondAndNominate:
+          return this.api.tx.utility.batchAll([
+            this.api.tx.staking.bond(mockAccountAddress, 0, { Account: mockAccountAddress }),
+            this.api.tx.staking.nominate([mockAccountAddress]),
+          ]);
         case Operation.StakingBondExtra:
           return this.api.tx.staking.bondExtra(0);
         case Operation.StakingRebond:
@@ -574,13 +645,11 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
         case Operation.Transfer:
           return this.api.tx.assets.transfer('', '', 0);
         case Operation.XorlessTransfer:
-          return this.api.tx.liquidityProxy.xorlessTransfer(DexId.XOR, '', '', 0, 0, 0, [], 'Disabled', undefined);
+          return this.api.tx.liquidityProxy.xorlessTransfer(DexId.XOR, '', '', 0, 0, 0, [], 'Disabled', null);
         case Operation.Mint:
-          return this.api.tx.assets.updateBalance('', '', 0);
+          return this.api.tx.assets.mint('', '', 0);
         case Operation.Burn:
           return this.api.tx.assets.burn('', 0);
-        case Operation.UpdateAssetInfo:
-          return this.api.tx.assets.updateInfo('', '', '');
         case Operation.OrderBookPlaceLimitOrder:
           return this.api.tx.orderBook.placeLimitOrder(
             { dexId: DexId.XOR, base: XOR.address, quote: XOR.address },
@@ -589,6 +658,16 @@ export class BaseApi<T = void> implements ISubmitExtrinsic<T> {
             PriceVariant.Buy,
             MAX_TIMESTAMP
           );
+        case Operation.CreateVault:
+          return this.api.tx.kensetsu.createCdp('', 0, 0, 0);
+        case Operation.CloseVault:
+          return this.api.tx.kensetsu.closeCdp(0);
+        case Operation.RepayVaultDebt:
+          return this.api.tx.kensetsu.repayDebt(0, 0);
+        case Operation.DepositCollateral:
+          return this.api.tx.kensetsu.depositCollateral(0, 0);
+        case Operation.BorrowVaultDebt:
+          return this.api.tx.kensetsu.borrow(0, 0, 0);
         default:
           return null;
       }
@@ -754,6 +833,12 @@ export enum Operation {
   Mint = 'Mint',
   Burn = 'Burn',
   UpdateAssetInfo = 'UpdateAssetInfo',
+  /** Kensetsu */
+  CreateVault = 'CreateVault',
+  CloseVault = 'CloseVault',
+  RepayVaultDebt = 'RepayVaultDebt',
+  DepositCollateral = 'DepositCollateral',
+  BorrowVaultDebt = 'BorrowVaultDebt',
   /** Governance */
   GovernanceVoteOnReferendum = 'GovernanceVoteOnReferendum',
   GovernanceSubmitProposal = 'GovernanceSubmitProposal',

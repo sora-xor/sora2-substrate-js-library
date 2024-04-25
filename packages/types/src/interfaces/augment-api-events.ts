@@ -9,12 +9,52 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuCollateralRiskParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericAccount, BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonOutcomeFee, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuCdpType, KensetsuCollateralRiskParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstSyntheticOutput, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
 declare module '@polkadot/api-base/types/events' {
   interface AugmentedEvents<ApiType extends ApiTypes> {
+    apolloPlatform: {
+      /**
+       * Borrowed [who, collateral_asset, collateral_amount, borrow_asset, borrow_amount]
+       **/
+      Borrowed: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32, u128]>;
+      ChangedRewardsAmount: AugmentedEvent<ApiType, [AccountId32, bool, u128]>;
+      ChangedRewardsAmountPerBlock: AugmentedEvent<ApiType, [AccountId32, bool, u128]>;
+      /**
+       * ClaimedBorrowingRewards [who, asset_id, amount]
+       **/
+      ClaimedBorrowingRewards: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * ClaimedLendingRewards [who, asset_id, amount]
+       **/
+      ClaimedLendingRewards: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Lended [who, asset_id, amount]
+       **/
+      Lended: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Liquidated [who, asset_id]
+       **/
+      Liquidated: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Pool added [who, asset_id]
+       **/
+      PoolAdded: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Pool removed [who, asset_id]
+       **/
+      PoolRemoved: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Repaid [who, asset_id, amount]
+       **/
+      Repaid: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Withdrawn [who, asset_id, amount]
+       **/
+      Withdrawn: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+    };
     assets: {
       /**
        * New asset has been registered. [Asset Id, Asset Owner Account]
@@ -539,6 +579,12 @@ declare module '@polkadot/api-base/types/events' {
     ethereumLightClient: {
       Finalized: AugmentedEvent<ApiType, [U256, BridgeTypesHeaderHeaderId]>;
     };
+    farming: {
+      /**
+       * When Minimum XOR amount for Liquidity Provider Bonus Reward is updated
+       **/
+      LpMinXorForBonusRewardUpdated: AugmentedEvent<ApiType, [newLpMinXorForBonusReward: u128, oldLpMinXorForBonusReward: u128], { newLpMinXorForBonusReward: u128, oldLpMinXorForBonusReward: u128 }>;
+    };
     faucet: {
       LimitUpdated: AugmentedEvent<ApiType, [u128]>;
       Transferred: AugmentedEvent<ApiType, [AccountId32, u128]>;
@@ -647,18 +693,18 @@ declare module '@polkadot/api-base/types/events' {
       Migrated: AugmentedEvent<ApiType, [Text, AccountId32]>;
     };
     kensetsu: {
-      CDPClosed: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32 }>;
-      CDPCreated: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32 }>;
+      BorrowTaxUpdated: AugmentedEvent<ApiType, [oldBorrowTax: Percent, newBorrowTax: Percent], { oldBorrowTax: Percent, newBorrowTax: Percent }>;
+      CDPClosed: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128 }>;
+      CDPCreated: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, debtAssetId: CommonPrimitivesAssetId32, cdpType: KensetsuCdpType], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, debtAssetId: CommonPrimitivesAssetId32, cdpType: KensetsuCdpType }>;
       CollateralDeposit: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
       CollateralRiskParametersUpdated: AugmentedEvent<ApiType, [collateralAssetId: CommonPrimitivesAssetId32, riskParameters: KensetsuCollateralRiskParameters], { collateralAssetId: CommonPrimitivesAssetId32, riskParameters: KensetsuCollateralRiskParameters }>;
-      CollateralWithdrawn: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
-      DebtIncreased: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
-      DebtPayment: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, collateralAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
-      Donation: AugmentedEvent<ApiType, [amount: u128], { amount: u128 }>;
-      KusdHardCapUpdated: AugmentedEvent<ApiType, [hardCap: u128], { hardCap: u128 }>;
-      Liquidated: AugmentedEvent<ApiType, [cdpId: u128, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, proceeds: u128, penalty: u128], { cdpId: u128, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, proceeds: u128, penalty: u128 }>;
-      LiquidationPenaltyUpdated: AugmentedEvent<ApiType, [liquidationPenalty: Percent], { liquidationPenalty: Percent }>;
-      ProfitWithdrawn: AugmentedEvent<ApiType, [amount: u128], { amount: u128 }>;
+      DebtIncreased: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      DebtPayment: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      DebtTokenHardCapUpdated: AugmentedEvent<ApiType, [debtAssetId: CommonPrimitivesAssetId32, newHardCap: u128, oldHardCap: u128], { debtAssetId: CommonPrimitivesAssetId32, newHardCap: u128, oldHardCap: u128 }>;
+      Donation: AugmentedEvent<ApiType, [debtAssetId: CommonPrimitivesAssetId32, amount: u128], { debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      Liquidated: AugmentedEvent<ApiType, [cdpId: u128, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, debtAssetId: CommonPrimitivesAssetId32, proceeds: u128, penalty: u128], { cdpId: u128, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, debtAssetId: CommonPrimitivesAssetId32, proceeds: u128, penalty: u128 }>;
+      LiquidationPenaltyUpdated: AugmentedEvent<ApiType, [newLiquidationPenalty: Percent, oldLiquidationPenalty: Percent], { newLiquidationPenalty: Percent, oldLiquidationPenalty: Percent }>;
+      ProfitWithdrawn: AugmentedEvent<ApiType, [debtAssetId: CommonPrimitivesAssetId32, amount: u128], { debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
     };
     leafProvider: {
     };
@@ -670,14 +716,14 @@ declare module '@polkadot/api-base/types/events' {
       ADARFeeWithdrawn: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, u128]>;
       /**
        * Batch of swap transfers has been performed
-       * [Input asset ADAR Fee, Input amount]
+       * [Input asset ADAR Fee, Input amount, Additional Data]
        **/
-      BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128]>;
+      BatchSwapExecuted: AugmentedEvent<ApiType, [u128, u128, Option<Bytes>]>;
       /**
        * Exchange of tokens has been performed
        * [Caller Account, DEX Id, Input Asset Id, Output Asset Id, Input Amount, Output Amount, Fee Amount]
        **/
-      Exchange: AugmentedEvent<ApiType, [AccountId32, u32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128, u128, u128, Vec<CommonPrimitivesLiquiditySourceId>]>;
+      Exchange: AugmentedEvent<ApiType, [AccountId32, u32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128, u128, CommonOutcomeFee, Vec<CommonPrimitivesLiquiditySourceId>]>;
       /**
        * Liquidity source was disabled
        **/
@@ -911,6 +957,28 @@ declare module '@polkadot/api-base/types/events' {
        **/
       NothingToExchange: AugmentedEvent<ApiType, [u32, AccountId32]>;
     };
+    qaTools: {
+      /**
+       * Multicollateral bonding curve liquidity source has been initialized successfully.
+       **/
+      McbcInitialized: AugmentedEvent<ApiType, [collateralRefPrices: Vec<ITuple<[CommonPrimitivesAssetId32, QaToolsPalletToolsPriceToolsAssetPrices]>>], { collateralRefPrices: Vec<ITuple<[CommonPrimitivesAssetId32, QaToolsPalletToolsPriceToolsAssetPrices]>> }>;
+      /**
+       * Requested order books have been created.
+       **/
+      OrderBooksCreated: AugmentedEvent<ApiType, []>;
+      /**
+       * Requested order book have been filled.
+       **/
+      OrderBooksFilled: AugmentedEvent<ApiType, []>;
+      /**
+       * XST liquidity source has been initialized successfully.
+       **/
+      XstInitialized: AugmentedEvent<ApiType, [quotesAchieved: Vec<QaToolsPalletToolsXstSyntheticOutput>], { quotesAchieved: Vec<QaToolsPalletToolsXstSyntheticOutput> }>;
+      /**
+       * Xyk liquidity source has been initialized successfully.
+       **/
+      XykInitialized: AugmentedEvent<ApiType, [pricesAchieved: Vec<QaToolsPalletToolsPoolXykAssetPairInput>], { pricesAchieved: Vec<QaToolsPalletToolsPoolXykAssetPairInput> }>;
+    };
     rewards: {
       /**
        * The account has claimed their rewards. [account]
@@ -1022,6 +1090,13 @@ declare module '@polkadot/api-base/types/events' {
        * from the unlocking queue.
        **/
       Withdrawn: AugmentedEvent<ApiType, [stash: AccountId32, amount: u128], { stash: AccountId32, amount: u128 }>;
+    };
+    substrateBridgeApp: {
+      AssetRegistrationFinalized: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      AssetRegistrationProceed: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      Burned: AugmentedEvent<ApiType, [networkId: BridgeTypesSubNetworkId, assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: BridgeTypesGenericAccount, amount: u128], { networkId: BridgeTypesSubNetworkId, assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: BridgeTypesGenericAccount, amount: u128 }>;
+      FailedToMint: AugmentedEvent<ApiType, [H256, SpRuntimeDispatchError]>;
+      Minted: AugmentedEvent<ApiType, [networkId: BridgeTypesSubNetworkId, assetId: CommonPrimitivesAssetId32, sender: BridgeTypesGenericAccount, recipient: AccountId32, amount: u128], { networkId: BridgeTypesSubNetworkId, assetId: CommonPrimitivesAssetId32, sender: BridgeTypesGenericAccount, recipient: AccountId32, amount: u128 }>;
     };
     substrateBridgeInboundChannel: {
     };

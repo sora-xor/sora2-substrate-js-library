@@ -14,6 +14,8 @@ import { SubNetworkId } from './sub/consts';
 import type { Api } from '../api';
 import type { Storage } from '../storage';
 import type { SupportedApps } from './types';
+import type { SubNetwork } from './sub/types';
+import type { EvmSupportedApp } from './evm/types';
 
 export class BridgeProxyModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -52,7 +54,8 @@ export class BridgeProxyModule<T> {
     this.sub.logout();
   }
 
-  public async getListApps(): Promise<SupportedApps> {
+  // prettier-ignore
+  public async getListApps(): Promise<SupportedApps> { // NOSONAR
     const apps: SupportedApps = {
       [BridgeNetworkType.Eth]: {},
       [BridgeNetworkType.Evm]: {},
@@ -74,12 +77,11 @@ export class BridgeProxyModule<T> {
 
           if (!apps[type][id]) apps[type][id] = {};
 
-          apps[type][id][kind] = address;
+          apps[type][id][kind as keyof Partial<EvmSupportedApp>] = address;
         } else {
           const genericNetworkId = appInfo.asSub;
           const type = BridgeNetworkType.Sub;
           const subNetwork = genericNetworkId.asSub;
-          const name = subNetwork.toString();
 
           // adding parachains we work through relaychain
           if (subNetwork.isRococo) {
@@ -87,10 +89,22 @@ export class BridgeProxyModule<T> {
           } else if (subNetwork.isKusama) {
             apps[type].push(SubNetworkId.KusamaSora);
           } else if (subNetwork.isPolkadot) {
+            apps[type].push(SubNetworkId.PolkadotAcala);
             apps[type].push(SubNetworkId.PolkadotSora);
+          } else if (subNetwork.isAlphanet) {
+            apps[type].push(SubNetworkId.AlphanetSora);
+            apps[type].push(SubNetworkId.AlphanetMoonbase);
+          } else if (subNetwork.isMainnet) {
+            // SORA-SORA bridge is not exists
+            console.info(`"Mainnet" sub network is not supported app`);
+            continue;
+          } else if (subNetwork.isCustom) {
+            // Custom bridge is not supported yet
+            console.info(`"${subNetwork.asCustom.toNumber()}" sub network is not supported app`);
+            continue;
           }
 
-          apps[type].push(name as SubNetworkId);
+          apps[type].push(subNetwork.type as SubNetwork);
         }
       }
 

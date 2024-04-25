@@ -7,13 +7,23 @@ import '@polkadot/api-base/types/consts';
 
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
 import type { U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
-import type { AccountId32, Perbill } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
 import type { BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight, SpWeightsWeightV2Weight } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
 
 declare module '@polkadot/api-base/types/consts' {
   interface AugmentedConsts<ApiType extends ApiTypes> {
+    apolloPlatform: {
+      /**
+       * A configuration for longevity of unsigned transactions.
+       **/
+      unsignedLongevity: u64 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for base priority of unsigned transactions.
+       **/
+      unsignedPriority: u64 & AugmentedConst<ApiType>;
+    };
     babe: {
       /**
        * The amount of time, in slots, that each epoch should last.
@@ -408,9 +418,9 @@ declare module '@polkadot/api-base/types/consts' {
     };
     kensetsu: {
       /**
-       * Accrue() for a single CDP can be called once per this period
+       * Percent of KEN that is reminted and goes to Demeter farming incentivization
        **/
-      accrueInterestPeriod: u64 & AugmentedConst<ApiType>;
+      kenIncentiveRemintPercent: Percent & AugmentedConst<ApiType>;
       /**
        * Maximum number of CDP that one user can create
        **/
@@ -419,6 +429,10 @@ declare module '@polkadot/api-base/types/consts' {
        * Maximum number of risk manager team members
        **/
       maxRiskManagementTeamSize: u32 & AugmentedConst<ApiType>;
+      /**
+       * Minimal uncollected fee in KUSD that triggers offchain worker to call accrue.
+       **/
+      minimalStabilityFeeAccrue: u128 & AugmentedConst<ApiType>;
       /**
        * A configuration for longevity of unsigned transactions.
        **/

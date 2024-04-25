@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, Bytes, Compact, Option, Result, Text, U256, U8aFixed, Vec, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesEthashproofDoubleNodeWithMerkleProof, BridgeTypesEthashproofMixNonce, BridgeTypesEvmProof, BridgeTypesGenericAccount, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesHeader, BridgeTypesLog, BridgeTypesNetworkConfig, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuCollateralRiskParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, QaToolsPalletToolsOrderBookSettingsOrderBookAttributes, QaToolsPalletToolsOrderBookSettingsOrderBookFill, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeMultiSignature, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesEthashproofDoubleNodeWithMerkleProof, BridgeTypesEthashproofMixNonce, BridgeTypesEvmProof, BridgeTypesGenericAccount, BridgeTypesGenericAssetId, BridgeTypesGenericBalance, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesHeader, BridgeTypesLog, BridgeTypesMessageStatus, BridgeTypesNetworkConfig, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuCollateralRiskParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, QaToolsInputAssetId, QaToolsPalletToolsMcbcBaseSupply, QaToolsPalletToolsMcbcOtherCollateralInput, QaToolsPalletToolsMcbcTbcdCollateralInput, QaToolsPalletToolsOrderBookFillInput, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstBaseInput, QaToolsPalletToolsXstSyntheticInput, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpRuntimeMultiSignature, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -18,6 +18,48 @@ export type __SubmittableExtrinsicFunction<ApiType extends ApiTypes> = Submittab
 
 declare module '@polkadot/api-base/types/submittable' {
   interface AugmentedSubmittables<ApiType extends ApiTypes> {
+    apolloPlatform: {
+      /**
+       * Add pool
+       **/
+      addPool: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, loanToValue: u128 | AnyNumber | Uint8Array, liquidationThreshold: u128 | AnyNumber | Uint8Array, optimalUtilizationRate: u128 | AnyNumber | Uint8Array, baseRate: u128 | AnyNumber | Uint8Array, slopeRate1: u128 | AnyNumber | Uint8Array, slopeRate2: u128 | AnyNumber | Uint8Array, reserveFactor: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128]>;
+      /**
+       * Borrow token
+       **/
+      borrow: AugmentedSubmittable<(collateralAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Change rewards amount
+       **/
+      changeRewardsAmount: AugmentedSubmittable<(isLending: bool | boolean | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [bool, u128]>;
+      /**
+       * Change rewards per block
+       **/
+      changeRewardsPerBlock: AugmentedSubmittable<(isLending: bool | boolean | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [bool, u128]>;
+      /**
+       * Get rewards
+       **/
+      getRewards: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, isLending: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, bool]>;
+      /**
+       * Lend token
+       **/
+      lend: AugmentedSubmittable<(lendingAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, lendingAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Liquidate
+       **/
+      liquidate: AugmentedSubmittable<(user: AccountId32 | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Remove pool
+       **/
+      removePool: AugmentedSubmittable<(assetIdToRemove: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      /**
+       * Repay
+       **/
+      repay: AugmentedSubmittable<(collateralAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amountToRepay: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Withdraw
+       **/
+      withdraw: AugmentedSubmittable<(withdrawnAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, withdrawnAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128]>;
+    };
     assets: {
       /**
        * Performs a checked Asset burn, can only be done
@@ -418,7 +460,7 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     bridgeProxy: {
       addLimitedAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
-      burn: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Parachain: any } | { Unknown: any } | { Root: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32, BridgeTypesGenericAccount, u128]>;
+      burn: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Liberland: any } | { Parachain: any } | { Unknown: any } | { Root: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32, BridgeTypesGenericAccount, u128]>;
       removeLimitedAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
       updateTransferLimit: AugmentedSubmittable<(settings: BridgeProxyTransferLimitSettings | { maxAmount?: any; periodBlocks?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeProxyTransferLimitSettings]>;
     };
@@ -1374,6 +1416,9 @@ declare module '@polkadot/api-base/types/submittable' {
       registerNetwork: AugmentedSubmittable<(networkConfig: BridgeTypesNetworkConfig | { Mainnet: any } | { Ropsten: any } | { Sepolia: any } | { Rinkeby: any } | { Goerli: any } | { Classic: any } | { Mordor: any } | { Custom: any } | string | Uint8Array, header: BridgeTypesHeader | { parentHash?: any; timestamp?: any; number?: any; author?: any; transactionsRoot?: any; ommersHash?: any; extraData?: any; stateRoot?: any; receiptsRoot?: any; logsBloom?: any; gasUsed?: any; gasLimit?: any; difficulty?: any; seal?: any; baseFee?: any } | string | Uint8Array, initialDifficulty: U256 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesNetworkConfig, BridgeTypesHeader, U256]>;
       updateDifficultyConfig: AugmentedSubmittable<(networkConfig: BridgeTypesNetworkConfig | { Mainnet: any } | { Ropsten: any } | { Sepolia: any } | { Rinkeby: any } | { Goerli: any } | { Classic: any } | { Mordor: any } | { Custom: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesNetworkConfig]>;
     };
+    farming: {
+      setLpMinXorForBonusReward: AugmentedSubmittable<(newLpMinXorForBonusReward: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+    };
     faucet: {
       resetRewards: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
@@ -1753,34 +1798,43 @@ declare module '@polkadot/api-base/types/submittable' {
       addRiskManager: AugmentedSubmittable<(accountId: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       /**
        * Borrows funds against a Collateralized Debt Position (CDP).
-       * 
+       * Borrow amount will be as max as possible in the range
+       * `[borrow_amount_min, borrow_amount_max]` in order to confrom the slippage tolerance.
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
        * - `cdp_id`: The ID of the CDP to borrow against.
-       * - `will_to_borrow_amount`: The amount the user intends to borrow.
+       * - `borrow_amount_min`: The minimum amount the user wants to borrow.
+       * - `borrow_amount_max`: The maximum amount the user wants to borrow.
        **/
-      borrow: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array, willToBorrowAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, u128]>;
+      borrow: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array, borrowAmountMin: u128 | AnyNumber | Uint8Array, borrowAmountMax: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, u128, u128]>;
       /**
        * Closes a Collateralized Debt Position (CDP).
        * 
+       * If a CDP has outstanding debt, this amount is covered with owner balance. Collateral
+       * then is returned to the owner and CDP is deleted.
+       * 
        * ## Parameters
        * 
-       * - `origin`: The origin of the transaction.
+       * - `origin`: The origin of the transaction, only CDP owner is allowed.
        * - `cdp_id`: The ID of the CDP to be closed.
        **/
       closeCdp: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
-       * Creates a Collateralized Debt Position (CDP) allowing users to lock collateral assets and borrow against them.
+       * Creates a Collateralized Debt Position (CDP).
+       * The extrinsic combines depositing collateral and borrowing.
+       * Borrow amount will be as max as possible in the range
+       * `[borrow_amount_min, borrow_amount_max]` in order to confrom the slippage tolerance.
        * 
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
        * - `collateral_asset_id`: The identifier of the asset used as collateral.
        * - `collateral_amount`: The amount of collateral to be deposited.
-       * - `borrow_amount`: The amount the user wants to borrow.
+       * - `borrow_amount_min`: The minimum amount the user wants to borrow.
+       * - `borrow_amount_max`: The maximum amount the user wants to borrow.
        **/
-      createCdp: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array, borrowAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128]>;
+      createCdp: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array, borrowAmountMin: u128 | AnyNumber | Uint8Array, borrowAmountMax: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128]>;
       /**
        * Deposits collateral into a Collateralized Debt Position (CDP).
        * 
@@ -1829,6 +1883,15 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       repayDebt: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, u128]>;
       /**
+       * Updates the borrow tax applied during borrow.
+       * 
+       * ## Parameters
+       * 
+       * - `origin`: The origin of the transaction.
+       * - `new_borrow_tax`: The new borrow tax percentage to be set.
+       **/
+      updateBorrowTax: AugmentedSubmittable<(newBorrowTax: Percent | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent]>;
+      /**
        * Updates the risk parameters for a specific collateral asset.
        * 
        * ## Parameters
@@ -1837,7 +1900,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `collateral_asset_id`: The identifier of the collateral asset.
        * - `new_risk_parameters`: The new risk parameters to be set for the collateral asset.
        **/
-      updateCollateralRiskParameters: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newRiskParameters: KensetsuCollateralRiskParameters | { hardCap?: any; liquidationRatio?: any; maxLiquidationLot?: any; stabilityFeeRate?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, KensetsuCollateralRiskParameters]>;
+      updateCollateralRiskParameters: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newRiskParameters: KensetsuCollateralRiskParameters | { hardCap?: any; liquidationRatio?: any; maxLiquidationLot?: any; stabilityFeeRate?: any; minimalCollateralDeposit?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, KensetsuCollateralRiskParameters]>;
       /**
        * Updates the hard cap for the total supply of a stablecoin.
        * 
@@ -1856,16 +1919,6 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `new_liquidation_penalty`: The new liquidation penalty percentage to be set.
        **/
       updateLiquidationPenalty: AugmentedSubmittable<(newLiquidationPenalty: Percent | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent]>;
-      /**
-       * Withdraws collateral from a Collateralized Debt Position (CDP).
-       * 
-       * ## Parameters
-       * 
-       * - `origin`: The origin of the transaction.
-       * - `cdp_id`: The ID of the CDP to withdraw collateral from.
-       * - `collateral_amount`: The amount of collateral to withdraw.
-       **/
-      withdrawCollateral: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, u128]>;
       /**
        * Withdraws protocol profit in the form of stablecoin (KUSD).
        * 
@@ -1928,8 +1981,9 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `selected_source_types`: list of selected LiquiditySource types, selection effect is
        * determined by filter_mode,
        * - `filter_mode`: indicate either to allow or forbid selected types only, or disable filtering.
+       * - `additional_data`: data to include in swap success event.
        **/
-      swapTransferBatch: AugmentedSubmittable<(swapBatches: Vec<LiquidityProxySwapBatchInfo> | (LiquidityProxySwapBatchInfo | { outcomeAssetId?: any; outcomeAssetReuse?: any; dexId?: any; receivers?: any } | string | Uint8Array)[], inputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, maxInputAmount: u128 | AnyNumber | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [Vec<LiquidityProxySwapBatchInfo>, CommonPrimitivesAssetId32, u128, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode]>;
+      swapTransferBatch: AugmentedSubmittable<(swapBatches: Vec<LiquidityProxySwapBatchInfo> | (LiquidityProxySwapBatchInfo | { outcomeAssetId?: any; outcomeAssetReuse?: any; dexId?: any; receivers?: any } | string | Uint8Array)[], inputAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, maxInputAmount: u128 | AnyNumber | Uint8Array, selectedSourceTypes: Vec<CommonPrimitivesLiquiditySourceType> | (CommonPrimitivesLiquiditySourceType | 'XYKPool' | 'BondingCurvePool' | 'MulticollateralBondingCurvePool' | 'MockPool' | 'MockPool2' | 'MockPool3' | 'MockPool4' | 'XSTPool' | 'OrderBook' | number | Uint8Array)[], filterMode: CommonPrimitivesFilterMode | 'Disabled' | 'ForbidSelected' | 'AllowSelected' | number | Uint8Array, additionalData: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [Vec<LiquidityProxySwapBatchInfo>, CommonPrimitivesAssetId32, u128, Vec<CommonPrimitivesLiquiditySourceType>, CommonPrimitivesFilterMode, Option<Bytes>]>;
       /**
        * Extrinsic which is enable XORless transfers.
        * Internally it's swaps `asset_id` to `desired_xor_amount` of `XOR` and transfers remaining amount of `asset_id` to `receiver`.
@@ -2131,13 +2185,175 @@ declare module '@polkadot/api-base/types/submittable' {
       enableOracle: AugmentedSubmittable<(oracle: CommonPrimitivesOracle | 'BandChainFeed' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOracle]>;
     };
     orderBook: {
+      /**
+       * Cancels the limit order
+       * 
+       * # Parameters:
+       * - `origin`: caller account who owns the limit order
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `order_id`: `id` of the limit order
+       * 
+       * # Rules:
+       * - only the order owner can cancel the limit order
+       * 
+       * # Note:
+       * Network fee isn't charged if the order is successfully cancelled by the owner
+       **/
       cancelLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, orderId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128]>;
+      /**
+       * Cancels the list of limit orders
+       * 
+       * # Parameters:
+       * - `origin`: caller account who owns the limit orders
+       * - `limit_orders_to_cancel`: the list with [`order_book_id`](OrderBookId) & `order_id` pairs to cancel
+       * 
+       * # Rules:
+       * - only the owner of **all** orders can cancel all limit orders from the list
+       * 
+       * # Note:
+       * Network fee isn't charged if orders are successfully cancelled by the owner
+       **/
       cancelLimitOrdersBatch: AugmentedSubmittable<(limitOrdersToCancel: Vec<ITuple<[OrderBookOrderBookId, Vec<u128>]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, Vec<u128> | (u128 | AnyNumber | Uint8Array)[]])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[OrderBookOrderBookId, Vec<u128>]>>]>;
+      /**
+       * Sets the order book status
+       * 
+       * # Parameters:
+       * - `origin`: caller account who must have permissions to change the order book status
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `status`: one of the statuses from [OrderBookStatus]
+       * 
+       * # Rules:
+       * - only root & tech committee can set the order book status
+       * - if the order book is locked by updating (tech status is [`Updating`](OrderBookTechStatus::Updating)), the allowed statues to set:
+       * - [`OnlyCancel`](OrderBookStatus::OnlyCancel)
+       * - [`Stop`](OrderBookStatus::Stop)
+       **/
       changeOrderbookStatus: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, status: OrderBookOrderBookStatus | 'Trade' | 'PlaceAndCancel' | 'OnlyCancel' | 'Stop' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, OrderBookOrderBookStatus]>;
+      /**
+       * Creates a new order book for the pair of assets.
+       * 
+       * # Parameters:
+       * - `origin`: caller account who must have permissions to create the order book
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `tick_size`: price step
+       * - `step_lot_size`: amount step
+       * - `min_lot_size`: minimal order amount
+       * - `max_lot_size`: maximal order amount
+       * 
+       * # Rules:
+       * - root & tech committee can create any order book
+       * - a regular user can create an order book only for indivisible base assets (most likely NFT) and only if they have this asset on their balance
+       * - trading pair for the assets must be registered before the creating an order book
+       * 
+       * # Attribute rules (for `tick_size`, `step_lot_size`, `min_lot_size` & `max_lot_size`):
+       * - all attributes must be non-zero
+       * - `min_lot_size` <= `max_lot_size`
+       * - `step_lot_size` <= `min_lot_size`
+       * - `min_lot_size` & `max_lot_size` must be a multiple of `step_lot_size`
+       * - `max_lot_size` <= `min_lot_size` * `SOFT_MIN_MAX_RATIO`, now `SOFT_MIN_MAX_RATIO` = 1 000
+       * - `max_lot_size` <= total supply of `base` asset
+       * - precision of `tick_size` * `step_lot_size` must not overflow **18 digits**
+       **/
       createOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, u128, u128]>;
+      /**
+       * Deletes the order book
+       * 
+       * # Parameters:
+       * - `origin`: caller account who must have permissions to delete the order book
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * 
+       * # Rules:
+       * - only root & tech committee can delete the order book
+       * - status of the order book must be [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+       * - the order book must be empty - doesn't contain any orders
+       * 
+       * # Real life delete process:
+       * 1. Announce that the order book will be deleted.
+       * 2. Stop the order book by changing the status to [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+       * 3. Wait until users cancel their orders or their lifetime just expires (maximum 1 month).
+       * 4. Delete the empty order book.
+       **/
       deleteOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId]>;
+      /**
+       * Executes the market order
+       * 
+       * # Parameters:
+       * - `origin`: caller account
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `direction`: [direction](PriceVariant) of the market order
+       * - `amount`: volume of the `base asset` to trade
+       * 
+       * # Rules:
+       * - works only for order books with indivisible `base asset`, because there is no other ability to trade such assets. All other divisible assets must be traded by `liquidity_proxy::swap`
+       * - `amount` >= [`OrderBook::min_lot_size`]
+       * - `amount` <= [`OrderBook::max_lot_size`]
+       * - `amount` must be a multiple of [`OrderBook::step_lot_size`]
+       **/
       executeMarketOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, direction: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, CommonPrimitivesPriceVariant, u128]>;
+      /**
+       * Places the limit order into the order book
+       * 
+       * # Parameters:
+       * - `origin`: caller account, the limit order owner
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `price`: price in the `quote asset`
+       * - `amount`: volume of the limit order in the `base asset`
+       * - `side`: [side](PriceVariant) where to place the limit order
+       * - `lifespan`: life duration of the limit order in millisecs, if not defined the default value 30 days is set
+       * 
+       * # Rules:
+       * - `price` must be a multiple of [`OrderBook::tick_size`]
+       * - `amount` >= [`OrderBook::min_lot_size`]
+       * - `amount` <= [`OrderBook::max_lot_size`]
+       * - `amount` must be a multiple of [`OrderBook::step_lot_size`]
+       * - if the `price` crosses the spread (the opposite `side`):
+       * - if [`OrderBook::status`] allows to trade - the limit order is converted into market order and the exchange occurs
+       * - if [`OrderBook::status`] doesn't allow to trade - transaction fails
+       **/
       placeLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, price: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array, side: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, lifespan: Option<u64> | null | Uint8Array | u64 | AnyNumber) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, CommonPrimitivesPriceVariant, Option<u64>]>;
+      /**
+       * Updates the attributes of the order book
+       * 
+       * # Parameters:
+       * - `origin`: caller account who must have permissions to update the order book
+       * - `order_book_id`: [order book identifier](OrderBookId) that contains: `DexId`, `base asset` & `quote asset`
+       * - `tick_size`: price step
+       * - `step_lot_size`: amount step
+       * - `min_lot_size`: minimal order amount
+       * - `max_lot_size`: maximal order amount
+       * 
+       * # Rules:
+       * - only root & tech committee can update the order book
+       * - status of the order book must be [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+       * - inernal tech status of the order book must be [`Ready`](OrderBookTechStatus::Ready), that means the previos update is completed
+       * 
+       * # Attribute rules (for `tick_size`, `step_lot_size`, `min_lot_size` & `max_lot_size`):
+       * - all attributes must be non-zero
+       * - `min_lot_size` <= `max_lot_size`
+       * - `step_lot_size` <= `min_lot_size`
+       * - `min_lot_size` & `max_lot_size` must be a multiple of `step_lot_size`
+       * - `max_lot_size` <= total supply of `base` asset
+       * - precision of `tick_size` * `step_lot_size` must not overflow 18 digits
+       * - `max_lot_size` <= `min_lot_size` * `SOFT_MIN_MAX_RATIO`, now `SOFT_MIN_MAX_RATIO` = 1 000
+       * - `max_lot_size` <= **old** `min_lot_size` * `HARD_MIN_MAX_RATIO`, now `HARD_MIN_MAX_RATIO` = 4 000
+       * 
+       * # Real life update process:
+       * 1. Announce that the order book will be updated.
+       * 2. Stop the order book by changing the status to [`OnlyCancel`](OrderBookStatus::OnlyCancel) or [`Stop`](OrderBookStatus::Stop)
+       * 3. Update the order book attributes according to the rules[^note].
+       * 4. Wait the orders alignment if it is necessary - the order book tech status must become [`Ready`](OrderBookTechStatus::Ready).
+       * 5. Change the order book status back to [`Trade`](OrderBookStatus::Trade) or other necessary status.
+       * 6. Announce that the order book update is completed.
+       * 
+       * [^note]: according to tech reasons it is forbidden to update `max_lot_size` with too large a value (see last 2 rules).
+       * For example, if the current values `min_lot_size` = 1 & `max_lot_size` = 1 000,
+       * we cannot change it to `min_lot_size` = 1 000 & `max_lot_size` = 1 000 000.
+       * In this case it is necessary to do several update rounds:
+       * 1. `min_lot_size`: 1 --> 1 000, `max_lot_size`: 1 000 --> 4 000
+       * 2. `max_lot_size`: 4 000 --> 1 000 000
+       * 
+       * It is also not recommended to batch these updates, because the tech status of the order book can be changed after the 1st update and the 2nd update will be declined in this case.
+       **/
       updateOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, u128, u128]>;
     };
     parachainBridgeApp: {
@@ -2194,6 +2410,16 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     qaTools: {
       /**
+       * Initialize mcbc liquidity source.
+       * 
+       * Parameters:
+       * - `origin`: Root
+       * - `base_supply`: Control supply of XOR,
+       * - `other_collaterals`: Variables related to arbitrary collateral-specific pricing,
+       * - `tbcd_collateral`: TBCD-specific pricing variables.
+       **/
+      mcbcInitialize: AugmentedSubmittable<(baseSupply: Option<QaToolsPalletToolsMcbcBaseSupply> | null | Uint8Array | QaToolsPalletToolsMcbcBaseSupply | { assetCollector?: any; target?: any } | string, otherCollaterals: Vec<QaToolsPalletToolsMcbcOtherCollateralInput> | (QaToolsPalletToolsMcbcOtherCollateralInput | { asset?: any; parameters?: any } | string | Uint8Array)[], tbcdCollateral: Option<QaToolsPalletToolsMcbcTbcdCollateralInput> | null | Uint8Array | QaToolsPalletToolsMcbcTbcdCollateralInput | { parameters?: any; refXorPrices?: any } | string) => SubmittableExtrinsic<ApiType>, [Option<QaToolsPalletToolsMcbcBaseSupply>, Vec<QaToolsPalletToolsMcbcOtherCollateralInput>, Option<QaToolsPalletToolsMcbcTbcdCollateralInput>]>;
+      /**
        * Create multiple many order books with parameters and fill them according to given parameters.
        * 
        * Balance for placing the orders is minted automatically, trading pairs are
@@ -2207,7 +2433,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `asks_owner`: Creator of the sell orders placed on the order books,
        * - `settings`: Parameters for creation of the order book and placing the orders in each order book.
        **/
-      orderBookCreateAndFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookSettingsOrderBookAttributes, QaToolsPalletToolsOrderBookSettingsOrderBookFill]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookSettingsOrderBookAttributes | { tickSize?: any; stepLotSize?: any; minLotSize?: any; maxLotSize?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookSettingsOrderBookFill | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookSettingsOrderBookAttributes, QaToolsPalletToolsOrderBookSettingsOrderBookFill]>>]>;
+      orderBookCreateAndFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsOrderBookFillInput]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookOrderBookAttributes | { tickSize?: any; stepLotSize?: any; minLotSize?: any; maxLotSize?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookFillInput | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsOrderBookFillInput]>>]>;
       /**
        * Fill the order books according to given parameters.
        * 
@@ -2219,7 +2445,41 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `asks_owner`: Creator of the sell orders placed on the order books,
        * - `settings`: Parameters for placing the orders in each order book.
        **/
-      orderBookFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookSettingsOrderBookFill]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookSettingsOrderBookFill | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookSettingsOrderBookFill]>>]>;
+      orderBookFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookFillInput]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookFillInput | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookFillInput]>>]>;
+      /**
+       * Set prices of an asset in `price_tools` pallet.
+       * Ignores pallet restrictions on price speed change.
+       * 
+       * Parameters:
+       * - `origin`: Root
+       * - `asset_per_xor`: Prices (1 XOR in terms of the corresponding asset).
+       * - `asset_id`: Asset identifier; can be some common constant for easier input.
+       **/
+      priceToolsSetAssetPrice: AugmentedSubmittable<(assetPerXor: QaToolsPalletToolsPriceToolsAssetPrices | { buy?: any; sell?: any } | string | Uint8Array, assetId: QaToolsInputAssetId | { McbcReference: any } | { XstReference: any } | { Other: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [QaToolsPalletToolsPriceToolsAssetPrices, QaToolsInputAssetId]>;
+      /**
+       * Initialize xst liquidity source. In xst's `quote`, one of the assets is the synthetic base
+       * (XST) and the other one is a synthetic asset.
+       * 
+       * Parameters:
+       * - `origin`: Root
+       * - `base_prices`: Synthetic base asset price update. Usually buy price > sell.
+       * - `synthetics_prices`: Synthetic initialization;
+       * registration of an asset + setting up prices for target quotes.
+       * - `relayer`: Account which will be the author of prices fed to `band` pallet;
+       * 
+       * Emits events with actual quotes achieved after initialization;
+       * more details in [`liquidity_sources::initialize_xst`]
+       **/
+      xstInitialize: AugmentedSubmittable<(basePrices: Option<QaToolsPalletToolsXstBaseInput> | null | Uint8Array | QaToolsPalletToolsXstBaseInput | { referencePerSyntheticBaseBuy?: any; referencePerSyntheticBaseSell?: any } | string, syntheticsPrices: Vec<QaToolsPalletToolsXstSyntheticInput> | (QaToolsPalletToolsXstSyntheticInput | { assetId?: any; expectedQuote?: any; existence?: any } | string | Uint8Array)[], relayer: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Option<QaToolsPalletToolsXstBaseInput>, Vec<QaToolsPalletToolsXstSyntheticInput>, AccountId32]>;
+      /**
+       * Initialize xyk pool liquidity source.
+       * 
+       * Parameters:
+       * - `origin`: Root
+       * - `account`: Some account to use during the initialization
+       * - `pairs`: Asset pairs to initialize.
+       **/
+      xykInitialize: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, pairs: Vec<QaToolsPalletToolsPoolXykAssetPairInput> | (QaToolsPalletToolsPoolXykAssetPairInput | { dexId?: any; assetA?: any; assetB?: any; price?: any } | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [AccountId32, Vec<QaToolsPalletToolsPoolXykAssetPairInput>]>;
     };
     referrals: {
       /**
@@ -2700,6 +2960,44 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       withdrawUnbonded: AugmentedSubmittable<(numSlashingSpans: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
+    };
+    substrateBridgeApp: {
+      /**
+       * Function used by users to send tokens to the sidechain
+       **/
+      burn: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Liberland: any } | { Parachain: any } | { Unknown: any } | { Root: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, BridgeTypesGenericAccount, u128]>;
+      /**
+       * Function used to finalize asset registration if everything went well on the sidechain
+       * The Origin for this call is the Bridge Origin
+       * Only the relayer can call this function
+       **/
+      finalizeAssetRegistration: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, sidechainAssetId: BridgeTypesGenericAssetId | { Sora: any } | { XCM: any } | { EVM: any } | { Liberland: any } | string | Uint8Array, assetKind: BridgeTypesAssetKind | 'Thischain' | 'Sidechain' | number | Uint8Array, sidechainPrecision: u8 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, BridgeTypesGenericAssetId, BridgeTypesAssetKind, u8]>;
+      /**
+       * Function used to register this chain asset
+       * The Origin for this call is the Bridge Origin
+       * Only the relayer can call this function
+       * Sends the message to sidechain to finalize asset registration
+       **/
+      incomingThischainAssetRegistration: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, sidechainAssetId: BridgeTypesGenericAssetId | { Sora: any } | { XCM: any } | { EVM: any } | { Liberland: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, BridgeTypesGenericAssetId]>;
+      /**
+       * Function used to mint or unlock tokens
+       * The Origin for this call is the Bridge Origin
+       * Only the relayer can call this function
+       **/
+      mint: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, sender: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Liberland: any } | { Parachain: any } | { Unknown: any } | { Root: any } | string | Uint8Array, recipient: AccountId32 | string | Uint8Array, amount: BridgeTypesGenericBalance | { Substrate: any } | { EVM: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, BridgeTypesGenericAccount, AccountId32, BridgeTypesGenericBalance]>;
+      /**
+       * Function used to register sidechain asset
+       * The Origin for this call is the Root Origin
+       * Only the root can call this function
+       * Sends the message to sidechain to register asset
+       **/
+      registerSidechainAsset: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, sidechainAsset: BridgeTypesGenericAssetId | { Sora: any } | { XCM: any } | { EVM: any } | { Liberland: any } | string | Uint8Array, symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, BridgeTypesGenericAssetId, Bytes, Bytes]>;
+      /**
+       * Function used to update transaction status
+       * The Origin for this call is the Bridge Origin
+       * Only the relayer can call this function
+       **/
+      updateTransactionStatus: AugmentedSubmittable<(messageId: H256 | string | Uint8Array, messageStatus: BridgeTypesMessageStatus | 'InQueue' | 'Committed' | 'Done' | 'Failed' | 'Refunded' | 'Approved' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, BridgeTypesMessageStatus]>;
     };
     substrateBridgeInboundChannel: {
       submit: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, commitment: BridgeTypesGenericCommitment | { Sub: any } | { EVM: any } | string | Uint8Array, proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, BridgeTypesGenericCommitment, FramenodeRuntimeMultiProof]>;

@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Struct, Vec } from '@polkadot/types-codec';
+import type { Json, Struct, Vec } from '@polkadot/types-codec';
 import type { AssetId, Balance, DEXId, LiquiditySourceType, RewardReason } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name LiquiditySourceIdOf */
@@ -20,9 +20,13 @@ export interface LPRewardsInfo extends Struct {
 /** @name LPSwapOutcomeInfo */
 export interface LPSwapOutcomeInfo extends Struct {
   readonly amount: Balance;
-  readonly fee: Balance;
+  readonly amountWithoutImpact: Balance;
+  readonly fee: OutcomeFee;
   readonly rewards: Vec<LPRewardsInfo>;
   readonly route: Vec<AssetId>;
 }
+
+/** @name OutcomeFee */
+export interface OutcomeFee extends Json {}
 
 export type PHANTOM_LIQUIDITYPROXY = 'liquidityProxy';

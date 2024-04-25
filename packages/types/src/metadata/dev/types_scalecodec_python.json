@@ -1,5 +1,5 @@
 {
-    "runtime_id": 71,
+    "runtime_id": 78,
     "versioning": [
         {
             "runtime_range": [
@@ -4688,6 +4688,99 @@
                         "V3"
                     ]
                 }
+            }
+        },
+        {
+            "runtime_range": [
+                72,
+                null
+            ],
+            "types": {
+                "SubNetworkId": {
+                    "type": "enum",
+                    "type_mapping": [
+                        [
+                            "Mainnet",
+                            null
+                        ],
+                        [
+                            "Kusama",
+                            null
+                        ],
+                        [
+                            "Polkadot",
+                            null
+                        ],
+                        [
+                            "Rococo",
+                            null
+                        ],
+                        [
+                            "Liberland",
+                            null
+                        ],
+                        [
+                            "Alphanet",
+                            null
+                        ],
+                        [
+                            "Custom",
+                            "u32"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "runtime_range": [
+                73,
+                null
+            ],
+            "types": {
+                "LPSwapOutcomeInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "amount",
+                            "Balance"
+                        ],
+                        [
+                            "amountWithoutImpact",
+                            "Balance"
+                        ],
+                        [
+                            "fee",
+                            "OutcomeFee"
+                        ],
+                        [
+                            "rewards",
+                            "Vec<LPRewardsInfo>"
+                        ],
+                        [
+                            "route",
+                            "Vec<AssetId>"
+                        ]
+                    ]
+                },
+                "PredefinedAssetId": {
+                    "type": "enum",
+                    "value_list": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST",
+                        "TBCD",
+                        "KEN",
+                        "KUSD"
+                    ]
+                },
+                "OutcomeFee": "Json"
             }
         }
     ]

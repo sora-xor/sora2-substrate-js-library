@@ -17,7 +17,6 @@ import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
 
 import type { BridgeNetworkId, BridgeTransactionData } from './types';
 import type { SubNetwork, ParachainIds } from './sub/types';
-import type { EvmNetwork } from './evm/types';
 
 function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
   if (junction.isAccountId32) {
@@ -37,16 +36,22 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   if (data.isSora) {
     return data.asSora.toString();
   }
+  if (data.isParachain) {
+    const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
 
-  const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
-
-  if (interior.isX1) {
-    return accountFromJunction(interior.asX1);
-  } else if (interior.isX2) {
-    return accountFromJunction(interior.asX2[1]);
-  } else {
-    return '';
+    if (interior.isX1) {
+      return accountFromJunction(interior.asX1);
+    } else if (interior.isX2) {
+      return accountFromJunction(interior.asX2[1]);
+    } else {
+      return '';
+    }
   }
+  if (data.isLiberland) {
+    return data.asLiberland.toString();
+  }
+
+  return '';
 }
 
 function getNetworkType(network: BridgeTypesGenericNetworkId): BridgeNetworkType {
@@ -57,7 +62,7 @@ function getNetworkType(network: BridgeTypesGenericNetworkId): BridgeNetworkType
 
 function getNetworkId(network: BridgeTypesGenericNetworkId): BridgeNetworkId {
   if (network.isSub) return network.asSub.toString() as SubNetwork;
-  if (network.isEvm) return network.asEvm.toNumber() as EvmNetwork;
+  if (network.isEvm) return network.asEvm.toNumber();
   return network.asEvmLegacy.toNumber();
 }
 
@@ -65,10 +70,9 @@ function getSubNetworkId(
   data: BridgeTypesGenericAccount,
   networkParam: BridgeTypesGenericNetworkId,
   usedNetwork: SubNetwork,
-  parachainIds: ParachainIds
+  parachainIds?: ParachainIds
 ): BridgeNetworkId | null {
-  // we don't know from where are this tx. For now this will be a used network
-  if (data.isUnknown) return usedNetwork;
+  if (!data.isParachain) return usedNetwork;
 
   const { interior } = data.asParachain.isV3 ? data.asParachain.asV3 : data.asParachain.asV2;
 
@@ -83,7 +87,7 @@ function getSubNetworkId(
     if (networkJunction.isParachain) {
       const paraId = networkJunction.asParachain.toNumber();
 
-      if (parachainIds[usedNetwork] === paraId) {
+      if (parachainIds?.[usedNetwork as keyof ParachainIds] === paraId) {
         return usedNetwork;
       }
     }
@@ -131,12 +135,12 @@ function formatBridgeTx(
   formatted.soraHash = hash;
   formatted.amount = unwrapped.amount.toString();
   formatted.soraAssetAddress = unwrapped.assetId.code.toString();
-  formatted.status =
-    unwrapped.status.isFailed || unwrapped.status.isRefunded
-      ? BridgeTxStatus.Failed
-      : unwrapped.status.isDone || unwrapped.status.isCommitted
-      ? BridgeTxStatus.Done
-      : BridgeTxStatus.Pending;
+  formatted.status = BridgeTxStatus.Pending;
+  if (unwrapped.status.isFailed || unwrapped.status.isRefunded) {
+    formatted.status = BridgeTxStatus.Failed;
+  } else if (unwrapped.status.isDone || unwrapped.status.isCommitted) {
+    formatted.status = BridgeTxStatus.Done;
+  }
   formatted.startBlock = getBlock(unwrapped.startTimepoint);
   formatted.endBlock = getBlock(unwrapped.endTimepoint);
 

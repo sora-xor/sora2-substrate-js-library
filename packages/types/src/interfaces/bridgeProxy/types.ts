@@ -95,9 +95,11 @@ export interface SubNetworkId extends Enum {
   readonly isKusama: boolean;
   readonly isPolkadot: boolean;
   readonly isRococo: boolean;
+  readonly isLiberland: boolean;
+  readonly isAlphanet: boolean;
   readonly isCustom: boolean;
   readonly asCustom: u32;
-  readonly type: 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Custom';
+  readonly type: 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Liberland' | 'Alphanet' | 'Custom';
 }
 
 export type PHANTOM_BRIDGEPROXY = 'bridgeProxy';

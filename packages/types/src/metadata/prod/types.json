@@ -376,7 +376,8 @@
     },
     "LPSwapOutcomeInfo": {
         "amount": "Balance",
-        "fee": "Balance",
+        "amountWithoutImpact": "Balance",
+        "fee": "OutcomeFee",
         "rewards": "Vec<LPRewardsInfo>",
         "route": "Vec<AssetId>"
     },
@@ -455,6 +456,7 @@
         }
     },
     "OracleKey": "AssetId",
+    "OutcomeFee": "Json",
     "OutgoingAddAsset": {
         "author": "AccountId",
         "assetId": "AssetId",
@@ -648,7 +650,9 @@
             "ETH",
             "XSTUSD",
             "XST",
-            "TBCD"
+            "TBCD",
+            "KEN",
+            "KUSD"
         ]
     },
     "PriceInfo": {
@@ -728,6 +732,8 @@
             "Kusama": null,
             "Polkadot": null,
             "Rococo": null,
+            "Liberland": null,
+            "Alphanet": null,
             "Custom": "u32"
         }
     },

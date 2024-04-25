@@ -83,6 +83,8 @@ export default {
         Kusama: null,
         Polkadot: null,
         Rococo: null,
+        Liberland: null,
+        Alphanet: null,
         Custom: 'u32',
       },
     },

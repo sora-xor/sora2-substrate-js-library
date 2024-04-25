@@ -1585,7 +1585,7 @@
         {
             "minmax": [
                 54,
-                null
+                71
             ],
             "types": {
                 "BridgeAppInfo": {
@@ -1675,6 +1675,50 @@
                         "V3"
                     ]
                 }
+            }
+        },
+        {
+            "minmax": [
+                72,
+                null
+            ],
+            "types": {
+                "SubNetworkId": {
+                    "_enum": {
+                        "Mainnet": null,
+                        "Kusama": null,
+                        "Polkadot": null,
+                        "Rococo": null,
+                        "Liberland": null,
+                        "Alphanet": null,
+                        "Custom": "u32"
+                    }
+                },
+                "LPSwapOutcomeInfo": {
+                    "amount": "Balance",
+                    "amountwithoutimpact": "Balance",
+                    "fee": "OutcomeFee",
+                    "rewards": "Vec<LPRewardsInfo>",
+                    "route": "Vec<AssetId>"
+                },
+                "PredefinedAssetId": {
+                    "_enum": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST",
+                        "TBCD",
+                        "KEN",
+                        "KUSD"
+                    ]
+                },
+                "OutcomeFee": "Json"
             }
         }
     ],
@@ -2056,7 +2100,8 @@
         },
         "LPSwapOutcomeInfo": {
             "amount": "Balance",
-            "fee": "Balance",
+            "amountWithoutImpact": "Balance",
+            "fee": "OutcomeFee",
             "rewards": "Vec<LPRewardsInfo>",
             "route": "Vec<AssetId>"
         },
@@ -2135,6 +2180,7 @@
             }
         },
         "OracleKey": "AssetId",
+        "OutcomeFee": "Json",
         "OutgoingAddAsset": {
             "author": "AccountId",
             "assetId": "AssetId",
@@ -2328,7 +2374,9 @@
                 "ETH",
                 "XSTUSD",
                 "XST",
-                "TBCD"
+                "TBCD",
+                "KEN",
+                "KUSD"
             ]
         },
         "PriceInfo": {
@@ -2408,6 +2456,8 @@
                 "Kusama": null,
                 "Polkadot": null,
                 "Rococo": null,
+                "Liberland": null,
+                "Alphanet": null,
                 "Custom": "u32"
             }
         },
