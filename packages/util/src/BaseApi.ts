@@ -832,12 +832,46 @@ export enum Operation {
   XorlessTransfer = 'XorlessTransfer',
   Mint = 'Mint',
   Burn = 'Burn',
+  UpdateAssetInfo = 'UpdateAssetInfo',
   /** Kensetsu */
   CreateVault = 'CreateVault',
   CloseVault = 'CloseVault',
   RepayVaultDebt = 'RepayVaultDebt',
   DepositCollateral = 'DepositCollateral',
   BorrowVaultDebt = 'BorrowVaultDebt',
+  /** Governance */
+  GovernanceVoteOnReferendum = 'GovernanceVoteOnReferendum',
+  GovernanceNotePreimage = 'GovernanceNotePreimage',
+  GovernanceSubmitProposal = 'GovernanceSubmitProposal',
+  GovernanceVoteOnCandidate = 'GovernanceVoteOnCandidate',
+  GovernanceSubmitCandidacy = 'GovernanceSubmitCandidacy',
+}
+
+export interface History {
+  txId?: string;
+  type: Operation;
+  amount?: string;
+  symbol?: string;
+  assetAddress?: string;
+  id?: string;
+  blockId?: string;
+  blockHeight?: number;
+  to?: string;
+  receivers?: Array<ReceiverHistoryItem>;
+  amount2?: string;
+  symbol2?: string;
+  asset2Address?: string;
+  decimals?: number;
+  decimals2?: number;
+  startTime?: number;
+  endTime?: number;
+  from?: string;
+  status?: string;
+  errorMessage?: ErrorMessageFields | string;
+  liquiditySource?: string;
+  liquidityProviderFee?: CodecString;
+  soraNetworkFee?: CodecString;
+  payload?: any; // can be used to integrate with third-party services
 }
 
 export interface OnChainIdentity {
