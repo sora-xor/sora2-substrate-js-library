@@ -58,6 +58,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
   // override it from frontend config if needed
   public parachainIds: ParachainIds = {
     [SubNetworkId.PolkadotAcala]: 2000,
+    [SubNetworkId.PolkadotAstar]: 2006,
     [SubNetworkId.PolkadotSora]: 2025,
     [SubNetworkId.RococoSora]: 2011,
     [SubNetworkId.KusamaSora]: 2011,
@@ -79,6 +80,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
 
     switch (subNetwork) {
       case SubNetworkId.PolkadotAcala:
+      case SubNetworkId.PolkadotAstar:
       case SubNetworkId.PolkadotSora:
         return SubNetworkId.Polkadot;
       case SubNetworkId.KusamaSora:
@@ -99,6 +101,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     switch (subNetwork) {
       case SubNetworkId.Polkadot:
       case SubNetworkId.PolkadotAcala:
+      case SubNetworkId.PolkadotAstar:
         return SubNetworkId.PolkadotSora;
       case SubNetworkId.Kusama:
         return SubNetworkId.KusamaSora;
