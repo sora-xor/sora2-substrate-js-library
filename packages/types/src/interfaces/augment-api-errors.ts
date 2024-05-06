@@ -1882,6 +1882,10 @@ declare module '@polkadot/api-base/types/errors' {
       LiquidationLimit: AugmentedError<ApiType>;
       OperationNotPermitted: AugmentedError<ApiType>;
       /**
+       * Outstanding debt prevents closing CDP
+       **/
+      OutstandingDebt: AugmentedError<ApiType>;
+      /**
        * Risk management team size exceeded
        **/
       TooManyManagers: AugmentedError<ApiType>;
