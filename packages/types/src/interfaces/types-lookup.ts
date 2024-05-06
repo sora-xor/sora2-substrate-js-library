@@ -7197,13 +7197,14 @@ declare module '@polkadot/types/lookup' {
     readonly isCdpLimitPerUser: boolean;
     readonly isTooManyManagers: boolean;
     readonly isOperationNotPermitted: boolean;
+    readonly isOutstandingDebt: boolean;
     readonly isUncollectedStabilityFeeTooSmall: boolean;
     readonly isHardCapSupply: boolean;
     readonly isAccrueWrongTime: boolean;
     readonly isZeroLiquidationLot: boolean;
     readonly isLiquidationLimit: boolean;
     readonly isWrongBorrowAmounts: boolean;
-    readonly type: 'ArithmeticError' | 'WrongAssetId' | 'CdpNotFound' | 'CollateralInfoNotFound' | 'CollateralBelowMinimal' | 'CdpSafe' | 'CdpUnsafe' | 'CdpLimitPerUser' | 'TooManyManagers' | 'OperationNotPermitted' | 'UncollectedStabilityFeeTooSmall' | 'HardCapSupply' | 'AccrueWrongTime' | 'ZeroLiquidationLot' | 'LiquidationLimit' | 'WrongBorrowAmounts';
+    readonly type: 'ArithmeticError' | 'WrongAssetId' | 'CdpNotFound' | 'CollateralInfoNotFound' | 'CollateralBelowMinimal' | 'CdpSafe' | 'CdpUnsafe' | 'CdpLimitPerUser' | 'TooManyManagers' | 'OperationNotPermitted' | 'OutstandingDebt' | 'UncollectedStabilityFeeTooSmall' | 'HardCapSupply' | 'AccrueWrongTime' | 'ZeroLiquidationLot' | 'LiquidationLimit' | 'WrongBorrowAmounts';
   }
 
   /** @name BridgeProxyBridgeRequest (908) */
