@@ -141,6 +141,7 @@ export class KensetsuModule<T> {
       lastFeeUpdateTime: collateralInfo.lastFeeUpdateTime.toNumber(),
       interestCoefficient: new FPNumber(collateralInfo.interestCoefficient),
       kusdSupply: new FPNumber(collateralInfo.kusdSupply),
+      totalLocked: new FPNumber(collateralInfo.totalCollateral),
       riskParams: {
         liquidationRatio: ratio.toNumber(2),
         liquidationRatioReversed: ratioReversed.toNumber(2),

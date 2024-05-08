@@ -34,7 +34,8 @@ async function main(): Promise<void> {
     const collateral = await api.kensetsu.getCollateral(XOR);
     console.info('\n\nCollateral for XOR_______________________');
     console.info('collateral.interestCoefficient', collateral.interestCoefficient.toString());
-    console.info('collateral.kusdSupply', collateral.kusdSupply.toString());
+    console.info('collateral.kusdSupply (KUSD)', collateral.kusdSupply.toString());
+    console.info('collateral.totalLocked (XOR)', collateral.totalLocked.toString());
     console.info('collateral.lastFeeUpdateTime', collateral.lastFeeUpdateTime);
     console.info('collateral.riskParams.hardCap', collateral.riskParams.hardCap.toString());
     console.info('collateral.riskParams.maxLiquidationLot', collateral.riskParams.maxLiquidationLot.toString());
