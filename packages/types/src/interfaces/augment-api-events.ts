@@ -6,10 +6,10 @@
 import '@polkadot/api-base/types/events';
 
 import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
-import type { Bytes, Null, Option, Result, Text, U256, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
+import type { Bytes, Null, Option, Result, Text, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesGenericAccount, BridgeTypesGenericNetworkId, BridgeTypesHeaderHeaderId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonOutcomeFee, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuCdpType, KensetsuCollateralRiskParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstSyntheticOutput, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericAccount, BridgeTypesGenericNetworkId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonOutcomeFee, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuCdpType, KensetsuCollateralRiskParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstSyntheticOutput, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -186,7 +186,7 @@ declare module '@polkadot/api-base/types/events' {
       NewMultisig: AugmentedEvent<ApiType, [AccountId32, AccountId32, U8aFixed]>;
     };
     bridgeOutboundChannel: {
-      MessageAccepted: AugmentedEvent<ApiType, [U256, u64, u64]>;
+      MessageAccepted: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, batchNonce: u64, messageNonce: u64], { networkId: BridgeTypesGenericNetworkId, batchNonce: u64, messageNonce: u64 }>;
     };
     bridgeProxy: {
       RefundFailed: AugmentedEvent<ApiType, [H256]>;
@@ -523,25 +523,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       SeatHolderSlashed: AugmentedEvent<ApiType, [seatHolder: AccountId32, amount: u128], { seatHolder: AccountId32, amount: u128 }>;
     };
-    erc20App: {
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Burned: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, AccountId32, H160, u128]>;
-      /**
-       * [network_id, asset_id, sender, recepient, amount]
-       **/
-      Minted: AugmentedEvent<ApiType, [U256, CommonPrimitivesAssetId32, H160, AccountId32, u128]>;
-      /**
-       * [network_id, sender, asset_id, amount]
-       **/
-      Refunded: AugmentedEvent<ApiType, [U256, AccountId32, CommonPrimitivesAssetId32, u128]>;
-    };
-    ethApp: {
-      Burned: AugmentedEvent<ApiType, [U256, AccountId32, H160, u128]>;
-      Minted: AugmentedEvent<ApiType, [U256, H160, AccountId32, u128]>;
-      Refunded: AugmentedEvent<ApiType, [U256, AccountId32, u128]>;
-    };
     ethBridge: {
       /**
        * The request's approvals have been collected. [Encoded Outgoing Request, Signatures]
@@ -576,8 +557,27 @@ declare module '@polkadot/api-base/types/events' {
        **/
       RequestRegistered: AugmentedEvent<ApiType, [H256]>;
     };
-    ethereumLightClient: {
-      Finalized: AugmentedEvent<ApiType, [U256, BridgeTypesHeaderHeaderId]>;
+    evmFungibleApp: {
+      /**
+       * New asset registered.
+       **/
+      AssetRegistered: AugmentedEvent<ApiType, [networkId: H256, assetId: CommonPrimitivesAssetId32], { networkId: H256, assetId: CommonPrimitivesAssetId32 }>;
+      /**
+       * Transfer to sidechain.
+       **/
+      Burned: AugmentedEvent<ApiType, [networkId: H256, assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: H160, amount: u128], { networkId: H256, assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: H160, amount: u128 }>;
+      /**
+       * Fees paid by relayer in EVM was claimed.
+       **/
+      FeesClaimed: AugmentedEvent<ApiType, [recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128], { recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      /**
+       * Transfer from sidechain.
+       **/
+      Minted: AugmentedEvent<ApiType, [networkId: H256, assetId: CommonPrimitivesAssetId32, sender: H160, recipient: AccountId32, amount: u128], { networkId: H256, assetId: CommonPrimitivesAssetId32, sender: H160, recipient: AccountId32, amount: u128 }>;
+      /**
+       * Transfer failed, tokens refunded.
+       **/
+      Refunded: AugmentedEvent<ApiType, [networkId: H256, recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128], { networkId: H256, recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128 }>;
     };
     farming: {
       /**
@@ -737,11 +737,6 @@ declare module '@polkadot/api-base/types/events' {
        * [Asset Id, Caller Account, Receiver Account, Amount, Additional Data]
        **/
       XorlessTransfer: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, AccountId32, AccountId32, u128, Option<Bytes>]>;
-    };
-    migrationApp: {
-      Erc20Migrated: AugmentedEvent<ApiType, [U256, H160]>;
-      EthMigrated: AugmentedEvent<ApiType, [U256, H160]>;
-      SidechainMigrated: AugmentedEvent<ApiType, [U256, H160]>;
     };
     multicollateralBondingCurvePool: {
       /**

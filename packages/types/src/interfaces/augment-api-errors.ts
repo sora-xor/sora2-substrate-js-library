@@ -331,13 +331,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ContractExists: AugmentedError<ApiType>;
       /**
-       * Malformed BatchDispatched event
+       * Invalid base fee update.
        **/
-      InvalidBatchDispatchedEvent: AugmentedError<ApiType>;
+      InvalidBaseFeeUpdate: AugmentedError<ApiType>;
       /**
-       * Message has an invalid envelope.
+       * Submitted invalid commitment type.
        **/
-      InvalidEnvelope: AugmentedError<ApiType>;
+      InvalidCommitment: AugmentedError<ApiType>;
       /**
        * Message came from an invalid network.
        **/
@@ -447,9 +447,25 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ChannelExists: AugmentedError<ApiType>;
       /**
+       * Commitment consume too much gas
+       **/
+      CommitmentGasLimitExceeded: AugmentedError<ApiType>;
+      /**
        * Maximum gas for queued batch exceeds limit.
        **/
       MaxGasTooBig: AugmentedError<ApiType>;
+      /**
+       * Message consume too much gas
+       **/
+      MessageGasLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Network does not support this kind of message (it's a developer's mistake)
+       **/
+      MessageTypeIsNotSupported: AugmentedError<ApiType>;
+      /**
+       * Cannot pay the fee to submit a message.
+       **/
+      NoFunds: AugmentedError<ApiType>;
       /**
        * Cannot increment nonce
        **/
@@ -1128,68 +1144,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnableToVote: AugmentedError<ApiType>;
     };
-    erc20App: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request for refund
-       **/
-      WrongRequest: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request status, must be Failed
-       **/
-      WrongRequestStatus: AugmentedError<ApiType>;
-    };
-    ethApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Destination account is not set.
-       **/
-      DestAccountIsNotSet: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request for refund
-       **/
-      WrongRequest: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request status, must be Failed
-       **/
-      WrongRequestStatus: AugmentedError<ApiType>;
-    };
     ethBridge: {
       /**
        * Account not found.
@@ -1536,76 +1490,35 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongPendingPeer: AugmentedError<ApiType>;
     };
-    ethereumLightClient: {
+    evmFungibleApp: {
+      AppAlreadyRegistered: AugmentedError<ApiType>;
+      AppIsNotRegistered: AugmentedError<ApiType>;
+      BaseFeeIsNotAvailable: AugmentedError<ApiType>;
+      BaseFeeLifetimeExceeded: AugmentedError<ApiType>;
       /**
-       * Header is same height or older than finalized block (we don't support forks).
+       * Call encoding failed.
        **/
-      AncientHeader: AugmentedError<ApiType>;
-      /**
-       * Unsupported consensus engine
-       **/
-      ConsensusNotSupported: AugmentedError<ApiType>;
-      /**
-       * Log could not be decoded
-       **/
-      DecodeFailed: AugmentedError<ApiType>;
-      /**
-       * Difficulty is too low comparing to last blocks difficulty
-       **/
-      DifficultyTooLow: AugmentedError<ApiType>;
-      /**
-       * Header has already been imported.
-       **/
-      DuplicateHeader: AugmentedError<ApiType>;
-      /**
-       * Header referenced in inclusion proof is not final yet.
-       **/
-      HeaderNotFinalized: AugmentedError<ApiType>;
-      /**
-       * Header not found for block number
-       **/
-      HeaderNotFound: AugmentedError<ApiType>;
-      /**
-       * Header is on a stale fork, i.e. it's not a descendant of the latest finalized block
-       **/
-      HeaderOnStaleFork: AugmentedError<ApiType>;
-      /**
-       * One or more header fields are invalid.
-       **/
-      InvalidHeader: AugmentedError<ApiType>;
-      /**
-       * Proof could not be applied / verified.
-       **/
-      InvalidProof: AugmentedError<ApiType>;
-      /**
-       * Signature provided inside unsigned extrinsic is not correct
-       **/
+      CallEncodeFailed: AugmentedError<ApiType>;
+      InvalidBaseFeeUpdate: AugmentedError<ApiType>;
+      InvalidNetwork: AugmentedError<ApiType>;
       InvalidSignature: AugmentedError<ApiType>;
+      NotEnoughFeesCollected: AugmentedError<ApiType>;
+      NotEnoughFunds: AugmentedError<ApiType>;
+      NothingToClaim: AugmentedError<ApiType>;
+      TokenAlreadyRegistered: AugmentedError<ApiType>;
+      TokenIsNotRegistered: AugmentedError<ApiType>;
       /**
-       * Header referenced in inclusion proof doesn't exist, e.g. because it's
-       * pruned or older than genesis.
+       * Amount must be > 0
        **/
-      MissingHeader: AugmentedError<ApiType>;
+      WrongAmount: AugmentedError<ApiType>;
       /**
-       * Header's parent has not been imported.
+       * Wrong bridge request for refund
        **/
-      MissingParentHeader: AugmentedError<ApiType>;
+      WrongRequest: AugmentedError<ApiType>;
       /**
-       * Network with given id already registered
+       * Wrong bridge request status, must be Failed
        **/
-      NetworkAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * Unknown network id passed
-       **/
-      NetworkNotFound: AugmentedError<ApiType>;
-      /**
-       * Network state is not suitable to proceed transacton
-       **/
-      NetworkStateInvalid: AugmentedError<ApiType>;
-      /**
-       * This should never be returned - indicates a bug
-       **/
-      Unknown: AugmentedError<ApiType>;
+      WrongRequestStatus: AugmentedError<ApiType>;
     };
     farming: {
       /**
@@ -1965,32 +1878,6 @@ declare module '@polkadot/api-base/types/errors' {
        * No route exists in a given DEX for given parameters to carry out the swap
        **/
       UnavailableExchangePath: AugmentedError<ApiType>;
-    };
-    migrationApp: {
-      /**
-       * App for given network exists.
-       **/
-      AppAlreadyExists: AugmentedError<ApiType>;
-      /**
-       * App for given network is not registered.
-       **/
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      /**
-       * Message came from wrong address.
-       **/
-      InvalidAppAddress: AugmentedError<ApiType>;
-      /**
-       * The submitted payload could not be decoded.
-       **/
-      InvalidPayload: AugmentedError<ApiType>;
-      /**
-       * Token already registered with another address.
-       **/
-      TokenRegisteredWithAnotherAddress: AugmentedError<ApiType>;
     };
     multicollateralBondingCurvePool: {
       /**
