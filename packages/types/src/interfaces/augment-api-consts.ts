@@ -427,10 +427,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxCdpsPerOwner: u32 & AugmentedConst<ApiType>;
       /**
-       * Maximum number of risk manager team members
-       **/
-      maxRiskManagementTeamSize: u32 & AugmentedConst<ApiType>;
-      /**
        * Minimal uncollected fee in KUSD that triggers offchain worker to call accrue.
        **/
       minimalStabilityFeeAccrue: u128 & AugmentedConst<ApiType>;

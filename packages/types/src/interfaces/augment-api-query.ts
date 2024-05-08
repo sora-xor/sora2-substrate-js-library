@@ -938,10 +938,6 @@ declare module '@polkadot/api-base/types/storage' {
        * CDP counter used for CDP id
        **/
       nextCDPId: AugmentedQuery<ApiType, () => Observable<u128>, []>;
-      /**
-       * Accounts of risk management team
-       **/
-      riskManagers: AugmentedQuery<ApiType, () => Observable<Option<BTreeSet<AccountId32>>>, []>;
     };
     leafProvider: {
       /**

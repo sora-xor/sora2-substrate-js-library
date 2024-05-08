@@ -1799,10 +1799,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       OutstandingDebt: AugmentedError<ApiType>;
       /**
-       * Risk management team size exceeded
-       **/
-      TooManyManagers: AugmentedError<ApiType>;
-      /**
        * Uncollected stability fee is too small for accrue
        **/
       UncollectedStabilityFeeTooSmall: AugmentedError<ApiType>;
