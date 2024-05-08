@@ -59,13 +59,10 @@
 - [kensetsu](#kensetsu-pallet)
 - [leafProvider](#leafprovider-pallet)
 - [bridgeProxy](#bridgeproxy-pallet)
-- [ethereumLightClient](#ethereumlightclient-pallet)
 - [bridgeInboundChannel](#bridgeinboundchannel-pallet)
 - [bridgeOutboundChannel](#bridgeoutboundchannel-pallet)
 - [dispatch](#dispatch-pallet)
-- [ethApp](#ethapp-pallet)
-- [erc20App](#erc20app-pallet)
-- [migrationApp](#migrationapp-pallet)
+- [evmFungibleApp](#evmfungibleapp-pallet)
 - [beefyLightClient](#beefylightclient-pallet)
 - [substrateBridgeInboundChannel](#substratebridgeinboundchannel-pallet)
 - [substrateBridgeOutboundChannel](#substratebridgeoutboundchannel-pallet)
@@ -9767,6 +9764,17 @@ returns: `u16`
 
 <hr>
 
+#### **api.query.kensetsu.liquidatedThisBlock**
+
+> Flag indicates that liquidation took place in this block. Only one liquidation per block is
+> allowed, the flag is dropped every block.
+
+arguments: -
+
+returns: `bool`
+
+<hr>
+
 #### **api.query.kensetsu.badDebt**
 
 > System bad debt, the amount of KUSD not secured with collateral.
@@ -9800,9 +9808,19 @@ returns: `u128`
 
 <hr>
 
-#### **api.query.kensetsu.liquidationPenalty**
+#### **api.query.kensetsu.borrowTax**
 
 > Risk parameter
+> Borrows tax to buy back and burn KEN
+
+arguments: -
+
+returns: `Percent`
+
+<hr>
+
+#### **api.query.kensetsu.liquidationPenalty**
+
 > Liquidation penalty
 
 arguments: -
@@ -9823,7 +9841,7 @@ returns: `u128`
 
 #### **api.query.kensetsu.cdpDepository**
 
-> Storage of all CDPs, where key is an unique CDP identifier
+> Storage of all CDPs, where key is a unique CDP identifier
 
 arguments:
 
@@ -9845,34 +9863,29 @@ returns: `Vec<u128>`
 
 <hr>
 
-#### **api.query.kensetsu.riskManagers**
-
-> Accounts of risk management team
-
-arguments: -
-
-returns: `BTreeSet<AccountId32>`
-
-<hr>
-
 ### _Extrinsics_
 
 #### **api.tx.kensetsu.createCdp**
 
-> Creates a Collateralized Debt Position (CDP) allowing users to lock collateral assets and borrow against them.
+> Creates a Collateralized Debt Position (CDP).
+> The extrinsic combines depositing collateral and borrowing.
+> Borrow amount will be as max as possible in the range
+> `[borrow_amount_min, borrow_amount_max]` in order to confrom the slippage tolerance.
 >
 > ## Parameters
 >
 > - `origin`: The origin of the transaction.
 > - `collateral_asset_id`: The identifier of the asset used as collateral.
 > - `collateral_amount`: The amount of collateral to be deposited.
-> - `borrow_amount`: The amount the user wants to borrow.
+> - `borrow_amount_min`: The minimum amount the user wants to borrow.
+> - `borrow_amount_max`: The maximum amount the user wants to borrow.
 
 arguments:
 
 - collateralAssetId: `CommonPrimitivesAssetId32`
 - collateralAmount: `u128`
-- borrowAmount: `u128`
+- borrowAmountMin: `u128`
+- borrowAmountMax: `u128`
 <hr>
 
 #### **api.tx.kensetsu.closeCdp**
@@ -9911,17 +9924,21 @@ arguments:
 #### **api.tx.kensetsu.borrow**
 
 > Borrows funds against a Collateralized Debt Position (CDP).
+> Borrow amount will be as max as possible in the range
+> `[borrow_amount_min, borrow_amount_max]` in order to confrom the slippage tolerance.
 >
 > ## Parameters
 >
 > - `origin`: The origin of the transaction.
 > - `cdp_id`: The ID of the CDP to borrow against.
-> - `will_to_borrow_amount`: The amount the user intends to borrow.
+> - `borrow_amount_min`: The minimum amount the user wants to borrow.
+> - `borrow_amount_max`: The maximum amount the user wants to borrow.
 
 arguments:
 
 - cdpId: `u128`
-- willToBorrowAmount: `u128`
+- borrowAmountMin: `u128`
+- borrowAmountMax: `u128`
 <hr>
 
 #### **api.tx.kensetsu.repayDebt**
@@ -9998,6 +10015,20 @@ arguments:
 - newHardCap: `u128`
 <hr>
 
+#### **api.tx.kensetsu.updateBorrowTax**
+
+> Updates the borrow tax applied during borrow.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `new_borrow_tax`: The new borrow tax percentage to be set.
+
+arguments:
+
+- newBorrowTax: `Percent`
+<hr>
+
 #### **api.tx.kensetsu.updateLiquidationPenalty**
 
 > Updates the liquidation penalty applied during CDP liquidation.
@@ -10019,10 +10050,12 @@ arguments:
 > ## Parameters
 >
 > - `origin`: The origin of the transaction.
+> - `beneficiary` : The destination account where assets will be withdrawn.
 > - `kusd_amount`: The amount of stablecoin (KUSD) to withdraw as protocol profit.
 
 arguments:
 
+- beneficiary: `AccountId32`
 - kusdAmount: `u128`
 <hr>
 
@@ -10038,34 +10071,6 @@ arguments:
 arguments:
 
 - kusdAmount: `u128`
-<hr>
-
-#### **api.tx.kensetsu.addRiskManager**
-
-> Adds a new account ID to the set of risk managers.
->
-> ## Parameters
->
-> - `origin`: The origin of the transaction.
-> - `account_id`: The account ID to be added as a risk manager.
-
-arguments:
-
-- accountId: `AccountId32`
-<hr>
-
-#### **api.tx.kensetsu.removeRiskManager**
-
-> Removes an account ID from the set of risk managers.
->
-> ## Parameters
->
-> - `origin`: The origin of the transaction.
-> - `account_id`: The account ID to be removed from the set of risk managers.
-
-arguments:
-
-- accountId: `AccountId32`
 <hr>
 
 ## LeafProvider pallet
@@ -10137,18 +10142,6 @@ arguments:
 - key: `(BridgeTypesGenericNetworkId,H256)`
 
 returns: `AccountId32`
-
-<hr>
-
-#### **api.query.bridgeProxy.sidechainFeePaid**
-
-> Fee paid for relayed tx on sidechain. Map ((Network ID, Address) => Cumulative Fee Paid).
-
-arguments:
-
-- key: `(BridgeTypesGenericNetworkId,H160)`
-
-returns: `U256`
 
 <hr>
 
@@ -10268,136 +10261,6 @@ returns: `Vec<BridgeAssetInfo>`
 
 <hr>
 
-## EthereumLightClient pallet
-
-### _State Queries_
-
-#### **api.query.ethereumLightClient.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.ethereumLightClient.bestBlock**
-
-> Best known block.
-
-arguments:
-
-- key: `U256`
-
-returns: `(BridgeTypesHeaderHeaderId,U256)`
-
-<hr>
-
-#### **api.query.ethereumLightClient.blocksToPrune**
-
-> Range of blocks that we want to prune.
-
-arguments:
-
-- key: `U256`
-
-returns: `EthereumLightClientPruningRange`
-
-<hr>
-
-#### **api.query.ethereumLightClient.finalizedBlock**
-
-> Best finalized block.
-
-arguments:
-
-- key: `U256`
-
-returns: `BridgeTypesHeaderHeaderId`
-
-<hr>
-
-#### **api.query.ethereumLightClient.networkConfig**
-
-> Network config
-
-arguments:
-
-- key: `U256`
-
-returns: `BridgeTypesNetworkConfig`
-
-<hr>
-
-#### **api.query.ethereumLightClient.headers**
-
-> Map of imported headers by hash.
-
-arguments:
-
-- key: `(U256,H256)`
-
-returns: `EthereumLightClientStoredHeader`
-
-<hr>
-
-#### **api.query.ethereumLightClient.headersByNumber**
-
-> Map of imported header hashes by number.
-
-arguments:
-
-- key: `(U256,u64)`
-
-returns: `Vec<H256>`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.ethereumLightClient.registerNetwork**
-
-arguments:
-
-- networkConfig: `BridgeTypesNetworkConfig`
-- header: `BridgeTypesHeader`
-- initialDifficulty: `U256`
-<hr>
-
-#### **api.tx.ethereumLightClient.updateDifficultyConfig**
-
-arguments:
-
-- networkConfig: `BridgeTypesNetworkConfig`
-<hr>
-
-#### **api.tx.ethereumLightClient.importHeader**
-
-> Import a single Ethereum PoW header.
->
-> Note that this extrinsic has a very high weight. The weight is affected by the
-> value of `DescendantsUntilFinalized`. Regenerate weights if it changes.
->
-> The largest contributors to the worst case weight, in decreasing order, are:
->
-> - Pruning: max 2 writes per pruned header + 2 writes to finalize pruning state.
->   Up to `HEADERS_TO_PRUNE_IN_SINGLE_IMPORT` can be pruned in one call.
-> - Ethash validation: this cost is pure CPU. EthashProver checks a merkle proof
->   for each DAG node selected in the "hashimoto"-loop.
-> - Iterating over ancestors: min `DescendantsUntilFinalized` reads to find the
->   newly finalized ancestor of a header.
-
-arguments:
-
-- networkId: `U256`
-- header: `BridgeTypesHeader`
-- proof: `Vec<BridgeTypesEthashproofDoubleNodeWithMerkleProof>`
-- mixNonce: `BridgeTypesEthashproofMixNonce`
-- submitter: `AccountId32`
-- signature: `SpRuntimeMultiSignature`
-<hr>
-
 ## BridgeInboundChannel pallet
 
 ### _State Queries_
@@ -10412,55 +10275,33 @@ returns: `u16`
 
 <hr>
 
-#### **api.query.bridgeInboundChannel.inboundChannelAddresses**
-
-> InboundChannel contract address on the ethereum side
-
-arguments:
-
-- key: `U256`
-
-returns: `H160`
-
-<hr>
-
-#### **api.query.bridgeInboundChannel.inboundChannelNonces**
-
-arguments:
-
-- key: `U256`
-
-returns: `u64`
-
-<hr>
-
-#### **api.query.bridgeInboundChannel.channelAddresses**
-
-> Source channel (OutboundChannel contract) on the ethereum side
-
-arguments:
-
-- key: `U256`
-
-returns: `H160`
-
-<hr>
-
 #### **api.query.bridgeInboundChannel.channelNonces**
 
 arguments:
 
-- key: `U256`
+- key: `BridgeTypesGenericNetworkId`
 
 returns: `u64`
 
 <hr>
 
-#### **api.query.bridgeInboundChannel.rewardFraction**
+#### **api.query.bridgeInboundChannel.reportedChannelNonces**
 
-arguments: -
+arguments:
 
-returns: `Perbill`
+- key: `BridgeTypesGenericNetworkId`
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.bridgeInboundChannel.evmChannelAddresses**
+
+arguments:
+
+- key: `H256`
+
+returns: `H160`
 
 <hr>
 
@@ -10470,37 +10311,17 @@ returns: `Perbill`
 
 arguments:
 
-- networkId: `U256`
-- log: `BridgeTypesLog`
-- proof: `BridgeTypesEvmProof`
+- networkId: `BridgeTypesGenericNetworkId`
+- commitment: `BridgeTypesGenericCommitment`
+- proof: `FramenodeRuntimeMultiProof`
 <hr>
 
-#### **api.tx.bridgeInboundChannel.batchDispatched**
-
-> BatchDispatched event from InboundChannel on Ethereum found, the function verifies tx
-> and changes all the batch messages statuses.
+#### **api.tx.bridgeInboundChannel.registerEvmChannel**
 
 arguments:
 
-- networkId: `U256`
-- log: `BridgeTypesLog`
-- proof: `BridgeTypesEvmProof`
-<hr>
-
-#### **api.tx.bridgeInboundChannel.registerChannel**
-
-arguments:
-
-- networkId: `U256`
-- inboundChannel: `H160`
-- outboundChannel: `H160`
-<hr>
-
-#### **api.tx.bridgeInboundChannel.setRewardFraction**
-
-arguments:
-
-- fraction: `Perbill`
+- networkId: `H256`
+- channelAddress: `H160`
 <hr>
 
 ## BridgeOutboundChannel pallet
@@ -10534,19 +10355,17 @@ returns: `u32`
 
 arguments:
 
-- key: `U256`
+- key: `BridgeTypesGenericNetworkId`
 
-returns: `Vec<BridgeTypesEvmMessage>`
+returns: `Vec<BridgeTypesGenericBridgeMessage>`
 
 <hr>
 
-#### **api.query.bridgeOutboundChannel.queuesTotalGas**
-
-> Total gas for each queue. Updated by mutating the queues with methods `append_message_queue` and `take_message_queue`.
+#### **api.query.bridgeOutboundChannel.queueTotalGas**
 
 arguments:
 
-- key: `U256`
+- key: `BridgeTypesGenericNetworkId`
 
 returns: `U256`
 
@@ -10556,17 +10375,9 @@ returns: `U256`
 
 arguments:
 
-- key: `U256`
+- key: `BridgeTypesGenericNetworkId`
 
 returns: `u64`
-
-<hr>
-
-#### **api.query.bridgeOutboundChannel.fee**
-
-arguments: -
-
-returns: `u128`
 
 <hr>
 
@@ -10574,19 +10385,20 @@ returns: `u128`
 
 arguments:
 
-- key: `U256`
+- key: `BridgeTypesGenericNetworkId`
 
 returns: `BridgeTypesGenericCommitmentWithBlock`
 
 <hr>
 
-### _Extrinsics_
-
-#### **api.tx.bridgeOutboundChannel.setFee**
+#### **api.query.bridgeOutboundChannel.evmSubmitGas**
 
 arguments:
 
-- amount: `u128`
+- key: `H256`
+
+returns: `U256`
+
 <hr>
 
 ## Dispatch pallet
@@ -10603,11 +10415,11 @@ returns: `u16`
 
 <hr>
 
-## EthApp pallet
+## EvmFungibleApp pallet
 
 ### _State Queries_
 
-#### **api.query.ethApp.palletVersion**
+#### **api.query.evmFungibleApp.palletVersion**
 
 > Returns the current pallet version from storage
 
@@ -10617,124 +10429,95 @@ returns: `u16`
 
 <hr>
 
-#### **api.query.ethApp.addresses**
+#### **api.query.evmFungibleApp.appAddresses**
 
 arguments:
 
-- key: `U256`
-
-returns: `(H160,CommonPrimitivesAssetId32,u8)`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.ethApp.burn**
-
-arguments:
-
-- networkId: `U256`
-- recipient: `H160`
-- amount: `u128`
-<hr>
-
-#### **api.tx.ethApp.mint**
-
-arguments:
-
-- sender: `H160`
-- recipient: `AccountId32`
-- amount: `U256`
-<hr>
-
-#### **api.tx.ethApp.registerNetwork**
-
-arguments:
-
-- networkId: `U256`
-- name: `Bytes`
-- symbol: `Bytes`
-- sidechainPrecision: `u8`
-- contract: `H160`
-<hr>
-
-#### **api.tx.ethApp.registerNetworkWithExistingAsset**
-
-arguments:
-
-- networkId: `U256`
-- assetId: `CommonPrimitivesAssetId32`
-- contract: `H160`
-- sidechainPrecision: `u8`
-<hr>
-
-## Erc20App pallet
-
-### _State Queries_
-
-#### **api.query.erc20App.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.erc20App.appAddresses**
-
-arguments:
-
-- key: `(U256,BridgeTypesAssetKind)`
+- key: `H256`
 
 returns: `H160`
 
 <hr>
 
-#### **api.query.erc20App.assetKinds**
+#### **api.query.evmFungibleApp.assetKinds**
 
 arguments:
 
-- key: `(U256,CommonPrimitivesAssetId32)`
+- key: `(H256,CommonPrimitivesAssetId32)`
 
 returns: `BridgeTypesAssetKind`
 
 <hr>
 
-#### **api.query.erc20App.tokenAddresses**
+#### **api.query.evmFungibleApp.tokenAddresses**
 
 arguments:
 
-- key: `(U256,CommonPrimitivesAssetId32)`
+- key: `(H256,CommonPrimitivesAssetId32)`
 
 returns: `H160`
 
 <hr>
 
-#### **api.query.erc20App.assetsByAddresses**
+#### **api.query.evmFungibleApp.assetsByAddresses**
 
 arguments:
 
-- key: `(U256,H160)`
+- key: `(H256,H160)`
 
 returns: `CommonPrimitivesAssetId32`
 
 <hr>
 
-#### **api.query.erc20App.sidechainPrecision**
+#### **api.query.evmFungibleApp.sidechainPrecision**
 
 arguments:
 
-- key: `(U256,CommonPrimitivesAssetId32)`
+- key: `(H256,CommonPrimitivesAssetId32)`
 
 returns: `u8`
 
 <hr>
 
+#### **api.query.evmFungibleApp.collectedFees**
+
+> Collected fees
+
+arguments:
+
+- key: `H256`
+
+returns: `U256`
+
+<hr>
+
+#### **api.query.evmFungibleApp.baseFees**
+
+> Base fees
+
+arguments:
+
+- key: `H256`
+
+returns: `EvmFungibleAppBaseFeeInfo`
+
+<hr>
+
+#### **api.query.evmFungibleApp.spentFees**
+
+> Fees spend by relayer
+
+arguments:
+
+- key: `(H256,H160)`
+
+returns: `U256`
+
+<hr>
+
 ### _Extrinsics_
 
-#### **api.tx.erc20App.mint**
+#### **api.tx.evmFungibleApp.mint**
 
 arguments:
 
@@ -10744,7 +10527,7 @@ arguments:
 - amount: `U256`
 <hr>
 
-#### **api.tx.erc20App.registerAssetInternal**
+#### **api.tx.evmFungibleApp.registerAssetInternal**
 
 arguments:
 
@@ -10752,116 +10535,73 @@ arguments:
 - contract: `H160`
 <hr>
 
-#### **api.tx.erc20App.burn**
+#### **api.tx.evmFungibleApp.burn**
 
 arguments:
 
-- networkId: `U256`
+- networkId: `H256`
 - assetId: `CommonPrimitivesAssetId32`
 - recipient: `H160`
 - amount: `u128`
 <hr>
 
-#### **api.tx.erc20App.registerErc20Asset**
+#### **api.tx.evmFungibleApp.registerSidechainAsset**
 
 arguments:
 
-- networkId: `U256`
+- networkId: `H256`
 - address: `H160`
 - symbol: `Bytes`
 - name: `Bytes`
 - decimals: `u8`
 <hr>
 
-#### **api.tx.erc20App.registerExistingErc20Asset**
+#### **api.tx.evmFungibleApp.registerExistingSidechainAsset**
 
 arguments:
 
-- networkId: `U256`
+- networkId: `H256`
 - address: `H160`
 - assetId: `CommonPrimitivesAssetId32`
 - decimals: `u8`
 <hr>
 
-#### **api.tx.erc20App.registerNativeAsset**
+#### **api.tx.evmFungibleApp.registerThischainAsset**
 
 arguments:
 
-- networkId: `U256`
+- networkId: `H256`
 - assetId: `CommonPrimitivesAssetId32`
 <hr>
 
-#### **api.tx.erc20App.registerNativeApp**
+#### **api.tx.evmFungibleApp.registerNetwork**
 
 arguments:
 
-- networkId: `U256`
+- networkId: `H256`
 - contract: `H160`
+- symbol: `Bytes`
+- name: `Bytes`
+- sidechainPrecision: `u8`
 <hr>
 
-#### **api.tx.erc20App.registerErc20App**
+#### **api.tx.evmFungibleApp.registerNetworkWithExistingAsset**
 
 arguments:
 
-- networkId: `U256`
+- networkId: `H256`
 - contract: `H160`
+- assetId: `CommonPrimitivesAssetId32`
+- sidechainPrecision: `u8`
 <hr>
 
-## MigrationApp pallet
-
-### _State Queries_
-
-#### **api.query.migrationApp.palletVersion**
-
-> Returns the current pallet version from storage
-
-arguments: -
-
-returns: `u16`
-
-<hr>
-
-#### **api.query.migrationApp.addresses**
+#### **api.tx.evmFungibleApp.claimRelayerFees**
 
 arguments:
 
-- key: `U256`
-
-returns: `H160`
-
-<hr>
-
-### _Extrinsics_
-
-#### **api.tx.migrationApp.migrateErc20**
-
-arguments:
-
-- networkId: `U256`
-- erc20Assets: `Vec<(CommonPrimitivesAssetId32,H160,u8)>`
-<hr>
-
-#### **api.tx.migrationApp.migrateSidechain**
-
-arguments:
-
-- networkId: `U256`
-- sidechainAssets: `Vec<(CommonPrimitivesAssetId32,H160,u8)>`
-<hr>
-
-#### **api.tx.migrationApp.migrateEth**
-
-arguments:
-
-- networkId: `U256`
-<hr>
-
-#### **api.tx.migrationApp.registerNetwork**
-
-arguments:
-
-- networkId: `U256`
-- contract: `H160`
+- networkId: `H256`
+- relayer: `H160`
+- signature: `SpCoreEcdsaSignature`
 <hr>
 
 ## BeefyLightClient pallet
