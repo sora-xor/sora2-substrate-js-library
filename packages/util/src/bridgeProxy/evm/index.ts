@@ -1,5 +1,5 @@
 import { FPNumber } from '@sora-substrate/math';
-import { assert } from '@polkadot/util';
+import { assert, numberToHex } from '@polkadot/util';
 
 import { BaseApi, isEvmOperation, Operation } from '../../BaseApi';
 import { Messages } from '../../logger';
@@ -19,7 +19,7 @@ export class EvmBridgeApi<T> extends BaseApi<T> {
 
   public prepareNetworkParam(evmNetwork: EvmNetwork): BridgeTypesGenericNetworkId {
     const genericNetworkId: BridgeTypesGenericNetworkId = this.api.createType('BridgeTypesGenericNetworkId', {
-      [BridgeNetworkType.Evm]: evmNetwork,
+      [BridgeNetworkType.Evm]: numberToHex(evmNetwork, 256),
     });
 
     return genericNetworkId;

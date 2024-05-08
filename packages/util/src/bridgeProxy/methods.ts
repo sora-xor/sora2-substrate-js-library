@@ -62,8 +62,9 @@ function getNetworkType(network: BridgeTypesGenericNetworkId): BridgeNetworkType
 
 function getNetworkId(network: BridgeTypesGenericNetworkId): BridgeNetworkId {
   if (network.isSub) return network.asSub.toString() as SubNetwork;
-  if (network.isEvm) return network.asEvm.toNumber();
-  return network.asEvmLegacy.toNumber();
+  if (network.isEvmLegacy) return network.asEvmLegacy.toNumber();
+
+  return parseInt(network.asEvm.toString(), 16);
 }
 
 function getSubNetworkId(

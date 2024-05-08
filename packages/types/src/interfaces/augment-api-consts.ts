@@ -133,7 +133,24 @@ declare module '@polkadot/api-base/types/consts' {
       unsignedPriority: u64 & AugmentedConst<ApiType>;
     };
     bridgeInboundChannel: {
+      evmPriorityFee: u128 & AugmentedConst<ApiType>;
+      /**
+       * Max bytes in a message payload
+       **/
+      maxMessagePayloadSize: u32 & AugmentedConst<ApiType>;
+      /**
+       * Max number of messages that can be queued and committed in one go for a given channel.
+       **/
+      maxMessagesPerCommit: u32 & AugmentedConst<ApiType>;
       thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
+      /**
+       * A configuration for longevity of unsigned transactions.
+       **/
+      unsignedLongevity: u64 & AugmentedConst<ApiType>;
+      /**
+       * A configuration for base priority of unsigned transactions.
+       **/
+      unsignedPriority: u64 & AugmentedConst<ApiType>;
     };
     bridgeOutboundChannel: {
       thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
@@ -342,25 +359,9 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       votingBondFactor: u128 & AugmentedConst<ApiType>;
     };
-    ethereumLightClient: {
-      /**
-       * The number of descendants, in the highest difficulty chain, a block
-       * needs to have in order to be considered final.
-       **/
-      descendantsUntilFinalized: u8 & AugmentedConst<ApiType>;
-      /**
-       * A configuration for longevity of unsigned transactions.
-       **/
-      unsignedLongevity: u64 & AugmentedConst<ApiType>;
-      /**
-       * A configuration for base priority of unsigned transactions.
-       **/
-      unsignedPriority: u64 & AugmentedConst<ApiType>;
-      /**
-       * Determines whether Ethash PoW is verified for headers
-       * NOTE: Should only be false for dev
-       **/
-      verifyPoW: bool & AugmentedConst<ApiType>;
+    evmFungibleApp: {
+      baseFeeLifetime: u32 & AugmentedConst<ApiType>;
+      priorityFee: u128 & AugmentedConst<ApiType>;
     };
     grandpa: {
       /**
