@@ -30,6 +30,7 @@ type RiskParameters = {
 export type Collateral = {
   riskParams: RiskParameters;
   kusdSupply: FPNumber;
+  totalLocked: FPNumber;
   lastFeeUpdateTime: number;
   interestCoefficient: FPNumber;
 };
