@@ -4507,16 +4507,11 @@ export default {
         newLiquidationPenalty: 'Percent',
       },
       withdraw_profit: {
+        beneficiary: 'AccountId32',
         kusdAmount: 'u128',
       },
       donate: {
-        kusdAmount: 'u128',
-      },
-      add_risk_manager: {
-        accountId: 'AccountId32',
-      },
-      remove_risk_manager: {
-        accountId: 'AccountId32'
+        kusdAmount: 'u128'
       }
     }
   },
@@ -6251,6 +6246,7 @@ export default {
    **/
   KensetsuCollateralInfo: {
     riskParameters: 'KensetsuCollateralRiskParameters',
+    totalCollateral: 'u128',
     kusdSupply: 'u128',
     lastFeeUpdateTime: 'u64',
     interestCoefficient: 'u128'
@@ -6266,13 +6262,13 @@ export default {
     interestCoefficient: 'u128'
   },
   /**
-   * Lookup885: kensetsu::pallet::Error<T>
+   * Lookup884: kensetsu::pallet::Error<T>
    **/
   KensetsuError: {
-    _enum: ['ArithmeticError', 'WrongAssetId', 'CDPNotFound', 'CollateralInfoNotFound', 'CollateralBelowMinimal', 'CDPSafe', 'CDPUnsafe', 'CDPLimitPerUser', 'TooManyManagers', 'OperationNotPermitted', 'OutstandingDebt', 'UncollectedStabilityFeeTooSmall', 'HardCapSupply', 'AccrueWrongTime', 'ZeroLiquidationLot', 'LiquidationLimit', 'WrongBorrowAmounts']
+    _enum: ['ArithmeticError', 'WrongAssetId', 'CDPNotFound', 'CollateralInfoNotFound', 'CollateralBelowMinimal', 'CDPSafe', 'CDPUnsafe', 'CDPLimitPerUser', 'OperationNotPermitted', 'OutstandingDebt', 'UncollectedStabilityFeeTooSmall', 'HardCapSupply', 'AccrueWrongTime', 'ZeroLiquidationLot', 'LiquidationLimit', 'WrongBorrowAmounts']
   },
   /**
-   * Lookup888: bridge_proxy::BridgeRequest<common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>>
+   * Lookup887: bridge_proxy::BridgeRequest<common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>>
    **/
   BridgeProxyBridgeRequest: {
     source: 'BridgeTypesGenericAccount',
@@ -6285,25 +6281,25 @@ export default {
     direction: 'BridgeTypesMessageDirection'
   },
   /**
-   * Lookup889: bridge_types::types::MessageDirection
+   * Lookup888: bridge_types::types::MessageDirection
    **/
   BridgeTypesMessageDirection: {
     _enum: ['Inbound', 'Outbound']
   },
   /**
-   * Lookup892: bridge_proxy::pallet::Error<T>
+   * Lookup891: bridge_proxy::pallet::Error<T>
    **/
   BridgeProxyError: {
     _enum: ['PathIsNotAvailable', 'WrongAccountKind', 'NotEnoughLockedLiquidity', 'Overflow', 'TransferLimitReached', 'AssetAlreadyLimited', 'AssetNotLimited', 'WrongLimitSettings']
   },
   /**
-   * Lookup893: bridge_channel::inbound::pallet::Error<T>
+   * Lookup892: bridge_channel::inbound::pallet::Error<T>
    **/
   BridgeChannelInboundPalletError: {
     _enum: ['InvalidNetwork', 'InvalidSourceChannel', 'InvalidCommitment', 'InvalidNonce', 'InvalidRewardFraction', 'ContractExists', 'CallEncodeFailed', 'InvalidBaseFeeUpdate']
   },
   /**
-   * Lookup895: bridge_types::GenericBridgeMessage<MaxPayload>
+   * Lookup894: bridge_types::GenericBridgeMessage<MaxPayload>
    **/
   BridgeTypesGenericBridgeMessage: {
     _enum: {
@@ -6312,20 +6308,20 @@ export default {
     }
   },
   /**
-   * Lookup897: bridge_types::types::GenericCommitmentWithBlock<BlockNumber, MaxMessages, MaxPayload>
+   * Lookup896: bridge_types::types::GenericCommitmentWithBlock<BlockNumber, MaxMessages, MaxPayload>
    **/
   BridgeTypesGenericCommitmentWithBlock: {
     blockNumber: 'u32',
     commitment: 'BridgeTypesGenericCommitment'
   },
   /**
-   * Lookup898: bridge_channel::outbound::pallet::Error<T>
+   * Lookup897: bridge_channel::outbound::pallet::Error<T>
    **/
   BridgeChannelOutboundPalletError: {
     _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists', 'MessageTypeIsNotSupported', 'MessageGasLimitExceeded', 'CommitmentGasLimitExceeded']
   },
   /**
-   * Lookup901: evm_fungible_app::BaseFeeInfo<BlockNumber>
+   * Lookup900: evm_fungible_app::BaseFeeInfo<BlockNumber>
    **/
   EvmFungibleAppBaseFeeInfo: {
     baseFee: 'U256',
@@ -6333,73 +6329,73 @@ export default {
     evmBlockNumber: 'u64'
   },
   /**
-   * Lookup902: evm_fungible_app::pallet::Error<T>
+   * Lookup901: evm_fungible_app::pallet::Error<T>
    **/
   EvmFungibleAppError: {
     _enum: ['TokenIsNotRegistered', 'AppIsNotRegistered', 'NotEnoughFunds', 'InvalidNetwork', 'TokenAlreadyRegistered', 'AppAlreadyRegistered', 'CallEncodeFailed', 'WrongAmount', 'WrongRequest', 'WrongRequestStatus', 'BaseFeeLifetimeExceeded', 'InvalidSignature', 'NothingToClaim', 'NotEnoughFeesCollected', 'BaseFeeIsNotAvailable', 'InvalidBaseFeeUpdate']
   },
   /**
-   * Lookup903: beefy_light_client::pallet::Error<T>
+   * Lookup902: beefy_light_client::pallet::Error<T>
    **/
   BeefyLightClientError: {
     _enum: ['InvalidValidatorSetId', 'InvalidMMRProof', 'PayloadBlocknumberTooOld', 'PayloadBlocknumberTooNew', 'CannotSwitchOldValidatorSet', 'NotEnoughValidatorSignatures', 'InvalidNumberOfSignatures', 'InvalidNumberOfPositions', 'InvalidNumberOfPublicKeys', 'ValidatorNotOnceInbitfield', 'ValidatorSetIncorrectPosition', 'InvalidSignature', 'MerklePositionTooHigh', 'MerkleProofTooShort', 'MerkleProofTooHigh', 'PalletNotInitialized', 'InvalidDigestHash', 'CommitmentNotFoundInDigest', 'MMRPayloadNotFound', 'InvalidNetworkId']
   },
   /**
-   * Lookup904: substrate_bridge_channel::inbound::pallet::Error<T>
+   * Lookup903: substrate_bridge_channel::inbound::pallet::Error<T>
    **/
   SubstrateBridgeChannelInboundPalletError: {
     _enum: ['InvalidNetwork', 'InvalidSourceChannel', 'InvalidCommitment', 'InvalidNonce', 'InvalidRewardFraction', 'ContractExists', 'CallEncodeFailed']
   },
   /**
-   * Lookup905: substrate_bridge_channel::outbound::pallet::Error<T>
+   * Lookup904: substrate_bridge_channel::outbound::pallet::Error<T>
    **/
   SubstrateBridgeChannelOutboundPalletError: {
     _enum: ['PayloadTooLarge', 'QueueSizeLimitReached', 'MaxGasTooBig', 'NoFunds', 'Overflow', 'ChannelExists', 'ZeroInterval']
   },
   /**
-   * Lookup908: parachain_bridge_app::pallet::Error<T>
+   * Lookup907: parachain_bridge_app::pallet::Error<T>
    **/
   ParachainBridgeAppError: {
     _enum: ['TokenIsNotRegistered', 'AppIsNotRegistered', 'NotEnoughFunds', 'InvalidNetwork', 'TokenAlreadyRegistered', 'AppAlreadyRegistered', 'CallEncodeFailed', 'WrongAmount', 'TransferLimitReached', 'UnknownPrecision', 'MessageIdNotFound', 'InvalidDestinationParachain', 'InvalidDestinationParams', 'RelaychainAssetNotRegistered', 'NotRelayTransferableAsset', 'RelaychainAssetRegistered']
   },
   /**
-   * Lookup915: bridge_data_signer::pallet::Error<T>
+   * Lookup914: bridge_data_signer::pallet::Error<T>
    **/
   BridgeDataSignerError: {
     _enum: ['PalletInitialized', 'PalletNotInitialized', 'PeerExists', 'PeerNotExists', 'TooMuchPeers', 'FailedToVerifySignature', 'PeerNotFound', 'TooMuchApprovals', 'ApprovalsNotFound', 'SignaturesNotFound', 'HasPendingPeerUpdate', 'DontHavePendingPeerUpdates', 'NetworkNotSupported', 'SignatureAlreadyExists']
   },
   /**
-   * Lookup916: multisig_verifier::pallet::Error<T>
+   * Lookup915: multisig_verifier::pallet::Error<T>
    **/
   MultisigVerifierError: {
     _enum: ['InvalidInitParams', 'TooMuchPeers', 'NetworkNotInitialized', 'InvalidNumberOfSignatures', 'InvalidSignature', 'NotTrustedPeerSignature', 'PeerExists', 'NoSuchPeer', 'InvalidNetworkId', 'CommitmentNotFoundInDigest', 'DuplicatedPeer']
   },
   /**
-   * Lookup918: substrate_bridge_app::pallet::Error<T>
+   * Lookup917: substrate_bridge_app::pallet::Error<T>
    **/
   SubstrateBridgeAppError: {
     _enum: ['TokenIsNotRegistered', 'InvalidNetwork', 'TokenAlreadyRegistered', 'CallEncodeFailed', 'WrongAmount', 'UnknownPrecision', 'WrongAssetId', 'WrongAccountId']
   },
   /**
-   * Lookup921: pallet_sudo::pallet::Error<T>
+   * Lookup920: pallet_sudo::pallet::Error<T>
    **/
   PalletSudoError: {
     _enum: ['RequireSudo']
   },
   /**
-   * Lookup922: faucet::pallet::Error<T>
+   * Lookup921: faucet::pallet::Error<T>
    **/
   FaucetError: {
     _enum: ['AssetNotSupported', 'AmountAboveLimit', 'NotEnoughReserves']
   },
   /**
-   * Lookup923: qa_tools::pallet::Error<T>
+   * Lookup922: qa_tools::pallet::Error<T>
    **/
   QaToolsError: {
     _enum: ['ArithmeticError', 'BuyLessThanSell', 'CannotFillUnknownOrderBook', 'OrderBookAlreadyExists', 'IncorrectPrice', 'EmptyRandomRange', 'OutOfBoundsRandomRange', 'TooManyOrders', 'TooManyPrices', 'AssetsMustBeDivisible', 'AssetAlreadyExists', 'UnknownSynthetic', 'UnknownMcbcAsset', 'IncorrectCollateralAsset', 'ReferenceAssetPriceNotFound']
   },
   /**
-   * Lookup924: apollo_platform::LendingPosition<BlockNumberFor>
+   * Lookup923: apollo_platform::LendingPosition<BlockNumberFor>
    **/
   ApolloPlatformLendingPosition: {
     lendingAmount: 'u128',
@@ -6407,7 +6403,7 @@ export default {
     lastLendingBlock: 'u32'
   },
   /**
-   * Lookup926: apollo_platform::BorrowingPosition<BlockNumberFor>
+   * Lookup925: apollo_platform::BorrowingPosition<BlockNumberFor>
    **/
   ApolloPlatformBorrowingPosition: {
     collateralAmount: 'u128',
@@ -6417,7 +6413,7 @@ export default {
     borrowingRewards: 'u128'
   },
   /**
-   * Lookup929: apollo_platform::PoolInfo
+   * Lookup928: apollo_platform::PoolInfo
    **/
   ApolloPlatformPoolInfo: {
     totalLiquidity: 'u128',
@@ -6438,13 +6434,13 @@ export default {
     isRemoved: 'bool'
   },
   /**
-   * Lookup930: apollo_platform::pallet::Error<T>
+   * Lookup929: apollo_platform::pallet::Error<T>
    **/
   ApolloPlatformError: {
     _enum: ['Unauthorized', 'AssetAlreadyListed', 'InvalidPoolParameters', 'PoolDoesNotExist', 'InvalidLendingAmount', 'CollateralTokenDoesNotExist', 'NoLendingAmountToBorrow', 'SameCollateralAndBorrowingAssets', 'NoLiquidityForBorrowingAsset', 'NothingLended', 'InvalidCollateralAmount', 'CanNotTransferBorrowingAmount', 'CanNotTransferCollateralAmount', 'NoRewardsToClaim', 'UnableToTransferRewards', 'InsufficientLendingAmount', 'LendingAmountExceeded', 'CanNotTransferLendingAmount', 'NothingBorrowed', 'NonexistentBorrowingPosition', 'NothingToRepay', 'CanNotTransferLendingInterest', 'UnableToTransferCollateral', 'UnableToTransferAmountToRepay', 'CanNotWithdrawLendingAmount', 'CanNotTransferBorrowingRewards', 'CanNotTransferAmountToRepay', 'CanNotTransferAmountToDevelopers', 'InvalidLiquidation', 'PoolIsRemoved', 'InvalidBorrowingAmount']
   },
   /**
-   * Lookup932: sp_runtime::MultiSignature
+   * Lookup931: sp_runtime::MultiSignature
    **/
   SpRuntimeMultiSignature: {
     _enum: {
@@ -6454,33 +6450,33 @@ export default {
     }
   },
   /**
-   * Lookup934: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
+   * Lookup933: frame_system::extensions::check_spec_version::CheckSpecVersion<T>
    **/
   FrameSystemExtensionsCheckSpecVersion: 'Null',
   /**
-   * Lookup935: frame_system::extensions::check_tx_version::CheckTxVersion<T>
+   * Lookup934: frame_system::extensions::check_tx_version::CheckTxVersion<T>
    **/
   FrameSystemExtensionsCheckTxVersion: 'Null',
   /**
-   * Lookup936: frame_system::extensions::check_genesis::CheckGenesis<T>
+   * Lookup935: frame_system::extensions::check_genesis::CheckGenesis<T>
    **/
   FrameSystemExtensionsCheckGenesis: 'Null',
   /**
-   * Lookup939: frame_system::extensions::check_nonce::CheckNonce<T>
+   * Lookup938: frame_system::extensions::check_nonce::CheckNonce<T>
    **/
   FrameSystemExtensionsCheckNonce: 'Compact<u32>',
   /**
-   * Lookup940: frame_system::extensions::check_weight::CheckWeight<T>
+   * Lookup939: frame_system::extensions::check_weight::CheckWeight<T>
    **/
   FrameSystemExtensionsCheckWeight: 'Null',
   /**
-   * Lookup941: xor_fee::extension::ChargeTransactionPayment<T>
+   * Lookup940: xor_fee::extension::ChargeTransactionPayment<T>
    **/
   XorFeeExtensionChargeTransactionPayment: {
     tip: 'Compact<u128>'
   },
   /**
-   * Lookup942: framenode_runtime::Runtime
+   * Lookup941: framenode_runtime::Runtime
    **/
   FramenodeRuntimeRuntime: 'Null'
 };

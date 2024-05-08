@@ -1755,15 +1755,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       accrue: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
-       * Adds a new account ID to the set of risk managers.
-       * 
-       * ## Parameters
-       * 
-       * - `origin`: The origin of the transaction.
-       * - `account_id`: The account ID to be added as a risk manager.
-       **/
-      addRiskManager: AugmentedSubmittable<(accountId: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
        * Borrows funds against a Collateralized Debt Position (CDP).
        * Borrow amount will be as max as possible in the range
        * `[borrow_amount_min, borrow_amount_max]` in order to confrom the slippage tolerance.
@@ -1831,15 +1822,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       liquidate: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
-       * Removes an account ID from the set of risk managers.
-       * 
-       * ## Parameters
-       * 
-       * - `origin`: The origin of the transaction.
-       * - `account_id`: The account ID to be removed from the set of risk managers.
-       **/
-      removeRiskManager: AugmentedSubmittable<(accountId: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
-      /**
        * Repays debt against a Collateralized Debt Position (CDP).
        * 
        * ## Parameters
@@ -1892,9 +1874,10 @@ declare module '@polkadot/api-base/types/submittable' {
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
+       * - `beneficiary` : The destination account where assets will be withdrawn.
        * - `kusd_amount`: The amount of stablecoin (KUSD) to withdraw as protocol profit.
        **/
-      withdrawProfit: AugmentedSubmittable<(kusdAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      withdrawProfit: AugmentedSubmittable<(beneficiary: AccountId32 | string | Uint8Array, kusdAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u128]>;
     };
     liquidityProxy: {
       /**
