@@ -24,16 +24,28 @@ export class Consts {
   /** Max `Rust` number value */
   static readonly MAX = new FPNumber('170141183460469231731.687303715884105727');
 
-  /** 4 registered - pswap and val which are not incentivized */
+  /** ETH & DAI which are incentivized */
   static readonly incentivizedCurrenciesNum = FPNumber.TWO;
   /** 2.5 billion pswap reserved for tbc rewards */
   static readonly initialPswapTbcRewardsAmount = new FPNumber(2_500_000_000);
+
+  static readonly GetNumSamples = 10;
 }
 
 export enum Errors {
+  PriceCalculationFailed = 'An error occurred while calculating the price.',
+  CantExchange = "Liquidity source can't exchange assets with the given IDs on the given DEXId.",
+  PoolIsEmpty = 'The pool has empty liquidity.',
+  InvalidFeeRatio = 'Invalid fee ratio value.',
+  NotEnoughReserves = "It's not enough reserves in the pool to perform the operation.",
+  SyntheticDoesNotExist = 'Synthetic asset does not exist.',
+  SyntheticBaseBuySellLimitExceeded = 'Input/output amount of synthetic base asset exceeds the limit',
+  UnavailableExchangePath = 'No route exists in a given DEX for given parameters to carry out the swap',
   UnknownOrderBook = 'Order book does not exist for this trading pair',
   NotEnoughLiquidityInOrderBook = 'Not Enough Liquidity In OrderBook',
   InvalidOrderAmount = 'Invalid Order Amount',
+  // own
+  UnsupportedLiquiditySource = 'Unsupported liquidity source',
 }
 
 export enum LiquiditySourceTypes {
@@ -59,4 +71,15 @@ export enum AssetType {
   SyntheticBase = 'SyntheticBase',
   Basic = 'Basic',
   Synthetic = 'Synthetic',
+}
+
+export enum SwapVariant {
+  WithDesiredInput = 'WithDesiredInput',
+  WithDesiredOutput = 'WithDesiredOutput',
+}
+
+export enum FilterMode {
+  Disabled = 'Disabled',
+  AllowSelected = 'AllowSelected',
+  ForbidSelected = 'ForbidSelected',
 }

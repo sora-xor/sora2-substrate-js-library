@@ -1,9 +1,104 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { LiquiditySourceTypes, Consts } from '../consts';
+import { LiquiditySourceTypes, Consts, Errors } from '../consts';
 import { safeDivide, toFp, isAssetAddress, safeQuoteResult } from '../utils';
+import { SwapChunk } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult } from '../types';
+
+// can_exchange
+export const canExchange = (
+  baseAssetId: string,
+  _syntheticBaseAssetId: string,
+  inputAssetId: string,
+  outputAssetId: string,
+  payload: QuotePayload
+): boolean => {
+  if (![inputAssetId, outputAssetId].includes(baseAssetId)) return false;
+
+  const isBaseAssetInput = isAssetAddress(inputAssetId, baseAssetId);
+  const nonBaseAsset = isBaseAssetInput ? outputAssetId : inputAssetId;
+  const reserves = [...payload.reserves.xyk[nonBaseAsset]];
+
+  return reserves.every((tokenReserve) => !!Number(tokenReserve));
+};
+
+// step_quote
+export const stepQuote = (
+  baseAssetId: string,
+  _syntheticBaseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload,
+  deduceFee: boolean,
+  recommendedSamplesCount: number
+): Array<SwapChunk> => {
+  const chunks: SwapChunk[] = [];
+
+  if (amount.isZero()) {
+    return chunks;
+  }
+  // Get actual pool reserves.
+  const [reserveInput, reserveOutput] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+
+  // Check reserves validity.
+  if (
+    FPNumber.isLessThanOrEqualTo(reserveInput, FPNumber.ZERO) ||
+    FPNumber.isLessThanOrEqualTo(reserveOutput, FPNumber.ZERO)
+  ) {
+    throw new Error(Errors.PoolIsEmpty);
+  }
+
+  let step = safeDivide(amount, new FPNumber(recommendedSamplesCount));
+  let subSum = FPNumber.ZERO;
+  let subFee = FPNumber.ZERO;
+
+  if (isDesiredInput) {
+    for (let i = 1; i <= recommendedSamplesCount; i++) {
+      let volume = step.mul(new FPNumber(i));
+
+      const { amount: calculated, fee } = calcOutputForExactInput(
+        baseAssetId,
+        inputAsset,
+        outputAsset,
+        reserveInput,
+        reserveOutput,
+        volume,
+        deduceFee
+      );
+
+      let output = calculated.sub(subSum);
+      let feeChunk = fee.sub(subFee);
+      subSum = calculated;
+      subFee = fee;
+      chunks.push(new SwapChunk(step, output, feeChunk));
+    }
+  } else {
+    for (let i = 1; i <= recommendedSamplesCount; i++) {
+      let volume = step.mul(new FPNumber(i));
+
+      const { amount: calculated, fee } = calcInputForExactOutput(
+        baseAssetId,
+        inputAsset,
+        outputAsset,
+        reserveInput,
+        reserveOutput,
+        volume,
+        deduceFee
+      );
+
+      let input = calculated.sub(subSum);
+      let feeChunk = fee.sub(subFee);
+      subSum = calculated;
+      subFee = fee;
+      chunks.push(new SwapChunk(input, step, feeChunk));
+    }
+  }
+
+  return chunks;
+};
 
 // returs reserves by order: inputAssetId, outputAssetId
 export const getXykReserves = (
@@ -182,7 +277,35 @@ const xykQuoteD = (
   };
 };
 
-export const xykQuote = (
+const calcOutputForExactInput = (
+  baseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  inputReserves: FPNumber,
+  outputReserves: FPNumber,
+  amount: FPNumber,
+  deduceFee: boolean
+) => {
+  return isAssetAddress(inputAsset, baseAssetId)
+    ? xykQuoteA(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee)
+    : xykQuoteB(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
+};
+
+const calcInputForExactOutput = (
+  baseAssetId: string,
+  inputAsset: string,
+  outputAsset: string,
+  inputReserves: FPNumber,
+  outputReserves: FPNumber,
+  amount: FPNumber,
+  deduceFee: boolean
+) => {
+  return isAssetAddress(inputAsset, baseAssetId)
+    ? xykQuoteC(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee)
+    : xykQuoteD(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
+};
+
+export const quote = (
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -193,28 +316,16 @@ export const xykQuote = (
 ): QuoteResult => {
   try {
     const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
-    const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
 
-    if (isDesiredInput) {
-      if (isBaseAssetInput) {
-        return xykQuoteA(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
-      } else {
-        return xykQuoteB(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
-      }
-    } else {
-      // prettier-ignore
-      if (isBaseAssetInput) { // NOSONAR
-        return xykQuoteC(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
-      } else {
-        return xykQuoteD(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
-      }
-    }
+    return isDesiredInput
+      ? calcOutputForExactInput(baseAssetId, inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee)
+      : calcInputForExactOutput(baseAssetId, inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XYKPool);
   }
 };
 
-export const xykQuoteWithoutImpact = (
+export const quoteWithoutImpact = (
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -253,4 +364,18 @@ export const xykQuoteWithoutImpact = (
   } catch (error) {
     return FPNumber.ZERO;
   }
+};
+
+// check_rewards
+export const checkRewards = (
+  _baseAssetId: string,
+  _syntheticBaseAssetId: string,
+  _inputAsset: string,
+  _outputAsset: string,
+  _inputAmount: FPNumber,
+  _outputAmount: FPNumber,
+  _payload: QuotePayload
+) => {
+  // XYK Pool has no rewards currently
+  return [];
 };
