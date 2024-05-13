@@ -1,10 +1,15 @@
 import { FPNumber } from '@sora-substrate/math';
-import { LiquiditySourceTypes, Consts, AssetType } from './consts';
-import { xykQuote, xykQuoteWithoutImpact, getXykReserves } from './quote/xyk';
-import { tbcQuote, tbcQuoteWithoutImpact, tbcSellPriceNoVolume, tbcBuyPriceNoVolume } from './quote/tbc';
-import { xstQuote, xstQuoteWithoutImpact, xstSellPriceNoVolume, xstBuyPriceNoVolume } from './quote/xst';
-import { orderBookQuote, orderBookQuoteWithoutImpact } from './quote/orderBook';
-import { isAssetAddress, isBetter, extremum, intersection, matchType, safeDivide } from './utils';
+import { LiquiditySourceTypes, Consts, AssetType } from '../../consts';
+import { xykQuote, xykQuoteWithoutImpact, getXykReserves } from '../poolXyk';
+import {
+  tbcQuote,
+  tbcQuoteWithoutImpact,
+  tbcSellPriceNoVolume,
+  tbcBuyPriceNoVolume,
+} from '../multicollateralBoundingCurvePool';
+import { xstQuote, xstQuoteWithoutImpact, xstSellPriceNoVolume, xstBuyPriceNoVolume } from '../xst';
+import { orderBookQuote, orderBookQuoteWithoutImpact } from '../orderBook';
+import { isAssetAddress, isBetter, extremum, intersection, matchType, safeDivide } from '../../utils';
 
 import type {
   QuotePayload,
@@ -16,7 +21,7 @@ import type {
   LPRewardsInfo,
   PrimaryMarketsEnabledAssets,
   PathsAndPairLiquiditySources,
-} from './types';
+} from '../../types';
 
 /**
  * Get asset type in terms of exchange nature

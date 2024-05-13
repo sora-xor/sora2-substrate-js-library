@@ -1,6 +1,6 @@
 import type { FPNumber, CodecString, NumberLike } from '@sora-substrate/math';
 import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
-import type { OrderBookAggregated } from './quote/orderBook/types';
+import type { OrderBookAggregated } from './pallets/orderBook/types';
 
 export type PrimaryMarketsEnabledAssets = {
   tbc: string[];
@@ -19,13 +19,17 @@ export interface LPRewardsInfo {
   reason: RewardReason;
 }
 
-export type Distribution = {
-  input: string;
-  output: string;
+export type DistributionChunk = {
+  // [Rename]: source
   market: LiquiditySourceTypes;
   income: FPNumber;
   outcome: FPNumber;
   fee: FPNumber;
+};
+
+export type Distribution = DistributionChunk & {
+  input: string;
+  output: string;
 };
 
 export type QuoteIntermediate = {
@@ -117,10 +121,13 @@ export type QuotePayload = {
   };
 };
 
-export type QuoteResult = {
+export type QuoteSingleResult = {
   amount: FPNumber;
   fee: FPNumber;
   distribution: Array<Distribution>;
+};
+
+export type QuoteResult = QuoteSingleResult & {
   rewards: Array<LPRewardsInfo>;
 };
 

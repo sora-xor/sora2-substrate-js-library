@@ -2,7 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, PriceVariant, RewardReason } from '../consts';
 import { safeDivide, isXorAsset, getMaxPositive, safeQuoteResult } from '../utils';
-import { getAveragePrice } from './price';
+import { getAveragePrice } from './priceTools';
 
 import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
 
