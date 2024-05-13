@@ -81,6 +81,7 @@ class OrderAmount {
 // can_exchange
 export const canExchange = (
   baseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   payload: QuotePayload
@@ -326,7 +327,7 @@ export const stepQuote = (
   _deduceFee: boolean,
   _recommendedSamplesCount: number
 ): Array<SwapChunk> => {
-  if (!canExchange(baseAssetId, inputAsset, outputAsset, payload)) {
+  if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
 
