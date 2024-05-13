@@ -62,6 +62,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
     [SubNetworkId.PolkadotSora]: 2025,
     [SubNetworkId.RococoSora]: 2011,
     [SubNetworkId.KusamaSora]: 2011,
+    [SubNetworkId.KusamaShiden]: 2007,
     [SubNetworkId.AlphanetSora]: 2011,
     [SubNetworkId.AlphanetMoonbase]: 1000,
   };
@@ -83,6 +84,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       case SubNetworkId.PolkadotAstar:
       case SubNetworkId.PolkadotSora:
         return SubNetworkId.Polkadot;
+      case SubNetworkId.KusamaShiden:
       case SubNetworkId.KusamaSora:
         return SubNetworkId.Kusama;
       case SubNetworkId.RococoSora:
@@ -104,6 +106,7 @@ export class SubBridgeApi<T> extends BaseApi<T> {
       case SubNetworkId.PolkadotAstar:
         return SubNetworkId.PolkadotSora;
       case SubNetworkId.Kusama:
+      case SubNetworkId.KusamaShiden:
         return SubNetworkId.KusamaSora;
       case SubNetworkId.Rococo:
         return SubNetworkId.RococoSora;

@@ -18,6 +18,8 @@ export enum SubNetworkId {
   Kusama = 'Kusama',
   /** SORA parachain in Kusama relaychain */
   KusamaSora = 'KusamaSora',
+  /** Shiden parachain in Kusama relaychain (Astar ecosystem) */
+  KusamaShiden = 'KusamaShiden',
   /** Rococo relaychain (Kusama testnet) */
   Rococo = 'Rococo',
   /** SORA parachain in Rococo relaychain */
@@ -55,6 +57,7 @@ export const Relaychains = [
 export const Parachains = [
   ...SoraParachains,
   SubNetworkId.AlphanetMoonbase,
+  SubNetworkId.KusamaShiden,
   SubNetworkId.PolkadotAcala,
   SubNetworkId.PolkadotAstar,
 ] as const;
