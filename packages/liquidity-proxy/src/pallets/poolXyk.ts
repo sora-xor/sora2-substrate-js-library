@@ -306,15 +306,20 @@ const calcInputForExactOutput = (
 };
 
 export const quote = (
+  baseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee: boolean,
-  baseAssetId: string
+  deduceFee: boolean
 ): QuoteResult => {
   try {
+    if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+      throw new Error(Errors.CantExchange);
+    }
+
     const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
 
     return isDesiredInput
@@ -326,13 +331,14 @@ export const quote = (
 };
 
 export const quoteWithoutImpact = (
+  baseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee: boolean,
-  baseAssetId: string
+  deduceFee: boolean
 ): FPNumber => {
   try {
     const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
