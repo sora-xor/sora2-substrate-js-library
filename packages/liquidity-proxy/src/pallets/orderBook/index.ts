@@ -387,7 +387,7 @@ export const quote = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  _deduceFee = true
+  _deduceFee: boolean
 ): QuoteResult => {
   try {
     if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
@@ -454,7 +454,7 @@ export const quoteWithoutImpact = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  _deduceFee = true
+  _deduceFee: boolean
 ): FPNumber => {
   try {
     const id = assembleOrderBookId(baseAssetId, inputAsset, outputAsset);

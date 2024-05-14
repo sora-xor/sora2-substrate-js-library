@@ -406,7 +406,7 @@ const decideSellAmounts = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean
 ): QuoteResult => {
   const feeRatio = deduceFee ? Consts.TBC_FEE.add(sellPenalty(mainAssetId, collateralAssetId, payload)) : FPNumber.ZERO;
 
@@ -459,7 +459,7 @@ const decideBuyAmounts = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean
 ): QuoteResult => {
   const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
 
@@ -530,7 +530,7 @@ export const quoteWithoutImpact = (
   amount: FPNumber,
   isDesiredinput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean
 ): FPNumber => {
   try {
     if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
@@ -581,7 +581,7 @@ export const quote = (
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean
 ): QuoteResult => {
   try {
     if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
