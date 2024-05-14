@@ -248,7 +248,7 @@ const tbcCheckRewards = (
   xorAmount: FPNumber,
   payload: QuotePayload
 ): Array<LPRewardsInfo> => {
-  if ([Consts.PSWAP, Consts.VAL, Consts.XST, Consts.TBCD].includes(collateralAssetId)) {
+  if (!collateralIsIncentivised(collateralAssetId)) {
     return [];
   }
 

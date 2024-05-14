@@ -218,7 +218,7 @@ const decideBuyAmounts = (
       distribution: [
         {
           input: syntheticAsset,
-          output: Consts.XST,
+          output: syntheticBaseAssetId,
           market: LiquiditySourceTypes.XSTPool,
           income: amount,
           outcome: output,
@@ -240,7 +240,7 @@ const decideBuyAmounts = (
       distribution: [
         {
           input: syntheticAsset,
-          output: Consts.XST,
+          output: syntheticBaseAssetId,
           market: LiquiditySourceTypes.XSTPool,
           income: input,
           outcome: amount,
@@ -277,7 +277,7 @@ const decideSellAmounts = (
       rewards: [],
       distribution: [
         {
-          input: Consts.XST,
+          input: syntheticBaseAssetId,
           output: syntheticAsset,
           market: LiquiditySourceTypes.XSTPool,
           income: amount,
@@ -299,7 +299,7 @@ const decideSellAmounts = (
       rewards: [],
       distribution: [
         {
-          input: Consts.XST,
+          input: syntheticBaseAssetId,
           output: syntheticAsset,
           market: LiquiditySourceTypes.XSTPool,
           income: inputAmountWithFee,

@@ -1,6 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 import { LiquiditySourceTypes, Consts, Errors, AssetType } from '../../consts';
 import { LiquidityRegistry } from './liquidityRegistry';
+import { listLiquiditySources } from '../dexApi';
 import { quote as xykQuote, getXykReserves } from '../poolXyk';
 import {
   quote as tbcQuote,
@@ -161,33 +162,6 @@ const getAssetLiquiditySources = (
     }
     return acc;
   }, []);
-};
-
-/**
- * Liquidity sources for direct exchange between two asssets
- * @param inputAssetId input asset id
- * @param outputAssetId output asset id
- * @param assetPaths liquidity sources for assets
- * @param baseAssetId Dex base asset id
- */
-const listLiquiditySources = (
-  inputAssetId: string,
-  outputAssetId: string,
-  assetPaths: QuotePaths,
-  baseAssetId: string,
-  selectedSources: LiquiditySourceTypes[] = []
-): Array<LiquiditySourceTypes> => {
-  const getSource = (asset: string) => assetPaths[asset] ?? [];
-  const commonSources = intersection(getSource(inputAssetId), getSource(outputAssetId));
-  const directSources = commonSources.filter((source) => {
-    return (
-      source === LiquiditySourceTypes.XSTPool || [inputAssetId, outputAssetId].includes(baseAssetId) // TBC, XYK, OrderBook uses baseAsset
-    );
-  });
-
-  if (!selectedSources.length) return directSources;
-
-  return directSources.filter((source) => selectedSources.includes(source));
 };
 
 /**
@@ -520,14 +494,14 @@ const quoteSingle = (
   payload: QuotePayload,
   deduceFee: boolean,
 ): QuoteResult => { // NOSONAR
-  const allSources = listLiquiditySources(
+  let sources = listLiquiditySources(
+    baseAssetId,
+    syntheticBaseAssetId,
     inputAsset,
     outputAsset,
-    payload.sources.assetPaths,
-    baseAssetId,
-    selectedSources
+    selectedSources,
+    payload
   );
-  let sources = allSources.filter((source) => !payload.lockedSources.includes(source));
 
   if (!sources.length) {
     throw new Error(Errors.UnavailableExchangePath);
