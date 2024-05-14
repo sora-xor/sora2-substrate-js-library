@@ -81,21 +81,21 @@ const ensureBaseAssetAmountWithinLimit = (amount: FPNumber, payload: QuotePayloa
   const limit = toFp(payload.consts.xst.syntheticBaseBuySellLimit);
 
   if (FPNumber.isGreaterThan(amount, limit)) {
-    throw new Error('Input/output amount of synthetic base asset exceeds the limit');
+    throw new Error(Errors.SyntheticBaseBuySellLimitExceeded);
   }
 };
 
 const getAggregatedFee = (syntheticAssetId: string, payload: QuotePayload): FPNumber => {
   const asset = payload.enabledAssets.xst[syntheticAssetId];
 
-  if (!asset) throw new Error(`Synthetic asset "${syntheticAssetId}" does not exist`);
+  if (!asset) throw new Error(Errors.SyntheticDoesNotExist);
 
   const { feeRatio, referenceSymbol } = asset;
   const rate = oracleProxyQuoteUnchecked(referenceSymbol, payload);
   const dynamicFeeRatio = toFp(rate?.dynamicFee ?? '0');
   const resultingFeeRatio = feeRatio.add(dynamicFeeRatio);
 
-  if (!FPNumber.isLessThan(resultingFeeRatio, FPNumber.ONE)) throw new Error('Invalid fee ratio value');
+  if (!FPNumber.isLessThan(resultingFeeRatio, FPNumber.ONE)) throw new Error(Errors.InvalidFeeRatio);
 
   return resultingFeeRatio;
 };
@@ -200,7 +200,7 @@ const decideBuyAmounts = (
   deduceFee: boolean,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
-  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error('Price calculation failed');
+  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error(Errors.PriceCalculationFailed);
 
   const feeRatio = deduceFee ? getAggregatedFee(syntheticAsset, payload) : FPNumber.ZERO;
 
@@ -261,7 +261,7 @@ const decideSellAmounts = (
   deduceFee: boolean,
   checkLimits = true // check on XST buy-sell limit (no need for price impact)
 ): QuoteResult => {
-  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error('Price calculation failed');
+  if (!FPNumber.isGreaterThan(amount, FPNumber.ZERO)) throw new Error(Errors.PriceCalculationFailed);
 
   const feeRatio = deduceFee ? getAggregatedFee(syntheticAsset, payload) : FPNumber.ZERO;
 
