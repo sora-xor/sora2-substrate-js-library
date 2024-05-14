@@ -303,7 +303,8 @@ export const quote = (
   payload: QuotePayload,
   deduceFee: boolean,
   baseAssetId = Consts.XOR,
-  syntheticBaseAssetId = Consts.XST
+  syntheticBaseAssetId = Consts.XST,
+  isALT = false,
 ): SwapResult => { // NOSONAR
   let bestQuote: QuoteIntermediate = {
     amount: FPNumber.ZERO,
@@ -350,6 +351,7 @@ export const quote = (
               selectedSources,
               payload,
               deduceFee,
+              isALT,
             );
 
             const ratioToActual =
