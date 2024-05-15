@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 import { LiquiditySourceTypes, Consts, Errors, AssetType } from '../../consts';
 import { LiquidityRegistry } from './liquidityRegistry';
-import { smartSplit, smartSplitAlt } from './smartSplit';
+import { smartSplit, newSmartSplit } from './smartSplit';
 import { listLiquiditySources } from '../dexApi';
 
 import { intersection, matchType, safeDivide } from '../../utils';
@@ -279,7 +279,7 @@ const quoteSingle = (
   
     throw new Error('[liquidityProxy] Unsupported operation');
   } else {
-    return smartSplitAlt(
+    return newSmartSplit(
       baseAssetId,
       syntheticBaseAssetId,
       sources,

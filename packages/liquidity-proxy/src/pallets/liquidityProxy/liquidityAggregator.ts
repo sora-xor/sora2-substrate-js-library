@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { SwapVariant, LiquiditySourceTypes } from '../../consts';
-import { SwapChunk } from '../../common/primitives';
+import { SwapChunk, DiscreteQuotation, SideAmount } from '../../common/primitives';
 
 import type { DistributionChunk } from '../../types';
 
@@ -15,96 +15,172 @@ type AggregatedSwapOutcome = {
 };
 
 export class LiquidityAggregator {
-  public liquidityChunks!: Partial<Record<LiquiditySourceTypes, Array<SwapChunk>>>;
+  public liquidityQuotations!: Partial<Record<LiquiditySourceTypes, DiscreteQuotation>>;
   public variant!: SwapVariant;
 
   constructor(variant: SwapVariant) {
-    this.liquidityChunks = {};
+    this.liquidityQuotations = {};
     this.variant = variant;
   }
 
-  public addSource(source: LiquiditySourceTypes, sortedChunks: Array<SwapChunk>) {
-    this.liquidityChunks[source] = sortedChunks;
+  public addSource(source: LiquiditySourceTypes, discreteQuotation: DiscreteQuotation) {
+    this.liquidityQuotations[source] = discreteQuotation;
   }
 
+  // Aggregates the liquidity from the provided liquidity sources.
+  // Liquidity sources provide discretized liquidity curve by chunks and then Liquidity Aggregator selects the best chunks from different sources to gain the best swap amount.
   public aggregateSwapOutcome(amount: FPNumber): AggregatedSwapOutcome | null {
-    if (!Object.keys(this.liquidityChunks).length) return null;
+    if (!Object.keys(this.liquidityQuotations).length) return null;
 
     let remainingAmount = amount;
-    let resultAmount = FPNumber.ZERO;
-    let fee = FPNumber.ZERO;
-
-    let distribution: Partial<Record<LiquiditySourceTypes, DistributionChunk>> = {};
+    let lockedSources: LiquiditySourceTypes[] = [];
+    let selected: Partial<Record<LiquiditySourceTypes, SwapChunk[]>> = {};
 
     while (FPNumber.isGreaterThan(remainingAmount, FPNumber.ZERO)) {
-      let candidates = this.findBestPriceCandidates();
+      let candidates = this.findBestPriceCandidates(lockedSources);
       let source = candidates[0];
 
       // if there are several candidates with the same best price,
       // then we need to select the source that already been selected
       for (const candidate of candidates) {
-        if (Object.keys(distribution).includes(candidate)) {
+        if (Object.keys(selected).includes(candidate)) {
           source = candidate;
           break;
         }
       }
 
-      const chunks = this.liquidityChunks[source] as SwapChunk[];
+      let discreteQuotation = this.liquidityQuotations[source] as DiscreteQuotation;
+      let chunk = discreteQuotation.chunks.shift() as SwapChunk;
+      let payback!: SwapChunk;
 
-      let chunk = chunks.shift() as SwapChunk;
+      let total = this.sumChunks(selected[source] ?? []); // [check]
+      let [aligned, remainder] = discreteQuotation.limits.alignExtraChunkMax(total, chunk);
 
-      if (this.variant === SwapVariant.WithDesiredInput) {
-        if (FPNumber.isLessThan(remainingAmount, chunk.input)) {
-          chunk = chunk.rescaleByInput(remainingAmount);
-        }
-      } else {
-        if (FPNumber.isLessThan(remainingAmount, chunk.output)) {
-          chunk = chunk.rescaleByOutput(remainingAmount);
-        }
+      if (remainder) {
+        // max amount (already selected + new chunk) exceeded
+        chunk = aligned as SwapChunk;
+        payback = remainder;
+        lockedSources.push(source);
       }
 
-      const remainingDelta = chunk.input;
-      const resultDelta = chunk.output;
-      const feeDelta = chunk.fee;
+      let remainingSideAmount = new SideAmount(remainingAmount, this.variant);
 
-      if (!distribution[source]) {
-        distribution[source] = {
-          market: source,
-          income: FPNumber.ZERO,
-          outcome: FPNumber.ZERO,
-          fee: FPNumber.ZERO,
-        };
+      // [check]
+      if (chunk > remainingSideAmount) {
+        let rescaled = chunk.rescaleBySideAmount(remainingSideAmount);
+        payback = payback.saturatingAdd(chunk.saturatingSub(rescaled));
+        chunk = rescaled;
       }
 
-      let distributionChunk = distribution[source] as DistributionChunk;
+      let remainingDelta = chunk.getAssociatedField(this.variant).amount;
 
-      distributionChunk.income.add(remainingDelta);
-      distributionChunk.outcome.add(resultDelta);
-      distributionChunk.fee.add(feeDelta);
+      if (!payback.isZero()) {
+        // push remains of the chunk back
+        discreteQuotation.chunks.unshift(payback);
+      }
 
-      resultAmount = resultAmount.add(resultDelta);
+      if (chunk.isZero()) {
+        continue;
+      }
+
+      (selected[source] = selected[source] ?? []).push(chunk);
       remainingAmount = remainingAmount.sub(remainingDelta);
-      fee = fee.add(feeDelta);
+
+      if (remainingAmount.isZero()) {
+        let toDelete = [];
+
+        for (const [src, chunks] of Object.entries(selected)) {
+          const source = src as LiquiditySourceTypes;
+
+          let total = this.sumChunks(chunks);
+          let discreteQuotation = this.liquidityQuotations[source] as DiscreteQuotation;
+          let [aligned, remainder] = discreteQuotation.limits.alignChunk(total);
+
+          if (remainder && !remainder.isZero()) {
+            remainingAmount = remainingAmount.add(remainder.getAssociatedField(this.variant).amount);
+            lockedSources.push(source);
+
+            if (aligned && aligned.isZero()) {
+              // liquidity is not enough even for the min amount
+              toDelete.push(source);
+
+              for (const chunk of [...chunks].reverse()) {
+                discreteQuotation.chunks.unshift(chunk);
+              }
+            } else {
+              let remainderSide = remainder.getAssociatedField(this.variant);
+
+              while (FPNumber.isGreaterThan(remainderSide.amount, FPNumber.ZERO)) {
+                const chunk = chunks.pop();
+
+                if (!chunk) {
+                  toDelete.push(source);
+                  break;
+                }
+
+                // [check]
+                if (chunk <= remainder) {
+                  remainderSide.amount = remainderSide.amount.sub(chunk.getAssociatedField(this.variant).amount);
+                  discreteQuotation.chunks.unshift(chunk);
+                } else {
+                  const remainderChunk = chunk.rescaleBySideAmount(remainderSide);
+                  const chunkUpdated = chunk.saturatingSub(remainderChunk);
+
+                  chunks.push(chunkUpdated);
+                  discreteQuotation.chunks.unshift(remainderChunk);
+                }
+              }
+            }
+          }
+        }
+
+        toDelete.forEach((source) => delete selected[source]);
+      }
+    }
+
+    let distribution = [];
+    let resultAmount = FPNumber.ZERO;
+    let fee = FPNumber.ZERO;
+
+    for (const [src, chunks] of Object.entries(selected)) {
+      const source = src as LiquiditySourceTypes;
+
+      const total = this.sumChunks(chunks);
+
+      const [desiredPart, resultPart] =
+        this.variant === SwapVariant.WithDesiredInput ? [total.input, total.output] : [total.output, total.input];
+
+      distribution.push({
+        market: source,
+        income: desiredPart,
+        outcome: resultPart,
+        fee: total.fee,
+      });
+      resultAmount = resultAmount.add(resultPart);
+      fee = fee.add(total.fee);
     }
 
     return {
-      distribution: Object.values(distribution),
+      distribution,
       amount: resultAmount,
       fee,
     };
   }
 
-  public findBestPriceCandidates(): Array<LiquiditySourceTypes> {
+  public findBestPriceCandidates(locked: LiquiditySourceTypes[] = []): Array<LiquiditySourceTypes> {
     let candidates: LiquiditySourceTypes[] = [];
     let max = FPNumber.ZERO;
 
-    for (const [src, chunks] of Object.entries(this.liquidityChunks)) {
+    for (const [src, discreteQuotation] of Object.entries(this.liquidityQuotations)) {
       const source = src as LiquiditySourceTypes;
+
+      // skip the locked source
+      if (locked.includes(source)) continue;
 
       let price!: FPNumber;
 
       try {
-        const front = chunks[0];
+        const front = discreteQuotation.chunks[0];
         price = front.price;
       } catch {
         continue;
@@ -122,5 +198,9 @@ export class LiquidityAggregator {
     }
 
     return candidates;
+  }
+
+  public sumChunks(chunks: SwapChunk[]) {
+    return chunks.reduce((acc, next) => acc.saturatingAdd(next));
   }
 }
