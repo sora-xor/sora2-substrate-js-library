@@ -381,14 +381,19 @@ export const stepQuote = (
 // quote
 export const quote = (
   baseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  _deduceFee = true
+  _deduceFee: boolean
 ): QuoteResult => {
   try {
+    if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+      throw new Error(Errors.CantExchange);
+    }
+
     const id = assembleOrderBookId(baseAssetId, inputAsset, outputAsset);
 
     if (!id) throw new Error(Errors.UnknownOrderBook);
@@ -443,12 +448,13 @@ export const quote = (
 // quote_without_impact
 export const quoteWithoutImpact = (
   baseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  _deduceFee = true
+  _deduceFee: boolean
 ): FPNumber => {
   try {
     const id = assembleOrderBookId(baseAssetId, inputAsset, outputAsset);
