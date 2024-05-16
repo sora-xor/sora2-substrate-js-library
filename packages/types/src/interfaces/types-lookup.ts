@@ -1578,12 +1578,6 @@ declare module '@polkadot/types/lookup' {
       readonly collateralAssetId: CommonPrimitivesAssetId32;
       readonly riskParameters: KensetsuCollateralRiskParameters;
     } & Struct;
-    readonly isDebtTokenHardCapUpdated: boolean;
-    readonly asDebtTokenHardCapUpdated: {
-      readonly debtAssetId: CommonPrimitivesAssetId32;
-      readonly newHardCap: u128;
-      readonly oldHardCap: u128;
-    } & Struct;
     readonly isBorrowTaxUpdated: boolean;
     readonly asBorrowTaxUpdated: {
       readonly oldBorrowTax: Percent;
@@ -1604,7 +1598,7 @@ declare module '@polkadot/types/lookup' {
       readonly debtAssetId: CommonPrimitivesAssetId32;
       readonly amount: u128;
     } & Struct;
-    readonly type: 'CdpCreated' | 'CdpClosed' | 'CollateralDeposit' | 'DebtIncreased' | 'DebtPayment' | 'Liquidated' | 'CollateralRiskParametersUpdated' | 'DebtTokenHardCapUpdated' | 'BorrowTaxUpdated' | 'LiquidationPenaltyUpdated' | 'ProfitWithdrawn' | 'Donation';
+    readonly type: 'CdpCreated' | 'CdpClosed' | 'CollateralDeposit' | 'DebtIncreased' | 'DebtPayment' | 'Liquidated' | 'CollateralRiskParametersUpdated' | 'BorrowTaxUpdated' | 'LiquidationPenaltyUpdated' | 'ProfitWithdrawn' | 'Donation';
   }
 
   /** @name KensetsuCdpType (159) */
@@ -4722,10 +4716,6 @@ declare module '@polkadot/types/lookup' {
       readonly collateralAssetId: CommonPrimitivesAssetId32;
       readonly newRiskParameters: KensetsuCollateralRiskParameters;
     } & Struct;
-    readonly isUpdateHardCapTotalSupply: boolean;
-    readonly asUpdateHardCapTotalSupply: {
-      readonly newHardCap: u128;
-    } & Struct;
     readonly isUpdateBorrowTax: boolean;
     readonly asUpdateBorrowTax: {
       readonly newBorrowTax: Percent;
@@ -4743,7 +4733,7 @@ declare module '@polkadot/types/lookup' {
     readonly asDonate: {
       readonly kusdAmount: u128;
     } & Struct;
-    readonly type: 'CreateCdp' | 'CloseCdp' | 'DepositCollateral' | 'Borrow' | 'RepayDebt' | 'Liquidate' | 'Accrue' | 'UpdateCollateralRiskParameters' | 'UpdateHardCapTotalSupply' | 'UpdateBorrowTax' | 'UpdateLiquidationPenalty' | 'WithdrawProfit' | 'Donate';
+    readonly type: 'CreateCdp' | 'CloseCdp' | 'DepositCollateral' | 'Borrow' | 'RepayDebt' | 'Liquidate' | 'Accrue' | 'UpdateCollateralRiskParameters' | 'UpdateBorrowTax' | 'UpdateLiquidationPenalty' | 'WithdrawProfit' | 'Donate';
   }
 
   /** @name BridgeProxyCall (566) */
