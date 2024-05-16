@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { SwapVariant } from '../consts';
-import { safeDivide } from '../utils';
+import { safeDivide, saturatingSub } from '../utils';
 
 export class SideAmount {
   public amount!: FPNumber;
@@ -121,9 +121,12 @@ export class SwapChunk {
     return new SwapChunk(this.input.add(chunk.input), this.output.add(chunk.output), this.fee.add(chunk.fee));
   }
 
-  // is greater or equal than 0 ?
   public saturatingSub(chunk: SwapChunk) {
-    return new SwapChunk(this.input.sub(chunk.input), this.output.sub(chunk.output), this.fee.sub(chunk.fee));
+    return new SwapChunk(
+      saturatingSub(this.input, chunk.input),
+      saturatingSub(this.output, chunk.output),
+      saturatingSub(this.fee, chunk.fee)
+    );
   }
 }
 
@@ -160,7 +163,7 @@ export class SwapLimits {
       }
     }
 
-    return [chunk, SwapChunk.zero()]; // [check]
+    return [chunk, SwapChunk.zero()];
   }
 
   // Aligns the `chunk` regarding to the `max_amount` limit.
@@ -184,7 +187,7 @@ export class SwapLimits {
       }
     }
 
-    return [chunk, SwapChunk.zero()]; // [check]
+    return [chunk, SwapChunk.zero()];
   }
 
   // Aligns the extra `chunk` regarding to the `max_amount` limit taking into account in calculations the accumulator `acc` values.
@@ -210,7 +213,7 @@ export class SwapLimits {
       }
     }
 
-    return [chunk, SwapChunk.zero()]; // [check]
+    return [chunk, SwapChunk.zero()];
   }
 
   // Aligns the `chunk` regarding to the `amount_precision` limit.
@@ -238,7 +241,7 @@ export class SwapLimits {
       }
     }
 
-    return [chunk, SwapChunk.zero()]; // [check]
+    return [chunk, SwapChunk.zero()];
   }
 
   // Aligns the `chunk` regarding to the limits.
@@ -256,7 +259,7 @@ export class SwapLimits {
     [rescaled, remainder] = this.alignChunkPrecision(chunk);
     if (!remainder.isZero()) return [rescaled, remainder];
 
-    return [chunk, SwapChunk.zero()]; // [check]
+    return [chunk, SwapChunk.zero()];
   }
 }
 

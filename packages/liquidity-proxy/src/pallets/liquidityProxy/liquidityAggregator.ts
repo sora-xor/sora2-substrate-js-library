@@ -2,6 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { SwapVariant, LiquiditySourceTypes } from '../../consts';
 import { SwapChunk, DiscreteQuotation, SideAmount } from '../../common/primitives';
+import { checkedSub } from '../../utils';
 
 import type { DistributionChunk } from '../../types';
 
@@ -38,7 +39,9 @@ export class LiquidityAggregator {
 
     while (FPNumber.isGreaterThan(remainingAmount, FPNumber.ZERO)) {
       const candidates = this.findBestPriceCandidates(lockedSources);
+
       let source = candidates[0];
+      if (!source) return null;
 
       // if there are several candidates with the same best price,
       // then we need to select the source that already been selected
@@ -49,11 +52,13 @@ export class LiquidityAggregator {
         }
       }
 
-      let discreteQuotation = this.liquidityQuotations.get(source) as DiscreteQuotation; // [check]
-      let chunk = discreteQuotation.chunks.shift() as SwapChunk;
+      const discreteQuotation = this.liquidityQuotations.get(source);
+      if (!discreteQuotation) return null;
+      let chunk = discreteQuotation.chunks.shift();
+      if (!chunk) return null;
       let payback = SwapChunk.zero();
 
-      const total = this.sumChunks(selected.get(source) ?? []); // [check]
+      const total = this.sumChunks(selected.get(source) ?? []);
       const [aligned, remainder] = discreteQuotation.limits.alignExtraChunkMax(total, chunk);
 
       if (!remainder.isZero()) {
@@ -65,7 +70,6 @@ export class LiquidityAggregator {
 
       const remainingSideAmount = new SideAmount(remainingAmount, this.variant);
 
-      // [check]
       if (FPNumber.isGreaterThan(chunk.forCompare(remainingSideAmount), remainingSideAmount.amount)) {
         const rescaled = chunk.rescaleBySideAmount(remainingSideAmount);
         payback = payback.saturatingAdd(chunk.saturatingSub(rescaled));
@@ -83,20 +87,22 @@ export class LiquidityAggregator {
         continue;
       }
 
-      // [check]
       if (!selected.has(source)) {
         selected.set(source, []);
       }
       selected.get(source)?.push(chunk);
 
-      remainingAmount = remainingAmount.sub(remainingDelta);
+      const remainingSubResult = checkedSub(remainingAmount, remainingDelta);
+      if (!remainingSubResult) return null;
+      remainingAmount = remainingSubResult;
 
       if (remainingAmount.isZero()) {
         const toDelete: LiquiditySourceTypes[] = [];
 
         for (const [source, chunks] of selected.entries()) {
           const total = this.sumChunks(chunks);
-          const discreteQuotation = this.liquidityQuotations.get(source) as DiscreteQuotation;
+          const discreteQuotation = this.liquidityQuotations.get(source);
+          if (!discreteQuotation) return null;
           const [aligned, remainder] = discreteQuotation.limits.alignChunk(total);
 
           if (!remainder.isZero()) {
@@ -121,9 +127,10 @@ export class LiquidityAggregator {
                   break;
                 }
 
-                // [check]
                 if (FPNumber.isLessThanOrEqualTo(chunk.forCompare(remainderSide), remainderSide.amount)) {
-                  remainderSide.amount = remainderSide.amount.sub(chunk.getAssociatedField(this.variant).amount);
+                  const value = checkedSub(remainderSide.amount, chunk.getAssociatedField(this.variant).amount);
+                  if (!value) return null;
+                  remainderSide.amount = value;
                   discreteQuotation.chunks.unshift(chunk);
                 } else {
                   const remainderChunk = chunk.rescaleBySideAmount(remainderSide);
@@ -141,7 +148,7 @@ export class LiquidityAggregator {
       }
     }
 
-    let distribution = [];
+    const distribution = [];
     let resultAmount = FPNumber.ZERO;
     let fee = FPNumber.ZERO;
 
@@ -199,7 +206,8 @@ export class LiquidityAggregator {
     return candidates;
   }
 
-  public sumChunks(chunks: SwapChunk[]) {
+  public sumChunks(chunks: SwapChunk[]): SwapChunk {
+    if (!chunks.length) return SwapChunk.zero();
     return chunks.reduce((acc, next) => acc.saturatingAdd(next));
   }
 }

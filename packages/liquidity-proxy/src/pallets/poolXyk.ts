@@ -54,16 +54,16 @@ export const stepQuote = (
     throw new Error(Errors.PoolIsEmpty);
   }
 
-  let commonStep = safeDivide(amount, new FPNumber(samplesCount));
+  const commonStep = safeDivide(amount, new FPNumber(samplesCount));
   // volume & step
-  let volumes: [FPNumber, FPNumber][] = [];
+  const volumes: [FPNumber, FPNumber][] = [];
 
   let remaining = amount;
 
   for (let i = 1; i < samplesCount; i++) {
     const volume = commonStep.mul(new FPNumber(i));
 
-    volumes.push([volume, commonStep]); // [check]
+    volumes.push([volume, commonStep]);
 
     remaining = remaining.sub(commonStep);
   }

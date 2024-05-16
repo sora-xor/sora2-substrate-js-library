@@ -80,7 +80,7 @@ export const stepQuote = (
   const ratio = safeDivide(FPNumber.ONE, new FPNumber(samplesCount));
   const chunk = monolith.rescaleByRatio(ratio);
 
-  quotation.chunks = new Array(samplesCount - 1).fill(chunk); // [check]
+  quotation.chunks = new Array(samplesCount - 1).fill(chunk);
 
   // add remaining values as the last chunk to not loss the liquidity on the rounding
   quotation.chunks.push(
