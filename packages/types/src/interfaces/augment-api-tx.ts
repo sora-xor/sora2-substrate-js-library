@@ -1851,15 +1851,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       updateCollateralRiskParameters: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newRiskParameters: KensetsuCollateralRiskParameters | { hardCap?: any; liquidationRatio?: any; maxLiquidationLot?: any; stabilityFeeRate?: any; minimalCollateralDeposit?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, KensetsuCollateralRiskParameters]>;
       /**
-       * Updates the hard cap for the total supply of a stablecoin.
-       * 
-       * ## Parameters
-       * 
-       * - `origin`: The origin of the transaction.
-       * - `new_hard_cap`: The new hard cap value to be set for the total supply.
-       **/
-      updateHardCapTotalSupply: AugmentedSubmittable<(newHardCap: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
-      /**
        * Updates the liquidation penalty applied during CDP liquidation.
        * 
        * ## Parameters

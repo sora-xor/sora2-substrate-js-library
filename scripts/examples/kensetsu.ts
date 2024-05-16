@@ -16,9 +16,6 @@ async function main(): Promise<void> {
     const cdpCount = await api.kensetsu.getCdpCount();
     console.info('cdpCount', cdpCount);
 
-    const kusdHardCap = await api.kensetsu.getKusdHardCap();
-    console.info('kusdHardCap (KUSD)', kusdHardCap.toLocaleString());
-
     const liquidationPenalty = await api.kensetsu.getLiquidationPenalty();
     console.info('liquidationPenalty (%)', liquidationPenalty);
 
