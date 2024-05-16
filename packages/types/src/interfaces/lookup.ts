@@ -1406,11 +1406,6 @@ export default {
         collateralAssetId: 'CommonPrimitivesAssetId32',
         riskParameters: 'KensetsuCollateralRiskParameters',
       },
-      DebtTokenHardCapUpdated: {
-        debtAssetId: 'CommonPrimitivesAssetId32',
-        newHardCap: 'u128',
-        oldHardCap: 'u128',
-      },
       BorrowTaxUpdated: {
         oldBorrowTax: 'Percent',
         newBorrowTax: 'Percent',
@@ -4496,9 +4491,6 @@ export default {
       update_collateral_risk_parameters: {
         collateralAssetId: 'CommonPrimitivesAssetId32',
         newRiskParameters: 'KensetsuCollateralRiskParameters',
-      },
-      update_hard_cap_total_supply: {
-        newHardCap: 'u128',
       },
       update_borrow_tax: {
         newBorrowTax: 'Percent',
