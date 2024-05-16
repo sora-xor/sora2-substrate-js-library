@@ -36,6 +36,14 @@ export class SwapChunk {
     }
   }
 
+  public forCompare(other: SideAmount): FPNumber {
+    if (other.isInput) {
+      return this.input;
+    } else {
+      return this.output;
+    }
+  }
+
   public eq(other: SideAmount): boolean {
     if (other.isInput) {
       return FPNumber.isEqualTo(this.input, other.amount);
@@ -44,7 +52,7 @@ export class SwapChunk {
     }
   }
 
-  public zero(): SwapChunk {
+  public static zero(): SwapChunk {
     return new SwapChunk(FPNumber.ZERO, FPNumber.ZERO, FPNumber.ZERO);
   }
 
@@ -137,27 +145,27 @@ export class SwapLimits {
 
   // Aligns the `chunk` regarding to the `min_amount` limit.
   // Returns the aligned chunk and the remainder
-  alignChunkMin(chunk: SwapChunk) {
+  alignChunkMin(chunk: SwapChunk): [SwapChunk, SwapChunk] {
     const min = this.minAmount;
 
     if (min) {
       if (min.isInput) {
         if (FPNumber.isLessThan(chunk.input, min.amount)) {
-          return [null, chunk];
+          return [SwapChunk.zero(), chunk];
         }
       } else {
         if (FPNumber.isLessThan(chunk.output, min.amount)) {
-          return [null, chunk];
+          return [SwapChunk.zero(), chunk];
         }
       }
     }
 
-    return [chunk, null]; // Zero::zero() ?
+    return [chunk, SwapChunk.zero()]; // [check]
   }
 
   // Aligns the `chunk` regarding to the `max_amount` limit.
   // Returns the aligned chunk and the remainder
-  alignChunkMax(chunk: SwapChunk) {
+  alignChunkMax(chunk: SwapChunk): [SwapChunk, SwapChunk] {
     const max = this.maxAmount;
 
     if (max) {
@@ -176,12 +184,12 @@ export class SwapLimits {
       }
     }
 
-    return [chunk, null]; // Zero::zero() ?
+    return [chunk, SwapChunk.zero()]; // [check]
   }
 
   // Aligns the extra `chunk` regarding to the `max_amount` limit taking into account in calculations the accumulator `acc` values.
   // Returns the aligned chunk and the remainder
-  alignExtraChunkMax(acc: SwapChunk, chunk: SwapChunk) {
+  alignExtraChunkMax(acc: SwapChunk, chunk: SwapChunk): [SwapChunk, SwapChunk] {
     const max = this.maxAmount;
 
     if (max) {
@@ -202,12 +210,12 @@ export class SwapLimits {
       }
     }
 
-    return [chunk, null]; // Zero::zero() ?
+    return [chunk, SwapChunk.zero()]; // [check]
   }
 
   // Aligns the `chunk` regarding to the `amount_precision` limit.
   // Returns the aligned chunk and the remainder
-  alignChunkPrecision(chunk: SwapChunk) {
+  alignChunkPrecision(chunk: SwapChunk): [SwapChunk, SwapChunk] {
     const precision = this.amountPrecision;
 
     if (precision) {
@@ -230,25 +238,25 @@ export class SwapLimits {
       }
     }
 
-    return [chunk, null]; // Zero::zero() ?
+    return [chunk, SwapChunk.zero()]; // [check]
   }
 
   // Aligns the `chunk` regarding to the limits.
   // Returns the aligned chunk and the remainder
-  alignChunk(chunk: SwapChunk) {
-    let rescaled!: SwapChunk | null;
-    let remainder!: SwapChunk | null;
+  alignChunk(chunk: SwapChunk): [SwapChunk, SwapChunk] {
+    let rescaled!: SwapChunk;
+    let remainder!: SwapChunk;
 
     [rescaled, remainder] = this.alignChunkMin(chunk);
-    if (remainder) return [rescaled, remainder];
+    if (!remainder.isZero()) return [rescaled, remainder];
 
     [rescaled, remainder] = this.alignChunkMax(chunk);
-    if (remainder) return [rescaled, remainder];
+    if (!remainder.isZero()) return [rescaled, remainder];
 
     [rescaled, remainder] = this.alignChunkPrecision(chunk);
-    if (remainder) return [rescaled, remainder];
+    if (!remainder.isZero()) return [rescaled, remainder];
 
-    return [chunk, null];
+    return [chunk, SwapChunk.zero()]; // [check]
   }
 }
 
