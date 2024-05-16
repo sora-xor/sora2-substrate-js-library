@@ -36,21 +36,6 @@ export class KensetsuModule<T> {
   }
 
   /**
-   * Get the upper limit of KUSD
-   */
-  async getKusdHardCap(): Promise<FPNumber> {
-    const kusdHardCap = await this.root.api.query.kensetsu.kusdHardCap();
-    return new FPNumber(kusdHardCap);
-  }
-
-  /**
-   * Subscribe on the upper limit of KUSD
-   */
-  subscribeOnKusdHardCap(): Observable<FPNumber> {
-    return this.root.apiRx.query.kensetsu.kusdHardCap().pipe(map((res) => new FPNumber(res)));
-  }
-
-  /**
    * @example If you had a cdp where you had 100 XOR for 100 KUSD and it became unsafe,
    * these 100 KUSD were sold, of which 10 KUSD went to protocol revenue and 90 KUSD to closing the debt,
    * if liquidationPenalty = 10%

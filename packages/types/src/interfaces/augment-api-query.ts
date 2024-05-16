@@ -921,11 +921,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       collateralInfos: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<KensetsuCollateralInfo>>, [CommonPrimitivesAssetId32]>;
       /**
-       * Risk parameter
-       * Hard cap of KUSD may be minted by the system
-       **/
-      kusdHardCap: AugmentedQuery<ApiType, () => Observable<u128>, []>;
-      /**
        * Flag indicates that liquidation took place in this block. Only one liquidation per block is
        * allowed, the flag is dropped every block.
        **/
