@@ -31,7 +31,7 @@ export class KensetsuModule<T> {
    *
    * Bad debt in KUSD
    */
-  subscribeOnBadDept(): Observable<FPNumber> {
+  subscribeOnBadDebt(): Observable<FPNumber> {
     return this.root.apiRx.query.kensetsu.badDebt().pipe(map((res) => new FPNumber(res)));
   }
 
