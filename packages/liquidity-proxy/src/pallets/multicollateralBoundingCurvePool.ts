@@ -1,9 +1,9 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { LiquiditySourceTypes, Consts, Errors, PriceVariant, RewardReason } from '../consts';
+import { LiquiditySourceTypes, Consts, Errors, PriceVariant, RewardReason, SwapVariant } from '../consts';
 import { safeDivide, getMaxPositive, safeQuoteResult, isAssetAddress, toFp } from '../utils';
 import { getAveragePrice } from './priceTools';
-import { SwapChunk } from '../common/primitives';
+import { SwapChunk, DiscreteQuotation, SideAmount } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
 
@@ -37,44 +37,67 @@ export const stepQuote = (
   payload: QuotePayload,
   deduceFee: boolean,
   recommendedSamplesCount: number
-): Array<SwapChunk> => {
+): DiscreteQuotation => {
   if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
 
-  const chunks: SwapChunk[] = [];
+  const quotation = new DiscreteQuotation();
 
   if (amount.isZero()) {
-    return chunks;
+    return quotation;
   }
 
-  let step = safeDivide(amount, new FPNumber(recommendedSamplesCount));
+  const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
+
+  const step = safeDivide(amount, new FPNumber(samplesCount));
+  const volumes = [];
+
+  for (let i = 1; i < samplesCount; i++) {
+    const volume = step.mul(new FPNumber(i));
+
+    volumes.push(volume);
+  }
+
+  volumes.push(amount);
+
   let subIn = FPNumber.ZERO;
   let subOut = FPNumber.ZERO;
   let subFee = FPNumber.ZERO;
 
-  for (let i = 1; i <= recommendedSamplesCount; i++) {
-    let volume = step.mul(new FPNumber(i));
-
-    const { amount, fee } = isAssetAddress(inputAsset, baseAssetId)
+  for (const volume of volumes) {
+    const { amount: resultAmount, fee: feeAmount } = isAssetAddress(inputAsset, baseAssetId)
       ? decideSellAmounts(inputAsset, outputAsset, volume, isDesiredInput, payload, deduceFee)
       : decideBuyAmounts(outputAsset, inputAsset, volume, isDesiredInput, payload, deduceFee);
 
-    const [inputAmount, outputAmount] = isDesiredInput ? [volume, amount] : [amount, volume];
-    const feeAmount = fee;
+    const [inputAmount, outputAmount] = isDesiredInput ? [amount, resultAmount] : [resultAmount, amount];
 
     const inputChunk = inputAmount.sub(subIn);
     const outputChunk = outputAmount.sub(subOut);
-    const feeChunk = feeAmount.sub(subFee);
+    const feeChunk = feeAmount.sub(subFee); // in XOR
 
     subIn = inputAmount;
     subOut = outputAmount;
     subFee = feeAmount;
 
-    chunks.push(new SwapChunk(inputChunk, outputChunk, feeChunk));
+    quotation.chunks.push(new SwapChunk(inputChunk, outputChunk, feeChunk));
   }
 
-  return chunks;
+  if (isAssetAddress(inputAsset, baseAssetId)) {
+    const collateralSupply = toFp(payload.reserves.tbc[outputAsset]);
+
+    if (isDesiredInput) {
+      const mainPricePerReferenceUnit = sellFunction(inputAsset, outputAsset, FPNumber.ZERO, payload);
+      const collateralPricePerReferenceUnit = referencePrice(outputAsset, PriceVariant.Sell, payload);
+      const mainSupply = safeDivide(collateralSupply.mul(collateralPricePerReferenceUnit), mainPricePerReferenceUnit);
+
+      quotation.limits.maxAmount = new SideAmount(mainSupply, SwapVariant.WithDesiredInput);
+    } else {
+      quotation.limits.maxAmount = new SideAmount(collateralSupply, SwapVariant.WithDesiredOutput);
+    }
+  }
+
+  return quotation;
 };
 
 // reference_price

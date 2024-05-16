@@ -2,7 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, Errors } from '../consts';
 import { safeDivide, toFp, isAssetAddress, safeQuoteResult } from '../utils';
-import { SwapChunk } from '../common/primitives';
+import { SwapChunk, DiscreteQuotation } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult } from '../types';
 
@@ -34,12 +34,15 @@ export const stepQuote = (
   payload: QuotePayload,
   deduceFee: boolean,
   recommendedSamplesCount: number
-): Array<SwapChunk> => {
-  const chunks: SwapChunk[] = [];
+): DiscreteQuotation => {
+  const quotation = new DiscreteQuotation();
 
   if (amount.isZero()) {
-    return chunks;
+    return quotation;
   }
+
+  const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
+
   // Get actual pool reserves.
   const [reserveInput, reserveOutput] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
 
@@ -51,14 +54,26 @@ export const stepQuote = (
     throw new Error(Errors.PoolIsEmpty);
   }
 
-  let step = safeDivide(amount, new FPNumber(recommendedSamplesCount));
+  let commonStep = safeDivide(amount, new FPNumber(samplesCount));
+  // volume & step
+  let volumes: [FPNumber, FPNumber][] = [];
+
+  let remaining = amount;
+
+  for (let i = 1; i < samplesCount; i++) {
+    const volume = commonStep.mul(new FPNumber(i));
+
+    volumes.push([volume, commonStep]); // [check]
+
+    remaining = remaining.sub(commonStep);
+  }
+  volumes.push([amount, remaining]);
+
   let subSum = FPNumber.ZERO;
   let subFee = FPNumber.ZERO;
 
   if (isDesiredInput) {
-    for (let i = 1; i <= recommendedSamplesCount; i++) {
-      let volume = step.mul(new FPNumber(i));
-
+    for (const [volume, step] of volumes) {
       const { amount: calculated, fee } = calcOutputForExactInput(
         baseAssetId,
         inputAsset,
@@ -69,16 +84,14 @@ export const stepQuote = (
         deduceFee
       );
 
-      let output = calculated.sub(subSum);
-      let feeChunk = fee.sub(subFee);
+      const output = calculated.sub(subSum);
+      const feeChunk = fee.sub(subFee);
       subSum = calculated;
       subFee = fee;
-      chunks.push(new SwapChunk(step, output, feeChunk));
+      quotation.chunks.push(new SwapChunk(step, output, feeChunk));
     }
   } else {
-    for (let i = 1; i <= recommendedSamplesCount; i++) {
-      let volume = step.mul(new FPNumber(i));
-
+    for (const [volume, step] of volumes) {
       const { amount: calculated, fee } = calcInputForExactOutput(
         baseAssetId,
         inputAsset,
@@ -89,15 +102,15 @@ export const stepQuote = (
         deduceFee
       );
 
-      let input = calculated.sub(subSum);
-      let feeChunk = fee.sub(subFee);
+      const input = calculated.sub(subSum);
+      const feeChunk = fee.sub(subFee);
       subSum = calculated;
       subFee = fee;
-      chunks.push(new SwapChunk(input, step, feeChunk));
+      quotation.chunks.push(new SwapChunk(input, step, feeChunk));
     }
   }
 
-  return chunks;
+  return quotation;
 };
 
 // returs reserves by order: inputAssetId, outputAssetId

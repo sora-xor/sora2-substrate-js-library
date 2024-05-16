@@ -1,8 +1,8 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { isAssetAddress, safeQuoteResult, safeDivide } from '../../utils';
-import { LiquiditySourceTypes, Errors, Consts, PriceVariant } from '../../consts';
-import { SwapChunk } from '../../common/primitives';
+import { LiquiditySourceTypes, Errors, Consts, PriceVariant, SwapVariant } from '../../consts';
+import { SwapChunk, DiscreteQuotation, SideAmount } from '../../common/primitives';
 import { OrderBookStatus } from './consts';
 
 import type { QuotePayload, QuoteResult } from '../../types';
@@ -326,7 +326,7 @@ export const stepQuote = (
   payload: QuotePayload,
   _deduceFee: boolean,
   _recommendedSamplesCount: number
-): Array<SwapChunk> => {
+): DiscreteQuotation => {
   if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
@@ -335,6 +335,10 @@ export const stepQuote = (
 
   if (!id) {
     throw new Error(Errors.UnknownOrderBook);
+  }
+
+  if (amount.isZero()) {
+    return new DiscreteQuotation();
   }
 
   const book = getOrderBook(id, payload);
@@ -346,36 +350,86 @@ export const stepQuote = (
   const direction = getDirection(book, inputAsset, outputAsset);
   const isBuyDirection = direction === PriceVariant.Buy;
 
-  let limit!: OrderAmount;
+  const marketDepthCalculated = marketDepth(
+    book,
+    isBuyDirection ? PriceVariant.Sell : PriceVariant.Buy,
+    new OrderAmount(OrderAmountType.Base, book.maxLotSize) // [check]
+  );
+
+  const [baseMinAmount, quoteMinAmount] = sumMarket(
+    book,
+    marketDepthCalculated,
+    new OrderAmount(OrderAmountType.Base, book.minLotSize) // [check]
+  );
+
+  if (FPNumber.isLessThan(baseMinAmount.value, book.minLotSize)) {
+    // order-book has not ehough liquidity even for min amount
+    return new DiscreteQuotation();
+  }
+
+  const [baseMaxAmount, quoteMaxAmount] = sumMarket(
+    book,
+    marketDepthCalculated,
+    new OrderAmount(OrderAmountType.Base, book.maxLotSize) // [check]
+  );
+
+  const quotation = new DiscreteQuotation();
+
+  let target!: OrderAmount;
 
   if (isDesiredInput) {
     if (isBuyDirection) {
-      limit = new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision));
+      quotation.limits.minAmount = new SideAmount(quoteMinAmount.value, SwapVariant.WithDesiredInput);
+      quotation.limits.maxAmount = new SideAmount(quoteMaxAmount.value, SwapVariant.WithDesiredInput);
+      quotation.limits.amountPrecision = new SideAmount(book.stepLotSize, SwapVariant.WithDesiredOutput); // [check]
+
+      target = new OrderAmount(OrderAmountType.Quote, book.tickSize.dp(amount.precision)); // [check]
     } else {
-      limit = new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision));
+      quotation.limits.minAmount = new SideAmount(baseMinAmount.value, SwapVariant.WithDesiredInput);
+      quotation.limits.maxAmount = new SideAmount(baseMaxAmount.value, SwapVariant.WithDesiredInput);
+      quotation.limits.amountPrecision = new SideAmount(book.stepLotSize, SwapVariant.WithDesiredInput); // [check]
+
+      target = new OrderAmount(OrderAmountType.Base, book.stepLotSize.dp(amount.precision)); // [check]
     }
   } else {
     if (isBuyDirection) {
-      limit = new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision));
+      quotation.limits.minAmount = new SideAmount(baseMinAmount.value, SwapVariant.WithDesiredOutput);
+      quotation.limits.maxAmount = new SideAmount(baseMaxAmount.value, SwapVariant.WithDesiredOutput);
+      quotation.limits.amountPrecision = new SideAmount(book.stepLotSize, SwapVariant.WithDesiredOutput); // [check]
+
+      target = new OrderAmount(OrderAmountType.Base, book.stepLotSize.dp(amount.precision)); // [check]
     } else {
-      limit = new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision));
+      quotation.limits.minAmount = new SideAmount(quoteMinAmount.value, SwapVariant.WithDesiredOutput);
+      quotation.limits.maxAmount = new SideAmount(quoteMaxAmount.value, SwapVariant.WithDesiredOutput);
+      quotation.limits.amountPrecision = new SideAmount(book.stepLotSize, SwapVariant.WithDesiredInput); // [check]
+
+      target = new OrderAmount(OrderAmountType.Quote, book.tickSize.dp(amount.precision)); // [check]
     }
   }
 
-  const marketDepthCalculated = marketDepth(book, isBuyDirection ? PriceVariant.Sell : PriceVariant.Buy, limit);
-  const chunks: Array<SwapChunk> = [];
+  let targetSum = FPNumber.ZERO;
 
   for (const [price, baseVolume] of marketDepthCalculated) {
     const quoteVolume = price.mul(baseVolume);
 
     if (isBuyDirection) {
-      chunks.push(new SwapChunk(quoteVolume, baseVolume, FPNumber.ZERO));
+      quotation.chunks.push(new SwapChunk(quoteVolume, baseVolume, FPNumber.ZERO));
     } else {
-      chunks.push(new SwapChunk(baseVolume, quoteVolume, FPNumber.ZERO));
+      quotation.chunks.push(new SwapChunk(baseVolume, quoteVolume, FPNumber.ZERO));
+    }
+
+    if (target.isBase) {
+      targetSum = targetSum.add(baseVolume);
+    } else {
+      targetSum = targetSum.add(quoteVolume);
+    }
+
+    if (FPNumber.isGreaterThanOrEqualTo(targetSum, target.value)) {
+      break;
     }
   }
 
-  return chunks;
+  return quotation;
 };
 
 // quote
