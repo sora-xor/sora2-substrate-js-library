@@ -20,8 +20,8 @@
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
-    "@types/lodash": "^4.17.0",
+    "@types/lodash": "^4.17.3",
     "@types/websocket": "^1.0.10",
-    "websocket": "^1.0.34"
+    "websocket": "^1.0.35"
   }
 }
