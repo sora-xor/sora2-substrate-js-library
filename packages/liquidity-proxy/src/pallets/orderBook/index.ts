@@ -161,7 +161,8 @@ const bestBid = (book: OrderBookAggregated): FPNumber | null => {
 const sumMarket = (
   book: OrderBook,
   marketData: OrderBookPriceVolume[],
-  targetDepth: OrderAmount | null
+  targetDepth: OrderAmount | null,
+  filledTarget: boolean,
 ): [OrderAmount, OrderAmount] => { // NOSONAR
   let marketBaseVolume = FPNumber.ZERO;
   let marketQuoteVolume = FPNumber.ZERO;
@@ -196,7 +197,7 @@ const sumMarket = (
     marketQuoteVolume = marketQuoteVolume.add(quoteVolume);
   }
 
-  if (!(!targetDepth || enoughLiquidity)) {
+  if (!(!targetDepth || enoughLiquidity || !filledTarget)) {
     throw new Error(Errors.NotEnoughLiquidityInOrderBook);
   }
 
@@ -225,13 +226,15 @@ const calculateDeal = (
       [base, quote] = sumMarket(
         book,
         book.aggregated.asks,
-        new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision))
+        new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision)),
+        true
       );
     } else {
       [base, quote] = sumMarket(
         book,
         [...book.aggregated.bids].reverse(),
-        new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision))
+        new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision)),
+        true
       );
     }
   } else {
@@ -240,13 +243,15 @@ const calculateDeal = (
       [base, quote] = sumMarket(
         book,
         book.aggregated.asks,
-        new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision))
+        new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision)),
+        true,
       );
     } else {
       [base, quote] = sumMarket(
         book,
         [...book.aggregated.bids].reverse(),
-        new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision))
+        new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision)),
+        true,
       );
     }
   }
@@ -359,7 +364,8 @@ export const stepQuote = (
   const [baseMinAmount, quoteMinAmount] = sumMarket(
     book,
     marketDepthCalculated,
-    new OrderAmount(OrderAmountType.Base, book.minLotSize)
+    new OrderAmount(OrderAmountType.Base, book.minLotSize),
+    false
   );
 
   if (FPNumber.isLessThan(baseMinAmount.value, book.minLotSize)) {
@@ -370,7 +376,8 @@ export const stepQuote = (
   const [baseMaxAmount, quoteMaxAmount] = sumMarket(
     book,
     marketDepthCalculated,
-    new OrderAmount(OrderAmountType.Base, book.maxLotSize)
+    new OrderAmount(OrderAmountType.Base, book.maxLotSize),
+    false
   );
 
   const quotation = new DiscreteQuotation();

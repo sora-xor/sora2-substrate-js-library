@@ -225,9 +225,12 @@ const xykQuoteC = (
   }
 
   const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
-  const x1 = safeDivide(x.mul(yOut), y.sub(yOut));
-  const xIn = safeDivide(x1, FPNumber.ONE.sub(feeRatio));
-  const fee = xIn.sub(x1);
+  const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
+  const nominator = x.mul(fxwYout);
+  const denominator = y.sub(fxwYout);
+  const xInWithoutFee = safeDivide(nominator, denominator);
+  const xIn = safeDivide(xInWithoutFee, FPNumber.ONE.sub(feeRatio));
+  const fee = xIn.sub(xInWithoutFee);
 
   return {
     amount: xIn,
@@ -262,7 +265,8 @@ const xykQuoteD = (
   deduceFee: boolean
 ): QuoteResult => {
   const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
-  const y1 = safeDivide(yOut, FPNumber.ONE.sub(feeRatio));
+  const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
+  const y1 = safeDivide(fxwYout, FPNumber.ONE.sub(feeRatio));
 
   if (FPNumber.isGreaterThanOrEqualTo(y1, y)) {
     throw new Error(

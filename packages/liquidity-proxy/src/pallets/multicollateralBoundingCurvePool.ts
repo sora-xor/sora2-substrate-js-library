@@ -416,7 +416,7 @@ const buyPrice = (
     return getMaxPositive(mainOut);
   } else {
     const newState = buyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, amount, payload);
-    const collateralReferenceIn = safeDivide(currentState.add(newState).mul(amount), FPNumber.TWO);
+    const collateralReferenceIn = safeDivide(currentState.add(newState), FPNumber.TWO).mul(amount);
     const collateralQuantity = safeDivide(collateralReferenceIn, collateralPricePerReferenceUnit);
     return getMaxPositive(collateralQuantity);
   }
