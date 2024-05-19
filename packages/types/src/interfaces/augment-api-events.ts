@@ -31,9 +31,9 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ClaimedLendingRewards: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
-       * Lended [who, asset_id, amount]
+       * Lent [who, asset_id, amount]
        **/
-      Lended: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      Lent: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
        * Liquidated [who, asset_id]
        **/
@@ -42,6 +42,10 @@ declare module '@polkadot/api-base/types/events' {
        * Pool added [who, asset_id]
        **/
       PoolAdded: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Pool info edited [who, asset_id]
+       **/
+      PoolInfoEdited: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
       /**
        * Pool removed [who, asset_id]
        **/

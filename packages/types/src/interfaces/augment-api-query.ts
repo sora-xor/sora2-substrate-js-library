@@ -47,7 +47,7 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       userBorrowingInfo: AugmentedQuery<ApiType, (arg1: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<BTreeMap<CommonPrimitivesAssetId32, ApolloPlatformBorrowingPosition>>>, [CommonPrimitivesAssetId32, AccountId32]>;
       /**
-       * Lended asset -> AccountId -> LendingPosition
+       * Lent asset -> AccountId -> LendingPosition
        **/
       userLendingInfo: AugmentedQuery<ApiType, (arg1: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<ApolloPlatformLendingPosition>>, [CommonPrimitivesAssetId32, AccountId32]>;
     };
