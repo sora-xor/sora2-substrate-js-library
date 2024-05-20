@@ -1998,7 +1998,7 @@ export default {
   ApolloPlatformEvent: {
     _enum: {
       PoolAdded: '(AccountId32,CommonPrimitivesAssetId32)',
-      Lended: '(AccountId32,CommonPrimitivesAssetId32,u128)',
+      Lent: '(AccountId32,CommonPrimitivesAssetId32,u128)',
       Borrowed: '(AccountId32,CommonPrimitivesAssetId32,u128,CommonPrimitivesAssetId32,u128)',
       ClaimedLendingRewards: '(AccountId32,CommonPrimitivesAssetId32,u128)',
       ClaimedBorrowingRewards: '(AccountId32,CommonPrimitivesAssetId32,u128)',
@@ -2007,7 +2007,8 @@ export default {
       ChangedRewardsAmount: '(AccountId32,bool,u128)',
       ChangedRewardsAmountPerBlock: '(AccountId32,bool,u128)',
       Liquidated: '(AccountId32,CommonPrimitivesAssetId32)',
-      PoolRemoved: '(AccountId32,CommonPrimitivesAssetId32)'
+      PoolRemoved: '(AccountId32,CommonPrimitivesAssetId32)',
+      PoolInfoEdited: '(AccountId32,CommonPrimitivesAssetId32)'
     }
   },
   /**
@@ -5254,7 +5255,17 @@ export default {
         assetId: 'CommonPrimitivesAssetId32',
       },
       remove_pool: {
-        assetIdToRemove: 'CommonPrimitivesAssetId32'
+        assetIdToRemove: 'CommonPrimitivesAssetId32',
+      },
+      edit_pool_info: {
+        assetId: 'CommonPrimitivesAssetId32',
+        newLoanToValue: 'u128',
+        newLiquidationThreshold: 'u128',
+        newOptimalUtilizationRate: 'u128',
+        newBaseRate: 'u128',
+        newSlopeRate1: 'u128',
+        newSlopeRate2: 'u128',
+        newReserveFactor: 'u128'
       }
     }
   },
@@ -6429,7 +6440,7 @@ export default {
    * Lookup929: apollo_platform::pallet::Error<T>
    **/
   ApolloPlatformError: {
-    _enum: ['Unauthorized', 'AssetAlreadyListed', 'InvalidPoolParameters', 'PoolDoesNotExist', 'InvalidLendingAmount', 'CollateralTokenDoesNotExist', 'NoLendingAmountToBorrow', 'SameCollateralAndBorrowingAssets', 'NoLiquidityForBorrowingAsset', 'NothingLended', 'InvalidCollateralAmount', 'CanNotTransferBorrowingAmount', 'CanNotTransferCollateralAmount', 'NoRewardsToClaim', 'UnableToTransferRewards', 'InsufficientLendingAmount', 'LendingAmountExceeded', 'CanNotTransferLendingAmount', 'NothingBorrowed', 'NonexistentBorrowingPosition', 'NothingToRepay', 'CanNotTransferLendingInterest', 'UnableToTransferCollateral', 'UnableToTransferAmountToRepay', 'CanNotWithdrawLendingAmount', 'CanNotTransferBorrowingRewards', 'CanNotTransferAmountToRepay', 'CanNotTransferAmountToDevelopers', 'InvalidLiquidation', 'PoolIsRemoved', 'InvalidBorrowingAmount']
+    _enum: ['Unauthorized', 'AssetAlreadyListed', 'InvalidPoolParameters', 'PoolDoesNotExist', 'InvalidLendingAmount', 'CollateralTokenDoesNotExist', 'NoLendingAmountToBorrow', 'SameCollateralAndBorrowingAssets', 'NoLiquidityForBorrowingAsset', 'NothingLent', 'InvalidCollateralAmount', 'CanNotTransferBorrowingAmount', 'CanNotTransferCollateralAmount', 'NoRewardsToClaim', 'UnableToTransferRewards', 'InsufficientLendingAmount', 'LendingAmountExceeded', 'CanNotTransferLendingAmount', 'NothingBorrowed', 'NonexistentBorrowingPosition', 'NothingToRepay', 'CanNotTransferLendingInterest', 'UnableToTransferCollateral', 'UnableToTransferAmountToRepay', 'CanNotWithdrawLendingAmount', 'CanNotTransferBorrowingRewards', 'CanNotTransferAmountToRepay', 'CanNotTransferAmountToDevelopers', 'InvalidLiquidation', 'PoolIsRemoved', 'InvalidBorrowingAmount']
   },
   /**
    * Lookup931: sp_runtime::MultiSignature

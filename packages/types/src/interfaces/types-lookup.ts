@@ -2216,8 +2216,8 @@ declare module '@polkadot/types/lookup' {
   interface ApolloPlatformEvent extends Enum {
     readonly isPoolAdded: boolean;
     readonly asPoolAdded: ITuple<[AccountId32, CommonPrimitivesAssetId32]>;
-    readonly isLended: boolean;
-    readonly asLended: ITuple<[AccountId32, CommonPrimitivesAssetId32, u128]>;
+    readonly isLent: boolean;
+    readonly asLent: ITuple<[AccountId32, CommonPrimitivesAssetId32, u128]>;
     readonly isBorrowed: boolean;
     readonly asBorrowed: ITuple<[AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32, u128]>;
     readonly isClaimedLendingRewards: boolean;
@@ -2236,7 +2236,9 @@ declare module '@polkadot/types/lookup' {
     readonly asLiquidated: ITuple<[AccountId32, CommonPrimitivesAssetId32]>;
     readonly isPoolRemoved: boolean;
     readonly asPoolRemoved: ITuple<[AccountId32, CommonPrimitivesAssetId32]>;
-    readonly type: 'PoolAdded' | 'Lended' | 'Borrowed' | 'ClaimedLendingRewards' | 'ClaimedBorrowingRewards' | 'Withdrawn' | 'Repaid' | 'ChangedRewardsAmount' | 'ChangedRewardsAmountPerBlock' | 'Liquidated' | 'PoolRemoved';
+    readonly isPoolInfoEdited: boolean;
+    readonly asPoolInfoEdited: ITuple<[AccountId32, CommonPrimitivesAssetId32]>;
+    readonly type: 'PoolAdded' | 'Lent' | 'Borrowed' | 'ClaimedLendingRewards' | 'ClaimedBorrowingRewards' | 'Withdrawn' | 'Repaid' | 'ChangedRewardsAmount' | 'ChangedRewardsAmountPerBlock' | 'Liquidated' | 'PoolRemoved' | 'PoolInfoEdited';
   }
 
   /** @name FrameSystemPhase (223) */
@@ -5491,7 +5493,18 @@ declare module '@polkadot/types/lookup' {
     readonly asRemovePool: {
       readonly assetIdToRemove: CommonPrimitivesAssetId32;
     } & Struct;
-    readonly type: 'AddPool' | 'Lend' | 'Borrow' | 'GetRewards' | 'Withdraw' | 'Repay' | 'ChangeRewardsAmount' | 'ChangeRewardsPerBlock' | 'Liquidate' | 'RemovePool';
+    readonly isEditPoolInfo: boolean;
+    readonly asEditPoolInfo: {
+      readonly assetId: CommonPrimitivesAssetId32;
+      readonly newLoanToValue: u128;
+      readonly newLiquidationThreshold: u128;
+      readonly newOptimalUtilizationRate: u128;
+      readonly newBaseRate: u128;
+      readonly newSlopeRate1: u128;
+      readonly newSlopeRate2: u128;
+      readonly newReserveFactor: u128;
+    } & Struct;
+    readonly type: 'AddPool' | 'Lend' | 'Borrow' | 'GetRewards' | 'Withdraw' | 'Repay' | 'ChangeRewardsAmount' | 'ChangeRewardsPerBlock' | 'Liquidate' | 'RemovePool' | 'EditPoolInfo';
   }
 
   /** @name PalletMultisigError (653) */
@@ -7338,7 +7351,7 @@ declare module '@polkadot/types/lookup' {
     readonly isNoLendingAmountToBorrow: boolean;
     readonly isSameCollateralAndBorrowingAssets: boolean;
     readonly isNoLiquidityForBorrowingAsset: boolean;
-    readonly isNothingLended: boolean;
+    readonly isNothingLent: boolean;
     readonly isInvalidCollateralAmount: boolean;
     readonly isCanNotTransferBorrowingAmount: boolean;
     readonly isCanNotTransferCollateralAmount: boolean;
@@ -7360,7 +7373,7 @@ declare module '@polkadot/types/lookup' {
     readonly isInvalidLiquidation: boolean;
     readonly isPoolIsRemoved: boolean;
     readonly isInvalidBorrowingAmount: boolean;
-    readonly type: 'Unauthorized' | 'AssetAlreadyListed' | 'InvalidPoolParameters' | 'PoolDoesNotExist' | 'InvalidLendingAmount' | 'CollateralTokenDoesNotExist' | 'NoLendingAmountToBorrow' | 'SameCollateralAndBorrowingAssets' | 'NoLiquidityForBorrowingAsset' | 'NothingLended' | 'InvalidCollateralAmount' | 'CanNotTransferBorrowingAmount' | 'CanNotTransferCollateralAmount' | 'NoRewardsToClaim' | 'UnableToTransferRewards' | 'InsufficientLendingAmount' | 'LendingAmountExceeded' | 'CanNotTransferLendingAmount' | 'NothingBorrowed' | 'NonexistentBorrowingPosition' | 'NothingToRepay' | 'CanNotTransferLendingInterest' | 'UnableToTransferCollateral' | 'UnableToTransferAmountToRepay' | 'CanNotWithdrawLendingAmount' | 'CanNotTransferBorrowingRewards' | 'CanNotTransferAmountToRepay' | 'CanNotTransferAmountToDevelopers' | 'InvalidLiquidation' | 'PoolIsRemoved' | 'InvalidBorrowingAmount';
+    readonly type: 'Unauthorized' | 'AssetAlreadyListed' | 'InvalidPoolParameters' | 'PoolDoesNotExist' | 'InvalidLendingAmount' | 'CollateralTokenDoesNotExist' | 'NoLendingAmountToBorrow' | 'SameCollateralAndBorrowingAssets' | 'NoLiquidityForBorrowingAsset' | 'NothingLent' | 'InvalidCollateralAmount' | 'CanNotTransferBorrowingAmount' | 'CanNotTransferCollateralAmount' | 'NoRewardsToClaim' | 'UnableToTransferRewards' | 'InsufficientLendingAmount' | 'LendingAmountExceeded' | 'CanNotTransferLendingAmount' | 'NothingBorrowed' | 'NonexistentBorrowingPosition' | 'NothingToRepay' | 'CanNotTransferLendingInterest' | 'UnableToTransferCollateral' | 'UnableToTransferAmountToRepay' | 'CanNotWithdrawLendingAmount' | 'CanNotTransferBorrowingRewards' | 'CanNotTransferAmountToRepay' | 'CanNotTransferAmountToDevelopers' | 'InvalidLiquidation' | 'PoolIsRemoved' | 'InvalidBorrowingAmount';
   }
 
   /** @name SpRuntimeMultiSignature (931) */
