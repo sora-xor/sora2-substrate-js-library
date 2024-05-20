@@ -220,6 +220,12 @@ const xykQuoteC = (
   yOut: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
+  if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
+    throw new Error(
+      `[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `
+    );
+  }
+
   const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
   const nominator = x.mul(fxwYout);
   const denominator = y.sub(fxwYout);
@@ -261,6 +267,12 @@ const xykQuoteD = (
 ): QuoteResult => {
   const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
   const yOutWithFee = deduceFee ? safeDivide(fxwYout, FPNumber.ONE.sub(Consts.XYK_FEE)) : fxwYout;
+
+  if (FPNumber.isGreaterThanOrEqualTo(yOutWithFee, y)) {
+    throw new Error(
+      `[liquidityProxy] xykQuote: output amount ${yOutWithFee.toString()} is larger than reserves ${y.toString()}.`
+    );
+  }
 
   const nominator = x.mul(yOutWithFee);
   const denominator = y.sub(yOutWithFee);
