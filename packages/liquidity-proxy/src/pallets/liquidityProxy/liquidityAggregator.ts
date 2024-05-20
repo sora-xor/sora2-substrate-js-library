@@ -158,13 +158,13 @@ export class LiquidityAggregator {
     for (const [source, chunks] of selected.entries()) {
       const total = this.sumChunks(chunks);
 
-      const [desiredPart, resultPart] =
+      const [_desiredPart, resultPart] =
         this.variant === SwapVariant.WithDesiredInput ? [total.input, total.output] : [total.output, total.input];
-
+      // DistributionChunk uses "total" instead of "desiredPart"
       distribution.push({
         market: source,
-        income: desiredPart,
-        outcome: resultPart,
+        income: total.input,
+        outcome: total.output,
         fee: total.fee,
       });
       resultAmount = resultAmount.add(resultPart);
