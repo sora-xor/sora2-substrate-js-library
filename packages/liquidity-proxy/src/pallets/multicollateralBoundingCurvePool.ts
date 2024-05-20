@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, Errors, PriceVariant, RewardReason, SwapVariant } from '../consts';
-import { safeDivide, getMaxPositive, safeQuoteResult, isAssetAddress, toFp } from '../utils';
+import { safeDivide, saturatingSub, getMaxPositive, safeQuoteResult, isAssetAddress, toFp } from '../utils';
 import { getAveragePrice } from './priceTools';
 import { SwapChunk, DiscreteQuotation, SideAmount } from '../common/primitives';
 
@@ -70,11 +70,11 @@ export const stepQuote = (
       ? decideSellAmounts(inputAsset, outputAsset, volume, isDesiredInput, payload, deduceFee)
       : decideBuyAmounts(outputAsset, inputAsset, volume, isDesiredInput, payload, deduceFee);
 
-    const [inputAmount, outputAmount] = isDesiredInput ? [amount, resultAmount] : [resultAmount, amount];
+    const [inputAmount, outputAmount] = isDesiredInput ? [volume, resultAmount] : [resultAmount, volume];
 
-    const inputChunk = inputAmount.sub(subIn);
-    const outputChunk = outputAmount.sub(subOut);
-    const feeChunk = feeAmount.sub(subFee); // in XOR
+    const inputChunk = saturatingSub(inputAmount, subIn);
+    const outputChunk = saturatingSub(outputAmount, subOut);
+    const feeChunk = saturatingSub(feeAmount, subFee); // in XOR
 
     subIn = inputAmount;
     subOut = outputAmount;
@@ -435,7 +435,7 @@ const decideSellAmounts = (
 
   if (isDesiredInput) {
     const fee = amount.mul(feeRatio);
-    const outputAmount = sellPrice(mainAssetId, collateralAssetId, amount.sub(fee), isDesiredInput, payload);
+    const outputAmount = sellPrice(mainAssetId, collateralAssetId, saturatingSub(amount, fee), isDesiredInput, payload);
 
     return {
       amount: outputAmount,
@@ -455,7 +455,7 @@ const decideSellAmounts = (
   } else {
     const inputAmount = sellPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
-    const fee = inputAmountWithFee.sub(inputAmount);
+    const fee = saturatingSub(inputAmountWithFee, inputAmount);
 
     return {
       amount: inputAmountWithFee,
@@ -489,7 +489,7 @@ const decideBuyAmounts = (
   if (isDesiredInput) {
     const outputAmount = buyPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
     const fee = feeRatio.mul(outputAmount);
-    const output = outputAmount.sub(fee);
+    const output = saturatingSub(outputAmount, fee);
     const rewards = tbcCheckRewards(mainAssetId, collateralAssetId, output, payload);
 
     return {
@@ -510,7 +510,7 @@ const decideBuyAmounts = (
   } else {
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
     const inputAmount = buyPrice(mainAssetId, collateralAssetId, amountWithFee, isDesiredInput, payload);
-    const fee = amountWithFee.sub(amount);
+    const fee = saturatingSub(amountWithFee, amount);
     const rewards = tbcCheckRewards(mainAssetId, collateralAssetId, amount, payload);
 
     return {
@@ -566,7 +566,7 @@ export const quoteWithoutImpact = (
 
       if (isDesiredinput) {
         const feeAmount = feeRatio.mul(amount);
-        const collateralOut = amount.sub(feeAmount).mul(xorPrice);
+        const collateralOut = saturatingSub(amount, feeAmount).mul(xorPrice);
 
         return collateralOut;
       } else {
@@ -583,7 +583,7 @@ export const quoteWithoutImpact = (
         const xorOut = safeDivide(amount, xorPrice);
         const feeAmount = xorOut.mul(feeRatio);
 
-        return xorOut.sub(feeAmount);
+        return saturatingSub(xorOut, feeAmount);
       } else {
         const outputAmountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
         const collateralIn = outputAmountWithFee.mul(xorPrice);

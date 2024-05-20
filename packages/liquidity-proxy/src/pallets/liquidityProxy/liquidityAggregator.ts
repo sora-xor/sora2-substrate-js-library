@@ -120,9 +120,11 @@ export class LiquidityAggregator {
               const remainderSide = remainder.getAssociatedField(this.variant);
 
               while (FPNumber.isGreaterThan(remainderSide.amount, FPNumber.ZERO)) {
+                // it is necessary to return chunks back till `remainder` volume is filled
                 const chunk = chunks.pop();
 
                 if (!chunk) {
+                  // chunks are over, already returned all chunks
                   toDelete.push(source);
                   break;
                 }
@@ -138,6 +140,7 @@ export class LiquidityAggregator {
 
                   chunks.push(chunkUpdated);
                   discreteQuotation.chunks.unshift(remainderChunk);
+                  remainderSide.amount = FPNumber.ZERO;
                 }
               }
             }
@@ -207,7 +210,6 @@ export class LiquidityAggregator {
   }
 
   public sumChunks(chunks: SwapChunk[]): SwapChunk {
-    if (!chunks.length) return SwapChunk.zero();
-    return chunks.reduce((acc, next) => acc.saturatingAdd(next));
+    return chunks.reduce((acc, next) => acc.saturatingAdd(next), SwapChunk.zero());
   }
 }

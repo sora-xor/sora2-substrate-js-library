@@ -144,10 +144,11 @@ const xykQuoteA = (
   xIn: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
-  const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
-  const fee = xIn.mul(feeRatio);
-  const x1 = xIn.sub(fee);
-  const yOut = safeDivide(x1.mul(y), x.add(x1));
+  const xInWithoutFee = deduceFee ? xIn.mul(FPNumber.ONE.sub(Consts.XYK_FEE)) : xIn;
+  const nominator = xInWithoutFee.mul(y);
+  const denominator = x.add(xInWithoutFee);
+  const yOut = safeDivide(nominator, denominator);
+  const fee = xIn.sub(xInWithoutFee);
 
   return {
     amount: yOut,
@@ -181,10 +182,11 @@ const xykQuoteB = (
   xIn: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
-  const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
-  const y1 = safeDivide(xIn.mul(y), x.add(xIn));
-  const yOut = y1.mul(FPNumber.ONE.sub(feeRatio));
-  const fee = y1.sub(yOut);
+  const nominator = xIn.mul(y);
+  const denominator = x.add(xIn);
+  const yOutWithFee = safeDivide(nominator, denominator);
+  const yOut = deduceFee ? yOutWithFee.mul(FPNumber.ONE.sub(Consts.XYK_FEE)) : yOutWithFee;
+  const fee = yOutWithFee.sub(yOut);
 
   return {
     amount: yOut,
@@ -218,18 +220,11 @@ const xykQuoteC = (
   yOut: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
-  if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
-    throw new Error(
-      `[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `
-    );
-  }
-
-  const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
   const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
   const nominator = x.mul(fxwYout);
   const denominator = y.sub(fxwYout);
   const xInWithoutFee = safeDivide(nominator, denominator);
-  const xIn = safeDivide(xInWithoutFee, FPNumber.ONE.sub(feeRatio));
+  const xIn = deduceFee ? safeDivide(xInWithoutFee, FPNumber.ONE.sub(Consts.XYK_FEE)) : xInWithoutFee;
   const fee = xIn.sub(xInWithoutFee);
 
   return {
@@ -264,18 +259,13 @@ const xykQuoteD = (
   yOut: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
-  const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
   const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
-  const y1 = safeDivide(fxwYout, FPNumber.ONE.sub(feeRatio));
+  const yOutWithFee = deduceFee ? safeDivide(fxwYout, FPNumber.ONE.sub(Consts.XYK_FEE)) : fxwYout;
 
-  if (FPNumber.isGreaterThanOrEqualTo(y1, y)) {
-    throw new Error(
-      `[liquidityProxy] xykQuote: output amount ${y1.toString()} is larger than reserves ${y.toString()}.`
-    );
-  }
-
-  const xIn = safeDivide(x.mul(y1), y.sub(y1));
-  const fee = y1.sub(yOut);
+  const nominator = x.mul(yOutWithFee);
+  const denominator = y.sub(yOutWithFee);
+  const xIn = safeDivide(nominator, denominator);
+  const fee = yOutWithFee.sub(fxwYout);
 
   return {
     amount: xIn,
@@ -294,6 +284,7 @@ const xykQuoteD = (
   };
 };
 
+// calc_output_for_exact_input
 const calcOutputForExactInput = (
   baseAssetId: string,
   inputAsset: string,
@@ -308,6 +299,7 @@ const calcOutputForExactInput = (
     : xykQuoteB(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
 };
 
+// calc_input_for_exact_output
 const calcInputForExactOutput = (
   baseAssetId: string,
   inputAsset: string,
