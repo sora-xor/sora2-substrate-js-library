@@ -954,11 +954,11 @@ export class SwapModule<T> {
       quoteFn(DexId.XOR, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
       quoteFn(DexId.XSTUSD, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
     ]);
-    const valueDex0 = resDex0.unwrapOr(emptySwapResult);
-    const valueDex1 = resDex1.unwrapOr(emptySwapResult);
+    const [valueDex0, valueDex1] = [resDex0.unwrapOr(emptySwapResult), resDex1.unwrapOr(emptySwapResult)];
+    const [amountDex0, amountDex1] = [toFP(valueDex0.amount), toFP(valueDex1.amount)];
     const isDex0Better = isExchangeB
-      ? FPNumber.lte(toFP(valueDex0.amount), toFP(valueDex1.amount))
-      : FPNumber.gte(toFP(valueDex0.amount), toFP(valueDex1.amount));
+      ? FPNumber.lte(amountDex0, amountDex1) && !amountDex0.isZero()
+      : FPNumber.gte(amountDex0, amountDex1);
     const value = isDex0Better ? valueDex0 : valueDex1;
 
     let fee: LiquidityProviderFee[] = [];
