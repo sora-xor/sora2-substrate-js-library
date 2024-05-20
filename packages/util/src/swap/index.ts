@@ -956,9 +956,11 @@ export class SwapModule<T> {
     ]);
     const [valueDex0, valueDex1] = [resDex0.unwrapOr(emptySwapResult), resDex1.unwrapOr(emptySwapResult)];
     const [amountDex0, amountDex1] = [toFP(valueDex0.amount), toFP(valueDex1.amount)];
-    const isDex0Better = isExchangeB
-      ? FPNumber.lte(amountDex0, amountDex1) && !amountDex0.isZero()
-      : FPNumber.gte(amountDex0, amountDex1);
+    const isDex0Better =
+      amountDex1.isZero() ||
+      (isExchangeB
+        ? FPNumber.lte(amountDex0, amountDex1) && !amountDex0.isZero()
+        : FPNumber.gte(amountDex0, amountDex1));
     const value = isDex0Better ? valueDex0 : valueDex1;
 
     let fee: LiquidityProviderFee[] = [];
