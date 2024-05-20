@@ -2,7 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import { LiquiditySourceTypes, Consts, Errors } from '../consts';
 import { safeDivide, toFp, isAssetAddress, safeQuoteResult } from '../utils';
-import { SwapChunk } from '../common/primitives';
+import { SwapChunk, DiscreteQuotation } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult } from '../types';
 
@@ -34,12 +34,15 @@ export const stepQuote = (
   payload: QuotePayload,
   deduceFee: boolean,
   recommendedSamplesCount: number
-): Array<SwapChunk> => {
-  const chunks: SwapChunk[] = [];
+): DiscreteQuotation => {
+  const quotation = new DiscreteQuotation();
 
   if (amount.isZero()) {
-    return chunks;
+    return quotation;
   }
+
+  const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
+
   // Get actual pool reserves.
   const [reserveInput, reserveOutput] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
 
@@ -51,14 +54,26 @@ export const stepQuote = (
     throw new Error(Errors.PoolIsEmpty);
   }
 
-  let step = safeDivide(amount, new FPNumber(recommendedSamplesCount));
+  const commonStep = safeDivide(amount, new FPNumber(samplesCount));
+  // volume & step
+  const volumes: [FPNumber, FPNumber][] = [];
+
+  let remaining = amount;
+
+  for (let i = 1; i < samplesCount; i++) {
+    const volume = commonStep.mul(new FPNumber(i));
+
+    volumes.push([volume, commonStep]);
+
+    remaining = remaining.sub(commonStep);
+  }
+  volumes.push([amount, remaining]);
+
   let subSum = FPNumber.ZERO;
   let subFee = FPNumber.ZERO;
 
   if (isDesiredInput) {
-    for (let i = 1; i <= recommendedSamplesCount; i++) {
-      let volume = step.mul(new FPNumber(i));
-
+    for (const [volume, step] of volumes) {
       const { amount: calculated, fee } = calcOutputForExactInput(
         baseAssetId,
         inputAsset,
@@ -69,16 +84,14 @@ export const stepQuote = (
         deduceFee
       );
 
-      let output = calculated.sub(subSum);
-      let feeChunk = fee.sub(subFee);
+      const output = calculated.sub(subSum);
+      const feeChunk = fee.sub(subFee);
       subSum = calculated;
       subFee = fee;
-      chunks.push(new SwapChunk(step, output, feeChunk));
+      quotation.chunks.push(new SwapChunk(step, output, feeChunk));
     }
   } else {
-    for (let i = 1; i <= recommendedSamplesCount; i++) {
-      let volume = step.mul(new FPNumber(i));
-
+    for (const [volume, step] of volumes) {
       const { amount: calculated, fee } = calcInputForExactOutput(
         baseAssetId,
         inputAsset,
@@ -89,15 +102,15 @@ export const stepQuote = (
         deduceFee
       );
 
-      let input = calculated.sub(subSum);
-      let feeChunk = fee.sub(subFee);
+      const input = calculated.sub(subSum);
+      const feeChunk = fee.sub(subFee);
       subSum = calculated;
       subFee = fee;
-      chunks.push(new SwapChunk(input, step, feeChunk));
+      quotation.chunks.push(new SwapChunk(input, step, feeChunk));
     }
   }
 
-  return chunks;
+  return quotation;
 };
 
 // returs reserves by order: inputAssetId, outputAssetId
@@ -131,10 +144,11 @@ const xykQuoteA = (
   xIn: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
-  const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
-  const fee = xIn.mul(feeRatio);
-  const x1 = xIn.sub(fee);
-  const yOut = safeDivide(x1.mul(y), x.add(x1));
+  const xInWithoutFee = deduceFee ? xIn.mul(FPNumber.ONE.sub(Consts.XYK_FEE)) : xIn;
+  const nominator = xInWithoutFee.mul(y);
+  const denominator = x.add(xInWithoutFee);
+  const yOut = safeDivide(nominator, denominator);
+  const fee = xIn.sub(xInWithoutFee);
 
   return {
     amount: yOut,
@@ -168,10 +182,11 @@ const xykQuoteB = (
   xIn: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
-  const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
-  const y1 = safeDivide(xIn.mul(y), x.add(xIn));
-  const yOut = y1.mul(FPNumber.ONE.sub(feeRatio));
-  const fee = y1.sub(yOut);
+  const nominator = xIn.mul(y);
+  const denominator = x.add(xIn);
+  const yOutWithFee = safeDivide(nominator, denominator);
+  const yOut = deduceFee ? yOutWithFee.mul(FPNumber.ONE.sub(Consts.XYK_FEE)) : yOutWithFee;
+  const fee = yOutWithFee.sub(yOut);
 
   return {
     amount: yOut,
@@ -205,16 +220,12 @@ const xykQuoteC = (
   yOut: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
-  if (FPNumber.isGreaterThanOrEqualTo(yOut, y)) {
-    throw new Error(
-      `[liquidityProxy] xykQuote: output amount ${yOut.toString()} is larger than reserves ${y.toString()}. `
-    );
-  }
-
-  const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
-  const x1 = safeDivide(x.mul(yOut), y.sub(yOut));
-  const xIn = safeDivide(x1, FPNumber.ONE.sub(feeRatio));
-  const fee = xIn.sub(x1);
+  const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
+  const nominator = x.mul(fxwYout);
+  const denominator = y.sub(fxwYout);
+  const xInWithoutFee = safeDivide(nominator, denominator);
+  const xIn = deduceFee ? safeDivide(xInWithoutFee, FPNumber.ONE.sub(Consts.XYK_FEE)) : xInWithoutFee;
+  const fee = xIn.sub(xInWithoutFee);
 
   return {
     amount: xIn,
@@ -248,17 +259,13 @@ const xykQuoteD = (
   yOut: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
-  const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
-  const y1 = safeDivide(yOut, FPNumber.ONE.sub(feeRatio));
+  const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
+  const yOutWithFee = deduceFee ? safeDivide(fxwYout, FPNumber.ONE.sub(Consts.XYK_FEE)) : fxwYout;
 
-  if (FPNumber.isGreaterThanOrEqualTo(y1, y)) {
-    throw new Error(
-      `[liquidityProxy] xykQuote: output amount ${y1.toString()} is larger than reserves ${y.toString()}.`
-    );
-  }
-
-  const xIn = safeDivide(x.mul(y1), y.sub(y1));
-  const fee = y1.sub(yOut);
+  const nominator = x.mul(yOutWithFee);
+  const denominator = y.sub(yOutWithFee);
+  const xIn = safeDivide(nominator, denominator);
+  const fee = yOutWithFee.sub(fxwYout);
 
   return {
     amount: xIn,
@@ -277,6 +284,7 @@ const xykQuoteD = (
   };
 };
 
+// calc_output_for_exact_input
 const calcOutputForExactInput = (
   baseAssetId: string,
   inputAsset: string,
@@ -291,6 +299,7 @@ const calcOutputForExactInput = (
     : xykQuoteB(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
 };
 
+// calc_input_for_exact_output
 const calcInputForExactOutput = (
   baseAssetId: string,
   inputAsset: string,

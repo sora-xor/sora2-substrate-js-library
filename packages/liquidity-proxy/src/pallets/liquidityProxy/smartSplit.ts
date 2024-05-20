@@ -288,8 +288,8 @@ export const smartSplit = (
   };
 };
 
-// [ALT] smart_split
-export const smartSplitAlt = (
+// [ALT] new_smart_split
+export const newSmartSplit = (
   baseAssetId: string,
   syntheticBaseAssetId: string,
   sources: LiquiditySourceTypes[],
@@ -307,13 +307,12 @@ export const smartSplitAlt = (
     throw new Error(Errors.UnavailableExchangePath);
   }
 
-  const aggregator = new LiquidityAggregator(
-    isDesiredInput ? SwapVariant.WithDesiredInput : SwapVariant.WithDesiredOutput
-  );
+  const variant = isDesiredInput ? SwapVariant.WithDesiredInput : SwapVariant.WithDesiredOutput;
+  const aggregator = new LiquidityAggregator(variant);
 
   for (const source of sources) {
     try {
-      const chunks = LiquidityRegistry.stepQuote(source)(
+      const discreteQuotation = LiquidityRegistry.stepQuote(source)(
         baseAssetId,
         syntheticBaseAssetId,
         inputAsset,
@@ -325,7 +324,7 @@ export const smartSplitAlt = (
         Consts.GetNumSamples
       );
 
-      aggregator.addSource(source, chunks);
+      aggregator.addSource(source, discreteQuotation);
     } catch {
       continue;
     }

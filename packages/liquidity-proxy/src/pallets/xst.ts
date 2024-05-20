@@ -1,10 +1,10 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { LiquiditySourceTypes, Consts, Errors, PriceVariant } from '../consts';
+import { LiquiditySourceTypes, Consts, Errors, PriceVariant, SwapVariant } from '../consts';
 import { safeDivide, isAssetAddress, safeQuoteResult, toFp } from '../utils';
 import { getAveragePrice } from './priceTools';
 import { oracleProxyQuoteUnchecked } from './oracleProxy';
-import { SwapChunk } from '../common/primitives';
+import { SwapChunk, DiscreteQuotation, SideAmount } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult } from '../types';
 
@@ -37,16 +37,18 @@ export const stepQuote = (
   payload: QuotePayload,
   deduceFee: boolean,
   recommendedSamplesCount: number
-): Array<SwapChunk> => {
+): DiscreteQuotation => {
   if (!canExchange(baseAssetId, syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
 
+  const quotation = new DiscreteQuotation();
+
   if (amount.isZero()) {
-    return [];
+    return quotation;
   }
 
-  const limit = toFp(payload.consts.xst.syntheticBaseBuySellLimit);
+  const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
 
   // Get the price without checking the limit, because even if it exceeds the limit it will be rounded below.
   // It is necessary to use as much liquidity from the source as we can.
@@ -57,6 +59,12 @@ export const stepQuote = (
   const [inputAmount, outputAmount] = isDesiredInput ? [amount, resultAmount] : [resultAmount, amount];
 
   let monolith = new SwapChunk(inputAmount, outputAmount, feeAmount);
+
+  // Get max amount for the limit
+  const limit = toFp(payload.consts.xst.syntheticBaseBuySellLimit);
+  quotation.limits.maxAmount = isAssetAddress(inputAsset, syntheticBaseAssetId)
+    ? new SideAmount(limit, SwapVariant.WithDesiredInput)
+    : new SideAmount(limit, SwapVariant.WithDesiredOutput);
 
   // If amount exceeds the limit, it is necessary to round the amount to the limit.
   if (isAssetAddress(inputAsset, syntheticBaseAssetId)) {
@@ -69,10 +77,21 @@ export const stepQuote = (
     }
   }
 
-  const ratio = safeDivide(FPNumber.ONE, new FPNumber(recommendedSamplesCount));
+  const ratio = safeDivide(FPNumber.ONE, new FPNumber(samplesCount));
   const chunk = monolith.rescaleByRatio(ratio);
 
-  return new Array(recommendedSamplesCount).fill(chunk);
+  quotation.chunks = new Array(samplesCount - 1).fill(chunk);
+
+  // add remaining values as the last chunk to not loss the liquidity on the rounding
+  quotation.chunks.push(
+    new SwapChunk(
+      monolith.input.sub(chunk.input.mul(FPNumber.fromNatural(samplesCount - 1))),
+      monolith.output.sub(chunk.output.mul(FPNumber.fromNatural(samplesCount - 1))),
+      monolith.fee.sub(chunk.fee.mul(FPNumber.fromNatural(samplesCount - 1)))
+    )
+  );
+
+  return quotation;
 };
 
 const ensureBaseAssetAmountWithinLimit = (amount: FPNumber, payload: QuotePayload, checkLimits = true) => {

@@ -38,6 +38,13 @@ export const safeDivide = (value: FPNumber, divider: FPNumber): FPNumber => {
     return value.div(divider);
   }
 };
+export const saturatingSub = (a: FPNumber, b: FPNumber): FPNumber => {
+  return a.sub(b).max(FPNumber.ZERO);
+};
+export const checkedSub = (a: FPNumber, b: FPNumber): FPNumber | null => {
+  const result = a.sub(b);
+  return FPNumber.isGreaterThanOrEqualTo(result, FPNumber.ZERO) ? result : null;
+};
 export const safeQuoteResult = (
   inputAsset: string,
   outputAsset: string,
