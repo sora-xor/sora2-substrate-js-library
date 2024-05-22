@@ -48,8 +48,29 @@ export const stepQuote = (
     return quotation;
   }
 
-  const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
+  // reduce amount if it exceeds reserves
+  if (isAssetAddress(inputAsset, baseAssetId)) {
+    const collateralSupply = toFp(payload.reserves.tbc[outputAsset]);
 
+    if (collateralSupply.isZero()) return quotation;
+
+    const [adjustedAmount, maxLimit] = (() => {
+      if (!isDesiredInput) {
+        const maxValue = saturatingSub(collateralSupply, Consts.MIN);
+        const value = maxValue.min(amount);
+
+        return [value, new SideAmount(maxValue, SwapVariant.WithDesiredOutput)];
+      } else {
+        return [amount, null];
+      }
+    })();
+
+    quotation.limits.maxAmount = maxLimit;
+
+    amount = adjustedAmount;
+  }
+
+  const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
   const step = safeDivide(amount, new FPNumber(samplesCount));
   const volumes = [];
 
@@ -81,20 +102,6 @@ export const stepQuote = (
     subFee = feeAmount;
 
     quotation.chunks.push(new SwapChunk(inputChunk, outputChunk, feeChunk));
-  }
-
-  if (isAssetAddress(inputAsset, baseAssetId)) {
-    const collateralSupply = toFp(payload.reserves.tbc[outputAsset]);
-
-    if (isDesiredInput) {
-      const mainPricePerReferenceUnit = sellFunction(inputAsset, outputAsset, FPNumber.ZERO, payload);
-      const collateralPricePerReferenceUnit = referencePrice(outputAsset, PriceVariant.Sell, payload);
-      const mainSupply = safeDivide(collateralSupply.mul(collateralPricePerReferenceUnit), mainPricePerReferenceUnit);
-
-      quotation.limits.maxAmount = new SideAmount(mainSupply, SwapVariant.WithDesiredInput);
-    } else {
-      quotation.limits.maxAmount = new SideAmount(collateralSupply, SwapVariant.WithDesiredOutput);
-    }
   }
 
   return quotation;

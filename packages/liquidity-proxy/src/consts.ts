@@ -23,6 +23,8 @@ export class Consts {
   static readonly TBC_FEE = Consts.XYK_FEE;
   /** Max `Rust` number value */
   static readonly MAX = new FPNumber('170141183460469231731.687303715884105727');
+  /** Manimal significant balance */
+  static readonly MIN = FPNumber.fromCodecValue(1);
 
   /** ETH & DAI which are incentivized */
   static readonly incentivizedCurrenciesNum = FPNumber.TWO;
@@ -33,17 +35,20 @@ export class Consts {
 }
 
 export enum Errors {
-  PriceCalculationFailed = 'An error occurred while calculating the price.',
+  CalculationError = 'Specified parameters lead to arithmetic error',
   CantExchange = "Liquidity source can't exchange assets with the given IDs on the given DEXId.",
-  PoolIsEmpty = 'The pool has empty liquidity.',
+  InsufficientLiquidity = 'None of the sources has enough reserves to execute a trade',
+  InvalidOrderAmount = 'Invalid Order Amount',
   InvalidFeeRatio = 'Invalid fee ratio value.',
+  NotEnoughLiquidityInOrderBook = 'Not Enough Liquidity In OrderBook',
   NotEnoughReserves = "It's not enough reserves in the pool to perform the operation.",
+  PoolIsEmpty = 'The pool has empty liquidity.',
+  PriceCalculationFailed = 'An error occurred while calculating the price.',
   SyntheticDoesNotExist = 'Synthetic asset does not exist.',
   SyntheticBaseBuySellLimitExceeded = 'Input/output amount of synthetic base asset exceeds the limit',
   UnavailableExchangePath = 'No route exists in a given DEX for given parameters to carry out the swap',
   UnknownOrderBook = 'Order book does not exist for this trading pair',
-  NotEnoughLiquidityInOrderBook = 'Not Enough Liquidity In OrderBook',
-  InvalidOrderAmount = 'Invalid Order Amount',
+  UnsupportedQuotePath = 'Attempt to quote via unsupported path, i.e. both output and input tokens are not XOR.',
   // own
   UnsupportedLiquiditySource = 'Unsupported liquidity source',
 }

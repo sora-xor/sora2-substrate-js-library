@@ -1,6 +1,6 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { SwapVariant, LiquiditySourceTypes } from '../../consts';
+import { SwapVariant, LiquiditySourceTypes, Errors } from '../../consts';
 import { SwapChunk, DiscreteQuotation, SideAmount } from '../../common/primitives';
 import { checkedSub } from '../../utils';
 
@@ -30,8 +30,8 @@ export class LiquidityAggregator {
 
   // Aggregates the liquidity from the provided liquidity sources.
   // Liquidity sources provide discretized liquidity curve by chunks and then Liquidity Aggregator selects the best chunks from different sources to gain the best swap amount.
-  public aggregateSwapOutcome(amount: FPNumber): AggregatedSwapOutcome | null {
-    if (!this.liquidityQuotations.size) return null;
+  public aggregateSwapOutcome(amount: FPNumber): AggregatedSwapOutcome {
+    if (!this.liquidityQuotations.size) throw new Error(Errors.InsufficientLiquidity);
 
     let remainingAmount = amount;
     const lockedSources: LiquiditySourceTypes[] = [];
@@ -41,7 +41,7 @@ export class LiquidityAggregator {
       const candidates = this.findBestPriceCandidates(lockedSources);
 
       let source = candidates[0];
-      if (!source) return null;
+      if (!source) throw new Error(Errors.InsufficientLiquidity);
 
       // if there are several candidates with the same best price,
       // then we need to select the source that already been selected
@@ -53,9 +53,9 @@ export class LiquidityAggregator {
       }
 
       const discreteQuotation = this.liquidityQuotations.get(source);
-      if (!discreteQuotation) return null;
+      if (!discreteQuotation) throw new Error(Errors.InsufficientLiquidity);
       let chunk = discreteQuotation.chunks.shift();
-      if (!chunk) return null;
+      if (!chunk) throw new Error(Errors.InsufficientLiquidity);
       let payback = SwapChunk.zero();
 
       const total = this.sumChunks(selected.get(source) ?? []);
@@ -93,7 +93,7 @@ export class LiquidityAggregator {
       selected.get(source)?.push(chunk);
 
       const remainingSubResult = checkedSub(remainingAmount, remainingDelta);
-      if (!remainingSubResult) return null;
+      if (!remainingSubResult) throw new Error(Errors.CalculationError);
       remainingAmount = remainingSubResult;
 
       if (remainingAmount.isZero()) {
@@ -102,7 +102,7 @@ export class LiquidityAggregator {
         for (const [source, chunks] of selected.entries()) {
           const total = this.sumChunks(chunks);
           const discreteQuotation = this.liquidityQuotations.get(source);
-          if (!discreteQuotation) return null;
+          if (!discreteQuotation) throw new Error(Errors.InsufficientLiquidity);
           const [aligned, remainder] = discreteQuotation.limits.alignChunk(total);
 
           if (!remainder.isZero()) {
@@ -131,7 +131,7 @@ export class LiquidityAggregator {
 
                 if (FPNumber.isLessThanOrEqualTo(chunk.forCompare(remainderSide), remainderSide.amount)) {
                   const value = checkedSub(remainderSide.amount, chunk.getAssociatedField(this.variant).amount);
-                  if (!value) return null;
+                  if (!value) throw new Error(Errors.CalculationError);
                   remainderSide.amount = value;
                   discreteQuotation.chunks.unshift(chunk);
                 } else {
