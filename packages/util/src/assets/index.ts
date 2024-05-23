@@ -11,7 +11,7 @@ import { KnownAssets, NativeAssets, XOR } from './consts';
 import { DexId } from '../dex/consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import type {
   AccountAsset,
   AccountBalance,

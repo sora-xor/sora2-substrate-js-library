@@ -3,7 +3,7 @@ import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import type { Api } from '../api';
 
 /**

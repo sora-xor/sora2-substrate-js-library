@@ -2,7 +2,7 @@ import type { CodecString } from '@sora-substrate/math';
 
 import type { Asset } from '../assets/types';
 import type { RewardingEvents, RewardType } from './consts';
-import type { History } from '../BaseApi';
+import type { History } from '../types';
 
 // for tagged crowdloans
 export type RewardTypedEvent = [RewardType, RewardingEvents | string];

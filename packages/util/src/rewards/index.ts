@@ -10,7 +10,7 @@ import type { SubmittableExtrinsic, AugmentedSubmittable } from '@polkadot/api-b
 import { RewardingEvents, RewardType } from './consts';
 import { VAL, PSWAP } from '../assets/consts';
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import type { Api } from '../api';
 import type { RewardInfo, RewardsInfo, RewardTypedEvent } from './types';
 import type { Asset } from '../assets/types';
@@ -108,8 +108,9 @@ export class RewardsModule<T> {
    * @returns rewards array with not zero amount
    */
   public async checkForExternalAccount(externalAddress: string): Promise<Array<RewardInfo>> {
-    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] =
-      await this.root.api.rpc.rewards.claimables(externalAddress);
+    const [xorErc20Amount, soraFarmHarvestAmount, nftAirdropAmount] = await this.root.api.rpc.rewards.claimables(
+      externalAddress
+    );
 
     const rewards = [
       this.prepareRewardInfo([RewardType.External, RewardingEvents.SoraFarmHarvest], soraFarmHarvestAmount, PSWAP),

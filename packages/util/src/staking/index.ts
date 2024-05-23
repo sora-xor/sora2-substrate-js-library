@@ -3,7 +3,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { map } from 'rxjs';
 
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import { XOR, VAL } from '../assets/consts';
 import {
   formatEra,
