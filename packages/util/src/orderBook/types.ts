@@ -1,7 +1,7 @@
 import type { FPNumber } from '@sora-substrate/math';
 import type { OrderBookId, OrderBookPriceVolume, PriceVariant } from '@sora-substrate/liquidity-proxy';
 
-import type { History } from '../BaseApi';
+import type { History } from '../types';
 import type { AccountAsset, Asset } from '../assets/types';
 
 export interface LimitOrder {
