@@ -1,4 +1,4 @@
-import type { History } from '../BaseApi';
+import type { History } from '../types';
 
 export interface StakingHistory extends History {
   validators?: string[];

@@ -4,7 +4,7 @@ import { FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 
 import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';

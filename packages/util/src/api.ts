@@ -1,14 +1,13 @@
 import { assert, isHex } from '@polkadot/util';
-import { keyExtractSuri, mnemonicValidate, mnemonicGenerate, cryptoWaitReady } from '@polkadot/util-crypto';
-import { Keyring } from '@polkadot/ui-keyring';
+import { keyExtractSuri, mnemonicValidate, mnemonicGenerate } from '@polkadot/util-crypto';
+
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
-import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
-import { decrypt, encrypt } from './crypto';
-import { BaseApi, KeyringType, OnChainIdentity } from './BaseApi';
+import { BaseApi } from './BaseApi';
+import { keyring } from './apiAccount';
 import { Messages } from './logger';
 import { BridgeProxyModule } from './bridgeProxy';
 import { SwapModule } from './swap';
@@ -27,17 +26,13 @@ import { KensetsuModule } from './kensetsu';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
-import type { HistoryItem } from './BaseApi';
 import type { OriginalIdentity } from './staking/types';
-
-let keyring!: Keyring;
+import type { OnChainIdentity } from './types';
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
  */
 export class Api<T = void> extends BaseApi<T> {
-  private readonly type: KeypairType = KeyringType;
-
   public readonly defaultSlippageTolerancePercent = 0.5;
   public readonly seedLength = 12;
 
@@ -61,21 +56,6 @@ export class Api<T = void> extends BaseApi<T> {
   public override initAccountStorage() {
     super.initAccountStorage();
     this.bridgeProxy.initAccountStorage();
-  }
-
-  // # History methods
-  /**
-   * Remove all history
-   * @param assetAddress If it's empty then all history will be removed, else - only history of the specific asset
-   */
-  public override clearHistory(assetAddress?: string): void {
-    if (assetAddress) {
-      const filterFn = (item: HistoryItem) => ![item.assetAddress, item.asset2Address].includes(assetAddress);
-
-      this.history = this.getFilteredHistory(filterFn);
-    } else {
-      super.clearHistory();
-    }
   }
 
   /**
@@ -105,22 +85,6 @@ export class Api<T = void> extends BaseApi<T> {
   public override setAccount(account: CreateResult): void {
     super.setAccount(account);
     this.bridgeProxy.setAccount(account);
-  }
-
-  public async initKeyring(silent = false): Promise<void> {
-    keyring = new Keyring();
-
-    await cryptoWaitReady();
-
-    try {
-      // Restore accounts from keyring storage (localStorage)
-      keyring.loadAll({ type: this.type });
-    } catch (error) {
-      // Dont throw "Unable to initialise options more than once" error in silent mode
-      if (!silent) {
-        throw error;
-      }
-    }
   }
 
   public async restoreActiveAccount(): Promise<void> {
@@ -188,8 +152,13 @@ export class Api<T = void> extends BaseApi<T> {
     };
   }
 
-  private updateAccountData(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
-    this.setAccount(account);
+  protected override updateAccountData(
+    account: CreateResult,
+    name?: string,
+    source?: string,
+    isExternal?: boolean
+  ): void {
+    super.updateAccountData(account);
 
     if (this.storage) {
       const soraAddress = this.formatAddress(account.pair.address);
@@ -199,44 +168,6 @@ export class Api<T = void> extends BaseApi<T> {
       name && this.storage.set('name', name);
       source && this.storage.set('source', source);
       typeof isExternal === 'boolean' && this.storage.set('isExternal', isExternal);
-    }
-
-    this.initAccountStorage();
-  }
-
-  /**
-   * Login to account
-   * @param address account address
-   * @param name account name
-   * @param source wallet identity
-   * @param isExternal is account from extension or not
-   */
-  public async loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): Promise<void> {
-    try {
-      const meta = { name: name ?? '' };
-
-      let account!: CreateResult | { pair: KeyringPair; json: null };
-
-      if (isExternal) {
-        account = keyring.addExternal(address, meta);
-      } else {
-        const accounts = this.getAccounts();
-
-        if (!accounts.find((acc) => acc.address === address)) {
-          // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
-          await this.initKeyring(true);
-        }
-
-        account = {
-          pair: this.getAccountPair(address),
-          json: null, // we don't need json here
-        };
-      }
-
-      this.updateAccountData(account as CreateResult, name, source, isExternal);
-    } catch (error) {
-      console.error(error);
-      this.logout();
     }
   }
 
@@ -272,16 +203,6 @@ export class Api<T = void> extends BaseApi<T> {
   }
 
   /**
-   * Get already imported account pair by address
-   * @param address account address
-   */
-  public getAccountPair(address: string): KeyringPair {
-    const defaultAddress = this.formatAddress(address, false);
-
-    return keyring.getPair(defaultAddress);
-  }
-
-  /**
    * Import account using account pair
    * @param pair account pair to add
    * @param password account password
@@ -299,15 +220,6 @@ export class Api<T = void> extends BaseApi<T> {
   public importAccount(suri: string, name: string, password: string): void {
     const account = this.addAccount(suri, name, password);
     this.updateAccountData(account, name);
-  }
-
-  /**
-   * Get all imported accounts.
-   * It returns list of imported accounts
-   * added via api.importAccount()
-   */
-  public getAccounts() {
-    return keyring.getAccounts();
   }
 
   /**
@@ -330,7 +242,7 @@ export class Api<T = void> extends BaseApi<T> {
     }
     keyring.encryptAccount(pair, newPassword);
     if (this.storage) {
-      this.storage.set('password', encrypt(newPassword));
+      this.storage.set('password', this.encrypt(newPassword));
     }
   }
 
@@ -368,7 +280,7 @@ export class Api<T = void> extends BaseApi<T> {
    * @param encrypted If `true` then it will be decrypted. `false` by default
    */
   public exportAccount(pair: KeyringPair, password: string, encrypted = false): string {
-    const pass = encrypted ? decrypt(password) : password;
+    const pass = encrypted ? this.decrypt(password) : password;
 
     return JSON.stringify(keyring.backupAccount(pair, pass));
   }

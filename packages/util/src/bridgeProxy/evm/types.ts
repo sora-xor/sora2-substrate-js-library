@@ -1,6 +1,6 @@
 import type { CodecString } from '@sora-substrate/math';
 
-import type { Operation, History } from '../../BaseApi';
+import type { Operation, History } from '../../types';
 import type { BridgeTxStatus, BridgeNetworkType } from '../consts';
 import type { EvmNetworkId, EvmAppKinds } from './consts';
 

@@ -14,7 +14,7 @@ import type {
   OrderBook as OrderBookStruct,
 } from '@polkadot/types/lookup';
 
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import { MAX_ORDERS_PER_SINGLE_PRICE, MAX_TIMESTAMP } from './consts';
 import { Messages } from '../logger';
 import type { Api } from '../api';

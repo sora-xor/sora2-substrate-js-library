@@ -34,7 +34,7 @@ import { Consts as SwapConsts } from './consts';
 import { XOR, DAI, XSTUSD } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 import type { SwapTransferBatchData, SwapQuoteData, FilterMode } from './types';
