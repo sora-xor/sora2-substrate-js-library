@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 import { assert, numberToHex } from '@polkadot/util';
 
-import { ApiAccount } from '../../apiAccount';
+import { ApiAccount, isEvmOperation } from '../../apiAccount';
 import { Operation } from '../../types';
 import { Messages } from '../../logger';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
@@ -12,9 +12,6 @@ import type { BridgeTypesGenericNetworkId } from '@polkadot/types/lookup';
 import type { Asset } from '../../assets/types';
 import type { EvmHistory, EvmNetwork, EvmAsset } from './types';
 import type { EvmAppKinds } from './consts';
-
-export const isEvmOperation = (operation: Operation) =>
-  [Operation.EvmIncoming, Operation.EvmOutgoing].includes(operation);
 
 export class EvmBridgeApi<T> extends ApiAccount<T> {
   constructor() {
