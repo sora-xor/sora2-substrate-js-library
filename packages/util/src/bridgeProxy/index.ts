@@ -3,6 +3,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import type { Observable, Signer } from '@polkadot/types/types';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
+import type { Connection } from '@sora-substrate/connection';
 import type { CodecString } from '@sora-substrate/math';
 
 import { EthBridgeApi } from './eth';
@@ -23,6 +24,12 @@ export class BridgeProxyModule<T> {
   public readonly eth = new EthBridgeApi<T>();
   public readonly evm = new EvmBridgeApi<T>();
   public readonly sub = new SubBridgeApi<T>();
+
+  public setConnection(connection: Connection) {
+    this.eth.setConnection(connection);
+    this.evm.setConnection(connection);
+    this.sub.setConnection(connection);
+  }
 
   public initAccountStorage() {
     this.eth.initAccountStorage();
