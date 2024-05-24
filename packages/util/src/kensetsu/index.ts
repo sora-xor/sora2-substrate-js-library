@@ -6,7 +6,7 @@ import type { Observable } from '@polkadot/types/types';
 import type { Vec, u128 } from '@polkadot/types-codec';
 
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import { KUSD } from '../assets/consts';
 import { VaultTypes } from './consts';
 import type { Api } from '../api';

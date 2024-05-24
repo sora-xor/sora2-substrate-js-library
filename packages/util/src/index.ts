@@ -20,9 +20,11 @@ import './bridgeProxy/sub/types';
 import './bridgeProxy/sub/consts';
 
 export * from './api';
+export * from './apiAccount';
 export * from './BaseApi';
 export * from './FaucetApi';
 export * from './storage';
 export * from './http';
+export * from './types';
 
 export { FPNumber, CodecString } from '@sora-substrate/math';

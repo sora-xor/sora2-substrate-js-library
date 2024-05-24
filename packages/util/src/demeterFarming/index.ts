@@ -7,7 +7,7 @@ import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 import type { NumberLike } from '@sora-substrate/math';
 
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import { XOR } from '../assets/consts';
 
 import type { Api } from '../api';

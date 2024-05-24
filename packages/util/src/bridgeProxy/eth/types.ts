@@ -1,6 +1,6 @@
 import type { CodecString } from '@sora-substrate/math';
 
-import type { Operation, History } from '../../BaseApi';
+import type { Operation, History } from '../../types';
 import type { BridgeNetworkType, BridgeTxDirection, BridgeTxStatus } from '../consts';
 import type { EthAssetKind, EthCurrencyType, EthRequestType } from './consts';
 

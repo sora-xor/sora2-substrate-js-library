@@ -3,10 +3,12 @@ import keyring from '@polkadot/ui-keyring';
 import { NumberLike, FPNumber } from '@sora-substrate/math';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 
-import { BaseApi, Operation, KeyringType } from './BaseApi';
+import { BaseApi } from './BaseApi';
+import { KeyringType } from './apiAccount';
 import { getBalance } from './assets';
 import { KnownAssets } from './assets/consts';
 import { Messages } from './logger';
+import { Operation } from './types';
 
 /**
  * Contains all necessary data and functions for the faucet
