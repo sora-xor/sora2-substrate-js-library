@@ -8,14 +8,57 @@ import { OrderBookStatus } from './consts';
 import type { QuotePayload, QuoteResult } from '../../types';
 import type { OrderBookId, OrderBook, OrderBookAggregated, OrderBookPriceVolume } from './types';
 
-type DealInfo = {
-  inputAsset: string;
-  inputAmount: OrderAmount;
-  outputAsset: string;
-  outputAmount: OrderAmount;
-  averagePrice: FPNumber;
-  direction: PriceVariant;
-};
+class DealInfo {
+  public inputAsset!: string;
+  public inputAmount!: OrderAmount;
+  public outputAsset!: string;
+  public outputAmount!: OrderAmount;
+  public averagePrice!: FPNumber;
+  public direction!: PriceVariant;
+
+  constructor(
+    inputAsset: string,
+    inputAmount: OrderAmount,
+    outputAsset: string,
+    outputAmount: OrderAmount,
+    averagePrice: FPNumber,
+    direction: PriceVariant
+  ) {
+    this.inputAsset = inputAsset;
+    this.inputAmount = inputAmount;
+    this.outputAsset = outputAsset;
+    this.outputAmount = outputAmount;
+    this.averagePrice = averagePrice;
+    this.direction = direction;
+  }
+
+  get isValid(): boolean {
+    return (
+      this.inputAsset !== this.outputAsset &&
+      !(this.inputAmount.isBase && this.outputAmount.isBase) &&
+      !(this.inputAmount.isQuote && this.outputAmount.isQuote) &&
+      !this.inputAmount.value.isZero() &&
+      !this.outputAmount.value.isZero() &&
+      !this.averagePrice.isZero()
+    );
+  }
+
+  get baseAmount(): FPNumber {
+    if (this.inputAmount.isBase) {
+      return this.inputAmount.value;
+    } else {
+      return this.outputAmount.value;
+    }
+  }
+
+  get quoteAmount(): FPNumber {
+    if (this.inputAmount.isQuote) {
+      return this.inputAmount.value;
+    } else {
+      return this.outputAmount.value;
+    }
+  }
+}
 
 enum OrderAmountType {
   Base = 'Base',
@@ -264,14 +307,7 @@ const calculateDeal = (
 
   const averagePrice = OrderAmount.averagePrice(inputAmount, outputAmount);
 
-  return {
-    inputAsset,
-    inputAmount,
-    outputAsset,
-    outputAmount,
-    averagePrice,
-    direction,
-  };
+  return new DealInfo(inputAsset, inputAmount, outputAsset, outputAmount, averagePrice, direction);
 };
 
 // market_depth
@@ -390,13 +426,23 @@ export const stepQuote = (
       quotation.limits.maxAmount = new SideAmount(quoteMaxAmount.value, SwapVariant.WithDesiredInput);
       quotation.limits.amountPrecision = new SideAmount(book.stepLotSize, SwapVariant.WithDesiredOutput);
 
-      target = new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision));
+      if (FPNumber.isLessThan(amount, quoteMinAmount.value)) {
+        return quotation;
+      }
+
+      const targetAmount = amount.min(quoteMaxAmount.value);
+      target = new OrderAmount(OrderAmountType.Quote, targetAmount.dp(book.tickSize.precision));
     } else {
       quotation.limits.minAmount = new SideAmount(baseMinAmount.value, SwapVariant.WithDesiredInput);
       quotation.limits.maxAmount = new SideAmount(baseMaxAmount.value, SwapVariant.WithDesiredInput);
       quotation.limits.amountPrecision = new SideAmount(book.stepLotSize, SwapVariant.WithDesiredInput);
 
-      target = new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision));
+      if (FPNumber.isLessThan(amount, baseMinAmount.value)) {
+        return quotation;
+      }
+
+      const targetAmount = amount.min(baseMaxAmount.value);
+      target = new OrderAmount(OrderAmountType.Base, targetAmount.dp(book.stepLotSize.precision));
     }
   } else {
     if (isBuyDirection) {
@@ -404,13 +450,23 @@ export const stepQuote = (
       quotation.limits.maxAmount = new SideAmount(baseMaxAmount.value, SwapVariant.WithDesiredOutput);
       quotation.limits.amountPrecision = new SideAmount(book.stepLotSize, SwapVariant.WithDesiredOutput);
 
-      target = new OrderAmount(OrderAmountType.Base, amount.dp(book.stepLotSize.precision));
+      if (FPNumber.isLessThan(amount, baseMinAmount.value)) {
+        return quotation;
+      }
+
+      const targetAmount = amount.min(baseMaxAmount.value);
+      target = new OrderAmount(OrderAmountType.Base, targetAmount.dp(book.stepLotSize.precision));
     } else {
       quotation.limits.minAmount = new SideAmount(quoteMinAmount.value, SwapVariant.WithDesiredOutput);
       quotation.limits.maxAmount = new SideAmount(quoteMaxAmount.value, SwapVariant.WithDesiredOutput);
       quotation.limits.amountPrecision = new SideAmount(book.stepLotSize, SwapVariant.WithDesiredInput);
 
-      target = new OrderAmount(OrderAmountType.Quote, amount.dp(book.tickSize.precision));
+      if (FPNumber.isLessThan(amount, quoteMinAmount.value)) {
+        return quotation;
+      }
+
+      const targetAmount = amount.min(quoteMaxAmount.value);
+      target = new OrderAmount(OrderAmountType.Quote, targetAmount.dp(book.tickSize.precision));
     }
   }
 
@@ -464,6 +520,18 @@ export const quote = (
     if (!book) throw new Error(Errors.UnknownOrderBook);
 
     const dealInfo = calculateDeal(book, inputAsset, outputAsset, amount, isDesiredInput);
+
+    if (!dealInfo.isValid) throw new Error(Errors.PriceCalculationFailed);
+
+    const baseAmount = dealInfo.baseAmount;
+
+    if (
+      !(
+        FPNumber.isLessThanOrEqualTo(book.minLotSize, baseAmount) &&
+        FPNumber.isLessThanOrEqualTo(baseAmount, book.maxLotSize)
+      )
+    )
+      throw new Error(Errors.InvalidOrderAmount);
 
     // order-book doesn't take fee
     const fee = FPNumber.ZERO;
@@ -535,24 +603,43 @@ export const quoteWithoutImpact = (
       throw new Error(Errors.NotEnoughLiquidityInOrderBook);
     }
 
-    let targetAmount!: FPNumber;
+    const [targetAmount, baseAmount] = (() => {
+      if (isDesiredInput) {
+        if (isBuyDirection) {
+          const base = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
 
-    if (isDesiredInput) {
-      if (isBuyDirection) {
-        targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
+          return [base, base];
+        } else {
+          const base = alignAmount(amount.dp(book.stepLotSize.precision), book);
+          const quote = base.mul(price);
+
+          return [quote, base];
+        }
       } else {
-        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision), book).mul(price);
+        // prettier-ignore
+        if (isBuyDirection) { // NOSONAR
+          const base = alignAmount(amount.dp(book.stepLotSize.precision), book);
+          const quote = base.mul(price);
+  
+          return [quote, base];
+        } else {
+          const base = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
+  
+          return [base, base];
+        }
       }
-    } else {
-      // prettier-ignore
-      if (isBuyDirection) { // NOSONAR
-        targetAmount = alignAmount(amount.dp(book.stepLotSize.precision), book).mul(price);
-      } else {
-        targetAmount = alignAmount(safeDivide(amount.dp(book.tickSize.precision), price), book);
-      }
-    }
+    })();
 
     if (!targetAmount.isGtZero()) {
+      throw new Error(Errors.InvalidOrderAmount);
+    }
+
+    if (
+      !(
+        FPNumber.isLessThanOrEqualTo(book.minLotSize, baseAmount) &&
+        FPNumber.isLessThanOrEqualTo(baseAmount, book.maxLotSize)
+      )
+    ) {
       throw new Error(Errors.InvalidOrderAmount);
     }
 
