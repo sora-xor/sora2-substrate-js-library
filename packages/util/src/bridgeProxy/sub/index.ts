@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 import { assert } from '@polkadot/util';
 
-import { ApiAccount } from '../../apiAccount';
+import { ApiAccount, isSubstrateOperation } from '../../apiAccount';
 import { Operation } from '../../types';
 import { Messages } from '../../logger';
 import { BridgeTxStatus, BridgeNetworkType, BridgeAccountType } from '../consts';
@@ -48,9 +48,6 @@ const parseSubBridgeAssetKind = (kind: Option<BridgeTypesAssetKind>): SubAssetKi
 const parseSubBridgeAssetDecimals = (precision: Option<u8>) => {
   return precision.unwrap().toNumber();
 };
-
-export const isSubstrateOperation = (operation: Operation) =>
-  [Operation.SubstrateIncoming, Operation.SubstrateOutgoing].includes(operation);
 
 export class SubBridgeApi<T> extends ApiAccount<T> {
   constructor() {

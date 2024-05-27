@@ -15,9 +15,6 @@ import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 
 import { XOR } from './assets/consts';
-import { isEthOperation } from './bridgeProxy/eth';
-import { isEvmOperation } from './bridgeProxy/evm';
-import { isSubstrateOperation } from './bridgeProxy/sub';
 import { decrypt, encrypt, toHmacSHA256 } from './crypto';
 import { Messages } from './logger';
 import { AccountStorage, Storage } from './storage';
@@ -43,11 +40,17 @@ export const SoraPrefix = 69;
 
 export let keyring!: Keyring;
 
-const isLiquidityPoolOperation = (operation: Operation) =>
+export const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
 
-// re-export
-export { isEthOperation, isEvmOperation, isSubstrateOperation, isLiquidityPoolOperation };
+export const isEthOperation = (operation: Operation) =>
+  [Operation.EthBridgeIncoming, Operation.EthBridgeOutgoing].includes(operation);
+
+export const isEvmOperation = (operation: Operation) =>
+  [Operation.EvmIncoming, Operation.EvmOutgoing].includes(operation);
+
+export const isSubstrateOperation = (operation: Operation) =>
+  [Operation.SubstrateIncoming, Operation.SubstrateOutgoing].includes(operation);
 
 export class WithConnectionApi {
   /** Connection class that provides Api */

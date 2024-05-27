@@ -112,6 +112,8 @@ export class Api<T = void> extends BaseApi<T> {
       await this.restoreActiveAccount();
     }
 
+    this.bridgeProxy.setConnection(this.connection);
+
     // Update dex data
     await Promise.allSettled([this.dex.update(), this.swap.update()]);
   }

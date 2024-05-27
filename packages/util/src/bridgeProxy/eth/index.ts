@@ -5,7 +5,7 @@ import { FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 import type { BridgeTypesGenericNetworkId, EthBridgeRequestsOffchainRequest } from '@polkadot/types/lookup';
 
-import { ApiAccount } from '../../apiAccount';
+import { ApiAccount, isEthOperation } from '../../apiAccount';
 import { Operation } from '../../types';
 import { Messages } from '../../logger';
 import { getLockedAssets } from '../methods';
@@ -16,9 +16,6 @@ import type { EthAssetKind } from './consts';
 import type { EthAsset, EthApprovedRequest, EthRequest, EthHistory } from './types';
 import type { EvmNetwork } from '../evm/types';
 import type { Asset } from '../../assets/types';
-
-export const isEthOperation = (operation: Operation) =>
-  [Operation.EthBridgeIncoming, Operation.EthBridgeOutgoing].includes(operation);
 
 export class EthBridgeApi<T> extends ApiAccount<T> {
   private externalNetwork: EthNetwork = EthNetwork.Ethereum;
