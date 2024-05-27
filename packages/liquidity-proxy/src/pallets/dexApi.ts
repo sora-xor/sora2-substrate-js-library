@@ -14,15 +14,16 @@ export const listLiquiditySources = (
   selectedSources: LiquiditySourceTypes[] = [],
   payload: QuotePayload
 ): Array<LiquiditySourceTypes> => {
-  const sources = Object.values(LiquiditySourceTypes).filter((source) => {
-    return (
-      source &&
-      !payload.lockedSources.includes(source) &&
-      LiquidityRegistry.canExchange(source)(baseAssetId, syntheticBaseAssetId, inputAssetId, outputAssetId, payload)
+  return Object.values(LiquiditySourceTypes).filter((source) => {
+    if (!source) return false;
+    if (selectedSources.length && !selectedSources.includes(source)) return false;
+    if (payload.lockedSources.includes(source)) return false;
+    return LiquidityRegistry.canExchange(source)(
+      baseAssetId,
+      syntheticBaseAssetId,
+      inputAssetId,
+      outputAssetId,
+      payload
     );
   });
-
-  if (!selectedSources.length) return sources;
-
-  return sources.filter((source) => selectedSources.includes(source));
 };
