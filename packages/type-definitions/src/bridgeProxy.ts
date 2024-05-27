@@ -55,10 +55,10 @@ export default {
       assetId: 'MainnetAssetId',
       evmAddress: 'H160',
       appKind: 'EVMAppKind',
-      precision: 'u8',
+      precision: 'Option<u8>',
     },
     EVMAppKind: {
-      _enum: ['EthApp', 'ERC20App', 'SidechainApp', 'HashiBridge', 'XorMaster', 'ValMaster'],
+      _enum: ['EthApp', 'FaApp', 'HashiBridge', 'XorMaster', 'ValMaster'],
     },
     SubAssetInfo: {
       assetId: 'MainnetAssetId',
@@ -76,7 +76,7 @@ export default {
       },
     },
     MainnetAssetId: 'H256',
-    EVMChainId: 'U256',
+    EVMChainId: 'H256',
     SubNetworkId: {
       _enum: {
         Mainnet: null,
