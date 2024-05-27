@@ -1,5 +1,6 @@
 import { assert } from '@polkadot/util';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
+import type { Connection } from '@sora-substrate/connection';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
@@ -46,6 +47,11 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly dex = new DexModule<T>(this);
   public readonly ceresLiquidityLocker = new CeresLiquidityLockerModule<T>(this);
   public readonly kensetsu = new KensetsuModule<T>(this);
+
+  public override setConnection(connection: Connection) {
+    super.setConnection(connection);
+    this.bridgeProxy.setConnection(this.connection);
+  }
 
   public override initAccountStorage() {
     super.initAccountStorage();
@@ -105,8 +111,6 @@ export class Api<T = void> extends BaseApi<T> {
       await this.initKeyring();
       await this.restoreActiveAccount();
     }
-
-    this.bridgeProxy.setConnection(this.connection);
 
     // Update dex data
     await Promise.allSettled([this.dex.update(), this.swap.update()]);
