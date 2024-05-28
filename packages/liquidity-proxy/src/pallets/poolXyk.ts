@@ -1,8 +1,8 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { LiquiditySourceTypes, Consts, Errors } from '../consts';
-import { safeDivide, toFp, isAssetAddress, safeQuoteResult } from '../utils';
-import { SwapChunk, DiscreteQuotation } from '../common/primitives';
+import { LiquiditySourceTypes, Consts, Errors, SwapVariant } from '../consts';
+import { safeDivide, toFp, isAssetAddress, safeQuoteResult, saturatingSub } from '../utils';
+import { SwapChunk, DiscreteQuotation, SideAmount } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult } from '../types';
 
@@ -21,6 +21,28 @@ export const canExchange = (
   const reserves = [...payload.reserves.xyk[nonBaseAsset]];
 
   return reserves.every((tokenReserve) => !!Number(tokenReserve));
+};
+
+// decide_is_fee_from_destination
+const decideIsFeeFromDestination = (baseAssetId: string, assetA: string, assetB: string) => {
+  if (isAssetAddress(baseAssetId, assetA)) {
+    return false;
+  } else if (isAssetAddress(baseAssetId, assetB)) {
+    return true;
+  } else {
+    throw new Error(Errors.UnavailableExchangePath);
+  }
+};
+
+// calc_max_output
+const calcMaxOutput = (getFeeFromDestination: boolean, reserveOutput: FPNumber, deduceFee: boolean) => {
+  if (reserveOutput.isZero()) return FPNumber.ZERO;
+
+  const maxOutput =
+    getFeeFromDestination && deduceFee ? reserveOutput.mul(FPNumber.ONE.sub(Consts.XYK_FEE)) : reserveOutput;
+
+  // // reduce by `IrreducibleReserve` percent, because (reserve - output) must be > 0
+  return saturatingSub(maxOutput, Consts.IrreducibleReserve.mul(maxOutput));
 };
 
 // step_quote
@@ -51,8 +73,22 @@ export const stepQuote = (
     FPNumber.isLessThanOrEqualTo(reserveInput, FPNumber.ZERO) ||
     FPNumber.isLessThanOrEqualTo(reserveOutput, FPNumber.ZERO)
   ) {
-    throw new Error(Errors.PoolIsEmpty);
+    return quotation;
   }
+
+  const getFeeFromDestination = decideIsFeeFromDestination(baseAssetId, inputAsset, outputAsset);
+
+  amount = (() => {
+    if (isDesiredInput) {
+      return amount;
+    } else {
+      const maxOutput = calcMaxOutput(getFeeFromDestination, reserveOutput, deduceFee);
+
+      quotation.limits.maxAmount = new SideAmount(maxOutput, SwapVariant.WithDesiredOutput);
+
+      return maxOutput.min(amount);
+    }
+  })();
 
   const commonStep = safeDivide(amount, new FPNumber(samplesCount));
   // volume & step
@@ -65,7 +101,7 @@ export const stepQuote = (
 
     volumes.push([volume, commonStep]);
 
-    remaining = remaining.sub(commonStep);
+    remaining = saturatingSub(remaining, commonStep);
   }
   volumes.push([amount, remaining]);
 
@@ -75,7 +111,7 @@ export const stepQuote = (
   if (isDesiredInput) {
     for (const [volume, step] of volumes) {
       const { amount: calculated, fee } = calcOutputForExactInput(
-        baseAssetId,
+        getFeeFromDestination,
         inputAsset,
         outputAsset,
         reserveInput,
@@ -84,8 +120,8 @@ export const stepQuote = (
         deduceFee
       );
 
-      const output = calculated.sub(subSum);
-      const feeChunk = fee.sub(subFee);
+      const output = saturatingSub(calculated, subSum);
+      const feeChunk = saturatingSub(fee, subFee);
       subSum = calculated;
       subFee = fee;
       quotation.chunks.push(new SwapChunk(step, output, feeChunk));
@@ -93,7 +129,7 @@ export const stepQuote = (
   } else {
     for (const [volume, step] of volumes) {
       const { amount: calculated, fee } = calcInputForExactOutput(
-        baseAssetId,
+        getFeeFromDestination,
         inputAsset,
         outputAsset,
         reserveInput,
@@ -102,8 +138,8 @@ export const stepQuote = (
         deduceFee
       );
 
-      const input = calculated.sub(subSum);
-      const feeChunk = fee.sub(subFee);
+      const input = saturatingSub(calculated, subSum);
+      const feeChunk = saturatingSub(fee, subFee);
       subSum = calculated;
       subFee = fee;
       quotation.chunks.push(new SwapChunk(input, step, feeChunk));
@@ -226,7 +262,7 @@ const xykQuoteC = (
     );
   }
 
-  const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
+  const fxwYout = yOut.add(Consts.MIN); // by 1 correction to overestimate required input
   const nominator = x.mul(fxwYout);
   const denominator = y.sub(fxwYout);
   const xInWithoutFee = safeDivide(nominator, denominator);
@@ -265,7 +301,7 @@ const xykQuoteD = (
   yOut: FPNumber,
   deduceFee: boolean
 ): QuoteResult => {
-  const fxwYout = yOut.add(FPNumber.fromCodecValue(1)); // by 1 correction to overestimate required input
+  const fxwYout = yOut.add(Consts.MIN); // by 1 correction to overestimate required input
   const yOutWithFee = deduceFee ? safeDivide(fxwYout, FPNumber.ONE.sub(Consts.XYK_FEE)) : fxwYout;
 
   if (FPNumber.isGreaterThanOrEqualTo(yOutWithFee, y)) {
@@ -298,7 +334,7 @@ const xykQuoteD = (
 
 // calc_output_for_exact_input
 const calcOutputForExactInput = (
-  baseAssetId: string,
+  getFeeFromDestination: boolean,
   inputAsset: string,
   outputAsset: string,
   inputReserves: FPNumber,
@@ -306,14 +342,16 @@ const calcOutputForExactInput = (
   amount: FPNumber,
   deduceFee: boolean
 ) => {
-  return isAssetAddress(inputAsset, baseAssetId)
-    ? xykQuoteA(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee)
-    : xykQuoteB(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
+  if (getFeeFromDestination) {
+    return xykQuoteB(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
+  } else {
+    return xykQuoteA(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
+  }
 };
 
 // calc_input_for_exact_output
 const calcInputForExactOutput = (
-  baseAssetId: string,
+  getFeeFromDestination: boolean,
   inputAsset: string,
   outputAsset: string,
   inputReserves: FPNumber,
@@ -321,9 +359,11 @@ const calcInputForExactOutput = (
   amount: FPNumber,
   deduceFee: boolean
 ) => {
-  return isAssetAddress(inputAsset, baseAssetId)
-    ? xykQuoteC(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee)
-    : xykQuoteD(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
+  if (getFeeFromDestination) {
+    return xykQuoteD(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
+  } else {
+    return xykQuoteC(inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
+  }
 };
 
 export const quote = (
@@ -342,10 +382,27 @@ export const quote = (
     }
 
     const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+    const getFeeFromDestination = decideIsFeeFromDestination(baseAssetId, inputAsset, outputAsset);
 
     return isDesiredInput
-      ? calcOutputForExactInput(baseAssetId, inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee)
-      : calcInputForExactOutput(baseAssetId, inputAsset, outputAsset, inputReserves, outputReserves, amount, deduceFee);
+      ? calcOutputForExactInput(
+          getFeeFromDestination,
+          inputAsset,
+          outputAsset,
+          inputReserves,
+          outputReserves,
+          amount,
+          deduceFee
+        )
+      : calcInputForExactOutput(
+          getFeeFromDestination,
+          inputAsset,
+          outputAsset,
+          inputReserves,
+          outputReserves,
+          amount,
+          deduceFee
+        );
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XYKPool);
   }

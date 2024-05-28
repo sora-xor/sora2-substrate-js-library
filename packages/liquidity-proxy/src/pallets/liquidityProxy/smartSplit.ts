@@ -332,10 +332,6 @@ export const newSmartSplit = (
 
   const result = aggregator.aggregateSwapOutcome(amount);
 
-  if (!result) {
-    throw new Error(Errors.UnavailableExchangePath);
-  }
-
   const rewards = [];
 
   for (const { market: source, income, outcome } of result.distribution) {

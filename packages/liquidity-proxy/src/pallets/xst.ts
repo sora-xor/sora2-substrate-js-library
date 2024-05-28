@@ -50,6 +50,15 @@ export const stepQuote = (
 
   const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
 
+  // Get max amount for the limit
+  const limit = toFp(payload.consts.xst.syntheticBaseBuySellLimit);
+
+  if (limit.isZero()) return quotation;
+
+  quotation.limits.maxAmount = isAssetAddress(inputAsset, syntheticBaseAssetId)
+    ? new SideAmount(limit, SwapVariant.WithDesiredInput)
+    : new SideAmount(limit, SwapVariant.WithDesiredOutput);
+
   // Get the price without checking the limit, because even if it exceeds the limit it will be rounded below.
   // It is necessary to use as much liquidity from the source as we can.
   const { amount: resultAmount, fee: feeAmount } = isAssetAddress(inputAsset, syntheticBaseAssetId)
@@ -59,12 +68,6 @@ export const stepQuote = (
   const [inputAmount, outputAmount] = isDesiredInput ? [amount, resultAmount] : [resultAmount, amount];
 
   let monolith = new SwapChunk(inputAmount, outputAmount, feeAmount);
-
-  // Get max amount for the limit
-  const limit = toFp(payload.consts.xst.syntheticBaseBuySellLimit);
-  quotation.limits.maxAmount = isAssetAddress(inputAsset, syntheticBaseAssetId)
-    ? new SideAmount(limit, SwapVariant.WithDesiredInput)
-    : new SideAmount(limit, SwapVariant.WithDesiredOutput);
 
   // If amount exceeds the limit, it is necessary to round the amount to the limit.
   if (isAssetAddress(inputAsset, syntheticBaseAssetId)) {
