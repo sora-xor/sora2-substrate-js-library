@@ -743,6 +743,10 @@ declare module '@polkadot/api-base/types/events' {
     };
     multicollateralBondingCurvePool: {
       /**
+       * Free reserves distribution routine failed. [Error]
+       **/
+      FailedToDistributeFreeReserves: AugmentedEvent<ApiType, [SpRuntimeDispatchError]>;
+      /**
        * Multiplier for reward has been updated on particular asset. [Asset Id, New Multiplier]
        **/
       OptionalRewardMultiplierUpdated: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, Option<FixnumFixedPoint>]>;

@@ -153,8 +153,7 @@
     "EVMAppKind": {
         "_enum": [
             "EthApp",
-            "ERC20App",
-            "SidechainApp",
+            "FaApp",
             "HashiBridge",
             "XorMaster",
             "ValMaster"
@@ -166,12 +165,12 @@
         "appKind": "EVMAppKind",
         "precision": "u8"
     },
-    "EVMChainId": "U256",
+    "EVMChainId": "H256",
     "EVMLegacyAssetInfo": {
         "assetId": "MainnetAssetId",
         "evmAddress": "H160",
         "appKind": "EVMAppKind",
-        "precision": "u8"
+        "precision": "Option<u8>"
     },
     "EthAddress": "H160",
     "EthBridgeStorageVersion": {
