@@ -56,7 +56,8 @@ export const stepQuote = (
 
     const [adjustedAmount, maxLimit] = (() => {
       if (!isDesiredInput) {
-        const maxValue = saturatingSub(collateralSupply, Consts.MIN);
+        // reduce by `IrreducibleReserve` percent, because (reserve - output) must be > 0
+        const maxValue = saturatingSub(collateralSupply, Consts.IrreducibleReserve.mul(collateralSupply));
         const value = maxValue.min(amount);
 
         return [value, new SideAmount(maxValue, SwapVariant.WithDesiredOutput)];

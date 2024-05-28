@@ -41,8 +41,8 @@ const calcMaxOutput = (getFeeFromDestination: boolean, reserveOutput: FPNumber, 
   const maxOutput =
     getFeeFromDestination && deduceFee ? reserveOutput.mul(FPNumber.ONE.sub(Consts.XYK_FEE)) : reserveOutput;
 
-  // reduce by 1, because (reserve - output) must be > 0
-  return maxOutput.sub(Consts.MIN);
+  // // reduce by `IrreducibleReserve` percent, because (reserve - output) must be > 0
+  return saturatingSub(maxOutput, Consts.IrreducibleReserve.mul(maxOutput));
 };
 
 // step_quote

@@ -25,6 +25,8 @@ export class Consts {
   static readonly MAX = new FPNumber('170141183460469231731.687303715884105727');
   /** Manimal significant balance */
   static readonly MIN = FPNumber.fromCodecValue(1);
+  /** Irreducible reserve percent = 1% */
+  static readonly IrreducibleReserve = new FPNumber(0.01);
 
   /** ETH & DAI which are incentivized */
   static readonly incentivizedCurrenciesNum = FPNumber.TWO;
