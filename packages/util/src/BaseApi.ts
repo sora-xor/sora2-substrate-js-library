@@ -1,4 +1,3 @@
-import { connection } from '@sora-substrate/connection';
 import { PriceVariant } from '@sora-substrate/liquidity-proxy';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 
@@ -67,11 +66,6 @@ export class BaseApi<T = void> extends ApiAccount<T> {
     [Operation.DepositCollateral]: '0',
     [Operation.BorrowVaultDebt]: '0',
   } as NetworkFeesObject;
-
-  constructor(historyNamespace?: string) {
-    super(historyNamespace);
-    this.setConnection(connection);
-  }
 
   /**
    * Returns an extrinsic with the default or empty params.

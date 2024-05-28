@@ -1,6 +1,7 @@
 import { assert } from '@polkadot/util';
 import keyring from '@polkadot/ui-keyring';
 import { NumberLike, FPNumber } from '@sora-substrate/math';
+import { connection } from '@sora-substrate/connection';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 
 import { BaseApi } from './BaseApi';
@@ -22,6 +23,7 @@ export class FaucetApi<T = void> extends BaseApi<T> {
 
   constructor(withKeyringLoading = true) {
     super();
+    this.setConnection(connection);
     // Fake account initialization
     if (withKeyringLoading) {
       keyring.loadAll({ type: KeyringType });

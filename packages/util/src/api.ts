@@ -1,5 +1,6 @@
 import { assert } from '@polkadot/util';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
+import { connection } from '@sora-substrate/connection';
 import type { Connection } from '@sora-substrate/connection';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { Signer } from '@polkadot/types/types';
@@ -50,7 +51,7 @@ export class Api<T = void> extends BaseApi<T> {
 
   public override setConnection(connection: Connection) {
     super.setConnection(connection);
-    this.bridgeProxy.setConnection(this.connection);
+    this.bridgeProxy.setConnection(connection);
   }
 
   public override initAccountStorage() {
@@ -275,4 +276,8 @@ export class Api<T = void> extends BaseApi<T> {
 }
 
 /** Api object */
-export const api = new Api();
+const api = new Api();
+// inject connection to api
+api.setConnection(connection);
+
+export { api };
