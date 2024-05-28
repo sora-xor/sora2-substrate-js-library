@@ -11,6 +11,7 @@ import { EvmBridgeApi } from './evm';
 import { SubBridgeApi } from './sub';
 
 import { BridgeNetworkType } from './consts';
+import { getEvmNetworkId, getEvmNetworkType } from './methods';
 import { SubNetworkId } from './sub/consts';
 import type { Api } from '../api';
 import type { Storage } from '../storage';
@@ -75,10 +76,8 @@ export class BridgeProxyModule<T> {
       for (const appInfo of data) {
         if (appInfo.isEvm) {
           const [genericNetworkId, evmAppInfo] = appInfo.asEvm;
-          const id = genericNetworkId.isEvm
-            ? genericNetworkId.asEvm.toNumber()
-            : genericNetworkId.asEvmLegacy.toNumber();
-          const type = genericNetworkId.isEvm ? BridgeNetworkType.Evm : BridgeNetworkType.Eth;
+          const id = getEvmNetworkId(genericNetworkId);
+          const type = getEvmNetworkType(genericNetworkId);
           const kind = evmAppInfo.appKind.toString();
           const address = evmAppInfo.evmAddress.toString();
 

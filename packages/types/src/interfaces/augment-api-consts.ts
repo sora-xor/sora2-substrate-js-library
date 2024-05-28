@@ -439,6 +439,12 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       unsignedPriority: u64 & AugmentedConst<ApiType>;
     };
+    multicollateralBondingCurvePool: {
+      /**
+       * Percent of reserve which is not involved in swap
+       **/
+      irreducibleReserve: Percent & AugmentedConst<ApiType>;
+    };
     multisig: {
       /**
        * The base amount of currency needed to reserve for creating a multisig execution or to
@@ -463,6 +469,12 @@ declare module '@polkadot/api-base/types/consts' {
     multisigVerifier: {
       maxPeers: u32 & AugmentedConst<ApiType>;
       thisNetworkId: BridgeTypesGenericNetworkId & AugmentedConst<ApiType>;
+    };
+    poolXYK: {
+      /**
+       * Percent of reserve which is not involved in swap
+       **/
+      irreducibleReserve: Percent & AugmentedConst<ApiType>;
     };
     scheduler: {
       /**

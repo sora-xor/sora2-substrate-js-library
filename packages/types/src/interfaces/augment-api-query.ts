@@ -1013,7 +1013,7 @@ declare module '@polkadot/api-base/types/storage' {
        * however this constant is not modified
        **/
       initialPswapRewardsSupply: AugmentedQuery<ApiType, () => Observable<u128>, []>;
-      pendingFreeReserves: AugmentedQuery<ApiType, () => Observable<Vec<ITuple<[CommonPrimitivesAssetId32, u128]>>>, []>;
+      pendingFreeReserves: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<BTreeMap<CommonPrimitivesAssetId32, u128>>, [u32]>;
       priceChangeRate: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
        * Coefficients in buy price function.

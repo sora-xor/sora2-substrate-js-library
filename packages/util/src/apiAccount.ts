@@ -2,15 +2,23 @@ import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { Keyring } from '@polkadot/ui-keyring';
-import { assert } from '@polkadot/util';
+import { assert, isHex } from '@polkadot/util';
 import { Observable, Subscriber } from 'rxjs';
-import { base58Decode, decodeAddress, encodeAddress, cryptoWaitReady } from '@polkadot/util-crypto';
+import {
+  base58Decode,
+  decodeAddress,
+  encodeAddress,
+  cryptoWaitReady,
+  mnemonicGenerate,
+  keyExtractSuri,
+  mnemonicValidate,
+} from '@polkadot/util-crypto';
 import type { KeypairType } from '@polkadot/util-crypto/types';
 import { FPNumber, CodecString } from '@sora-substrate/math';
 import type { Connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
-import type { KeyringPair, KeyringPair$Json } from '@polkadot/keyring/types';
+import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 
@@ -28,7 +36,9 @@ import type {
   HistoryItem,
   CombinedHistoryItem,
   SaveHistoryOptions,
+  OnChainIdentity,
 } from './types';
+import type { OriginalIdentity } from './staking/types';
 import type { CommonPrimitivesAssetId32Override } from './typeOverrides';
 
 // We don't need to know real account address for checking network fees
@@ -173,7 +183,164 @@ export class WithAccountPair extends WithSigner {
   }
 }
 
-export class WithStorage extends WithAccountPair {
+export class WithKeyring extends WithAccountPair {
+  public readonly seedLength = 12;
+  public readonly type: KeypairType = KeyringType;
+
+  public async initKeyring(silent = false): Promise<void> {
+    keyring = new Keyring();
+
+    await cryptoWaitReady();
+
+    try {
+      // Restore accounts from keyring storage (localStorage)
+      keyring.loadAll({ type: this.type });
+    } catch (error) {
+      // Dont throw "Unable to initialise options more than once" error in silent mode
+      if (!silent) {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Get all imported accounts.
+   * It returns list of imported accounts
+   * added via api.importAccount()
+   */
+  public getAccounts() {
+    return keyring.getAccounts();
+  }
+
+  /**
+   * Get already imported account pair by address
+   * @param address account address
+   */
+  public getAccountPair(address: string): KeyringPair {
+    const defaultAddress = this.formatAddress(address, false);
+
+    return keyring.getPair(defaultAddress);
+  }
+
+  /**
+   * Create an account pair
+   * It could be added to account list using addAccountPair method
+   * @param suri Seed of the account
+   * @param name Name of the account
+   */
+  public createAccountPair(suri: string, name?: string): KeyringPair {
+    const meta = { name: name ?? '' };
+
+    return keyring.createFromUri(suri, meta, this.type);
+  }
+
+  /**
+   * Import account using account pair
+   * @param pair account pair to add
+   * @param password account password
+   */
+  public addAccountPair(pair: KeyringPair, password: string): void {
+    keyring.addPair(pair, password);
+  }
+
+  /**
+   * Create account pair from json
+   * @param json account json
+   * @param meta account meta
+   */
+  public createAccountPairFromJson(json: KeyringPair$Json, meta?: KeyringPair$Meta): KeyringPair {
+    return keyring.createFromJson(json, meta);
+  }
+
+  /**
+   * Restore from JSON object.
+   * Adds it to keyring storage
+   * It generates an error if JSON or/and password are not valid
+   * @param json
+   * @param password
+   */
+  public restoreAccountFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
+    const pair = keyring.restoreAccount(json, password);
+    return { address: pair.address, name: (pair.meta?.name ?? '') as string };
+  }
+
+  /**
+   * Export a JSON with the account data
+   * @param password
+   * @param encrypted If `true` then it will be decrypted. `false` by default
+   */
+  public exportAccount(pair: KeyringPair, password: string, encrypted = false): string {
+    const pass = encrypted ? this.decrypt(password) : password;
+
+    return JSON.stringify(keyring.backupAccount(pair, pass));
+  }
+
+  /**
+   * Import account using credentials
+   * @param suri Seed of the account
+   * @param name Name of the account
+   * @param password Password which will be set for the account
+   */
+  public addAccount(suri: string, name: string, password: string): CreateResult {
+    return keyring.addUri(suri, password, { name }, this.type);
+  }
+
+  /**
+   * Forget account from keyring
+   * @param address account address to forget
+   */
+  public forgetAccount(address = this.address): void {
+    if (address) {
+      const defaultAddress = this.formatAddress(address, false);
+      keyring.forgetAccount(defaultAddress);
+      keyring.forgetAddress(defaultAddress);
+    }
+  }
+
+  /**
+   * Create seed phrase. It returns `{ address, seed }` object.
+   */
+  public createSeed(): { address: string; seed: string } {
+    const seed = mnemonicGenerate(this.seedLength);
+    return {
+      address: this.createAccountPair(seed).address,
+      seed,
+    };
+  }
+
+  /**
+   * Before use the seed for wallet connection you may want to check its correctness
+   * @param suri Seed which is set by the user
+   */
+  public checkSeed(suri: string): { address: string; suri: string } {
+    const { phrase } = keyExtractSuri(suri);
+    if (isHex(phrase)) {
+      assert(isHex(phrase, 256), 'Hex seed is not 256-bits');
+    } else {
+      assert(String(phrase).split(' ').length === this.seedLength, `Mnemonic should contain ${this.seedLength} words`);
+      assert(mnemonicValidate(phrase), 'There is no valid mnemonic seed');
+    }
+    return {
+      address: this.createAccountPair(suri).address,
+      suri,
+    };
+  }
+
+  /**
+   * Generate unique string from value
+   * @param value
+   * @returns
+   */
+  public encrypt(value: string): string {
+    return encrypt(value);
+  }
+
+  public decrypt(value: string): string {
+    return decrypt(value);
+  }
+}
+
+export class WithStorage extends WithKeyring {
   /** Common data storage */
   public storage?: Storage;
 
@@ -316,8 +483,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
   /** If `true` you might subscribe on extrinsic statuses (`false` by default) */
   public shouldObservableBeUsed = false;
 
-  public readonly type: KeypairType = KeyringType;
-
   /**
    * Login to account
    * @param address account address
@@ -361,41 +526,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
 
     this.clearHistory();
     this.storage?.clear();
-  }
-
-  /**
-   * Get all imported accounts.
-   * It returns list of imported accounts
-   * added via api.importAccount()
-   */
-  public getAccounts() {
-    return keyring.getAccounts();
-  }
-
-  /**
-   * Get already imported account pair by address
-   * @param address account address
-   */
-  public getAccountPair(address: string): KeyringPair {
-    const defaultAddress = this.formatAddress(address, false);
-
-    return keyring.getPair(defaultAddress);
-  }
-
-  public async initKeyring(silent = false): Promise<void> {
-    keyring = new Keyring();
-
-    await cryptoWaitReady();
-
-    try {
-      // Restore accounts from keyring storage (localStorage)
-      keyring.loadAll({ type: this.type });
-    } catch (error) {
-      // Dont throw "Unable to initialise options more than once" error in silent mode
-      if (!silent) {
-        throw error;
-      }
-    }
   }
 
   // prettier-ignore
@@ -565,6 +695,24 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
   }
 
   /**
+   * Get on-chain account's identity
+   * @param address account address
+   */
+  public async getAccountOnChainIdentity(address: string): Promise<OnChainIdentity | null> {
+    const data = await this.api.query.identity.identityOf(address);
+
+    if (data.isEmpty || data.isNone) return null;
+
+    const result = data.unwrap();
+
+    return {
+      legalName: result.info.legal.value.toHuman() as string,
+      approved: Boolean(result.judgements.length),
+      identity: result.toHuman() as unknown as OriginalIdentity,
+    };
+  }
+
+  /**
    * Validate account address
    * @param address
    */
@@ -587,18 +735,5 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     const publicKey = decodeAddress(address, false);
 
     return Buffer.from(publicKey).toString('hex');
-  }
-
-  /**
-   * Generate unique string from value
-   * @param value
-   * @returns
-   */
-  public encrypt(value: string): string {
-    return encrypt(value);
-  }
-
-  public decrypt(value: string): string {
-    return decrypt(value);
   }
 }

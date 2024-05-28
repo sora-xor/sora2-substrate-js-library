@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Enum, Struct, U256, u32, u8 } from '@polkadot/types-codec';
+import type { Enum, Option, Struct, u32, u8 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { H160, H256 } from '@sora-substrate/types/interfaces/runtime';
 
@@ -34,12 +34,11 @@ export interface EVMAppInfo extends Struct {
 /** @name EVMAppKind */
 export interface EVMAppKind extends Enum {
   readonly isEthApp: boolean;
-  readonly isErc20App: boolean;
-  readonly isSidechainApp: boolean;
+  readonly isFaApp: boolean;
   readonly isHashiBridge: boolean;
   readonly isXorMaster: boolean;
   readonly isValMaster: boolean;
-  readonly type: 'EthApp' | 'Erc20App' | 'SidechainApp' | 'HashiBridge' | 'XorMaster' | 'ValMaster';
+  readonly type: 'EthApp' | 'FaApp' | 'HashiBridge' | 'XorMaster' | 'ValMaster';
 }
 
 /** @name EVMAssetInfo */
@@ -51,14 +50,14 @@ export interface EVMAssetInfo extends Struct {
 }
 
 /** @name EVMChainId */
-export interface EVMChainId extends U256 {}
+export interface EVMChainId extends H256 {}
 
 /** @name EVMLegacyAssetInfo */
 export interface EVMLegacyAssetInfo extends Struct {
   readonly assetId: MainnetAssetId;
   readonly evmAddress: H160;
   readonly appKind: EVMAppKind;
-  readonly precision: u8;
+  readonly precision: Option<u8>;
 }
 
 /** @name GenericNetworkId */

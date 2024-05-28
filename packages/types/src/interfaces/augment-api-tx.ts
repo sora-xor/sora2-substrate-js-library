@@ -2418,7 +2418,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `account`: Some account to use during the initialization
        * - `pairs`: Asset pairs to initialize.
        **/
-      xykInitialize: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, pairs: Vec<QaToolsPalletToolsPoolXykAssetPairInput> | (QaToolsPalletToolsPoolXykAssetPairInput | { dexId?: any; assetA?: any; assetB?: any; price?: any } | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [AccountId32, Vec<QaToolsPalletToolsPoolXykAssetPairInput>]>;
+      xykInitialize: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, pairs: Vec<QaToolsPalletToolsPoolXykAssetPairInput> | (QaToolsPalletToolsPoolXykAssetPairInput | { dexId?: any; assetA?: any; assetB?: any; price?: any; maybeAssetAReserves?: any } | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [AccountId32, Vec<QaToolsPalletToolsPoolXykAssetPairInput>]>;
     };
     referrals: {
       /**
