@@ -34,7 +34,7 @@ import { Consts as SwapConsts } from './consts';
 import { XOR, DAI, XSTUSD } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 import type { SwapTransferBatchData, SwapQuoteData, FilterMode } from './types';
@@ -145,6 +145,8 @@ const emptySwapResult = { amount: 0, fee: [], rewards: [], amountWithoutImpact: 
 export class SwapModule<T> {
   public enabledAssets!: PrimaryMarketsEnabledAssets;
 
+  public isALT = false;
+
   constructor(private readonly root: Api<T>) {}
 
   public async update(): Promise<void> {
@@ -251,7 +253,8 @@ export class SwapModule<T> {
       payload,
       deduceFee,
       baseAssetId,
-      syntheticBaseAssetId
+      syntheticBaseAssetId,
+      this.isALT,
     );
   }
 
@@ -945,15 +948,19 @@ export class SwapModule<T> {
 
     const codecAmount = toCodecString(amount);
     const swapVariant = !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput';
-    const quote = this.root.api.rpc.liquidityProxy.quote;
+    const quoteFn = this.root.api.rpc.liquidityProxy.quote;
 
     const [resDex0, resDex1] = await Promise.all([
-      quote(DexId.XOR, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
-      quote(DexId.XSTUSD, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
+      quoteFn(DexId.XOR, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
+      quoteFn(DexId.XSTUSD, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
     ]);
-    const valueDex0 = resDex0.unwrapOr(emptySwapResult);
-    const valueDex1 = resDex1.unwrapOr(emptySwapResult);
-    const isDex0Better = FPNumber.gte(toFP(valueDex0.amount), toFP(valueDex1.amount));
+    const [valueDex0, valueDex1] = [resDex0.unwrapOr(emptySwapResult), resDex1.unwrapOr(emptySwapResult)];
+    const [amountDex0, amountDex1] = [toFP(valueDex0.amount), toFP(valueDex1.amount)];
+    const isDex0Better =
+      amountDex1.isZero() ||
+      (isExchangeB
+        ? FPNumber.lte(amountDex0, amountDex1) && !amountDex0.isZero()
+        : FPNumber.gte(amountDex0, amountDex1));
     const value = isDex0Better ? valueDex0 : valueDex1;
 
     let fee: LiquidityProviderFee[] = [];

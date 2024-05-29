@@ -1,9 +1,9 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { LiquiditySourceTypes, Consts, Errors, PriceVariant, RewardReason } from '../consts';
-import { safeDivide, isXorAsset, getMaxPositive, safeQuoteResult, isAssetAddress, toFp } from '../utils';
+import { LiquiditySourceTypes, Consts, Errors, PriceVariant, RewardReason, SwapVariant } from '../consts';
+import { safeDivide, saturatingSub, getMaxPositive, safeQuoteResult, isAssetAddress, toFp } from '../utils';
 import { getAveragePrice } from './priceTools';
-import { SwapChunk } from '../common/primitives';
+import { SwapChunk, DiscreteQuotation, SideAmount } from '../common/primitives';
 
 import type { QuotePayload, QuoteResult, LPRewardsInfo } from '../types';
 
@@ -37,44 +37,75 @@ export const stepQuote = (
   payload: QuotePayload,
   deduceFee: boolean,
   recommendedSamplesCount: number
-): Array<SwapChunk> => {
+): DiscreteQuotation => {
   if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
     throw new Error(Errors.CantExchange);
   }
 
-  const chunks: SwapChunk[] = [];
+  const quotation = new DiscreteQuotation();
 
   if (amount.isZero()) {
-    return chunks;
+    return quotation;
   }
 
-  let step = safeDivide(amount, new FPNumber(recommendedSamplesCount));
+  // reduce amount if it exceeds reserves
+  if (isAssetAddress(inputAsset, baseAssetId)) {
+    const collateralSupply = toFp(payload.reserves.tbc[outputAsset]);
+
+    if (collateralSupply.isZero()) return quotation;
+
+    const [adjustedAmount, maxLimit] = (() => {
+      if (!isDesiredInput) {
+        // reduce by `IrreducibleReserve` percent, because (reserve - output) must be > 0
+        const maxValue = saturatingSub(collateralSupply, Consts.IrreducibleReserve.mul(collateralSupply));
+        const value = maxValue.min(amount);
+
+        return [value, new SideAmount(maxValue, SwapVariant.WithDesiredOutput)];
+      } else {
+        return [amount, null];
+      }
+    })();
+
+    quotation.limits.maxAmount = maxLimit;
+
+    amount = adjustedAmount;
+  }
+
+  const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
+  const step = safeDivide(amount, new FPNumber(samplesCount));
+  const volumes = [];
+
+  for (let i = 1; i < samplesCount; i++) {
+    const volume = step.mul(new FPNumber(i));
+
+    volumes.push(volume);
+  }
+
+  volumes.push(amount);
+
   let subIn = FPNumber.ZERO;
   let subOut = FPNumber.ZERO;
   let subFee = FPNumber.ZERO;
 
-  for (let i = 1; i <= recommendedSamplesCount; i++) {
-    let volume = step.mul(new FPNumber(i));
+  for (const volume of volumes) {
+    const { amount: resultAmount, fee: feeAmount } = isAssetAddress(inputAsset, baseAssetId)
+      ? decideSellAmounts(inputAsset, outputAsset, volume, isDesiredInput, payload, deduceFee)
+      : decideBuyAmounts(outputAsset, inputAsset, volume, isDesiredInput, payload, deduceFee);
 
-    const { amount, fee } = isAssetAddress(inputAsset, baseAssetId)
-      ? decideSellAmounts(outputAsset, volume, isDesiredInput, payload, deduceFee)
-      : decideBuyAmounts(inputAsset, volume, isDesiredInput, payload, deduceFee);
+    const [inputAmount, outputAmount] = isDesiredInput ? [volume, resultAmount] : [resultAmount, volume];
 
-    const [inputAmount, outputAmount] = isDesiredInput ? [volume, amount] : [amount, volume];
-    const feeAmount = fee;
-
-    const inputChunk = inputAmount.sub(subIn);
-    const outputChunk = outputAmount.sub(subOut);
-    const feeChunk = feeAmount.sub(subFee);
+    const inputChunk = saturatingSub(inputAmount, subIn);
+    const outputChunk = saturatingSub(outputAmount, subOut);
+    const feeChunk = saturatingSub(feeAmount, subFee); // in XOR
 
     subIn = inputAmount;
     subOut = outputAmount;
     subFee = feeAmount;
 
-    chunks.push(new SwapChunk(inputChunk, outputChunk, feeChunk));
+    quotation.chunks.push(new SwapChunk(inputChunk, outputChunk, feeChunk));
   }
 
-  return chunks;
+  return quotation;
 };
 
 // reference_price
@@ -102,16 +133,17 @@ const actualReservesReferencePrice = (
 
 // ideal_reserves_reference_price
 const idealReservesReferencePrice = (
+  mainAssetId: string,
   collateralAssetId: string,
   priceVariant: PriceVariant,
   delta: FPNumber,
   payload: QuotePayload
 ): FPNumber => {
-  const xorIssuance = toFp(payload.issuances[Consts.XOR]);
+  const baseTotalSupply = toFp(payload.issuances[mainAssetId]);
   const initialPrice = toFp(payload.consts.tbc.initialPrice);
-  const currentState = buyFunction(collateralAssetId, priceVariant, delta, payload);
+  const currentState = buyFunction(mainAssetId, collateralAssetId, priceVariant, delta, payload);
 
-  return safeDivide(initialPrice.add(currentState), FPNumber.TWO).mul(xorIssuance.add(delta));
+  return safeDivide(initialPrice.add(currentState), FPNumber.TWO).mul(baseTotalSupply.add(delta));
 };
 
 // map_collateralized_fraction_to_penalty
@@ -139,12 +171,18 @@ const mapCollateralizedFractionToPenalty = (fraction: FPNumber): FPNumber => {
 };
 
 // sell_penalty
-const sellPenalty = (collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const idealReservesPrice = idealReservesReferencePrice(collateralAsset, PriceVariant.Sell, FPNumber.ZERO, payload);
-  const collateralReservesPrice = actualReservesReferencePrice(collateralAsset, payload, PriceVariant.Sell);
+const sellPenalty = (mainAssetId: string, collateralAssetId: string, payload: QuotePayload): FPNumber => {
+  const idealReservesPrice = idealReservesReferencePrice(
+    mainAssetId,
+    collateralAssetId,
+    PriceVariant.Sell,
+    FPNumber.ZERO,
+    payload
+  );
+  const collateralReservesPrice = actualReservesReferencePrice(collateralAssetId, payload, PriceVariant.Sell);
 
   if (collateralReservesPrice.isZero()) {
-    throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAsset}`);
+    throw new Error(Errors.NotEnoughReserves);
   }
 
   const collateralizedFraction = safeDivide(collateralReservesPrice, idealReservesPrice);
@@ -169,9 +207,21 @@ const calculateBuyReward = (
     return FPNumber.ZERO;
   }
 
-  const idealBefore = idealReservesReferencePrice(collateralAssetId, PriceVariant.Buy, FPNumber.ZERO, payload);
+  const idealBefore = idealReservesReferencePrice(
+    mainAssetId,
+    collateralAssetId,
+    PriceVariant.Buy,
+    FPNumber.ZERO,
+    payload
+  );
 
-  const idealAfter = idealReservesReferencePrice(collateralAssetId, PriceVariant.Buy, mainAssetAmount, payload);
+  const idealAfter = idealReservesReferencePrice(
+    mainAssetId,
+    collateralAssetId,
+    PriceVariant.Buy,
+    mainAssetAmount,
+    payload
+  );
 
   const actualBefore = actualReservesReferencePrice(collateralAssetId, payload, PriceVariant.Buy);
   const unfundedLiabilities = idealBefore.sub(actualBefore);
@@ -179,7 +229,7 @@ const calculateBuyReward = (
   const a = safeDivide(unfundedLiabilities, idealBefore);
   const b = safeDivide(unfundedLiabilities, idealAfter);
 
-  const mean = safeDivide(a.add(b), new FPNumber(2));
+  const mean = safeDivide(a.add(b), FPNumber.TWO);
   const amount = safeDivide(
     a.sub(b).mul(Consts.initialPswapTbcRewardsAmount).mul(mean),
     Consts.incentivizedCurrenciesNum
@@ -223,15 +273,26 @@ export const checkRewards = (
   }
 };
 
-const tbcCheckRewards = (collateralAsset: string, xorAmount: FPNumber, payload: QuotePayload): Array<LPRewardsInfo> => {
-  if ([Consts.PSWAP, Consts.VAL, Consts.XST, Consts.TBCD].includes(collateralAsset)) {
+const tbcCheckRewards = (
+  mainAssetId: string,
+  collateralAssetId: string,
+  xorAmount: FPNumber,
+  payload: QuotePayload
+): Array<LPRewardsInfo> => {
+  if (!collateralIsIncentivised(collateralAssetId)) {
     return [];
   }
 
-  const idealBefore = idealReservesReferencePrice(collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
-  const idealAfter = idealReservesReferencePrice(collateralAsset, PriceVariant.Buy, xorAmount, payload);
+  const idealBefore = idealReservesReferencePrice(
+    mainAssetId,
+    collateralAssetId,
+    PriceVariant.Buy,
+    FPNumber.ZERO,
+    payload
+  );
+  const idealAfter = idealReservesReferencePrice(mainAssetId, collateralAssetId, PriceVariant.Buy, xorAmount, payload);
 
-  const actualBefore = actualReservesReferencePrice(collateralAsset, payload, PriceVariant.Buy);
+  const actualBefore = actualReservesReferencePrice(collateralAssetId, payload, PriceVariant.Buy);
   const unfundedLiabilities = idealBefore.sub(actualBefore);
 
   const a = safeDivide(unfundedLiabilities, idealBefore);
@@ -258,32 +319,38 @@ const tbcCheckRewards = (collateralAsset: string, xorAmount: FPNumber, payload: 
 
 // buy_function
 const buyFunction = (
+  mainAssetId: string,
   collateralAssetId: string,
   priceVariant: PriceVariant,
   delta: FPNumber,
   payload: QuotePayload
 ): FPNumber => {
-  if (collateralAssetId === Consts.TBCD) {
+  if (isAssetAddress(collateralAssetId, Consts.TBCD)) {
     // Handle TBCD
-    const xp = referencePrice(Consts.XOR, priceVariant, payload);
+    const xp = referencePrice(mainAssetId, priceVariant, payload);
     // get the XOR price in USD (DAI) and add $1 to it
     const xorPrice = xp.add(FPNumber.ONE);
 
     return xorPrice;
   } else {
     // Everything other than TBCD
-    const xorIssuance = toFp(payload.issuances[Consts.XOR]);
+    const totalSupply = toFp(payload.issuances[mainAssetId]);
     const initialPrice = toFp(payload.consts.tbc.initialPrice);
     const priceChangeStep = toFp(payload.consts.tbc.priceChangeStep);
     const priceChangeRate = toFp(payload.consts.tbc.priceChangeRate);
 
-    return safeDivide(xorIssuance.add(delta), priceChangeStep.mul(priceChangeRate)).add(initialPrice);
+    return safeDivide(totalSupply.add(delta), priceChangeStep.mul(priceChangeRate)).add(initialPrice);
   }
 };
 
 // sell_function
-const sellFunction = (collateralAssetId: string, delta: FPNumber, payload: QuotePayload): FPNumber => {
-  const buyFunctionResult = buyFunction(collateralAssetId, PriceVariant.Sell, delta, payload);
+const sellFunction = (
+  mainAssetId: string,
+  collateralAssetId: string,
+  delta: FPNumber,
+  payload: QuotePayload
+): FPNumber => {
+  const buyFunctionResult = buyFunction(mainAssetId, collateralAssetId, PriceVariant.Sell, delta, payload);
   const sellPriceCoefficient = toFp(payload.consts.tbc.sellPriceCoefficient);
 
   return buyFunctionResult.mul(sellPriceCoefficient);
@@ -291,27 +358,28 @@ const sellFunction = (collateralAssetId: string, delta: FPNumber, payload: Quote
 
 // sell_price
 const sellPrice = (
-  collateralAsset: string,
+  mainAssetId: string,
+  collateralAssetId: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload
 ): FPNumber => {
-  const collateralSupply = toFp(payload.reserves.tbc[collateralAsset]);
-  const mainPricePerReferenceUnit = sellFunction(collateralAsset, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = referencePrice(collateralAsset, PriceVariant.Sell, payload);
+  const collateralSupply = toFp(payload.reserves.tbc[collateralAssetId]);
+  const mainPricePerReferenceUnit = sellFunction(mainAssetId, collateralAssetId, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = referencePrice(collateralAssetId, PriceVariant.Sell, payload);
   const mainSupply = safeDivide(collateralSupply.mul(collateralPricePerReferenceUnit), mainPricePerReferenceUnit);
 
   if (isDesiredInput) {
     const outputCollateral = safeDivide(amount.mul(collateralSupply), mainSupply.add(amount));
 
     if (FPNumber.isGreaterThan(outputCollateral, collateralSupply)) {
-      throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAsset}`);
+      throw new Error(Errors.NotEnoughReserves);
     }
 
     return outputCollateral;
   } else {
     if (FPNumber.isGreaterThan(amount, collateralSupply)) {
-      throw new Error(`[liquidityProxy] TBC: Not enough collateral reserves ${collateralAsset}`);
+      throw new Error(Errors.NotEnoughReserves);
     }
 
     const outputXor = safeDivide(mainSupply.mul(amount), collateralSupply.sub(amount));
@@ -322,7 +390,8 @@ const sellPrice = (
 
 // buy_price
 const buyPrice = (
-  collateralAsset: string,
+  mainAssetId: string,
+  collateralAssetId: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload
@@ -331,15 +400,15 @@ const buyPrice = (
   const priceChangeRate = toFp(payload.consts.tbc.priceChangeRate);
   const priceChangeCoeff = priceChangeStep.mul(priceChangeRate);
 
-  const currentState = buyFunction(collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = referencePrice(collateralAsset, PriceVariant.Buy, payload);
+  const currentState = buyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = referencePrice(collateralAssetId, PriceVariant.Buy, payload);
 
   if (isDesiredInput) {
     const collateralReferenceIn = collateralPricePerReferenceUnit.mul(amount);
 
     let mainOut: FPNumber;
 
-    if (collateralAsset === Consts.TBCD) {
+    if (isAssetAddress(collateralAssetId, Consts.TBCD)) {
       mainOut = safeDivide(collateralReferenceIn, currentState);
     } else {
       // multiply_and_sqrt
@@ -354,8 +423,8 @@ const buyPrice = (
     }
     return getMaxPositive(mainOut);
   } else {
-    const newState = buyFunction(collateralAsset, PriceVariant.Buy, amount, payload);
-    const collateralReferenceIn = safeDivide(currentState.add(newState).mul(amount), FPNumber.TWO);
+    const newState = buyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, amount, payload);
+    const collateralReferenceIn = safeDivide(currentState.add(newState), FPNumber.TWO).mul(amount);
     const collateralQuantity = safeDivide(collateralReferenceIn, collateralPricePerReferenceUnit);
     return getMaxPositive(collateralQuantity);
   }
@@ -363,17 +432,18 @@ const buyPrice = (
 
 // decide_sell_amounts
 const decideSellAmounts = (
-  collateralAsset: string,
+  mainAssetId: string,
+  collateralAssetId: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean
 ): QuoteResult => {
-  const feeRatio = deduceFee ? Consts.TBC_FEE.add(sellPenalty(collateralAsset, payload)) : FPNumber.ZERO;
+  const feeRatio = deduceFee ? Consts.TBC_FEE.add(sellPenalty(mainAssetId, collateralAssetId, payload)) : FPNumber.ZERO;
 
   if (isDesiredInput) {
     const fee = amount.mul(feeRatio);
-    const outputAmount = sellPrice(collateralAsset, amount.sub(fee), isDesiredInput, payload);
+    const outputAmount = sellPrice(mainAssetId, collateralAssetId, saturatingSub(amount, fee), isDesiredInput, payload);
 
     return {
       amount: outputAmount,
@@ -381,8 +451,8 @@ const decideSellAmounts = (
       rewards: [],
       distribution: [
         {
-          input: Consts.XOR,
-          output: collateralAsset,
+          input: mainAssetId,
+          output: collateralAssetId,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: amount,
           outcome: outputAmount,
@@ -391,9 +461,9 @@ const decideSellAmounts = (
       ],
     };
   } else {
-    const inputAmount = sellPrice(collateralAsset, amount, isDesiredInput, payload);
+    const inputAmount = sellPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
     const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
-    const fee = inputAmountWithFee.sub(inputAmount);
+    const fee = saturatingSub(inputAmountWithFee, inputAmount);
 
     return {
       amount: inputAmountWithFee,
@@ -401,8 +471,8 @@ const decideSellAmounts = (
       rewards: [],
       distribution: [
         {
-          input: Consts.XOR,
-          output: collateralAsset,
+          input: mainAssetId,
+          output: collateralAssetId,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: inputAmountWithFee,
           outcome: amount,
@@ -415,19 +485,20 @@ const decideSellAmounts = (
 
 // decide_buy_amounts
 const decideBuyAmounts = (
-  collateralAsset: string,
+  mainAssetId: string,
+  collateralAssetId: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean
 ): QuoteResult => {
   const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
 
   if (isDesiredInput) {
-    const outputAmount = buyPrice(collateralAsset, amount, isDesiredInput, payload);
+    const outputAmount = buyPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
     const fee = feeRatio.mul(outputAmount);
-    const output = outputAmount.sub(fee);
-    const rewards = tbcCheckRewards(collateralAsset, output, payload);
+    const output = saturatingSub(outputAmount, fee);
+    const rewards = tbcCheckRewards(mainAssetId, collateralAssetId, output, payload);
 
     return {
       amount: output,
@@ -435,8 +506,8 @@ const decideBuyAmounts = (
       rewards,
       distribution: [
         {
-          input: collateralAsset,
-          output: Consts.XOR,
+          input: collateralAssetId,
+          output: mainAssetId,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: amount,
           outcome: output,
@@ -446,9 +517,9 @@ const decideBuyAmounts = (
     };
   } else {
     const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
-    const inputAmount = buyPrice(collateralAsset, amountWithFee, isDesiredInput, payload);
-    const fee = amountWithFee.sub(amount);
-    const rewards = tbcCheckRewards(collateralAsset, amount, payload);
+    const inputAmount = buyPrice(mainAssetId, collateralAssetId, amountWithFee, isDesiredInput, payload);
+    const fee = saturatingSub(amountWithFee, amount);
+    const rewards = tbcCheckRewards(mainAssetId, collateralAssetId, amount, payload);
 
     return {
       amount: inputAmount,
@@ -456,8 +527,8 @@ const decideBuyAmounts = (
       rewards,
       distribution: [
         {
-          input: collateralAsset,
-          output: Consts.XOR,
+          input: collateralAssetId,
+          output: mainAssetId,
           market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
           income: inputAmount,
           outcome: amount,
@@ -468,36 +539,42 @@ const decideBuyAmounts = (
   }
 };
 
-export const buyPriceNoVolume = (collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const basePriceWrtRef = buyFunction(collateralAsset, PriceVariant.Buy, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = referencePrice(collateralAsset, PriceVariant.Sell, payload);
+export const buyPriceNoVolume = (mainAssetId: string, collateralAssetId: string, payload: QuotePayload): FPNumber => {
+  const basePriceWrtRef = buyFunction(mainAssetId, collateralAssetId, PriceVariant.Buy, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = referencePrice(collateralAssetId, PriceVariant.Sell, payload);
 
   return safeDivide(basePriceWrtRef, collateralPricePerReferenceUnit);
 };
 
-export const sellPriceNoVolume = (collateralAsset: string, payload: QuotePayload): FPNumber => {
-  const basePriceWrtRef = sellFunction(collateralAsset, FPNumber.ZERO, payload);
-  const collateralPricePerReferenceUnit = referencePrice(collateralAsset, PriceVariant.Buy, payload);
+export const sellPriceNoVolume = (mainAssetId: string, collateralAssetId: string, payload: QuotePayload): FPNumber => {
+  const basePriceWrtRef = sellFunction(mainAssetId, collateralAssetId, FPNumber.ZERO, payload);
+  const collateralPricePerReferenceUnit = referencePrice(collateralAssetId, PriceVariant.Buy, payload);
 
   return safeDivide(basePriceWrtRef, collateralPricePerReferenceUnit);
 };
 
 export const quoteWithoutImpact = (
+  baseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredinput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean
 ): FPNumber => {
   try {
-    if (isXorAsset(inputAsset)) {
-      const xorPrice = sellPriceNoVolume(outputAsset, payload);
-      const feeRatio = deduceFee ? Consts.TBC_FEE.add(sellPenalty(outputAsset, payload)) : FPNumber.ZERO;
+    if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+      throw new Error(Errors.CantExchange);
+    }
+
+    if (isAssetAddress(inputAsset, baseAssetId)) {
+      const xorPrice = sellPriceNoVolume(inputAsset, outputAsset, payload);
+      const feeRatio = deduceFee ? Consts.TBC_FEE.add(sellPenalty(inputAsset, outputAsset, payload)) : FPNumber.ZERO;
 
       if (isDesiredinput) {
         const feeAmount = feeRatio.mul(amount);
-        const collateralOut = amount.sub(feeAmount).mul(xorPrice);
+        const collateralOut = saturatingSub(amount, feeAmount).mul(xorPrice);
 
         return collateralOut;
       } else {
@@ -507,14 +584,14 @@ export const quoteWithoutImpact = (
         return inputAmountWithFee;
       }
     } else {
-      const xorPrice = buyPriceNoVolume(inputAsset, payload);
+      const xorPrice = buyPriceNoVolume(outputAsset, inputAsset, payload);
       const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
 
       if (isDesiredinput) {
         const xorOut = safeDivide(amount, xorPrice);
         const feeAmount = xorOut.mul(feeRatio);
 
-        return xorOut.sub(feeAmount);
+        return saturatingSub(xorOut, feeAmount);
       } else {
         const outputAmountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
         const collateralIn = outputAmountWithFee.mul(xorPrice);
@@ -528,18 +605,24 @@ export const quoteWithoutImpact = (
 };
 
 export const quote = (
+  baseAssetId: string,
+  _syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
   isDesiredInput: boolean,
   payload: QuotePayload,
-  deduceFee = true
+  deduceFee: boolean
 ): QuoteResult => {
   try {
-    if (isXorAsset(inputAsset)) {
-      return decideSellAmounts(outputAsset, amount, isDesiredInput, payload, deduceFee);
+    if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
+      throw new Error(Errors.CantExchange);
+    }
+
+    if (isAssetAddress(inputAsset, baseAssetId)) {
+      return decideSellAmounts(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
     } else {
-      return decideBuyAmounts(inputAsset, amount, isDesiredInput, payload, deduceFee);
+      return decideBuyAmounts(outputAsset, inputAsset, amount, isDesiredInput, payload, deduceFee);
     }
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.MulticollateralBondingCurvePool);

@@ -12,6 +12,7 @@ import type {
 import type { Option } from '@polkadot/types-codec';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CodecString } from '@sora-substrate/math';
+import type { GenericNetworkId } from '@sora-substrate/types';
 
 import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
 
@@ -54,17 +55,26 @@ function getAccount(data: BridgeTypesGenericAccount): string {
   return '';
 }
 
-function getNetworkType(network: BridgeTypesGenericNetworkId): BridgeNetworkType {
-  if (network.isSub) return BridgeNetworkType.Sub;
+export function getEvmNetworkType(network: BridgeTypesGenericNetworkId | GenericNetworkId) {
   if (network.isEvm) return BridgeNetworkType.Evm;
   return BridgeNetworkType.Eth;
 }
 
-function getNetworkId(network: BridgeTypesGenericNetworkId): BridgeNetworkId {
-  if (network.isSub) return network.asSub.toString() as SubNetwork;
+function getNetworkType(network: BridgeTypesGenericNetworkId | GenericNetworkId): BridgeNetworkType {
+  if (network.isSub) return BridgeNetworkType.Sub;
+  return getEvmNetworkType(network);
+}
+
+export function getEvmNetworkId(network: BridgeTypesGenericNetworkId | GenericNetworkId): number {
   if (network.isEvmLegacy) return network.asEvmLegacy.toNumber();
 
   return parseInt(network.asEvm.toString(), 16);
+}
+
+function getNetworkId(network: BridgeTypesGenericNetworkId | GenericNetworkId): BridgeNetworkId {
+  if (network.isSub) return network.asSub.toString() as SubNetwork;
+
+  return getEvmNetworkId(network);
 }
 
 function getSubNetworkId(

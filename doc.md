@@ -9797,17 +9797,6 @@ returns: `KensetsuCollateralInfo`
 
 <hr>
 
-#### **api.query.kensetsu.kusdHardCap**
-
-> Risk parameter
-> Hard cap of KUSD may be minted by the system
-
-arguments: -
-
-returns: `u128`
-
-<hr>
-
 #### **api.query.kensetsu.borrowTax**
 
 > Risk parameter
@@ -9999,20 +9988,6 @@ arguments:
 
 - collateralAssetId: `CommonPrimitivesAssetId32`
 - newRiskParameters: `KensetsuCollateralRiskParameters`
-<hr>
-
-#### **api.tx.kensetsu.updateHardCapTotalSupply**
-
-> Updates the hard cap for the total supply of a stablecoin.
->
-> ## Parameters
->
-> - `origin`: The origin of the transaction.
-> - `new_hard_cap`: The new hard cap value to be set for the total supply.
-
-arguments:
-
-- newHardCap: `u128`
 <hr>
 
 #### **api.tx.kensetsu.updateBorrowTax**

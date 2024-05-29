@@ -5,7 +5,7 @@ import type { Observable } from '@polkadot/types/types';
 
 import { Messages } from '../logger';
 import { XOR } from '../assets/consts';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import type { Api } from '../api';
 
 export class ReferralSystemModule<T> {

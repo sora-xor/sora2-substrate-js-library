@@ -1,5 +1,5 @@
 {
-    "runtime_id": 82,
+    "runtime_id": 85,
     "types": {},
     "versioning": [
         {
@@ -4760,6 +4760,46 @@
                     ]
                 },
                 "OutcomeFee": "Json"
+            }
+        },
+        {
+            "runtime_range": [
+                85,
+                null
+            ],
+            "types": {
+                "EVMAppKind": {
+                    "type": "enum",
+                    "value_list": [
+                        "EthApp",
+                        "FaApp",
+                        "HashiBridge",
+                        "XorMaster",
+                        "ValMaster"
+                    ]
+                },
+                "EVMChainId": "H256",
+                "EVMLegacyAssetInfo": {
+                    "type": "struct",
+                    "type_mapping": [
+                        [
+                            "assetId",
+                            "MainnetAssetId"
+                        ],
+                        [
+                            "evmAddress",
+                            "H160"
+                        ],
+                        [
+                            "appKind",
+                            "EVMAppKind"
+                        ],
+                        [
+                            "precision",
+                            "Option<u8>"
+                        ]
+                    ]
+                }
             }
         }
     ]

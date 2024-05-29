@@ -3,6 +3,7 @@ import { FPNumber } from '@sora-substrate/math';
 
 import type { Observable, Signer } from '@polkadot/types/types';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
+import type { Connection } from '@sora-substrate/connection';
 import type { CodecString } from '@sora-substrate/math';
 
 import { EthBridgeApi } from './eth';
@@ -10,6 +11,7 @@ import { EvmBridgeApi } from './evm';
 import { SubBridgeApi } from './sub';
 
 import { BridgeNetworkType } from './consts';
+import { getEvmNetworkId, getEvmNetworkType } from './methods';
 import { SubNetworkId } from './sub/consts';
 import type { Api } from '../api';
 import type { Storage } from '../storage';
@@ -23,6 +25,12 @@ export class BridgeProxyModule<T> {
   public readonly eth = new EthBridgeApi<T>();
   public readonly evm = new EvmBridgeApi<T>();
   public readonly sub = new SubBridgeApi<T>();
+
+  public setConnection(connection: Connection) {
+    this.eth.setConnection(connection);
+    this.evm.setConnection(connection);
+    this.sub.setConnection(connection);
+  }
 
   public initAccountStorage() {
     this.eth.initAccountStorage();
@@ -68,10 +76,8 @@ export class BridgeProxyModule<T> {
       for (const appInfo of data) {
         if (appInfo.isEvm) {
           const [genericNetworkId, evmAppInfo] = appInfo.asEvm;
-          const id = genericNetworkId.isEvm
-            ? genericNetworkId.asEvm.toNumber()
-            : genericNetworkId.asEvmLegacy.toNumber();
-          const type = genericNetworkId.isEvm ? BridgeNetworkType.Evm : BridgeNetworkType.Eth;
+          const id = getEvmNetworkId(genericNetworkId);
+          const type = getEvmNetworkType(genericNetworkId);
           const kind = evmAppInfo.appKind.toString();
           const address = evmAppInfo.evmAddress.toString();
 

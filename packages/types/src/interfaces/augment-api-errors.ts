@@ -65,7 +65,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidCollateralAmount: AugmentedError<ApiType>;
       /**
-       * The amount that is being lended is invalid
+       * The amount that is being lent is invalid
        **/
       InvalidLendingAmount: AugmentedError<ApiType>;
       /**
@@ -101,9 +101,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NothingBorrowed: AugmentedError<ApiType>;
       /**
-       * Nothing lended
+       * Nothing lent
        **/
-      NothingLended: AugmentedError<ApiType>;
+      NothingLent: AugmentedError<ApiType>;
       /**
        * Nothing to repay
        **/

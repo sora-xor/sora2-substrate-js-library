@@ -36,6 +36,10 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       changeRewardsPerBlock: AugmentedSubmittable<(isLending: bool | boolean | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [bool, u128]>;
       /**
+       * Edit pool info
+       **/
+      editPoolInfo: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newLoanToValue: u128 | AnyNumber | Uint8Array, newLiquidationThreshold: u128 | AnyNumber | Uint8Array, newOptimalUtilizationRate: u128 | AnyNumber | Uint8Array, newBaseRate: u128 | AnyNumber | Uint8Array, newSlopeRate1: u128 | AnyNumber | Uint8Array, newSlopeRate2: u128 | AnyNumber | Uint8Array, newReserveFactor: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128]>;
+      /**
        * Get rewards
        **/
       getRewards: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, isLending: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, bool]>;
@@ -1851,15 +1855,6 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       updateCollateralRiskParameters: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newRiskParameters: KensetsuCollateralRiskParameters | { hardCap?: any; liquidationRatio?: any; maxLiquidationLot?: any; stabilityFeeRate?: any; minimalCollateralDeposit?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, KensetsuCollateralRiskParameters]>;
       /**
-       * Updates the hard cap for the total supply of a stablecoin.
-       * 
-       * ## Parameters
-       * 
-       * - `origin`: The origin of the transaction.
-       * - `new_hard_cap`: The new hard cap value to be set for the total supply.
-       **/
-      updateHardCapTotalSupply: AugmentedSubmittable<(newHardCap: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
-      /**
        * Updates the liquidation penalty applied during CDP liquidation.
        * 
        * ## Parameters
@@ -2423,7 +2418,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `account`: Some account to use during the initialization
        * - `pairs`: Asset pairs to initialize.
        **/
-      xykInitialize: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, pairs: Vec<QaToolsPalletToolsPoolXykAssetPairInput> | (QaToolsPalletToolsPoolXykAssetPairInput | { dexId?: any; assetA?: any; assetB?: any; price?: any } | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [AccountId32, Vec<QaToolsPalletToolsPoolXykAssetPairInput>]>;
+      xykInitialize: AugmentedSubmittable<(account: AccountId32 | string | Uint8Array, pairs: Vec<QaToolsPalletToolsPoolXykAssetPairInput> | (QaToolsPalletToolsPoolXykAssetPairInput | { dexId?: any; assetA?: any; assetB?: any; price?: any; maybeAssetAReserves?: any } | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [AccountId32, Vec<QaToolsPalletToolsPoolXykAssetPairInput>]>;
     };
     referrals: {
       /**

@@ -47,7 +47,7 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       userBorrowingInfo: AugmentedQuery<ApiType, (arg1: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<BTreeMap<CommonPrimitivesAssetId32, ApolloPlatformBorrowingPosition>>>, [CommonPrimitivesAssetId32, AccountId32]>;
       /**
-       * Lended asset -> AccountId -> LendingPosition
+       * Lent asset -> AccountId -> LendingPosition
        **/
       userLendingInfo: AugmentedQuery<ApiType, (arg1: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, arg2: AccountId32 | string | Uint8Array) => Observable<Option<ApolloPlatformLendingPosition>>, [CommonPrimitivesAssetId32, AccountId32]>;
     };
@@ -921,11 +921,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       collateralInfos: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<KensetsuCollateralInfo>>, [CommonPrimitivesAssetId32]>;
       /**
-       * Risk parameter
-       * Hard cap of KUSD may be minted by the system
-       **/
-      kusdHardCap: AugmentedQuery<ApiType, () => Observable<u128>, []>;
-      /**
        * Flag indicates that liquidation took place in this block. Only one liquidation per block is
        * allowed, the flag is dropped every block.
        **/
@@ -1018,7 +1013,7 @@ declare module '@polkadot/api-base/types/storage' {
        * however this constant is not modified
        **/
       initialPswapRewardsSupply: AugmentedQuery<ApiType, () => Observable<u128>, []>;
-      pendingFreeReserves: AugmentedQuery<ApiType, () => Observable<Vec<ITuple<[CommonPrimitivesAssetId32, u128]>>>, []>;
+      pendingFreeReserves: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<BTreeMap<CommonPrimitivesAssetId32, u128>>, [u32]>;
       priceChangeRate: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
       /**
        * Coefficients in buy price function.

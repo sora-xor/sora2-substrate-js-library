@@ -1690,7 +1690,7 @@
         {
             "minmax": [
                 73,
-                null
+                83
             ],
             "types": {
                 "PredefinedAssetId": {
@@ -1718,6 +1718,30 @@
                     "route": "Vec<AssetId>"
                 },
                 "OutcomeFee": "Json"
+            }
+        },
+        {
+            "minmax": [
+                84,
+                null
+            ],
+            "types": {
+                "EVMAppKind": {
+                    "_enum": [
+                        "EthApp",
+                        "FaApp",
+                        "HashiBridge",
+                        "XorMaster",
+                        "ValMaster"
+                    ]
+                },
+                "EVMChainId": "H256",
+                "EVMLegacyAssetInfo": {
+                    "assetid": "MainnetAssetId",
+                    "evmaddress": "H160",
+                    "appkind": "EVMAppKind",
+                    "precision": "Option<u8>"
+                }
             }
         }
     ],
@@ -1876,8 +1900,7 @@
         "EVMAppKind": {
             "_enum": [
                 "EthApp",
-                "ERC20App",
-                "SidechainApp",
+                "FaApp",
                 "HashiBridge",
                 "XorMaster",
                 "ValMaster"
@@ -1889,12 +1912,12 @@
             "appKind": "EVMAppKind",
             "precision": "u8"
         },
-        "EVMChainId": "U256",
+        "EVMChainId": "H256",
         "EVMLegacyAssetInfo": {
             "assetId": "MainnetAssetId",
             "evmAddress": "H160",
             "appKind": "EVMAppKind",
-            "precision": "u8"
+            "precision": "Option<u8>"
         },
         "EthAddress": "H160",
         "EthBridgeStorageVersion": {

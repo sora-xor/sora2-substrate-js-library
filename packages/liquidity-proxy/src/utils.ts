@@ -8,7 +8,7 @@ import type { QuoteResult } from './types';
 export const toFp = (item: CodecString): FPNumber => FPNumber.fromCodecValue(item);
 export const getMaxPositive = (value: FPNumber) => value.max(FPNumber.ZERO);
 export const isAssetAddress = (a: string, b: string) => a === b;
-export const isXorAsset = (asset: string, dexBaseAsset = Consts.XOR) => isAssetAddress(asset, dexBaseAsset);
+
 export const matchType =
   (iType: AssetType, oType: AssetType) =>
   (a: AssetType, b: AssetType, bidirect = false) => {
@@ -37,6 +37,13 @@ export const safeDivide = (value: FPNumber, divider: FPNumber): FPNumber => {
   } else {
     return value.div(divider);
   }
+};
+export const saturatingSub = (a: FPNumber, b: FPNumber): FPNumber => {
+  return a.sub(b).max(FPNumber.ZERO);
+};
+export const checkedSub = (a: FPNumber, b: FPNumber): FPNumber | null => {
+  const result = a.sub(b);
+  return FPNumber.isGreaterThanOrEqualTo(result, FPNumber.ZERO) ? result : null;
 };
 export const safeQuoteResult = (
   inputAsset: string,

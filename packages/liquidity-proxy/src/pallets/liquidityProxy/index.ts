@@ -1,29 +1,17 @@
 import { FPNumber } from '@sora-substrate/math';
-import { LiquiditySourceTypes, Consts, AssetType } from '../../consts';
-import { quote as xykQuote, quoteWithoutImpact as xykQuoteWithoutImpact, getXykReserves } from '../poolXyk';
-import {
-  quote as tbcQuote,
-  quoteWithoutImpact as tbcQuoteWithoutImpact,
-  sellPriceNoVolume as tbcSellPriceNoVolume,
-  buyPriceNoVolume as tbcBuyPriceNoVolume,
-} from '../multicollateralBoundingCurvePool';
-import {
-  quote as xstQuote,
-  quoteWithoutImpact as xstQuoteWithoutImpact,
-  sellPriceNoVolume as xstSellPriceNoVolume,
-  buyPriceNoVolume as xstBuyPriceNoVolume,
-} from '../xst';
-import { quote as orderBookQuote, quoteWithoutImpact as orderBookQuoteWithoutImpact } from '../orderBook';
-import { isAssetAddress, isBetter, extremum, intersection, matchType, safeDivide } from '../../utils';
+import { LiquiditySourceTypes, Consts, Errors, AssetType } from '../../consts';
+import { LiquidityRegistry } from './liquidityRegistry';
+import { smartSplit, newSmartSplit } from './smartSplit';
+import { listLiquiditySources } from '../dexApi';
+
+import { intersection, matchType, safeDivide } from '../../utils';
 
 import type {
   QuotePayload,
   QuoteResult,
   QuotePaths,
   QuoteIntermediate,
-  Distribution,
   SwapResult,
-  LPRewardsInfo,
   PrimaryMarketsEnabledAssets,
   PathsAndPairLiquiditySources,
 } from '../../types';
@@ -165,33 +153,6 @@ const getAssetLiquiditySources = (
 };
 
 /**
- * Liquidity sources for direct exchange between two asssets
- * @param inputAssetId input asset id
- * @param outputAssetId output asset id
- * @param assetPaths liquidity sources for assets
- * @param baseAssetId Dex base asset id
- */
-const listLiquiditySources = (
-  inputAssetId: string,
-  outputAssetId: string,
-  assetPaths: QuotePaths,
-  baseAssetId: string,
-  selectedSources: LiquiditySourceTypes[] = []
-): Array<LiquiditySourceTypes> => {
-  const getSource = (asset: string) => assetPaths[asset] ?? [];
-  const commonSources = intersection(getSource(inputAssetId), getSource(outputAssetId));
-  const directSources = commonSources.filter((source) => {
-    return (
-      source === LiquiditySourceTypes.XSTPool || [inputAssetId, outputAssetId].includes(baseAssetId) // TBC, XYK, OrderBook uses baseAsset
-    );
-  });
-
-  if (!selectedSources.length) return directSources;
-
-  return directSources.filter((source) => selectedSources.includes(source));
-};
-
-/**
  * Get available liquidity sources for the assets exchange paths
  * @param baseAssetId Dex base asset id
  * @param syntheticBaseAssetId Dex synthetic base asset id
@@ -235,231 +196,14 @@ export const getAssetsLiquiditySources = (
   return { assetPaths, liquiditySources };
 };
 
-// AGGREGATOR
-const quotePrimaryMarket = (
-  inputAssetAddress: string,
-  outputAssetAddress: string,
-  amount: FPNumber,
-  isDesiredInput: boolean,
-  payload: QuotePayload,
-  deduceFee: boolean
-): QuoteResult => {
-  if ([inputAssetAddress, outputAssetAddress].includes(Consts.XSTUSD)) {
-    return xstQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee);
-  } else {
-    return tbcQuote(inputAssetAddress, outputAssetAddress, amount, isDesiredInput, payload, deduceFee);
-  }
-};
-
-/**
- * Determines the share of a swap that should be exchanged in the primary market
- * (i.e., the multi-collateral bonding curve pool) based on the current reserves of
- * the base asset and the collateral asset in the secondary market (e.g., an XYK pool)
- * provided the base asset is being bought.
- */
-// prettier-ignore
-const primaryMarketAmountBuyingBaseAsset = (
-  collateralAsset: string,
-  amount: FPNumber,
-  isDesiredInput: boolean,
-  baseReserve: FPNumber,
-  otherReserve: FPNumber,
-  payload: QuotePayload
-): FPNumber => { // NOSONAR
-  try {
-    const secondaryPrice = baseReserve.isGtZero() ? safeDivide(otherReserve, baseReserve) : Consts.MAX;
-
-    const primaryBuyPrice = isAssetAddress(collateralAsset, Consts.XSTUSD)
-      ? xstBuyPriceNoVolume(collateralAsset, payload)
-      : tbcBuyPriceNoVolume(collateralAsset, payload);
-
-    const k = baseReserve.mul(otherReserve);
-
-    if (isDesiredInput) {
-      if (FPNumber.isLessThan(secondaryPrice, primaryBuyPrice)) {
-        const amountSecondary = k.mul(primaryBuyPrice).sqrt().sub(otherReserve);
-
-        if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
-          return FPNumber.ZERO;
-        } else if (amountSecondary.isLteZero()) {
-          return amount;
-        } else {
-          return amount.sub(amountSecondary);
-        }
-      } else {
-        return amount;
-      }
-    } else {
-      // prettier-ignore
-      if (FPNumber.isLessThan(secondaryPrice, primaryBuyPrice)) { // NOSONAR
-        const amountSecondary = baseReserve.sub(safeDivide(k, primaryBuyPrice).sqrt());
-
-        if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
-          return FPNumber.ZERO;
-        } else if (amountSecondary.isLteZero()) {
-          return amount;
-        } else {
-          return amount.sub(amountSecondary);
-        }
-      } else {
-        return amount;
-      }
-    }
-  } catch (error) {
-    return FPNumber.ZERO;
-  }
-};
-
-/**
- * Determines the share of a swap that should be exchanged in the primary market
- * (i.e. the multi-collateral bonding curve pool) based on the current reserves of
- * the base asset and the collateral asset in the secondary market (e.g. an XYK pool)
- * provided the base asset is being sold.
- */
-// prettier-ignore
-const primaryMarketAmountSellingBaseAsset = (
-  collateralAsset: string,
-  amount: FPNumber,
-  isDesiredInput: boolean,
-  xorReserve: FPNumber,
-  otherReserve: FPNumber,
-  payload: QuotePayload
-): FPNumber => { // NOSONAR
-  try {
-    const secondaryPrice = xorReserve.isGtZero() ? safeDivide(otherReserve, xorReserve) : FPNumber.ZERO;
-
-    const primarySellPrice = isAssetAddress(collateralAsset, Consts.XSTUSD)
-      ? xstSellPriceNoVolume(collateralAsset, payload)
-      : tbcSellPriceNoVolume(collateralAsset, payload);
-
-    const k = xorReserve.mul(otherReserve);
-
-    if (isDesiredInput) {
-      if (FPNumber.isGreaterThan(secondaryPrice, primarySellPrice)) {
-        const amountSecondary = safeDivide(k, primarySellPrice).sqrt().sub(xorReserve);
-
-        if (FPNumber.isGreaterThan(amountSecondary, amount)) {
-          return FPNumber.ZERO;
-        } else if (amountSecondary.isLteZero()) {
-          return amount;
-        } else {
-          return amount.sub(amountSecondary);
-        }
-      } else {
-        return amount;
-      }
-    } else {
-      // prettier-ignore
-      if (FPNumber.isGreaterThan(secondaryPrice, primarySellPrice)) { // NOSONAR
-        const amountSecondary = otherReserve.sub(k.mul(primarySellPrice).sqrt());
-
-        if (FPNumber.isGreaterThanOrEqualTo(amountSecondary, amount)) {
-          return FPNumber.ZERO;
-        } else if (amountSecondary.isLteZero()) {
-          return amount;
-        } else {
-          return amount.sub(amountSecondary);
-        }
-      } else {
-        return amount;
-      }
-    }
-  } catch (error) {
-    return FPNumber.ZERO;
-  }
-};
-
-/**
- * Implements the "smart" split algorithm.
- */
-const smartSplit = (
-  inputAsset: string,
-  outputAsset: string,
-  amount: FPNumber,
-  isDesiredInput: boolean,
-  payload: QuotePayload,
-  deduceFee: boolean,
-  baseAssetId = Consts.XOR
-): QuoteResult => {
-  let bestOutcome: FPNumber = extremum(isDesiredInput);
-  let bestFee: FPNumber = FPNumber.ZERO;
-  let bestDistribution: Array<Distribution> = [];
-  let bestRewards: Array<LPRewardsInfo> = [];
-
-  const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
-  const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
-  const [baseReserve, otherReserve] = isBaseAssetInput
-    ? [inputReserves, outputReserves]
-    : [outputReserves, inputReserves];
-
-  const primaryAmount = isBaseAssetInput
-    ? primaryMarketAmountSellingBaseAsset(outputAsset, amount, isDesiredInput, baseReserve, otherReserve, payload)
-    : primaryMarketAmountBuyingBaseAsset(inputAsset, amount, isDesiredInput, baseReserve, otherReserve, payload);
-
-  if (primaryAmount.isGtZero()) {
-    const outcomePrimary = quotePrimaryMarket(
-      inputAsset,
-      outputAsset,
-      primaryAmount,
-      isDesiredInput,
-      payload,
-      deduceFee
-    );
-    // check that outcomePrimary is not zero
-    if (FPNumber.isLessThan(primaryAmount, amount) && !outcomePrimary.amount.isZero()) {
-      const incomeSecondary = amount.sub(primaryAmount);
-      const outcomeSecondary = xykQuote(
-        inputAsset,
-        outputAsset,
-        incomeSecondary,
-        isDesiredInput,
-        payload,
-        deduceFee,
-        baseAssetId
-      );
-
-      bestOutcome = outcomePrimary.amount.add(outcomeSecondary.amount);
-      bestFee = outcomePrimary.fee.add(outcomeSecondary.fee);
-      bestRewards = [...outcomePrimary.rewards, ...outcomeSecondary.rewards];
-      bestDistribution = [...outcomeSecondary.distribution, ...outcomePrimary.distribution];
-    } else {
-      bestOutcome = outcomePrimary.amount;
-      bestFee = outcomePrimary.fee;
-      bestRewards = outcomePrimary.rewards;
-      bestDistribution = outcomePrimary.distribution;
-    }
-  }
-
-  // check xyk only result regardless of split, because it might be better
-  const outcomeSecondary = xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
-
-  if (isBetter(isDesiredInput, outcomeSecondary.amount, bestOutcome)) {
-    bestOutcome = outcomeSecondary.amount;
-    bestFee = outcomeSecondary.fee;
-    bestRewards = outcomeSecondary.rewards;
-    bestDistribution = outcomeSecondary.distribution;
-  }
-
-  if (FPNumber.isEqualTo(bestOutcome, Consts.MAX)) {
-    bestOutcome = FPNumber.ZERO;
-    bestFee = FPNumber.ZERO;
-    bestRewards = [];
-  }
-
-  return {
-    amount: bestOutcome,
-    fee: bestFee,
-    rewards: bestRewards,
-    distribution: bestDistribution,
-  };
-};
-
 /**
  * Computes the optimal distribution across available liquidity sources to exectute the requested trade
  * given the input and output assets, the trade amount and a liquidity sources filter.
  */
 // prettier-ignore
 const quoteSingle = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   amount: FPNumber,
@@ -467,58 +211,86 @@ const quoteSingle = (
   selectedSources: Array<LiquiditySourceTypes>,
   payload: QuotePayload,
   deduceFee: boolean,
-  baseAssetId = Consts.XOR
+  isALT = false,
 ): QuoteResult => { // NOSONAR
-  const allSources = listLiquiditySources(
+  let sources = listLiquiditySources(
+    baseAssetId,
+    syntheticBaseAssetId,
     inputAsset,
     outputAsset,
-    payload.sources.assetPaths,
-    baseAssetId,
-    selectedSources
+    selectedSources,
+    payload
   );
-  let sources = allSources.filter((source) => !payload.lockedSources.includes(source));
 
   if (!sources.length) {
-    throw new Error(`[liquidityProxy] Path doesn't exist: [${inputAsset}, ${outputAsset}]`);
+    throw new Error(Errors.UnavailableExchangePath);
   }
 
   // The temp solution is to exclude OrderBook source if there are multiple sources.
   // Will be removed in ALT implementation
-  if (sources.length > 1) {
+  if (!isALT && sources.length > 1) {
     sources = sources.filter((source) => source !== LiquiditySourceTypes.OrderBook);
   }
 
   if (sources.length === 1) {
-    switch (sources[0]) {
-      case LiquiditySourceTypes.XYKPool: {
-        return xykQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
-      }
-      case LiquiditySourceTypes.MulticollateralBondingCurvePool: {
-        return tbcQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
-      }
-      case LiquiditySourceTypes.XSTPool: {
-        return xstQuote(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
-      }
-      case LiquiditySourceTypes.OrderBook: {
-        return orderBookQuote(baseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
-      }
-      default: {
-        throw new Error(`[liquidityProxy] Unexpected liquidity source: ${sources[0]}`);
-      }
-    }
+    const {
+      amount: resultAmount,
+      fee,
+      distribution,
+    } = LiquidityRegistry.quote(sources[0])(
+      baseAssetId,
+      syntheticBaseAssetId,
+      inputAsset,
+      outputAsset,
+      amount,
+      isDesiredInput,
+      payload,
+      deduceFee
+    );
+    const [inputAmount, outputAmount] = isDesiredInput ? [amount, resultAmount] : [resultAmount, amount];
+    const rewards = LiquidityRegistry.checkRewards(sources[0])(
+      baseAssetId,
+      syntheticBaseAssetId,
+      inputAsset,
+      outputAsset,
+      inputAmount,
+      outputAmount,
+      payload
+    );
+
+    return {
+      amount: resultAmount,
+      fee,
+      distribution,
+      rewards,
+    };
   }
 
-  if (sources.length === 2) {
-    if (
-      sources.includes(LiquiditySourceTypes.XYKPool) &&
-      // We can't use XST as primary market for smart split, because it use XST asset as base
-      sources.includes(LiquiditySourceTypes.MulticollateralBondingCurvePool)
-    ) {
-      return smartSplit(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
+  if (!isALT) {
+    if (sources.length === 2) {
+      if (
+        sources.includes(LiquiditySourceTypes.XYKPool) &&
+        // We can't use XST as primary market for smart split, because it use XST asset as base
+        sources.includes(LiquiditySourceTypes.MulticollateralBondingCurvePool)
+      ) {
+        return smartSplit(baseAssetId, syntheticBaseAssetId, inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
+      }
     }
+  
+    throw new Error('[liquidityProxy] Unsupported operation');
+  } else {
+    return newSmartSplit(
+      baseAssetId,
+      syntheticBaseAssetId,
+      sources,
+      inputAsset,
+      outputAsset,
+      amount,
+      isDesiredInput,
+      payload,
+      deduceFee
+    );
   }
-
-  throw new Error('[liquidityProxy] Unsupported operation');
 };
 
 // prettier-ignore
@@ -531,7 +303,8 @@ export const quote = (
   payload: QuotePayload,
   deduceFee: boolean,
   baseAssetId = Consts.XOR,
-  syntheticBaseAssetId = Consts.XST
+  syntheticBaseAssetId = Consts.XST,
+  isALT = false,
 ): SwapResult => { // NOSONAR
   let bestQuote: QuoteIntermediate = {
     amount: FPNumber.ZERO,
@@ -569,6 +342,8 @@ export const quote = (
             const [assetA, assetB] = isDesiredInput ? [prevAsset, currentAsset] : [currentAsset, prevAsset];
 
             const result = quoteSingle(
+              baseAssetId,
+              syntheticBaseAssetId,
               assetA,
               assetB,
               buffer.amount,
@@ -576,7 +351,7 @@ export const quote = (
               selectedSources,
               payload,
               deduceFee,
-              baseAssetId
+              isALT,
             );
 
             const ratioToActual =
@@ -591,13 +366,14 @@ export const quote = (
             }));
 
             const amountWithoutImpact = quoteWithoutImpactSingle(
+              baseAssetId,
+              syntheticBaseAssetId,
               assetA,
               assetB,
               isDesiredInput,
               distributionAmounts,
               payload,
               deduceFee,
-              baseAssetId
             );
 
             buffer.amount = result.amount;
@@ -666,34 +442,26 @@ export const quote = (
 };
 
 const quoteWithoutImpactSingle = (
+  baseAssetId: string,
+  syntheticBaseAssetId: string,
   inputAsset: string,
   outputAsset: string,
   isDesiredInput: boolean,
   distribution: Array<{ market: LiquiditySourceTypes; amount: FPNumber }>,
   payload: QuotePayload,
-  deduceFee: boolean,
-  baseAssetId = Consts.XOR
+  deduceFee: boolean
 ): FPNumber => {
   return distribution.reduce((result, { market, amount }) => {
-    let value = FPNumber.ZERO;
-
-    if (market === LiquiditySourceTypes.XYKPool) {
-      value = xykQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee, baseAssetId);
-    } else if (market === LiquiditySourceTypes.MulticollateralBondingCurvePool) {
-      value = tbcQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
-    } else if (market === LiquiditySourceTypes.XSTPool) {
-      value = xstQuoteWithoutImpact(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
-    } else if (market === LiquiditySourceTypes.OrderBook) {
-      value = orderBookQuoteWithoutImpact(
-        baseAssetId,
-        inputAsset,
-        outputAsset,
-        amount,
-        isDesiredInput,
-        payload,
-        deduceFee
-      );
-    }
+    const value = LiquidityRegistry.quoteWithoutImpact(market)(
+      baseAssetId,
+      syntheticBaseAssetId,
+      inputAsset,
+      outputAsset,
+      amount,
+      isDesiredInput,
+      payload,
+      deduceFee
+    );
 
     return result.add(value);
   }, FPNumber.ZERO);

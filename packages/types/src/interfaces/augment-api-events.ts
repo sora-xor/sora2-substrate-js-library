@@ -31,9 +31,9 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ClaimedLendingRewards: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
-       * Lended [who, asset_id, amount]
+       * Lent [who, asset_id, amount]
        **/
-      Lended: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      Lent: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
        * Liquidated [who, asset_id]
        **/
@@ -42,6 +42,10 @@ declare module '@polkadot/api-base/types/events' {
        * Pool added [who, asset_id]
        **/
       PoolAdded: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
+      /**
+       * Pool info edited [who, asset_id]
+       **/
+      PoolInfoEdited: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32]>;
       /**
        * Pool removed [who, asset_id]
        **/
@@ -700,7 +704,6 @@ declare module '@polkadot/api-base/types/events' {
       CollateralRiskParametersUpdated: AugmentedEvent<ApiType, [collateralAssetId: CommonPrimitivesAssetId32, riskParameters: KensetsuCollateralRiskParameters], { collateralAssetId: CommonPrimitivesAssetId32, riskParameters: KensetsuCollateralRiskParameters }>;
       DebtIncreased: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
       DebtPayment: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
-      DebtTokenHardCapUpdated: AugmentedEvent<ApiType, [debtAssetId: CommonPrimitivesAssetId32, newHardCap: u128, oldHardCap: u128], { debtAssetId: CommonPrimitivesAssetId32, newHardCap: u128, oldHardCap: u128 }>;
       Donation: AugmentedEvent<ApiType, [debtAssetId: CommonPrimitivesAssetId32, amount: u128], { debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
       Liquidated: AugmentedEvent<ApiType, [cdpId: u128, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, debtAssetId: CommonPrimitivesAssetId32, proceeds: u128, penalty: u128], { cdpId: u128, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, debtAssetId: CommonPrimitivesAssetId32, proceeds: u128, penalty: u128 }>;
       LiquidationPenaltyUpdated: AugmentedEvent<ApiType, [newLiquidationPenalty: Percent, oldLiquidationPenalty: Percent], { newLiquidationPenalty: Percent, oldLiquidationPenalty: Percent }>;
@@ -739,6 +742,10 @@ declare module '@polkadot/api-base/types/events' {
       XorlessTransfer: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32, AccountId32, AccountId32, u128, Option<Bytes>]>;
     };
     multicollateralBondingCurvePool: {
+      /**
+       * Free reserves distribution routine failed. [Error]
+       **/
+      FailedToDistributeFreeReserves: AugmentedEvent<ApiType, [SpRuntimeDispatchError]>;
       /**
        * Multiplier for reward has been updated on particular asset. [Asset Id, New Multiplier]
        **/

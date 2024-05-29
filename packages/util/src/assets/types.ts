@@ -1,6 +1,6 @@
 import type { CodecString, NumberLike } from '@sora-substrate/math';
 
-import type { History } from '../BaseApi';
+import type { History } from '../types';
 import type { KnownSymbols } from './consts';
 
 export type NativeSymbol =

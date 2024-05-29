@@ -1,6 +1,21 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { safeDivide } from '../utils';
+import { SwapVariant } from '../consts';
+import { safeDivide, saturatingSub } from '../utils';
+
+export class SideAmount {
+  public amount!: FPNumber;
+  public variant!: SwapVariant;
+
+  constructor(amount: FPNumber, variant: SwapVariant) {
+    this.amount = amount;
+    this.variant = variant;
+  }
+
+  get isInput(): boolean {
+    return this.variant === SwapVariant.WithDesiredInput;
+  }
+}
 
 export class SwapChunk {
   public input!: FPNumber;
@@ -11,6 +26,38 @@ export class SwapChunk {
     this.input = input;
     this.output = output;
     this.fee = fee;
+  }
+
+  public getAssociatedField(swapVariant: SwapVariant): SideAmount {
+    if (swapVariant === SwapVariant.WithDesiredInput) {
+      return new SideAmount(this.input, SwapVariant.WithDesiredInput);
+    } else {
+      return new SideAmount(this.output, SwapVariant.WithDesiredOutput);
+    }
+  }
+
+  public forCompare(other: SideAmount): FPNumber {
+    if (other.isInput) {
+      return this.input;
+    } else {
+      return this.output;
+    }
+  }
+
+  public eq(other: SideAmount): boolean {
+    if (other.isInput) {
+      return FPNumber.isEqualTo(this.input, other.amount);
+    } else {
+      return FPNumber.isEqualTo(this.output, other.amount);
+    }
+  }
+
+  public static zero(): SwapChunk {
+    return new SwapChunk(FPNumber.ZERO, FPNumber.ZERO, FPNumber.ZERO);
+  }
+
+  public isZero(): boolean {
+    return this.input.isZero() && this.output.isZero() && this.fee.isZero();
   }
 
   /** Calculates a price of the chunk */
@@ -60,5 +107,169 @@ export class SwapChunk {
     const fee = this.fee.mul(ratio);
 
     return new SwapChunk(input, output, fee);
+  }
+
+  public rescaleBySideAmount(amount: SideAmount) {
+    if (amount.isInput) {
+      return this.rescaleByInput(amount.amount);
+    } else {
+      return this.rescaleByOutput(amount.amount);
+    }
+  }
+
+  public saturatingAdd(chunk: SwapChunk) {
+    return new SwapChunk(this.input.add(chunk.input), this.output.add(chunk.output), this.fee.add(chunk.fee));
+  }
+
+  public saturatingSub(chunk: SwapChunk) {
+    return new SwapChunk(
+      saturatingSub(this.input, chunk.input),
+      saturatingSub(this.output, chunk.output),
+      saturatingSub(this.fee, chunk.fee)
+    );
+  }
+}
+
+type SideAmountOption = SideAmount | null;
+
+export class SwapLimits {
+  /// The amount of swap cannot be less than `min_amount` if it's defined
+  public minAmount!: SideAmountOption;
+  /// The amount of swap cannot be more than `max_amount` if it's defined
+  public maxAmount!: SideAmountOption;
+  /// The amount of swap must be a multiplier of `amount_precision` if it's defined
+  public amountPrecision!: SideAmountOption;
+
+  constructor(minAmount: SideAmountOption, maxAmount: SideAmountOption, amountPrecision: SideAmountOption) {
+    this.minAmount = minAmount;
+    this.maxAmount = maxAmount;
+    this.amountPrecision = amountPrecision;
+  }
+
+  // Aligns the `chunk` regarding to the `min_amount` limit.
+  // Returns the aligned chunk and the remainder
+  alignChunkMin(chunk: SwapChunk): [SwapChunk, SwapChunk] {
+    const min = this.minAmount;
+
+    if (min) {
+      if (min.isInput) {
+        if (FPNumber.isLessThan(chunk.input, min.amount)) {
+          return [SwapChunk.zero(), chunk];
+        }
+      } else {
+        if (FPNumber.isLessThan(chunk.output, min.amount)) {
+          return [SwapChunk.zero(), chunk];
+        }
+      }
+    }
+
+    return [chunk, SwapChunk.zero()];
+  }
+
+  // Aligns the `chunk` regarding to the `max_amount` limit.
+  // Returns the aligned chunk and the remainder
+  alignChunkMax(chunk: SwapChunk): [SwapChunk, SwapChunk] {
+    const max = this.maxAmount;
+
+    if (max) {
+      if (max.isInput) {
+        if (FPNumber.isGreaterThan(chunk.input, max.amount)) {
+          const rescaled = chunk.rescaleByInput(max.amount);
+          const remainder = chunk.saturatingSub(rescaled);
+          return [rescaled, remainder];
+        }
+      } else {
+        if (FPNumber.isGreaterThan(chunk.output, max.amount)) {
+          const rescaled = chunk.rescaleByOutput(max.amount);
+          const remainder = chunk.saturatingSub(rescaled);
+          return [rescaled, remainder];
+        }
+      }
+    }
+
+    return [chunk, SwapChunk.zero()];
+  }
+
+  // Aligns the extra `chunk` regarding to the `max_amount` limit taking into account in calculations the accumulator `acc` values.
+  // Returns the aligned chunk and the remainder
+  alignExtraChunkMax(acc: SwapChunk, chunk: SwapChunk): [SwapChunk, SwapChunk] {
+    const max = this.maxAmount;
+
+    if (max) {
+      if (max.isInput) {
+        if (FPNumber.isGreaterThan(acc.input.add(chunk.input), max.amount)) {
+          const diff = max.amount.sub(acc.input);
+          const rescaled = chunk.rescaleByInput(diff);
+          const remainder = chunk.saturatingSub(rescaled);
+          return [rescaled, remainder];
+        }
+      } else {
+        if (FPNumber.isGreaterThan(acc.output.sub(chunk.output), max.amount)) {
+          const diff = max.amount.sub(acc.output);
+          const rescaled = chunk.rescaleByOutput(diff);
+          const remainder = chunk.saturatingSub(rescaled);
+          return [rescaled, remainder];
+        }
+      }
+    }
+
+    return [chunk, SwapChunk.zero()];
+  }
+
+  // Aligns the `chunk` regarding to the `amount_precision` limit.
+  // Returns the aligned chunk and the remainder
+  alignChunkPrecision(chunk: SwapChunk): [SwapChunk, SwapChunk] {
+    const precision = this.amountPrecision;
+
+    if (precision) {
+      if (precision.isInput) {
+        if (!chunk.input.isZeroMod(precision.amount)) {
+          const count = Math.floor(safeDivide(chunk.input, precision.amount).toNumber());
+          const aligned = FPNumber.fromNatural(count).mul(precision.amount);
+          const rescaled = chunk.rescaleByInput(aligned);
+          const remainder = chunk.saturatingSub(rescaled);
+          return [rescaled, remainder];
+        }
+      } else {
+        if (!chunk.output.isZeroMod(precision.amount)) {
+          const count = Math.floor(safeDivide(chunk.output, precision.amount).toNumber());
+          const aligned = FPNumber.fromNatural(count).mul(precision.amount);
+          const rescaled = chunk.rescaleByOutput(aligned);
+          const remainder = chunk.saturatingSub(rescaled);
+          return [rescaled, remainder];
+        }
+      }
+    }
+
+    return [chunk, SwapChunk.zero()];
+  }
+
+  // Aligns the `chunk` regarding to the limits.
+  // Returns the aligned chunk and the remainder
+  alignChunk(chunk: SwapChunk): [SwapChunk, SwapChunk] {
+    let rescaled!: SwapChunk;
+    let remainder!: SwapChunk;
+
+    [rescaled, remainder] = this.alignChunkMin(chunk);
+    if (!remainder.isZero()) return [rescaled, remainder];
+
+    [rescaled, remainder] = this.alignChunkMax(chunk);
+    if (!remainder.isZero()) return [rescaled, remainder];
+
+    [rescaled, remainder] = this.alignChunkPrecision(chunk);
+    if (!remainder.isZero()) return [rescaled, remainder];
+
+    return [chunk, SwapChunk.zero()];
+  }
+}
+
+// Discrete result of quotation
+export class DiscreteQuotation {
+  public chunks!: SwapChunk[];
+  public limits!: SwapLimits;
+
+  constructor() {
+    this.chunks = [];
+    this.limits = new SwapLimits(null, null, null);
   }
 }

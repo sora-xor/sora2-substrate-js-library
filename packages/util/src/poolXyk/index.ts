@@ -10,7 +10,7 @@ import type { Subscription } from 'rxjs';
 import { poolAccountIdFromAssetPair } from './account';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import type { Api } from '../api';
 import type { AccountLiquidity } from './types';
 import type { Asset, AccountAsset } from '../assets/types';

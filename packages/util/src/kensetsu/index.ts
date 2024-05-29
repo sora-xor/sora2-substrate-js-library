@@ -6,7 +6,7 @@ import type { Observable } from '@polkadot/types/types';
 import type { Vec, u128 } from '@polkadot/types-codec';
 
 import { Messages } from '../logger';
-import { Operation } from '../BaseApi';
+import { Operation } from '../types';
 import { KUSD } from '../assets/consts';
 import { VaultTypes } from './consts';
 import type { Api } from '../api';
@@ -31,23 +31,8 @@ export class KensetsuModule<T> {
    *
    * Bad debt in KUSD
    */
-  subscribeOnBadDept(): Observable<FPNumber> {
+  subscribeOnBadDebt(): Observable<FPNumber> {
     return this.root.apiRx.query.kensetsu.badDebt().pipe(map((res) => new FPNumber(res)));
-  }
-
-  /**
-   * Get the upper limit of KUSD
-   */
-  async getKusdHardCap(): Promise<FPNumber> {
-    const kusdHardCap = await this.root.api.query.kensetsu.kusdHardCap();
-    return new FPNumber(kusdHardCap);
-  }
-
-  /**
-   * Subscribe on the upper limit of KUSD
-   */
-  subscribeOnKusdHardCap(): Observable<FPNumber> {
-    return this.root.apiRx.query.kensetsu.kusdHardCap().pipe(map((res) => new FPNumber(res)));
   }
 
   /**
