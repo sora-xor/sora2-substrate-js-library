@@ -1,6 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 import { connection } from '@sora-substrate/connection';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
+import BigNumber from 'bignumber.js';
 
 describe('FPNumber', () => {
   it.each([
@@ -247,6 +248,38 @@ describe('FPNumber', () => {
   ])('[toFixed] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.toFixed(3)).toBe(result);
+  });
+
+  it.each([
+    [BigNumber.ROUND_UP, '1.2345', 2, '1.24'],
+    [BigNumber.ROUND_DOWN, '1.2345', 2, '1.23'],
+    [BigNumber.ROUND_CEIL, '1.2345', 2, '1.24'],
+    [BigNumber.ROUND_FLOOR, '1.2345', 2, '1.23'],
+    [BigNumber.ROUND_HALF_UP, '1.2345', 2, '1.23'],
+    [BigNumber.ROUND_HALF_DOWN, '1.2345', 2, '1.23'],
+    [BigNumber.ROUND_HALF_EVEN, '1.2355', 2, '1.24'],
+    [BigNumber.ROUND_HALF_CEIL, '1.2345', 2, '1.24'],
+    [BigNumber.ROUND_HALF_FLOOR, '1.2345', 2, '1.23'],
+  ])('rounding %s with mode %i should result in %s', (mode, value, decimals, expected) => {
+    const instance = new FPNumber(new BigNumber(value), 6);
+    const result = instance.dp(decimals, mode);
+    expect(result.value.toString()).toBe(expected);
+  });
+
+  it.each([
+    [BigNumber.ROUND_UP, '-1.2345', 2, '-1.24'],
+    [BigNumber.ROUND_DOWN, '-1.2345', 2, '-1.23'],
+    [BigNumber.ROUND_CEIL, '-1.2345', 2, '-1.23'],
+    [BigNumber.ROUND_FLOOR, '-1.2345', 2, '-1.24'],
+    [BigNumber.ROUND_HALF_UP, '-1.2345', 2, '-1.23'],
+    [BigNumber.ROUND_HALF_DOWN, '-1.2345', 2, '-1.23'],
+    [BigNumber.ROUND_HALF_EVEN, '-1.2355', 2, '-1.24'],
+    [BigNumber.ROUND_HALF_CEIL, '-1.2345', 2, '-1.23'],
+    [BigNumber.ROUND_HALF_FLOOR, '-1.2345', 2, '-1.23'],
+  ])('rounding negative %s with mode %i should result in %s', (mode, value, decimals, expected) => {
+    const instance = new FPNumber(new BigNumber(value), 6);
+    const result = instance.dp(decimals, mode);
+    expect(result.value.toString()).toBe(expected);
   });
 
   it.each([
