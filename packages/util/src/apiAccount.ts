@@ -150,7 +150,7 @@ export class WithConnectionApi {
 
 export class WithAccountPair extends WithConnectionApi {
   public account?: CreateResult;
-  protected signer?: Signer;
+  public signer?: Signer;
 
   public get accountPair(): KeyringPair | null {
     return this.account?.pair ?? null;
