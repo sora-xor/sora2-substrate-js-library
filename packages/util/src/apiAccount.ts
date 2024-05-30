@@ -150,7 +150,7 @@ export class WithConnectionApi {
 
 export class WithAccountPair extends WithConnectionApi {
   public account?: CreateResult;
-  protected signer?: Signer;
+  public signer?: Signer;
 
   public get accountPair(): KeyringPair | null {
     return this.account?.pair ?? null;
@@ -427,7 +427,7 @@ export class WithAccountStorage extends WithStorage {
   }
 
   public override setAccount(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
-    this.setAccount(account);
+    super.setAccount(account);
     this.initAccountStorage();
   }
 
