@@ -427,7 +427,7 @@ export class WithAccountStorage extends WithStorage {
   }
 
   public override setAccount(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
-    this.setAccount(account);
+    super.setAccount(account);
     this.initAccountStorage();
   }
 
