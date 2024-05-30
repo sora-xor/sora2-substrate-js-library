@@ -1,9 +1,14 @@
 import { map } from 'rxjs';
 import { assert } from '@polkadot/util';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
-import type { KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
+import type {
+  KensetsuCollateralInfo,
+  KensetsuCollateralizedDebtPosition,
+  CommonPrimitivesAssetId32,
+} from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
-import type { Vec, u128 } from '@polkadot/types-codec';
+import type { Vec, u128, Option } from '@polkadot/types-codec';
+import type { StorageKey } from '@polkadot/types';
 
 import { Messages } from '../logger';
 import { Operation } from '../types';
@@ -16,23 +21,58 @@ import type { Collateral, Vault } from './types';
 export class KensetsuModule<T> {
   constructor(private readonly root: Api<T>) {}
 
-  /**
-   * Usage: general system parameters, statistical information
-   *
-   * Bad debt in KUSD
-   */
-  async getBadDebt(): Promise<FPNumber> {
-    const badDebt = await this.root.api.query.kensetsu.badDebt();
-    return new FPNumber(badDebt);
+  /** {lockedAssetId},{debtAssetId} serialization */
+  public serializeKey(lockedAssetId: string, debtAssetId: string): string {
+    if (!(lockedAssetId && debtAssetId)) return '';
+    return `${lockedAssetId},${debtAssetId}`;
+  }
+
+  /** {lockedAssetId},{debtAssetId} deserialization -> { lockedAssetId: string; debtAssetId: string; } */
+  public deserializeKey(key: string): Partial<{ lockedAssetId: string; debtAssetId: string }> | null {
+    if (!key) return null;
+    const [lockedAssetId, debtAssetId] = key.split(',');
+    return { lockedAssetId, debtAssetId };
   }
 
   /**
    * Usage: general system parameters, statistical information
    *
-   * Bad debt in KUSD
+   * @returns Bad debt as `Record<string, FPNumber>` where key is the asset address and value is the amount of bad debt
    */
-  subscribeOnBadDebt(): Observable<FPNumber> {
-    return this.root.apiRx.query.kensetsu.badDebt().pipe(map((res) => new FPNumber(res)));
+  async getBadDebt(): Promise<Record<string, FPNumber>> {
+    const stablecoinInfos = await this.root.api.query.kensetsu.stablecoinInfos.entries();
+    return stablecoinInfos.reduce<Record<string, FPNumber>>((acc, item) => {
+      const [key, value] = item;
+
+      const assetId = key.args[0].code.toString();
+      const info = value.unwrapOr(null);
+      const badDebt = info ? new FPNumber(info.badDebt) : FPNumber.ZERO;
+      acc[assetId] = badDebt;
+
+      return acc;
+    }, {});
+  }
+
+  /**
+   * Usage: general system parameters, statistical information
+   *
+   * Bad debt as `Record<string, FPNumber>` where key is the asset address and value is the amount of bad debt
+   */
+  async subscribeOnBadDebt(): Promise<Observable<Record<string, FPNumber>>> {
+    const keys = await this.root.api.query.kensetsu.stablecoinInfos.keys();
+    const assetIds = keys.map((key) => key.args[0].code.toString());
+
+    return this.root.apiRx.query.kensetsu.stablecoinInfos.multi(assetIds).pipe(
+      map((infos) => {
+        return infos.reduce<Record<string, FPNumber>>((acc, value, index) => {
+          const assetId = assetIds[index];
+          const info = value.unwrapOr(null);
+          const badDebt = info ? new FPNumber(info.badDebt) : FPNumber.ZERO;
+          acc[assetId] = badDebt;
+          return acc;
+        }, {});
+      })
+    );
   }
 
   /**
@@ -114,7 +154,11 @@ export class KensetsuModule<T> {
     return vaultDebt.add(stabilityFee);
   }
 
-  private formatCollateral(collateralInfo: KensetsuCollateralInfo): Collateral {
+  private formatCollateral(
+    collateralInfo: KensetsuCollateralInfo,
+    lockedAssetId: string,
+    debtAssetId: string
+  ): Collateral {
     // ratioReversed has Perbill type = 1_000_000_000 decimals * 100 because of %, so we set decimals = 9 - 2 = 7
     const ratioReversed = new FPNumber(collateralInfo.riskParameters.liquidationRatio, 7);
     const ratio = FPNumber.ONE.div(ratioReversed).mul(FPNumber.TEN_THOUSANDS);
@@ -123,9 +167,11 @@ export class KensetsuModule<T> {
     // stability_fee_annual = (1 + stability_fee_ms) ^ 31_556_952 - 1; 31_556_952 - seconds in a year (an average Gregorian year has 365.2425 days)
     const stabilityFeeAnnual = FPNumber.ONE.add(stabilityFeeMs).pow(31_556_952).sub(1).mul(100_000).dp(2); // * 100 (to %) * 1000 (ms to seconds)
     const formatted: Collateral = {
+      lockedAssetId,
+      debtAssetId,
       lastFeeUpdateTime: collateralInfo.lastFeeUpdateTime.toNumber(),
       interestCoefficient: new FPNumber(collateralInfo.interestCoefficient),
-      kusdSupply: new FPNumber(collateralInfo.kusdSupply),
+      debtSupply: new FPNumber(collateralInfo.stablecoinSupply),
       totalLocked: new FPNumber(collateralInfo.totalCollateral),
       riskParams: {
         liquidationRatio: ratio.toNumber(2),
@@ -143,19 +189,23 @@ export class KensetsuModule<T> {
   /**
    * Usage: statistical information, for instance, Explore page
    */
-  async getCollateral(asset: Asset): Promise<Collateral | null> {
-    const data = await this.root.api.query.kensetsu.collateralInfos(asset.address);
+  async getCollateral(lockedAsset: Asset, debtAsset: Asset): Promise<Collateral | null> {
+    const lockedAssetId = lockedAsset.address;
+    const debtAssetId = debtAsset.address;
+    const data = await this.root.api.query.kensetsu.collateralInfos(lockedAssetId, debtAssetId);
     const collateralInfo: KensetsuCollateralInfo | null = data.unwrapOr(null);
     if (!collateralInfo) return null;
-    return this.formatCollateral(collateralInfo);
+    return this.formatCollateral(collateralInfo, lockedAssetId, debtAssetId);
   }
 
-  subscribeOnCollateral(asset: Asset): Observable<Collateral | null> {
-    return this.root.apiRx.query.kensetsu.collateralInfos(asset.address).pipe(
+  subscribeOnCollateral(lockedAsset: Asset, debtAsset: Asset): Observable<Collateral | null> {
+    const lockedAssetId = lockedAsset.address;
+    const debtAssetId = debtAsset.address;
+    return this.root.apiRx.query.kensetsu.collateralInfos(lockedAssetId, debtAssetId).pipe(
       map((data) => {
         const collateralInfo: KensetsuCollateralInfo | null = data.unwrapOr(null);
         if (!collateralInfo) return null;
-        return this.formatCollateral(collateralInfo);
+        return this.formatCollateral(collateralInfo, lockedAssetId, debtAssetId);
       })
     );
   }
@@ -164,12 +214,16 @@ export class KensetsuModule<T> {
    * Usage: statistical information, for instance, Explore page
    */
   async getCollaterals(): Promise<Record<string, Collateral>> {
-    const data = await this.root.api.query.kensetsu.collateralInfos.entries();
+    const data: [StorageKey<[CommonPrimitivesAssetId32, CommonPrimitivesAssetId32]>, Option<KensetsuCollateralInfo>][] =
+      await (this.root.api.query.kensetsu.collateralInfos.entries as any)();
     const infos: Record<string, Collateral> = {};
     data.forEach((item) => {
+      const lockedAssetId = item[0].args[0].code.toString();
+      const debtAssetId = item[0].args[1].code.toString();
+      const key = this.serializeKey(lockedAssetId, debtAssetId);
       const info: KensetsuCollateralInfo | null = item[1].unwrapOr(null);
       if (info) {
-        infos[item[0].args[0].code.toString()] = this.formatCollateral(info);
+        infos[key] = this.formatCollateral(info, lockedAssetId, debtAssetId);
       }
     });
     return infos;
@@ -289,20 +343,23 @@ export class KensetsuModule<T> {
   /**
    * Create a new vault
    *
-   * @param asset Collateral asset
+   * @param lockedAsset Locked asset
+   * @param debtAsset Debt asset
    * @param collateralAmount Amount of collateral asset
    * @param borrowAmount Amount of KUSD which will be borrowed
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
   createVault(
-    asset: Asset | AccountAsset,
+    lockedAsset: Asset | AccountAsset,
+    debtAsset: Asset | AccountAsset,
     collateralAmount: NumberLike,
     borrowAmount: NumberLike,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
 
-    const assetAddress = asset.address;
+    const assetAddress = lockedAsset.address;
+    const asset2Address = debtAsset.address;
     const collateralCodec = new FPNumber(collateralAmount).codec;
     const borrow = new FPNumber(borrowAmount);
 
@@ -310,16 +367,23 @@ export class KensetsuModule<T> {
     const minBorrowAmountCodec = borrow.sub(slippage).codec;
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.kensetsu.createCdp(assetAddress, collateralCodec, minBorrowAmountCodec, borrow.codec),
+      this.root.api.tx.kensetsu.createCdp(
+        assetAddress,
+        collateralCodec,
+        asset2Address,
+        minBorrowAmountCodec,
+        borrow.codec,
+        'Type2'
+      ),
       this.root.account.pair,
       {
         type: Operation.CreateVault,
         amount: `${collateralAmount}`,
         amount2: `${borrowAmount}`,
         assetAddress,
-        symbol: asset.symbol,
-        asset2Address: KUSD.address,
-        symbol2: KUSD.symbol,
+        asset2Address,
+        symbol: lockedAsset.symbol,
+        symbol2: debtAsset.symbol,
       }
     );
   }

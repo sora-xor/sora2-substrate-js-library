@@ -1,6 +1,6 @@
 import { FPNumber, api } from '@sora-substrate/util';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
-import { DAI, XOR } from '@sora-substrate/util/assets/consts';
+import { DAI, KUSD, XOR } from '@sora-substrate/util/assets/consts';
 
 import { withConnectedAccount, delay } from './util';
 
@@ -11,7 +11,10 @@ async function main(): Promise<void> {
     console.info('borrowTax (%)', borrowTax.toLocaleString());
 
     const badDebt = await api.kensetsu.getBadDebt();
-    console.info('badDebt (KUSD)', badDebt.toLocaleString());
+    console.info(
+      'badDebt',
+      Object.entries(badDebt).map(([assetId, value]) => `${assetId}: ${value.toString()}`)
+    );
 
     const cdpCount = await api.kensetsu.getCdpCount();
     console.info('cdpCount', cdpCount);
@@ -28,10 +31,10 @@ async function main(): Promise<void> {
       vaults.map(({ id }) => id)
     );
 
-    const collateral = await api.kensetsu.getCollateral(XOR);
+    const collateral = await api.kensetsu.getCollateral(XOR, KUSD);
     console.info('\n\nCollateral for XOR_______________________');
     console.info('collateral.interestCoefficient', collateral.interestCoefficient.toString());
-    console.info('collateral.kusdSupply (KUSD)', collateral.kusdSupply.toString());
+    console.info('collateral.debtSupply (KUSD)', collateral.debtSupply.toString());
     console.info('collateral.totalLocked (XOR)', collateral.totalLocked.toString());
     console.info('collateral.lastFeeUpdateTime', collateral.lastFeeUpdateTime);
     console.info('collateral.riskParams.hardCap', collateral.riskParams.hardCap.toString());
@@ -75,10 +78,10 @@ async function main(): Promise<void> {
 
     console.info('\n\nVault Creation__________________________');
     console.info(`Network fee: ${FPNumber.fromCodecValue(api.NetworkFee.CreateVault).toString()} XOR`);
-    await api.kensetsu.createVault(DAI, 100, 20);
-    await delay();
-    console.info('History:', api.historyList[0]);
-  }, SORA_ENV.dev);
+    // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
+    // await delay();
+    // console.info('History:', api.historyList[0]);
+  }, SORA_ENV.predev);
 }
 
 main()

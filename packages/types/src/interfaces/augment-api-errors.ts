@@ -1788,16 +1788,18 @@ declare module '@polkadot/api-base/types/errors' {
       CDPUnsafe: AugmentedError<ApiType>;
       CollateralBelowMinimal: AugmentedError<ApiType>;
       CollateralInfoNotFound: AugmentedError<ApiType>;
+      /**
+       * Collateral must be registered in PriceTools.
+       **/
+      CollateralNotRegisteredInPriceTools: AugmentedError<ApiType>;
       HardCapSupply: AugmentedError<ApiType>;
       /**
        * Liquidation limit reached
        **/
       LiquidationLimit: AugmentedError<ApiType>;
       OperationNotPermitted: AugmentedError<ApiType>;
-      /**
-       * Outstanding debt prevents closing CDP
-       **/
-      OutstandingDebt: AugmentedError<ApiType>;
+      StablecoinInfoNotFound: AugmentedError<ApiType>;
+      SymbolNotEnabledByOracle: AugmentedError<ApiType>;
       /**
        * Uncollected stability fee is too small for accrue
        **/
@@ -2398,6 +2400,10 @@ declare module '@polkadot/api-base/types/errors' {
        * This range values is not validy by rules of correct range.
        **/
       RangeValuesIsInvalid: AugmentedError<ApiType>;
+      /**
+       * Restricted Chameleon pool
+       **/
+      RestrictedChameleonPool: AugmentedError<ApiType>;
       /**
        * Some values need to be same, the source amount must be same.
        **/

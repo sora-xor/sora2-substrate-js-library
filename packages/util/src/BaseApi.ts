@@ -191,7 +191,7 @@ export class BaseApi<T = void> extends ApiAccount<T> {
             MAX_TIMESTAMP
           );
         case Operation.CreateVault:
-          return this.api.tx.kensetsu.createCdp('', 0, 0, 0);
+          return this.api.tx.kensetsu.createCdp('', 0, '', 0, 0, 'Type2');
         case Operation.CloseVault:
           return this.api.tx.kensetsu.closeCdp(0);
         case Operation.RepayVaultDebt:

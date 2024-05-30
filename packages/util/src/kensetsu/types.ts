@@ -3,7 +3,7 @@ import type { FPNumber } from '@sora-substrate/math';
 import type { History } from '../types';
 import type { VaultTypes } from './consts';
 
-export type VaultType = typeof VaultTypes[keyof typeof VaultTypes];
+export type VaultType = (typeof VaultTypes)[keyof typeof VaultTypes];
 
 export type Vault = {
   owner?: string;
@@ -28,8 +28,10 @@ type RiskParameters = {
 };
 
 export type Collateral = {
+  lockedAssetId: string;
+  debtAssetId: string;
   riskParams: RiskParameters;
-  kusdSupply: FPNumber;
+  debtSupply: FPNumber;
   totalLocked: FPNumber;
   lastFeeUpdateTime: number;
   interestCoefficient: FPNumber;
