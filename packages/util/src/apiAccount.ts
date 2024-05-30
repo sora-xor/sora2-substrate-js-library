@@ -22,7 +22,6 @@ import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 
-import { XOR } from './assets/consts';
 import { decrypt, encrypt, toHmacSHA256 } from './crypto';
 import { Messages } from './logger';
 import { AccountStorage, Storage } from './storage';
@@ -109,36 +108,56 @@ export class WithConnectionApi {
 
     return encodeAddress(publicKey);
   }
-}
-
-export class WithSigner extends WithConnectionApi {
-  protected signer?: Signer;
 
   /**
-   * Set signer if the pair is locked (For polkadot js extension usage)
-   * @param signer
+   * Validate account address
+   * @param address
    */
-  public setSigner(signer: Signer): void {
-    this.api.setSigner(signer);
-    this.signer = signer;
+  public validateAddress(address: string): boolean {
+    try {
+      base58Decode(address);
+      decodeAddress(address, false);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Get public key as hex string by account address
+   * @param address
+   * @returns
+   */
+  public getPublicKeyByAddress(address: string): string {
+    const publicKey = decodeAddress(address, false);
+
+    return Buffer.from(publicKey).toString('hex');
+  }
+
+  /**
+   * Generate unique string from value
+   * @param value
+   * @returns
+   */
+  public encrypt(value: string): string {
+    return encrypt(value);
+  }
+
+  public decrypt(value: string): string {
+    return decrypt(value);
   }
 }
 
-export class WithAccountPair extends WithSigner {
+export class WithAccountPair extends WithConnectionApi {
   public account?: CreateResult;
+  protected signer?: Signer;
 
   public get accountPair(): KeyringPair | null {
-    if (!this.account) {
-      return null;
-    }
-    return this.account.pair;
+    return this.account?.pair ?? null;
   }
 
   public get accountJson(): KeyringPair$Json | null {
-    if (!this.account) {
-      return null;
-    }
-    return this.account.json;
+    return this.account?.json ?? null;
   }
 
   public get address(): string {
@@ -149,10 +168,19 @@ export class WithAccountPair extends WithSigner {
   }
 
   /**
+   * Set signer if the pair is locked (For polkadot js extension usage)
+   * @param signer
+   */
+  public setSigner(signer: Signer): void {
+    this.api.setSigner(signer);
+    this.signer = signer;
+  }
+
+  /**
    * Set account data
    * @param account
    */
-  public setAccount(account: CreateResult): void {
+  public setAccount(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
     this.account = account;
   }
 
@@ -181,6 +209,11 @@ export class WithAccountPair extends WithSigner {
       options: { signer: this.signer },
     };
   }
+
+  public logout(): void {
+    this.signer = undefined;
+    this.account = undefined;
+  }
 }
 
 export class WithKeyring extends WithAccountPair {
@@ -200,6 +233,42 @@ export class WithKeyring extends WithAccountPair {
       if (!silent) {
         throw error;
       }
+    }
+  }
+
+  /**
+   * Login to account
+   * @param address account address
+   * @param name account name
+   * @param source wallet identity
+   * @param isExternal is account from extension or not
+   */
+  public async loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): Promise<void> {
+    try {
+      const meta = { name: name ?? '' };
+
+      let account!: CreateResult | { pair: KeyringPair; json: null };
+
+      if (isExternal) {
+        account = keyring.addExternal(address, meta);
+      } else {
+        const accounts = this.getAccounts();
+
+        if (!accounts.find((acc) => acc.address === address)) {
+          // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
+          await this.initKeyring(true);
+        }
+
+        account = {
+          pair: this.getAccountPair(address),
+          json: null, // we don't need json here
+        };
+      }
+
+      this.setAccount(account as CreateResult, name, source, isExternal);
+    } catch (error) {
+      console.error(error);
+      this.logout();
     }
   }
 
@@ -325,19 +394,6 @@ export class WithKeyring extends WithAccountPair {
       suri,
     };
   }
-
-  /**
-   * Generate unique string from value
-   * @param value
-   * @returns
-   */
-  public encrypt(value: string): string {
-    return encrypt(value);
-  }
-
-  public decrypt(value: string): string {
-    return decrypt(value);
-  }
 }
 
 export class WithStorage extends WithKeyring {
@@ -350,6 +406,11 @@ export class WithStorage extends WithKeyring {
    */
   public setStorage(storage: Storage): void {
     this.storage = storage;
+  }
+
+  public override logout(): void {
+    super.logout();
+    this.storage?.clear();
   }
 }
 
@@ -365,9 +426,14 @@ export class WithAccountStorage extends WithStorage {
     }
   }
 
-  protected updateAccountData(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
+  public override setAccount(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
     this.setAccount(account);
     this.initAccountStorage();
+  }
+
+  public override logout(): void {
+    super.logout();
+    this.accountStorage = undefined;
   }
 }
 
@@ -475,6 +541,11 @@ export class WithAccountHistory extends WithAccountStorage {
       this.history = {};
     }
   }
+
+  public override logout(): void {
+    super.logout();
+    this.clearHistory();
+  }
 }
 
 export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitExtrinsic<T> {
@@ -483,60 +554,15 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
   /** If `true` you might subscribe on extrinsic statuses (`false` by default) */
   public shouldObservableBeUsed = false;
 
-  /**
-   * Login to account
-   * @param address account address
-   * @param name account name
-   * @param source wallet identity
-   * @param isExternal is account from extension or not
-   */
-  public async loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): Promise<void> {
-    try {
-      const meta = { name: name ?? '' };
-
-      let account!: CreateResult | { pair: KeyringPair; json: null };
-
-      if (isExternal) {
-        account = keyring.addExternal(address, meta);
-      } else {
-        const accounts = this.getAccounts();
-
-        if (!accounts.find((acc) => acc.address === address)) {
-          // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
-          await this.initKeyring(true);
-        }
-
-        account = {
-          pair: this.getAccountPair(address),
-          json: null, // we don't need json here
-        };
-      }
-
-      this.updateAccountData(account as CreateResult, name, source, isExternal);
-    } catch (error) {
-      console.error(error);
-      this.logout();
-    }
-  }
-
-  public logout(): void {
-    this.account = undefined;
-    this.accountStorage = undefined;
-    this.signer = undefined;
-
-    this.clearHistory();
-    this.storage?.clear();
-  }
-
   // prettier-ignore
   public async submitApiExtrinsic( // NOSONAR
     api: ApiPromise,
     extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
+    accountPair: KeyringPair,
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    const nonce = await api.rpc.system.accountNextIndex(signer.address);
+    const nonce = await api.rpc.system.accountNextIndex(accountPair.address);
     const { account, options } = this.getAccountWithOptions();
     assert(account, Messages.connectWallet);
     // Signing the transaction
@@ -548,7 +574,7 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
 
     // history initial params
-    const from = isNotFaucetOperation && signer ? this.address : undefined;
+    const from = isNotFaucetOperation && accountPair ? this.address : undefined;
     const txId = signedTx.hash.toString();
     const id = historyData?.id ?? txId;
     const type = historyData?.type;
@@ -668,11 +694,11 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
 
   public async submitExtrinsic(
     extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
+    accountPair: KeyringPair,
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    return await this.submitApiExtrinsic(this.api, extrinsic, signer, historyData, unsigned);
+    return await this.submitApiExtrinsic(this.api, extrinsic, accountPair, historyData, unsigned);
   }
 
   /**
@@ -680,14 +706,11 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
    * @param extrinsic Extrinsic entity
    * @param decimals (Optional) 18 decimals of SORA network is used by default
    */
-  public async getTransactionFee(
-    extrinsic: SubmittableExtrinsic<'promise'>,
-    decimals = XOR.decimals
-  ): Promise<CodecString> {
+  public async getTransactionFee(extrinsic: SubmittableExtrinsic<'promise'>): Promise<CodecString> {
     try {
       const res = await extrinsic.paymentInfo(mockAccountAddress);
 
-      return new FPNumber(res.partialFee, decimals).toCodecString();
+      return new FPNumber(res.partialFee, this.chainDecimals).toCodecString();
     } catch {
       // extrinsic is not supported in chain
       return '0';
@@ -710,30 +733,5 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
       approved: Boolean(result.judgements.length),
       identity: result.toHuman() as unknown as OriginalIdentity,
     };
-  }
-
-  /**
-   * Validate account address
-   * @param address
-   */
-  public validateAddress(address: string): boolean {
-    try {
-      base58Decode(address);
-      decodeAddress(address, false);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Get public key as hex string by account address
-   * @param address
-   * @returns
-   */
-  public getPublicKeyByAddress(address: string): string {
-    const publicKey = decodeAddress(address, false);
-
-    return Buffer.from(publicKey).toString('hex');
   }
 }
