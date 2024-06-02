@@ -118,12 +118,13 @@ export type NetworkFeesObject = {
 };
 
 export interface History {
-  txId?: string;
+  id?: string;
+  from?: string;
   type: Operation;
+  txId?: string;
   amount?: string;
   symbol?: string;
   assetAddress?: string;
-  id?: string;
   blockId?: string;
   blockHeight?: number;
   to?: string;
@@ -135,7 +136,6 @@ export interface History {
   decimals2?: number;
   startTime?: number;
   endTime?: number;
-  from?: string;
   status?: string;
   errorMessage?: ErrorMessageFields | string;
   liquiditySource?: string;
