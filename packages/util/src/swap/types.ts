@@ -20,6 +20,10 @@ export interface ReceiverHistoryItem {
   assetId: string;
 }
 
+export interface SwapTransferBatchAdditionalData {
+  rates: Array<string>;
+}
+
 export type SwapQuoteData = {
   quote: SwapQuote;
   isAvailable: boolean;

@@ -37,7 +37,7 @@ import { Messages } from '../logger';
 import { Operation } from '../types';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
-import type { SwapTransferBatchData, SwapQuoteData, FilterMode } from './types';
+import type { SwapTransferBatchData, SwapTransferBatchAdditionalData, SwapQuoteData, FilterMode } from './types';
 
 interface SwapResultWithDexId extends SwapResult {
   dexId: DexId;
@@ -781,11 +781,13 @@ export class SwapModule<T> {
    * @param receivers the ordered map, which maps the asset id and dexId being bought to the vector of batch receivers
    * @param inputAsset asset being sold
    * @param maxInputAmount max amount being sold
+   * @param additionalData additional data field
    */
   public executeSwapTransferBatch(
     receivers: Array<SwapTransferBatchData>,
     inputAsset: Asset | AccountAsset,
     maxInputAmount: FPNumber | NumberLike,
+    additionalData: SwapTransferBatchAdditionalData | null = null,
     liquiditySource = LiquiditySourceTypes.Default
   ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
@@ -794,6 +796,7 @@ export class SwapModule<T> {
     const amount = new FPNumber(maxInputAmount, inputAsset.decimals).toCodecString();
     const liquiditySources = liquiditySource ? [liquiditySource] : [];
     const filterMode = liquiditySource === LiquiditySourceTypes.Default ? 'Disabled' : 'AllowSelected';
+    const formattedAdditionalData = JSON.stringify(additionalData);
 
     const data = receivers.map((item) => {
       return {
@@ -806,42 +809,22 @@ export class SwapModule<T> {
         })),
       };
     });
-
-    try {
-      return this.root.submitExtrinsic(
-        this.root.api.tx.liquidityProxy.swapTransferBatch(
-          data,
-          assetAddress,
-          amount,
-          liquiditySources,
-          filterMode,
-          null
-        ),
-        this.root.account.pair,
-        {
-          symbol: inputAsset.symbol,
-          assetAddress,
-          type: Operation.SwapTransferBatch,
-        }
-      );
-    } catch {
-      // TODO: Should be removed in @sora-substrate/util v.1.33.
-      return this.root.submitExtrinsic(
-        (this.root.api.tx.liquidityProxy as any).swapTransferBatch(
-          data,
-          assetAddress,
-          amount,
-          liquiditySources,
-          filterMode
-        ),
-        this.root.account.pair,
-        {
-          symbol: inputAsset.symbol,
-          assetAddress,
-          type: Operation.SwapTransferBatch,
-        }
-      );
-    }
+    return this.root.submitExtrinsic(
+      this.root.api.tx.liquidityProxy.swapTransferBatch(
+        data,
+        assetAddress,
+        amount,
+        liquiditySources,
+        filterMode,
+        formattedAdditionalData
+      ),
+      this.root.account.pair,
+      {
+        symbol: inputAsset.symbol,
+        assetAddress,
+        type: Operation.SwapTransferBatch,
+      }
+    );
   }
 
   private getSourcesAndFilterMode(liquiditySource: LiquiditySourceTypes, allowSelectedSorce: boolean) {
