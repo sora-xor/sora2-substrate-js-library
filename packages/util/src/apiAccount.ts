@@ -22,7 +22,6 @@ import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
 
-import { XOR } from './assets/consts';
 import { decrypt, encrypt, toHmacSHA256 } from './crypto';
 import { Messages } from './logger';
 import { AccountStorage, Storage } from './storage';
@@ -100,7 +99,9 @@ export class WithConnectionApi {
    * Format account address
    * @param withPrefix `true` by default
    */
-  public formatAddress(address: string, withPrefix = true): string {
+  public formatAddress(address?: string, withPrefix = true): string {
+    if (!address) return '';
+
     const publicKey = decodeAddress(address, false);
 
     if (withPrefix) {
@@ -109,10 +110,61 @@ export class WithConnectionApi {
 
     return encodeAddress(publicKey);
   }
+
+  /**
+   * Validate account address
+   * @param address
+   */
+  public validateAddress(address: string): boolean {
+    try {
+      base58Decode(address);
+      decodeAddress(address, false);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Get public key as hex string by account address
+   * @param address
+   * @returns
+   */
+  public getPublicKeyByAddress(address: string): string {
+    const publicKey = decodeAddress(address, false);
+
+    return Buffer.from(publicKey).toString('hex');
+  }
+
+  /**
+   * Generate unique string from value
+   * @param value
+   * @returns
+   */
+  public encrypt(value: string): string {
+    return encrypt(value);
+  }
+
+  public decrypt(value: string): string {
+    return decrypt(value);
+  }
 }
 
-export class WithSigner extends WithConnectionApi {
-  protected signer?: Signer;
+export class WithAccountPair extends WithConnectionApi {
+  public account?: CreateResult;
+  public signer?: Signer;
+
+  public get accountPair(): KeyringPair | null {
+    return this.account?.pair ?? null;
+  }
+
+  public get accountJson(): KeyringPair$Json | null {
+    return this.account?.json ?? null;
+  }
+
+  public get address(): string {
+    return this.formatAddress(this.accountPair?.address);
+  }
 
   /**
    * Set signer if the pair is locked (For polkadot js extension usage)
@@ -122,37 +174,12 @@ export class WithSigner extends WithConnectionApi {
     this.api.setSigner(signer);
     this.signer = signer;
   }
-}
-
-export class WithAccountPair extends WithSigner {
-  public account?: CreateResult;
-
-  public get accountPair(): KeyringPair | null {
-    if (!this.account) {
-      return null;
-    }
-    return this.account.pair;
-  }
-
-  public get accountJson(): KeyringPair$Json | null {
-    if (!this.account) {
-      return null;
-    }
-    return this.account.json;
-  }
-
-  public get address(): string {
-    if (!this.accountPair) {
-      return '';
-    }
-    return this.formatAddress(this.accountPair.address);
-  }
 
   /**
    * Set account data
    * @param account
    */
-  public setAccount(account: CreateResult): void {
+  public setAccount(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
     this.account = account;
   }
 
@@ -160,26 +187,34 @@ export class WithAccountPair extends WithSigner {
    * Unlock pair to sign tx
    * @param password
    */
-  public unlockPair(password: string): void {
-    this.accountPair?.unlock(password);
+  public unlockPair(password: string, pair = this.accountPair): void {
+    pair?.unlock(password);
   }
 
   /**
    * Lock pair
    */
-  public lockPair(): void {
-    if (!this.accountPair?.isLocked) {
-      this.accountPair?.lock();
+  public lockPair(pair = this.accountPair): void {
+    if (!pair?.isLocked) {
+      pair?.lock();
     }
   }
 
-  protected getAccountWithOptions(): AccountWithOptions | { account: undefined; options: {} } {
-    if (!this.accountPair) return { account: undefined, options: {} };
+  protected getAccountWithOptions(
+    pair = this.accountPair,
+    signer = this.signer
+  ): AccountWithOptions | { account: undefined; options: {} } {
+    if (!pair) return { account: undefined, options: {} };
 
     return {
-      account: this.accountPair.isLocked ? this.accountPair.address : this.accountPair,
-      options: { signer: this.signer },
+      account: pair.isLocked ? pair.address : pair,
+      options: { signer },
     };
+  }
+
+  public logout(): void {
+    this.signer = undefined;
+    this.account = undefined;
   }
 }
 
@@ -200,6 +235,42 @@ export class WithKeyring extends WithAccountPair {
       if (!silent) {
         throw error;
       }
+    }
+  }
+
+  /**
+   * Login to account
+   * @param address account address
+   * @param name account name
+   * @param source wallet identity
+   * @param isExternal is account from extension or not
+   */
+  public async loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): Promise<void> {
+    try {
+      const meta = { name: name ?? '' };
+
+      let account!: CreateResult | { pair: KeyringPair; json: null };
+
+      if (isExternal) {
+        account = keyring.addExternal(address, meta);
+      } else {
+        const accounts = this.getAccounts();
+
+        if (!accounts.find((acc) => acc.address === address)) {
+          // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
+          await this.initKeyring(true);
+        }
+
+        account = {
+          pair: this.getAccountPair(address),
+          json: null, // we don't need json here
+        };
+      }
+
+      this.setAccount(account as CreateResult, name, source, isExternal);
+    } catch (error) {
+      console.error(error);
+      this.logout();
     }
   }
 
@@ -325,19 +396,6 @@ export class WithKeyring extends WithAccountPair {
       suri,
     };
   }
-
-  /**
-   * Generate unique string from value
-   * @param value
-   * @returns
-   */
-  public encrypt(value: string): string {
-    return encrypt(value);
-  }
-
-  public decrypt(value: string): string {
-    return decrypt(value);
-  }
 }
 
 export class WithStorage extends WithKeyring {
@@ -350,6 +408,11 @@ export class WithStorage extends WithKeyring {
    */
   public setStorage(storage: Storage): void {
     this.storage = storage;
+  }
+
+  public override logout(): void {
+    super.logout();
+    this.storage?.clear();
   }
 }
 
@@ -365,9 +428,14 @@ export class WithAccountStorage extends WithStorage {
     }
   }
 
-  protected updateAccountData(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
-    this.setAccount(account);
+  public override setAccount(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
+    super.setAccount(account);
     this.initAccountStorage();
+  }
+
+  public override logout(): void {
+    super.logout();
+    this.accountStorage = undefined;
   }
 }
 
@@ -475,7 +543,14 @@ export class WithAccountHistory extends WithAccountStorage {
       this.history = {};
     }
   }
+
+  public override logout(): void {
+    super.logout();
+    this.clearHistory();
+  }
 }
+
+type RequiredHistoryParams = Required<Pick<HistoryItem, 'id' | 'type' | 'from'>>;
 
 export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitExtrinsic<T> {
   /** If `true` it'll be locked during extrinsics submit (`false` by default) */
@@ -483,211 +558,178 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
   /** If `true` you might subscribe on extrinsic statuses (`false` by default) */
   public shouldObservableBeUsed = false;
 
-  /**
-   * Login to account
-   * @param address account address
-   * @param name account name
-   * @param source wallet identity
-   * @param isExternal is account from extension or not
-   */
-  public async loginAccount(address: string, name?: string, source?: string, isExternal?: boolean): Promise<void> {
-    try {
-      const meta = { name: name ?? '' };
-
-      let account!: CreateResult | { pair: KeyringPair; json: null };
-
-      if (isExternal) {
-        account = keyring.addExternal(address, meta);
-      } else {
-        const accounts = this.getAccounts();
-
-        if (!accounts.find((acc) => acc.address === address)) {
-          // [Multiple Tabs] to restore accounts from keyring storage (localStorage)
-          await this.initKeyring(true);
-        }
-
-        account = {
-          pair: this.getAccountPair(address),
-          json: null, // we don't need json here
-        };
-      }
-
-      this.updateAccountData(account as CreateResult, name, source, isExternal);
-    } catch (error) {
-      console.error(error);
-      this.logout();
-    }
-  }
-
-  public logout(): void {
-    this.account = undefined;
-    this.accountStorage = undefined;
-    this.signer = undefined;
-
-    this.clearHistory();
-    this.storage?.clear();
-  }
-
   // prettier-ignore
   public async submitApiExtrinsic( // NOSONAR
     api: ApiPromise,
     extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
+    accountPair: KeyringPair,
+    signer?: Signer,
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    const nonce = await api.rpc.system.accountNextIndex(signer.address);
-    const { account, options } = this.getAccountWithOptions();
-    assert(account, Messages.connectWallet);
     // Signing the transaction
-    const signedTx = unsigned ? extrinsic : await extrinsic.signAsync(account, { ...options, nonce });
-
+    const signedTx = await this.signExtrinsic(api, extrinsic, accountPair, signer, unsigned);
     // we should lock pair, if it's not locked
-    this.shouldPairBeLocked && this.lockPair();
-
-    const isNotFaucetOperation = !historyData || historyData.type !== Operation.Faucet;
-
+    this.shouldPairBeLocked && this.lockPair(accountPair);
     // history initial params
-    const from = isNotFaucetOperation && signer ? this.address : undefined;
+    const from = this.formatAddress(historyData?.from ?? accountPair?.address);
     const txId = signedTx.hash.toString();
     const id = historyData?.id ?? txId;
-    const type = historyData?.type;
+    const type = historyData?.type as Operation;
     const startTime = historyData?.startTime ?? Date.now();
     // history required params for each update
-    const requiredParams = { id, from, type } as HistoryItem;
+    const requiredParams: RequiredHistoryParams = { id, from ,type };
 
     this.saveHistory({ ...historyData, ...requiredParams, txId, startTime });
 
-    const extrinsicFn = async (subscriber?: Subscriber<ExtrinsicEvent>) => {
-      const unsub = await extrinsic
-        .send((result: ISubmittableResult) => {
-          // Status cannot be null
-          const status = first<string>(
-            Object.keys(result.status.toJSON() as object)
-          )?.toLowerCase() as TransactionStatus;
-          const updated: Partial<CombinedHistoryItem> = {};
-          
-
-          updated.status = status;
-
-          if (result.status.isInBlock) {
-            updated.blockId = result.status.asInBlock.toString();
-          } else if (result.status.isFinalized) {
-            updated.endTime = Date.now();
-
-            const txIndex = result.txIndex;
-
-            for (const {
-              phase,
-              event: { data, method, section },
-            } of result.events) {
-              if (!(phase.isApplyExtrinsic && phase.asApplyExtrinsic.toNumber() === txIndex)) continue;
-
-              if (method === 'FeeWithdrawn' && section === 'xorFee') {
-                const [_, soraNetworkFee] = data;
-                updated.soraNetworkFee = soraNetworkFee.toString();
-              } else if (method === 'AssetRegistered' && section === 'assets') {
-                const [assetId, _] = data;
-                updated.assetAddress = ((assetId as CommonPrimitivesAssetId32Override).code ?? assetId).toString();
-              } else if (
-                method === 'Transfer' &&
-                ['balances', 'tokens'].includes(section) &&
-                isLiquidityPoolOperation(type as Operation)
-              ) {
-                // balances.Transfer doesn't have assetId field
-                const [amount] = data.slice().reverse();
-                const amountFormatted = new FPNumber(amount).toString();
-                const history = this.getHistory(id);
-                // events for 1st token and 2nd token are ordered in extrinsic
-                const amountKey = history && 'amount' in history ? 'amount' : 'amount2';
-                updated[amountKey] = amountFormatted;
-              } else if (
-                (method === 'RequestRegistered' && isEthOperation(type as Operation)) ||
-                (method === 'RequestStatusUpdate' &&
-                  (isEvmOperation(type as Operation) || isSubstrateOperation(type as Operation)))
-              ) {
-                updated.hash = first(data.toJSON() as any);
-              } else if (method === 'CDPCreated' && section === 'kensetsu') {
-                updated.vaultId = first(data.toJSON() as any);
-              } else if (method === 'ExtrinsicFailed' && section === 'system') {
-                updated.status = TransactionStatus.Error;
-                updated.endTime = Date.now();
-
-                const error = data[0] as any;
-                if (error.isModule) {
-                  const decoded = this.api.registry.findMetaError(error.asModule);
-                  const { docs, section, name } = decoded;
-                  updated.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
-                } else {
-                  // Other, CannotLookup, BadOrigin, no extra info
-                  updated.errorMessage = error.toString();
-                }
-              }
-            }
-          }
-
-          this.saveHistory({ ...requiredParams, ...updated }); // Save history during each status update
-          // HistoryItem should appear here
-          subscriber?.next([status, this.getHistory(id) as HistoryItem]); // NOSONAR
-
-          if (result.status.isFinalized) {
-            subscriber?.complete();
-            unsub();
-          }
-        })
-        .catch((e: Error) => {
-          const errorParts = e?.message?.split(':');
-          const errorInfo = last(errorParts)?.trim();
-          const status = TransactionStatus.Error;
-          const updated: any = {};
-
-          updated.status = status;
-          updated.endTime = Date.now();
-          updated.errorMessage = errorInfo;
-
-          // save history and then delete 'txId'
-          this.saveHistory(
-            { ...requiredParams, ...updated },
-            {
-              wasNotGenerated: true,
-            }
-          );
-          // HistoryItem should appear here
-          subscriber?.next([status, this.getHistory(id) as HistoryItem]); // NOSONAR
-          subscriber?.complete();
-          throw new Error(errorInfo);
-        });
-    };
     if (this.shouldObservableBeUsed) {
       return new Observable<ExtrinsicEvent>((subscriber) => {
-        extrinsicFn(subscriber);
+        this.sendExtrinsic(extrinsic, requiredParams, subscriber);
       }) as unknown as T; // T is `Observable<ExtrinsicEvent>` here
     }
-    return extrinsicFn() as unknown as Promise<T>; // T is `void` here
+
+    return this.sendExtrinsic(extrinsic, requiredParams) as unknown as Promise<T>; // T is `void` here
   }
 
   public async submitExtrinsic(
     extrinsic: SubmittableExtrinsic<'promise'>,
-    signer: KeyringPair,
+    accountPair: KeyringPair,
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    return await this.submitApiExtrinsic(this.api, extrinsic, signer, historyData, unsigned);
+    return await this.submitApiExtrinsic(this.api, extrinsic, accountPair, this.signer, historyData, unsigned);
+  }
+
+  public async signExtrinsic(
+    api: ApiPromise,
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    accountPair: KeyringPair,
+    signer?: Signer,
+    unsigned = false
+  ) {
+    if (unsigned) return extrinsic;
+
+    const { account, options } = this.getAccountWithOptions(accountPair, signer);
+
+    assert(account, Messages.connectWallet);
+
+    const nonce = await api.rpc.system.accountNextIndex(accountPair.address);
+
+    return await extrinsic.signAsync(account, { ...options, nonce });
+  }
+
+  public async sendExtrinsic(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    requiredParams: RequiredHistoryParams,
+    subscriber?: Subscriber<ExtrinsicEvent>
+  ): Promise<void> {
+    const { id, type } = requiredParams;
+
+    const unsub = await extrinsic
+      .send((result: ISubmittableResult) => {
+        // Status cannot be null
+        const status = first<string>(Object.keys(result.status.toJSON() as object))?.toLowerCase() as TransactionStatus;
+        const updated: Partial<CombinedHistoryItem> = {};
+
+        updated.status = status;
+
+        if (result.status.isInBlock) {
+          updated.blockId = result.status.asInBlock.toString();
+        } else if (result.status.isFinalized) {
+          updated.endTime = Date.now();
+
+          const txIndex = result.txIndex;
+
+          for (const {
+            phase,
+            event: { data, method, section },
+          } of result.events) {
+            if (!(phase.isApplyExtrinsic && phase.asApplyExtrinsic.toNumber() === txIndex)) continue;
+
+            if (method === 'FeeWithdrawn' && section === 'xorFee') {
+              const [_, soraNetworkFee] = data;
+              updated.soraNetworkFee = soraNetworkFee.toString();
+            } else if (method === 'AssetRegistered' && section === 'assets') {
+              const [assetId, _] = data;
+              updated.assetAddress = ((assetId as CommonPrimitivesAssetId32Override).code ?? assetId).toString();
+            } else if (
+              method === 'Transfer' &&
+              ['balances', 'tokens'].includes(section) &&
+              isLiquidityPoolOperation(type)
+            ) {
+              // balances.Transfer doesn't have assetId field
+              const [amount] = data.slice().reverse();
+              const amountFormatted = new FPNumber(amount).toString();
+              const history = this.getHistory(id as string);
+              // events for 1st token and 2nd token are ordered in extrinsic
+              const amountKey = history && 'amount' in history ? 'amount' : 'amount2';
+              updated[amountKey] = amountFormatted;
+            } else if (
+              (method === 'RequestRegistered' && isEthOperation(type)) ||
+              (method === 'RequestStatusUpdate' && (isEvmOperation(type) || isSubstrateOperation(type)))
+            ) {
+              updated.hash = first(data.toJSON() as any);
+            } else if (method === 'CDPCreated' && section === 'kensetsu') {
+              updated.vaultId = first(data.toJSON() as any);
+            } else if (method === 'ExtrinsicFailed' && section === 'system') {
+              updated.status = TransactionStatus.Error;
+              updated.endTime = Date.now();
+
+              const error = data[0] as any;
+              if (error.isModule) {
+                const decoded = this.api.registry.findMetaError(error.asModule);
+                const { docs, section, name } = decoded;
+                updated.errorMessage = section && name ? { name, section } : docs.join(' ').trim();
+              } else {
+                // Other, CannotLookup, BadOrigin, no extra info
+                updated.errorMessage = error.toString();
+              }
+            }
+          }
+        }
+
+        this.saveHistory({ ...requiredParams, ...updated }); // Save history during each status update
+        // HistoryItem should appear here
+        subscriber?.next([status, this.getHistory(id as string) as HistoryItem]); // NOSONAR
+
+        if (result.status.isFinalized) {
+          subscriber?.complete();
+          unsub();
+        }
+      })
+      .catch((e: Error) => {
+        const errorParts = e?.message?.split(':');
+        const errorInfo = last(errorParts)?.trim();
+        const status = TransactionStatus.Error;
+        const updated: Partial<CombinedHistoryItem> = {};
+
+        updated.status = status;
+        updated.endTime = Date.now();
+        updated.errorMessage = errorInfo;
+
+        // save history and then delete 'txId'
+        this.saveHistory(
+          { ...requiredParams, ...updated },
+          {
+            wasNotGenerated: true,
+          }
+        );
+        // HistoryItem should appear here
+        subscriber?.next([status, this.getHistory(id as string) as HistoryItem]); // NOSONAR
+        subscriber?.complete();
+        throw new Error(errorInfo);
+      });
   }
 
   /**
    * Calc network fee for the extrinsic based on paymentInfo
    * @param extrinsic Extrinsic entity
-   * @param decimals (Optional) 18 decimals of SORA network is used by default
    */
-  public async getTransactionFee(
-    extrinsic: SubmittableExtrinsic<'promise'>,
-    decimals = XOR.decimals
-  ): Promise<CodecString> {
+  public async getTransactionFee(extrinsic: SubmittableExtrinsic<'promise'>): Promise<CodecString> {
     try {
       const res = await extrinsic.paymentInfo(mockAccountAddress);
 
-      return new FPNumber(res.partialFee, decimals).toCodecString();
+      return new FPNumber(res.partialFee, this.chainDecimals).toCodecString();
     } catch {
       // extrinsic is not supported in chain
       return '0';
@@ -710,30 +752,5 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
       approved: Boolean(result.judgements.length),
       identity: result.toHuman() as unknown as OriginalIdentity,
     };
-  }
-
-  /**
-   * Validate account address
-   * @param address
-   */
-  public validateAddress(address: string): boolean {
-    try {
-      base58Decode(address);
-      decodeAddress(address, false);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Get public key as hex string by account address
-   * @param address
-   * @returns
-   */
-  public getPublicKeyByAddress(address: string): string {
-    const publicKey = decodeAddress(address, false);
-
-    return Buffer.from(publicKey).toString('hex');
   }
 }

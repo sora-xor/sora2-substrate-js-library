@@ -79,15 +79,6 @@ export class Api<T = void> extends BaseApi<T> {
     this.bridgeProxy.setSigner(signer);
   }
 
-  /**
-   * Set account data
-   * @param account
-   */
-  public override setAccount(account: CreateResult): void {
-    super.setAccount(account);
-    this.bridgeProxy.setAccount(account);
-  }
-
   public async restoreActiveAccount(): Promise<void> {
     const address = this.storage?.get('address');
 
@@ -117,13 +108,9 @@ export class Api<T = void> extends BaseApi<T> {
     await Promise.allSettled([this.dex.update(), this.swap.update()]);
   }
 
-  protected override updateAccountData(
-    account: CreateResult,
-    name?: string,
-    source?: string,
-    isExternal?: boolean
-  ): void {
-    super.updateAccountData(account);
+  public override setAccount(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
+    super.setAccount(account);
+    this.bridgeProxy.setAccount(account);
 
     if (this.storage) {
       const soraAddress = this.formatAddress(account.pair.address);
@@ -144,7 +131,7 @@ export class Api<T = void> extends BaseApi<T> {
    */
   public importAccount(suri: string, name: string, password: string): void {
     const account = this.addAccount(suri, name, password);
-    this.updateAccountData(account, name);
+    this.setAccount(account, name);
   }
 
   /**
