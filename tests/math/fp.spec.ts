@@ -258,7 +258,7 @@ describe('FPNumber', () => {
     [BigNumber.ROUND_HALF_UP, '1.2345', 2, '1.23'],
     [BigNumber.ROUND_HALF_DOWN, '1.2345', 2, '1.23'],
     [BigNumber.ROUND_HALF_EVEN, '1.2355', 2, '1.24'],
-    [BigNumber.ROUND_HALF_CEIL, '1.2345', 2, '1.24'],
+    [BigNumber.ROUND_HALF_CEIL, '1.2345', 2, '1.23'],
     [BigNumber.ROUND_HALF_FLOOR, '1.2345', 2, '1.23'],
   ])('rounding %s with mode %i should result in %s', (mode, value, decimals, expected) => {
     const instance = new FPNumber(new BigNumber(value), 6);
