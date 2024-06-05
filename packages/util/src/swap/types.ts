@@ -20,11 +20,8 @@ export interface ReceiverHistoryItem {
   assetId: string;
 }
 
-export type Rate = string;
-
-// rates - array of price of a batch's token in dollars at the time of the transaction
 export interface SwapTransferBatchAdditionalData {
-  rates: Array<Rate>;
+  rates: Array<string>; // rates - array of price of a batch's token in dollars at the time of the transaction
 }
 
 export type SwapQuoteData = {
