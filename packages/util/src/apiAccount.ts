@@ -3,7 +3,7 @@ import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { Keyring } from '@polkadot/ui-keyring';
 import { assert, isHex } from '@polkadot/util';
-import { Observable, Subscriber } from 'rxjs';
+import { Observable, Subscriber, Subject } from 'rxjs';
 import {
   base58Decode,
   decodeAddress,
@@ -17,7 +17,7 @@ import type { KeypairType } from '@polkadot/util-crypto/types';
 import { FPNumber, CodecString } from '@sora-substrate/math';
 import type { Connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
-import type { CreateResult } from '@polkadot/ui-keyring/types';
+import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';
 import type { KeyringPair, KeyringPair$Json, KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Signer, ISubmittableResult } from '@polkadot/types/types';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
@@ -222,6 +222,14 @@ export class WithKeyring extends WithAccountPair {
   public readonly seedLength = 12;
   public readonly type: KeypairType = KeyringType;
 
+  private accountsSubject = new Subject<KeyringAddress[]>();
+
+  public accountsObservable = this.accountsSubject.asObservable();
+
+  protected emitAccountsUpdate() {
+    this.accountsSubject.next(this.getAccounts());
+  }
+
   public async initKeyring(silent = false): Promise<void> {
     keyring = new Keyring();
 
@@ -312,6 +320,7 @@ export class WithKeyring extends WithAccountPair {
    */
   public addAccountPair(pair: KeyringPair, password: string): void {
     keyring.addPair(pair, password);
+    this.emitAccountsUpdate();
   }
 
   /**
@@ -332,6 +341,7 @@ export class WithKeyring extends WithAccountPair {
    */
   public restoreAccountFromJson(json: KeyringPair$Json, password: string): { address: string; name: string } {
     const pair = keyring.restoreAccount(json, password);
+    this.emitAccountsUpdate();
     return { address: pair.address, name: (pair.meta?.name ?? '') as string };
   }
 
@@ -355,6 +365,7 @@ export class WithKeyring extends WithAccountPair {
     const pair = this.getAccountPair(address);
 
     keyring.saveAccountMeta(pair, { ...pair.meta, name });
+    this.emitAccountsUpdate();
   }
 
   /**
@@ -376,6 +387,7 @@ export class WithKeyring extends WithAccountPair {
       throw new Error('Old password is invalid');
     }
     keyring.encryptAccount(pair, newPassword);
+    this.emitAccountsUpdate();
   }
 
   /**
@@ -385,7 +397,9 @@ export class WithKeyring extends WithAccountPair {
    * @param password Password which will be set for the account
    */
   public addAccount(suri: string, name: string, password: string): CreateResult {
-    return keyring.addUri(suri, password, { name }, this.type);
+    const account = keyring.addUri(suri, password, { name }, this.type);
+    this.emitAccountsUpdate();
+    return account;
   }
 
   /**
@@ -408,6 +422,7 @@ export class WithKeyring extends WithAccountPair {
       const defaultAddress = this.formatAddress(address, false);
       keyring.forgetAccount(defaultAddress);
       keyring.forgetAddress(defaultAddress);
+      this.emitAccountsUpdate();
     }
   }
 
