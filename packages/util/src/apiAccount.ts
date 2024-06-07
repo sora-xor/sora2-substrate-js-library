@@ -47,7 +47,7 @@ export const KeyringType = 'sr25519';
 
 export const SoraPrefix = 69;
 
-export let keyring!: Keyring;
+let keyring!: Keyring;
 
 export const isLiquidityPoolOperation = (operation: Operation) =>
   [Operation.AddLiquidity, Operation.RemoveLiquidity].includes(operation);
@@ -347,6 +347,38 @@ export class WithKeyring extends WithAccountPair {
   }
 
   /**
+   * Change the account name
+   * @param address account address
+   * @param name New name
+   */
+  public changeAccountName(address: string, name: string): void {
+    const pair = this.getAccountPair(address);
+
+    keyring.saveAccountMeta(pair, { ...pair.meta, name });
+  }
+
+  /**
+   * Change the account password.
+   * It generates an error if `oldPassword` is invalid
+   * @param oldPassword
+   * @param newPassword
+   */
+  public changeAccountPassword(oldPassword: string, newPassword: string): void {
+    assert(this.accountPair, Messages.connectWallet);
+
+    const pair = this.accountPair;
+    try {
+      if (!pair.isLocked) {
+        pair.lock();
+      }
+      pair.decodePkcs8(oldPassword);
+    } catch (error) {
+      throw new Error('Old password is invalid');
+    }
+    keyring.encryptAccount(pair, newPassword);
+  }
+
+  /**
    * Import account using credentials
    * @param suri Seed of the account
    * @param name Name of the account
@@ -354,6 +386,17 @@ export class WithKeyring extends WithAccountPair {
    */
   public addAccount(suri: string, name: string, password: string): CreateResult {
     return keyring.addUri(suri, password, { name }, this.type);
+  }
+
+  /**
+   * Import account & login
+   * @param suri Seed of the account
+   * @param name Name of the account
+   * @param password Password which will be set for the account
+   */
+  public importAccount(suri: string, name: string, password: string): void {
+    const account = this.addAccount(suri, name, password);
+    this.setAccount(account, name);
   }
 
   /**
