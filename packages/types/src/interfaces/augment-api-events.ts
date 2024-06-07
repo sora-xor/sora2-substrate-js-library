@@ -981,6 +981,16 @@ declare module '@polkadot/api-base/types/events' {
        **/
       XykInitialized: AugmentedEvent<ApiType, [pricesAchieved: Vec<QaToolsPalletToolsPoolXykAssetPairInput>], { pricesAchieved: Vec<QaToolsPalletToolsPoolXykAssetPairInput> }>;
     };
+    regulatedAssets: {
+      /**
+       * Emits When an asset is regulated
+       **/
+      AssetRegulated: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32], { assetId: CommonPrimitivesAssetId32 }>;
+      /**
+       * Emits When an SBT is issued
+       **/
+      SoulboundTokenIssued: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32, owner: AccountId32, allowedAssets: Vec<CommonPrimitivesAssetId32>], { assetId: CommonPrimitivesAssetId32, owner: AccountId32, allowedAssets: Vec<CommonPrimitivesAssetId32> }>;
+    };
     rewards: {
       /**
        * The account has claimed their rewards. [account]
