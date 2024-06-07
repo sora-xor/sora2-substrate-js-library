@@ -1,4 +1,3 @@
-import { assert } from '@polkadot/util';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import { connection } from '@sora-substrate/connection';
 import type { Connection } from '@sora-substrate/connection';
@@ -6,8 +5,6 @@ import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
 import { BaseApi } from './BaseApi';
-import { keyring } from './apiAccount';
-import { Messages } from './logger';
 import { BridgeProxyModule } from './bridgeProxy';
 import { SwapModule } from './swap';
 import { RewardsModule } from './rewards';
@@ -124,53 +121,15 @@ export class Api<T = void> extends BaseApi<T> {
   }
 
   /**
-   * Import account & login
-   * @param suri Seed of the account
-   * @param name Name of the account
-   * @param password Password which will be set for the account
-   */
-  public importAccount(suri: string, name: string, password: string): void {
-    const account = this.addAccount(suri, name, password);
-    this.setAccount(account, name);
-  }
-
-  /**
-   * Change the account password.
-   * It generates an error if `oldPassword` is invalid
-   * @param oldPassword
-   * @param newPassword
-   */
-  public changeAccountPassword(oldPassword: string, newPassword: string): void {
-    assert(this.accountPair, Messages.connectWallet);
-
-    const pair = this.accountPair;
-    try {
-      if (!pair.isLocked) {
-        pair.lock();
-      }
-      pair.decodePkcs8(oldPassword);
-    } catch (error) {
-      throw new Error('Old password is invalid');
-    }
-    keyring.encryptAccount(pair, newPassword);
-
-    if (this.storage) {
-      this.storage.set('password', this.encrypt(newPassword));
-    }
-  }
-
-  /**
    * Change the account name
    * TODO: check it, polkadot-js extension doesn't change account name
    * @param address account address
    * @param name New name
    */
-  public changeAccountName(address: string, name: string): void {
-    const pair = this.getAccountPair(address);
+  public override changeAccountName(address: string, name: string): void {
+    super.changeAccountName(address, name);
 
-    keyring.saveAccountMeta(pair, { ...pair.meta, name });
-
-    if (this.storage && this.accountPair && pair.address === this.accountPair.address) {
+    if (this.storage && this.accountPair && this.formatAddress(address, false) === this.accountPair.address) {
       this.storage.set('name', name);
     }
   }
