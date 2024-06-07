@@ -448,11 +448,20 @@ export class FPNumber {
 
   /**
    * Returns a new `FPNumber` instance with the specified number of decimal places.
-   * @param dp The number of decimal places to round the value to. Defaults to the precision of the current `FPNumber` instance.
-   * @returns A new `FPNumber` instance with the specified number of decimal places.
+   * @param {number} [dp=precision] Decimal places
+   * @param {number} [roundMode=FPNumber.DEFAULT_ROUND_MODE] Decimal places
+   * `0` Rounds away from zero
+   * `1` Rounds towards zero
+   * `2` Rounds towards Infinity
+   * `3` Rounds towards -Infinity
+   * `4` Rounds towards nearest neighbour. If equidistant, rounds away from zero
+   * `5` Rounds towards nearest neighbour. If equidistant, rounds towards zero
+   * `6` Rounds towards nearest neighbour. If equidistant, rounds towards even neighbour
+   * `7` Rounds towards nearest neighbour. If equidistant, rounds towards Infinity
+   * `8` Rounds towards nearest neighbour. If equidistant, rounds towards -Infinity
    */
-  public dp(dp: number = this.precision): FPNumber {
-    const newValue = this.value.dp(dp, FPNumber.DEFAULT_ROUND_MODE);
+  public dp(dp: number = this.precision, roundMode: BigNumber.RoundingMode = FPNumber.DEFAULT_ROUND_MODE): FPNumber {
+    const newValue = this.value.dp(dp, roundMode);
     return new FPNumber(newValue, dp);
   }
 

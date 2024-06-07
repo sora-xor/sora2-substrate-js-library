@@ -2434,6 +2434,29 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       unreserve: AugmentedSubmittable<(balance: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
     };
+    regulatedAssets: {
+      /**
+       * Issues a new Soulbound Token (SBT).
+       * 
+       * ## Parameters
+       * 
+       * - `origin`: The origin of the transaction.
+       * - `symbol`: The symbol of the SBT which should represent string with only uppercase latin chars with max length of 7.
+       * - `name`: The name of the SBT should represent string with only uppercase or lowercase latin chars or numbers or spaces, with max length of 33.
+       * - `allowed_assets`: TThe list of assets allowed to be operated with by holding the SBT.
+       * - `description`: The description of the SBT. (Optional)
+       **/
+      issueSbt: AugmentedSubmittable<(symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, allowedAssets: Vec<CommonPrimitivesAssetId32> | (CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array)[], description: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Vec<CommonPrimitivesAssetId32>, Option<Bytes>]>;
+      /**
+       * Marks an asset as regulated, representing that the asset will only operate between KYC-verified wallets.
+       * 
+       * ## Parameters
+       * 
+       * - `origin`: The origin of the transaction.
+       * - `asset_id`: The identifier of the asset.
+       **/
+      regulateAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+    };
     rewards: {
       /**
        * Finalize the update of unclaimed VAL data in storage
