@@ -20,6 +20,10 @@ export enum KnownSymbols {
   TBCD = 'TBCD',
   KEN = 'KEN',
   KUSD = 'KUSD',
+  KGOLD = 'KGOLD',
+  KXOR = 'KXOR',
+  SB = 'SB',
+  KARMA = 'KARMA',
 }
 
 const ZERO_STR = '0';
@@ -125,6 +129,34 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
   },
+  {
+    address: '0x02000d0000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.KGOLD,
+    name: 'Kensetsu Gold',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
+  },
+  {
+    address: '0x02000e0000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.KXOR,
+    name: 'Kensetsu XOR',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
+  },
+  {
+    address: '0x02000f0000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.SB,
+    name: 'Sora Builders',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
+  },
+  {
+    address: '0x0200100000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.KARMA,
+    name: 'Chameleon',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
+  },
 ]);
 
 export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
@@ -155,3 +187,7 @@ export const XST = KnownAssets.get(KnownSymbols.XST);
 export const TBCD = KnownAssets.get(KnownSymbols.TBCD);
 export const KEN = KnownAssets.get(KnownSymbols.KEN);
 export const KUSD = KnownAssets.get(KnownSymbols.KUSD);
+export const KGOLD = KnownAssets.get(KnownSymbols.KGOLD);
+export const KXOR = KnownAssets.get(KnownSymbols.KXOR);
+export const SB = KnownAssets.get(KnownSymbols.SB);
+export const KARMA = KnownAssets.get(KnownSymbols.KARMA);
