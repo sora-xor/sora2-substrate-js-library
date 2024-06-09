@@ -1,14 +1,9 @@
 import { map } from 'rxjs';
 import { assert } from '@polkadot/util';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
-import type {
-  KensetsuCollateralInfo,
-  KensetsuCollateralizedDebtPosition,
-  CommonPrimitivesAssetId32,
-} from '@polkadot/types/lookup';
+import type { KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
-import type { Vec, u128, Option } from '@polkadot/types-codec';
-import type { StorageKey } from '@polkadot/types';
+import type { Vec, u128 } from '@polkadot/types-codec';
 
 import { Messages } from '../logger';
 import { Operation } from '../types';
@@ -114,7 +109,7 @@ export class KensetsuModule<T> {
   /**
    * Usage: general system parameters, debt calculation, statistical information
    *
-   * Returns the tax for borrowing KUSD in %
+   * Returns the tax for borrowing stablecoin in %
    */
   async getBorrowTax(): Promise<number> {
     const borrowTax = await this.root.api.query.kensetsu.borrowTax();
@@ -122,10 +117,40 @@ export class KensetsuModule<T> {
   }
 
   /**
-   * Returns the subscription on the tax for borrowing KUSD in %
+   * Returns the subscription on the tax for borrowing stablecoin in %
    */
   subscribeOnBorrowTax(): Observable<number> {
     return this.root.apiRx.query.kensetsu.borrowTax().pipe(map((res) => res.toNumber()));
+  }
+
+  /**
+   * Returns the TBCD tax in %
+   */
+  async getTbcdBorrowTax(): Promise<number> {
+    const borrowTax = await this.root.api.query.kensetsu.tbcdBorrowTax();
+    return borrowTax.toNumber();
+  }
+
+  /**
+   * Returns the subscription on the TBCD tax in %
+   */
+  subscribeOnTbcdBorrowTax(): Observable<number> {
+    return this.root.apiRx.query.kensetsu.tbcdBorrowTax().pipe(map((res) => res.toNumber()));
+  }
+
+  /**
+   * Returns the KARMA tax in %
+   */
+  async getKarmaBorrowTax(): Promise<number> {
+    const borrowTax = await this.root.api.query.kensetsu.karmaBorrowTax();
+    return borrowTax.toNumber();
+  }
+
+  /**
+   * Returns the subscription on the KARMA tax in %
+   */
+  subscribeOnKarmaBorrowTax(): Observable<number> {
+    return this.root.apiRx.query.kensetsu.karmaBorrowTax().pipe(map((res) => res.toNumber()));
   }
 
   // update_collateral_interest_coefficient
@@ -190,43 +215,43 @@ export class KensetsuModule<T> {
    * Usage: statistical information, for instance, Explore page
    */
   async getCollateral(lockedAsset: Asset, debtAsset: Asset): Promise<Collateral | null> {
-    const lockedAssetId = lockedAsset.address;
-    const debtAssetId = debtAsset.address;
-    const data = await this.root.api.query.kensetsu.collateralInfos(lockedAssetId, debtAssetId);
+    const collateralAssetId = lockedAsset.address;
+    const stablecoinAssetId = debtAsset.address;
+    const data = await this.root.api.query.kensetsu.collateralInfos({ collateralAssetId, stablecoinAssetId });
     const collateralInfo: KensetsuCollateralInfo | null = data.unwrapOr(null);
     if (!collateralInfo) return null;
-    return this.formatCollateral(collateralInfo, lockedAssetId, debtAssetId);
+    return this.formatCollateral(collateralInfo, collateralAssetId, stablecoinAssetId);
   }
 
   subscribeOnCollateral(lockedAsset: Asset, debtAsset: Asset): Observable<Collateral | null> {
-    const lockedAssetId = lockedAsset.address;
-    const debtAssetId = debtAsset.address;
-    return this.root.apiRx.query.kensetsu.collateralInfos(lockedAssetId, debtAssetId).pipe(
+    const collateralAssetId = lockedAsset.address;
+    const stablecoinAssetId = debtAsset.address;
+    return this.root.apiRx.query.kensetsu.collateralInfos({ collateralAssetId, stablecoinAssetId }).pipe(
       map((data) => {
         const collateralInfo: KensetsuCollateralInfo | null = data.unwrapOr(null);
         if (!collateralInfo) return null;
-        return this.formatCollateral(collateralInfo, lockedAssetId, debtAssetId);
+        return this.formatCollateral(collateralInfo, collateralAssetId, stablecoinAssetId);
       })
     );
   }
 
   /**
-   * Usage: statistical information, for instance, Explore page
+   * Usage: statistical information & positions management
    */
   async getCollaterals(): Promise<Record<string, Collateral>> {
-    const data: [StorageKey<[CommonPrimitivesAssetId32, CommonPrimitivesAssetId32]>, Option<KensetsuCollateralInfo>][] =
-      await (this.root.api.query.kensetsu.collateralInfos.entries as any)();
-    const infos: Record<string, Collateral> = {};
-    data.forEach((item) => {
-      const lockedAssetId = item[0].args[0].code.toString();
-      const debtAssetId = item[0].args[1].code.toString();
+    const data = await this.root.api.query.kensetsu.collateralInfos.entries();
+
+    return data.reduce<Record<string, Collateral>>((acc, item) => {
+      const id = item[0].args[0];
+      const lockedAssetId = id.collateralAssetId.code.toString();
+      const debtAssetId = id.stablecoinAssetId.code.toString();
       const key = this.serializeKey(lockedAssetId, debtAssetId);
       const info: KensetsuCollateralInfo | null = item[1].unwrapOr(null);
       if (info) {
-        infos[key] = this.formatCollateral(info, lockedAssetId, debtAssetId);
+        acc[key] = this.formatCollateral(info, lockedAssetId, debtAssetId);
       }
-    });
-    return infos;
+      return acc;
+    }, {});
   }
 
   private formatVault(data: KensetsuCollateralizedDebtPosition, id: number): Vault {
