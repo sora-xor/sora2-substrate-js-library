@@ -33,7 +33,7 @@
     "clean": "polkadot-dev-clean-build",
     "demo": "node -r ts-node/register -r tsconfig-paths/register demo.ts",
     "example": "wrap () { node -r ts-node/register -r tsconfig-paths/register scripts/examples/\"$*\".ts; }; wrap",
-    "export-types:all": "yarn export-types:prod && yarn export-types:stage && yarn export-types:test && yarn export-types:dev",
+    "export-types:all": "yarn export-types:prod && yarn export-types:stage && yarn export-types:test && yarn export-types:dev && yarn build",
     "export-types:dev": "yarn build:interfaces:dev && ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts dev",
     "export-types:test": "yarn build:interfaces:test && ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts test",
     "export-types:stage": "yarn build:interfaces:stage && ts-node --project ./tsconfig.json packages/types/scripts/exportTypesJson.ts stage",
