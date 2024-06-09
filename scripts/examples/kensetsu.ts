@@ -9,6 +9,10 @@ async function main(): Promise<void> {
     console.info('\n\nKensetsu Stats____________________________');
     const borrowTax = await api.kensetsu.getBorrowTax();
     console.info('borrowTax (%)', borrowTax.toLocaleString());
+    const tbcdBorrowTax = await api.kensetsu.getTbcdBorrowTax();
+    console.info('tbcdBorrowTax (%)', tbcdBorrowTax.toLocaleString());
+    const karmaBorrowTax = await api.kensetsu.getKarmaBorrowTax();
+    console.info('karmaBorrowTax (%)', karmaBorrowTax.toLocaleString());
 
     const badDebt = await api.kensetsu.getBadDebt();
     console.info(
