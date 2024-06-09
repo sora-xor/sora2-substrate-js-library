@@ -154,6 +154,10 @@ export default {
         'TBCD',
         'KEN',
         'KUSD',
+        'KGOLD',
+        'KXOR',
+        'SB',
+        'KARMA',
       ],
     },
     RewardInfo: {
