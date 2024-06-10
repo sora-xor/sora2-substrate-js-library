@@ -1,8 +1,7 @@
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { assert } from '@polkadot/util';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
-import type { Observable } from '@polkadot/types/types';
 import type { Vec, u128 } from '@polkadot/types-codec';
 
 import { Messages } from '../logger';
@@ -22,8 +21,8 @@ export class KensetsuModule<T> {
    * Bad debt in KUSD
    */
   async getBadDebt(): Promise<FPNumber> {
-    const badDebt = await this.root.api.query.kensetsu.badDebt();
-    return new FPNumber(badDebt);
+    // [MOCK]
+    return FPNumber.ZERO;
   }
 
   /**
@@ -32,7 +31,10 @@ export class KensetsuModule<T> {
    * Bad debt in KUSD
    */
   subscribeOnBadDebt(): Observable<FPNumber> {
-    return this.root.apiRx.query.kensetsu.badDebt().pipe(map((res) => new FPNumber(res)));
+    // [MOCK]
+    return new Observable((subscriber) => {
+      subscriber.next(FPNumber.ZERO);
+    });
   }
 
   /**

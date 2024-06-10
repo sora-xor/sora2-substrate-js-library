@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, Bytes, Compact, Option, Result, Text, U256, U8aFixed, Vec, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesGenericAccount, BridgeTypesGenericAssetId, BridgeTypesGenericBalance, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuCollateralRiskParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, QaToolsInputAssetId, QaToolsPalletToolsMcbcBaseSupply, QaToolsPalletToolsMcbcOtherCollateralInput, QaToolsPalletToolsMcbcTbcdCollateralInput, QaToolsPalletToolsOrderBookFillInput, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstBaseInput, QaToolsPalletToolsXstSyntheticInput, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesGenericAccount, BridgeTypesGenericAssetId, BridgeTypesGenericBalance, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, QaToolsInputAssetId, QaToolsPalletToolsMcbcBaseSupply, QaToolsPalletToolsMcbcOtherCollateralInput, QaToolsPalletToolsMcbcTbcdCollateralInput, QaToolsPalletToolsOrderBookFillInput, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstBaseInput, QaToolsPalletToolsXstSyntheticInput, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -1780,6 +1780,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * 
        * - `origin`: The origin of the transaction, only CDP owner is allowed.
        * - `cdp_id`: The ID of the CDP to be closed.
+       * will be transferred.
        **/
       closeCdp: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
       /**
@@ -1796,7 +1797,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `borrow_amount_min`: The minimum amount the user wants to borrow.
        * - `borrow_amount_max`: The maximum amount the user wants to borrow.
        **/
-      createCdp: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array, borrowAmountMin: u128 | AnyNumber | Uint8Array, borrowAmountMax: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128]>;
+      createCdp: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowAmountMin: u128 | AnyNumber | Uint8Array, borrowAmountMax: u128 | AnyNumber | Uint8Array, cdpType: KensetsuCdpType | 'Type1' | 'Type2' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32, u128, u128, KensetsuCdpType]>;
       /**
        * Deposits collateral into a Collateralized Debt Position (CDP).
        * 
@@ -1808,14 +1809,15 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       depositCollateral: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, u128]>;
       /**
-       * Donates stablecoin (KUSD) to cover protocol bad debt.
+       * Donates stablecoin to cover protocol bad debt.
        * 
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
-       * - `kusd_amount`: The amount of stablecoin (KUSD) to donate to cover bad debt.
+       * - `stablecoin_asset_id` - The asset id of stablecoin.
+       * - `amount`: The amount of stablecoin to donate to cover bad debt.
        **/
-      donate: AugmentedSubmittable<(kusdAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      donate: AugmentedSubmittable<(stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128]>;
       /**
        * Liquidates a Collateralized Debt Position (CDP) if it becomes unsafe.
        * 
@@ -1825,6 +1827,15 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `cdp_id`: The ID of the CDP to be liquidated.
        **/
       liquidate: AugmentedSubmittable<(cdpId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      /**
+       * Adds new stablecoin mutating StablecoinInfo.
+       * 
+       * ##Parameters
+       * - stablecoin_asset_id - asset id of new stablecoin, must be mintable and total supply
+       * must be 0.
+       * - new_stablecoin_parameters - parameters for peg.
+       **/
+      registerStablecoin: AugmentedSubmittable<(newStablecoinParameters: KensetsuStablecoinParameters | { pegAsset?: any; minimalStabilityFeeAccrue?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [KensetsuStablecoinParameters]>;
       /**
        * Repays debt against a Collateralized Debt Position (CDP).
        * 
@@ -1843,17 +1854,18 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `origin`: The origin of the transaction.
        * - `new_borrow_tax`: The new borrow tax percentage to be set.
        **/
-      updateBorrowTax: AugmentedSubmittable<(newBorrowTax: Percent | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent]>;
+      updateBorrowTax: AugmentedSubmittable<(newBorrowTaxes: KensetsuBorrowTaxes | { kenBorrowTax?: any; karmaBorrowTax?: any; tbcdBorrowTax?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [KensetsuBorrowTaxes]>;
       /**
        * Updates the risk parameters for a specific collateral asset.
        * 
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
-       * - `collateral_asset_id`: The identifier of the collateral asset.
+       * - `collateral_asset_id`: The identifier of the collateral asset. If collateral asset id
+       * is not tracked by PriceTools, registers the asset id in PriceTools.
        * - `new_risk_parameters`: The new risk parameters to be set for the collateral asset.
        **/
-      updateCollateralRiskParameters: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newRiskParameters: KensetsuCollateralRiskParameters | { hardCap?: any; liquidationRatio?: any; maxLiquidationLot?: any; stabilityFeeRate?: any; minimalCollateralDeposit?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, KensetsuCollateralRiskParameters]>;
+      updateCollateralRiskParameters: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newRiskParameters: KensetsuCollateralRiskParameters | { hardCap?: any; liquidationRatio?: any; maxLiquidationLot?: any; stabilityFeeRate?: any; minimalCollateralDeposit?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, KensetsuCollateralRiskParameters]>;
       /**
        * Updates the liquidation penalty applied during CDP liquidation.
        * 
@@ -1864,15 +1876,16 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       updateLiquidationPenalty: AugmentedSubmittable<(newLiquidationPenalty: Percent | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent]>;
       /**
-       * Withdraws protocol profit in the form of stablecoin (KUSD).
+       * Withdraws protocol profit in the form of stablecoin.
        * 
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
        * - `beneficiary` : The destination account where assets will be withdrawn.
-       * - `kusd_amount`: The amount of stablecoin (KUSD) to withdraw as protocol profit.
+       * - `stablecoin_asset_id` - The asset id of stablecoin.
+       * - `amount`: The amount of stablecoin to withdraw as protocol profit.
        **/
-      withdrawProfit: AugmentedSubmittable<(beneficiary: AccountId32 | string | Uint8Array, kusdAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u128]>;
+      withdrawProfit: AugmentedSubmittable<(beneficiary: AccountId32 | string | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, CommonPrimitivesAssetId32, u128]>;
     };
     liquidityProxy: {
       /**

@@ -467,7 +467,11 @@ export interface PredefinedAssetId extends Enum {
   readonly isTbcd: boolean;
   readonly isKen: boolean;
   readonly isKusd: boolean;
-  readonly type: 'Xor' | 'Dot' | 'Ksm' | 'Usdt' | 'Val' | 'Pswap' | 'Dai' | 'Eth' | 'Xstusd' | 'Xst' | 'Tbcd' | 'Ken' | 'Kusd';
+  readonly isKgold: boolean;
+  readonly isKxor: boolean;
+  readonly isSb: boolean;
+  readonly isKarma: boolean;
+  readonly type: 'Xor' | 'Dot' | 'Ksm' | 'Usdt' | 'Val' | 'Pswap' | 'Dai' | 'Eth' | 'Xstusd' | 'Xst' | 'Tbcd' | 'Ken' | 'Kusd' | 'Kgold' | 'Kxor' | 'Sb' | 'Karma';
 }
 
 /** @name PreRuntime */
