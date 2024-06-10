@@ -96,6 +96,24 @@ export class WithConnectionApi {
   }
 
   /**
+   * Get on-chain account's identity
+   * @param address account address
+   */
+  public async getAccountOnChainIdentity(address: string): Promise<OnChainIdentity | null> {
+    const data = await this.api.query.identity.identityOf(address);
+
+    if (data.isEmpty || data.isNone) return null;
+
+    const result = data.unwrap();
+
+    return {
+      legalName: result.info.legal.value.toHuman() as string,
+      approved: Boolean(result.judgements.length),
+      identity: result.toHuman() as unknown as OriginalIdentity,
+    };
+  }
+
+  /**
    * Format account address
    * @param withPrefix `true` by default
    */
@@ -792,23 +810,5 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
       // extrinsic is not supported in chain
       return '0';
     }
-  }
-
-  /**
-   * Get on-chain account's identity
-   * @param address account address
-   */
-  public async getAccountOnChainIdentity(address: string): Promise<OnChainIdentity | null> {
-    const data = await this.api.query.identity.identityOf(address);
-
-    if (data.isEmpty || data.isNone) return null;
-
-    const result = data.unwrap();
-
-    return {
-      legalName: result.info.legal.value.toHuman() as string,
-      approved: Boolean(result.judgements.length),
-      identity: result.toHuman() as unknown as OriginalIdentity,
-    };
   }
 }
