@@ -258,9 +258,7 @@ const getAssetLiquiditySources = (
 
   const rules = {
     [LiquiditySourceTypes.XYKPool]: () =>
-      baseAssetId === address ||
-      baseChameleonAssetId === address ||
-      (Array.isArray(xykReserves[address]) && xykReserves[address].every((tokenReserve) => !!Number(tokenReserve))),
+      baseAssetId === address || baseChameleonAssetId === address || Array.isArray(xykReserves[address]),
     [LiquiditySourceTypes.MulticollateralBondingCurvePool]: () =>
       baseAssetId === Consts.XOR && [...enabledAssets.tbc, Consts.XOR].includes(address),
     [LiquiditySourceTypes.XSTPool]: () =>
@@ -318,7 +316,9 @@ export const getAssetsLiquiditySources = (
     liquiditySources = [...new Set([...liquiditySources, ...exchangePathSources])];
   }
 
-  return { assetPaths, liquiditySources };
+  const isAvailable = !!Object.keys(assetPaths).length && Object.values(assetPaths).every((paths) => !!paths.length);
+
+  return { isAvailable, liquiditySources };
 };
 
 /**

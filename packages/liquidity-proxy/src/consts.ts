@@ -3,7 +3,7 @@ import { FPNumber } from '@sora-substrate/math';
 export class Consts {
   /** XOR token */
   static readonly XOR = '0x0200000000000000000000000000000000000000000000000000000000000000';
-  /** XOR token */
+  /** KXOR token */
   static readonly KXOR = '0x02000e0000000000000000000000000000000000000000000000000000000000';
   /** VAL token */
   static readonly VAL = '0x0200040000000000000000000000000000000000000000000000000000000000';

@@ -137,6 +137,6 @@ export type QuoteResult = QuoteSingleResult & {
 };
 
 export type PathsAndPairLiquiditySources = {
-  assetPaths: QuotePaths;
+  isAvailable: boolean;
   liquiditySources: Array<LiquiditySourceTypes>;
 };
