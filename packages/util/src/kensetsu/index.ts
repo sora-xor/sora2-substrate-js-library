@@ -127,7 +127,7 @@ export class KensetsuModule<T> {
     const formatted: Collateral = {
       lastFeeUpdateTime: collateralInfo.lastFeeUpdateTime.toNumber(),
       interestCoefficient: new FPNumber(collateralInfo.interestCoefficient),
-      kusdSupply: new FPNumber(collateralInfo.kusdSupply),
+      debtSupply: new FPNumber(collateralInfo.stablecoinSupply),
       totalLocked: new FPNumber(collateralInfo.totalCollateral),
       riskParams: {
         liquidationRatio: ratio.toNumber(2),
@@ -171,7 +171,8 @@ export class KensetsuModule<T> {
     data.forEach((item) => {
       const info: KensetsuCollateralInfo | null = item[1].unwrapOr(null);
       if (info) {
-        infos[item[0].args[0].code.toString()] = this.formatCollateral(info);
+        // [MOCK]
+        infos[item[0].args[0].toString()] = this.formatCollateral(info);
       }
     });
     return infos;
