@@ -1,8 +1,7 @@
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { assert } from '@polkadot/util';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
-import type { Observable } from '@polkadot/types/types';
 import type { Vec, u128 } from '@polkadot/types-codec';
 
 import { Messages } from '../logger';
@@ -22,8 +21,8 @@ export class KensetsuModule<T> {
    * Bad debt in KUSD
    */
   async getBadDebt(): Promise<FPNumber> {
-    const badDebt = await this.root.api.query.kensetsu.badDebt();
-    return new FPNumber(badDebt);
+    // [MOCK]
+    return FPNumber.ZERO;
   }
 
   /**
@@ -32,7 +31,10 @@ export class KensetsuModule<T> {
    * Bad debt in KUSD
    */
   subscribeOnBadDebt(): Observable<FPNumber> {
-    return this.root.apiRx.query.kensetsu.badDebt().pipe(map((res) => new FPNumber(res)));
+    // [MOCK]
+    return new Observable((subscriber) => {
+      subscriber.next(FPNumber.ZERO);
+    });
   }
 
   /**
@@ -125,7 +127,7 @@ export class KensetsuModule<T> {
     const formatted: Collateral = {
       lastFeeUpdateTime: collateralInfo.lastFeeUpdateTime.toNumber(),
       interestCoefficient: new FPNumber(collateralInfo.interestCoefficient),
-      kusdSupply: new FPNumber(collateralInfo.kusdSupply),
+      debtSupply: new FPNumber(collateralInfo.stablecoinSupply),
       totalLocked: new FPNumber(collateralInfo.totalCollateral),
       riskParams: {
         liquidationRatio: ratio.toNumber(2),
@@ -169,7 +171,8 @@ export class KensetsuModule<T> {
     data.forEach((item) => {
       const info: KensetsuCollateralInfo | null = item[1].unwrapOr(null);
       if (info) {
-        infos[item[0].args[0].code.toString()] = this.formatCollateral(info);
+        // [MOCK]
+        infos[item[0].args[0].toString()] = this.formatCollateral(info);
       }
     });
     return infos;
@@ -310,7 +313,15 @@ export class KensetsuModule<T> {
     const minBorrowAmountCodec = borrow.sub(slippage).codec;
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.kensetsu.createCdp(assetAddress, collateralCodec, minBorrowAmountCodec, borrow.codec),
+      // [MOCK]
+      this.root.api.tx.kensetsu.createCdp(
+        assetAddress,
+        collateralCodec,
+        minBorrowAmountCodec,
+        borrow.codec,
+        borrow.codec,
+        'Type2'
+      ),
       this.root.account.pair,
       {
         type: Operation.CreateVault,

@@ -419,7 +419,11 @@ declare module '@polkadot/api-base/types/consts' {
     };
     kensetsu: {
       /**
-       * Percent of KEN that is reminted and goes to Demeter farming incentivization
+       * Percent of KARMA buy back that is reminted and goes to Demeter farming incentivization.
+       **/
+      karmaIncentiveRemintPercent: Percent & AugmentedConst<ApiType>;
+      /**
+       * Percent of KEN buy back that is reminted and goes to Demeter farming incentivization.
        **/
       kenIncentiveRemintPercent: Percent & AugmentedConst<ApiType>;
       /**
