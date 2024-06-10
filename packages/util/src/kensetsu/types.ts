@@ -37,6 +37,12 @@ export type Collateral = {
   interestCoefficient: FPNumber;
 };
 
+export type StablecoinInfo = {
+  badDebt: FPNumber;
+  pegAssetId: string;
+  isSoraAsset: boolean;
+};
+
 export interface VaultHistory extends History {
   vaultId: number;
 }

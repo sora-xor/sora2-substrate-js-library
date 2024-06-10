@@ -7,11 +7,11 @@ import type { Vec, u128 } from '@polkadot/types-codec';
 
 import { Messages } from '../logger';
 import { Operation } from '../types';
-import { KUSD } from '../assets/consts';
+import { KUSD, KXOR } from '../assets/consts';
 import { VaultTypes } from './consts';
 import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
-import type { Collateral, Vault } from './types';
+import type { Collateral, StablecoinInfo, Vault } from './types';
 
 export class KensetsuModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -32,18 +32,23 @@ export class KensetsuModule<T> {
   /**
    * Usage: general system parameters, statistical information
    *
-   * @returns Bad debt as `Record<string, FPNumber>` where key is the asset address and value is the amount of bad debt
+   * @returns Stablecoin info as `Record<string, StablecoinInfo>` where key is the asset address and value is the amount of bad debt and peg asset id
    */
-  async getBadDebt(): Promise<Record<string, FPNumber>> {
+  async getStablecoinInfo(): Promise<Record<string, StablecoinInfo>> {
     const stablecoinInfos = await this.root.api.query.kensetsu.stablecoinInfos.entries();
-    return stablecoinInfos.reduce<Record<string, FPNumber>>((acc, item) => {
+    return stablecoinInfos.reduce<Record<string, StablecoinInfo>>((acc, item) => {
       const [key, value] = item;
 
       const assetId = key.args[0].code.toString();
       const info = value.unwrapOr(null);
-      const badDebt = info ? new FPNumber(info.badDebt) : FPNumber.ZERO;
-      acc[assetId] = badDebt;
+      if (!info) return acc;
 
+      const pegAsset = info.stablecoinParameters.pegAsset;
+      const isSoraAsset = pegAsset.isSoraAssetId;
+      const pegAssetId = isSoraAsset ? pegAsset.asSoraAssetId.code.toString() : pegAsset.asOracleSymbol.toString();
+      const badDebt = new FPNumber(info.badDebt);
+
+      acc[assetId] = { badDebt, pegAssetId, isSoraAsset };
       return acc;
     }, {});
   }
@@ -51,19 +56,25 @@ export class KensetsuModule<T> {
   /**
    * Usage: general system parameters, statistical information
    *
-   * Bad debt as `Record<string, FPNumber>` where key is the asset address and value is the amount of bad debt
+   * Stablecoin info as `Record<string, StablecoinInfo>` where key is the asset address and value is the amount of bad debt and peg asset id
    */
-  async subscribeOnBadDebt(): Promise<Observable<Record<string, FPNumber>>> {
+  async subscribeOnStablecoinInfo(): Promise<Observable<Record<string, StablecoinInfo>>> {
     const keys = await this.root.api.query.kensetsu.stablecoinInfos.keys();
     const assetIds = keys.map((key) => key.args[0].code.toString());
 
     return this.root.apiRx.query.kensetsu.stablecoinInfos.multi(assetIds).pipe(
       map((infos) => {
-        return infos.reduce<Record<string, FPNumber>>((acc, value, index) => {
+        return infos.reduce<Record<string, StablecoinInfo>>((acc, value, index) => {
           const assetId = assetIds[index];
           const info = value.unwrapOr(null);
-          const badDebt = info ? new FPNumber(info.badDebt) : FPNumber.ZERO;
-          acc[assetId] = badDebt;
+          if (!info) return acc;
+
+          const pegAsset = info.stablecoinParameters.pegAsset;
+          const isSoraAsset = pegAsset.isSoraAssetId;
+          const pegAssetId = isSoraAsset ? pegAsset.asSoraAssetId.code.toString() : pegAsset.asOracleSymbol.toString();
+          const badDebt = new FPNumber(info.badDebt);
+
+          acc[assetId] = { badDebt, pegAssetId, isSoraAsset };
           return acc;
         }, {});
       })
@@ -151,6 +162,25 @@ export class KensetsuModule<T> {
    */
   subscribeOnKarmaBorrowTax(): Observable<number> {
     return this.root.apiRx.query.kensetsu.karmaBorrowTax().pipe(map((res) => res.toNumber()));
+  }
+
+  /**
+   * Returns the total borrow tax based on debt asset, in %
+   * @param debtAsset Debt asset or its address
+   * @param borrowTax Onchain borrow tax in %
+   * @param tbcdBorrowTax Onchain TBCD borrow tax in %
+   * @param karmaBorrowTax Onchain KARMA borrow tax in %
+   */
+  calcTax(
+    debtAsset: Asset | AccountAsset | string,
+    borrowTax: number,
+    tbcdBorrowTax: number,
+    karmaBorrowTax: number
+  ): number {
+    const debtAddress = typeof debtAsset === 'string' ? debtAsset : debtAsset.address;
+    if (debtAddress === KXOR.address) return borrowTax + tbcdBorrowTax + karmaBorrowTax;
+
+    return borrowTax;
   }
 
   // update_collateral_interest_coefficient
