@@ -317,9 +317,9 @@ export class KensetsuModule<T> {
       this.root.api.tx.kensetsu.createCdp(
         assetAddress,
         collateralCodec,
+        assetAddress,
         minBorrowAmountCodec,
-        borrow.codec,
-        borrow.codec,
+        minBorrowAmountCodec,
         'Type2'
       ),
       this.root.account.pair,
