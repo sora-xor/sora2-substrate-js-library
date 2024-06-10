@@ -313,7 +313,15 @@ export class KensetsuModule<T> {
     const minBorrowAmountCodec = borrow.sub(slippage).codec;
 
     return this.root.submitExtrinsic(
-      this.root.api.tx.kensetsu.createCdp(assetAddress, collateralCodec, minBorrowAmountCodec, borrow.codec),
+      // [MOCK]
+      this.root.api.tx.kensetsu.createCdp(
+        assetAddress,
+        collateralCodec,
+        minBorrowAmountCodec,
+        borrow.codec,
+        borrow.codec,
+        'Type2'
+      ),
       this.root.account.pair,
       {
         type: Operation.CreateVault,
