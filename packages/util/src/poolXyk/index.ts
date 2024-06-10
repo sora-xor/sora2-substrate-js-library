@@ -11,9 +11,17 @@ import { poolAccountIdFromAssetPair } from './account';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
 import { Operation } from '../types';
+import { ETH, KXOR, XOR } from '../assets/consts';
 import type { Api } from '../api';
 import type { AccountLiquidity } from './types';
 import type { Asset, AccountAsset } from '../assets/types';
+
+function isBaseAssetId<T>(root: Api<T>, address: string) {
+  return root.dex.baseAssetsIds.includes(address);
+}
+
+const isChameleon = (first: string, second: string, isCreateOperation = false) =>
+  !isCreateOperation && first === KXOR.address && second === ETH.address;
 
 function serializeLPKey(liquidity: Partial<AccountLiquidity>): string {
   if (!(liquidity.firstAddress && liquidity.secondAddress)) {
@@ -327,11 +335,15 @@ export class PoolXykModule<T> {
     firstAsset: Asset | AccountAsset,
     secondAsset: Asset | AccountAsset,
     firstAmount: NumberLike,
-    secondAmount: NumberLike
+    secondAmount: NumberLike,
+    isCreateOperation = false
   ): Array<any> {
-    const isBaseAssetId = (address: string) => this.root.dex.baseAssetsIds.includes(address);
-    const isFirstAssetSuitable = isBaseAssetId(firstAsset.address);
-    const isSecondAssetSuitable = isBaseAssetId(secondAsset.address);
+    const isFirstBaseAsset = isBaseAssetId(this.root, firstAsset.address);
+    const isSecondBaseAsset = isBaseAssetId(this.root, secondAsset.address);
+    const isFirstChameleon = isChameleon(firstAsset.address, secondAsset.address, isCreateOperation);
+    const isSecondChameleon = isChameleon(secondAsset.address, firstAsset.address, isCreateOperation);
+    const isFirstAssetSuitable = isFirstBaseAsset || isFirstChameleon;
+    const isSecondAssetSuitable = isSecondBaseAsset || isSecondChameleon;
 
     assert(isFirstAssetSuitable || isSecondAssetSuitable, Messages.xorOrXstIsRequired);
 
@@ -590,7 +602,8 @@ export class PoolXykModule<T> {
       firstAsset,
       secondAsset,
       firstAmount,
-      secondAmount
+      secondAmount,
+      true
     );
 
     const baseAssetAllowed = this.root.dex.poolBaseAssetsIds.includes(baseAsset.address);
@@ -675,7 +688,9 @@ export class PoolXykModule<T> {
   ) {
     assert(this.root.account, Messages.connectWallet);
 
-    const poolToken = this.getInfo(firstAsset.address, secondAsset.address);
+    const isChameleonPair = isChameleon(firstAsset.address, secondAsset.address);
+
+    const poolToken = this.getInfo(isChameleonPair ? XOR.address : firstAsset.address, secondAsset.address);
     const desired = new FPNumber(desiredMarker, poolToken?.decimals);
     const reserveA = FPNumber.fromCodecValue(firstTotal, firstAsset.decimals);
     const reserveB = FPNumber.fromCodecValue(secondTotal, secondAsset.decimals);
