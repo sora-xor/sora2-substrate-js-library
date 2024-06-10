@@ -1,10 +1,49 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import { LiquiditySourceTypes, Consts, Errors, SwapVariant } from '../consts';
-import { safeDivide, toFp, isAssetAddress, safeQuoteResult, saturatingSub } from '../utils';
-import { SwapChunk, DiscreteQuotation, SideAmount } from '../common/primitives';
+import { LiquiditySourceTypes, Consts, Errors, SwapVariant } from '../../consts';
+import { safeDivide, toFp, isAssetAddress, safeQuoteResult, saturatingSub } from '../../utils';
+import { SwapChunk, DiscreteQuotation, SideAmount } from '../../common/primitives';
 
-import type { QuotePayload, QuoteResult } from '../types';
+import { getPairInfo, getTradingPair } from './utils';
+
+import type { QuotePayload, QuoteResult } from '../../types';
+
+// get_actual_reserves
+// returs reserves by order: [inputAssetId, outputAssetId]
+export const getActualReserves = (
+  baseAssetId: string,
+  inputAssetId: string,
+  outputAssetId: string,
+  payload: QuotePayload
+) => {
+  const [tpair, _baseChameleonAssetId, _isChameleonPool] = getPairInfo(baseAssetId, inputAssetId, outputAssetId);
+
+  const [reserveBase, reserveTarget] = [...payload.reserves.xyk[tpair.targetAssetId]];
+
+  // This code is not needed for lib, because "poolXyk.reserves" call returns reserves sum for "chameleon" pool
+
+  // let reserve_base = if let Some(base_chameleon_asset_id) = base_chameleon_asset_id {
+  //   if is_chameleon_pool {
+  //       let reserve_chameleon = <T as Config>::AssetInfoProvider::free_balance(
+  //           &base_chameleon_asset_id,
+  //           &pool_acc_id,
+  //       )?;
+  //       reserve_base
+  //           .checked_add(reserve_chameleon)
+  //           .ok_or(Error::<T>::PoolTokenSupplyOverflow)?
+  //   } else {
+  //       reserve_base
+  //   }
+  // } else {
+  //     reserve_base
+  // };
+
+  if (tpair.targetAssetId === inputAssetId) {
+    return [toFp(reserveTarget), toFp(reserveBase)];
+  } else {
+    return [toFp(reserveBase), toFp(reserveTarget)];
+  }
+};
 
 // can_exchange
 export const canExchange = (
@@ -14,21 +53,25 @@ export const canExchange = (
   outputAssetId: string,
   payload: QuotePayload
 ): boolean => {
-  if (![inputAssetId, outputAssetId].includes(baseAssetId)) return false;
+  try {
+    const tPair = getTradingPair(baseAssetId, inputAssetId, outputAssetId);
 
-  const isBaseAssetInput = isAssetAddress(inputAssetId, baseAssetId);
-  const nonBaseAsset = isBaseAssetInput ? outputAssetId : inputAssetId;
-  const reserves = [...payload.reserves.xyk[nonBaseAsset]];
+    const reserves = [...payload.reserves.xyk[tPair.targetAssetId]];
 
-  return reserves.every((tokenReserve) => !!Number(tokenReserve));
+    return reserves.every((tokenReserve) => !!Number(tokenReserve));
+  } catch {
+    return false;
+  }
 };
 
 // decide_is_fee_from_destination
 const decideIsFeeFromDestination = (baseAssetId: string, assetA: string, assetB: string) => {
-  if (isAssetAddress(baseAssetId, assetA)) {
-    return false;
-  } else if (isAssetAddress(baseAssetId, assetB)) {
+  const tPair = getTradingPair(baseAssetId, assetA, assetB);
+
+  if (tPair.targetAssetId === assetA) {
     return true;
+  } else if (tPair.targetAssetId === assetB) {
+    return false;
   } else {
     throw new Error(Errors.UnavailableExchangePath);
   }
@@ -66,7 +109,7 @@ export const stepQuote = (
   const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
 
   // Get actual pool reserves.
-  const [reserveInput, reserveOutput] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+  const [reserveInput, reserveOutput] = getActualReserves(baseAssetId, inputAsset, outputAsset, payload);
 
   // Check reserves validity.
   if (
@@ -147,22 +190,6 @@ export const stepQuote = (
   }
 
   return quotation;
-};
-
-// returs reserves by order: inputAssetId, outputAssetId
-export const getXykReserves = (
-  inputAsset: string,
-  outputAsset: string,
-  payload: QuotePayload,
-  baseAssetId = Consts.XOR
-): [FPNumber, FPNumber] => {
-  const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
-  const nonBaseAsset = isBaseAssetInput ? outputAsset : inputAsset;
-  const reserves = [...payload.reserves.xyk[nonBaseAsset]];
-  // "reverse" method is fine here cuz we don't use reserves below so that mutation won't affect anything
-  const [input, output] = isBaseAssetInput ? reserves : reserves.reverse(); // NOSONAR
-
-  return [toFp(input), toFp(output)];
 };
 
 /**
@@ -381,7 +408,7 @@ export const quote = (
       throw new Error(Errors.CantExchange);
     }
 
-    const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+    const [inputReserves, outputReserves] = getActualReserves(baseAssetId, inputAsset, outputAsset, payload);
     const getFeeFromDestination = decideIsFeeFromDestination(baseAssetId, inputAsset, outputAsset);
 
     return isDesiredInput
@@ -419,7 +446,7 @@ export const quoteWithoutImpact = (
   deduceFee: boolean
 ): FPNumber => {
   try {
-    const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+    const [inputReserves, outputReserves] = getActualReserves(baseAssetId, inputAsset, outputAsset, payload);
     const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
     const feeRatio = deduceFee ? Consts.XYK_FEE : FPNumber.ZERO;
 

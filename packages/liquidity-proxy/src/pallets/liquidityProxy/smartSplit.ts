@@ -2,7 +2,7 @@ import { FPNumber } from '@sora-substrate/math';
 import { LiquiditySourceTypes, Consts, Errors, SwapVariant } from '../../consts';
 import { LiquidityAggregator } from './liquidityAggregator';
 import { LiquidityRegistry } from './liquidityRegistry';
-import { quote as xykQuote, getXykReserves } from '../poolXyk';
+import { quote as xykQuote, getActualReserves } from '../poolXyk';
 import {
   quote as tbcQuote,
   sellPriceNoVolume as tbcSellPriceNoVolume,
@@ -193,7 +193,7 @@ export const smartSplit = (
   let bestRewards: Array<LPRewardsInfo> = [];
 
   const isBaseAssetInput = isAssetAddress(inputAsset, baseAssetId);
-  const [inputReserves, outputReserves] = getXykReserves(inputAsset, outputAsset, payload, baseAssetId);
+  const [inputReserves, outputReserves] = getActualReserves(baseAssetId, inputAsset, outputAsset, payload);
   const [baseReserve, otherReserve] = isBaseAssetInput
     ? [inputReserves, outputReserves]
     : [outputReserves, inputReserves];

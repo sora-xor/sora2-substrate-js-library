@@ -3,6 +3,8 @@ import { FPNumber } from '@sora-substrate/math';
 export class Consts {
   /** XOR token */
   static readonly XOR = '0x0200000000000000000000000000000000000000000000000000000000000000';
+  /** XOR token */
+  static readonly KXOR = '0x02000e0000000000000000000000000000000000000000000000000000000000';
   /** VAL token */
   static readonly VAL = '0x0200040000000000000000000000000000000000000000000000000000000000';
   /** PSWAP token */
@@ -37,6 +39,8 @@ export class Consts {
 }
 
 export enum Errors {
+  AssetsMustNotBeSame = 'In this case assets must not be same.',
+  BaseAssetIsNotMatchedWithAnyAssetArguments = 'The base asset is not matched with any asset arguments.',
   CalculationError = 'Specified parameters lead to arithmetic error',
   CantExchange = "Liquidity source can't exchange assets with the given IDs on the given DEXId.",
   InsufficientLiquidity = 'None of the sources has enough reserves to execute a trade',
@@ -46,6 +50,7 @@ export enum Errors {
   NotEnoughReserves = "It's not enough reserves in the pool to perform the operation.",
   PoolIsEmpty = 'The pool has empty liquidity.',
   PriceCalculationFailed = 'An error occurred while calculating the price.',
+  RestrictedChameleonPool = 'Restricted Chameleon pool',
   SyntheticDoesNotExist = 'Synthetic asset does not exist.',
   SyntheticBaseBuySellLimitExceeded = 'Input/output amount of synthetic base asset exceeds the limit',
   UnavailableExchangePath = 'No route exists in a given DEX for given parameters to carry out the swap',
@@ -78,6 +83,8 @@ export enum AssetType {
   SyntheticBase = 'SyntheticBase',
   Basic = 'Basic',
   Synthetic = 'Synthetic',
+  ChameleonBase = 'ChameleonBase',
+  ChameleonPoolAsset = 'ChameleonPoolAsset',
 }
 
 export enum SwapVariant {

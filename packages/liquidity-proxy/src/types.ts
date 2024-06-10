@@ -2,6 +2,11 @@ import type { FPNumber, CodecString, NumberLike } from '@sora-substrate/math';
 import type { LiquiditySourceTypes, RewardReason, PriceVariant } from './consts';
 import type { OrderBookAggregated } from './pallets/orderBook/types';
 
+export type TradingPair = {
+  baseAssetId: string;
+  targetAssetId: string;
+};
+
 export type PrimaryMarketsEnabledAssets = {
   tbc: string[];
   xst: Record<
