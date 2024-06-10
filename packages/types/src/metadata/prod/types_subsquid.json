@@ -1724,7 +1724,7 @@
         {
             "minmax": [
                 84,
-                null
+                84
             ],
             "types": {
                 "EVMAppKind": {
@@ -1742,6 +1742,35 @@
                     "evmaddress": "H160",
                     "appkind": "EVMAppKind",
                     "precision": "Option<u8>"
+                }
+            }
+        },
+        {
+            "minmax": [
+                85,
+                null
+            ],
+            "types": {
+                "PredefinedAssetId": {
+                    "_enum": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST",
+                        "TBCD",
+                        "KEN",
+                        "KUSD",
+                        "KGOLD",
+                        "KXOR",
+                        "SB",
+                        "KARMA"
+                    ]
                 }
             }
         }
@@ -2399,7 +2428,11 @@
                 "XST",
                 "TBCD",
                 "KEN",
-                "KUSD"
+                "KUSD",
+                "KGOLD",
+                "KXOR",
+                "SB",
+                "KARMA"
             ]
         },
         "PriceInfo": {

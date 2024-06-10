@@ -651,7 +651,11 @@
             "XST",
             "TBCD",
             "KEN",
-            "KUSD"
+            "KUSD",
+            "KGOLD",
+            "KXOR",
+            "SB",
+            "KARMA"
         ]
     },
     "PriceInfo": {
