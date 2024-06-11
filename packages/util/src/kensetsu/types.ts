@@ -46,3 +46,5 @@ export type StablecoinInfo = {
 export interface VaultHistory extends History {
   vaultId: number;
 }
+
+export type BorrowTaxes = { borrowTax: number; tbcdBorrowTax: number; karmaBorrowTax: number };
