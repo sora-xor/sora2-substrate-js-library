@@ -95,6 +95,20 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     isMintable: true,
   },
   {
+    address: '0x02000c0000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.KUSD,
+    name: 'Kensetsu Dollar',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
+  },
+  {
+    address: '0x02000a0000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.TBCD,
+    name: 'SORA TBC Dollar',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
+  },
+  {
     address: '0x0200080000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.XSTUSD,
     name: 'SORA Synthetic USD',
@@ -108,10 +122,21 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
   },
+]);
+
+export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
+  ...NativeAssets,
   {
-    address: '0x02000a0000000000000000000000000000000000000000000000000000000000',
-    symbol: KnownSymbols.TBCD,
-    name: 'SORA TBC Dollar',
+    address: '0x0200060000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.DAI,
+    name: 'Dai Stablecoin',
+    decimals: FPNumber.DEFAULT_PRECISION,
+    isMintable: true,
+  },
+  {
+    address: '0x0200070000000000000000000000000000000000000000000000000000000000',
+    symbol: KnownSymbols.ETH,
+    name: 'Ether',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
   },
@@ -119,13 +144,6 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     address: '0x02000b0000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.KEN,
     name: 'Kensetsu',
-    decimals: FPNumber.DEFAULT_PRECISION,
-    isMintable: true,
-  },
-  {
-    address: '0x02000c0000000000000000000000000000000000000000000000000000000000',
-    symbol: KnownSymbols.KUSD,
-    name: 'Kensetsu Dollar',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
   },
@@ -159,28 +177,10 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
   },
 ]);
 
-export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
-  ...NativeAssets,
-  {
-    address: '0x0200060000000000000000000000000000000000000000000000000000000000',
-    symbol: KnownSymbols.DAI,
-    name: 'Dai Stablecoin',
-    decimals: FPNumber.DEFAULT_PRECISION,
-    isMintable: true,
-  },
-  {
-    address: '0x0200070000000000000000000000000000000000000000000000000000000000',
-    symbol: KnownSymbols.ETH,
-    name: 'Ether',
-    decimals: FPNumber.DEFAULT_PRECISION,
-    isMintable: true,
-  },
-]);
-
-export const XOR = NativeAssets.get(KnownSymbols.XOR);
-export const VAL = NativeAssets.get(KnownSymbols.VAL);
-export const PSWAP = NativeAssets.get(KnownSymbols.PSWAP);
-export const XSTUSD = NativeAssets.get(KnownSymbols.XSTUSD);
+export const XOR = KnownAssets.get(KnownSymbols.XOR);
+export const VAL = KnownAssets.get(KnownSymbols.VAL);
+export const PSWAP = KnownAssets.get(KnownSymbols.PSWAP);
+export const XSTUSD = KnownAssets.get(KnownSymbols.XSTUSD);
 export const DAI = KnownAssets.get(KnownSymbols.DAI);
 export const ETH = KnownAssets.get(KnownSymbols.ETH);
 export const XST = KnownAssets.get(KnownSymbols.XST);
