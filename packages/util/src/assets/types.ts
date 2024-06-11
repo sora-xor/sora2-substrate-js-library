@@ -7,11 +7,10 @@ export type NativeSymbol =
   | KnownSymbols.XOR
   | KnownSymbols.VAL
   | KnownSymbols.PSWAP
-  | KnownSymbols.XSTUSD
-  | KnownSymbols.XST
+  | KnownSymbols.KUSD
   | KnownSymbols.TBCD
-  | KnownSymbols.KEN
-  | KnownSymbols.KUSD;
+  | KnownSymbols.XSTUSD
+  | KnownSymbols.XST;
 export type KnownSymbol = keyof typeof KnownSymbols;
 
 export interface WhitelistItem {
