@@ -20,8 +20,12 @@ export interface ReceiverHistoryItem {
   assetId: string;
 }
 
+export interface SwapTransferBatchRates {
+  [assetSymbol: string]: string; // dictionary type object, contains  prices of a batch's token in dollars at the time of the transaction.  { "val" = "0.37" }
+}
+
 export interface SwapTransferBatchAdditionalData {
-  rates: Array<string>; // rates - array of price of a batch's token in dollars at the time of the transaction
+  rates: SwapTransferBatchRates;
 }
 
 export type SwapQuoteData = {
