@@ -1,5 +1,4 @@
 import { assert } from '@polkadot/util';
-import isEmpty from 'lodash/fp/isEmpty';
 import { combineLatest, map, distinctUntilChanged } from 'rxjs';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
 import {
@@ -503,8 +502,7 @@ export class SwapModule<T> {
 
     const swapQuoteObservable = dexReservesObservable.pipe(
       map((payload) => {
-        const { assetPaths, liquiditySources } = payload.sources;
-        const isAvailable = !isEmpty(assetPaths) && Object.values(assetPaths).every((paths) => !isEmpty(paths));
+        const { isAvailable, liquiditySources } = payload.sources;
 
         const quote: SwapQuote = (
           inputAssetAddress: string,

@@ -3,6 +3,7 @@ import { LiquiditySourceTypes, Consts, Errors, AssetType } from '../../consts';
 import { LiquidityRegistry } from './liquidityRegistry';
 import { smartSplit, newSmartSplit } from './smartSplit';
 import { listLiquiditySources } from '../dexApi';
+import { getChameleonPool, getChameleonPoolBaseAssetId } from '../../runtime';
 
 import { intersection, matchType, safeDivide } from '../../utils';
 
@@ -15,6 +16,102 @@ import type {
   PrimaryMarketsEnabledAssets,
   PathsAndPairLiquiditySources,
 } from '../../types';
+
+class PathBuilder {
+  public paths!: string[][];
+  public inputAssetId!: string;
+  public outputAssetId!: string;
+  public baseAssetId!: string;
+  public syntheticBaseAssetId!: string;
+  public baseChameleonAssetId!: string | null;
+
+  constructor(
+    inputAssetId: string,
+    outputAssetId: string,
+    baseAssetId: string,
+    syntheticBaseAssetId: string,
+    baseChameleonAssetId: string | null
+  ) {
+    this.paths = [];
+    this.inputAssetId = inputAssetId;
+    this.outputAssetId = outputAssetId;
+    this.baseAssetId = baseAssetId;
+    this.syntheticBaseAssetId = syntheticBaseAssetId;
+    this.baseChameleonAssetId = baseChameleonAssetId;
+  }
+
+  public direct() {
+    this.paths.push([this.inputAssetId, this.outputAssetId]);
+    return this;
+  }
+
+  public viaBase() {
+    this.paths.push([this.inputAssetId, this.baseAssetId, this.outputAssetId]);
+    return this;
+  }
+
+  public viaSyntheticBase() {
+    this.paths.push([this.inputAssetId, this.syntheticBaseAssetId, this.outputAssetId]);
+    return this;
+  }
+
+  public viaBaseAndSyntheticBase() {
+    this.paths.push([this.inputAssetId, this.baseAssetId, this.syntheticBaseAssetId, this.outputAssetId]);
+    return this;
+  }
+
+  public viaSyntheticBaseAndBase() {
+    this.paths.push([this.inputAssetId, this.syntheticBaseAssetId, this.baseAssetId, this.outputAssetId]);
+    return this;
+  }
+
+  public viaBaseChameleon() {
+    if (this.baseChameleonAssetId) {
+      this.paths.push([this.inputAssetId, this.baseChameleonAssetId, this.outputAssetId]);
+    }
+    return this;
+  }
+
+  public viaBaseAndBaseChameleon() {
+    if (this.baseChameleonAssetId) {
+      this.paths.push([this.inputAssetId, this.baseAssetId, this.baseChameleonAssetId, this.outputAssetId]);
+    }
+    return this;
+  }
+
+  public viaBaseChameleonAndBase() {
+    if (this.baseChameleonAssetId) {
+      this.paths.push([this.inputAssetId, this.baseChameleonAssetId, this.baseAssetId, this.outputAssetId]);
+    }
+    return this;
+  }
+
+  public viaBaseChameleonAndBaseAndSyntheticBase() {
+    if (this.baseChameleonAssetId) {
+      this.paths.push([
+        this.inputAssetId,
+        this.baseChameleonAssetId,
+        this.baseAssetId,
+        this.syntheticBaseAssetId,
+        this.outputAssetId,
+      ]);
+    }
+    return this;
+  }
+
+  public viaSyntheticBaseAndBaseAndBaseChameleon() {
+    if (this.baseChameleonAssetId) {
+      this.paths.push([
+        this.inputAssetId,
+        this.syntheticBaseAssetId,
+        this.baseAssetId,
+        this.baseChameleonAssetId,
+        this.outputAssetId,
+      ]);
+    }
+    return this;
+  }
+}
 
 /**
  * Get asset type in terms of exchange nature
@@ -29,12 +126,22 @@ const determine = (
   syntheticAssets: string[],
   assetId: string
 ): AssetType => {
+  const baseChameleonAssetId = getChameleonPoolBaseAssetId(baseAssetId);
+
   if (assetId === baseAssetId) {
     return AssetType.Base;
   } else if (assetId === syntheticBaseAssetId) {
     return AssetType.SyntheticBase;
   } else if (syntheticAssets.includes(assetId)) {
     return AssetType.Synthetic;
+  } else if (baseChameleonAssetId) {
+    if (assetId === baseChameleonAssetId) {
+      return AssetType.ChameleonBase;
+    } else if (getChameleonPool({ baseAssetId, targetAssetId: assetId })) {
+      return AssetType.ChameleonPoolAsset;
+    } else {
+      return AssetType.Basic;
+    }
   } else {
     return AssetType.Basic;
   }
@@ -55,63 +162,78 @@ export const newTrivial = (
   inputAssetId: string,
   outputAssetId: string
 ) => {
+  if (inputAssetId === outputAssetId) return [];
+
   const iType = determine(baseAssetId, syntheticBaseAssetId, syntheticAssets, inputAssetId);
   const oType = determine(baseAssetId, syntheticBaseAssetId, syntheticAssets, outputAssetId);
+  const baseChameleonAssetId = getChameleonPoolBaseAssetId(baseAssetId);
+
+  const pathBuilder = new PathBuilder(
+    inputAssetId,
+    outputAssetId,
+    baseAssetId,
+    syntheticBaseAssetId,
+    baseChameleonAssetId
+  );
 
   if (
     matchType(iType, oType)(AssetType.Base, AssetType.Basic, true) ||
-    matchType(iType, oType)(AssetType.Base, AssetType.SyntheticBase, true)
+    matchType(iType, oType)(AssetType.Base, AssetType.SyntheticBase, true) ||
+    matchType(iType, oType)(AssetType.Base, AssetType.ChameleonBase, true)
   ) {
-    return [
-      // F.E: XOR-VAL; VAL-XOR; XOR-XST; XST-XOR;
-      [inputAssetId, outputAssetId],
-    ];
+    pathBuilder.direct();
   } else if (matchType(iType, oType)(AssetType.SyntheticBase, AssetType.Synthetic, true)) {
-    return [
-      // F.E: XST-XSTUSD; XSTUSD-XST;
-      [inputAssetId, outputAssetId],
-      // F.E: XST-XOR-XSTUSD; XSTUSD-XOR-XST;
-      [inputAssetId, baseAssetId, outputAssetId],
-    ];
+    pathBuilder.direct().viaBase();
   } else if (
     matchType(iType, oType)(AssetType.Basic, AssetType.Basic) ||
-    matchType(iType, oType)(AssetType.Basic, AssetType.SyntheticBase, true)
+    matchType(iType, oType)(AssetType.SyntheticBase, AssetType.Basic, true) ||
+    matchType(iType, oType)(AssetType.ChameleonBase, AssetType.SyntheticBase, true) ||
+    matchType(iType, oType)(AssetType.Basic, AssetType.ChameleonBase, true)
   ) {
-    return [
-      // F.E: VAL-XOR-PSWAP; VAL-XOR-XST; XST-XOR-VAL;
-      [inputAssetId, baseAssetId, outputAssetId],
-    ];
+    pathBuilder.viaBase();
   } else if (matchType(iType, oType)(AssetType.Synthetic, AssetType.Synthetic)) {
-    return [
-      // F.E: XSTUSD-XST-XSTGPB;
-      [inputAssetId, syntheticBaseAssetId, outputAssetId],
-      // F.E: XSTUSD-XOR-XSTGPB;
-      [inputAssetId, baseAssetId, outputAssetId],
-    ];
+    pathBuilder.viaSyntheticBase().viaBase();
   } else if (matchType(iType, oType)(AssetType.Base, AssetType.Synthetic, true)) {
-    return [
-      // F.E: XOR-XSTUSD; XSTUSD-XOR;
-      [inputAssetId, outputAssetId],
-      // F.E: XOR-XST-XSTUSD; XSTUSD-XST-XOR;
-      [inputAssetId, syntheticBaseAssetId, outputAssetId],
-    ];
-  } else if (matchType(iType, oType)(AssetType.Basic, AssetType.Synthetic)) {
-    return [
-      // F.E: VAL-XOR-XST-XSTUSD;
-      [inputAssetId, baseAssetId, syntheticBaseAssetId, outputAssetId],
-      // F.E: VAL-XOR-XSTUSD;
-      [inputAssetId, baseAssetId, outputAssetId],
-    ];
-  } else if (matchType(iType, oType)(AssetType.Synthetic, AssetType.Basic)) {
-    return [
-      // F.E: XSTUSD-XST-XOR-VAL;
-      [inputAssetId, syntheticBaseAssetId, baseAssetId, outputAssetId],
-      // F.E: XSTUSD-XOR-VAL;
-      [inputAssetId, baseAssetId, outputAssetId],
-    ];
+    pathBuilder.direct().viaSyntheticBase();
+  } else if (
+    matchType(iType, oType)(AssetType.Basic, AssetType.Synthetic) ||
+    matchType(iType, oType)(AssetType.ChameleonBase, AssetType.Synthetic)
+  ) {
+    pathBuilder.viaBase().viaBaseAndSyntheticBase();
+  } else if (
+    matchType(iType, oType)(AssetType.Synthetic, AssetType.Basic) ||
+    matchType(iType, oType)(AssetType.Synthetic, AssetType.ChameleonBase)
+  ) {
+    pathBuilder.viaBase().viaSyntheticBaseAndBase();
+  } else if (matchType(iType, oType)(AssetType.ChameleonPoolAsset, AssetType.ChameleonBase, true)) {
+    pathBuilder.direct().viaBase();
+  } else if (matchType(iType, oType)(AssetType.Base, AssetType.ChameleonPoolAsset, true)) {
+    pathBuilder.direct().viaBaseChameleon();
+  } else if (
+    matchType(iType, oType)(AssetType.SyntheticBase, AssetType.ChameleonPoolAsset) ||
+    matchType(iType, oType)(AssetType.Basic, AssetType.ChameleonPoolAsset) // VAL - ETH
+  ) {
+    pathBuilder.viaBase().viaBaseAndBaseChameleon();
+  } else if (
+    matchType(iType, oType)(AssetType.ChameleonPoolAsset, AssetType.SyntheticBase) ||
+    matchType(iType, oType)(AssetType.ChameleonPoolAsset, AssetType.Basic)
+  ) {
+    pathBuilder.viaBase().viaBaseChameleonAndBase();
+  } else if (matchType(iType, oType)(AssetType.Synthetic, AssetType.ChameleonPoolAsset)) {
+    pathBuilder.viaBase().viaSyntheticBaseAndBase().viaBaseAndBaseChameleon().viaSyntheticBaseAndBaseAndBaseChameleon();
+  } else if (matchType(iType, oType)(AssetType.ChameleonPoolAsset, AssetType.Synthetic)) {
+    pathBuilder.viaBase().viaBaseAndSyntheticBase().viaBaseChameleonAndBase().viaBaseChameleonAndBaseAndSyntheticBase();
+  } else if (matchType(iType, oType)(AssetType.ChameleonPoolAsset, AssetType.ChameleonPoolAsset)) {
+    pathBuilder.viaBase().viaBaseChameleonAndBase().viaBaseAndBaseChameleon();
+  } else if (
+    matchType(iType, oType)(AssetType.Base, AssetType.Base) ||
+    matchType(iType, oType)(AssetType.SyntheticBase, AssetType.SyntheticBase) ||
+    matchType(iType, oType)(AssetType.ChameleonBase, AssetType.ChameleonBase)
+  ) {
+    pathBuilder;
   }
 
-  return [];
+  return pathBuilder.paths;
 };
 
 /**
@@ -132,12 +254,13 @@ const getAssetLiquiditySources = (
   xykReserves: QuotePayload['reserves']['xyk'],
   orderBookReserves: QuotePayload['reserves']['orderBook']
 ): Array<LiquiditySourceTypes> => {
+  const baseChameleonAssetId = getChameleonPoolBaseAssetId(baseAssetId);
+
   const rules = {
+    [LiquiditySourceTypes.XYKPool]: () =>
+      baseAssetId === address || baseChameleonAssetId === address || Array.isArray(xykReserves[address]),
     [LiquiditySourceTypes.MulticollateralBondingCurvePool]: () =>
       baseAssetId === Consts.XOR && [...enabledAssets.tbc, Consts.XOR].includes(address),
-    [LiquiditySourceTypes.XYKPool]: () =>
-      baseAssetId === address ||
-      (Array.isArray(xykReserves[address]) && xykReserves[address].every((tokenReserve) => !!Number(tokenReserve))),
     [LiquiditySourceTypes.XSTPool]: () =>
       baseAssetId === Consts.XOR && (address === syntheticBaseAssetId || !!enabledAssets.xst[address]),
     [LiquiditySourceTypes.OrderBook]: () =>
@@ -193,7 +316,9 @@ export const getAssetsLiquiditySources = (
     liquiditySources = [...new Set([...liquiditySources, ...exchangePathSources])];
   }
 
-  return { assetPaths, liquiditySources };
+  const isAvailable = !!Object.keys(assetPaths).length && Object.values(assetPaths).every((paths) => !!paths.length);
+
+  return { isAvailable, liquiditySources };
 };
 
 /**
