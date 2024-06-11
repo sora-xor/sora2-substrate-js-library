@@ -50,7 +50,15 @@ async function main(): Promise<void> {
 
     const maxInputAmount = FPNumber.fromCodecValue('3060019612559079462');
 
-    api.swap.executeSwapTransferBatch(SwapTransferBatchData, VAL, maxInputAmount);
+    const additionalData = {
+      rates: {
+        val: '1.34',
+        xor: '1.7',
+        pswap: '0.03',
+      },
+    };
+
+    api.swap.executeSwapTransferBatch(SwapTransferBatchData, VAL, maxInputAmount, additionalData);
   });
 }
 
