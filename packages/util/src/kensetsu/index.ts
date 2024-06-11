@@ -3,6 +3,7 @@ import { assert } from '@polkadot/util';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
 import type { KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
 import type { Vec, u128 } from '@polkadot/types-codec';
+import type { Percent } from '@polkadot/types/interfaces/runtime';
 
 import { Messages } from '../logger';
 import { Operation } from '../types';
@@ -10,7 +11,7 @@ import { KXOR } from '../assets/consts';
 import { VaultTypes } from './consts';
 import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
-import type { Collateral, StablecoinInfo, Vault } from './types';
+import type { BorrowTaxes, Collateral, StablecoinInfo, Vault } from './types';
 
 export class KensetsuModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -165,6 +166,29 @@ export class KensetsuModule<T> {
    */
   subscribeOnKarmaBorrowTax(): Observable<number> {
     return this.root.apiRx.query.kensetsu.karmaBorrowTax().pipe(map((res) => res.toNumber()));
+  }
+
+  async getBorrowTaxes(): Promise<BorrowTaxes> {
+    const [tax, tbcdTax, karmaTax] = await this.root.api.queryMulti<Array<Percent>>([
+      this.root.api.query.kensetsu.borrowTax as any,
+      this.root.api.query.kensetsu.tbcdBorrowTax,
+      this.root.api.query.kensetsu.karmaBorrowTax,
+    ]);
+    return { borrowTax: tax.toNumber(), tbcdBorrowTax: tbcdTax.toNumber(), karmaBorrowTax: karmaTax.toNumber() };
+  }
+
+  subscribeOnBorrowTaxes(): Observable<BorrowTaxes> {
+    return this.root.apiRx
+      .queryMulti<
+        Array<Percent>
+      >([this.root.apiRx.query.kensetsu.borrowTax as any, this.root.apiRx.query.kensetsu.tbcdBorrowTax, this.root.apiRx.query.kensetsu.karmaBorrowTax])
+      .pipe(
+        map(([tax, tbcdTax, karmaTax]) => ({
+          borrowTax: tax.toNumber(),
+          tbcdBorrowTax: tbcdTax.toNumber(),
+          karmaBorrowTax: karmaTax.toNumber(),
+        }))
+      );
   }
 
   /**
