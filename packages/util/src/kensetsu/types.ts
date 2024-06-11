@@ -39,7 +39,7 @@ export type Collateral = {
 
 export type StablecoinInfo = {
   badDebt: FPNumber;
-  pegAssetId: string;
+  pegAsset: string;
   isSoraAsset: boolean;
 };
 

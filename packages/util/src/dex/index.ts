@@ -4,7 +4,7 @@ import { XOR, XST } from '../assets/consts';
 import type { Api } from '../api';
 import type { DexInfo } from './types';
 
-import { LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
+import type { LiquiditySourceTypes } from '@sora-substrate/liquidity-proxy';
 
 export class DexModule<T> {
   constructor(private readonly root: Api<T>) {}

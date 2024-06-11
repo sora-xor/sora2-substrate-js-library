@@ -7,7 +7,7 @@ import type { Vec, u128 } from '@polkadot/types-codec';
 
 import { Messages } from '../logger';
 import { Operation } from '../types';
-import { KUSD, KXOR } from '../assets/consts';
+import { KXOR } from '../assets/consts';
 import { VaultTypes } from './consts';
 import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
@@ -32,9 +32,9 @@ export class KensetsuModule<T> {
   /**
    * Usage: general system parameters, statistical information
    *
-   * @returns Stablecoin info as `Record<string, StablecoinInfo>` where key is the asset address and value is the amount of bad debt and peg asset id
+   * @returns Stablecoin infos as `Record<string, StablecoinInfo>` where key is the asset address and value is the amount of bad debt and peg asset id
    */
-  async getStablecoinInfo(): Promise<Record<string, StablecoinInfo>> {
+  async getStablecoinInfos(): Promise<Record<string, StablecoinInfo>> {
     const stablecoinInfos = await this.root.api.query.kensetsu.stablecoinInfos.entries();
     return stablecoinInfos.reduce<Record<string, StablecoinInfo>>((acc, item) => {
       const [key, value] = item;
@@ -43,12 +43,14 @@ export class KensetsuModule<T> {
       const info = value.unwrapOr(null);
       if (!info) return acc;
 
-      const pegAsset = info.stablecoinParameters.pegAsset;
-      const isSoraAsset = pegAsset.isSoraAssetId;
-      const pegAssetId = isSoraAsset ? pegAsset.asSoraAssetId.code.toString() : pegAsset.asOracleSymbol.toString();
+      const pegAssetObj = info.stablecoinParameters.pegAsset;
+      const isSoraAsset = pegAssetObj.isSoraAssetId;
+      const pegAsset = isSoraAsset
+        ? pegAssetObj.asSoraAssetId.code.toString()
+        : (pegAssetObj.asOracleSymbol.toHuman() as string);
       const badDebt = new FPNumber(info.badDebt);
 
-      acc[assetId] = { badDebt, pegAssetId, isSoraAsset };
+      acc[assetId] = { badDebt, pegAsset, isSoraAsset };
       return acc;
     }, {});
   }
@@ -56,9 +58,9 @@ export class KensetsuModule<T> {
   /**
    * Usage: general system parameters, statistical information
    *
-   * Stablecoin info as `Record<string, StablecoinInfo>` where key is the asset address and value is the amount of bad debt and peg asset id
+   * Stablecoin infos as `Record<string, StablecoinInfo>` where key is the asset address and value is the amount of bad debt and peg asset id
    */
-  async subscribeOnStablecoinInfo(): Promise<Observable<Record<string, StablecoinInfo>>> {
+  async subscribeOnStablecoinInfos(): Promise<Observable<Record<string, StablecoinInfo>>> {
     const keys = await this.root.api.query.kensetsu.stablecoinInfos.keys();
     const assetIds = keys.map((key) => key.args[0].code.toString());
 
@@ -69,12 +71,14 @@ export class KensetsuModule<T> {
           const info = value.unwrapOr(null);
           if (!info) return acc;
 
-          const pegAsset = info.stablecoinParameters.pegAsset;
-          const isSoraAsset = pegAsset.isSoraAssetId;
-          const pegAssetId = isSoraAsset ? pegAsset.asSoraAssetId.code.toString() : pegAsset.asOracleSymbol.toString();
+          const pegAssetObj = info.stablecoinParameters.pegAsset;
+          const isSoraAsset = pegAssetObj.isSoraAssetId;
+          const pegAsset = isSoraAsset
+            ? pegAssetObj.asSoraAssetId.code.toString()
+            : pegAssetObj.asOracleSymbol.toString();
           const badDebt = new FPNumber(info.badDebt);
 
-          acc[assetId] = { badDebt, pegAssetId, isSoraAsset };
+          acc[assetId] = { badDebt, pegAsset, isSoraAsset };
           return acc;
         }, {});
       })
@@ -287,7 +291,7 @@ export class KensetsuModule<T> {
   private formatVault(data: KensetsuCollateralizedDebtPosition, id: number): Vault {
     const vault: Vault = {
       lockedAmount: new FPNumber(data.collateralAmount),
-      debtAssetId: KUSD.address,
+      debtAssetId: data.stablecoinAssetId.code.toString(),
       vaultType: VaultTypes.V2,
       debt: new FPNumber(data.debt),
       internalDebt: new FPNumber(data.debt),
@@ -401,7 +405,7 @@ export class KensetsuModule<T> {
    * @param lockedAsset Locked asset
    * @param debtAsset Debt asset
    * @param collateralAmount Amount of collateral asset
-   * @param borrowAmount Amount of KUSD which will be borrowed
+   * @param borrowAmount Amount of debt asset which will be borrowed
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
   createVault(
@@ -446,15 +450,17 @@ export class KensetsuModule<T> {
   /**
    * Close user's vault (repay full debt & close vault)
    *
-   * Be sure that the account has enough KUSD for covering all the debt
+   * Be sure that the account has enough debt token amount for covering all the debt
    *
    * @param vault User's vault
    * @param collateralAsset Collateral asset; it's required to set it as well to have correct asset symbol in a history
+   * @param debtAsset Debt asset; it's required to set it as well to have correct asset symbol in a history
    */
-  closeVault(vault: Vault, collateralAsset: Asset): Promise<T> {
+  closeVault(vault: Vault, collateralAsset: Asset | AccountAsset, debtAsset: Asset | AccountAsset): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     const vaultId = vault.id;
     const symbol = collateralAsset?.symbol ?? '';
+    const symbol2 = debtAsset?.symbol ?? '';
 
     return this.root.submitExtrinsic(this.root.api.tx.kensetsu.closeCdp(vaultId), this.root.account.pair, {
       type: Operation.CloseVault,
@@ -463,8 +469,8 @@ export class KensetsuModule<T> {
       amount2: vault.debt.toString(),
       assetAddress: vault.lockedAssetId,
       symbol,
-      asset2Address: KUSD.address,
-      symbol2: KUSD.symbol,
+      asset2Address: vault.debtAssetId,
+      symbol2,
     });
   }
 
@@ -474,12 +480,14 @@ export class KensetsuModule<T> {
    * If you want to repay everything and close vault then it's better to use `closeVault`
    *
    * @param vault User's vault
-   * @param amount Amount in KUSD from the account which will cover the debt in KUSD
+   * @param amount Amount of debt asset from the account which will cover the debt
+   * @param debtAsset Debt asset; it's required to set it as well to have correct asset symbol in a history
    */
-  repayVaultDebt(vault: Vault, amount: NumberLike): Promise<T> {
+  repayVaultDebt(vault: Vault, amount: NumberLike, debtAsset: Asset | AccountAsset): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     const repayDebt = new FPNumber(amount);
     assert(vault.debt.gte(repayDebt), Messages.repayVaultDebtMoreThanDebt);
+    const symbol = debtAsset?.symbol ?? '';
 
     return this.root.submitExtrinsic(
       this.root.api.tx.kensetsu.repayDebt(vault.id, repayDebt.codec),
@@ -488,8 +496,8 @@ export class KensetsuModule<T> {
         type: Operation.RepayVaultDebt,
         vaultId: vault.id,
         amount: `${amount}`,
-        assetAddress: KUSD.address,
-        symbol: KUSD.symbol,
+        assetAddress: vault.debtAssetId,
+        symbol,
       }
     );
   }
@@ -520,20 +528,22 @@ export class KensetsuModule<T> {
   }
 
   /**
-   * Borrow extra KUSD from the existing vault
+   * Borrow extra debt from the existing vault
    *
    * @param vault User's vault
    * @param amount Amount which will be borrowed to the existing vault
+   * @param debtAsset Debt asset; it's required to set it as well to have correct asset symbol in a history
    * @param slippageTolerance Slippage tolerance coefficient (in %)
    */
   borrow(
     vault: Vault,
     amount: NumberLike,
+    debtAsset: Asset | AccountAsset,
     slippageTolerance: NumberLike = this.root.defaultSlippageTolerancePercent
   ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     const willToBorrow = new FPNumber(amount);
-
+    const symbol = debtAsset?.symbol ?? '';
     const slippage = willToBorrow.mul(Number(slippageTolerance) / 100);
     const minWillToBorrowCodec = willToBorrow.sub(slippage).codec;
 
@@ -544,8 +554,8 @@ export class KensetsuModule<T> {
         type: Operation.BorrowVaultDebt,
         vaultId: vault.id,
         amount: `${amount}`,
-        assetAddress: KUSD.address,
-        symbol: KUSD.symbol,
+        assetAddress: vault.debtAssetId,
+        symbol,
       }
     );
   }

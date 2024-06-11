@@ -14,10 +14,15 @@ async function main(): Promise<void> {
     const karmaBorrowTax = await api.kensetsu.getKarmaBorrowTax();
     console.info('karmaBorrowTax (%)', karmaBorrowTax.toLocaleString());
 
-    const badDebt = await api.kensetsu.getBadDebt();
+    const stablecoinInfos = await api.kensetsu.getStablecoinInfos();
     console.info(
-      'badDebt',
-      Object.entries(badDebt).map(([assetId, value]) => `${assetId}: ${value.toString()}`)
+      'stablecoinInfos:\n',
+      Object.entries(stablecoinInfos)
+        .map(
+          ([assetId, value]) =>
+            `_____\n${assetId}:\nbadDebt:${value.badDebt.toString()}\npegAsset:${value.pegAsset}\nisSoraAsset:${value.isSoraAsset}`
+        )
+        .join('\n')
     );
 
     const cdpCount = await api.kensetsu.getCdpCount();
@@ -85,7 +90,7 @@ async function main(): Promise<void> {
     // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
     // await delay();
     // console.info('History:', api.historyList[0]);
-  }, SORA_ENV.predev);
+  }, SORA_ENV.dev);
 }
 
 main()
