@@ -14,13 +14,13 @@ export type SubAsset = {
   decimals: number;
 };
 
-export type Standalone = typeof Standalones[number];
+export type Standalone = (typeof Standalones)[number];
 
-export type Relaychain = typeof Relaychains[number];
+export type Relaychain = (typeof Relaychains)[number];
 
-export type SoraParachain = typeof SoraParachains[number];
+export type SoraParachain = (typeof SoraParachains)[number];
 
-export type Parachain = typeof Parachains[number];
+export type Parachain = (typeof Parachains)[number];
 /** Used in frontend app */
 export type SubNetwork = Relaychain | Parachain | Standalone;
 

@@ -13,8 +13,8 @@ import {
   keyExtractSuri,
   mnemonicValidate,
 } from '@polkadot/util-crypto';
-import type { KeypairType } from '@polkadot/util-crypto/types';
 import { FPNumber, CodecString } from '@sora-substrate/math';
+import type { KeypairType } from '@polkadot/util-crypto/types';
 import type { Connection } from '@sora-substrate/connection';
 import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CreateResult, KeyringAddress } from '@polkadot/ui-keyring/types';

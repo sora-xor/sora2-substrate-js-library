@@ -1,6 +1,6 @@
 import { FPNumber, api } from '@sora-substrate/util';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
-import { DAI, XOR } from '@sora-substrate/util/assets/consts';
+import { DAI, KUSD, XOR } from '@sora-substrate/util/assets/consts';
 
 import { withConnectedAccount, delay } from './util';
 
@@ -9,9 +9,21 @@ async function main(): Promise<void> {
     console.info('\n\nKensetsu Stats____________________________');
     const borrowTax = await api.kensetsu.getBorrowTax();
     console.info('borrowTax (%)', borrowTax.toLocaleString());
+    const tbcdBorrowTax = await api.kensetsu.getTbcdBorrowTax();
+    console.info('tbcdBorrowTax (%)', tbcdBorrowTax.toLocaleString());
+    const karmaBorrowTax = await api.kensetsu.getKarmaBorrowTax();
+    console.info('karmaBorrowTax (%)', karmaBorrowTax.toLocaleString());
 
-    const badDebt = await api.kensetsu.getBadDebt();
-    console.info('badDebt (KUSD)', badDebt.toLocaleString());
+    const stablecoinInfos = await api.kensetsu.getStablecoinInfos();
+    console.info(
+      'stablecoinInfos:\n',
+      Object.entries(stablecoinInfos)
+        .map(
+          ([assetId, value]) =>
+            `_____\n${assetId}:\nbadDebt:${value.badDebt.toString()}\npegAsset:${value.pegAsset}\nisSoraAsset:${value.isSoraAsset}`
+        )
+        .join('\n')
+    );
 
     const cdpCount = await api.kensetsu.getCdpCount();
     console.info('cdpCount', cdpCount);
@@ -28,10 +40,10 @@ async function main(): Promise<void> {
       vaults.map(({ id }) => id)
     );
 
-    const collateral = await api.kensetsu.getCollateral(XOR);
+    const collateral = await api.kensetsu.getCollateral(XOR, KUSD);
     console.info('\n\nCollateral for XOR_______________________');
     console.info('collateral.interestCoefficient', collateral.interestCoefficient.toString());
-    console.info('collateral.debtSupply (KUSD)', collateral.debtSupply.toString()); // [MOCK]
+    console.info('collateral.debtSupply (KUSD)', collateral.debtSupply.toString());
     console.info('collateral.totalLocked (XOR)', collateral.totalLocked.toString());
     console.info('collateral.lastFeeUpdateTime', collateral.lastFeeUpdateTime);
     console.info('collateral.riskParams.hardCap', collateral.riskParams.hardCap.toString());
@@ -75,9 +87,9 @@ async function main(): Promise<void> {
 
     console.info('\n\nVault Creation__________________________');
     console.info(`Network fee: ${FPNumber.fromCodecValue(api.NetworkFee.CreateVault).toString()} XOR`);
-    await api.kensetsu.createVault(DAI, 100, 20);
-    await delay();
-    console.info('History:', api.historyList[0]);
+    // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
+    // await delay();
+    // console.info('History:', api.historyList[0]);
   }, SORA_ENV.dev);
 }
 

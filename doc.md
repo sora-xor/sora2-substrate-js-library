@@ -76,6 +76,7 @@
 - [mmrLeaf](#mmrleaf-pallet)
 - [sudo](#sudo-pallet)
 - [apolloPlatform](#apolloplatform-pallet)
+- [regulatedAssets](#regulatedassets-pallet)
 - [utility](#utility-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
 - [faucet](#faucet-pallet)
@@ -3826,9 +3827,11 @@ returns: `AccountId32`
 
 #### **api.query.multicollateralBondingCurvePool.pendingFreeReserves**
 
-arguments: -
+arguments:
 
-returns: `Vec<(CommonPrimitivesAssetId32,u128)>`
+- key: `u32`
+
+returns: `BTreeMap<CommonPrimitivesAssetId32, u128>`
 
 <hr>
 
@@ -9775,23 +9778,26 @@ returns: `bool`
 
 <hr>
 
-#### **api.query.kensetsu.badDebt**
+#### **api.query.kensetsu.stablecoinInfos**
 
-> System bad debt, the amount of KUSD not secured with collateral.
+> Stablecoin parameters
 
-arguments: -
+arguments:
 
-returns: `u128`
+- key: `CommonPrimitivesAssetId32`
+
+returns: `KensetsuStablecoinInfo`
 
 <hr>
 
 #### **api.query.kensetsu.collateralInfos**
 
-> Parametes for collaterals, include risk parameters and interest recalculation coefficients
+> Parameters for collaterals, include risk parameters and interest recalculation coefficients.
+> Map (Collateral asset id, Stablecoin asset id => CollateralInfo)
 
 arguments:
 
-- key: `CommonPrimitivesAssetId32`
+- key: `KensetsuStablecoinCollateralIdentifier`
 
 returns: `KensetsuCollateralInfo`
 
@@ -9799,8 +9805,28 @@ returns: `KensetsuCollateralInfo`
 
 #### **api.query.kensetsu.borrowTax**
 
-> Risk parameter
-> Borrows tax to buy back and burn KEN
+> Borrows tax applied on borrow amount in any stablecoin and used to buy back and incentivize
+> KEN. It is a risk parameter.
+
+arguments: -
+
+returns: `Percent`
+
+<hr>
+
+#### **api.query.kensetsu.karmaBorrowTax**
+
+> Borrow tax applied on borrow amount in KXOR and used to buy back and incentivize KARMA.
+
+arguments: -
+
+returns: `Percent`
+
+<hr>
+
+#### **api.query.kensetsu.tbcdBorrowTax**
+
+> Borrow tax applied on borrow amount in KXOR and used to buy back and burn TBCD.
 
 arguments: -
 
@@ -9873,8 +9899,10 @@ arguments:
 
 - collateralAssetId: `CommonPrimitivesAssetId32`
 - collateralAmount: `u128`
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
 - borrowAmountMin: `u128`
 - borrowAmountMax: `u128`
+- cdpType: `KensetsuCdpType`
 <hr>
 
 #### **api.tx.kensetsu.closeCdp**
@@ -9888,6 +9916,7 @@ arguments:
 >
 > - `origin`: The origin of the transaction, only CDP owner is allowed.
 > - `cdp_id`: The ID of the CDP to be closed.
+>   will be transferred.
 
 arguments:
 
@@ -9981,12 +10010,14 @@ arguments:
 > ## Parameters
 >
 > - `origin`: The origin of the transaction.
-> - `collateral_asset_id`: The identifier of the collateral asset.
+> - `collateral_asset_id`: The identifier of the collateral asset. If collateral asset id
+>   is not tracked by PriceTools, registers the asset id in PriceTools.
 > - `new_risk_parameters`: The new risk parameters to be set for the collateral asset.
 
 arguments:
 
 - collateralAssetId: `CommonPrimitivesAssetId32`
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
 - newRiskParameters: `KensetsuCollateralRiskParameters`
 <hr>
 
@@ -10001,7 +10032,7 @@ arguments:
 
 arguments:
 
-- newBorrowTax: `Percent`
+- newBorrowTaxes: `KensetsuBorrowTaxes`
 <hr>
 
 #### **api.tx.kensetsu.updateLiquidationPenalty**
@@ -10020,32 +10051,51 @@ arguments:
 
 #### **api.tx.kensetsu.withdrawProfit**
 
-> Withdraws protocol profit in the form of stablecoin (KUSD).
+> Withdraws protocol profit in the form of stablecoin.
 >
 > ## Parameters
 >
 > - `origin`: The origin of the transaction.
 > - `beneficiary` : The destination account where assets will be withdrawn.
-> - `kusd_amount`: The amount of stablecoin (KUSD) to withdraw as protocol profit.
+> - `stablecoin_asset_id` - The asset id of stablecoin.
+> - `amount`: The amount of stablecoin to withdraw as protocol profit.
 
 arguments:
 
 - beneficiary: `AccountId32`
-- kusdAmount: `u128`
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
+- amount: `u128`
 <hr>
 
 #### **api.tx.kensetsu.donate**
 
-> Donates stablecoin (KUSD) to cover protocol bad debt.
+> Donates stablecoin to cover protocol bad debt.
 >
 > ## Parameters
 >
 > - `origin`: The origin of the transaction.
-> - `kusd_amount`: The amount of stablecoin (KUSD) to donate to cover bad debt.
+> - `stablecoin_asset_id` - The asset id of stablecoin.
+> - `amount`: The amount of stablecoin to donate to cover bad debt.
 
 arguments:
 
-- kusdAmount: `u128`
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
+- amount: `u128`
+<hr>
+
+#### **api.tx.kensetsu.registerStablecoin**
+
+> Adds new stablecoin mutating StablecoinInfo.
+>
+> ##Parameters
+>
+> - stablecoin_asset_id - asset id of new stablecoin, must be mintable and total supply
+>   must be 0.
+> - new_stablecoin_parameters - parameters for peg.
+
+arguments:
+
+- newStablecoinParameters: `KensetsuStablecoinParameters`
 <hr>
 
 ## LeafProvider pallet
@@ -11506,7 +11556,7 @@ returns: `u16`
 
 #### **api.query.apolloPlatform.userLendingInfo**
 
-> Lended asset -> AccountId -> LendingPosition
+> Lent asset -> AccountId -> LendingPosition
 
 arguments:
 
@@ -11713,6 +11763,108 @@ arguments:
 arguments:
 
 - assetIdToRemove: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.apolloPlatform.editPoolInfo**
+
+> Edit pool info
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- newLoanToValue: `u128`
+- newLiquidationThreshold: `u128`
+- newOptimalUtilizationRate: `u128`
+- newBaseRate: `u128`
+- newSlopeRate1: `u128`
+- newSlopeRate2: `u128`
+- newReserveFactor: `u128`
+<hr>
+
+## RegulatedAssets pallet
+
+### _State Queries_
+
+#### **api.query.regulatedAssets.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.regulatedAssets.regulatedAsset**
+
+> Mapping from asset id to whether it is regulated or not
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `bool`
+
+<hr>
+
+#### **api.query.regulatedAssets.soulboundAsset**
+
+> Mapping from SBT (asset_id) to its metadata
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `RegulatedAssetsSoulboundTokenMetadata`
+
+<hr>
+
+#### **api.query.regulatedAssets.sbTsByAsset**
+
+> Mapping from `asset_id` to its SBTs which grant permission to transfer, mint, and burn the `asset_id`
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `BTreeSet<CommonPrimitivesAssetId32>`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.regulatedAssets.regulateAsset**
+
+> Marks an asset as regulated, representing that the asset will only operate between KYC-verified wallets.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `asset_id`: The identifier of the asset.
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.regulatedAssets.issueSbt**
+
+> Issues a new Soulbound Token (SBT).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `symbol`: The symbol of the SBT which should represent string with only uppercase latin chars with max length of 7.
+> - `name`: The name of the SBT should represent string with only uppercase or lowercase latin chars or numbers or spaces, with max length of 33.
+> - `allowed_assets`: TThe list of assets allowed to be operated with by holding the SBT.
+> - `description`: The description of the SBT. (Optional)
+
+arguments:
+
+- symbol: `Bytes`
+- name: `Bytes`
+- allowedAssets: `Vec<CommonPrimitivesAssetId32>`
+- description: `Option<Bytes>`
 <hr>
 
 ## Utility pallet
@@ -13194,8 +13346,7 @@ returns: `Option<SwapOutcomeInfo>`
 {
     _enum: [
         "EthApp",
-        "ERC20App",
-        "SidechainApp",
+        "FaApp",
         "HashiBridge",
         "XorMaster",
         "ValMaster"
@@ -13217,7 +13368,7 @@ returns: `Option<SwapOutcomeInfo>`
 ### EVMChainId
 
 ```
-"U256"
+"H256"
 ```
 
 ### EVMLegacyAssetInfo
@@ -13227,7 +13378,7 @@ returns: `Option<SwapOutcomeInfo>`
     assetId: "MainnetAssetId",
     evmAddress: "H160",
     appKind: "EVMAppKind",
-    precision: "u8"
+    precision: "Option<u8>"
 }
 ```
 
@@ -14083,7 +14234,11 @@ returns: `Option<SwapOutcomeInfo>`
         "XST",
         "TBCD",
         "KEN",
-        "KUSD"
+        "KUSD",
+        "KGOLD",
+        "KXOR",
+        "SB",
+        "KARMA"
     ]
 }
 ```
