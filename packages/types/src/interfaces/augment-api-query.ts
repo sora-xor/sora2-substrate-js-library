@@ -1215,6 +1215,20 @@ declare module '@polkadot/api-base/types/storage' {
       referrerBalances: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<u128>>, [AccountId32]>;
       referrers: AugmentedQuery<ApiType, (arg: AccountId32 | string | Uint8Array) => Observable<Option<AccountId32>>, [AccountId32]>;
     };
+    regulatedAssets: {
+      /**
+       * Mapping from asset id to whether it is regulated or not
+       **/
+      regulatedAsset: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<bool>, [CommonPrimitivesAssetId32]>;
+      /**
+       * Mapping from `asset_id` to its SBTs which grant permission to transfer, mint, and burn the `asset_id`
+       **/
+      sbTsByAsset: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<BTreeSet<CommonPrimitivesAssetId32>>, [CommonPrimitivesAssetId32]>;
+      /**
+       * Mapping from SBT (asset_id) to its metadata
+       **/
+      soulboundAsset: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<RegulatedAssetsSoulboundTokenMetadata>>, [CommonPrimitivesAssetId32]>;
+    };
     rewards: {
       /**
        * Amount of VAL currently being vested (aggregated over the previous period of 14,400 blocks)

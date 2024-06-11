@@ -432,6 +432,10 @@ declare module '@polkadot/types/types/registry' {
     QaToolsPalletToolsXstSyntheticQuoteDirection: QaToolsPalletToolsXstSyntheticQuoteDirection;
     ReferralsCall: ReferralsCall;
     ReferralsError: ReferralsError;
+    RegulatedAssetsCall: RegulatedAssetsCall;
+    RegulatedAssetsError: RegulatedAssetsError;
+    RegulatedAssetsEvent: RegulatedAssetsEvent;
+    RegulatedAssetsSoulboundTokenMetadata: RegulatedAssetsSoulboundTokenMetadata;
     RewardsCall: RewardsCall;
     RewardsError: RewardsError;
     RewardsEvent: RewardsEvent;

@@ -2658,6 +2658,28 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ReferrerInsufficientBalance: AugmentedError<ApiType>;
     };
+    regulatedAssets: {
+      /**
+       * All involved users of a regulated asset operation should hold SBT
+       **/
+      AllInvolvedUsersShouldHoldSBT: AugmentedError<ApiType>;
+      /**
+       * Asset is already regulated
+       **/
+      AssetAlreadyRegulated: AugmentedError<ApiType>;
+      /**
+       * Only asset owner can regulate
+       **/
+      OnlyAssetOwnerCanRegulate: AugmentedError<ApiType>;
+      /**
+       * SBT is not operationable by any asset operation
+       **/
+      SoulboundAssetNotOperationable: AugmentedError<ApiType>;
+      /**
+       * SBT is not transferable
+       **/
+      SoulboundAssetNotTransferable: AugmentedError<ApiType>;
+    };
     rewards: {
       /**
        * Address is not eligible for any rewards
