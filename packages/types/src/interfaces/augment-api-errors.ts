@@ -2357,6 +2357,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NotEnoughLiquidityOutOfFarming: AugmentedError<ApiType>;
       /**
+       * Output asset reserves is not enough
+       **/
+      NotEnoughOutputReserves: AugmentedError<ApiType>;
+      /**
        * Not enough unlocked liquidity to withdraw
        **/
       NotEnoughUnlockedLiquidity: AugmentedError<ApiType>;
