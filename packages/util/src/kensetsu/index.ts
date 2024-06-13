@@ -15,8 +15,6 @@ import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
 import type { AveragePrice, BorrowTaxes, Collateral, StablecoinInfo, Vault } from './types';
 
-const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
-
 export class KensetsuModule<T> {
   constructor(private readonly root: Api<T>) {}
 
@@ -47,17 +45,25 @@ export class KensetsuModule<T> {
           return acc;
         }, {});
       }),
-      distinctUntilChanged(comparator)
+      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr))
     );
   }
 
-  private getAveragePriceObservable(assetA: string, assetB: string, priceVariant: PriceVariant): Observable<FPNumber> {
+  private getAveragePriceObservable(
+    assetA: string,
+    assetB: string,
+    priceVariant: PriceVariant
+  ): Observable<FPNumber | null> {
     return this.getPricesObservable(assetA, assetB).pipe(
       map((prices) => {
-        const payload = { prices } as QuotePayload;
-        return getAveragePrice(assetA, assetB, priceVariant, payload);
-      }),
-      distinctUntilChanged((prev, curr) => prev.eq(curr))
+        try {
+          const payload = { prices } as QuotePayload;
+          return getAveragePrice(assetA, assetB, priceVariant, payload);
+        } catch (error) {
+          console.warn(`[Kensetsu] getAveragePriceObservable for ${assetA} and ${assetB}`, error);
+          return null;
+        }
+      })
     );
   }
 
@@ -73,7 +79,7 @@ export class KensetsuModule<T> {
     lockedAssetId: string,
     debtAssetId: string,
     info?: StablecoinInfo
-  ): Observable<FPNumber> | null {
+  ): Observable<FPNumber | null> | null {
     if (lockedAssetId === DAI.address && debtAssetId === KUSD.address) {
       return null; // Exclude DAI/KUSD pair because it has a fixed price 1:1
     }
@@ -86,7 +92,7 @@ export class KensetsuModule<T> {
       return this.getAveragePriceObservable(lockedAssetId, pegAssetId, PriceVariant.Sell);
     } else {
       const pegSymbol = info.pegAsset;
-      const observables: [Observable<Option<BandBandRate>>, Observable<FPNumber>?] = [
+      const observables: [Observable<Option<BandBandRate>>, Observable<FPNumber | null>?] = [
         this.root.apiRx.query.band.symbolRates(pegSymbol),
       ];
 
@@ -97,9 +103,11 @@ export class KensetsuModule<T> {
       return combineLatest(observables).pipe(
         map(([rate, collateralPriceInDai]) => {
           const rateValue = rate.unwrapOr(null)?.value.toString();
-          if (!rateValue) return FPNumber.ZERO;
+          if (!rateValue) return null;
 
           const oraclePrice = FPNumber.fromCodecValue(rateValue);
+          if (oraclePrice.isZero()) return null;
+
           return (collateralPriceInDai ?? FPNumber.ONE).div(oraclePrice);
         })
       );
