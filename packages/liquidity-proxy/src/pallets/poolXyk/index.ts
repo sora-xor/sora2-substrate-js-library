@@ -9,7 +9,8 @@ import { getPairInfo, getTradingPair } from './utils';
 import type { QuotePayload, QuoteResult } from '../../types';
 
 // get_actual_reserves
-// returs reserves by order: [inputAssetId, outputAssetId]
+// Returns (input reserves, output reserves, max output amount)
+// Output reserves could only be greater than max output amount if it's chameleon pool
 export const getActualReserves = (
   baseAssetId: string,
   inputAssetId: string,
@@ -18,7 +19,7 @@ export const getActualReserves = (
 ) => {
   const [tpair, _baseChameleonAssetId, _isChameleonPool] = getPairInfo(baseAssetId, inputAssetId, outputAssetId);
 
-  const [reserveBase, reserveTarget] = [...payload.reserves.xyk[tpair.targetAssetId]];
+  const { base: reserveBase, target: reserveTarget } = payload.reserves.xyk[tpair.targetAssetId];
 
   // This code is not needed for lib, because "poolXyk.reserves" call returns reserves sum for "chameleon" pool
 
@@ -56,9 +57,9 @@ export const canExchange = (
   try {
     const tPair = getTradingPair(baseAssetId, inputAssetId, outputAssetId);
 
-    const reserves = [...payload.reserves.xyk[tPair.targetAssetId]];
+    const { base, target } = payload.reserves.xyk[tPair.targetAssetId];
 
-    return reserves.every((tokenReserve) => !!Number(tokenReserve));
+    return [base, target].every((tokenReserve) => !!Number(tokenReserve));
   } catch {
     return false;
   }

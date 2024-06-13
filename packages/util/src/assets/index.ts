@@ -549,6 +549,15 @@ export class AssetsModule<T> {
     }
   }
 
+  public subscribeOnAssetTransferableBalance(assetId: string, accountId: string) {
+    const observable =
+      assetId === XOR.address
+        ? this.root.apiRx.query.system.account(accountId).pipe(map((info) => formatBalance(info.data)))
+        : this.root.apiRx.query.tokens.accounts(accountId, assetId).pipe(map((info) => formatBalance(info)));
+
+    return observable.pipe(map((accountBalance) => accountBalance.transferable));
+  }
+
   public subscribeOnAssetSupply(assetId: string): Observable<CodecString> {
     let rxQuery: () => Observable<u128>;
     if (assetId === XOR.address) {

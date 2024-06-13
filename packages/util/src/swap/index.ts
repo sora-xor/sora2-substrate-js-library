@@ -1,5 +1,5 @@
 import { assert } from '@polkadot/util';
-import { combineLatest, map, distinctUntilChanged } from 'rxjs';
+import { combineLatest, map, distinctUntilChanged, Observable } from 'rxjs';
 import { NumberLike, FPNumber, CodecString } from '@sora-substrate/math';
 import {
   quote,
@@ -7,6 +7,8 @@ import {
   PriceVariant,
   newTrivial,
   getAssetsLiquiditySources,
+  getChameleonPool,
+  getChameleonPoolBaseAssetId,
 } from '@sora-substrate/liquidity-proxy';
 import type {
   PrimaryMarketsEnabledAssets,
@@ -20,7 +22,7 @@ import type {
   LiquidityProviderFee,
 } from '@sora-substrate/liquidity-proxy';
 import type { Balance, LPSwapOutcomeInfo, LiquiditySourceType, OutcomeFee } from '@sora-substrate/types';
-import type { Observable, Codec } from '@polkadot/types/types';
+import { Codec } from '@polkadot/types/types';
 import type {
   CommonPrimitivesAssetId32,
   FixnumFixedPoint,
@@ -33,6 +35,7 @@ import { Consts as SwapConsts } from './consts';
 import { XOR, DAI, XSTUSD } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
+import { poolAccountIdFromAssetPair } from '../poolXyk/account';
 import { Operation } from '../types';
 import { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
@@ -103,6 +106,43 @@ const getAssetAveragePrice = <T>(
   root: Api<T>
 ): Observable<{ [PriceVariant.Buy]: string; [PriceVariant.Sell]: string }> => {
   return toAveragePrice(root.apiRx.query.priceTools.priceInfos(assetAddress));
+};
+
+const toPoolReserves = <T>(
+  baseAssetId: string,
+  baseChameleonAssetId: string | null,
+  targetAssetId: string,
+  root: Api<T>
+): Observable<{ base: string; target: string; chameleon: string }> => {
+  const observablePoolReserves = root.apiRx.query.poolXYK.reserves(baseAssetId, targetAssetId).pipe(
+    map((reserves) => {
+      return {
+        base: reserves[0].toString(),
+        target: reserves[1].toString(),
+      };
+    })
+  );
+
+  let observableChameleonReserve!: Observable<string>;
+
+  if (baseChameleonAssetId && getChameleonPool({ baseAssetId, targetAssetId })) {
+    const poolAccountId = poolAccountIdFromAssetPair(root, baseAssetId, targetAssetId).toString();
+
+    observableChameleonReserve = root.assets.subscribeOnAssetTransferableBalance(baseChameleonAssetId, poolAccountId);
+  } else {
+    observableChameleonReserve = new Observable((subscriber) => subscriber.next('0'));
+  }
+
+  return combineLatest([observablePoolReserves, observableChameleonReserve]).pipe(
+    map(([reserves, chameleonReserve]) => {
+      return {
+        base: FPNumber.fromCodecValue(reserves.base).sub(FPNumber.fromCodecValue(chameleonReserve)).toCodecString(),
+        target: reserves.target,
+        chameleon: chameleonReserve,
+      };
+    }),
+    distinctUntilChanged(comparator)
+  );
 };
 
 const getAggregatedOrderBook = <T>(
@@ -311,6 +351,7 @@ export class SwapModule<T> {
     const dai = DAI.address;
     const xstusd = XSTUSD.address;
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
+    const baseChameleonAssetId = getChameleonPoolBaseAssetId(baseAssetId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
     const enabledSources = [...this.root.dex.enabledSources];
     const lockedSources = [...this.root.dex.lockedSources];
@@ -361,7 +402,7 @@ export class SwapModule<T> {
     }, []);
 
     const xykReserves = xykUsed
-      ? assetsWithXykReserves.map((address) => toCodec(this.root.apiRx.query.poolXYK.reserves(baseAssetId, address)))
+      ? assetsWithXykReserves.map((address) => toPoolReserves(baseAssetId, baseChameleonAssetId, address, this.root))
       : [];
 
     const orderBookReserves = orderBookUsed
@@ -428,7 +469,7 @@ export class SwapModule<T> {
         );
         const orderBook: Array<OrderBookAggregated> = data.slice(position, (position += orderBookReserves.length));
         const tbc: Array<string> = data.slice(position, (position += tbcReserves.length));
-        const xyk: Array<[string, string]> = data.slice(position, (position += xykReserves.length));
+        const xyk = data.slice(position, (position += xykReserves.length));
         const [initialPrice, priceChangeStep, priceChangeRate, sellPriceCoefficient, tbcReferenceAsset] = data.slice(
           position,
           (position += tbcConsts.length)
