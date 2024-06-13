@@ -1,32 +1,109 @@
-import { map, Observable } from 'rxjs';
+import { map, Observable, combineLatest, distinctUntilChanged } from 'rxjs';
 import { assert } from '@polkadot/util';
 import { FPNumber, NumberLike } from '@sora-substrate/math';
-import type { KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
-import type { Vec, u128 } from '@polkadot/types-codec';
+import { PriceVariant, QuotePayload } from '@sora-substrate/liquidity-proxy';
+import { getAveragePrice } from '@sora-substrate/liquidity-proxy/pallets/priceTools';
+import type { BandBandRate, KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition } from '@polkadot/types/lookup';
+import type { Vec, u128, Option } from '@polkadot/types-codec';
 import type { Percent } from '@polkadot/types/interfaces/runtime';
 
 import { Messages } from '../logger';
 import { Operation } from '../types';
-import { KXOR } from '../assets/consts';
+import { DAI, KUSD, KXOR } from '../assets/consts';
 import { VaultTypes } from './consts';
 import type { Api } from '../api';
 import type { AccountAsset, Asset } from '../assets/types';
-import type { BorrowTaxes, Collateral, StablecoinInfo, Vault } from './types';
+import type { AveragePrice, BorrowTaxes, Collateral, StablecoinInfo, Vault } from './types';
+
+const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
 
 export class KensetsuModule<T> {
   constructor(private readonly root: Api<T>) {}
 
   /** {lockedAssetId},{debtAssetId} serialization */
-  public serializeKey(lockedAssetId: string, debtAssetId: string): string {
+  serializeKey(lockedAssetId: string, debtAssetId: string): string {
     if (!(lockedAssetId && debtAssetId)) return '';
     return `${lockedAssetId},${debtAssetId}`;
   }
 
   /** {lockedAssetId},{debtAssetId} deserialization -> { lockedAssetId: string; debtAssetId: string; } */
-  public deserializeKey(key: string): Partial<{ lockedAssetId: string; debtAssetId: string }> | null {
+  deserializeKey(key: string): Partial<{ lockedAssetId: string; debtAssetId: string }> | null {
     if (!key) return null;
     const [lockedAssetId, debtAssetId] = key.split(',');
     return { lockedAssetId, debtAssetId };
+  }
+
+  private getPricesObservable(...assets: Array<string>): Observable<Record<string, AveragePrice>> {
+    const observables = assets.map((id) => this.root.apiRx.query.priceTools.priceInfos(id));
+    return combineLatest(observables).pipe(
+      map((prices) => {
+        return prices.reduce<Record<string, AveragePrice>>((acc, codec, index) => {
+          const key = assets[index];
+          const info = codec.unwrapOr(null);
+          acc[key] = {
+            [PriceVariant.Buy]: info?.buy.averagePrice.toString() ?? '0',
+            [PriceVariant.Sell]: info?.sell.averagePrice.toString() ?? '0',
+          };
+          return acc;
+        }, {});
+      }),
+      distinctUntilChanged(comparator)
+    );
+  }
+
+  private getAveragePriceObservable(assetA: string, assetB: string, priceVariant: PriceVariant): Observable<FPNumber> {
+    return this.getPricesObservable(assetA, assetB).pipe(
+      map((prices) => {
+        const payload = { prices } as QuotePayload;
+        return getAveragePrice(assetA, assetB, priceVariant, payload);
+      }),
+      distinctUntilChanged((prev, curr) => prev.eq(curr))
+    );
+  }
+
+  /**
+   * Returns the average price of the locked asset in the debt asset.
+   * It uses the average price from the liquidity proxy if debt asset has SORA based nature.
+   * Otherwise, it uses the average price from the liquidity proxy for the locked asset in DAI and the oracle rate for the debt asset.
+   *
+   * Returns `null` if the pair is DAI/KUSD because it has a fixed price 1:1.
+   * Also, it returns `null` if there is no stablecoin info.
+   */
+  subscribeOnAveragePrice(
+    lockedAssetId: string,
+    debtAssetId: string,
+    info?: StablecoinInfo
+  ): Observable<FPNumber> | null {
+    if (lockedAssetId === DAI.address && debtAssetId === KUSD.address) {
+      return null; // Exclude DAI/KUSD pair because it has a fixed price 1:1
+    }
+    if (!info) {
+      console.warn(`[Kensetsu] subscribeOnAveragePrice: no stablecoin info for ${debtAssetId} / ${lockedAssetId}`);
+      return null;
+    }
+    if (info.isSoraAsset) {
+      const pegAssetId = info.pegAsset;
+      return this.getAveragePriceObservable(lockedAssetId, pegAssetId, PriceVariant.Sell);
+    } else {
+      const pegSymbol = info.pegAsset;
+      const observables: [Observable<Option<BandBandRate>>, Observable<FPNumber>?] = [
+        this.root.apiRx.query.band.symbolRates(pegSymbol),
+      ];
+
+      if (lockedAssetId !== DAI.address) {
+        observables.push(this.getAveragePriceObservable(lockedAssetId, DAI.address, PriceVariant.Sell));
+      }
+
+      return combineLatest(observables).pipe(
+        map(([rate, collateralPriceInDai]) => {
+          const rateValue = rate.unwrapOr(null)?.value.toString();
+          if (!rateValue) return FPNumber.ZERO;
+
+          const oraclePrice = FPNumber.fromCodecValue(rateValue);
+          return (collateralPriceInDai ?? FPNumber.ONE).div(oraclePrice);
+        })
+      );
+    }
   }
 
   /**
