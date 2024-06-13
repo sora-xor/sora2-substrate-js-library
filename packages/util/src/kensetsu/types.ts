@@ -1,4 +1,5 @@
-import type { FPNumber } from '@sora-substrate/math';
+import type { CodecString, FPNumber } from '@sora-substrate/math';
+import type { PriceVariant } from '@sora-substrate/liquidity-proxy';
 
 import type { History } from '../types';
 import type { VaultTypes } from './consts';
@@ -48,3 +49,8 @@ export interface VaultHistory extends History {
 }
 
 export type BorrowTaxes = { borrowTax: number; tbcdBorrowTax: number; karmaBorrowTax: number };
+
+export type AveragePrice = {
+  [PriceVariant.Buy]: CodecString;
+  [PriceVariant.Sell]: CodecString;
+};
