@@ -1,10 +1,10 @@
 import { assert } from '@polkadot/util';
 import keyring from '@polkadot/ui-keyring';
 import { NumberLike, FPNumber } from '@sora-substrate/math';
-import { connection } from '@sora-substrate/connection';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 
 import { BaseApi } from './BaseApi';
+import { connection } from './api';
 import { KeyringType } from './apiAccount';
 import { getBalance } from './assets';
 import { KnownAssets } from './assets/consts';
