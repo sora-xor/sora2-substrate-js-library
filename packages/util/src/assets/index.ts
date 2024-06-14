@@ -549,7 +549,7 @@ export class AssetsModule<T> {
     }
   }
 
-  public subscribeOnAssetTransferableBalance(assetId: string, accountId: string) {
+  public subscribeOnAssetTransferableBalance(assetId: string, accountId: string): Observable<string> {
     const observable =
       assetId === XOR.address
         ? this.root.apiRx.query.system.account(accountId).pipe(map((info) => formatBalance(info.data)))

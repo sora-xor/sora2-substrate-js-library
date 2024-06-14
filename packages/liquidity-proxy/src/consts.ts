@@ -48,6 +48,7 @@ export enum Errors {
   InvalidFeeRatio = 'Invalid fee ratio value.',
   NotEnoughLiquidityInOrderBook = 'Not Enough Liquidity In OrderBook',
   NotEnoughReserves = "It's not enough reserves in the pool to perform the operation.",
+  NotEnoughOutputReserves = 'Output asset reserves is not enough',
   PoolIsEmpty = 'The pool has empty liquidity.',
   PriceCalculationFailed = 'An error occurred while calculating the price.',
   RestrictedChameleonPool = 'Restricted Chameleon pool',
