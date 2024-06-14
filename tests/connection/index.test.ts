@@ -1,4 +1,4 @@
-import { ApiPromise } from '@polkadot/api';
+import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Connection, ConnectionRunOptions } from '@sora-substrate/connection';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
@@ -6,7 +6,7 @@ describe('Connection', () => {
   let connection: Connection;
 
   beforeEach(() => {
-    connection = new Connection({});
+    connection = new Connection(ApiPromise, WsProvider, {});
   });
 
   afterEach(async () => {

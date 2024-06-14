@@ -1,5 +1,5 @@
 import { FPNumber } from '@sora-substrate/math';
-import { connection } from '@sora-substrate/connection';
+import { connection } from '@sora-substrate/util';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 import BigNumber from 'bignumber.js';
 

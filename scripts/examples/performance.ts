@@ -1,7 +1,6 @@
 import { mnemonicGenerate } from '@polkadot/util-crypto';
 
-import { connection } from '@sora-substrate/connection';
-import { Api, FaucetApi, FPNumber } from '@sora-substrate/util';
+import { Api, FaucetApi, FPNumber, connection } from '@sora-substrate/util';
 import { XOR } from '@sora-substrate/util/assets/consts';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
