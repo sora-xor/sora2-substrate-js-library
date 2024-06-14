@@ -31,6 +31,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ClaimedLendingRewards: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
+       * Collateral added [who, collateral_asset, collateral_amount, borrow_asset]
+       **/
+      CollateralAdded: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32]>;
+      /**
        * Lent [who, asset_id, amount]
        **/
       Lent: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;

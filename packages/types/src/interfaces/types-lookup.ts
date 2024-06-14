@@ -2272,7 +2272,9 @@ declare module '@polkadot/types/lookup' {
     readonly asPoolRemoved: ITuple<[AccountId32, CommonPrimitivesAssetId32]>;
     readonly isPoolInfoEdited: boolean;
     readonly asPoolInfoEdited: ITuple<[AccountId32, CommonPrimitivesAssetId32]>;
-    readonly type: 'PoolAdded' | 'Lent' | 'Borrowed' | 'ClaimedLendingRewards' | 'ClaimedBorrowingRewards' | 'Withdrawn' | 'Repaid' | 'ChangedRewardsAmount' | 'ChangedRewardsAmountPerBlock' | 'Liquidated' | 'PoolRemoved' | 'PoolInfoEdited';
+    readonly isCollateralAdded: boolean;
+    readonly asCollateralAdded: ITuple<[AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32]>;
+    readonly type: 'PoolAdded' | 'Lent' | 'Borrowed' | 'ClaimedLendingRewards' | 'ClaimedBorrowingRewards' | 'Withdrawn' | 'Repaid' | 'ChangedRewardsAmount' | 'ChangedRewardsAmountPerBlock' | 'Liquidated' | 'PoolRemoved' | 'PoolInfoEdited' | 'CollateralAdded';
   }
 
   /** @name RegulatedAssetsEvent (227) */
@@ -5515,6 +5517,7 @@ declare module '@polkadot/types/lookup' {
       readonly collateralAsset: CommonPrimitivesAssetId32;
       readonly borrowingAsset: CommonPrimitivesAssetId32;
       readonly borrowingAmount: u128;
+      readonly loanToValue: u128;
     } & Struct;
     readonly isGetRewards: boolean;
     readonly asGetRewards: {
@@ -5562,7 +5565,13 @@ declare module '@polkadot/types/lookup' {
       readonly newSlopeRate2: u128;
       readonly newReserveFactor: u128;
     } & Struct;
-    readonly type: 'AddPool' | 'Lend' | 'Borrow' | 'GetRewards' | 'Withdraw' | 'Repay' | 'ChangeRewardsAmount' | 'ChangeRewardsPerBlock' | 'Liquidate' | 'RemovePool' | 'EditPoolInfo';
+    readonly isAddCollateral: boolean;
+    readonly asAddCollateral: {
+      readonly collateralAsset: CommonPrimitivesAssetId32;
+      readonly collateralAmount: u128;
+      readonly borrowingAsset: CommonPrimitivesAssetId32;
+    } & Struct;
+    readonly type: 'AddPool' | 'Lend' | 'Borrow' | 'GetRewards' | 'Withdraw' | 'Repay' | 'ChangeRewardsAmount' | 'ChangeRewardsPerBlock' | 'Liquidate' | 'RemovePool' | 'EditPoolInfo' | 'AddCollateral';
   }
 
   /** @name RegulatedAssetsCall (656) */
@@ -7464,7 +7473,8 @@ declare module '@polkadot/types/lookup' {
     readonly isInvalidLiquidation: boolean;
     readonly isPoolIsRemoved: boolean;
     readonly isInvalidBorrowingAmount: boolean;
-    readonly type: 'Unauthorized' | 'AssetAlreadyListed' | 'InvalidPoolParameters' | 'PoolDoesNotExist' | 'InvalidLendingAmount' | 'CollateralTokenDoesNotExist' | 'NoLendingAmountToBorrow' | 'SameCollateralAndBorrowingAssets' | 'NoLiquidityForBorrowingAsset' | 'NothingLent' | 'InvalidCollateralAmount' | 'CanNotTransferBorrowingAmount' | 'CanNotTransferCollateralAmount' | 'NoRewardsToClaim' | 'UnableToTransferRewards' | 'InsufficientLendingAmount' | 'LendingAmountExceeded' | 'CanNotTransferLendingAmount' | 'NothingBorrowed' | 'NonexistentBorrowingPosition' | 'NothingToRepay' | 'CanNotTransferLendingInterest' | 'UnableToTransferCollateral' | 'UnableToTransferAmountToRepay' | 'CanNotWithdrawLendingAmount' | 'CanNotTransferBorrowingRewards' | 'CanNotTransferAmountToRepay' | 'CanNotTransferAmountToDevelopers' | 'InvalidLiquidation' | 'PoolIsRemoved' | 'InvalidBorrowingAmount';
+    readonly isInvalidLoanToValue: boolean;
+    readonly type: 'Unauthorized' | 'AssetAlreadyListed' | 'InvalidPoolParameters' | 'PoolDoesNotExist' | 'InvalidLendingAmount' | 'CollateralTokenDoesNotExist' | 'NoLendingAmountToBorrow' | 'SameCollateralAndBorrowingAssets' | 'NoLiquidityForBorrowingAsset' | 'NothingLent' | 'InvalidCollateralAmount' | 'CanNotTransferBorrowingAmount' | 'CanNotTransferCollateralAmount' | 'NoRewardsToClaim' | 'UnableToTransferRewards' | 'InsufficientLendingAmount' | 'LendingAmountExceeded' | 'CanNotTransferLendingAmount' | 'NothingBorrowed' | 'NonexistentBorrowingPosition' | 'NothingToRepay' | 'CanNotTransferLendingInterest' | 'UnableToTransferCollateral' | 'UnableToTransferAmountToRepay' | 'CanNotWithdrawLendingAmount' | 'CanNotTransferBorrowingRewards' | 'CanNotTransferAmountToRepay' | 'CanNotTransferAmountToDevelopers' | 'InvalidLiquidation' | 'PoolIsRemoved' | 'InvalidBorrowingAmount' | 'InvalidLoanToValue';
   }
 
   /** @name RegulatedAssetsSoulboundTokenMetadata (938) */

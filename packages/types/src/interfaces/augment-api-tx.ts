@@ -20,13 +20,17 @@ declare module '@polkadot/api-base/types/submittable' {
   interface AugmentedSubmittables<ApiType extends ApiTypes> {
     apolloPlatform: {
       /**
+       * Add more collateral to borrowing position
+       **/
+      addCollateral: AugmentedSubmittable<(collateralAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, collateralAmount: u128 | AnyNumber | Uint8Array, borrowingAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32]>;
+      /**
        * Add pool
        **/
       addPool: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, loanToValue: u128 | AnyNumber | Uint8Array, liquidationThreshold: u128 | AnyNumber | Uint8Array, optimalUtilizationRate: u128 | AnyNumber | Uint8Array, baseRate: u128 | AnyNumber | Uint8Array, slopeRate1: u128 | AnyNumber | Uint8Array, slopeRate2: u128 | AnyNumber | Uint8Array, reserveFactor: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128]>;
       /**
        * Borrow token
        **/
-      borrow: AugmentedSubmittable<(collateralAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
+      borrow: AugmentedSubmittable<(collateralAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, borrowingAmount: u128 | AnyNumber | Uint8Array, loanToValue: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128, u128]>;
       /**
        * Change rewards amount
        **/
