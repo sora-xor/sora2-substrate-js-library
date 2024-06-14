@@ -89,7 +89,11 @@ export type QuotePayload = {
   rates: Record<string, OracleRate>;
   reserves: {
     xyk: {
-      [key: string]: [CodecString, CodecString];
+      [key: string]: {
+        base: CodecString;
+        target: CodecString;
+        chameleon: CodecString;
+      };
     };
     tbc: {
       [key: string]: CodecString;

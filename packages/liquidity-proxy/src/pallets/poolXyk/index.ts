@@ -9,39 +9,35 @@ import { getPairInfo, getTradingPair } from './utils';
 import type { QuotePayload, QuoteResult } from '../../types';
 
 // get_actual_reserves
-// returs reserves by order: [inputAssetId, outputAssetId]
+// Returns (input reserves, output reserves, max output amount)
+// Output reserves could only be greater than max output amount if it's chameleon pool
 export const getActualReserves = (
   baseAssetId: string,
   inputAssetId: string,
   outputAssetId: string,
   payload: QuotePayload
-) => {
+): [FPNumber, FPNumber, FPNumber] => {
   const [tpair, _baseChameleonAssetId, _isChameleonPool] = getPairInfo(baseAssetId, inputAssetId, outputAssetId);
 
-  const [reserveBase, reserveTarget] = [...payload.reserves.xyk[tpair.targetAssetId]];
+  const { base, target, chameleon } = payload.reserves.xyk[tpair.targetAssetId];
+  const [reserveBase, reserveTarget, reserveChameleon] = [toFp(base), toFp(target), toFp(chameleon)];
 
-  // This code is not needed for lib, because "poolXyk.reserves" call returns reserves sum for "chameleon" pool
+  const reserveBaseChameleon = reserveBase.add(reserveChameleon);
 
-  // let reserve_base = if let Some(base_chameleon_asset_id) = base_chameleon_asset_id {
-  //   if is_chameleon_pool {
-  //       let reserve_chameleon = <T as Config>::AssetInfoProvider::free_balance(
-  //           &base_chameleon_asset_id,
-  //           &pool_acc_id,
-  //       )?;
-  //       reserve_base
-  //           .checked_add(reserve_chameleon)
-  //           .ok_or(Error::<T>::PoolTokenSupplyOverflow)?
-  //   } else {
-  //       reserve_base
-  //   }
-  // } else {
-  //     reserve_base
-  // };
+  const maxOutput = (() => {
+    if (outputAssetId === tpair.targetAssetId) {
+      return reserveTarget;
+    } else if (outputAssetId === tpair.baseAssetId) {
+      return reserveBase;
+    } else {
+      return reserveChameleon;
+    }
+  })();
 
   if (tpair.targetAssetId === inputAssetId) {
-    return [toFp(reserveTarget), toFp(reserveBase)];
+    return [reserveTarget, reserveBaseChameleon, maxOutput];
   } else {
-    return [toFp(reserveBase), toFp(reserveTarget)];
+    return [reserveBaseChameleon, reserveTarget, maxOutput];
   }
 };
 
@@ -56,9 +52,9 @@ export const canExchange = (
   try {
     const tPair = getTradingPair(baseAssetId, inputAssetId, outputAssetId);
 
-    const reserves = [...payload.reserves.xyk[tPair.targetAssetId]];
+    const { base, target } = payload.reserves.xyk[tPair.targetAssetId];
 
-    return reserves.every((tokenReserve) => !!Number(tokenReserve));
+    return [base, target].every((tokenReserve) => !!Number(tokenReserve));
   } catch {
     return false;
   }
@@ -109,7 +105,12 @@ export const stepQuote = (
   const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
 
   // Get actual pool reserves.
-  const [reserveInput, reserveOutput] = getActualReserves(baseAssetId, inputAsset, outputAsset, payload);
+  const [reserveInput, reserveOutput, maxOutputAvailable] = getActualReserves(
+    baseAssetId,
+    inputAsset,
+    outputAsset,
+    payload
+  );
 
   // Check reserves validity.
   if (
@@ -123,13 +124,33 @@ export const stepQuote = (
 
   amount = (() => {
     if (isDesiredInput) {
-      return amount;
+      if (FPNumber.eq(maxOutputAvailable, reserveOutput)) {
+        return amount;
+      }
+
+      try {
+        const maxAmount = calcInputForExactOutput(
+          getFeeFromDestination,
+          inputAsset,
+          outputAsset,
+          reserveInput,
+          reserveOutput,
+          maxOutputAvailable,
+          deduceFee
+        ).amount;
+
+        quotation.limits.maxAmount = new SideAmount(maxAmount, SwapVariant.WithDesiredInput);
+
+        return amount.min(maxAmount);
+      } catch {
+        return amount;
+      }
     } else {
       const maxOutput = calcMaxOutput(getFeeFromDestination, reserveOutput, deduceFee);
 
-      quotation.limits.maxAmount = new SideAmount(maxOutput, SwapVariant.WithDesiredOutput);
+      quotation.limits.maxAmount = new SideAmount(maxOutput.min(maxOutputAvailable), SwapVariant.WithDesiredOutput);
 
-      return maxOutput.min(amount);
+      return maxOutput.min(amount).min(maxOutputAvailable);
     }
   })();
 
@@ -404,32 +425,52 @@ export const quote = (
   deduceFee: boolean
 ): QuoteResult => {
   try {
-    if (!canExchange(baseAssetId, _syntheticBaseAssetId, inputAsset, outputAsset, payload)) {
-      throw new Error(Errors.CantExchange);
-    }
-
-    const [inputReserves, outputReserves] = getActualReserves(baseAssetId, inputAsset, outputAsset, payload);
+    const [reserveInput, reserveOutput, maxOutputAvailable] = getActualReserves(
+      baseAssetId,
+      inputAsset,
+      outputAsset,
+      payload
+    );
     const getFeeFromDestination = decideIsFeeFromDestination(baseAssetId, inputAsset, outputAsset);
 
-    return isDesiredInput
-      ? calcOutputForExactInput(
-          getFeeFromDestination,
-          inputAsset,
-          outputAsset,
-          inputReserves,
-          outputReserves,
-          amount,
-          deduceFee
-        )
-      : calcInputForExactOutput(
-          getFeeFromDestination,
-          inputAsset,
-          outputAsset,
-          inputReserves,
-          outputReserves,
-          amount,
-          deduceFee
-        );
+    if (isDesiredInput) {
+      const result = calcOutputForExactInput(
+        getFeeFromDestination,
+        inputAsset,
+        outputAsset,
+        reserveInput,
+        reserveOutput,
+        amount,
+        deduceFee
+      );
+      if (!FPNumber.eq(maxOutputAvailable, reserveOutput)) {
+        const requiredOutput = getFeeFromDestination ? result.amount.add(result.fee) : result.amount;
+
+        if (!FPNumber.isLessThanOrEqualTo(requiredOutput, maxOutputAvailable)) {
+          throw new Error(Errors.NotEnoughOutputReserves);
+        }
+      }
+
+      return result;
+    } else {
+      if (!FPNumber.eq(maxOutputAvailable, reserveOutput)) {
+        if (!FPNumber.isLessThanOrEqualTo(amount, maxOutputAvailable)) {
+          throw new Error(Errors.NotEnoughOutputReserves);
+        }
+      }
+
+      const result = calcInputForExactOutput(
+        getFeeFromDestination,
+        inputAsset,
+        outputAsset,
+        reserveInput,
+        reserveOutput,
+        amount,
+        deduceFee
+      );
+
+      return result;
+    }
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.XYKPool);
   }

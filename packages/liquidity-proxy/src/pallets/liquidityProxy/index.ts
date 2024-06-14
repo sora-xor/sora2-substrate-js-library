@@ -258,7 +258,7 @@ const getAssetLiquiditySources = (
 
   const rules = {
     [LiquiditySourceTypes.XYKPool]: () =>
-      baseAssetId === address || baseChameleonAssetId === address || Array.isArray(xykReserves[address]),
+      baseAssetId === address || baseChameleonAssetId === address || !!xykReserves[address],
     [LiquiditySourceTypes.MulticollateralBondingCurvePool]: () =>
       baseAssetId === Consts.XOR && [...enabledAssets.tbc, Consts.XOR].includes(address),
     [LiquiditySourceTypes.XSTPool]: () =>
