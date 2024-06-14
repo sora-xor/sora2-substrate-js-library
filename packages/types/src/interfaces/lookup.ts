@@ -2038,7 +2038,8 @@ export default {
       ChangedRewardsAmountPerBlock: '(AccountId32,bool,u128)',
       Liquidated: '(AccountId32,CommonPrimitivesAssetId32)',
       PoolRemoved: '(AccountId32,CommonPrimitivesAssetId32)',
-      PoolInfoEdited: '(AccountId32,CommonPrimitivesAssetId32)'
+      PoolInfoEdited: '(AccountId32,CommonPrimitivesAssetId32)',
+      CollateralAdded: '(AccountId32,CommonPrimitivesAssetId32,u128,CommonPrimitivesAssetId32)'
     }
   },
   /**
@@ -5281,6 +5282,7 @@ export default {
         collateralAsset: 'CommonPrimitivesAssetId32',
         borrowingAsset: 'CommonPrimitivesAssetId32',
         borrowingAmount: 'u128',
+        loanToValue: 'u128',
       },
       get_rewards: {
         assetId: 'CommonPrimitivesAssetId32',
@@ -5318,7 +5320,12 @@ export default {
         newBaseRate: 'u128',
         newSlopeRate1: 'u128',
         newSlopeRate2: 'u128',
-        newReserveFactor: 'u128'
+        newReserveFactor: 'u128',
+      },
+      add_collateral: {
+        collateralAsset: 'CommonPrimitivesAssetId32',
+        collateralAmount: 'u128',
+        borrowingAsset: 'CommonPrimitivesAssetId32'
       }
     }
   },
@@ -6524,7 +6531,7 @@ export default {
    * Lookup937: apollo_platform::pallet::Error<T>
    **/
   ApolloPlatformError: {
-    _enum: ['Unauthorized', 'AssetAlreadyListed', 'InvalidPoolParameters', 'PoolDoesNotExist', 'InvalidLendingAmount', 'CollateralTokenDoesNotExist', 'NoLendingAmountToBorrow', 'SameCollateralAndBorrowingAssets', 'NoLiquidityForBorrowingAsset', 'NothingLent', 'InvalidCollateralAmount', 'CanNotTransferBorrowingAmount', 'CanNotTransferCollateralAmount', 'NoRewardsToClaim', 'UnableToTransferRewards', 'InsufficientLendingAmount', 'LendingAmountExceeded', 'CanNotTransferLendingAmount', 'NothingBorrowed', 'NonexistentBorrowingPosition', 'NothingToRepay', 'CanNotTransferLendingInterest', 'UnableToTransferCollateral', 'UnableToTransferAmountToRepay', 'CanNotWithdrawLendingAmount', 'CanNotTransferBorrowingRewards', 'CanNotTransferAmountToRepay', 'CanNotTransferAmountToDevelopers', 'InvalidLiquidation', 'PoolIsRemoved', 'InvalidBorrowingAmount']
+    _enum: ['Unauthorized', 'AssetAlreadyListed', 'InvalidPoolParameters', 'PoolDoesNotExist', 'InvalidLendingAmount', 'CollateralTokenDoesNotExist', 'NoLendingAmountToBorrow', 'SameCollateralAndBorrowingAssets', 'NoLiquidityForBorrowingAsset', 'NothingLent', 'InvalidCollateralAmount', 'CanNotTransferBorrowingAmount', 'CanNotTransferCollateralAmount', 'NoRewardsToClaim', 'UnableToTransferRewards', 'InsufficientLendingAmount', 'LendingAmountExceeded', 'CanNotTransferLendingAmount', 'NothingBorrowed', 'NonexistentBorrowingPosition', 'NothingToRepay', 'CanNotTransferLendingInterest', 'UnableToTransferCollateral', 'UnableToTransferAmountToRepay', 'CanNotWithdrawLendingAmount', 'CanNotTransferBorrowingRewards', 'CanNotTransferAmountToRepay', 'CanNotTransferAmountToDevelopers', 'InvalidLiquidation', 'PoolIsRemoved', 'InvalidBorrowingAmount', 'InvalidLoanToValue']
   },
   /**
    * Lookup938: regulated_assets::SoulboundTokenMetadata<common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>, MaxAllowedTokensPerSBT>

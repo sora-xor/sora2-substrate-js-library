@@ -73,6 +73,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       InvalidLiquidation: AugmentedError<ApiType>;
       /**
+       * Invalid loan to value
+       **/
+      InvalidLoanToValue: AugmentedError<ApiType>;
+      /**
        * Invalid pool parameters
        **/
       InvalidPoolParameters: AugmentedError<ApiType>;
