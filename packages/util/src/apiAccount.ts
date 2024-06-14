@@ -218,7 +218,7 @@ export class WithAccountPair extends WithConnectionApi {
     }
   }
 
-  protected getAccountWithOptions(
+  public getAccountWithOptions(
     pair = this.accountPair,
     signer = this.signer
   ): AccountWithOptions | { account: undefined; options: {} } {
@@ -226,7 +226,9 @@ export class WithAccountPair extends WithConnectionApi {
 
     return {
       account: pair.isLocked ? pair.address : pair,
-      options: { signer },
+      options: {
+        signer,
+      },
     };
   }
 
