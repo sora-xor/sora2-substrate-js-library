@@ -1,13 +1,14 @@
 {
   "name": "@sora-substrate/connection",
-  "version": "1.38.11",
+  "version": "1.38.12",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "@sora-substrate/api": "1.38.11"
+  "peerDependencies": {
+    "@polkadot/api": ">=9.14.2",
+    "@polkadot/rpc-provider": ">=9.14.2"
   }
 }

@@ -1,6 +1,7 @@
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { options } from '@sora-substrate/api';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
-import { connection } from '@sora-substrate/connection';
-import type { Connection } from '@sora-substrate/connection';
+import { Connection } from '@sora-substrate/connection';
 import type { CreateResult } from '@polkadot/ui-keyring/types';
 import type { Signer } from '@polkadot/types/types';
 
@@ -220,6 +221,11 @@ export class Api<T = void> extends BaseApi<T> {
     return this.divideAssetsInternal(firstAsset, secondAsset, firstAmount, secondAmount, reversed);
   }
 }
+
+/**
+ * Base SORA connection object (without cache by default)
+ */
+export const connection = new Connection(ApiPromise, WsProvider, options());
 
 /** Api object */
 const api = new Api();

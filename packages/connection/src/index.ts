@@ -1,6 +1,5 @@
-import { ApiPromise } from '@polkadot/api';
-import { WsProvider } from '@polkadot/rpc-provider';
-import { options } from '@sora-substrate/api';
+import type { ApiPromise } from '@polkadot/api';
+import type { WsProvider } from '@polkadot/rpc-provider';
 import type { ApiInterfaceEvents, ApiOptions } from '@polkadot/api/types';
 import type { ProviderInterfaceEmitCb, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
 
@@ -50,9 +49,17 @@ class Connection {
   public endpoint = '';
   public loading = false;
 
+  private readonly ApiPromise!: typeof ApiPromise;
+  private readonly WsProvider!: typeof WsProvider;
+  private readonly apiOptions!: ApiOptions;
+
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
 
-  constructor(private readonly apiOptions: ApiOptions) {}
+  constructor(apiPromise: typeof ApiPromise, wsProvider: typeof WsProvider, apiOptions: ApiOptions) {
+    this.ApiPromise = apiPromise;
+    this.WsProvider = wsProvider;
+    this.apiOptions = apiOptions;
+  }
 
   private async withLoading(func: Function): Promise<any> {
     this.loading = true;
@@ -69,7 +76,7 @@ class Connection {
     const providerAutoConnectMs = once ? false : autoConnectMs;
     const apiConnectionPromise = once ? 'isReadyOrError' : 'isReady';
 
-    const provider = new WsProvider(endpoint, providerAutoConnectMs);
+    const provider = new this.WsProvider(endpoint, providerAutoConnectMs);
     // https://github.com/polkadot-js/api/issues/5798
     // Seems that the issue isn't related to the cache itself
 
@@ -78,7 +85,7 @@ class Connection {
     //   return originalSend.call(provider, method, params, false, subscription) as ReturnType<typeof originalSend<T>>;
     // };
 
-    this.api = new ApiPromise({ ...this.apiOptions, provider, noInitWarn: true });
+    this.api = new this.ApiPromise({ ...this.apiOptions, provider, noInitWarn: true });
     this.endpoint = endpoint;
 
     const connectionRequests: Array<Promise<any>> = [this.api[apiConnectionPromise]];
@@ -138,9 +145,4 @@ class Connection {
   }
 }
 
-/**
- * Base SORA connection object (without cache by default)
- */
-const connection = new Connection(options());
-
-export { connection, Connection };
+export { Connection };
