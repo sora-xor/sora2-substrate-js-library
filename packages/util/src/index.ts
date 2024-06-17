@@ -22,7 +22,6 @@ import './bridgeProxy/sub/consts';
 export * from './api';
 export * from './apiAccount';
 export * from './BaseApi';
-export * from './FaucetApi';
 export * from './storage';
 export * from './http';
 export * from './types';
