@@ -555,7 +555,7 @@ export default {
    * Lookup68: common::primitives::_allowed_deprecated::PredefinedAssetId
    **/
   CommonPrimitivesAllowedDeprecatedPredefinedAssetId: {
-    _enum: ['XOR', 'DOT', 'KSM', 'USDT', 'VAL', 'PSWAP', 'DAI', 'ETH', 'XSTUSD', 'XST', 'TBCD', 'KEN', 'KUSD', 'KGOLD', 'KXOR', 'SB', 'KARMA']
+    _enum: ['XOR', 'DOT', 'KSM', 'USDT', 'VAL', 'PSWAP', 'DAI', 'ETH', 'XSTUSD', 'XST', 'TBCD', 'KEN', 'KUSD', 'KGOLD', 'KXOR', 'KARMA']
   },
   /**
    * Lookup70: trading_pair::pallet::Event<T>

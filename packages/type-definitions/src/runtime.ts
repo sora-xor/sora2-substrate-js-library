@@ -156,7 +156,6 @@ export default {
         'KUSD',
         'KGOLD',
         'KXOR',
-        'SB',
         'KARMA',
       ],
     },
