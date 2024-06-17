@@ -5164,6 +5164,35 @@
                     ]
                 }
             }
+        },
+        {
+            "runtime_range": [
+                86,
+                null
+            ],
+            "types": {
+                "PredefinedAssetId": {
+                    "type": "enum",
+                    "value_list": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST",
+                        "TBCD",
+                        "KEN",
+                        "KUSD",
+                        "KGOLD",
+                        "KXOR",
+                        "KARMA"
+                    ]
+                }
+            }
         }
     ],
     "runtime_upgrades": [
