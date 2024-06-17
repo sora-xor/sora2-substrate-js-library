@@ -22,7 +22,6 @@ export enum KnownSymbols {
   KUSD = 'KUSD',
   KGOLD = 'KGOLD',
   KXOR = 'KXOR',
-  SB = 'SB',
   KARMA = 'KARMA',
 }
 
@@ -163,13 +162,6 @@ export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
   },
   {
     address: '0x02000f0000000000000000000000000000000000000000000000000000000000',
-    symbol: KnownSymbols.SB,
-    name: 'Sora Builders',
-    decimals: FPNumber.DEFAULT_PRECISION,
-    isMintable: true,
-  },
-  {
-    address: '0x0200100000000000000000000000000000000000000000000000000000000000',
     symbol: KnownSymbols.KARMA,
     name: 'Chameleon',
     decimals: FPNumber.DEFAULT_PRECISION,
@@ -189,5 +181,4 @@ export const KEN = KnownAssets.get(KnownSymbols.KEN);
 export const KUSD = KnownAssets.get(KnownSymbols.KUSD);
 export const KGOLD = KnownAssets.get(KnownSymbols.KGOLD);
 export const KXOR = KnownAssets.get(KnownSymbols.KXOR);
-export const SB = KnownAssets.get(KnownSymbols.SB);
 export const KARMA = KnownAssets.get(KnownSymbols.KARMA);

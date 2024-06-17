@@ -1658,7 +1658,7 @@
         {
             "minmax": [
                 86,
-                null
+                86
             ],
             "types": {
                 "PredefinedAssetId": {
@@ -1679,6 +1679,34 @@
                         "KGOLD",
                         "KXOR",
                         "SB",
+                        "KARMA"
+                    ]
+                }
+            }
+        },
+        {
+            "minmax": [
+                87,
+                null
+            ],
+            "types": {
+                "PredefinedAssetId": {
+                    "_enum": [
+                        "XOR",
+                        "DOT",
+                        "KSM",
+                        "USDT",
+                        "VAL",
+                        "PSWAP",
+                        "DAI",
+                        "ETH",
+                        "XSTUSD",
+                        "XST",
+                        "TBCD",
+                        "KEN",
+                        "KUSD",
+                        "KGOLD",
+                        "KXOR",
                         "KARMA"
                     ]
                 }
@@ -2341,7 +2369,6 @@
                 "KUSD",
                 "KGOLD",
                 "KXOR",
-                "SB",
                 "KARMA"
             ]
         },

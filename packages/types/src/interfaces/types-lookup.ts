@@ -611,9 +611,8 @@ declare module '@polkadot/types/lookup' {
     readonly isKusd: boolean;
     readonly isKgold: boolean;
     readonly isKxor: boolean;
-    readonly isSb: boolean;
     readonly isKarma: boolean;
-    readonly type: 'Xor' | 'Dot' | 'Ksm' | 'Usdt' | 'Val' | 'Pswap' | 'Dai' | 'Eth' | 'Xstusd' | 'Xst' | 'Tbcd' | 'Ken' | 'Kusd' | 'Kgold' | 'Kxor' | 'Sb' | 'Karma';
+    readonly type: 'Xor' | 'Dot' | 'Ksm' | 'Usdt' | 'Val' | 'Pswap' | 'Dai' | 'Eth' | 'Xstusd' | 'Xst' | 'Tbcd' | 'Ken' | 'Kusd' | 'Kgold' | 'Kxor' | 'Karma';
   }
 
   /** @name TradingPairEvent (70) */
