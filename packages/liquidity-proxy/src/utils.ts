@@ -45,6 +45,11 @@ export const checkedSub = (a: FPNumber, b: FPNumber): FPNumber | null => {
   const result = a.sub(b);
   return FPNumber.isGreaterThanOrEqualTo(result, FPNumber.ZERO) ? result : null;
 };
+export const absDiff = (a: FPNumber, b: FPNumber): FPNumber => {
+  const result = a.sub(b);
+
+  return FPNumber.isLessThan(result, FPNumber.ZERO) ? result.negative() : result;
+};
 export const safeQuoteResult = (
   inputAsset: string,
   outputAsset: string,

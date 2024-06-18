@@ -36,6 +36,14 @@ export class SwapChunk {
     }
   }
 
+  public getSameTypeAmount(reference: SideAmount): SideAmount {
+    if (reference.isInput) {
+      return new SideAmount(this.input, SwapVariant.WithDesiredInput);
+    } else {
+      return new SideAmount(this.output, SwapVariant.WithDesiredOutput);
+    }
+  }
+
   public forCompare(other: SideAmount): FPNumber {
     if (other.isInput) {
       return this.input;
@@ -56,6 +64,10 @@ export class SwapChunk {
     return new SwapChunk(FPNumber.ZERO, FPNumber.ZERO, FPNumber.ZERO);
   }
 
+  public static default(): SwapChunk {
+    return SwapChunk.zero();
+  }
+
   public isZero(): boolean {
     return this.input.isZero() && this.output.isZero() && this.fee.isZero();
   }
@@ -72,7 +84,7 @@ export class SwapChunk {
   public proportionalInput(output: FPNumber): FPNumber {
     if (output.isZero()) return FPNumber.ZERO;
 
-    return safeDivide(output, this.price);
+    return safeDivide(output.mul(this.input), this.output);
   }
 
   /**
@@ -82,7 +94,7 @@ export class SwapChunk {
   public proportionalOutput(input: FPNumber): FPNumber {
     if (input.isZero()) return FPNumber.ZERO;
 
-    return input.mul(this.price);
+    return safeDivide(input.mul(this.output), this.input);
   }
 
   public rescaleByInput(input: FPNumber): SwapChunk {
@@ -144,6 +156,29 @@ export class SwapLimits {
     this.minAmount = minAmount;
     this.maxAmount = maxAmount;
     this.amountPrecision = amountPrecision;
+  }
+
+  public getPrecisionStep(chunk: SwapChunk, variant: SwapVariant): FPNumber {
+    if (this.amountPrecision) {
+      switch (variant) {
+        case SwapVariant.WithDesiredInput: {
+          if (this.amountPrecision.isInput) {
+            return this.amountPrecision.amount;
+          } else {
+            return chunk.proportionalInput(this.amountPrecision.amount);
+          }
+        }
+        case SwapVariant.WithDesiredOutput: {
+          if (this.amountPrecision.isInput) {
+            return chunk.proportionalOutput(this.amountPrecision.amount);
+          } else {
+            return this.amountPrecision.amount;
+          }
+        }
+      }
+    }
+
+    return FPNumber.ZERO;
   }
 
   // Aligns the `chunk` regarding to the `min_amount` limit.
@@ -271,5 +306,61 @@ export class DiscreteQuotation {
   constructor() {
     this.chunks = [];
     this.limits = new SwapLimits(null, null, null);
+  }
+
+  public verify(): boolean {
+    let prevPrice = new FPNumber(Infinity);
+
+    for (const chunk of this.chunks) {
+      // chunk should not contain zeros
+      if (chunk.input.isZero() || chunk.output.isZero()) {
+        return false;
+      }
+
+      let precision = this.limits.amountPrecision;
+
+      // if source provides the precision limit - all chunks must match this requirement.
+      if (precision) {
+        let inputPrecision!: FPNumber;
+        let outputPrecision!: FPNumber;
+
+        try {
+          if (precision.isInput) {
+            [inputPrecision, outputPrecision] = [
+              precision.amount,
+              this.limits.getPrecisionStep(chunk, SwapVariant.WithDesiredOutput),
+            ];
+          } else {
+            [inputPrecision, outputPrecision] = [
+              this.limits.getPrecisionStep(chunk, SwapVariant.WithDesiredInput),
+              precision.amount,
+            ];
+          }
+        } catch {
+          return false;
+        }
+
+        if (!chunk.input.isZeroMod(inputPrecision) || !chunk.output.isZeroMod(outputPrecision)) {
+          return false;
+        }
+      }
+
+      let price;
+
+      try {
+        price = chunk.price;
+      } catch {
+        return false;
+      }
+
+      // chunks should go to reduce the price, from the best to the worst
+      if (FPNumber.isGreaterThan(price, prevPrice)) {
+        return false;
+      }
+
+      prevPrice = price;
+    }
+
+    return true;
   }
 }
