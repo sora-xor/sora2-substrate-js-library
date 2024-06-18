@@ -149,7 +149,7 @@ export class LiquidityAggregator {
         }
 
         // if chunk is bigger than remaining amount, it is necessary to rescale it and take only required part
-        if (FPNumber.isGreaterThan(chunk.forCompare(sideAmount), sideAmount.amount)) {
+        if (FPNumber.isGreaterThan(...chunk.compareWith(sideAmount))) {
           const rescaled = chunk.rescaleBySideAmount(sideAmount);
           refund = refund.saturatingAdd(chunk.saturatingSub(rescaled));
           chunk = rescaled;
@@ -210,7 +210,7 @@ export class LiquidityAggregator {
     }
 
     toDelete.forEach((source) => {
-      this.aggregation.map.delete(source);
+      this.aggregation.delete(source);
     });
   }
 
@@ -221,7 +221,7 @@ export class LiquidityAggregator {
     let resultAmount = FPNumber.ZERO;
     let fee = FPNumber.ZERO;
 
-    for (const [source, cluster] of this.aggregation.map.entries()) {
+    for (const [source, cluster] of this.aggregation.entries()) {
       const total = cluster.getTotal();
 
       swapInfo.set(source, [total.input, total.output]);

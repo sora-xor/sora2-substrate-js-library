@@ -36,11 +36,9 @@ export class Cluster {
   }
 }
 
-export class Aggregation {
-  public map = new Map<LiquiditySourceTypes, Cluster>();
-
+export class Aggregation extends Map<LiquiditySourceTypes, Cluster> {
   public getTotal(source: LiquiditySourceTypes): SwapChunk {
-    const cluster = this.map.get(source);
+    const cluster = this.get(source);
 
     if (!cluster) return SwapChunk.default();
 
@@ -48,7 +46,7 @@ export class Aggregation {
   }
 
   public getMutCluster(source: LiquiditySourceTypes): Cluster {
-    const cluster = this.map.get(source);
+    const cluster = this.get(source);
 
     if (!cluster) throw new Error(Errors.AggregationError);
 
@@ -56,14 +54,14 @@ export class Aggregation {
   }
 
   public pushChunk(source: LiquiditySourceTypes, chunk: SwapChunk) {
-    let cluster = this.map.get(source);
+    let cluster = this.get(source);
 
     if (cluster) {
       cluster.pushBack(chunk);
     } else {
       cluster = new Cluster();
       cluster.pushBack(chunk);
-      this.map.set(source, cluster);
+      this.set(source, cluster);
     }
   }
 
@@ -71,7 +69,7 @@ export class Aggregation {
   public getTotalPriceAscendingQueue(): LiquiditySourceTypes[] {
     const queue: [LiquiditySourceTypes, FPNumber][] = [];
 
-    for (const [source, cluster] of this.map.entries()) {
+    for (const [source, cluster] of this.entries()) {
       queue.push([source, cluster.getTotal().price]);
     }
 

@@ -44,11 +44,11 @@ export class SwapChunk {
     }
   }
 
-  public forCompare(other: SideAmount): FPNumber {
+  public compareWith(other: SideAmount): [FPNumber, FPNumber] {
     if (other.isInput) {
-      return this.input;
+      return [this.input, other.amount];
     } else {
-      return this.output;
+      return [this.output, other.amount];
     }
   }
 
@@ -317,7 +317,7 @@ export class DiscreteQuotation {
         return false;
       }
 
-      let precision = this.limits.amountPrecision;
+      const precision = this.limits.amountPrecision;
 
       // if source provides the precision limit - all chunks must match this requirement.
       if (precision) {
@@ -345,7 +345,7 @@ export class DiscreteQuotation {
         }
       }
 
-      let price;
+      let price!: FPNumber;
 
       try {
         price = chunk.price;

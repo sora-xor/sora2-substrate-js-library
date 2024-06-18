@@ -58,7 +58,7 @@ export class Selector {
 
       if (!chunk) break;
 
-      if (FPNumber.isLessThanOrEqualTo(chunk.forCompare(amount), amount.amount)) {
+      if (FPNumber.isLessThanOrEqualTo(...chunk.compareWith(amount))) {
         const value = checkedSub(amount.amount, chunk.getSameTypeAmount(amount).amount);
 
         if (!value) throw new Error(Errors.CalculationError);
@@ -130,9 +130,9 @@ export class Selector {
 
     let source = candidates[0];
 
-    if (candidates.length) {
+    if (source) {
       for (const candidate of candidates) {
-        if (aggregation.map.has(candidate)) {
+        if (aggregation.has(candidate)) {
           source = candidate;
           break;
         }
