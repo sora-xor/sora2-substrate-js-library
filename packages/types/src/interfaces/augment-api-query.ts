@@ -1784,6 +1784,16 @@ declare module '@polkadot/api-base/types/storage' {
     xorFee: {
       multiplier: AugmentedQuery<ApiType, () => Observable<u128>, []>;
       /**
+       * Small fee value should be `SmallReferenceAmount` in reference asset id
+       **/
+      smallReferenceAmount: AugmentedQuery<ApiType, () => Observable<u128>, []>;
+      /**
+       * Next block number to update multiplier
+       * If it is necessary to stop updating the multiplier,
+       * set 0 value
+       **/
+      updatePeriod: AugmentedQuery<ApiType, () => Observable<u32>, []>;
+      /**
        * The amount of XOR to be reminted and exchanged for VAL at the end of the session
        **/
       xorToVal: AugmentedQuery<ApiType, () => Observable<u128>, []>;
