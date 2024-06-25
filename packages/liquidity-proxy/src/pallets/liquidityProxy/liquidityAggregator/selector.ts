@@ -48,8 +48,8 @@ export class Selector {
   }
 
   /** Takes chunks from `cluster` and puts them back into the selector until it reaches `amount`. */
+  /** Returns the returned amount of liquidity and the flag true if `cluster` became empty. */
   public returnLiquidity(amount: SideAmount, source: LiquiditySourceTypes, cluster: Cluster): [SwapChunk, boolean] {
-    let remove = false;
     let taken = SwapChunk.default();
 
     while (FPNumber.isGreaterThan(amount.amount, FPNumber.ZERO)) {
@@ -76,11 +76,7 @@ export class Selector {
       }
     }
 
-    if (cluster.isEmpty()) {
-      remove = true;
-    }
-
-    return [taken, remove];
+    return [taken, cluster.isEmpty()];
   }
 
   /**
