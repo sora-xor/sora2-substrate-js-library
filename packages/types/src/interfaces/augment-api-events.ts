@@ -1389,9 +1389,17 @@ declare module '@polkadot/api-base/types/events' {
        **/
       FeeWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
       /**
+       * New block number to update multiplier is set. [New value]
+       **/
+      PeriodUpdated: AugmentedEvent<ApiType, [u32]>;
+      /**
        * The portion of fee is sent to the referrer. [Referral, Referrer, Amount]
        **/
       ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128]>;
+      /**
+       * New small reference amount set. [New value]
+       **/
+      SmallReferenceAmountUpdated: AugmentedEvent<ApiType, [u128]>;
       /**
        * New multiplier for weight to fee conversion is set
        * (*1_000_000_000_000_000_000). [New value]

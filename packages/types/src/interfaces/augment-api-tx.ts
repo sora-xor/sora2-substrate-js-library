@@ -3475,6 +3475,16 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     xorFee: {
       /**
+       * Set new update period for `xor_fee::Multiplier` updating
+       * Set 0 to stop updating
+       **/
+      setFeeUpdatePeriod: AugmentedSubmittable<(newPeriod: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
+      /**
+       * Set new small reference amount `xor_fee::SmallReferenceAmount`
+       * Small fee should tend to the amount value
+       **/
+      setSmallReferenceAmount: AugmentedSubmittable<(newReferenceAmount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      /**
        * Update the multiplier for weight -> fee conversion.
        **/
       updateMultiplier: AugmentedSubmittable<(newMultiplier: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;

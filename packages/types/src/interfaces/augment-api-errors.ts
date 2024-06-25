@@ -1820,9 +1820,13 @@ declare module '@polkadot/api-base/types/errors' {
     };
     liquidityProxy: {
       /**
-       * Path exists but it's not possible to perform exchange with currently available liquidity on pools.
+       * Unable to aggregate the liquidity from sources.
        **/
       AggregationError: AugmentedError<ApiType>;
+      /**
+       * Internal error. Liquidity source returned wrong liquidity.
+       **/
+      BadLiquidity: AugmentedError<ApiType>;
       /**
        * Specified parameters lead to arithmetic error
        **/
@@ -1831,21 +1835,33 @@ declare module '@polkadot/api-base/types/errors' {
        * Failure while calculating price ignoring non-linearity of liquidity source.
        **/
       FailedToCalculatePriceWithoutImpact: AugmentedError<ApiType>;
+      /**
+       * Failure while transferring commission to ADAR account
+       **/
       FailedToTransferAdarCommission: AugmentedError<ApiType>;
       /**
        * Selected filtering request is not allowed.
        **/
       ForbiddenFilter: AugmentedError<ApiType>;
+      /**
+       * Sender don't have enough asset balance
+       **/
       InsufficientBalance: AugmentedError<ApiType>;
       /**
        * None of the sources has enough reserves to execute a trade
        **/
       InsufficientLiquidity: AugmentedError<ApiType>;
+      /**
+       * ADAR commission ratio exceeds 1
+       **/
       InvalidADARCommissionRatio: AugmentedError<ApiType>;
       /**
        * Fee value outside of the basis points range [0..10000]
        **/
       InvalidFeeValue: AugmentedError<ApiType>;
+      /**
+       * Information about swap batch receivers is invalid
+       **/
       InvalidReceiversInfo: AugmentedError<ApiType>;
       /**
        * Liquidity source is already disabled
@@ -1863,6 +1879,9 @@ declare module '@polkadot/api-base/types/errors' {
        * Slippage either exceeds minimum tolerated output or maximum tolerated input.
        **/
       SlippageNotTolerated: AugmentedError<ApiType>;
+      /**
+       * Sender and receiver should not be the same
+       **/
       TheSameSenderAndReceiver: AugmentedError<ApiType>;
       /**
        * Unable to disable liquidity source
@@ -3237,6 +3256,16 @@ declare module '@polkadot/api-base/types/errors' {
        * Wrong crowdloan data passed
        **/
       WrongCrowdloanInfo: AugmentedError<ApiType>;
+    };
+    xorFee: {
+      /**
+       * `SmallReferenceAmount` is unsupported
+       **/
+      InvalidSmallReferenceAmount: AugmentedError<ApiType>;
+      /**
+       * Failed to calculate new multiplier.
+       **/
+      MultiplierCalculationFailed: AugmentedError<ApiType>;
     };
     xstPool: {
       /**
