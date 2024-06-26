@@ -30,6 +30,8 @@ export class Consts {
   /** Irreducible reserve percent = 1% */
   static readonly IrreducibleReserve = new FPNumber(0.01);
 
+  static readonly InternalSlippageTolerance = new FPNumber(0.001);
+
   /** ETH & DAI which are incentivized */
   static readonly incentivizedCurrenciesNum = FPNumber.TWO;
   /** 2.5 billion pswap reserved for tbc rewards */
@@ -39,7 +41,9 @@ export class Consts {
 }
 
 export enum Errors {
+  AggregationError = 'Unable to aggregate the liquidity from sources.',
   AssetsMustNotBeSame = 'In this case assets must not be same.',
+  BadLiquidity = 'Internal error. Liquidity source returned wrong liquidity.',
   BaseAssetIsNotMatchedWithAnyAssetArguments = 'The base asset is not matched with any asset arguments.',
   CalculationError = 'Specified parameters lead to arithmetic error',
   CantExchange = "Liquidity source can't exchange assets with the given IDs on the given DEXId.",
