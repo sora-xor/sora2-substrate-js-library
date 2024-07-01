@@ -1221,9 +1221,13 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       regulatedAsset: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<bool>, [CommonPrimitivesAssetId32]>;
       /**
-       * Mapping from `asset_id` to its SBTs which grant permission to transfer, mint, and burn the `asset_id`
+       * Mapping from Regulated asset id to SBT asset id
        **/
-      sbTsByAsset: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<BTreeSet<CommonPrimitivesAssetId32>>, [CommonPrimitivesAssetId32]>;
+      regulatedAssetToSoulboundAsset: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<CommonPrimitivesAssetId32>, [CommonPrimitivesAssetId32]>;
+      /**
+       * Mapping from SBT asset id to its expiration per account
+       **/
+      sbtExpiration: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<u64>>, [AccountId32, CommonPrimitivesAssetId32]>;
       /**
        * Mapping from SBT (asset_id) to its metadata
        **/

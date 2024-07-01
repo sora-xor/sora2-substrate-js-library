@@ -2687,17 +2687,41 @@ declare module '@polkadot/api-base/types/errors' {
     };
     regulatedAssets: {
       /**
-       * All involved users of a regulated asset operation should hold SBT
+       * All involved users of a regulated asset operation should hold valid SBT
        **/
-      AllInvolvedUsersShouldHoldSBT: AugmentedError<ApiType>;
+      AllInvolvedUsersShouldHoldValidSBT: AugmentedError<ApiType>;
       /**
        * Asset is already regulated
        **/
       AssetAlreadyRegulated: AugmentedError<ApiType>;
       /**
+       * All Allowed assets must be regulated
+       **/
+      AssetNotRegulated: AugmentedError<ApiType>;
+      /**
+       * Invalid External URL
+       **/
+      InvalidExternalUrl: AugmentedError<ApiType>;
+      /**
+       * Not allowed to regulate SBT
+       **/
+      NotAllowedToRegulateSoulboundAsset: AugmentedError<ApiType>;
+      /**
+       * Caller is not the owner of the SBT
+       **/
+      NotSBTOwner: AugmentedError<ApiType>;
+      /**
        * Only asset owner can regulate
        **/
       OnlyAssetOwnerCanRegulate: AugmentedError<ApiType>;
+      /**
+       * All Allowed assets must be owned by SBT issuer
+       **/
+      RegulatedAssetNoOwnedBySBTIssuer: AugmentedError<ApiType>;
+      /**
+       * SBT not found
+       **/
+      SBTNotFound: AugmentedError<ApiType>;
       /**
        * SBT is not operationable by any asset operation
        **/

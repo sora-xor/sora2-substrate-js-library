@@ -2453,17 +2453,31 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     regulatedAssets: {
       /**
+       * Binds a regulated asset to a Soulbound Token (SBT).
+       * 
+       * This function binds a regulated asset to a specified SBT, ensuring the asset and
+       * the SBT meet the required criteria.
+       * 
+       * ## Parameters
+       * 
+       * - `origin`: The origin of the transaction.
+       * - `sbt_asset_id`: The ID of the SBT to bind the regulated asset to.
+       * - `regulated_asset_id`: The ID of the regulated asset to bind.
+       **/
+      bindRegulatedAssetToSbt: AugmentedSubmittable<(sbtAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, regulatedAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32]>;
+      /**
        * Issues a new Soulbound Token (SBT).
        * 
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
-       * - `symbol`: The symbol of the SBT which should represent string with only uppercase latin chars with max length of 7.
-       * - `name`: The name of the SBT should represent string with only uppercase or lowercase latin chars or numbers or spaces, with max length of 33.
-       * - `allowed_assets`: TThe list of assets allowed to be operated with by holding the SBT.
+       * - `symbol`: The symbol of the SBT which should represent a string with only uppercase Latin characters with a maximum length of 7.
+       * - `name`: The name of the SBT which should represent a string with only uppercase or lowercase Latin characters, numbers, or spaces, with a maximum length of 33.
        * - `description`: The description of the SBT. (Optional)
+       * - `image`: The URL or identifier for the image associated with the SBT. (Optional)
+       * - `external_url`: The URL pointing to an external resource related to the SBT. (Optional)
        **/
-      issueSbt: AugmentedSubmittable<(symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, allowedAssets: Vec<CommonPrimitivesAssetId32> | (CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array)[], description: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Vec<CommonPrimitivesAssetId32>, Option<Bytes>]>;
+      issueSbt: AugmentedSubmittable<(symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, description: Option<Bytes> | null | Uint8Array | Bytes | string, image: Option<Bytes> | null | Uint8Array | Bytes | string, externalUrl: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Option<Bytes>, Option<Bytes>, Option<Bytes>]>;
       /**
        * Marks an asset as regulated, representing that the asset will only operate between KYC-verified wallets.
        * 
@@ -2473,6 +2487,17 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `asset_id`: The identifier of the asset.
        **/
       regulateAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      /**
+       * Sets the expiration date of a Soulbound Token (SBT) for the given account.
+       * 
+       * ## Parameters
+       * 
+       * - `origin`: The origin of the transaction.
+       * - `asset_id`: The ID of the SBT to update.
+       * - `account_id`: The ID of the account to set the expiration for.
+       * - `new_expires_at`: The new expiration timestamp for the SBT.
+       **/
+      setSbtExpiration: AugmentedSubmittable<(accountId: AccountId32 | string | Uint8Array, sbtAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newExpiresAt: Option<u64> | null | Uint8Array | u64 | AnyNumber) => SubmittableExtrinsic<ApiType>, [AccountId32, CommonPrimitivesAssetId32, Option<u64>]>;
     };
     rewards: {
       /**

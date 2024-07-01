@@ -992,9 +992,17 @@ declare module '@polkadot/api-base/types/events' {
        **/
       AssetRegulated: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32], { assetId: CommonPrimitivesAssetId32 }>;
       /**
+       * When a regulated asset is successfully bound to an SBT
+       **/
+      RegulatedAssetBoundToSBT: AugmentedEvent<ApiType, [regulatedAssetId: CommonPrimitivesAssetId32, sbtAssetId: CommonPrimitivesAssetId32], { regulatedAssetId: CommonPrimitivesAssetId32, sbtAssetId: CommonPrimitivesAssetId32 }>;
+      /**
+       * Emits When the expiration date of an SBT is updated
+       **/
+      SBTExpirationUpdated: AugmentedEvent<ApiType, [sbtAssetId: CommonPrimitivesAssetId32, oldExpiresAt: Option<u64>, newExpiresAt: Option<u64>], { sbtAssetId: CommonPrimitivesAssetId32, oldExpiresAt: Option<u64>, newExpiresAt: Option<u64> }>;
+      /**
        * Emits When an SBT is issued
        **/
-      SoulboundTokenIssued: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32, owner: AccountId32, allowedAssets: Vec<CommonPrimitivesAssetId32>], { assetId: CommonPrimitivesAssetId32, owner: AccountId32, allowedAssets: Vec<CommonPrimitivesAssetId32> }>;
+      SoulboundTokenIssued: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32, owner: AccountId32, image: Option<Bytes>, externalUrl: Option<Bytes>, issuedAt: u64], { assetId: CommonPrimitivesAssetId32, owner: AccountId32, image: Option<Bytes>, externalUrl: Option<Bytes>, issuedAt: u64 }>;
     };
     rewards: {
       /**
