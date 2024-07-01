@@ -486,16 +486,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       irreducibleReserve: Percent & AugmentedConst<ApiType>;
     };
-    regulatedAssets: {
-      /**
-       * Max number of allowed tokens per one Soulbound Token
-       **/
-      maxAllowedTokensPerSBT: u32 & AugmentedConst<ApiType>;
-      /**
-       * Max number of SBTs per one Soulbound Token
-       **/
-      maxSBTsPerAsset: u32 & AugmentedConst<ApiType>;
-    };
     scheduler: {
       /**
        * The maximum weight that may be scheduled per block for any dispatchables.
