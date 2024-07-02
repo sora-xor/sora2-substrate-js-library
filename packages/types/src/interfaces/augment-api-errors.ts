@@ -1524,6 +1524,52 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongRequestStatus: AugmentedError<ApiType>;
     };
+    extendedAssets: {
+      /**
+       * All involved users of a regulated asset operation should hold valid SBT
+       **/
+      AllInvolvedUsersShouldHoldValidSBT: AugmentedError<ApiType>;
+      /**
+       * Asset is already regulated
+       **/
+      AssetAlreadyRegulated: AugmentedError<ApiType>;
+      /**
+       * All Allowed assets must be regulated
+       **/
+      AssetNotRegulated: AugmentedError<ApiType>;
+      /**
+       * Invalid External URL
+       **/
+      InvalidExternalUrl: AugmentedError<ApiType>;
+      /**
+       * Not allowed to regulate SBT
+       **/
+      NotAllowedToRegulateSoulboundAsset: AugmentedError<ApiType>;
+      /**
+       * Caller is not the owner of the SBT
+       **/
+      NotSBTOwner: AugmentedError<ApiType>;
+      /**
+       * Only asset owner can regulate
+       **/
+      OnlyAssetOwnerCanRegulate: AugmentedError<ApiType>;
+      /**
+       * All Allowed assets must be owned by SBT issuer
+       **/
+      RegulatedAssetNoOwnedBySBTIssuer: AugmentedError<ApiType>;
+      /**
+       * SBT not found
+       **/
+      SBTNotFound: AugmentedError<ApiType>;
+      /**
+       * SBT is not operationable by any asset operation
+       **/
+      SoulboundAssetNotOperationable: AugmentedError<ApiType>;
+      /**
+       * SBT is not transferable
+       **/
+      SoulboundAssetNotTransferable: AugmentedError<ApiType>;
+    };
     farming: {
       /**
        * Increment account reference error.
@@ -2684,52 +2730,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Referrer doesn't have enough of reserved balance
        **/
       ReferrerInsufficientBalance: AugmentedError<ApiType>;
-    };
-    regulatedAssets: {
-      /**
-       * All involved users of a regulated asset operation should hold valid SBT
-       **/
-      AllInvolvedUsersShouldHoldValidSBT: AugmentedError<ApiType>;
-      /**
-       * Asset is already regulated
-       **/
-      AssetAlreadyRegulated: AugmentedError<ApiType>;
-      /**
-       * All Allowed assets must be regulated
-       **/
-      AssetNotRegulated: AugmentedError<ApiType>;
-      /**
-       * Invalid External URL
-       **/
-      InvalidExternalUrl: AugmentedError<ApiType>;
-      /**
-       * Not allowed to regulate SBT
-       **/
-      NotAllowedToRegulateSoulboundAsset: AugmentedError<ApiType>;
-      /**
-       * Caller is not the owner of the SBT
-       **/
-      NotSBTOwner: AugmentedError<ApiType>;
-      /**
-       * Only asset owner can regulate
-       **/
-      OnlyAssetOwnerCanRegulate: AugmentedError<ApiType>;
-      /**
-       * All Allowed assets must be owned by SBT issuer
-       **/
-      RegulatedAssetNoOwnedBySBTIssuer: AugmentedError<ApiType>;
-      /**
-       * SBT not found
-       **/
-      SBTNotFound: AugmentedError<ApiType>;
-      /**
-       * SBT is not operationable by any asset operation
-       **/
-      SoulboundAssetNotOperationable: AugmentedError<ApiType>;
-      /**
-       * SBT is not transferable
-       **/
-      SoulboundAssetNotTransferable: AugmentedError<ApiType>;
     };
     rewards: {
       /**
