@@ -1558,6 +1558,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       RegulatedAssetNoOwnedBySBTIssuer: AugmentedError<ApiType>;
       /**
+       * Regulated Assets per SBT exceeded
+       **/
+      RegulatedAssetsPerSBTExceeded: AugmentedError<ApiType>;
+      /**
        * SBT not found
        **/
       SBTNotFound: AugmentedError<ApiType>;

@@ -363,6 +363,12 @@ declare module '@polkadot/api-base/types/consts' {
       baseFeeLifetime: u32 & AugmentedConst<ApiType>;
       priorityFee: u128 & AugmentedConst<ApiType>;
     };
+    extendedAssets: {
+      /**
+       * Max number of regulated assets per one Soulbound Token
+       **/
+      maxRegulatedAssetsPerSBT: u32 & AugmentedConst<ApiType>;
+    };
     grandpa: {
       /**
        * Max Authorities in use

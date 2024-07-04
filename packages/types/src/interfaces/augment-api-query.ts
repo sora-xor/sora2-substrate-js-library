@@ -53,9 +53,13 @@ declare module '@polkadot/api-base/types/storage' {
     };
     assets: {
       /**
+       * Asset Id -> (Symbol, Name, Precision, Is Mintable, Content Source, Description)
+       **/
+      assetInfos: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<ITuple<[Bytes, Bytes, u8, bool, Option<Bytes>, Option<Bytes>]>>, [CommonPrimitivesAssetId32]>;
+      /**
        * Asset Id -> AssetInfo
        **/
-      assetInfos: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<CommonPrimitivesAssetInfo>, [CommonPrimitivesAssetId32]>;
+      assetInfosV2: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<CommonPrimitivesAssetInfo>, [CommonPrimitivesAssetId32]>;
       /**
        * Asset Id -> Owner Account Id
        **/
