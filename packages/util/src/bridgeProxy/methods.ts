@@ -1,4 +1,5 @@
 import { map } from 'rxjs';
+import { u8aToHex } from '@polkadot/util';
 
 import type { Observable } from '@polkadot/types/types';
 import type {
@@ -22,6 +23,9 @@ import type { SubNetwork, ParachainIds } from './sub/types';
 function accountFromJunction(junction: XcmV2Junction | XcmV3Junction): string {
   if (junction.isAccountId32) {
     return junction.asAccountId32.id.toString();
+  } else if (junction.isAccountKey20) {
+    const { key } = junction.asAccountKey20;
+    return u8aToHex(key);
   } else {
     return '';
   }
