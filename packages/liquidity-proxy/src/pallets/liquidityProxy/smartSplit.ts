@@ -1,6 +1,6 @@
 import { FPNumber } from '@sora-substrate/math';
 import { LiquiditySourceTypes, Consts, Errors, SwapVariant } from '../../consts';
-import { LiquidityAggregator } from './liquidityAggregator';
+import { LiquidityAggregator } from './liquidityAggregator/liquidityAggregator';
 import { LiquidityRegistry } from './liquidityRegistry';
 import { quote as xykQuote, getActualReserves } from '../poolXyk';
 import {
@@ -330,11 +330,11 @@ export const newSmartSplit = (
     }
   }
 
-  const result = aggregator.aggregateSwapOutcome(amount);
+  const aggregationResult = aggregator.aggregateLiquidity(amount);
 
   const rewards = [];
 
-  for (const { market: source, income, outcome } of result.distribution) {
+  for (const [source, [income, outcome]] of aggregationResult.swapInfo.entries()) {
     const sourceRewards = LiquidityRegistry.checkRewards(source)(
       baseAssetId,
       syntheticBaseAssetId,
@@ -348,9 +348,9 @@ export const newSmartSplit = (
   }
 
   return {
-    amount: result.amount,
-    fee: result.fee,
-    distribution: result.distribution.map((item) => ({ ...item, input: inputAsset, output: outputAsset })),
+    amount: aggregationResult.resultAmount,
+    fee: aggregationResult.fee,
+    distribution: aggregationResult.distribution.map((item) => ({ ...item, input: inputAsset, output: outputAsset })),
     rewards,
   };
 };

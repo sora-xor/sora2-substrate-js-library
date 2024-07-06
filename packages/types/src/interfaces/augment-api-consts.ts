@@ -7,7 +7,7 @@ import '@polkadot/api-base/types/consts';
 
 import type { ApiTypes, AugmentedConst } from '@polkadot/api-base/types';
 import type { U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
-import type { AccountId32, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, Perbill, Percent, Permill } from '@polkadot/types/interfaces/runtime';
 import type { BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight, SpWeightsWeightV2Weight } from '@polkadot/types/lookup';
 
 export type __AugmentedConst<ApiType extends ApiTypes> = AugmentedConst<ApiType>;
@@ -363,6 +363,12 @@ declare module '@polkadot/api-base/types/consts' {
       baseFeeLifetime: u32 & AugmentedConst<ApiType>;
       priorityFee: u128 & AugmentedConst<ApiType>;
     };
+    extendedAssets: {
+      /**
+       * Max number of regulated assets per one Soulbound Token
+       **/
+      maxRegulatedAssetsPerSBT: u32 & AugmentedConst<ApiType>;
+    };
     grandpa: {
       /**
        * Max Authorities in use
@@ -443,6 +449,12 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       unsignedPriority: u64 & AugmentedConst<ApiType>;
     };
+    liquidityProxy: {
+      /**
+       * Percent of internal slippage tolerance
+       **/
+      internalSlippageTolerance: Permill & AugmentedConst<ApiType>;
+    };
     multicollateralBondingCurvePool: {
       /**
        * Percent of reserve which is not involved in swap
@@ -479,16 +491,6 @@ declare module '@polkadot/api-base/types/consts' {
        * Percent of reserve which is not involved in swap
        **/
       irreducibleReserve: Percent & AugmentedConst<ApiType>;
-    };
-    regulatedAssets: {
-      /**
-       * Max number of allowed tokens per one Soulbound Token
-       **/
-      maxAllowedTokensPerSBT: u32 & AugmentedConst<ApiType>;
-      /**
-       * Max number of SBTs per one Soulbound Token
-       **/
-      maxSBTsPerAsset: u32 & AugmentedConst<ApiType>;
     };
     scheduler: {
       /**
