@@ -1524,6 +1524,56 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongRequestStatus: AugmentedError<ApiType>;
     };
+    extendedAssets: {
+      /**
+       * All involved users of a regulated asset operation should hold valid SBT
+       **/
+      AllInvolvedUsersShouldHoldValidSBT: AugmentedError<ApiType>;
+      /**
+       * Asset is already regulated
+       **/
+      AssetAlreadyRegulated: AugmentedError<ApiType>;
+      /**
+       * All Allowed assets must be regulated
+       **/
+      AssetNotRegulated: AugmentedError<ApiType>;
+      /**
+       * Invalid External URL
+       **/
+      InvalidExternalUrl: AugmentedError<ApiType>;
+      /**
+       * Not allowed to regulate SBT
+       **/
+      NotAllowedToRegulateSoulboundAsset: AugmentedError<ApiType>;
+      /**
+       * Caller is not the owner of the SBT
+       **/
+      NotSBTOwner: AugmentedError<ApiType>;
+      /**
+       * Only asset owner can regulate
+       **/
+      OnlyAssetOwnerCanRegulate: AugmentedError<ApiType>;
+      /**
+       * All Allowed assets must be owned by SBT issuer
+       **/
+      RegulatedAssetNoOwnedBySBTIssuer: AugmentedError<ApiType>;
+      /**
+       * Regulated Assets per SBT exceeded
+       **/
+      RegulatedAssetsPerSBTExceeded: AugmentedError<ApiType>;
+      /**
+       * SBT not found
+       **/
+      SBTNotFound: AugmentedError<ApiType>;
+      /**
+       * SBT is not operationable by any asset operation
+       **/
+      SoulboundAssetNotOperationable: AugmentedError<ApiType>;
+      /**
+       * SBT is not transferable
+       **/
+      SoulboundAssetNotTransferable: AugmentedError<ApiType>;
+    };
     farming: {
       /**
        * Increment account reference error.
@@ -1820,9 +1870,13 @@ declare module '@polkadot/api-base/types/errors' {
     };
     liquidityProxy: {
       /**
-       * Path exists but it's not possible to perform exchange with currently available liquidity on pools.
+       * Unable to aggregate the liquidity from sources.
        **/
       AggregationError: AugmentedError<ApiType>;
+      /**
+       * Internal error. Liquidity source returned wrong liquidity.
+       **/
+      BadLiquidity: AugmentedError<ApiType>;
       /**
        * Specified parameters lead to arithmetic error
        **/
@@ -1831,21 +1885,33 @@ declare module '@polkadot/api-base/types/errors' {
        * Failure while calculating price ignoring non-linearity of liquidity source.
        **/
       FailedToCalculatePriceWithoutImpact: AugmentedError<ApiType>;
+      /**
+       * Failure while transferring commission to ADAR account
+       **/
       FailedToTransferAdarCommission: AugmentedError<ApiType>;
       /**
        * Selected filtering request is not allowed.
        **/
       ForbiddenFilter: AugmentedError<ApiType>;
+      /**
+       * Sender don't have enough asset balance
+       **/
       InsufficientBalance: AugmentedError<ApiType>;
       /**
        * None of the sources has enough reserves to execute a trade
        **/
       InsufficientLiquidity: AugmentedError<ApiType>;
+      /**
+       * ADAR commission ratio exceeds 1
+       **/
       InvalidADARCommissionRatio: AugmentedError<ApiType>;
       /**
        * Fee value outside of the basis points range [0..10000]
        **/
       InvalidFeeValue: AugmentedError<ApiType>;
+      /**
+       * Information about swap batch receivers is invalid
+       **/
       InvalidReceiversInfo: AugmentedError<ApiType>;
       /**
        * Liquidity source is already disabled
@@ -1863,6 +1929,9 @@ declare module '@polkadot/api-base/types/errors' {
        * Slippage either exceeds minimum tolerated output or maximum tolerated input.
        **/
       SlippageNotTolerated: AugmentedError<ApiType>;
+      /**
+       * Sender and receiver should not be the same
+       **/
       TheSameSenderAndReceiver: AugmentedError<ApiType>;
       /**
        * Unable to disable liquidity source
@@ -2666,28 +2735,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ReferrerInsufficientBalance: AugmentedError<ApiType>;
     };
-    regulatedAssets: {
-      /**
-       * All involved users of a regulated asset operation should hold SBT
-       **/
-      AllInvolvedUsersShouldHoldSBT: AugmentedError<ApiType>;
-      /**
-       * Asset is already regulated
-       **/
-      AssetAlreadyRegulated: AugmentedError<ApiType>;
-      /**
-       * Only asset owner can regulate
-       **/
-      OnlyAssetOwnerCanRegulate: AugmentedError<ApiType>;
-      /**
-       * SBT is not operationable by any asset operation
-       **/
-      SoulboundAssetNotOperationable: AugmentedError<ApiType>;
-      /**
-       * SBT is not transferable
-       **/
-      SoulboundAssetNotTransferable: AugmentedError<ApiType>;
-    };
     rewards: {
       /**
        * Address is not eligible for any rewards
@@ -3237,6 +3284,16 @@ declare module '@polkadot/api-base/types/errors' {
        * Wrong crowdloan data passed
        **/
       WrongCrowdloanInfo: AugmentedError<ApiType>;
+    };
+    xorFee: {
+      /**
+       * `SmallReferenceAmount` is unsupported
+       **/
+      InvalidSmallReferenceAmount: AugmentedError<ApiType>;
+      /**
+       * Failed to calculate new multiplier.
+       **/
+      MultiplierCalculationFailed: AugmentedError<ApiType>;
     };
     xstPool: {
       /**
