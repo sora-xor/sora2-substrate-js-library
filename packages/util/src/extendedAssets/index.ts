@@ -49,25 +49,32 @@ export class ExtendedAssetsModule<T> {
   }
 
   /**
-   * Give privilege to provided account
-   * @param sbtAssetId asset ID of SBT
+   * Give privilege for provided account for specified lifespan.
    * @param accountId account address to give access to
+   * @param sbtAssetId asset ID of SBT
+   * @param timestamp time when access is expired
    *
    */
-  public async givePrivilege(sbtAssetId: string, accountId: string): Promise<T> {
-    // TODO: replace with another call
-    return this.root.assets.mint({ address: sbtAssetId } as Asset, '1', accountId);
+  public async givePrivilege(accountId: string, sbtAssetId: string, timestamp: number): Promise<T> {
+    // TODO: add logic for possible minting
+    return this.root.submitExtrinsic(
+      this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, timestamp * 1000),
+      this.root.account.pair
+    );
   }
 
   /**
    * Revoke privilege from provided account
-   * @param sbtAssetId asset ID of SBT
    * @param accountId account address to give access to
+   * @param sbtAssetId asset ID of SBT
    *
    */
-  public async revokePrivilege(sbtAssetId: string, accountId: string): Promise<T> {
-    // TODO: replace with another call
-    return this.root.assets.burn({ address: sbtAssetId } as Asset, '1');
+  public async revokePrivilege(accountId: string, sbtAssetId: string): Promise<T> {
+    // TODO: add logic for possible burning
+    return this.root.submitExtrinsic(
+      this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, Date.now() * 1000),
+      this.root.account.pair
+    );
   }
 
   /**
@@ -100,6 +107,7 @@ export class ExtendedAssetsModule<T> {
    * @param description description string
    * @param image image source (ipfs)
    * @param extendedUrl url of financial institution
+   *
    */
   public async issueSbt(symbol: string, name: string, description = '', image = '', extendedUrl = ''): Promise<T> {
     return this.root.submitExtrinsic(

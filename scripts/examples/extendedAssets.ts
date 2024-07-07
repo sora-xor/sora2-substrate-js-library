@@ -9,8 +9,8 @@ async function main(): Promise<void> {
 
     // await api.extendedAssets.regulateAsset(assetId);
 
-    const isAssetRegulated = await api.extendedAssets.isAssetRegulated(assetId);
-    console.log('isAssetRegulated', isAssetRegulated);
+    // const isAssetRegulated = await api.extendedAssets.isAssetRegulated(assetId);
+    // console.log('isAssetRegulated', isAssetRegulated);
 
     // await api.extendedAssets.issueSbt(
     //   'SBT',
@@ -20,10 +20,12 @@ async function main(): Promise<void> {
     //   'web3.com'
     // );
 
-    await api.extendedAssets.bindRegulatedAssetToSBT(sbtId, assetId);
+    // await api.extendedAssets.bindRegulatedAssetToSBT(sbtId, assetId);
 
-    const sbtMeta = await api.extendedAssets.getSbtMetaInfo(sbtId);
-    console.log('sbtMeta', sbtMeta);
+    // const sbtMeta = await api.extendedAssets.getSbtMetaInfo(sbtId);
+    // console.log('sbtMeta', sbtMeta);
+
+    api.extendedAssets.givePrivilege(sbtId, 'cnUaaC2q8z1SFkZcPNDQ38maLVFhuNeuZeFQnUCRLEM8FvMs4');
 
     await delay(100000);
   });
