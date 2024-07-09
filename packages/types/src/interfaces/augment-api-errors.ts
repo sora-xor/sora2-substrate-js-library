@@ -2325,6 +2325,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AssetDecodingError: AugmentedError<ApiType>;
       /**
+       * Asset Regulations Check failed
+       **/
+      AssetRegulationsCheckFailed: AugmentedError<ApiType>;
+      /**
        * In this case assets must not be same.
        **/
       AssetsMustNotBeSame: AugmentedError<ApiType>;
