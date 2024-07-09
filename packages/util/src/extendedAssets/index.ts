@@ -1,4 +1,5 @@
 import type { Api } from '../api';
+import { Asset } from '../assets/types';
 import { SoulBoundToken } from './types';
 
 export class ExtendedAssetsModule<T> {
@@ -45,7 +46,7 @@ export class ExtendedAssetsModule<T> {
    * @param assetId asset ID
    *
    */
-  public async isAssetRegulated(assetId: string): Promise<Boolean> {
+  public async isAssetRegulated(assetId: string): Promise<boolean> {
     return (await this.root.api.query.extendedAssets.regulatedAsset(assetId)).toHuman();
   }
 
@@ -56,12 +57,16 @@ export class ExtendedAssetsModule<T> {
    * @param timestamp time when access is expired
    *
    */
-  public async givePrivilege(accountId: string, sbtAssetId: string, timestamp: number): Promise<T> {
-    // TODO: add logic for possible minting
-    return this.root.submitExtrinsic(
-      this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, timestamp * 1000),
-      this.root.account.pair
-    );
+  public async givePrivilege(accountId: string, sbtAssetId: string, timestamp?: number): Promise<T | undefined> {
+    // if provided, account has some determined lifespan to operate, otherwise, it is indefinite
+    if (timestamp) {
+      return this.root.submitExtrinsic(
+        this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, timestamp),
+        this.root.account.pair
+      );
+    }
+
+    return this.root.assets.mint({ address: sbtAssetId } as Asset, '1', accountId);
   }
 
   /**
@@ -71,9 +76,8 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async revokePrivilege(accountId: string, sbtAssetId: string): Promise<T> {
-    // TODO: add logic for possible burning
     return this.root.submitExtrinsic(
-      this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, Date.now() * 1000),
+      this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, Math.round(Date.now() / 1000)),
       this.root.account.pair
     );
   }
