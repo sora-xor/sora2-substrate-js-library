@@ -88,3 +88,5 @@ export interface HistoryElementTransfer extends History {
   assetFee?: string;
   comment?: string;
 }
+
+export type AssetType = 'Regular' | 'NFT' | 'Soulbound' | 'Regulated';

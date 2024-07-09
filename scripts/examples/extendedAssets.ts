@@ -25,7 +25,7 @@ async function main(): Promise<void> {
     // const sbtMeta = await api.extendedAssets.getSbtMetaInfo(sbtId);
     // console.log('sbtMeta', sbtMeta);
 
-    api.extendedAssets.givePrivilege(sbtId, 'cnUaaC2q8z1SFkZcPNDQ38maLVFhuNeuZeFQnUCRLEM8FvMs4');
+    api.extendedAssets.givePrivilege(sbtId, 'cnUaaC2q8z1SFkZcPNDQ38maLVFhuNeuZeFQnUCRLEM8FvMs4', Date.now());
 
     await delay(100000);
   });

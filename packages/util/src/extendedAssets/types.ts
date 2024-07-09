@@ -1,4 +1,4 @@
-import { AssetType } from '@sora-substrate/types';
+import { AssetType } from '../assets/types';
 
 export type SoulBoundToken = {
   address: string;
