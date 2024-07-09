@@ -28,3 +28,5 @@ export interface BalanceInfo extends Struct {
 }
 
 export type PHANTOM_ASSETS = 'assets';
+
+export type AssetType = 'Regular' | 'NFT' | 'Soulbound' | 'Regulated'

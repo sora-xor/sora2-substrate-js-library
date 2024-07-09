@@ -1,5 +1,5 @@
 import type { Api } from '../api';
-import { Asset } from '../assets/types';
+import { SoulBoundToken } from './types';
 
 export class ExtendedAssetsModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -9,14 +9,15 @@ export class ExtendedAssetsModule<T> {
    * @param assetId asset ID
    *
    */
-  public async getSbtMetaInfo(assetId: string): Promise<any> {
+  public async getSbtMetaInfo(assetId: string): Promise<SoulBoundToken> {
     const sbtSpecificInfo = await this.root.api.query.extendedAssets.soulboundAsset(assetId);
     const sbtCommonInfo = await this.root.api.query.assets.assetInfosV2(assetId);
 
-    const { externalUrl, issuedAt, regulatedAssets } = sbtSpecificInfo.toHuman() as any;
-    const { symbol, name, assetType, contentSource, description } = sbtCommonInfo.toHuman() as any;
+    const { externalUrl, issuedAt, regulatedAssets = [] } = sbtSpecificInfo.toHuman() as Partial<SoulBoundToken>;
+    const { symbol, name, assetType, contentSource, description } = sbtCommonInfo.toHuman() as Partial<SoulBoundToken>;
 
     return {
+      address: assetId,
       symbol,
       name,
       assetType,
@@ -24,7 +25,7 @@ export class ExtendedAssetsModule<T> {
       description,
       externalUrl,
       issuedAt,
-      regulatedAssets: regulatedAssets.map((regulatedAsset: { code: string }) => regulatedAsset.code),
+      regulatedAssets: regulatedAssets.map((regulatedAsset) => (regulatedAsset as { code: string }).code),
     };
   }
 
