@@ -42,6 +42,8 @@ export enum SubNetworkId {
   Liberland = 'Liberland',
 }
 
+export const SubEvmNetworks = [SubNetworkId.AlphanetMoonbase] as const;
+
 export const SoraParachains = [
   SubNetworkId.PolkadotSora,
   SubNetworkId.KusamaSora,

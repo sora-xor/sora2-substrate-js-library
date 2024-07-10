@@ -12,6 +12,7 @@ import {
   XcmVersionedMultiLocation,
   XcmMultilocationJunction,
   XcmJunction,
+  SubEvmNetworks,
   SoraParachains,
   PolkadotParachains,
   KusamaParachains,
@@ -33,6 +34,7 @@ import type {
   ParachainIds,
   SubNetwork,
   SubNetworkChainId,
+  SubEvmNetwork,
   SoraParachain,
   PolkadotParachain,
   KusamaParachain,
@@ -148,7 +150,7 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
   }
 
   public isEvmAccount(subNetwork: SubNetwork): boolean {
-    return [SubNetworkId.AlphanetMoonbase].includes(subNetwork);
+    return SubEvmNetworks.includes(subNetwork as SubEvmNetwork);
   }
 
   private getRecipientArg(subNetwork: SubNetwork, recipient: string): BridgeTypesGenericAccount {

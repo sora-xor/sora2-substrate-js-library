@@ -4,6 +4,7 @@ import type { Operation, History } from '../../types';
 import type { BridgeTxStatus, BridgeNetworkType } from '../consts';
 import type {
   SubAssetKind,
+  SubEvmNetworks,
   SoraParachains,
   PolkadotParachains,
   KusamaParachains,
@@ -24,6 +25,8 @@ export type SubAsset = {
   assetKind: SubAssetKind;
   decimals: number;
 };
+
+export type SubEvmNetwork = (typeof SubEvmNetworks)[number];
 
 export type Standalone = (typeof Standalones)[number];
 
