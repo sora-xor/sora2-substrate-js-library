@@ -51,22 +51,32 @@ export class ExtendedAssetsModule<T> {
   }
 
   /**
+   * Get SBT expiration on account
+   * @param accountId account address
+   * @param sbtAssetId asset ID of SBT
+   *
+   */
+  public async getSbtExpiration(accountId: string, sbtAssetId: string): Promise<number> {
+    return (await this.root.api.query.extendedAssets.sbtExpiration(accountId, sbtAssetId)).toHuman() as number;
+  }
+
+  /**
    * Give privilege for provided account for specified lifespan.
    * @param accountId account address to give access to
-   * @param sbtAssetId asset ID of SBT
+   * @param sbtAsset SBT asset
    * @param timestamp time when access is expired
    *
    */
-  public async givePrivilege(accountId: string, sbtAssetId: string, timestamp?: number): Promise<T | undefined> {
+  public async givePrivilege(accountId: string, sbtAsset: Asset, timestamp?: number): Promise<T> {
     // if provided, account has some determined lifespan to operate, otherwise, it is indefinite
     if (timestamp) {
-      return this.root.submitExtrinsic(
-        this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, timestamp),
+      this.root.submitExtrinsic(
+        this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAsset.address, timestamp),
         this.root.account.pair
       );
     }
 
-    return this.root.assets.mint({ address: sbtAssetId } as Asset, '1', accountId);
+    return this.root.assets.mint(sbtAsset, '1', accountId);
   }
 
   /**
