@@ -12,7 +12,12 @@ import {
   XcmVersionedMultiLocation,
   XcmMultilocationJunction,
   XcmJunction,
+  SubEvmNetworks,
   SoraParachains,
+  PolkadotParachains,
+  KusamaParachains,
+  AlphanetParachains,
+  RococoParachains,
   Relaychains,
   Parachains,
   Standalones,
@@ -29,7 +34,12 @@ import type {
   ParachainIds,
   SubNetwork,
   SubNetworkChainId,
+  SubEvmNetwork,
   SoraParachain,
+  PolkadotParachain,
+  KusamaParachain,
+  AlphanetParachain,
+  RococoParachain,
   Relaychain,
   Parachain,
   Standalone,
@@ -60,6 +70,7 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
   public parachainIds: ParachainIds = {
     [SubNetworkId.PolkadotAcala]: 2000,
     [SubNetworkId.PolkadotAstar]: 2006,
+    [SubNetworkId.PolkadotMoonbeam]: 2004,
     [SubNetworkId.PolkadotSora]: 2025,
     [SubNetworkId.RococoSora]: 2011,
     [SubNetworkId.KusamaSora]: 2011,
@@ -80,39 +91,27 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
   public getRelayChain(subNetwork: SubNetwork): Relaychain {
     if (this.isRelayChain(subNetwork)) return subNetwork as Relaychain;
 
-    switch (subNetwork) {
-      case SubNetworkId.PolkadotAcala:
-      case SubNetworkId.PolkadotAstar:
-      case SubNetworkId.PolkadotSora:
-        return SubNetworkId.Polkadot;
-      case SubNetworkId.KusamaShiden:
-      case SubNetworkId.KusamaSora:
-        return SubNetworkId.Kusama;
-      case SubNetworkId.RococoSora:
-        return SubNetworkId.Rococo;
-      case SubNetworkId.AlphanetSora:
-      case SubNetworkId.AlphanetMoonbase:
-        return SubNetworkId.Alphanet;
-      default:
-        throw new Error(`"${subNetwork}" has not relaychain`);
-    }
+    if (PolkadotParachains.includes(subNetwork as PolkadotParachain)) return SubNetworkId.Polkadot;
+    if (KusamaParachains.includes(subNetwork as KusamaParachain)) return SubNetworkId.Kusama;
+    if (AlphanetParachains.includes(subNetwork as AlphanetParachain)) return SubNetworkId.Alphanet;
+    if (RococoParachains.includes(subNetwork as RococoParachain)) return SubNetworkId.Rococo;
+
+    throw new Error(`"${subNetwork}" has not relaychain`);
   }
 
   public getSoraParachain(subNetwork: SubNetwork): SoraParachain {
     if (this.isSoraParachain(subNetwork)) return subNetwork as SoraParachain;
 
-    switch (subNetwork) {
+    const relaychain = this.getRelayChain(subNetwork);
+
+    switch (relaychain) {
       case SubNetworkId.Polkadot:
-      case SubNetworkId.PolkadotAcala:
-      case SubNetworkId.PolkadotAstar:
         return SubNetworkId.PolkadotSora;
       case SubNetworkId.Kusama:
-      case SubNetworkId.KusamaShiden:
         return SubNetworkId.KusamaSora;
       case SubNetworkId.Rococo:
         return SubNetworkId.RococoSora;
       case SubNetworkId.Alphanet:
-      case SubNetworkId.AlphanetMoonbase:
         return SubNetworkId.AlphanetSora;
       default:
         throw new Error(`"${subNetwork}" has not SORA parachain`);
@@ -151,7 +150,7 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
   }
 
   public isEvmAccount(subNetwork: SubNetwork): boolean {
-    return [SubNetworkId.AlphanetMoonbase].includes(subNetwork);
+    return SubEvmNetworks.includes(subNetwork as SubEvmNetwork);
   }
 
   private getRecipientArg(subNetwork: SubNetwork, recipient: string): BridgeTypesGenericAccount {

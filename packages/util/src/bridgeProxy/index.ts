@@ -12,7 +12,7 @@ import { SubBridgeApi } from './sub';
 
 import { BridgeNetworkType } from './consts';
 import { getEvmNetworkId, getEvmNetworkType } from './methods';
-import { SubNetworkId } from './sub/consts';
+import { PolkadotParachains, KusamaParachains, AlphanetParachains, RococoParachains } from './sub/consts';
 import type { Api } from '../api';
 import type { Storage } from '../storage';
 import type { SupportedApps } from './types';
@@ -91,17 +91,13 @@ export class BridgeProxyModule<T> {
 
           // adding parachains we work through relaychain
           if (subNetwork.isRococo) {
-            apps[type].push(SubNetworkId.RococoSora);
+            apps[type].push(...RococoParachains);
           } else if (subNetwork.isKusama) {
-            apps[type].push(SubNetworkId.KusamaShiden);
-            apps[type].push(SubNetworkId.KusamaSora);
+            apps[type].push(...KusamaParachains);
           } else if (subNetwork.isPolkadot) {
-            apps[type].push(SubNetworkId.PolkadotAcala);
-            apps[type].push(SubNetworkId.PolkadotAstar);
-            apps[type].push(SubNetworkId.PolkadotSora);
+            apps[type].push(...PolkadotParachains);
           } else if (subNetwork.isAlphanet) {
-            apps[type].push(SubNetworkId.AlphanetSora);
-            apps[type].push(SubNetworkId.AlphanetMoonbase);
+            apps[type].push(...AlphanetParachains);
           } else if (subNetwork.isMainnet) {
             // SORA-SORA bridge is not exists
             console.info(`"Mainnet" sub network is not supported app`);
