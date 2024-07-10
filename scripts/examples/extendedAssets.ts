@@ -33,7 +33,7 @@ async function main(): Promise<void> {
 
     const sbtAsset = await api.assets.getAssetInfo(sbtId);
     console.log('sbtAsset', sbtAsset);
-    await api.extendedAssets.givePrivilege('cnVDcsDK6cvS6VBP36SbwM3GhQQWe9kxzZEgfqSRABRoCfn79', sbtAsset, 1720671542);
+    await api.extendedAssets.givePrivilege(accountId, sbtAsset, 1720671542);
 
     api.extendedAssets.revokePrivilege('', sbtId);
 
