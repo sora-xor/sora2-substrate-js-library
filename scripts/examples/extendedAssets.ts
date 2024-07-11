@@ -8,6 +8,8 @@ async function main(): Promise<void> {
     const sbtId = '0x0023e888d25c3451585bdf75e75ec44be448bdc88ac10aae084a7d26ba8c78d0';
     const accountId = 'cnUaaC2q8z1SFkZcPNDQ38maLVFhuNeuZeFQnUCRLEM8FvMs4';
 
+    const sbtAdresses = await api.extendedAssets.getAllSbtIds();
+
     await api.extendedAssets.regulateAsset(assetId);
 
     const isAssetRegulated = await api.extendedAssets.isAssetRegulated(assetId);
@@ -26,7 +28,7 @@ async function main(): Promise<void> {
     const sbtMeta = await api.extendedAssets.getSbtMetaInfo(sbtId);
     console.log('sbtMeta', sbtMeta);
 
-    const expDate = await api.extendedAssets.getSbtExpiration(
+    const timestamp = await api.extendedAssets.getSbtExpiration(
       'cnVDcsDK6cvS6VBP36SbwM3GhQQWe9kxzZEgfqSRABRoCfn79',
       sbtId
     );

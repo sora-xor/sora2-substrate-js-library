@@ -14,7 +14,7 @@ export class ExtendedAssetsModule<T> {
     const sbtSpecificInfo = await this.root.api.query.extendedAssets.soulboundAsset(assetId);
     const sbtCommonInfo = await this.root.api.query.assets.assetInfosV2(assetId);
 
-    const { externalUrl, issuedAt, regulatedAssets = [] } = sbtSpecificInfo.toHuman() as Partial<SoulBoundToken>;
+    const { externalUrl, issuedAt, regulatedAssets } = sbtSpecificInfo.unwrapOrDefault();
     const { symbol, name, assetType, contentSource, description } = sbtCommonInfo.toHuman() as Partial<SoulBoundToken>;
 
     return {
@@ -24,9 +24,11 @@ export class ExtendedAssetsModule<T> {
       assetType,
       contentSource,
       description,
-      externalUrl,
-      issuedAt,
-      regulatedAssets: regulatedAssets.map((regulatedAsset) => (regulatedAsset as { code: string }).code),
+      externalUrl: externalUrl.toHuman() as string,
+      issuedAt: issuedAt.toHuman(),
+      regulatedAssets: regulatedAssets.isEmpty
+        ? (regulatedAssets.toJSON() as Array<{ code: string }>).map((regulatedAsset) => regulatedAsset?.code)
+        : [],
     };
   }
 
@@ -37,7 +39,7 @@ export class ExtendedAssetsModule<T> {
   public async getAllSbtIds(): Promise<Array<string>> {
     const data = await this.root.api.query.extendedAssets.soulboundAsset.entries();
 
-    return data.map(([code]) => code.args[0].toHuman().code) as Array<string>;
+    return data.map(([code]) => code.args[0].toJSON().code) as Array<string>;
   }
 
   /**
@@ -47,7 +49,7 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async isAssetRegulated(assetId: string): Promise<boolean> {
-    return (await this.root.api.query.extendedAssets.regulatedAsset(assetId)).toHuman();
+    return (await this.root.api.query.extendedAssets.regulatedAsset(assetId)).toJSON();
   }
 
   /**
@@ -57,7 +59,7 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async getSbtExpiration(accountId: string, sbtAssetId: string): Promise<number> {
-    return (await this.root.api.query.extendedAssets.sbtExpiration(accountId, sbtAssetId)).toHuman() as number;
+    return (await this.root.api.query.extendedAssets.sbtExpiration(accountId, sbtAssetId)).unwrap().toNumber();
   }
 
   /**
