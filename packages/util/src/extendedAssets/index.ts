@@ -26,9 +26,9 @@ export class ExtendedAssetsModule<T> {
       description,
       externalUrl: externalUrl.toHuman() as string,
       issuedAt: issuedAt.toHuman(),
-      regulatedAssets: regulatedAssets.isEmpty
-        ? (regulatedAssets.toJSON() as Array<{ code: string }>).map((regulatedAsset) => regulatedAsset?.code)
-        : [],
+      regulatedAssets: (regulatedAssets.toJSON() as Array<{ code: string }>).map(
+        (regulatedAsset) => regulatedAsset?.code
+      ),
     };
   }
 
