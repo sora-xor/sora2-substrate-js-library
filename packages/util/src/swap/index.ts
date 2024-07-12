@@ -49,6 +49,7 @@ type SwapResultWithDexIdV2 = Omit<SwapResultWithDexId, 'fee'> & { fee: Liquidity
 
 type AnyBalance = NumberLike | Codec | Balance;
 
+const toFP = (value: AnyBalance, decimals = XOR.decimals) => new FPNumber(value, decimals);
 const toParamCodecString = (value: AnyBalance, assetA: Asset, assetB: Asset, isExchangeB: boolean) =>
   new FPNumber(value, (!isExchangeB ? assetB : assetA).decimals).toCodecString();
 
@@ -1027,6 +1028,59 @@ export class SwapModule<T> {
           this.getResultRpc(assetAAddress, assetBAddress, amount, isExchangeB, liquiditySource, allowSelectedSorce)
         )
       );
+  }
+
+  /**
+   * **RPC**
+   *
+   * Get buy/sell swap results using `liquidityProxy.quote` rpc call for all DEX IDs (XOR & XSTUSD based).
+   * It utilizes only 18 decimals assets
+   * __________________
+   * It's better to use `getResult` function because of the blockchain performance
+   *
+   * @param base Base asset address
+   * @param quote Quote asset address
+   * @param amount Amount value represented by `number` or `string`
+   * @param liquiditySource Selected liquidity source; `''` by default
+   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`); `true` by default
+   */
+  public async getBuySellResultRpc(
+    base: string,
+    quote: string,
+    amount: NumberLike,
+    liquiditySource = LiquiditySourceTypes.Default,
+    allowSelectedSorce = true,
+    dexId = DexId.XOR
+  ): Promise<{ buy: string; sell: string }> {
+    const { liquiditySources, filterMode } = this.getSourcesAndFilterMode(liquiditySource, allowSelectedSorce);
+
+    const amountFp = toFP(amount);
+    const codecAmount = amountFp.toCodecString();
+    const quoteFn = this.root.api.rpc.liquidityProxy.quote;
+
+    const [sellDex0, /* sellDex1, */ buyDex0 /*, buyDex1*/] = await Promise.all([
+      quoteFn(dexId, base, quote, codecAmount, 'WithDesiredInput', liquiditySources, filterMode),
+      // quoteFn(DexId.XSTUSD, base, quote, codecAmount, 'WithDesiredInput', liquiditySources, filterMode),
+      quoteFn(dexId, quote, base, codecAmount, 'WithDesiredOutput', liquiditySources, filterMode),
+      // quoteFn(DexId.XSTUSD, quote, base, codecAmount, 'WithDesiredOutput', liquiditySources, filterMode),
+    ]);
+
+    const valueSellDex0 = sellDex0.unwrapOr(emptySwapResult);
+    // NOSONAR
+    // const valueSellDex1 = sellDex1.unwrapOr(emptySwapResult);
+    // const isDex0BetterForSell = FPNumber.gte(toFP(valueSellDex0.amount), toFP(valueSellDex1.amount));
+    const valueSell = toFP(valueSellDex0.amount); // toFP((isDex0BetterForSell ? valueSellDex0 : valueSellDex1).amount); NOSONAR
+
+    const valueBuyDex0 = buyDex0.unwrapOr(emptySwapResult);
+    // NOSONAR
+    // const valueBuyDex1 = buyDex1.unwrapOr(emptySwapResult);
+    // const isDex0BetterForBuy = FPNumber.gte(toFP(valueBuyDex0.amount), toFP(valueBuyDex1.amount));
+    const valueBuy = toFP(valueBuyDex0.amount); // toFP((isDex0BetterForBuy ? valueBuyDex0 : valueBuyDex1).amount); NOSONAR
+
+    return {
+      buy: valueBuy.div(amountFp).toString(),
+      sell: valueSell.div(amountFp).toString(),
+    };
   }
 
   /**
