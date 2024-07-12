@@ -264,7 +264,8 @@ const getAssetLiquiditySources = (
     [LiquiditySourceTypes.XSTPool]: () =>
       baseAssetId === Consts.XOR && (address === syntheticBaseAssetId || !!enabledAssets.xst[address]),
     [LiquiditySourceTypes.OrderBook]: () =>
-      baseAssetId === Consts.XOR && (address === baseAssetId || !!orderBookReserves[address]),
+      (baseAssetId === Consts.XOR || baseAssetId === Consts.KUSD) &&
+      (address === baseAssetId || !!orderBookReserves[address]),
   };
 
   return Object.entries(rules).reduce((acc: LiquiditySourceTypes[], [source, rule]) => {
