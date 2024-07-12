@@ -89,4 +89,9 @@ export interface HistoryElementTransfer extends History {
   comment?: string;
 }
 
-export type AssetType = 'Regular' | 'NFT' | 'Soulbound' | 'Regulated';
+export enum AssetTypes {
+  Regular = 'Regular',
+  NFT = 'NFT',
+  Soulbound = 'Soulbound',
+  Regulated = 'Regulated',
+}

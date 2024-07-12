@@ -1,4 +1,6 @@
-import { AssetType } from '../assets/types';
+import { AssetTypes } from '../assets/types';
+
+export type AssetType = keyof typeof AssetTypes;
 
 export type SoulBoundToken = {
   address: string;

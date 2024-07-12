@@ -17,6 +17,11 @@ export class ExtendedAssetsModule<T> {
     const { externalUrl, issuedAt, regulatedAssets } = sbtSpecificInfo.unwrapOrDefault();
     const { symbol, name, assetType, contentSource, description } = sbtCommonInfo.toHuman() as Partial<SoulBoundToken>;
 
+    const regulatedAssetsList: Array<string> = [];
+    regulatedAssets.forEach((assetAddressEncoded) => {
+      regulatedAssetsList.push(assetAddressEncoded.code.toString());
+    });
+
     return {
       address: assetId,
       symbol,
@@ -26,9 +31,7 @@ export class ExtendedAssetsModule<T> {
       description,
       externalUrl: externalUrl.toHuman() as string,
       issuedAt: issuedAt.toHuman(),
-      regulatedAssets: (regulatedAssets.toJSON() as Array<{ code: string }>).map(
-        (regulatedAsset) => regulatedAsset?.code
-      ),
+      regulatedAssets: regulatedAssetsList,
     };
   }
 
@@ -39,7 +42,7 @@ export class ExtendedAssetsModule<T> {
   public async getAllSbtIds(): Promise<Array<string>> {
     const data = await this.root.api.query.extendedAssets.soulboundAsset.entries();
 
-    return data.map(([code]) => code.args[0].toJSON().code) as Array<string>;
+    return data.map(([code]) => code.args[0].code.toString());
   }
 
   /**
@@ -49,7 +52,7 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async isAssetRegulated(assetId: string): Promise<boolean> {
-    return (await this.root.api.query.extendedAssets.regulatedAsset(assetId)).toJSON();
+    return (await this.root.api.query.extendedAssets.regulatedAsset(assetId)).isTrue;
   }
 
   /**
@@ -58,8 +61,10 @@ export class ExtendedAssetsModule<T> {
    * @param sbtAssetId asset ID of SBT
    *
    */
-  public async getSbtExpiration(accountId: string, sbtAssetId: string): Promise<number> {
-    return (await this.root.api.query.extendedAssets.sbtExpiration(accountId, sbtAssetId)).unwrap().toNumber();
+  public async getSbtExpiration(accountId: string, sbtAssetId: string): Promise<string> {
+    return (await this.root.api.query.extendedAssets.sbtExpiration(accountId, sbtAssetId))
+      .unwrapOr(Infinity)
+      .toString();
   }
 
   /**
