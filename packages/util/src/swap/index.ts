@@ -1004,36 +1004,7 @@ export class SwapModule<T> {
   /**
    * **RPC**
    *
-   * Subscribe on swap result using `liquidityProxy.quote` rpc call for all DEX IDs (XOR & XSTUSD based).
-   *
-   * @param assetAAddress Asset A address
-   * @param assetBAddress Asset B address
-   * @param amount Amount value (Asset A if Exchange A, else - Asset B)
-   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
-   * @param liquiditySource Selected liquidity source; `''` by default
-   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`); `true` by default
-   */
-  public subscribeOnResultRpc(
-    assetAAddress: string,
-    assetBAddress: string,
-    amount: NumberLike,
-    isExchangeB = false,
-    liquiditySource = LiquiditySourceTypes.Default,
-    allowSelectedSorce = true
-  ): Observable<Promise<SwapResultWithDexIdV2>> {
-    return this.root.system
-      .getBlockNumberObservable()
-      .pipe(
-        map(() =>
-          this.getResultRpc(assetAAddress, assetBAddress, amount, isExchangeB, liquiditySource, allowSelectedSorce)
-        )
-      );
-  }
-
-  /**
-   * **RPC**
-   *
-   * Get buy/sell swap results using `liquidityProxy.quote` rpc call for all DEX IDs (XOR & XSTUSD based).
+   * Get buy/sell swap results using `liquidityProxy.quote` rpc call for selected DEX (XOR DEX by default).
    * It utilizes only 18 decimals assets
    * __________________
    * It's better to use `getResult` function because of the blockchain performance
@@ -1043,6 +1014,7 @@ export class SwapModule<T> {
    * @param amount Amount value represented by `number` or `string`
    * @param liquiditySource Selected liquidity source; `''` by default
    * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`); `true` by default
+   * @param dexId Selected DEX (0 - XOR DEX by default)
    */
   public async getBuySellResultRpc(
     base: string,
@@ -1081,6 +1053,35 @@ export class SwapModule<T> {
       buy: valueBuy.div(amountFp).toString(),
       sell: valueSell.div(amountFp).toString(),
     };
+  }
+
+  /**
+   * **RPC**
+   *
+   * Subscribe on swap result using `liquidityProxy.quote` rpc call for all DEX IDs (XOR & XSTUSD based).
+   *
+   * @param assetAAddress Asset A address
+   * @param assetBAddress Asset B address
+   * @param amount Amount value (Asset A if Exchange A, else - Asset B)
+   * @param isExchangeB Exchange A if `isExchangeB=false` else Exchange B. `false` by default
+   * @param liquiditySource Selected liquidity source; `''` by default
+   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`); `true` by default
+   */
+  public subscribeOnResultRpc(
+    assetAAddress: string,
+    assetBAddress: string,
+    amount: NumberLike,
+    isExchangeB = false,
+    liquiditySource = LiquiditySourceTypes.Default,
+    allowSelectedSorce = true
+  ): Observable<Promise<SwapResultWithDexIdV2>> {
+    return this.root.system
+      .getBlockNumberObservable()
+      .pipe(
+        map(() =>
+          this.getResultRpc(assetAAddress, assetBAddress, amount, isExchangeB, liquiditySource, allowSelectedSorce)
+        )
+      );
   }
 
   /**
