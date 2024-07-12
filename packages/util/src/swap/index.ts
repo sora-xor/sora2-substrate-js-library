@@ -49,8 +49,6 @@ type SwapResultWithDexIdV2 = Omit<SwapResultWithDexId, 'fee'> & { fee: Liquidity
 
 type AnyBalance = NumberLike | Codec | Balance;
 
-const toCodecString = (value: AnyBalance, decimals = XOR.decimals) => new FPNumber(value, decimals).toCodecString();
-const toFP = (value: AnyBalance, decimals = XOR.decimals) => new FPNumber(value, decimals);
 const toParamCodecString = (value: AnyBalance, assetA: Asset, assetB: Asset, isExchangeB: boolean) =>
   new FPNumber(value, (!isExchangeB ? assetB : assetA).decimals).toCodecString();
 
@@ -178,6 +176,32 @@ const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key
     }),
     {}
   );
+
+type DexSwapResult = SwapResult | SwapResultV2;
+type DexesSwapResults<T extends DexSwapResult> = Record<number, T>;
+
+export const getBestResult = <T extends DexSwapResult>(isExchangeB: boolean, results: DexesSwapResults<T>) => {
+  let bestDexId: number = DexId.XOR;
+
+  for (const currentDexId in results) {
+    const currAmount = FPNumber.fromCodecValue(results[currentDexId].amount);
+    const bestAmount = FPNumber.fromCodecValue(results[bestDexId].amount);
+
+    if (currAmount.isZero()) continue;
+
+    if (
+      (FPNumber.isLessThan(currAmount, bestAmount) && isExchangeB) ||
+      (FPNumber.isLessThan(bestAmount, currAmount) && !isExchangeB)
+    ) {
+      bestDexId = +currentDexId;
+    }
+  }
+
+  return {
+    dexId: bestDexId,
+    result: results[bestDexId],
+  };
+};
 
 const emptySwapResult = { amount: 0, fee: [], rewards: [], amountWithoutImpact: 0, route: [] };
 
@@ -347,6 +371,7 @@ export class SwapModule<T> {
     dexId = DexId.XOR
   ): Observable<QuotePayload> | null {
     const isXorDex = dexId === DexId.XOR;
+    const isKusdDex = dexId === DexId.KSUD;
     const xor = XOR.address;
     const dai = DAI.address;
     const xstusd = XSTUSD.address;
@@ -363,11 +388,11 @@ export class SwapModule<T> {
     const isSourceUsed = (source: LiquiditySourceTypes): boolean =>
       enabledSources.includes(source) && (!selectedSources.length || selectedSources.includes(source));
 
-    // is XYK and [TBC, XST, OrderBook](only for XOR Dex) sources used
+    // is [XYK, TBC, XST, OrderBook] sources used
     const xykUsed = isSourceUsed(LiquiditySourceTypes.XYKPool);
     const tbcUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
     const xstUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.XSTPool);
-    const orderBookUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.OrderBook);
+    const orderBookUsed = (isXorDex || isKusdDex) && isSourceUsed(LiquiditySourceTypes.OrderBook);
 
     if ([xykUsed, tbcUsed, xstUsed, orderBookUsed].every((isUsed) => !isUsed)) {
       return null;
@@ -592,7 +617,7 @@ export class SwapModule<T> {
   ): Observable<SwapQuoteData> | null {
     const observables: Observable<SwapQuoteData>[] = [];
 
-    for (const { dexId } of this.root.dex.dexList) {
+    for (const { dexId } of this.root.dex.publicDexes) {
       const swapQuoteDataObservable = this.getSwapQuoteObservable(
         firstAssetAddress,
         secondAssetAddress,
@@ -620,8 +645,6 @@ export class SwapModule<T> {
           selectedSources: LiquiditySourceTypes[] = [],
           deduceFee = true
         ) => {
-          let bestDexId: number = DexId.XOR;
-
           const results = swapQuoteData.reduce<{ [dexId: number]: SwapResult }>((buffer, { quote }) => {
             const { dexId, result } = quote(
               inputAssetAddress,
@@ -635,24 +658,7 @@ export class SwapModule<T> {
             return { ...buffer, [dexId]: result };
           }, {});
 
-          for (const currentDexId in results) {
-            const currAmount = FPNumber.fromCodecValue(results[currentDexId].amount);
-            const bestAmount = FPNumber.fromCodecValue(results[bestDexId].amount);
-
-            if (currAmount.isZero()) continue;
-
-            if (
-              (FPNumber.isLessThan(currAmount, bestAmount) && isExchangeB) ||
-              (FPNumber.isLessThan(bestAmount, currAmount) && !isExchangeB)
-            ) {
-              bestDexId = +currentDexId;
-            }
-          }
-
-          return {
-            dexId: bestDexId,
-            result: results[bestDexId],
-          };
+          return getBestResult(isExchangeB, results);
         };
 
         return {
@@ -906,13 +912,15 @@ export class SwapModule<T> {
       this.root.assets.getAssetInfo(assetBAddress),
     ]);
     const { liquiditySources, filterMode } = this.getSourcesAndFilterMode(liquiditySource, allowSelectedSorce);
+    const swapVariant = !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput';
+    const swapAmount = toParamCodecString(amount, assetA, assetB, isExchangeB);
 
     const result = await this.root.api.rpc.liquidityProxy.quote(
       dexId,
       assetAAddress,
       assetBAddress,
-      toParamCodecString(amount, assetA, assetB, isExchangeB),
-      !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput',
+      swapAmount,
+      swapVariant,
       liquiditySources,
       filterMode
     );
@@ -966,101 +974,30 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
   ): Promise<SwapResultWithDexIdV2> {
-    const { liquiditySources, filterMode } = this.getSourcesAndFilterMode(liquiditySource, allowSelectedSorce);
+    const results: DexesSwapResults<SwapResultV2> = {};
 
-    const codecAmount = toCodecString(amount);
-    const swapVariant = !isExchangeB ? 'WithDesiredInput' : 'WithDesiredOutput';
-    const quoteFn = this.root.api.rpc.liquidityProxy.quote;
+    await Promise.all(
+      this.root.dex.publicDexes.map(({ dexId }) =>
+        this.getResultFromDexRpc(
+          assetAAddress,
+          assetBAddress,
+          amount,
+          isExchangeB,
+          liquiditySource,
+          allowSelectedSorce,
+          dexId
+        ).then((result) => {
+          results[dexId] = result;
+        })
+      )
+    );
 
-    const [resDex0, resDex1] = await Promise.all([
-      quoteFn(DexId.XOR, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
-      quoteFn(DexId.XSTUSD, assetAAddress, assetBAddress, codecAmount, swapVariant, liquiditySources, filterMode),
-    ]);
-    const [valueDex0, valueDex1] = [resDex0.unwrapOr(emptySwapResult), resDex1.unwrapOr(emptySwapResult)];
-    const [amountDex0, amountDex1] = [toFP(valueDex0.amount), toFP(valueDex1.amount)];
-    const isDex0Better =
-      amountDex1.isZero() ||
-      (isExchangeB
-        ? FPNumber.lte(amountDex0, amountDex1) && !amountDex0.isZero()
-        : FPNumber.gte(amountDex0, amountDex1));
-    const value = isDex0Better ? valueDex0 : valueDex1;
-
-    let fee: LiquidityProviderFee[] = [];
-    // TODO [v.1.33]: Should be removed in @sora-substrate/util v.1.33.
-    // value.fee.forEach((value: string, key: string) => {
-    //   fee.push({ assetId: key.toString(), value: value.toString() });
-    // });
-    const resultFee = Array.isArray(value.fee) ? value.fee : (value.fee as OutcomeFee).toJSON();
-    if ((resultFee as any[])[0]) {
-      // old format represented as object - join string values to CodecString
-      fee = [{ assetId: XOR.address, value: Object.values(resultFee).join('') }];
-    } else {
-      fee = Object.entries(resultFee).reduce<LiquidityProviderFee[]>((arr, [assetId, codec]) => {
-        arr.push({ assetId, value: codec?.toString() ?? '0' });
-        return arr;
-      }, []);
-    }
+    const { dexId, result } = getBestResult(isExchangeB, results);
 
     return {
-      amount: toCodecString(value.amount),
-      amountWithoutImpact: toCodecString(value.amountWithoutImpact),
-      fee,
-      rewards: ('toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards) as unknown as LPRewardsInfo[],
-      route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
-      dexId: isDex0Better ? DexId.XOR : DexId.XSTUSD,
+      ...result,
+      dexId,
     } as SwapResultWithDexIdV2;
-  }
-
-  /**
-   * **RPC**
-   *
-   * Get buy/sell swap results using `liquidityProxy.quote` rpc call for all DEX IDs (XOR & XSTUSD based).
-   * It utilizes only 18 decimals assets
-   * __________________
-   * It's better to use `getResult` function because of the blockchain performance
-   *
-   * @param base Base asset address
-   * @param quote Quote asset address
-   * @param amount Amount value represented by `number` or `string`
-   * @param liquiditySource Selected liquidity source; `''` by default
-   * @param allowSelectedSorce Filter mode for source (`AllowSelected` or `ForbidSelected`); `true` by default
-   */
-  public async getBuySellResultRpc(
-    base: string,
-    quote: string,
-    amount: NumberLike,
-    liquiditySource = LiquiditySourceTypes.Default,
-    allowSelectedSorce = true
-  ): Promise<{ buy: string; sell: string }> {
-    const { liquiditySources, filterMode } = this.getSourcesAndFilterMode(liquiditySource, allowSelectedSorce);
-
-    const amountFp = toFP(amount);
-    const codecAmount = amountFp.toCodecString();
-    const quoteFn = this.root.api.rpc.liquidityProxy.quote;
-
-    const [sellDex0, /* sellDex1, */ buyDex0 /*, buyDex1*/] = await Promise.all([
-      quoteFn(DexId.XOR, base, quote, codecAmount, 'WithDesiredInput', liquiditySources, filterMode),
-      // quoteFn(DexId.XSTUSD, base, quote, codecAmount, 'WithDesiredInput', liquiditySources, filterMode),
-      quoteFn(DexId.XOR, quote, base, codecAmount, 'WithDesiredOutput', liquiditySources, filterMode),
-      // quoteFn(DexId.XSTUSD, quote, base, codecAmount, 'WithDesiredOutput', liquiditySources, filterMode),
-    ]);
-
-    const valueSellDex0 = sellDex0.unwrapOr(emptySwapResult);
-    // NOSONAR
-    // const valueSellDex1 = sellDex1.unwrapOr(emptySwapResult);
-    // const isDex0BetterForSell = FPNumber.gte(toFP(valueSellDex0.amount), toFP(valueSellDex1.amount));
-    const valueSell = toFP(valueSellDex0.amount); // toFP((isDex0BetterForSell ? valueSellDex0 : valueSellDex1).amount); NOSONAR
-
-    const valueBuyDex0 = buyDex0.unwrapOr(emptySwapResult);
-    // NOSONAR
-    // const valueBuyDex1 = buyDex1.unwrapOr(emptySwapResult);
-    // const isDex0BetterForBuy = FPNumber.gte(toFP(valueBuyDex0.amount), toFP(valueBuyDex1.amount));
-    const valueBuy = toFP(valueBuyDex0.amount); // toFP((isDex0BetterForBuy ? valueBuyDex0 : valueBuyDex1).amount); NOSONAR
-
-    return {
-      buy: valueBuy.div(amountFp).toString(),
-      sell: valueSell.div(amountFp).toString(),
-    };
   }
 
   /**
