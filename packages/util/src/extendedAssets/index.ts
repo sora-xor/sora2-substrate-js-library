@@ -46,16 +46,6 @@ export class ExtendedAssetsModule<T> {
   }
 
   /**
-   * Checks whether provided asset is regulated to operate on it
-   * among KYC-verified accounts
-   * @param assetId asset ID
-   *
-   */
-  public async isAssetRegulated(assetId: string): Promise<boolean> {
-    return (await this.root.api.query.extendedAssets.regulatedAsset(assetId)).isTrue;
-  }
-
-  /**
    * Get SBT expiration on account
    * @param accountId account address
    * @param sbtAssetId asset ID of SBT
