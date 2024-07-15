@@ -65,6 +65,10 @@ export class BaseApi<T = void> extends ApiAccount<T> {
     [Operation.RepayVaultDebt]: '0',
     [Operation.DepositCollateral]: '0',
     [Operation.BorrowVaultDebt]: '0',
+    [Operation.SetAccessExpiration]: '0',
+    [Operation.RegulateAsset]: '0',
+    [Operation.BindRegulatedAsset]: '0',
+    [Operation.IssueSoulBoundToken]: '0',
   } as NetworkFeesObject;
 
   /**
@@ -200,6 +204,14 @@ export class BaseApi<T = void> extends ApiAccount<T> {
           return this.api.tx.kensetsu.depositCollateral(0, 0);
         case Operation.BorrowVaultDebt:
           return this.api.tx.kensetsu.borrow(0, 0, 0);
+        case Operation.SetAccessExpiration:
+          return this.api.tx.extendedAssets.setSbtExpiration('', '', 0);
+        case Operation.RegulateAsset: 
+          return this.api.tx.extendedAssets.regulateAsset('');
+        case Operation.BindRegulatedAsset: 
+          return this.api.tx.extendedAssets.bindRegulatedAssetToSbt('', '');
+        case Operation.IssueSoulBoundToken: 
+          return this.api.tx.extendedAssets.issueSbt('', '', '', '', '');
         default:
           return null;
       }

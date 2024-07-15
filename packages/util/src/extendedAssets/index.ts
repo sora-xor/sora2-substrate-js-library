@@ -1,5 +1,6 @@
 import type { Api } from '../api';
 import { Asset } from '../assets/types';
+import { Operation } from '../types';
 import { SoulBoundToken } from './types';
 
 export class ExtendedAssetsModule<T> {
@@ -69,7 +70,8 @@ export class ExtendedAssetsModule<T> {
     if (timestamp) {
       this.root.submitExtrinsic(
         this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAsset.address, timestamp),
-        this.root.account.pair
+        this.root.account.pair,
+        { type: Operation.SetAccessExpiration, assetAddress: sbtAsset.address, to: accountId, endTime: timestamp }
       );
     }
 
@@ -83,9 +85,12 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async revokePrivilege(accountId: string, sbtAssetId: string): Promise<T> {
+    const currentTimestamp = Math.round(Date.now() / 1000);
+
     return this.root.submitExtrinsic(
-      this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, Math.round(Date.now() / 1000)),
-      this.root.account.pair
+      this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, currentTimestamp),
+      this.root.account.pair,
+      { type: Operation.SetAccessExpiration, assetAddress: sbtAssetId, to: accountId, endTime: currentTimestamp }
     );
   }
 
@@ -96,7 +101,10 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async regulateAsset(assetId: string): Promise<T> {
-    return this.root.submitExtrinsic(this.root.api.tx.extendedAssets.regulateAsset(assetId), this.root.account.pair);
+    return this.root.submitExtrinsic(this.root.api.tx.extendedAssets.regulateAsset(assetId), this.root.account.pair, {
+      type: Operation.RegulateAsset,
+      assetAddress: assetId,
+    });
   }
 
   /**
@@ -108,7 +116,8 @@ export class ExtendedAssetsModule<T> {
   public async bindRegulatedAssetToSBT(sbtAssetId: string, regulatedAssetId: string): Promise<T> {
     return this.root.submitExtrinsic(
       this.root.api.tx.extendedAssets.bindRegulatedAssetToSbt(sbtAssetId, regulatedAssetId),
-      this.root.account.pair
+      this.root.account.pair,
+      { type: Operation.BindRegulatedAsset, assetAddress: sbtAssetId, asset2Address: regulatedAssetId }
     );
   }
 
@@ -124,7 +133,8 @@ export class ExtendedAssetsModule<T> {
   public async issueSbt(symbol: string, name: string, description = '', image = '', extendedUrl = ''): Promise<T> {
     return this.root.submitExtrinsic(
       this.root.api.tx.extendedAssets.issueSbt(symbol, name, description, image, extendedUrl),
-      this.root.account.pair
+      this.root.account.pair,
+      { type: Operation.IssueSoulBoundToken, symbol }
     );
   }
 }

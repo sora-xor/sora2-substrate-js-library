@@ -91,6 +91,11 @@ export enum Operation {
   RepayVaultDebt = 'RepayVaultDebt',
   DepositCollateral = 'DepositCollateral',
   BorrowVaultDebt = 'BorrowVaultDebt',
+  /** DEFI-R */
+  SetAccessExpiration = 'SetAccessExpiration',
+  RegulateAsset = 'RegulateAsset',
+  BindRegulatedAsset = 'BindRegulatedAsset',
+  IssueSoulBoundToken = 'IssueSoulBoundToken',
 }
 
 export interface OnChainIdentity {
