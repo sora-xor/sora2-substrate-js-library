@@ -12,9 +12,6 @@ async function main(): Promise<void> {
 
     await api.extendedAssets.regulateAsset(assetId);
 
-    const isAssetRegulated = await api.extendedAssets.isAssetRegulated(assetId);
-    console.log('isAssetRegulated', isAssetRegulated);
-
     await api.extendedAssets.issueSbt(
       'SBT',
       'sbt',
