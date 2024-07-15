@@ -15,6 +15,8 @@ import type { ApiPromise, ApiRx } from '@polkadot/api';
 import type { CodecString } from '@sora-substrate/math';
 import type { GenericNetworkId } from '@sora-substrate/types';
 
+import { toAssetId } from '../assets';
+
 import { BridgeTxStatus, BridgeTxDirection, BridgeNetworkType } from './consts';
 
 import type { BridgeNetworkId, BridgeTransactionData } from './types';
@@ -149,7 +151,7 @@ function formatBridgeTx(
   formatted.externalNetworkType = getNetworkType(networkParam);
   formatted.soraHash = hash;
   formatted.amount = unwrapped.amount.toString();
-  formatted.soraAssetAddress = unwrapped.assetId.code.toString();
+  formatted.soraAssetAddress = toAssetId(unwrapped.assetId);
   formatted.status = BridgeTxStatus.Pending;
   if (unwrapped.status.isFailed || unwrapped.status.isRefunded) {
     formatted.status = BridgeTxStatus.Failed;

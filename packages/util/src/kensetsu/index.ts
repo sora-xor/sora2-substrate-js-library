@@ -9,6 +9,7 @@ import type { Percent } from '@polkadot/types/interfaces/runtime';
 
 import { Messages } from '../logger';
 import { Operation } from '../types';
+import { toAssetId } from '../assets';
 import { DAI, KUSD, KXOR } from '../assets/consts';
 import { VaultTypes } from './consts';
 import type { Api } from '../api';
@@ -124,14 +125,14 @@ export class KensetsuModule<T> {
     return stablecoinInfos.reduce<Record<string, StablecoinInfo>>((acc, item) => {
       const [key, value] = item;
 
-      const assetId = key.args[0].code.toString();
+      const assetId = toAssetId(key.args[0]);
       const info = value.unwrapOr(null);
       if (!info) return acc;
 
       const pegAssetObj = info.stablecoinParameters.pegAsset;
       const isSoraAsset = pegAssetObj.isSoraAssetId;
       const pegAsset = isSoraAsset
-        ? pegAssetObj.asSoraAssetId.code.toString()
+        ? toAssetId(pegAssetObj.asSoraAssetId)
         : (pegAssetObj.asOracleSymbol.toHuman() as string);
       const badDebt = new FPNumber(info.badDebt);
 
@@ -147,7 +148,7 @@ export class KensetsuModule<T> {
    */
   async subscribeOnStablecoinInfos(): Promise<Observable<Record<string, StablecoinInfo>>> {
     const keys = await this.root.api.query.kensetsu.stablecoinInfos.keys();
-    const assetIds = keys.map((key) => key.args[0].code.toString());
+    const assetIds = keys.map((key) => toAssetId(key.args[0]));
 
     return this.root.apiRx.query.kensetsu.stablecoinInfos.multi(assetIds).pipe(
       map((infos) => {
@@ -158,9 +159,7 @@ export class KensetsuModule<T> {
 
           const pegAssetObj = info.stablecoinParameters.pegAsset;
           const isSoraAsset = pegAssetObj.isSoraAssetId;
-          const pegAsset = isSoraAsset
-            ? pegAssetObj.asSoraAssetId.code.toString()
-            : pegAssetObj.asOracleSymbol.toString();
+          const pegAsset = isSoraAsset ? toAssetId(pegAssetObj.asSoraAssetId) : pegAssetObj.asOracleSymbol.toString();
           const badDebt = new FPNumber(info.badDebt);
 
           acc[assetId] = { badDebt, pegAsset, isSoraAsset };
@@ -385,8 +384,8 @@ export class KensetsuModule<T> {
 
     return data.reduce<Record<string, Collateral>>((acc, item) => {
       const id = item[0].args[0];
-      const lockedAssetId = id.collateralAssetId.code.toString();
-      const debtAssetId = id.stablecoinAssetId.code.toString();
+      const lockedAssetId = toAssetId(id.collateralAssetId);
+      const debtAssetId = toAssetId(id.stablecoinAssetId);
       const key = this.serializeKey(lockedAssetId, debtAssetId);
       const info: KensetsuCollateralInfo | null = item[1].unwrapOr(null);
       if (info) {
@@ -399,13 +398,13 @@ export class KensetsuModule<T> {
   private formatVault(data: KensetsuCollateralizedDebtPosition, id: number): Vault {
     const vault: Vault = {
       lockedAmount: new FPNumber(data.collateralAmount),
-      debtAssetId: data.stablecoinAssetId.code.toString(),
+      debtAssetId: toAssetId(data.stablecoinAssetId),
       vaultType: VaultTypes.V2,
       debt: new FPNumber(data.debt),
       internalDebt: new FPNumber(data.debt),
       interestCoefficient: new FPNumber(data.interestCoefficient),
       owner: data.owner.toString(),
-      lockedAssetId: data.collateralAssetId.code.toString(),
+      lockedAssetId: toAssetId(data.collateralAssetId),
       id,
     };
     return vault;

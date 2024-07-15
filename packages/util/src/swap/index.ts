@@ -32,6 +32,7 @@ import type {
 import type { Option, BTreeSet } from '@polkadot/types';
 
 import { Consts as SwapConsts } from './consts';
+import { toAssetId } from '../assets';
 import { XOR, DAI, XSTUSD } from '../assets/consts';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
@@ -55,9 +56,9 @@ const toParamCodecString = (value: AnyBalance, assetA: Asset, assetB: Asset, isE
 
 const comparator = <T>(prev: T, curr: T): boolean => JSON.stringify(prev) === JSON.stringify(curr);
 
-const toAssetId = (o: Observable<CommonPrimitivesAssetId32>): Observable<string> =>
+const fromCodecToAssetId = (o: Observable<CommonPrimitivesAssetId32>): Observable<string> =>
   o.pipe(
-    map((asset) => asset.code.toString()),
+    map((asset) => toAssetId(asset)),
     distinctUntilChanged(comparator)
   );
 
@@ -98,7 +99,7 @@ const toBandRate = (o: Observable<Option<BandBandRate>>): Observable<OracleRate>
   );
 
 const toAssetIds = (data: BTreeSet<CommonPrimitivesAssetId32>): string[] =>
-  [...data.values()].map((asset) => asset.code.toString());
+  [...data.values()].map((asset) => toAssetId(asset));
 
 const getAssetAveragePrice = <T>(
   assetAddress: string,
@@ -331,7 +332,7 @@ export class SwapModule<T> {
     const entries = await this.root.api.query.xstPool.enabledSynthetics.entries();
 
     return entries.reduce<Record<string, { referenceSymbol: string; feeRatio: FPNumber }>>((buffer, [key, value]) => {
-      const id = key.args[0].code.toString();
+      const id = toAssetId(key.args[0]);
       const data = value.unwrap();
       const referenceSymbol = new TextDecoder().decode(data.referenceSymbol);
       const feeRatio = FPNumber.fromCodecValue(data.feeRatio.inner.toString());
@@ -459,14 +460,14 @@ export class SwapModule<T> {
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.priceChangeStep()),
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.priceChangeRate()),
           fromFixnumToCodec(this.root.apiRx.query.multicollateralBondingCurvePool.sellPriceCoefficient()),
-          toAssetId(this.root.apiRx.query.multicollateralBondingCurvePool.referenceAssetId()),
+          fromCodecToAssetId(this.root.apiRx.query.multicollateralBondingCurvePool.referenceAssetId()),
         ]
       : [];
 
     const xstConsts = xstUsed
       ? [
           toCodec(this.root.apiRx.query.xstPool.syntheticBaseAssetFloorPrice()),
-          toAssetId(this.root.apiRx.query.xstPool.referenceAssetId()),
+          fromCodecToAssetId(this.root.apiRx.query.xstPool.referenceAssetId()),
         ]
       : [];
 

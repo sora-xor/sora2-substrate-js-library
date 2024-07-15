@@ -3,6 +3,7 @@ import { assert } from '@polkadot/util';
 import { FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 
+import { toAssetId } from '../assets';
 import { Messages } from '../logger';
 import { Operation } from '../types';
 
@@ -26,8 +27,8 @@ export class CeresLiquidityLockerModule<T> {
           return {
             poolTokens: new FPNumber(value.poolTokens),
             unlockingTimestamp: value.unlockingTimestamp.toNumber(),
-            assetA: value.assetA.code.toString(),
-            assetB: value.assetB.code.toString(),
+            assetA: toAssetId(value.assetA),
+            assetB: toAssetId(value.assetB),
           };
         });
 
