@@ -772,10 +772,6 @@ declare module '@polkadot/api-base/types/storage' {
     };
     extendedAssets: {
       /**
-       * Mapping from asset id to whether it is regulated or not
-       **/
-      regulatedAsset: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<bool>, [CommonPrimitivesAssetId32]>;
-      /**
        * Mapping from Regulated asset id to SBT asset id
        **/
       regulatedAssetToSoulboundAsset: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<CommonPrimitivesAssetId32>, [CommonPrimitivesAssetId32]>;
