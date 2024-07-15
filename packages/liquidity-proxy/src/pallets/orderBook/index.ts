@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { isAssetAddress, safeQuoteResult, safeDivide } from '../../utils';
-import { LiquiditySourceTypes, Errors, Consts, PriceVariant, SwapVariant } from '../../consts';
+import { LiquiditySourceTypes, Errors, Consts, PriceVariant, SwapVariant, DexIdByBaseAsset } from '../../consts';
 import { SwapChunk, DiscreteQuotation, SideAmount } from '../../common/primitives';
 import { OrderBookStatus } from './consts';
 
@@ -146,10 +146,11 @@ const getOrderBook = (id: OrderBookId, payload: QuotePayload) => {
 
 // assemble_order_book_id
 const assembleOrderBookId = (baseAssetId: string, inputAsset: string, outputAsset: string): OrderBookId | null => {
-  // trick
-  const dexId = isAssetAddress(baseAssetId, Consts.XOR) ? 0 : 1;
-
   if (isAssetAddress(inputAsset, outputAsset)) return null;
+
+  const dexId = DexIdByBaseAsset[baseAssetId];
+
+  if (!Number.isFinite(dexId)) return null;
 
   if (isAssetAddress(inputAsset, baseAssetId)) {
     return { dexId, base: outputAsset, quote: inputAsset };

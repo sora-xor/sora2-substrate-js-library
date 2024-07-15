@@ -42,6 +42,12 @@ export class Consts {
   static readonly GetNumSamples = 10;
 }
 
+export const DexIdByBaseAsset: Record<string, number> = {
+  [Consts.XOR]: 0,
+  [Consts.XSTUSD]: 1,
+  [Consts.KUSD]: 2,
+};
+
 export enum Errors {
   AggregationError = 'Unable to aggregate the liquidity from sources.',
   AssetsMustNotBeSame = 'In this case assets must not be same.',
