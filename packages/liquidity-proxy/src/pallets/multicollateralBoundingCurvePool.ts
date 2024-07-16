@@ -48,6 +48,8 @@ export const stepQuote = (
     return quotation;
   }
 
+  const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
+
   // reduce amount if it exceeds reserves
   if (isAssetAddress(inputAsset, baseAssetId)) {
     const collateralSupply = toFp(payload.reserves.tbc[outputAsset]);
@@ -71,29 +73,39 @@ export const stepQuote = (
     amount = adjustedAmount;
   }
 
-  const samplesCount = recommendedSamplesCount < 1 ? 1 : recommendedSamplesCount;
   const step = safeDivide(amount, new FPNumber(samplesCount));
-  const volumes = [];
 
-  for (let i = 1; i < samplesCount; i++) {
-    const volume = step.mul(new FPNumber(i));
-
-    volumes.push(volume);
-  }
-
-  volumes.push(amount);
+  const amounts = (() => {
+    if (inputAsset === baseAssetId) {
+      return decideStepSellAmounts(
+        inputAsset,
+        outputAsset,
+        amount,
+        isDesiredInput,
+        payload,
+        step,
+        samplesCount,
+        deduceFee
+      );
+    } else {
+      return decideStepBuyAmounts(
+        outputAsset,
+        inputAsset,
+        amount,
+        isDesiredInput,
+        payload,
+        step,
+        samplesCount,
+        deduceFee
+      );
+    }
+  })();
 
   let subIn = FPNumber.ZERO;
   let subOut = FPNumber.ZERO;
   let subFee = FPNumber.ZERO;
 
-  for (const volume of volumes) {
-    const { amount: resultAmount, fee: feeAmount } = isAssetAddress(inputAsset, baseAssetId)
-      ? decideSellAmounts(inputAsset, outputAsset, volume, isDesiredInput, payload, deduceFee)
-      : decideBuyAmounts(outputAsset, inputAsset, volume, isDesiredInput, payload, deduceFee);
-
-    const [inputAmount, outputAmount] = isDesiredInput ? [volume, resultAmount] : [resultAmount, volume];
-
+  for (const [inputAmount, outputAmount, feeAmount] of amounts) {
     const inputChunk = saturatingSub(inputAmount, subIn);
     const outputChunk = saturatingSub(outputAmount, subOut);
     const feeChunk = saturatingSub(feeAmount, subFee); // in XOR
@@ -356,6 +368,87 @@ const sellFunction = (
   return buyFunctionResult.mul(sellPriceCoefficient);
 };
 
+// decide_step_sell_amounts
+const decideStepSellAmounts = (
+  mainAssetId: string,
+  collateralAssetAd: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload,
+  stepAmount: FPNumber,
+  steps: number,
+  deduceFee: boolean
+): Array<[FPNumber, FPNumber, FPNumber]> => {
+  const res: Array<[FPNumber, FPNumber, FPNumber]> = [];
+
+  for (let step = 1; step <= steps; step++) {
+    res.push(
+      decideSellAmounts(
+        mainAssetId,
+        collateralAssetAd,
+        stepAmount.mul(new FPNumber(step)),
+        isDesiredInput,
+        payload,
+        deduceFee
+      )
+    );
+  }
+
+  res.push(decideSellAmounts(mainAssetId, collateralAssetAd, amount, isDesiredInput, payload, deduceFee));
+
+  return res;
+};
+
+// decide_step_buy_amounts
+const decideStepBuyAmounts = (
+  mainAssetId: string,
+  collateralAssetId: string,
+  amount: FPNumber,
+  isDesiredInput: boolean,
+  payload: QuotePayload,
+  stepAmount: FPNumber,
+  steps: number,
+  deduceFee: boolean
+): Array<[FPNumber, FPNumber, FPNumber]> => {
+  let res: Array<[FPNumber, FPNumber, FPNumber]> = [];
+
+  if (collateralAssetId === Consts.TBCD) {
+    const [stepInput, stepOutput, stepFee] = decideBuyAmounts(
+      mainAssetId,
+      collateralAssetId,
+      amount,
+      isDesiredInput,
+      payload,
+      deduceFee
+    );
+
+    for (let step = 1; step <= steps; step++) {
+      res.push([
+        stepInput.mul(new FPNumber(step)),
+        stepOutput.mul(new FPNumber(step)),
+        stepFee.mul(new FPNumber(step)),
+      ]);
+    }
+  } else {
+    for (let step = 1; step <= steps; step++) {
+      const [stepInput, stepOutput, stepFee] = decideBuyAmounts(
+        mainAssetId,
+        collateralAssetId,
+        stepAmount.mul(new FPNumber(step)),
+        isDesiredInput,
+        payload,
+        deduceFee
+      );
+
+      res.push([stepInput, stepOutput, stepFee]);
+    }
+  }
+
+  res.push(decideBuyAmounts(mainAssetId, collateralAssetId, amount, isDesiredInput, payload, deduceFee));
+
+  return res;
+};
+
 // sell_price
 const sellPrice = (
   mainAssetId: string,
@@ -438,48 +531,32 @@ const decideSellAmounts = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   deduceFee: boolean
-): QuoteResult => {
-  const feeRatio = deduceFee ? Consts.TBC_FEE.add(sellPenalty(mainAssetId, collateralAssetId, payload)) : FPNumber.ZERO;
-
+): [FPNumber, FPNumber, FPNumber] => {
   if (isDesiredInput) {
-    const fee = amount.mul(feeRatio);
-    const outputAmount = sellPrice(mainAssetId, collateralAssetId, saturatingSub(amount, fee), isDesiredInput, payload);
+    const feeAmount = deduceFee
+      ? Consts.TBC_FEE.add(sellPenalty(mainAssetId, collateralAssetId, payload)).mul(amount)
+      : FPNumber.ZERO;
+    const outputAmount = sellPrice(
+      mainAssetId,
+      collateralAssetId,
+      saturatingSub(amount, feeAmount),
+      isDesiredInput,
+      payload
+    );
 
-    return {
-      amount: outputAmount,
-      fee,
-      rewards: [],
-      distribution: [
-        {
-          input: mainAssetId,
-          output: collateralAssetId,
-          market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
-          income: amount,
-          outcome: outputAmount,
-          fee,
-        },
-      ],
-    };
+    return [amount, outputAmount, feeAmount];
   } else {
     const inputAmount = sellPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
-    const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
-    const fee = saturatingSub(inputAmountWithFee, inputAmount);
 
-    return {
-      amount: inputAmountWithFee,
-      fee,
-      rewards: [],
-      distribution: [
-        {
-          input: mainAssetId,
-          output: collateralAssetId,
-          market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
-          income: inputAmountWithFee,
-          outcome: amount,
-          fee,
-        },
-      ],
-    };
+    if (deduceFee) {
+      const feeRatio = Consts.TBC_FEE.add(sellPenalty(mainAssetId, collateralAssetId, payload));
+      const inputAmountWithFee = safeDivide(inputAmount, FPNumber.ONE.sub(feeRatio));
+      const feeAmount = saturatingSub(inputAmountWithFee, inputAmount);
+
+      return [inputAmountWithFee, amount, feeAmount];
+    } else {
+      return [inputAmount, amount, FPNumber.ZERO];
+    }
   }
 };
 
@@ -491,51 +568,25 @@ const decideBuyAmounts = (
   isDesiredInput: boolean,
   payload: QuotePayload,
   deduceFee: boolean
-): QuoteResult => {
-  const feeRatio = deduceFee ? Consts.TBC_FEE : FPNumber.ZERO;
-
+): [FPNumber, FPNumber, FPNumber] => {
   if (isDesiredInput) {
-    const outputAmount = buyPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
-    const fee = feeRatio.mul(outputAmount);
-    const output = saturatingSub(outputAmount, fee);
-    const rewards = tbcCheckRewards(mainAssetId, collateralAssetId, output, payload);
+    const output = buyPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
+    const feeAmount = deduceFee ? Consts.TBC_FEE.mul(output) : FPNumber.ZERO;
+    const outputAmount = saturatingSub(output, feeAmount);
 
-    return {
-      amount: output,
-      fee,
-      rewards,
-      distribution: [
-        {
-          input: collateralAssetId,
-          output: mainAssetId,
-          market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
-          income: amount,
-          outcome: output,
-          fee,
-        },
-      ],
-    };
+    return [amount, outputAmount, feeAmount];
   } else {
-    const amountWithFee = safeDivide(amount, FPNumber.ONE.sub(feeRatio));
-    const inputAmount = buyPrice(mainAssetId, collateralAssetId, amountWithFee, isDesiredInput, payload);
-    const fee = saturatingSub(amountWithFee, amount);
-    const rewards = tbcCheckRewards(mainAssetId, collateralAssetId, amount, payload);
+    if (deduceFee) {
+      const desiredAmountOutWithFee = safeDivide(amount, FPNumber.ONE.sub(Consts.TBC_FEE));
+      const inputAmount = buyPrice(mainAssetId, collateralAssetId, desiredAmountOutWithFee, isDesiredInput, payload);
+      const feeAmount = saturatingSub(desiredAmountOutWithFee, amount);
 
-    return {
-      amount: inputAmount,
-      fee,
-      rewards,
-      distribution: [
-        {
-          input: collateralAssetId,
-          output: mainAssetId,
-          market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
-          income: inputAmount,
-          outcome: amount,
-          fee,
-        },
-      ],
-    };
+      return [inputAmount, amount, feeAmount];
+    } else {
+      const inputAmount = buyPrice(mainAssetId, collateralAssetId, amount, isDesiredInput, payload);
+
+      return [inputAmount, amount, FPNumber.ZERO];
+    }
   }
 };
 
@@ -619,11 +670,35 @@ export const quote = (
       throw new Error(Errors.CantExchange);
     }
 
-    if (isAssetAddress(inputAsset, baseAssetId)) {
-      return decideSellAmounts(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee);
-    } else {
-      return decideBuyAmounts(outputAsset, inputAsset, amount, isDesiredInput, payload, deduceFee);
-    }
+    const [inputAmount, outputAmount, feeAmount] = isAssetAddress(inputAsset, baseAssetId)
+      ? decideSellAmounts(inputAsset, outputAsset, amount, isDesiredInput, payload, deduceFee)
+      : decideBuyAmounts(outputAsset, inputAsset, amount, isDesiredInput, payload, deduceFee);
+    const resultAmount = isDesiredInput ? outputAmount : inputAmount;
+    const rewards = checkRewards(
+      baseAssetId,
+      _syntheticBaseAssetId,
+      inputAsset,
+      outputAsset,
+      inputAmount,
+      outputAmount,
+      payload
+    );
+
+    return {
+      amount: resultAmount,
+      fee: feeAmount,
+      rewards,
+      distribution: [
+        {
+          input: inputAsset,
+          output: outputAsset,
+          market: LiquiditySourceTypes.MulticollateralBondingCurvePool,
+          income: inputAmount,
+          outcome: outputAmount,
+          fee: feeAmount,
+        },
+      ],
+    };
   } catch (error) {
     return safeQuoteResult(inputAsset, outputAsset, amount, LiquiditySourceTypes.MulticollateralBondingCurvePool);
   }
