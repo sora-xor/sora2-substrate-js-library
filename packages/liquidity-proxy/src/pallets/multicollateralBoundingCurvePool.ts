@@ -381,7 +381,7 @@ const decideStepSellAmounts = (
 ): Array<[FPNumber, FPNumber, FPNumber]> => {
   const res: Array<[FPNumber, FPNumber, FPNumber]> = [];
 
-  for (let step = 1; step <= steps; step++) {
+  for (let step = 1; step < steps; step++) {
     res.push(
       decideSellAmounts(
         mainAssetId,
@@ -422,7 +422,7 @@ const decideStepBuyAmounts = (
       deduceFee
     );
 
-    for (let step = 1; step <= steps; step++) {
+    for (let step = 1; step < steps; step++) {
       res.push([
         stepInput.mul(new FPNumber(step)),
         stepOutput.mul(new FPNumber(step)),
@@ -430,7 +430,7 @@ const decideStepBuyAmounts = (
       ]);
     }
   } else {
-    for (let step = 1; step <= steps; step++) {
+    for (let step = 1; step < steps; step++) {
       const [stepInput, stepOutput, stepFee] = decideBuyAmounts(
         mainAssetId,
         collateralAssetId,
