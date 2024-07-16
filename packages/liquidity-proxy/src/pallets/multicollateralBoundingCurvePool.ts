@@ -76,7 +76,7 @@ export const stepQuote = (
   const step = safeDivide(amount, new FPNumber(samplesCount));
 
   const amounts = (() => {
-    if (inputAsset === baseAssetId) {
+    if (isAssetAddress(inputAsset, baseAssetId)) {
       return decideStepSellAmounts(
         inputAsset,
         outputAsset,
@@ -410,9 +410,9 @@ const decideStepBuyAmounts = (
   steps: number,
   deduceFee: boolean
 ): Array<[FPNumber, FPNumber, FPNumber]> => {
-  let res: Array<[FPNumber, FPNumber, FPNumber]> = [];
+  const res: Array<[FPNumber, FPNumber, FPNumber]> = [];
 
-  if (collateralAssetId === Consts.TBCD) {
+  if (isAssetAddress(collateralAssetId, Consts.TBCD)) {
     const [stepInput, stepOutput, stepFee] = decideBuyAmounts(
       mainAssetId,
       collateralAssetId,
