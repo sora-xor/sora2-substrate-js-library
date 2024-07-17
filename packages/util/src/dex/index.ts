@@ -1,4 +1,5 @@
 import { DexId } from './consts';
+import { toAssetId } from '../assets';
 import { XOR, XST } from '../assets/consts';
 
 import type { Api } from '../api';
@@ -38,9 +39,8 @@ export class DexModule<T> {
 
     this.dexList = data.map(([key, codec]) => {
       const dexId = key.args[0].toNumber();
-      const baseAssetId = codec.value.baseAssetId.code.toString();
-      const syntheticBaseAssetId =
-        codec.value.syntheticBaseAssetId?.code.toString() ?? DexModule.defaultSyntheticAssetId;
+      const baseAssetId = toAssetId(codec.value.baseAssetId);
+      const syntheticBaseAssetId = toAssetId(codec.value.syntheticBaseAssetId);
       const isPublic = codec.value.isPublic.isTrue;
 
       return { dexId, baseAssetId, syntheticBaseAssetId, isPublic };

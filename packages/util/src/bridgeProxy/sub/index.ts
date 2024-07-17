@@ -1,6 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 import { assert } from '@polkadot/util';
 
+import { toAssetId } from '../../assets';
 import { ApiAccount, isSubstrateOperation } from '../../apiAccount';
 import { Operation } from '../../types';
 import { Messages } from '../../logger';
@@ -271,7 +272,7 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
 
     try {
       const assetCodec = await this.api.query.parachainBridgeApp.relaychainAsset(relaychain);
-      const soraAssetId = assetCodec.unwrap().code.toString();
+      const soraAssetId = toAssetId(assetCodec.unwrap());
       const data = await this.getSubAssetData(relaychain, soraAssetId);
 
       assets[soraAssetId] = data;
@@ -289,7 +290,7 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
 
     try {
       const assetsCodecs = await this.api.query.parachainBridgeApp.allowedParachainAssets(relaychain, parachainId);
-      const soraAssetIds = assetsCodecs.map((item) => item.code.toString());
+      const soraAssetIds = assetsCodecs.map((item) => toAssetId(item));
 
       await Promise.all(
         soraAssetIds.map(async (soraAssetId) => {
@@ -318,7 +319,7 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
 
     try {
       const keys = await this.api.query.substrateBridgeApp.assetKinds.keys(SubNetworkId.Liberland);
-      const soraAssetIds: string[] = keys.map((key) => key.args[1].code.toString());
+      const soraAssetIds: string[] = keys.map((key) => toAssetId(key.args[1]));
 
       await Promise.all(
         soraAssetIds.map(async (soraAssetId) => {

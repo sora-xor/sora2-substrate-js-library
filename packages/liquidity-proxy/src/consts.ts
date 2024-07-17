@@ -19,6 +19,8 @@ export class Consts {
   static readonly XST = '0x0200090000000000000000000000000000000000000000000000000000000000';
   /** TBCD token */
   static readonly TBCD = '0x02000a0000000000000000000000000000000000000000000000000000000000';
+  /** KUSD token */
+  static readonly KUSD = '0x02000c0000000000000000000000000000000000000000000000000000000000';
 
   /** XYK, TBC fees the same */
   static readonly XYK_FEE = new FPNumber(0.003);
@@ -39,6 +41,12 @@ export class Consts {
 
   static readonly GetNumSamples = 10;
 }
+
+export const DexIdByBaseAsset: Record<string, number> = {
+  [Consts.XOR]: 0,
+  [Consts.XSTUSD]: 1,
+  [Consts.KUSD]: 2,
+};
 
 export enum Errors {
   AggregationError = 'Unable to aggregate the liquidity from sources.',
