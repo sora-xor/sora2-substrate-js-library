@@ -70,52 +70,48 @@ export class BridgeProxyModule<T> {
       [BridgeNetworkType.Sub]: [],
     };
 
-    try {
-      const data = await this.root.api.rpc.bridgeProxy.listApps();
+    const data = await this.root.api.rpc.bridgeProxy.listApps();
 
-      for (const appInfo of data) {
-        if (appInfo.isEvm) {
-          const [genericNetworkId, evmAppInfo] = appInfo.asEvm;
-          const id = getEvmNetworkId(genericNetworkId);
-          const type = getEvmNetworkType(genericNetworkId);
-          const kind = evmAppInfo.appKind.toString();
-          const address = evmAppInfo.evmAddress.toString();
+    for (const appInfo of data) {
+      if (appInfo.isEvm) {
+        const [genericNetworkId, evmAppInfo] = appInfo.asEvm;
+        const id = getEvmNetworkId(genericNetworkId);
+        const type = getEvmNetworkType(genericNetworkId);
+        const kind = evmAppInfo.appKind.toString();
+        const address = evmAppInfo.evmAddress.toString();
 
-          if (!apps[type][id]) apps[type][id] = {};
+        if (!apps[type][id]) apps[type][id] = {};
 
-          apps[type][id][kind as keyof Partial<EvmSupportedApp>] = address;
-        } else {
-          const genericNetworkId = appInfo.asSub;
-          const type = BridgeNetworkType.Sub;
-          const subNetwork = genericNetworkId.asSub;
+        apps[type][id][kind as keyof Partial<EvmSupportedApp>] = address;
+      } else {
+        const genericNetworkId = appInfo.asSub;
+        const type = BridgeNetworkType.Sub;
+        const subNetwork = genericNetworkId.asSub;
 
-          // adding parachains we work through relaychain
-          if (subNetwork.isRococo) {
-            apps[type].push(...RococoParachains);
-          } else if (subNetwork.isKusama) {
-            apps[type].push(...KusamaParachains);
-          } else if (subNetwork.isPolkadot) {
-            apps[type].push(...PolkadotParachains);
-          } else if (subNetwork.isAlphanet) {
-            apps[type].push(...AlphanetParachains);
-          } else if (subNetwork.isMainnet) {
-            // SORA-SORA bridge is not exists
-            console.info(`"Mainnet" sub network is not supported app`);
-            continue;
-          } else if (subNetwork.isCustom) {
-            // Custom bridge is not supported yet
-            console.info(`"${subNetwork.asCustom.toNumber()}" sub network is not supported app`);
-            continue;
-          }
-
-          apps[type].push(subNetwork.type as SubNetwork);
+        // adding parachains we work through relaychain
+        if (subNetwork.isRococo) {
+          apps[type].push(...RococoParachains);
+        } else if (subNetwork.isKusama) {
+          apps[type].push(...KusamaParachains);
+        } else if (subNetwork.isPolkadot) {
+          apps[type].push(...PolkadotParachains);
+        } else if (subNetwork.isAlphanet) {
+          apps[type].push(...AlphanetParachains);
+        } else if (subNetwork.isMainnet) {
+          // SORA-SORA bridge is not exists
+          console.info(`"Mainnet" sub network is not supported app`);
+          continue;
+        } else if (subNetwork.isCustom) {
+          // Custom bridge is not supported yet
+          console.info(`"${subNetwork.asCustom.toNumber()}" sub network is not supported app`);
+          continue;
         }
-      }
 
-      return apps;
-    } catch {
-      return apps;
+        apps[type].push(subNetwork.type as SubNetwork);
+      }
     }
+
+    return apps;
   }
 
   public async isAssetTransferLimited(assetAddress: string): Promise<boolean> {

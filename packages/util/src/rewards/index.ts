@@ -8,6 +8,7 @@ import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 import type { SubmittableExtrinsic, AugmentedSubmittable } from '@polkadot/api-base/types';
 
 import { RewardingEvents, RewardType } from './consts';
+import { toAssetId } from '../assets';
 import { VAL, PSWAP } from '../assets/consts';
 import { Messages } from '../logger';
 import { Operation } from '../types';
@@ -29,7 +30,7 @@ const getCrowdloanRewardsMap = (data: Vec<ITuple<[CommonPrimitivesAssetId32, u12
     if (!tuple.isEmpty) {
       const [assetId, amount] = tuple;
 
-      const assetAddress = assetId.code.toString();
+      const assetAddress = toAssetId(assetId);
       const claimedAmount = new FPNumber(amount);
 
       buffer[assetAddress] = (buffer[assetAddress] || FPNumber.ZERO).add(claimedAmount);

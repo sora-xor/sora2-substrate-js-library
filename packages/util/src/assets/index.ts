@@ -24,6 +24,12 @@ import type {
 } from './types';
 import type { Api } from '../api';
 
+import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
+
+export function toAssetId(asset: CommonPrimitivesAssetId32) {
+  return asset.code.toString();
+}
+
 /**
  * **For the external collaboration**
  *
@@ -163,7 +169,7 @@ const sort = (a: Asset, b: Asset, whitelist: Whitelist) => {
 
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
   const allAssets = (await api.query.assets.assetInfos.entries()).map<Asset>(([key, codec]) => {
-    const address = key.args[0].code.toString();
+    const address = toAssetId(key.args[0]);
     const [symbol, name, decimals, isMintable, content, description] = codec.toHuman() as any;
 
     return { address, symbol, name, decimals: +decimals, isMintable: !!isMintable, content, description };
@@ -463,7 +469,7 @@ export class AssetsModule<T> {
     const list: string[] = [];
 
     for (const [key, { free, reserved, frozen }] of data) {
-      const assetId = key.args[1].code.toString();
+      const assetId = toAssetId(key.args[1]);
       const hasAssetAnyBalance = [free, reserved, frozen].some((value) => !new FPNumber(value).isZero());
 
       if (hasAssetAnyBalance) {
@@ -538,7 +544,7 @@ export class AssetsModule<T> {
         if (!accountIdItem || accountIdItem !== accountId) {
           return buffer;
         }
-        const newAsset: string = item[0]?.args?.[0]?.code?.toString?.() ?? '';
+        const newAsset: string = toAssetId(item[0].args[0]);
         if (!newAsset) {
           return buffer;
         }
