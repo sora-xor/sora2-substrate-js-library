@@ -2282,8 +2282,8 @@ declare module '@polkadot/types/lookup' {
 
   /** @name ExtendedAssetsEvent (227) */
   interface ExtendedAssetsEvent extends Enum {
-    readonly isAssetRegulated: boolean;
-    readonly asAssetRegulated: {
+    readonly isRegulatedAssetRegistered: boolean;
+    readonly asRegulatedAssetRegistered: {
       readonly assetId: CommonPrimitivesAssetId32;
     } & Struct;
     readonly isSoulboundTokenIssued: boolean;
@@ -2305,7 +2305,7 @@ declare module '@polkadot/types/lookup' {
       readonly regulatedAssetId: CommonPrimitivesAssetId32;
       readonly sbtAssetId: CommonPrimitivesAssetId32;
     } & Struct;
-    readonly type: 'AssetRegulated' | 'SoulboundTokenIssued' | 'SbtExpirationUpdated' | 'RegulatedAssetBoundToSBT';
+    readonly type: 'RegulatedAssetRegistered' | 'SoulboundTokenIssued' | 'SbtExpirationUpdated' | 'RegulatedAssetBoundToSBT';
   }
 
   /** @name FrameSystemPhase (230) */
@@ -5607,9 +5607,15 @@ declare module '@polkadot/types/lookup' {
 
   /** @name ExtendedAssetsCall (657) */
   interface ExtendedAssetsCall extends Enum {
-    readonly isRegulateAsset: boolean;
-    readonly asRegulateAsset: {
-      readonly assetId: CommonPrimitivesAssetId32;
+    readonly isRegisterRegulatedAsset: boolean;
+    readonly asRegisterRegulatedAsset: {
+      readonly symbol: Bytes;
+      readonly name: Bytes;
+      readonly initialSupply: u128;
+      readonly isMintable: bool;
+      readonly isIndivisible: bool;
+      readonly optContentSrc: Option<Bytes>;
+      readonly optDesc: Option<Bytes>;
     } & Struct;
     readonly isIssueSbt: boolean;
     readonly asIssueSbt: {
@@ -5630,7 +5636,7 @@ declare module '@polkadot/types/lookup' {
       readonly sbtAssetId: CommonPrimitivesAssetId32;
       readonly regulatedAssetId: CommonPrimitivesAssetId32;
     } & Struct;
-    readonly type: 'RegulateAsset' | 'IssueSbt' | 'SetSbtExpiration' | 'BindRegulatedAssetToSbt';
+    readonly type: 'RegisterRegulatedAsset' | 'IssueSbt' | 'SetSbtExpiration' | 'BindRegulatedAssetToSbt';
   }
 
   /** @name PalletMultisigError (659) */
@@ -7553,8 +7559,6 @@ declare module '@polkadot/types/lookup' {
   interface ExtendedAssetsError extends Enum {
     readonly isSoulboundAssetNotOperationable: boolean;
     readonly isSoulboundAssetNotTransferable: boolean;
-    readonly isOnlyAssetOwnerCanRegulate: boolean;
-    readonly isAssetAlreadyRegulated: boolean;
     readonly isAllInvolvedUsersShouldHoldValidSBT: boolean;
     readonly isRegulatedAssetNoOwnedBySBTIssuer: boolean;
     readonly isAssetNotRegulated: boolean;
@@ -7563,7 +7567,7 @@ declare module '@polkadot/types/lookup' {
     readonly isNotAllowedToRegulateSoulboundAsset: boolean;
     readonly isInvalidExternalUrl: boolean;
     readonly isRegulatedAssetsPerSBTExceeded: boolean;
-    readonly type: 'SoulboundAssetNotOperationable' | 'SoulboundAssetNotTransferable' | 'OnlyAssetOwnerCanRegulate' | 'AssetAlreadyRegulated' | 'AllInvolvedUsersShouldHoldValidSBT' | 'RegulatedAssetNoOwnedBySBTIssuer' | 'AssetNotRegulated' | 'SbtNotFound' | 'NotSBTOwner' | 'NotAllowedToRegulateSoulboundAsset' | 'InvalidExternalUrl' | 'RegulatedAssetsPerSBTExceeded';
+    readonly type: 'SoulboundAssetNotOperationable' | 'SoulboundAssetNotTransferable' | 'AllInvolvedUsersShouldHoldValidSBT' | 'RegulatedAssetNoOwnedBySBTIssuer' | 'AssetNotRegulated' | 'SbtNotFound' | 'NotSBTOwner' | 'NotAllowedToRegulateSoulboundAsset' | 'InvalidExternalUrl' | 'RegulatedAssetsPerSBTExceeded';
   }
 
   /** @name SpRuntimeMultiSignature (945) */

@@ -1419,14 +1419,24 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       issueSbt: AugmentedSubmittable<(symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, description: Option<Bytes> | null | Uint8Array | Bytes | string, image: Option<Bytes> | null | Uint8Array | Bytes | string, externalUrl: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Option<Bytes>, Option<Bytes>, Option<Bytes>]>;
       /**
-       * Marks an asset as regulated, representing that the asset will only operate between KYC-verified wallets.
+       * Registers a new regulated asset, representing that the asset will only operate between KYC-verified wallets.
        * 
        * ## Parameters
        * 
        * - `origin`: The origin of the transaction.
-       * - `asset_id`: The identifier of the asset.
+       * - `symbol`: AssetSymbol should represent string with only uppercase latin chars with max length of 7.
+       * - `name`: AssetName should represent string with only uppercase or lowercase latin chars or numbers or spaces, with max length of 33.
+       * - `initial_supply`: Balance type representing the total amount of the asset to be issued initially.
+       * - `is_indivisible`: A boolean flag indicating whether the asset can be divided into smaller units or not.
+       * - `opt_content_src`: An optional parameter of type `ContentSource`, which can include a URI or a reference to a content source that provides more details about the asset.
+       * - `opt_desc`: An optional parameter of type `Description`, which is a string providing a short description or commentary about the asset.
+       * 
+       * ## Events
+       * 
+       * Emits `RegulatedAssetRegistered` event when the asset is successfully registered.
+       * 
        **/
-      regulateAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      registerRegulatedAsset: AugmentedSubmittable<(symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, initialSupply: u128 | AnyNumber | Uint8Array, isMintable: bool | boolean | Uint8Array, isIndivisible: bool | boolean | Uint8Array, optContentSrc: Option<Bytes> | null | Uint8Array | Bytes | string, optDesc: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, u128, bool, bool, Option<Bytes>, Option<Bytes>]>;
       /**
        * Sets the expiration date of a Soulbound Token (SBT) for the given account.
        * 
