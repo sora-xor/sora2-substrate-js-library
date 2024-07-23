@@ -15,10 +15,12 @@ export class Storage<T = string> {
 
   public set(key: T, value: any): void {
     localStorage.setItem(`${this.namespace}.${key}`, value);
+    window.dispatchEvent(new Event('localStorageUpdated'));
   }
 
   public remove(key: T): void {
     localStorage.removeItem(`${this.namespace}.${key}`);
+    window.dispatchEvent(new Event('localStorageUpdated'));
   }
 
   public clear(): void {
