@@ -2049,7 +2049,7 @@ export default {
    **/
   ExtendedAssetsEvent: {
     _enum: {
-      AssetRegulated: {
+      RegulatedAssetRegistered: {
         assetId: 'CommonPrimitivesAssetId32',
       },
       SoulboundTokenIssued: {
@@ -5359,8 +5359,14 @@ export default {
    **/
   ExtendedAssetsCall: {
     _enum: {
-      regulate_asset: {
-        assetId: 'CommonPrimitivesAssetId32',
+      register_regulated_asset: {
+        symbol: 'Bytes',
+        name: 'Bytes',
+        initialSupply: 'u128',
+        isMintable: 'bool',
+        isIndivisible: 'bool',
+        optContentSrc: 'Option<Bytes>',
+        optDesc: 'Option<Bytes>',
       },
       issue_sbt: {
         symbol: 'Bytes',
@@ -6598,7 +6604,7 @@ export default {
    * Lookup943: extended_assets::pallet::Error<T>
    **/
   ExtendedAssetsError: {
-    _enum: ['SoulboundAssetNotOperationable', 'SoulboundAssetNotTransferable', 'OnlyAssetOwnerCanRegulate', 'AssetAlreadyRegulated', 'AllInvolvedUsersShouldHoldValidSBT', 'RegulatedAssetNoOwnedBySBTIssuer', 'AssetNotRegulated', 'SBTNotFound', 'NotSBTOwner', 'NotAllowedToRegulateSoulboundAsset', 'InvalidExternalUrl', 'RegulatedAssetsPerSBTExceeded']
+    _enum: ['SoulboundAssetNotOperationable', 'SoulboundAssetNotTransferable', 'AllInvolvedUsersShouldHoldValidSBT', 'RegulatedAssetNoOwnedBySBTIssuer', 'AssetNotRegulated', 'SBTNotFound', 'NotSBTOwner', 'NotAllowedToRegulateSoulboundAsset', 'InvalidExternalUrl', 'RegulatedAssetsPerSBTExceeded']
   },
   /**
    * Lookup945: sp_runtime::MultiSignature
