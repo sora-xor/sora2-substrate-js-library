@@ -11,6 +11,7 @@ import { poolAccountIdFromAssetPair } from './account';
 import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
 import { Operation } from '../types';
+import { toAssetId } from '../assets';
 import { ETH, KXOR, XOR } from '../assets/consts';
 import type { Api } from '../api';
 import type { AccountLiquidity } from './types';
@@ -193,8 +194,6 @@ export class PoolXykModule<T> {
   }
 
   public async getAllReserves(): Promise<Record<string, Array<CodecString>>> {
-    const toKey = (address: CommonPrimitivesAssetId32) => address.code.toString();
-
     const reserves = {} as Record<string, Array<CodecString>>;
     const baseAssetIds = this.root.dex.baseAssetsIds;
     const allReserves = (
@@ -206,7 +205,7 @@ export class PoolXykModule<T> {
       const [key1, key2] = item[0].args;
       if (item[1]?.length == 2) {
         const [value1, value2] = item[1];
-        reserves[toKey(key1) + toKey(key2)] = [toReserve(value1), toReserve(value2)];
+        reserves[toAssetId(key1) + toAssetId(key2)] = [toReserve(value1), toReserve(value2)];
       }
     }
 
@@ -502,7 +501,7 @@ export class PoolXykModule<T> {
         const baseAssetId = baseAssetIds[index];
 
         for (const targetAssetId of list) {
-          const pair = [baseAssetId, targetAssetId.code.toString()];
+          const pair = [baseAssetId, toAssetId(targetAssetId)];
           assetIdPairs.push(pair);
         }
       });

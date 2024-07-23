@@ -6,6 +6,7 @@ import type { StorageKey } from '@polkadot/types';
 import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 import type { NumberLike } from '@sora-substrate/math';
 
+import { toAssetId } from '../assets';
 import { Messages } from '../logger';
 import { Operation } from '../types';
 import { XOR } from '../assets/consts';
@@ -27,7 +28,7 @@ export class DemeterFarmingModule<T> {
     return this.root.apiRx.query.demeterFarmingPlatform.pools(poolAsset, rewardAsset).pipe(
       map((poolDataVec) => {
         return poolDataVec.map((poolData) => ({
-          baseAsset: poolData.baseAsset.code.toString(),
+          baseAsset: toAssetId(poolData.baseAsset),
           poolAsset,
           rewardAsset,
           multiplier: poolData.multiplier.toNumber(),
@@ -64,8 +65,8 @@ export class DemeterFarmingModule<T> {
       const [poolAssetId, rewardAssetId] = item.args;
 
       return {
-        poolAsset: poolAssetId.code.toString(),
-        rewardAsset: rewardAssetId.code.toString(),
+        poolAsset: toAssetId(poolAssetId),
+        rewardAsset: toAssetId(rewardAssetId),
       };
     });
 
@@ -108,7 +109,7 @@ export class DemeterFarmingModule<T> {
 
     if (!storageKeys.length) return null;
 
-    const keys = storageKeys.map((item) => item.args[0].code.toString());
+    const keys = storageKeys.map((item) => toAssetId(item.args[0]));
 
     const observables = keys.map((assetId) => this.getTokenInfoObservable(assetId));
 
@@ -126,10 +127,10 @@ export class DemeterFarmingModule<T> {
       map((userInfoVec) => {
         return userInfoVec.map((data) => ({
           isFarm: data.isFarm.isTrue,
-          baseAsset: data.baseAsset.code.toString(),
-          poolAsset: data.poolAsset.code.toString(),
+          baseAsset: toAssetId(data.baseAsset),
+          poolAsset: toAssetId(data.poolAsset),
           pooledTokens: new FPNumber(data.pooledTokens),
-          rewardAsset: data.rewardAsset.code.toString(),
+          rewardAsset: toAssetId(data.rewardAsset),
           rewards: new FPNumber(data.rewards),
         }));
       })

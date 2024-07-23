@@ -7,21 +7,19 @@ import type { Observable } from '@polkadot/types/types';
 import type { Option } from '@polkadot/types-codec';
 import type {
   CommonBalanceUnit,
-  CommonPrimitivesAssetId32,
   CommonPrimitivesPriceVariant,
   OrderBookLimitOrder,
   OrderBookOrderBookStatus,
   OrderBook as OrderBookStruct,
 } from '@polkadot/types/lookup';
 
+import { toAssetId } from '../assets';
 import { Operation } from '../types';
 import { MAX_ORDERS_PER_SINGLE_PRICE, MAX_TIMESTAMP } from './consts';
 import { Messages } from '../logger';
 import type { Api } from '../api';
 import type { AggregatedOrderBook, AssetIdOrAsset, LimitOrder, LimitOrderHistory, OrderId } from './types';
 import type { AccountAsset, Asset } from '../assets/types';
-
-const toAssetId = (asset: CommonPrimitivesAssetId32) => asset.code.toString();
 
 function toFP(value: CommonBalanceUnit): FPNumber {
   const decimals = value.isDivisible.isTrue ? FPNumber.DEFAULT_PRECISION : 0;

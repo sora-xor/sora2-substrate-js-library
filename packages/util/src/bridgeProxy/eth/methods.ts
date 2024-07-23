@@ -4,6 +4,7 @@ import type { Vec, Result } from '@polkadot/types';
 import type { OutgoingRequestEncoded, SignatureParams } from '@sora-substrate/types';
 import type { EthBridgeRequestsOffchainRequest } from '@polkadot/types/lookup';
 
+import { toAssetId } from '../../assets';
 import { BridgeTxDirection, BridgeTxStatus } from '../consts';
 import { EthCurrencyType } from './consts';
 
@@ -25,8 +26,8 @@ export function formatRequest(request: EthBridgeRequestsOffchainRequest, status:
 
   if (request.isIncoming) {
     const transferRequest = request.asIncoming[0].asTransfer;
-    const assetId = transferRequest.assetId;
-    formattedItem.soraAssetAddress = (assetId.code ?? assetId).toString();
+    const assetId = toAssetId(transferRequest.assetId);
+    formattedItem.soraAssetAddress = assetId;
     formattedItem.amount = new FPNumber(transferRequest.amount).toString();
     formattedItem.from = transferRequest.author.toString();
     formattedItem.kind = transferRequest.assetKind.toString();
@@ -41,8 +42,8 @@ export function formatRequest(request: EthBridgeRequestsOffchainRequest, status:
     formattedItem.direction = BridgeTxDirection.Outgoing;
     const outgoingRequest = request.asOutgoing;
     const transferRequest = outgoingRequest[0].asTransfer;
-    const assetId = transferRequest.assetId;
-    formattedItem.soraAssetAddress = (assetId.code ?? assetId).toString();
+    const assetId = toAssetId(transferRequest.assetId);
+    formattedItem.soraAssetAddress = assetId;
     formattedItem.amount = new FPNumber(transferRequest.amount).toString();
     formattedItem.from = transferRequest.from.toString();
     formattedItem.to = transferRequest.to.toString();
