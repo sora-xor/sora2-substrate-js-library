@@ -589,13 +589,13 @@ declare module '@polkadot/api-base/types/events' {
     };
     extendedAssets: {
       /**
-       * Emits When an asset is regulated
-       **/
-      AssetRegulated: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32], { assetId: CommonPrimitivesAssetId32 }>;
-      /**
        * When a regulated asset is successfully bound to an SBT
        **/
       RegulatedAssetBoundToSBT: AugmentedEvent<ApiType, [regulatedAssetId: CommonPrimitivesAssetId32, sbtAssetId: CommonPrimitivesAssetId32], { regulatedAssetId: CommonPrimitivesAssetId32, sbtAssetId: CommonPrimitivesAssetId32 }>;
+      /**
+       * Emits When a new regulated asset is registered
+       **/
+      RegulatedAssetRegistered: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32], { assetId: CommonPrimitivesAssetId32 }>;
       /**
        * Emits When the expiration date of an SBT is updated
        **/
