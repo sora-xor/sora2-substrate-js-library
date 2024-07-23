@@ -4,37 +4,38 @@ import { delay, withConnectedAccount } from './util';
 
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {
-    const assetId = '0x00ad9559393c1c154c3da5fd2f0280fb701a0fac23d4f35b65643236ff4254d5';
-    const sbtId = '0x0023e888d25c3451585bdf75e75ec44be448bdc88ac10aae084a7d26ba8c78d0';
-    const accountId = 'cnUaaC2q8z1SFkZcPNDQ38maLVFhuNeuZeFQnUCRLEM8FvMs4';
+    const assetId1 = '0x002115b295ba9da6a18707f39287b1497f605c43649530a7361ccd7675e3aa8b';
+    const assetId2 = '0x0051e3d18281ce07299a00079d29e2c817dc1c9418bb4cfda6a7dc6832af6262';
+    const sbtId = '0x008967a08c9f151b9632b2d9f69b37425d1bcd58a3be0366b426db426003292f';
+    const accountId = '';
 
-    const sbtAdresses = await api.extendedAssets.getAllSbtIds();
+    // const sbtAdresses = await api.extendedAssets.getAllSbtIds();
 
-    await api.extendedAssets.regulateAsset(assetId);
+    // await api.extendedAssets.regulateAsset(assetId);
 
-    await api.extendedAssets.issueSbt(
-      'SBT',
-      'sbt',
-      'this is sbt to check',
-      'bafybeig5ymwb7tsjgpzqyckkzhihnjm7gbw5chjamvymfwy2aityda3ufe/_WRR9729.jpg',
-      'web3.com'
-    );
+    // await api.extendedAssets.issueSbt(
+    //   'SBT',
+    //   'sbt',
+    //   'this is sbt to check',
+    //   'bafybeig5ymwb7tsjgpzqyckkzhihnjm7gbw5chjamvymfwy2aityda3ufe/_WRR9729.jpg',
+    //   'web3.com'
+    // );
 
-    await api.extendedAssets.bindRegulatedAssetToSBT(sbtId, assetId);
+    await api.extendedAssets.bindRegulatedAssetToSBT(sbtId, [assetId1]);
 
-    const sbtMeta = await api.extendedAssets.getSbtMetaInfo(sbtId);
-    console.log('sbtMeta', sbtMeta);
+    // const sbtMeta = await api.extendedAssets.getSbtMetaInfo(sbtId);
+    // console.log('sbtMeta', sbtMeta);
 
-    const timestamp = await api.extendedAssets.getSbtExpiration(
-      'cnVDcsDK6cvS6VBP36SbwM3GhQQWe9kxzZEgfqSRABRoCfn79',
-      sbtId
-    );
+    // const timestamp = await api.extendedAssets.getSbtExpiration(
+    //   'cnVDcsDK6cvS6VBP36SbwM3GhQQWe9kxzZEgfqSRABRoCfn79',
+    //   sbtId
+    // );
 
-    const sbtAsset = await api.assets.getAssetInfo(sbtId);
-    console.log('sbtAsset', sbtAsset);
-    await api.extendedAssets.givePrivilege(accountId, sbtAsset, 1720671542);
+    // const sbtAsset = await api.assets.getAssetInfo(sbtId);
+    // console.log('sbtAsset', sbtAsset);
+    // await api.extendedAssets.givePrivilege(accountId, sbtAsset, 1720671542);
 
-    api.extendedAssets.revokePrivilege('', sbtId);
+    // api.extendedAssets.revokePrivilege('', sbtId);
 
     await delay(100000);
   });

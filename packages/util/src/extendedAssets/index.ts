@@ -1,3 +1,4 @@
+import { NumberLike } from '@sora-substrate/math';
 import type { Api } from '../api';
 import { Asset } from '../assets/types';
 import { Operation } from '../types';
@@ -101,24 +102,47 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async regulateAsset(assetId: string): Promise<T> {
-    return this.root.submitExtrinsic(this.root.api.tx.extendedAssets.regulateAsset(assetId), this.root.account.pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.extendedAssets.regulateAsset(assetId), this.root.account?.pair, {
       type: Operation.RegulateAsset,
       assetAddress: assetId,
     });
   }
 
+  public async registerRegulatedAsset(
+    symbol: string,
+    name: string,
+    initialSupply: NumberLike,
+    isMintable = false,
+    isIndivisible = false
+  ) {
+    // return this.root.submitExtrinsic(this.root.api.tx.extendedAssets.issueSbt()), this.root.account?.pair, {});
+  }
+
   /**
    * Bind regulated asset to SB token. For the asset to be only operable between KYC-verified wallets.
    * @param sbtAssetId SB address
-   * @param regulatedAssetId regulated asset address
+   * @param regulatedAssetIds array of regulated asset addresses
    *
    */
-  public async bindRegulatedAssetToSBT(sbtAssetId: string, regulatedAssetId: string): Promise<T> {
-    return this.root.submitExtrinsic(
-      this.root.api.tx.extendedAssets.bindRegulatedAssetToSbt(sbtAssetId, regulatedAssetId),
-      this.root.account.pair,
-      { type: Operation.BindRegulatedAsset, assetAddress: sbtAssetId, asset2Address: regulatedAssetId }
+  public async bindRegulatedAssetToSBT(sbtAssetId: string, regulatedAssetIds: Array<string>): Promise<T> {
+    if (regulatedAssetIds.length === 1) {
+      return this.root.submitExtrinsic(
+        this.root.api.tx.extendedAssets.bindRegulatedAssetToSbt(sbtAssetId, regulatedAssetIds[0]),
+        this.root.account.pair,
+        { type: Operation.BindRegulatedAsset, assetAddress: sbtAssetId, asset2Address: regulatedAssetIds[0] }
+      );
+    }
+
+    // batch
+    const transactions = regulatedAssetIds.map((regulatedAssetAddress) =>
+      this.root.api.tx.extendedAssets.bindRegulatedAssetToSbt(sbtAssetId, regulatedAssetAddress)
     );
+
+    return this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
+      type: Operation.BindRegulatedAsset,
+      assetAddress: sbtAssetId,
+      asset2Address: regulatedAssetIds[0],
+    });
   }
 
   /**
