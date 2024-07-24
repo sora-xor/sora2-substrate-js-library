@@ -1438,6 +1438,15 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       registerRegulatedAsset: AugmentedSubmittable<(symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, initialSupply: u128 | AnyNumber | Uint8Array, isMintable: bool | boolean | Uint8Array, isIndivisible: bool | boolean | Uint8Array, optContentSrc: Option<Bytes> | null | Uint8Array | Bytes | string, optDesc: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, u128, bool, bool, Option<Bytes>, Option<Bytes>]>;
       /**
+       * Marks an asset as regulated, representing that the asset will only operate between KYC-verified wallets.
+       * 
+       * ## Parameters
+       * 
+       * - `origin`: The origin of the transaction.
+       * - `asset_id`: The identifier of the asset.
+       **/
+      regulateAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      /**
        * Sets the expiration date of a Soulbound Token (SBT) for the given account.
        * 
        * ## Parameters
