@@ -4,9 +4,9 @@ import { delay, withConnectedAccount } from './util';
 
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {
-    const assetId1 = '0x002115b295ba9da6a18707f39287b1497f605c43649530a7361ccd7675e3aa8b';
-    const assetId2 = '0x0051e3d18281ce07299a00079d29e2c817dc1c9418bb4cfda6a7dc6832af6262';
-    const sbtId = '0x008967a08c9f151b9632b2d9f69b37425d1bcd58a3be0366b426db426003292f';
+    const assetId1 = '';
+    const assetId2 = '';
+    const sbtId = '';
     const accountId = '';
 
     const sbtAdresses = await api.extendedAssets.getAllSbtIds();
