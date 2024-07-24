@@ -2066,7 +2066,10 @@ export default {
       },
       RegulatedAssetBoundToSBT: {
         regulatedAssetId: 'CommonPrimitivesAssetId32',
-        sbtAssetId: 'CommonPrimitivesAssetId32'
+        sbtAssetId: 'CommonPrimitivesAssetId32',
+      },
+      AssetRegulated: {
+        assetId: 'CommonPrimitivesAssetId32'
       }
     }
   },
@@ -5382,7 +5385,10 @@ export default {
       },
       bind_regulated_asset_to_sbt: {
         sbtAssetId: 'CommonPrimitivesAssetId32',
-        regulatedAssetId: 'CommonPrimitivesAssetId32'
+        regulatedAssetId: 'CommonPrimitivesAssetId32',
+      },
+      regulate_asset: {
+        assetId: 'CommonPrimitivesAssetId32'
       }
     }
   },
@@ -6604,7 +6610,7 @@ export default {
    * Lookup943: extended_assets::pallet::Error<T>
    **/
   ExtendedAssetsError: {
-    _enum: ['SoulboundAssetNotOperationable', 'SoulboundAssetNotTransferable', 'AllInvolvedUsersShouldHoldValidSBT', 'RegulatedAssetNoOwnedBySBTIssuer', 'AssetNotRegulated', 'SBTNotFound', 'NotSBTOwner', 'NotAllowedToRegulateSoulboundAsset', 'InvalidExternalUrl', 'RegulatedAssetsPerSBTExceeded']
+    _enum: ['SoulboundAssetNotOperationable', 'SoulboundAssetNotTransferable', 'AllInvolvedUsersShouldHoldValidSBT', 'RegulatedAssetNoOwnedBySBTIssuer', 'AssetNotRegulated', 'SBTNotFound', 'NotSBTOwner', 'NotAllowedToRegulateSoulboundAsset', 'InvalidExternalUrl', 'RegulatedAssetsPerSBTExceeded', 'OnlyAssetOwnerCanRegulate', 'AssetAlreadyRegulated']
   },
   /**
    * Lookup945: sp_runtime::MultiSignature
