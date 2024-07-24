@@ -9,33 +9,33 @@ async function main(): Promise<void> {
     const sbtId = '0x008967a08c9f151b9632b2d9f69b37425d1bcd58a3be0366b426db426003292f';
     const accountId = '';
 
-    // const sbtAdresses = await api.extendedAssets.getAllSbtIds();
+    const sbtAdresses = await api.extendedAssets.getAllSbtIds();
 
-    // await api.extendedAssets.regulateAsset(assetId);
+    await api.extendedAssets.regulateAsset(assetId1);
 
-    // await api.extendedAssets.issueSbt(
-    //   'SBT',
-    //   'sbt',
-    //   'this is sbt to check',
-    //   'bafybeig5ymwb7tsjgpzqyckkzhihnjm7gbw5chjamvymfwy2aityda3ufe/_WRR9729.jpg',
-    //   'web3.com'
-    // );
+    await api.extendedAssets.issueSbt(
+      'SBT',
+      'sbt',
+      'this is sbt to check',
+      'bafybeig5ymwb7tsjgpzqyckkzhihnjm7gbw5chjamvymfwy2aityda3ufe/_WRR9729.jpg',
+      'web3.com'
+    );
 
-    await api.extendedAssets.bindRegulatedAssetToSBT(sbtId, [assetId1]);
+    await api.extendedAssets.bindRegulatedAssetToSBT(sbtId, [assetId1, assetId2]);
 
-    // const sbtMeta = await api.extendedAssets.getSbtMetaInfo(sbtId);
-    // console.log('sbtMeta', sbtMeta);
+    const sbtMeta = await api.extendedAssets.getSbtMetaInfo(sbtId);
+    console.log('sbtMeta', sbtMeta);
 
-    // const timestamp = await api.extendedAssets.getSbtExpiration(
-    //   'cnVDcsDK6cvS6VBP36SbwM3GhQQWe9kxzZEgfqSRABRoCfn79',
-    //   sbtId
-    // );
+    const timestamp = await api.extendedAssets.getSbtExpiration(
+      'cnVDcsDK6cvS6VBP36SbwM3GhQQWe9kxzZEgfqSRABRoCfn79',
+      sbtId
+    );
 
-    // const sbtAsset = await api.assets.getAssetInfo(sbtId);
-    // console.log('sbtAsset', sbtAsset);
-    // await api.extendedAssets.givePrivilege(accountId, sbtAsset, 1720671542);
+    const sbtAsset = await api.assets.getAssetInfo(sbtId);
+    console.log('sbtAsset', sbtAsset);
+    await api.extendedAssets.givePrivilege(accountId, sbtAsset, 1720671542);
 
-    // api.extendedAssets.revokePrivilege('', sbtId);
+    api.extendedAssets.revokePrivilege('', sbtId);
 
     await delay(100000);
   });

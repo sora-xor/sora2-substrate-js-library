@@ -30,6 +30,7 @@ export enum Operation {
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
   CreatePair = 'CreatePair',
+  BatchAll = 'BatchAll',
   Faucet = 'Faucet',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
@@ -94,6 +95,7 @@ export enum Operation {
   /** DEFI-R */
   SetAccessExpiration = 'SetAccessExpiration',
   RegulateAsset = 'RegulateAsset',
+  RegisterAndRegulateAsset = 'RegisterAndRegulateAsset',
   BindRegulatedAsset = 'BindRegulatedAsset',
   IssueSoulBoundToken = 'IssueSoulBoundToken',
 }

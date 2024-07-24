@@ -1,4 +1,4 @@
-import { NumberLike } from '@sora-substrate/math';
+import { FPNumber, NumberLike } from '@sora-substrate/math';
 import type { Api } from '../api';
 import { Asset } from '../assets/types';
 import { Operation } from '../types';
@@ -102,20 +102,50 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async regulateAsset(assetId: string): Promise<T> {
-    return this.root.submitExtrinsic(this.root.api.tx.extendedAssets.regulateAsset(assetId), this.root.account?.pair, {
+    return this.root.submitExtrinsic(this.root.api.tx.extendedAssets.regulateAsset(assetId), this.root.account.pair, {
       type: Operation.RegulateAsset,
       assetAddress: assetId,
     });
   }
 
+  /**
+   * Register and regulate asset in one step.
+   * @param symbol string with asset symbol
+   * @param name string with asset name
+   * @param initialSupply total token supply
+   * @param isMintable `true` means that token can be mintable any time by the owner of that token. `false` by default
+   * @param nonDivisible `false` by default
+   * @param content content string (image url)
+   * @param description description of token
+   *
+   */
   public async registerRegulatedAsset(
     symbol: string,
     name: string,
     initialSupply: NumberLike,
     isMintable = false,
-    isIndivisible = false
-  ) {
-    // return this.root.submitExtrinsic(this.root.api.tx.extendedAssets.issueSbt()), this.root.account?.pair, {});
+    isIndivisible = false,
+    content = null,
+    description = null
+  ): Promise<T> {
+    const supply = new FPNumber(initialSupply, isIndivisible ? 0 : FPNumber.DEFAULT_PRECISION);
+
+    return this.root.submitExtrinsic(
+      this.root.api.tx.extendedAssets.registerRegulatedAsset(
+        symbol,
+        name,
+        supply.toCodecString(),
+        isMintable,
+        isIndivisible,
+        content,
+        description
+      ),
+      this.root.account.pair,
+      {
+        type: Operation.RegisterAndRegulateAsset,
+        symbol,
+      }
+    );
   }
 
   /**
