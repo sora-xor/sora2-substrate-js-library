@@ -1530,6 +1530,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AllInvolvedUsersShouldHoldValidSBT: AugmentedError<ApiType>;
       /**
+       * Asset is already regulated
+       **/
+      AssetAlreadyRegulated: AugmentedError<ApiType>;
+      /**
        * All Allowed assets must be regulated
        **/
       AssetNotRegulated: AugmentedError<ApiType>;
@@ -1545,6 +1549,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Caller is not the owner of the SBT
        **/
       NotSBTOwner: AugmentedError<ApiType>;
+      /**
+       * Only asset owner can regulate
+       **/
+      OnlyAssetOwnerCanRegulate: AugmentedError<ApiType>;
       /**
        * All Allowed assets must be owned by SBT issuer
        **/

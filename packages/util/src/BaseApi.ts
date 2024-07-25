@@ -20,6 +20,7 @@ export class BaseApi<T = void> extends ApiAccount<T> {
    */
   public NetworkFee = {
     [Operation.AddLiquidity]: '0',
+    [Operation.BatchAll]: '0',
     [Operation.CreatePair]: '0',
     [Operation.EthBridgeIncoming]: '0',
     [Operation.EthBridgeOutgoing]: '0',
@@ -65,6 +66,11 @@ export class BaseApi<T = void> extends ApiAccount<T> {
     [Operation.RepayVaultDebt]: '0',
     [Operation.DepositCollateral]: '0',
     [Operation.BorrowVaultDebt]: '0',
+    [Operation.SetAccessExpiration]: '0',
+    [Operation.RegulateAsset]: '0',
+    [Operation.RegisterAndRegulateAsset]: '0',
+    [Operation.BindRegulatedAsset]: '0',
+    [Operation.IssueSoulBoundToken]: '0',
   } as NetworkFeesObject;
 
   /**
@@ -79,6 +85,8 @@ export class BaseApi<T = void> extends ApiAccount<T> {
       switch (operation) { // NOSONAR
         case Operation.AddLiquidity:
           return this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', 0, 0, 0, 0);
+        case Operation.BatchAll: 
+          return this.api.tx.utility.batchAll([]);
         case Operation.CreatePair:
           return this.api.tx.utility.batchAll([
             this.api.tx.tradingPair.register(DexId.XOR, '', ''),
@@ -200,6 +208,16 @@ export class BaseApi<T = void> extends ApiAccount<T> {
           return this.api.tx.kensetsu.depositCollateral(0, 0);
         case Operation.BorrowVaultDebt:
           return this.api.tx.kensetsu.borrow(0, 0, 0);
+        case Operation.SetAccessExpiration:
+          return this.api.tx.extendedAssets.setSbtExpiration('', '', 0);
+        case Operation.RegulateAsset: 
+          return this.api.tx.extendedAssets.regulateAsset('');
+        case Operation.RegisterAndRegulateAsset:
+          return  this.api.tx.extendedAssets.registerRegulatedAsset('', '', 0, false, false, null, null);
+        case Operation.BindRegulatedAsset: 
+          return this.api.tx.extendedAssets.bindRegulatedAssetToSbt('', '');
+        case Operation.IssueSoulBoundToken: 
+          return this.api.tx.extendedAssets.issueSbt('', '', '', '', '');
         default:
           return null;
       }

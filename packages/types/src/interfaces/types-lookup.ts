@@ -2305,7 +2305,11 @@ declare module '@polkadot/types/lookup' {
       readonly regulatedAssetId: CommonPrimitivesAssetId32;
       readonly sbtAssetId: CommonPrimitivesAssetId32;
     } & Struct;
-    readonly type: 'RegulatedAssetRegistered' | 'SoulboundTokenIssued' | 'SbtExpirationUpdated' | 'RegulatedAssetBoundToSBT';
+    readonly isAssetRegulated: boolean;
+    readonly asAssetRegulated: {
+      readonly assetId: CommonPrimitivesAssetId32;
+    } & Struct;
+    readonly type: 'RegulatedAssetRegistered' | 'SoulboundTokenIssued' | 'SbtExpirationUpdated' | 'RegulatedAssetBoundToSBT' | 'AssetRegulated';
   }
 
   /** @name FrameSystemPhase (230) */
@@ -5636,7 +5640,11 @@ declare module '@polkadot/types/lookup' {
       readonly sbtAssetId: CommonPrimitivesAssetId32;
       readonly regulatedAssetId: CommonPrimitivesAssetId32;
     } & Struct;
-    readonly type: 'RegisterRegulatedAsset' | 'IssueSbt' | 'SetSbtExpiration' | 'BindRegulatedAssetToSbt';
+    readonly isRegulateAsset: boolean;
+    readonly asRegulateAsset: {
+      readonly assetId: CommonPrimitivesAssetId32;
+    } & Struct;
+    readonly type: 'RegisterRegulatedAsset' | 'IssueSbt' | 'SetSbtExpiration' | 'BindRegulatedAssetToSbt' | 'RegulateAsset';
   }
 
   /** @name PalletMultisigError (659) */
@@ -7567,7 +7575,9 @@ declare module '@polkadot/types/lookup' {
     readonly isNotAllowedToRegulateSoulboundAsset: boolean;
     readonly isInvalidExternalUrl: boolean;
     readonly isRegulatedAssetsPerSBTExceeded: boolean;
-    readonly type: 'SoulboundAssetNotOperationable' | 'SoulboundAssetNotTransferable' | 'AllInvolvedUsersShouldHoldValidSBT' | 'RegulatedAssetNoOwnedBySBTIssuer' | 'AssetNotRegulated' | 'SbtNotFound' | 'NotSBTOwner' | 'NotAllowedToRegulateSoulboundAsset' | 'InvalidExternalUrl' | 'RegulatedAssetsPerSBTExceeded';
+    readonly isOnlyAssetOwnerCanRegulate: boolean;
+    readonly isAssetAlreadyRegulated: boolean;
+    readonly type: 'SoulboundAssetNotOperationable' | 'SoulboundAssetNotTransferable' | 'AllInvolvedUsersShouldHoldValidSBT' | 'RegulatedAssetNoOwnedBySBTIssuer' | 'AssetNotRegulated' | 'SbtNotFound' | 'NotSBTOwner' | 'NotAllowedToRegulateSoulboundAsset' | 'InvalidExternalUrl' | 'RegulatedAssetsPerSBTExceeded' | 'OnlyAssetOwnerCanRegulate' | 'AssetAlreadyRegulated';
   }
 
   /** @name SpRuntimeMultiSignature (945) */
