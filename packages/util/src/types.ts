@@ -30,6 +30,7 @@ export enum Operation {
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
   CreatePair = 'CreatePair',
+  BatchAll = 'BatchAll',
   Faucet = 'Faucet',
   EthBridgeOutgoing = 'EthBridgeOutgoing',
   EthBridgeIncoming = 'EthBridgeIncoming',
@@ -91,6 +92,12 @@ export enum Operation {
   RepayVaultDebt = 'RepayVaultDebt',
   DepositCollateral = 'DepositCollateral',
   BorrowVaultDebt = 'BorrowVaultDebt',
+  /** DEFI-R */
+  SetAccessExpiration = 'SetAccessExpiration',
+  RegulateAsset = 'RegulateAsset',
+  RegisterAndRegulateAsset = 'RegisterAndRegulateAsset',
+  BindRegulatedAsset = 'BindRegulatedAsset',
+  IssueSoulBoundToken = 'IssueSoulBoundToken',
 }
 
 export interface OnChainIdentity {
