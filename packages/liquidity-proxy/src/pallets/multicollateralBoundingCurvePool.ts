@@ -285,50 +285,6 @@ export const checkRewards = (
   }
 };
 
-const tbcCheckRewards = (
-  mainAssetId: string,
-  collateralAssetId: string,
-  xorAmount: FPNumber,
-  payload: QuotePayload
-): Array<LPRewardsInfo> => {
-  if (!collateralIsIncentivised(collateralAssetId)) {
-    return [];
-  }
-
-  const idealBefore = idealReservesReferencePrice(
-    mainAssetId,
-    collateralAssetId,
-    PriceVariant.Buy,
-    FPNumber.ZERO,
-    payload
-  );
-  const idealAfter = idealReservesReferencePrice(mainAssetId, collateralAssetId, PriceVariant.Buy, xorAmount, payload);
-
-  const actualBefore = actualReservesReferencePrice(collateralAssetId, payload, PriceVariant.Buy);
-  const unfundedLiabilities = idealBefore.sub(actualBefore);
-
-  const a = safeDivide(unfundedLiabilities, idealBefore);
-  const b = safeDivide(unfundedLiabilities, idealAfter);
-
-  const mean = safeDivide(a.add(b), FPNumber.TWO);
-  const amount = safeDivide(
-    a.sub(b).mul(Consts.initialPswapTbcRewardsAmount).mul(mean),
-    Consts.incentivizedCurrenciesNum
-  );
-
-  if (amount.isZero()) {
-    return [];
-  }
-
-  return [
-    {
-      amount: amount.toCodecString(),
-      currency: Consts.PSWAP,
-      reason: RewardReason.BuyOnBondingCurve,
-    },
-  ];
-};
-
 // buy_function
 const buyFunction = (
   mainAssetId: string,
