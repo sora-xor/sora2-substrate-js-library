@@ -69,15 +69,16 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
 
   // override it from frontend config if needed
   public parachainIds: ParachainIds = {
+    [SubNetworkId.PolkadotAssetHub]: 1000,
     [SubNetworkId.PolkadotAcala]: 2000,
-    [SubNetworkId.PolkadotAstar]: 2006,
     [SubNetworkId.PolkadotMoonbeam]: 2004,
+    [SubNetworkId.PolkadotAstar]: 2006,
     [SubNetworkId.PolkadotSora]: 2025,
     [SubNetworkId.RococoSora]: 2011,
     [SubNetworkId.KusamaSora]: 2011,
     [SubNetworkId.KusamaShiden]: 2007,
-    [SubNetworkId.AlphanetSora]: 2011,
     [SubNetworkId.AlphanetMoonbase]: 1000,
+    [SubNetworkId.AlphanetSora]: 2011,
   };
 
   public prepareNetworkParam(subNetwork: SubNetwork): BridgeTypesGenericNetworkId {
