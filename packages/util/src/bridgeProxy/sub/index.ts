@@ -75,6 +75,7 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
     [SubNetworkId.PolkadotAstar]: 2006,
     [SubNetworkId.PolkadotSora]: 2025,
     [SubNetworkId.RococoSora]: 2011,
+    [SubNetworkId.KusamaAssetHub]: 1000,
     [SubNetworkId.KusamaSora]: 2011,
     [SubNetworkId.KusamaShiden]: 2007,
     [SubNetworkId.AlphanetMoonbase]: 1000,

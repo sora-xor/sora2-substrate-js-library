@@ -20,6 +20,8 @@ export enum SubNetworkId {
   PolkadotMoonbeam = 'PolkadotMoonbeam',
   /** Kusama relaychain */
   Kusama = 'Kusama',
+  /** AssetHub parachain in Kusama relaychain */
+  KusamaAssetHub = 'KusamaAssetHub',
   /** SORA parachain in Kusama relaychain */
   KusamaSora = 'KusamaSora',
   /** Shiden parachain in Kusama relaychain (Astar ecosystem) */
@@ -61,7 +63,11 @@ export const PolkadotParachains = [
   SubNetworkId.PolkadotMoonbeam,
 ] as const;
 
-export const KusamaParachains = [SubNetworkId.KusamaSora, SubNetworkId.KusamaShiden] as const;
+export const KusamaParachains = [
+  SubNetworkId.KusamaSora,
+  SubNetworkId.KusamaAssetHub,
+  SubNetworkId.KusamaShiden,
+] as const;
 
 export const AlphanetParachains = [SubNetworkId.AlphanetSora, SubNetworkId.AlphanetMoonbase] as const;
 
