@@ -4,7 +4,11 @@ import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { BalanceInfo } from '@sora-substrate/types';
 import type { ApiPromise } from '@polkadot/api';
 import type { Observable } from '@polkadot/types/types';
-import type { OrmlTokensAccountData, PalletBalancesAccountData } from '@polkadot/types/lookup';
+import type {
+  OrmlTokensAccountData,
+  PalletBalancesAccountData,
+  CommonPrimitivesAssetId32,
+} from '@polkadot/types/lookup';
 import type { Option, u128 } from '@polkadot/types-codec';
 
 import { KnownAssets, NativeAssets, XOR } from './consts';
@@ -23,8 +27,6 @@ import type {
   WhitelistIdsBySymbol,
 } from './types';
 import type { Api } from '../api';
-
-import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 export function toAssetId(asset: CommonPrimitivesAssetId32) {
   return asset.code.toString();
