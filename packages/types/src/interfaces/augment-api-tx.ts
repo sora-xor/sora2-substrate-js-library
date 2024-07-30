@@ -42,7 +42,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Edit pool info
        **/
-      editPoolInfo: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newLoanToValue: u128 | AnyNumber | Uint8Array, newLiquidationThreshold: u128 | AnyNumber | Uint8Array, newOptimalUtilizationRate: u128 | AnyNumber | Uint8Array, newBaseRate: u128 | AnyNumber | Uint8Array, newSlopeRate1: u128 | AnyNumber | Uint8Array, newSlopeRate2: u128 | AnyNumber | Uint8Array, newReserveFactor: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128]>;
+      editPoolInfo: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newLoanToValue: u128 | AnyNumber | Uint8Array, newLiquidationThreshold: u128 | AnyNumber | Uint8Array, newOptimalUtilizationRate: u128 | AnyNumber | Uint8Array, newBaseRate: u128 | AnyNumber | Uint8Array, newSlopeRate1: u128 | AnyNumber | Uint8Array, newSlopeRate2: u128 | AnyNumber | Uint8Array, newReserveFactor: u128 | AnyNumber | Uint8Array, newTl: u128 | AnyNumber | Uint8Array, newTb: u128 | AnyNumber | Uint8Array, newTc: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128, u128, u128, u128]>;
       /**
        * Get rewards
        **/

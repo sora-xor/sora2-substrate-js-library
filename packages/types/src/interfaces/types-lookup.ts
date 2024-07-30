@@ -5599,6 +5599,9 @@ declare module '@polkadot/types/lookup' {
       readonly newSlopeRate1: u128;
       readonly newSlopeRate2: u128;
       readonly newReserveFactor: u128;
+      readonly newTl: u128;
+      readonly newTb: u128;
+      readonly newTc: u128;
     } & Struct;
     readonly isAddCollateral: boolean;
     readonly asAddCollateral: {

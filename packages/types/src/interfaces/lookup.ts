@@ -5349,6 +5349,9 @@ export default {
         newSlopeRate1: 'u128',
         newSlopeRate2: 'u128',
         newReserveFactor: 'u128',
+        newTl: 'u128',
+        newTb: 'u128',
+        newTc: 'u128',
       },
       add_collateral: {
         collateralAsset: 'CommonPrimitivesAssetId32',
