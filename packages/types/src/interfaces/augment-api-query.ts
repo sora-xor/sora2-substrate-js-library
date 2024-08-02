@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, BTreeSet, Bytes, Null, Option, Text, U256, U8aFixed, Vec, WrapperOpaque, bool, u128, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { ApolloPlatformBorrowingPosition, ApolloPlatformLendingPosition, ApolloPlatformPoolInfo, AssetsAssetRecord, BandBandRate, BandFeeCalculationParameters, BridgeProxyBridgeRequest, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesAuxiliaryDigestItem, BridgeTypesGenericAssetId, BridgeTypesGenericBridgeMessage, BridgeTypesGenericCommitmentWithBlock, BridgeTypesGenericNetworkId, BridgeTypesSubNetworkId, BridgeTypesSubstrateBridgeMessage, CeresGovernancePlatformPollInfo, CeresGovernancePlatformStorageVersion, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresLiquidityLockerStorageVersion, CeresStakingStakingInfo, CeresTokenLockerStorageVersion, CeresTokenLockerTokenLockInfo, CommonBalanceUnit, CommonPrimitivesAssetId32, CommonPrimitivesAssetInfo, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformStorageVersion, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeSignatureVersion, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, EvmFungibleAppBaseFeeInfo, ExtendedAssetsSoulboundTokenMetadata, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportDispatchPerDispatchClassWeight, FrameSupportPreimagesBounded, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, HermesGovernancePlatformHermesPollInfo, HermesGovernancePlatformHermesVotingInfo, HermesGovernancePlatformStorageVersion, IrohaMigrationPendingMultisigAccount, KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition, KensetsuStablecoinCollateralIdentifier, KensetsuStablecoinInfo, MulticollateralBondingCurvePoolDistributionAccounts, OrderBook, OrderBookLimitOrder, OrderBookOrderBookId, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyReferendumInfo, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletPreimageRequestStatus, PalletSchedulerScheduled, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsAggregatedPriceInfo, RewardsRewardInfo, SpBeefyCryptoPublic, SpBeefyMmrBeefyAuthoritySet, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanInfo, VestedRewardsCrowdloanUserInfo, VestedRewardsRewardInfo, XstSyntheticInfo } from '@polkadot/types/lookup';
+import type { ApolloPlatformBorrowingPosition, ApolloPlatformLendingPosition, ApolloPlatformPoolInfo, AssetsAssetRecord, BandBandRate, BandFeeCalculationParameters, BridgeProxyBridgeRequest, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesAuxiliaryDigestItem, BridgeTypesGenericAssetId, BridgeTypesGenericBridgeMessage, BridgeTypesGenericCommitmentWithBlock, BridgeTypesGenericNetworkId, BridgeTypesSubNetworkId, BridgeTypesSubstrateBridgeMessage, BridgeTypesTonTonAddress, BridgeTypesTonTonNetworkId, CeresGovernancePlatformPollInfo, CeresGovernancePlatformStorageVersion, CeresGovernancePlatformVotingInfo, CeresLaunchpadContributionInfo, CeresLaunchpadIloInfo, CeresLiquidityLockerLockInfo, CeresLiquidityLockerStorageVersion, CeresStakingStakingInfo, CeresTokenLockerStorageVersion, CeresTokenLockerTokenLockInfo, CommonBalanceUnit, CommonPrimitivesAssetId32, CommonPrimitivesAssetInfo, CommonPrimitivesDexInfo, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesTechAccountId, CommonPrimitivesTradingPairAssetId32, DemeterFarmingPlatformPoolData, DemeterFarmingPlatformStorageVersion, DemeterFarmingPlatformTokenInfo, DemeterFarmingPlatformUserInfo, EthBridgeBridgeSignatureVersion, EthBridgeBridgeStatus, EthBridgeOffchainSignatureParams, EthBridgeRequestsAssetKind, EthBridgeRequestsOffchainRequest, EthBridgeRequestsOutgoingEthPeersSync, EthBridgeRequestsRequestStatus, EvmFungibleAppBaseFeeInfo, ExtendedAssetsSoulboundTokenMetadata, FarmingPoolFarmer, FixnumFixedPoint, FrameSupportDispatchPerDispatchClassWeight, FrameSupportPreimagesBounded, FrameSystemAccountInfo, FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo, FrameSystemPhase, FramenodeRuntimeOpaqueSessionKeys, HermesGovernancePlatformHermesPollInfo, HermesGovernancePlatformHermesVotingInfo, HermesGovernancePlatformStorageVersion, IrohaMigrationPendingMultisigAccount, KensetsuCollateralInfo, KensetsuCollateralizedDebtPosition, KensetsuStablecoinCollateralIdentifier, KensetsuStablecoinInfo, MulticollateralBondingCurvePoolDistributionAccounts, OrderBook, OrderBookLimitOrder, OrderBookOrderBookId, OrmlTokensAccountData, OrmlTokensBalanceLock, OrmlTokensReserveData, PalletBagsListListBag, PalletBagsListListNode, PalletBalancesAccountData, PalletBalancesBalanceLock, PalletBalancesReserveData, PalletCollectiveVotes, PalletDemocracyReferendumInfo, PalletDemocracyVoteThreshold, PalletDemocracyVoteVoting, PalletElectionProviderMultiPhasePhase, PalletElectionProviderMultiPhaseReadySolution, PalletElectionProviderMultiPhaseRoundSnapshot, PalletElectionProviderMultiPhaseSignedSignedSubmission, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenSeatHolder, PalletElectionsPhragmenVoter, PalletGrandpaStoredPendingChange, PalletGrandpaStoredState, PalletIdentityRegistrarInfo, PalletIdentityRegistration, PalletImOnlineBoundedOpaqueNetworkState, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigMultisig, PalletMultisigMultisigAccount, PalletPreimageRequestStatus, PalletSchedulerScheduled, PalletStakingActiveEraInfo, PalletStakingEraRewardPoints, PalletStakingExposure, PalletStakingForcing, PalletStakingNominations, PalletStakingRewardDestination, PalletStakingSlashingSlashingSpans, PalletStakingSlashingSpanRecord, PalletStakingSoraDurationWrapper, PalletStakingStakingLedger, PalletStakingUnappliedSlash, PalletStakingValidatorPrefs, PalletTransactionPaymentReleases, PermissionsScope, PriceToolsAggregatedPriceInfo, RewardsRewardInfo, SpBeefyCryptoPublic, SpBeefyMmrBeefyAuthoritySet, SpConsensusBabeAppPublic, SpConsensusBabeBabeEpochConfiguration, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusBabeDigestsPreDigest, SpCoreCryptoKeyTypeId, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpNposElectionsElectionScore, SpRuntimeDigest, SpStakingOffenceOffenceDetails, VestedRewardsCrowdloanInfo, VestedRewardsCrowdloanUserInfo, VestedRewardsRewardInfo, XstSyntheticInfo } from '@polkadot/types/lookup';
 import type { Observable } from '@polkadot/types/types';
 
 export type __AugmentedQuery<ApiType extends ApiTypes> = AugmentedQuery<ApiType, () => unknown>;
@@ -269,20 +269,21 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Approvals
        **/
-      approvals: AugmentedQuery<ApiType, (arg1: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<BTreeMap<SpCoreEcdsaPublic, SpCoreEcdsaSignature>>, [BridgeTypesGenericNetworkId, H256]>;
+      approvals: AugmentedQuery<ApiType, (arg1: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<BTreeMap<SpCoreEcdsaPublic, SpCoreEcdsaSignature>>, [BridgeTypesGenericNetworkId, H256]>;
       /**
        * Peers
        **/
-      peers: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array) => Observable<Option<BTreeSet<SpCoreEcdsaPublic>>>, [BridgeTypesGenericNetworkId]>;
+      peers: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array) => Observable<Option<BTreeSet<SpCoreEcdsaPublic>>>, [BridgeTypesGenericNetworkId]>;
       /**
        * Pending peers
        **/
-      pendingPeerUpdate: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array) => Observable<bool>, [BridgeTypesGenericNetworkId]>;
+      pendingPeerUpdate: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array) => Observable<bool>, [BridgeTypesGenericNetworkId]>;
     };
     bridgeInboundChannel: {
-      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesGenericNetworkId]>;
+      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesGenericNetworkId]>;
       evmChannelAddresses: AugmentedQuery<ApiType, (arg: H256 | string | Uint8Array) => Observable<Option<H160>>, [H256]>;
-      reportedChannelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesGenericNetworkId]>;
+      reportedChannelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesGenericNetworkId]>;
+      tonChannelAddresses: AugmentedQuery<ApiType, (arg: BridgeTypesTonTonNetworkId | 'Mainnet' | 'Testnet' | number | Uint8Array) => Observable<Option<BridgeTypesTonTonAddress>>, [BridgeTypesTonTonNetworkId]>;
     };
     bridgeMultisig: {
       /**
@@ -297,19 +298,19 @@ declare module '@polkadot/api-base/types/storage' {
       multisigs: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: U8aFixed | string | Uint8Array) => Observable<Option<PalletMultisigMultisig>>, [AccountId32, U8aFixed]>;
     };
     bridgeOutboundChannel: {
-      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesGenericNetworkId]>;
+      channelNonces: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array) => Observable<u64>, [BridgeTypesGenericNetworkId]>;
       evmSubmitGas: AugmentedQuery<ApiType, (arg: H256 | string | Uint8Array) => Observable<U256>, [H256]>;
       /**
        * Interval between committing messages.
        **/
       interval: AugmentedQuery<ApiType, () => Observable<u32>, []>;
-      latestCommitment: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array) => Observable<Option<BridgeTypesGenericCommitmentWithBlock>>, [BridgeTypesGenericNetworkId]>;
+      latestCommitment: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array) => Observable<Option<BridgeTypesGenericCommitmentWithBlock>>, [BridgeTypesGenericNetworkId]>;
       /**
        * Messages waiting to be committed. To update the queue, use `append_message_queue` and `take_message_queue` methods
        * (to keep correct value in [QueuesTotalGas]).
        **/
-      messageQueues: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array) => Observable<Vec<BridgeTypesGenericBridgeMessage>>, [BridgeTypesGenericNetworkId]>;
-      queueTotalGas: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array) => Observable<U256>, [BridgeTypesGenericNetworkId]>;
+      messageQueues: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array) => Observable<Vec<BridgeTypesGenericBridgeMessage>>, [BridgeTypesGenericNetworkId]>;
+      queueTotalGas: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array) => Observable<U256>, [BridgeTypesGenericNetworkId]>;
     };
     bridgeProxy: {
       /**
@@ -323,9 +324,9 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Amount of assets locked by bridge for specific network. Map ((Network ID, Asset ID) => Locked amount).
        **/
-      lockedAssets: AugmentedQuery<ApiType, (arg1: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<u128>, [BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32]>;
-      senders: AugmentedQuery<ApiType, (arg1: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<Option<AccountId32>>, [BridgeTypesGenericNetworkId, H256]>;
-      transactions: AugmentedQuery<ApiType, (arg1: ITuple<[BridgeTypesGenericNetworkId, AccountId32]> | [BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, AccountId32 | string | Uint8Array], arg2: H256 | string | Uint8Array) => Observable<Option<BridgeProxyBridgeRequest>>, [ITuple<[BridgeTypesGenericNetworkId, AccountId32]>, H256]>;
+      lockedAssets: AugmentedQuery<ApiType, (arg1: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, arg2: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<u128>, [BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32]>;
+      senders: AugmentedQuery<ApiType, (arg1: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<Option<AccountId32>>, [BridgeTypesGenericNetworkId, H256]>;
+      transactions: AugmentedQuery<ApiType, (arg1: ITuple<[BridgeTypesGenericNetworkId, AccountId32]> | [BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, AccountId32 | string | Uint8Array], arg2: H256 | string | Uint8Array) => Observable<Option<BridgeProxyBridgeRequest>>, [ITuple<[BridgeTypesGenericNetworkId, AccountId32]>, H256]>;
       /**
        * Maximum amount of assets that can be withdrawn during period of time.
        **/
@@ -916,6 +917,13 @@ declare module '@polkadot/api-base/types/storage' {
       quorums: AugmentedQuery<ApiType, (arg: Text | string) => Observable<u8>, [Text]>;
       referrers: AugmentedQuery<ApiType, (arg: Text | string) => Observable<Option<Text>>, [Text]>;
     };
+    jettonApp: {
+      appInfo: AugmentedQuery<ApiType, () => Observable<Option<ITuple<[BridgeTypesTonTonNetworkId, BridgeTypesTonTonAddress]>>>, []>;
+      assetKinds: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<BridgeTypesAssetKind>>, [CommonPrimitivesAssetId32]>;
+      assetsByAddresses: AugmentedQuery<ApiType, (arg: BridgeTypesTonTonAddress | { workchain?: any; address?: any } | string | Uint8Array) => Observable<Option<CommonPrimitivesAssetId32>>, [BridgeTypesTonTonAddress]>;
+      sidechainPrecision: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<u8>>, [CommonPrimitivesAssetId32]>;
+      tokenAddresses: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<BridgeTypesTonTonAddress>>, [CommonPrimitivesAssetId32]>;
+    };
     kensetsu: {
       /**
        * Borrows tax applied on borrow amount in any stablecoin and used to buy back and incentivize
@@ -1074,7 +1082,7 @@ declare module '@polkadot/api-base/types/storage' {
       multisigs: AugmentedQuery<ApiType, (arg1: AccountId32 | string | Uint8Array, arg2: U8aFixed | string | Uint8Array) => Observable<Option<PalletMultisigMultisig>>, [AccountId32, U8aFixed]>;
     };
     multisigVerifier: {
-      peerKeys: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array) => Observable<Option<BTreeSet<SpCoreEcdsaPublic>>>, [BridgeTypesGenericNetworkId]>;
+      peerKeys: AugmentedQuery<ApiType, (arg: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array) => Observable<Option<BTreeSet<SpCoreEcdsaPublic>>>, [BridgeTypesGenericNetworkId]>;
     };
     offences: {
       /**
