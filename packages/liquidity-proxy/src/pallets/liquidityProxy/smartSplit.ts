@@ -324,7 +324,10 @@ export const newSmartSplit = (
         Consts.GetNumSamples
       );
 
-      aggregator.addSource(source, discreteQuotation);
+      // skip the source if it returns bad liquidity
+      if (discreteQuotation.verify()) {
+        aggregator.addSource(source, discreteQuotation);
+      }
     } catch {
       continue;
     }
