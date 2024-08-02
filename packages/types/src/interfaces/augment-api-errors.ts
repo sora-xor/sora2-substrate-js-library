@@ -1830,6 +1830,32 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       SignatureVerificationFailed: AugmentedError<ApiType>;
     };
+    jettonApp: {
+      AppAlreadyRegistered: AugmentedError<ApiType>;
+      AppIsNotRegistered: AugmentedError<ApiType>;
+      /**
+       * Call encoding failed.
+       **/
+      CallEncodeFailed: AugmentedError<ApiType>;
+      InvalidNetwork: AugmentedError<ApiType>;
+      NotEnoughFunds: AugmentedError<ApiType>;
+      OperationNotSupported: AugmentedError<ApiType>;
+      TokenAlreadyRegistered: AugmentedError<ApiType>;
+      TokenIsNotRegistered: AugmentedError<ApiType>;
+      WrongAccountPrefix: AugmentedError<ApiType>;
+      /**
+       * Amount must be > 0
+       **/
+      WrongAmount: AugmentedError<ApiType>;
+      /**
+       * Wrong bridge request for refund
+       **/
+      WrongRequest: AugmentedError<ApiType>;
+      /**
+       * Wrong bridge request status, must be Failed
+       **/
+      WrongRequestStatus: AugmentedError<ApiType>;
+    };
     kensetsu: {
       AccrueWrongTime: AugmentedError<ApiType>;
       ArithmeticError: AugmentedError<ApiType>;
