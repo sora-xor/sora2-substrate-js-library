@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BridgeTypesGenericAccount, BridgeTypesGenericNetworkId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, CommonBalanceUnit, CommonOutcomeFee, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstSyntheticOutput, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BridgeTypesGenericAccount, BridgeTypesGenericNetworkId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesTonTonAddress, CommonBalanceUnit, CommonOutcomeFee, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstSyntheticOutput, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
 
@@ -721,6 +721,28 @@ declare module '@polkadot/api-base/types/events' {
        * Migrated. [source, target]
        **/
       Migrated: AugmentedEvent<ApiType, [Text, AccountId32]>;
+    };
+    jettonApp: {
+      /**
+       * New asset registered.
+       **/
+      AssetRegistered: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32], { assetId: CommonPrimitivesAssetId32 }>;
+      /**
+       * Transfer to sidechain.
+       **/
+      Burned: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: BridgeTypesTonTonAddress, amount: u128], { assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: BridgeTypesTonTonAddress, amount: u128 }>;
+      /**
+       * Fees paid by relayer in EVM was claimed.
+       **/
+      FeesClaimed: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32, amount: u128], { assetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      /**
+       * Transfer from sidechain.
+       **/
+      Minted: AugmentedEvent<ApiType, [assetId: CommonPrimitivesAssetId32, sender: BridgeTypesTonTonAddress, recipient: AccountId32, amount: u128], { assetId: CommonPrimitivesAssetId32, sender: BridgeTypesTonTonAddress, recipient: AccountId32, amount: u128 }>;
+      /**
+       * Transfer failed, tokens refunded.
+       **/
+      Refunded: AugmentedEvent<ApiType, [recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128], { recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128 }>;
     };
     kensetsu: {
       BorrowTaxUpdated: AugmentedEvent<ApiType, [oldBorrowTaxes: KensetsuBorrowTaxes, newBorrowTaxes: KensetsuBorrowTaxes], { oldBorrowTaxes: KensetsuBorrowTaxes, newBorrowTaxes: KensetsuBorrowTaxes }>;

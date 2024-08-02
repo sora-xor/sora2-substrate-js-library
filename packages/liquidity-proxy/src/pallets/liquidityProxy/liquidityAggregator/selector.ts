@@ -18,8 +18,6 @@ export class Selector {
   }
 
   public addSource(source: LiquiditySourceTypes, discreteQuotation: DiscreteQuotation): void {
-    if (!discreteQuotation.verify()) throw new Error(Errors.BadLiquidity);
-
     this.liquidityQuotations.set(source, discreteQuotation);
   }
 

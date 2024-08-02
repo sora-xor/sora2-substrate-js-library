@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { SwapVariant } from '../consts';
-import { safeDivide, saturatingSub } from '../utils';
+import { safeDivide, saturatingSub, absDiff } from '../utils';
 
 export class SideAmount {
   public amount!: FPNumber;
@@ -309,6 +309,7 @@ export class DiscreteQuotation {
   }
 
   public verify(): boolean {
+    const priceEpsilon = new FPNumber(1 / 1000); // 0.1%
     let prevPrice = new FPNumber(Infinity);
 
     for (const chunk of this.chunks) {
@@ -353,8 +354,11 @@ export class DiscreteQuotation {
         return false;
       }
 
-      // chunks should go to reduce the price, from the best to the worst
-      if (FPNumber.isGreaterThan(price, prevPrice)) {
+      // chunks should go to reduce the price, from the best to the worst (or don't exceed the epsilon)
+      if (
+        FPNumber.isGreaterThan(price, prevPrice) &&
+        FPNumber.isGreaterThan(absDiff(price, prevPrice), priceEpsilon.mul(prevPrice))
+      ) {
         return false;
       }
 
