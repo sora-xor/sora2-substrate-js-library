@@ -69,11 +69,13 @@ export class ExtendedAssetsModule<T> {
   public async givePrivilege(accountId: string, sbtAsset: Asset, timestamp?: number): Promise<T> {
     // if provided, account has some determined lifespan to operate, otherwise, it is indefinite
     if (timestamp) {
-      this.root.submitExtrinsic(
-        this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAsset.address, timestamp),
-        this.root.account.pair,
-        { type: Operation.SetAccessExpiration, assetAddress: sbtAsset.address, to: accountId, endTime: timestamp }
-      );
+      setTimeout(() => {
+        this.root.submitExtrinsic(
+          this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAsset.address, timestamp),
+          this.root.account.pair,
+          { type: Operation.SetAccessExpiration, assetAddress: sbtAsset.address, to: accountId, endTime: timestamp }
+        );
+      }, 1000);
     }
 
     return this.root.assets.mint(sbtAsset, '1', accountId);
