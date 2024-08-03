@@ -161,9 +161,13 @@ export class ExtendedAssetsModule<T> {
       return this.root.submitExtrinsic(
         this.root.api.tx.extendedAssets.bindRegulatedAssetToSbt(sbtAssetId, regulatedAssetIds[0]),
         this.root.account.pair,
-        { type: Operation.BindRegulatedAsset, assetAddress: sbtAssetId, asset2Address: regulatedAssetIds[0] }
+        { type: Operation.BindRegulatedAsset, assetAddress: sbtAssetId, receivers: [{ assetId: regulatedAssetIds[0] }] }
       );
     }
+
+    const historyRegulatedAssets = regulatedAssetIds.map((regulatedAssetAddress) => ({
+      assetId: regulatedAssetAddress,
+    }));
 
     // batch
     const transactions = regulatedAssetIds.map((regulatedAssetAddress) =>
@@ -173,7 +177,7 @@ export class ExtendedAssetsModule<T> {
     return this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
       type: Operation.BindRegulatedAsset,
       assetAddress: sbtAssetId,
-      asset2Address: regulatedAssetIds[0],
+      receivers: historyRegulatedAssets,
     });
   }
 
@@ -184,9 +188,35 @@ export class ExtendedAssetsModule<T> {
    * @param description description string
    * @param image image source (ipfs)
    * @param extendedUrl url of financial institution
+   * @param regulatedAssetIds array of regulated asset addresses (optional)
    *
    */
-  public async issueSbt(symbol: string, name: string, description = '', image = '', extendedUrl = ''): Promise<T> {
+  public async issueSbt(
+    symbol: string,
+    name: string,
+    description = '',
+    image = '',
+    extendedUrl = '',
+    regulatedAssetIds?: Array<string>
+  ): Promise<T> {
+    if (regulatedAssetIds?.length) {
+      const sbtAssetId = await this.root.assets.getNextRegisteredAssetId();
+
+      const transactionsWithRegulated = regulatedAssetIds.map((regulatedAssetAddress) =>
+        this.root.api.tx.extendedAssets.bindRegulatedAssetToSbt(sbtAssetId, regulatedAssetAddress)
+      );
+
+      const transactions = [
+        this.root.api.tx.extendedAssets.issueSbt(symbol, name, description, image, extendedUrl),
+        ...transactionsWithRegulated,
+      ];
+
+      return this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
+        type: Operation.IssueSoulBoundToken,
+        symbol,
+      });
+    }
+
     return this.root.submitExtrinsic(
       this.root.api.tx.extendedAssets.issueSbt(symbol, name, description, image, extendedUrl),
       this.root.account.pair,
