@@ -1,10 +1,15 @@
-import { assert } from '@polkadot/util';
+import { assert, stringToU8a, u8aToHex, bnToU8a } from '@polkadot/util';
 import { Subscription, Subject, combineLatest, map } from 'rxjs';
+import { keccak256AsU8a } from '@polkadot/util-crypto';
 import { CodecString, FPNumber, NumberLike } from '@sora-substrate/math';
 import type { BalanceInfo } from '@sora-substrate/types';
 import type { ApiPromise } from '@polkadot/api';
 import type { Observable } from '@polkadot/types/types';
-import type { OrmlTokensAccountData, PalletBalancesAccountData } from '@polkadot/types/lookup';
+import type {
+  OrmlTokensAccountData,
+  PalletBalancesAccountData,
+  CommonPrimitivesAssetId32,
+} from '@polkadot/types/lookup';
 import type { Option, u128 } from '@polkadot/types-codec';
 
 import { KnownAssets, NativeAssets, XOR } from './consts';
@@ -23,8 +28,6 @@ import type {
   WhitelistIdsBySymbol,
 } from './types';
 import type { Api } from '../api';
-
-import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 
 export function toAssetId(asset: CommonPrimitivesAssetId32) {
   return asset.code.toString();
@@ -583,6 +586,28 @@ export class AssetsModule<T> {
     }
     const supply = await query();
     return supply.toString();
+  }
+
+  /**
+   * Get next asset ID after registering for the selected account.
+   *
+   * This method is used for the asset ID generation.
+   *
+   * @see https://github.com/sora-xor/sora2-network/blob/3f35601d27a145d5398b8c6a96306de83c58f33b/pallets/assets/src/lib.rs#L678
+   */
+  public async getNextRegisteredAssetId(): Promise<string> {
+    assert(this.root.account, Messages.connectWallet);
+    const account = this.root.account.pair.publicKey;
+
+    const title = stringToU8a('Sora Asset Id');
+
+    const index = await this.root.api.rpc.system.accountNextIndex(account);
+    const nonce = bnToU8a(index.toBn().addn(1), { bitLength: 32 });
+
+    const output = keccak256AsU8a(new Uint8Array([...title, ...account, ...nonce]));
+    output[0] = 0;
+
+    return u8aToHex(output);
   }
 
   /**
