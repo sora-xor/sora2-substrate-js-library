@@ -9,8 +9,8 @@ import type { ApiTypes, AugmentedSubmittable, SubmittableExtrinsic, SubmittableE
 import type { Data } from '@polkadot/types';
 import type { BTreeMap, Bytes, Compact, Option, Result, Text, U256, U8aFixed, Vec, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, Call, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesGenericAccount, BridgeTypesGenericAssetId, BridgeTypesGenericBalance, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, QaToolsInputAssetId, QaToolsPalletToolsMcbcBaseSupply, QaToolsPalletToolsMcbcOtherCollateralInput, QaToolsPalletToolsMcbcTbcdCollateralInput, QaToolsPalletToolsOrderBookFillInput, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstBaseInput, QaToolsPalletToolsXstSyntheticInput, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { AccountId32, Call, H128, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
+import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesGenericAccount, BridgeTypesGenericAssetId, BridgeTypesGenericBalance, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, BridgeTypesTonTonAddress, BridgeTypesTonTonAddressWithPrefix, BridgeTypesTonTonNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, QaToolsInputAssetId, QaToolsPalletToolsMcbcBaseSupply, QaToolsPalletToolsMcbcOtherCollateralInput, QaToolsPalletToolsMcbcTbcdCollateralInput, QaToolsPalletToolsOrderBookFillInput, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstBaseInput, QaToolsPalletToolsXstSyntheticInput, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpSessionMembershipProof, SpWeightsWeightV2Weight, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -42,7 +42,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Edit pool info
        **/
-      editPoolInfo: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newLoanToValue: u128 | AnyNumber | Uint8Array, newLiquidationThreshold: u128 | AnyNumber | Uint8Array, newOptimalUtilizationRate: u128 | AnyNumber | Uint8Array, newBaseRate: u128 | AnyNumber | Uint8Array, newSlopeRate1: u128 | AnyNumber | Uint8Array, newSlopeRate2: u128 | AnyNumber | Uint8Array, newReserveFactor: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128]>;
+      editPoolInfo: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newLoanToValue: u128 | AnyNumber | Uint8Array, newLiquidationThreshold: u128 | AnyNumber | Uint8Array, newOptimalUtilizationRate: u128 | AnyNumber | Uint8Array, newBaseRate: u128 | AnyNumber | Uint8Array, newSlopeRate1: u128 | AnyNumber | Uint8Array, newSlopeRate2: u128 | AnyNumber | Uint8Array, newReserveFactor: u128 | AnyNumber | Uint8Array, newTl: u128 | AnyNumber | Uint8Array, newTb: u128 | AnyNumber | Uint8Array, newTc: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128, u128, u128, u128, u128, u128, u128, u128, u128, u128]>;
       /**
        * Get rewards
        **/
@@ -257,16 +257,17 @@ declare module '@polkadot/api-base/types/submittable' {
       submitSignatureCommitment: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, commitment: SpBeefyCommitment | { payload?: any; blockNumber?: any; validatorSetId?: any } | string | Uint8Array, validatorProof: BridgeCommonBeefyTypesValidatorProof | { validatorClaimsBitfield?: any; signatures?: any; positions?: any; publicKeys?: any; publicKeyMerkleProofs?: any } | string | Uint8Array, latestMmrLeaf: SpBeefyMmrMmrLeaf | { version?: any; parentNumberAndHash?: any; beefyNextAuthoritySet?: any; leafExtra?: any } | string | Uint8Array, proof: BridgeCommonSimplifiedProofProof | { order?: any; items?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, SpBeefyCommitment, BridgeCommonBeefyTypesValidatorProof, SpBeefyMmrMmrLeaf, BridgeCommonSimplifiedProofProof]>;
     };
     bridgeDataSigner: {
-      addPeer: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, SpCoreEcdsaPublic]>;
-      approve: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, data: H256 | string | Uint8Array, signature: SpCoreEcdsaSignature | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, H256, SpCoreEcdsaSignature]>;
+      addPeer: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, SpCoreEcdsaPublic]>;
+      approve: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, data: H256 | string | Uint8Array, signature: SpCoreEcdsaSignature | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, H256, SpCoreEcdsaSignature]>;
       finishAddPeer: AugmentedSubmittable<(peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [SpCoreEcdsaPublic]>;
       finishRemovePeer: AugmentedSubmittable<(peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [SpCoreEcdsaPublic]>;
-      registerNetwork: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, peers: Vec<SpCoreEcdsaPublic> | (SpCoreEcdsaPublic | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, Vec<SpCoreEcdsaPublic>]>;
-      removePeer: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, SpCoreEcdsaPublic]>;
+      registerNetwork: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, peers: Vec<SpCoreEcdsaPublic> | (SpCoreEcdsaPublic | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, Vec<SpCoreEcdsaPublic>]>;
+      removePeer: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, SpCoreEcdsaPublic]>;
     };
     bridgeInboundChannel: {
       registerEvmChannel: AugmentedSubmittable<(networkId: H256 | string | Uint8Array, channelAddress: H160 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, H160]>;
-      submit: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, commitment: BridgeTypesGenericCommitment | { Sub: any } | { EVM: any } | string | Uint8Array, proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | { EVMMultisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, BridgeTypesGenericCommitment, FramenodeRuntimeMultiProof]>;
+      registerTonChannel: AugmentedSubmittable<(networkId: BridgeTypesTonTonNetworkId | 'Mainnet' | 'Testnet' | number | Uint8Array, channelAddress: BridgeTypesTonTonAddress | { workchain?: any; address?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesTonTonNetworkId, BridgeTypesTonTonAddress]>;
+      submit: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, commitment: BridgeTypesGenericCommitment | { Sub: any } | { EVM: any } | { TON: any } | string | Uint8Array, proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | { EVMMultisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, BridgeTypesGenericCommitment, FramenodeRuntimeMultiProof]>;
     };
     bridgeMultisig: {
       /**
@@ -459,7 +460,7 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     bridgeProxy: {
       addLimitedAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
-      burn: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Liberland: any } | { Parachain: any } | { Unknown: any } | { Root: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32, BridgeTypesGenericAccount, u128]>;
+      burn: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Liberland: any } | { Parachain: any } | { Unknown: any } | { Root: any } | { TON: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, CommonPrimitivesAssetId32, BridgeTypesGenericAccount, u128]>;
       removeLimitedAsset: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
       updateTransferLimit: AugmentedSubmittable<(settings: BridgeProxyTransferLimitSettings | { maxAmount?: any; periodBlocks?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeProxyTransferLimitSettings]>;
     };
@@ -1819,6 +1820,59 @@ declare module '@polkadot/api-base/types/submittable' {
     irohaMigration: {
       migrate: AugmentedSubmittable<(irohaAddress: Text | string, irohaPublicKey: Text | string, irohaSignature: Text | string) => SubmittableExtrinsic<ApiType>, [Text, Text, Text]>;
     };
+    jettonApp: {
+      /**
+       * Mint bridged tokens to user account
+       * 
+       * Arguments:
+       * - `origin`: Bridge origin with information about network, source contract and etc.
+       * - `token`: Jetton master contract address, or 0:00..00 with prefix 0 for native TON asset
+       * - `sender`: Sender address on TON side
+       * - `recipient`: User account to mint tokens
+       * - `amount`: Amount of tokens to mint with TON network encoding and precision, so real amount could be different
+       * 
+       * Fails if:
+       * - Origin network is not registered
+       * - Source contract (Jetton app) is not registered
+       * - Token is not registered
+       * - Sender or token address is wrong (for now we support only standart internal TON addresses)
+       * - Amount precision could not be adjusted to thischain
+       * - Failed to mint tokens for some reason
+       **/
+      mint: AugmentedSubmittable<(token: BridgeTypesTonTonAddressWithPrefix | { prefix?: any; address?: any } | string | Uint8Array, sender: BridgeTypesTonTonAddressWithPrefix | { prefix?: any; address?: any } | string | Uint8Array, recipient: AccountId32 | string | Uint8Array, amount: H128 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesTonTonAddressWithPrefix, BridgeTypesTonTonAddressWithPrefix, AccountId32, H128]>;
+      /**
+       * Register network with the new asset for native TON
+       * 
+       * Arguments:
+       * - `origin`: Only root can call this extrinsic
+       * - `network_id`: TON network id
+       * - `contract`: Jetton App contract address
+       * - `symbol`: Asset symbol
+       * - `name`: Asset name
+       * - `decimals`: Sidechain precision of native TON
+       * 
+       * Fails if:
+       * - Origin is not root
+       * - Network already registered
+       * - Can't register asset
+       **/
+      registerNetwork: AugmentedSubmittable<(networkId: BridgeTypesTonTonNetworkId | 'Mainnet' | 'Testnet' | number | Uint8Array, contract: BridgeTypesTonTonAddress | { workchain?: any; address?: any } | string | Uint8Array, symbol: Bytes | string | Uint8Array, name: Bytes | string | Uint8Array, decimals: u8 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesTonTonNetworkId, BridgeTypesTonTonAddress, Bytes, Bytes, u8]>;
+      /**
+       * Register network with the new asset for native TON
+       * 
+       * Arguments:
+       * - `origin`: Only root can call this extrinsic
+       * - `network_id`: TON network id
+       * - `contract`: Jetton App contract address
+       * - `asset_id`: Existing TON asset id
+       * - `decimals`: Sidechain precision of native TON
+       * 
+       * Fails if:
+       * - Origin is not root
+       * - Network already registered
+       **/
+      registerNetworkWithExistingAsset: AugmentedSubmittable<(networkId: BridgeTypesTonTonNetworkId | 'Mainnet' | 'Testnet' | number | Uint8Array, contract: BridgeTypesTonTonAddress | { workchain?: any; address?: any } | string | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, decimals: u8 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesTonTonNetworkId, BridgeTypesTonTonAddress, CommonPrimitivesAssetId32, u8]>;
+    };
     kensetsu: {
       /**
        * Accrues interest on a Collateralized Debt Position (CDP).
@@ -2184,7 +2238,7 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     multisigVerifier: {
       addPeer: AugmentedSubmittable<(peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [SpCoreEcdsaPublic]>;
-      initialize: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | string | Uint8Array, peers: Vec<SpCoreEcdsaPublic> | (SpCoreEcdsaPublic | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, Vec<SpCoreEcdsaPublic>]>;
+      initialize: AugmentedSubmittable<(networkId: BridgeTypesGenericNetworkId | { EVM: any } | { Sub: any } | { EVMLegacy: any } | { TON: any } | string | Uint8Array, peers: Vec<SpCoreEcdsaPublic> | (SpCoreEcdsaPublic | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [BridgeTypesGenericNetworkId, Vec<SpCoreEcdsaPublic>]>;
       removePeer: AugmentedSubmittable<(peer: SpCoreEcdsaPublic | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [SpCoreEcdsaPublic]>;
     };
     oracleProxy: {
@@ -2988,7 +3042,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Function used by users to send tokens to the sidechain
        **/
-      burn: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Liberland: any } | { Parachain: any } | { Unknown: any } | { Root: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, BridgeTypesGenericAccount, u128]>;
+      burn: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, recipient: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Liberland: any } | { Parachain: any } | { Unknown: any } | { Root: any } | { TON: any } | string | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, CommonPrimitivesAssetId32, BridgeTypesGenericAccount, u128]>;
       /**
        * Function used to finalize asset registration if everything went well on the sidechain
        * The Origin for this call is the Bridge Origin
@@ -3007,7 +3061,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * The Origin for this call is the Bridge Origin
        * Only the relayer can call this function
        **/
-      mint: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, sender: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Liberland: any } | { Parachain: any } | { Unknown: any } | { Root: any } | string | Uint8Array, recipient: AccountId32 | string | Uint8Array, amount: BridgeTypesGenericBalance | { Substrate: any } | { EVM: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, BridgeTypesGenericAccount, AccountId32, BridgeTypesGenericBalance]>;
+      mint: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, sender: BridgeTypesGenericAccount | { EVM: any } | { Sora: any } | { Liberland: any } | { Parachain: any } | { Unknown: any } | { Root: any } | { TON: any } | string | Uint8Array, recipient: AccountId32 | string | Uint8Array, amount: BridgeTypesGenericBalance | { Substrate: any } | { EVM: any } | { TON: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, BridgeTypesGenericAccount, AccountId32, BridgeTypesGenericBalance]>;
       /**
        * Function used to register sidechain asset
        * The Origin for this call is the Root Origin
@@ -3023,7 +3077,7 @@ declare module '@polkadot/api-base/types/submittable' {
       updateTransactionStatus: AugmentedSubmittable<(messageId: H256 | string | Uint8Array, messageStatus: BridgeTypesMessageStatus | 'InQueue' | 'Committed' | 'Done' | 'Failed' | 'Refunded' | 'Approved' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, BridgeTypesMessageStatus]>;
     };
     substrateBridgeInboundChannel: {
-      submit: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, commitment: BridgeTypesGenericCommitment | { Sub: any } | { EVM: any } | string | Uint8Array, proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | { EVMMultisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, BridgeTypesGenericCommitment, FramenodeRuntimeMultiProof]>;
+      submit: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, commitment: BridgeTypesGenericCommitment | { Sub: any } | { EVM: any } | { TON: any } | string | Uint8Array, proof: FramenodeRuntimeMultiProof | { Beefy: any } | { Multisig: any } | { EVMMultisig: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, BridgeTypesGenericCommitment, FramenodeRuntimeMultiProof]>;
     };
     substrateBridgeOutboundChannel: {
       updateInterval: AugmentedSubmittable<(newInterval: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
