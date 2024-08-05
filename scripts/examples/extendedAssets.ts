@@ -18,7 +18,8 @@ async function main(): Promise<void> {
       'sbt',
       'this is sbt to check',
       'bafybeig5ymwb7tsjgpzqyckkzhihnjm7gbw5chjamvymfwy2aityda3ufe/_WRR9729.jpg',
-      'web3.com'
+      'web3.com',
+      [assetId1, assetId2]
     );
 
     await api.extendedAssets.bindRegulatedAssetToSBT(sbtId, [assetId1, assetId2]);
