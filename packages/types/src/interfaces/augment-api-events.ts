@@ -946,6 +946,7 @@ declare module '@polkadot/api-base/types/events' {
       PermissionTransfered: AugmentedEvent<ApiType, [u32, AccountId32]>;
     };
     poolXYK: {
+      PoolAdjusted: AugmentedEvent<ApiType, [pool: AccountId32, oldIssuance: u128, newIssuance: u128, providers: u32], { pool: AccountId32, oldIssuance: u128, newIssuance: u128, providers: u32 }>;
       PoolIsInitialized: AugmentedEvent<ApiType, [AccountId32]>;
     };
     preimage: {
@@ -1072,6 +1073,8 @@ declare module '@polkadot/api-base/types/events' {
        * block number as the type might suggest.
        **/
       NewSession: AugmentedEvent<ApiType, [sessionIndex: u32], { sessionIndex: u32 }>;
+    };
+    soratopia: {
     };
     staking: {
       /**

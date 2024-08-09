@@ -491,6 +491,10 @@ declare module '@polkadot/api-base/types/consts' {
        * Percent of reserve which is not involved in swap
        **/
       irreducibleReserve: Percent & AugmentedConst<ApiType>;
+      /**
+       * How often to check and adjust Chameleon pool issuance
+       **/
+      poolAdjustPeriod: u32 & AugmentedConst<ApiType>;
     };
     scheduler: {
       /**
@@ -501,6 +505,10 @@ declare module '@polkadot/api-base/types/consts' {
        * The maximum number of scheduled calls in the queue for a single block.
        **/
       maxScheduledPerBlock: u32 & AugmentedConst<ApiType>;
+    };
+    soratopia: {
+      adminAccount: AccountId32 & AugmentedConst<ApiType>;
+      checkInTransferAmount: u128 & AugmentedConst<ApiType>;
     };
     staking: {
       /**

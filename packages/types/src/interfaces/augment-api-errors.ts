@@ -2831,6 +2831,8 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoKeys: AugmentedError<ApiType>;
     };
+    soratopia: {
+    };
     staking: {
       /**
        * Stash is already bonded.
