@@ -1336,6 +1336,8 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       validators: AugmentedQuery<ApiType, () => Observable<Vec<AccountId32>>, []>;
     };
+    soratopia: {
+    };
     staking: {
       /**
        * The active era information, it holds index and start.
