@@ -2655,6 +2655,13 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       setKeys: AugmentedSubmittable<(keys: FramenodeRuntimeOpaqueSessionKeys | { babe?: any; grandpa?: any; imOnline?: any; beefy?: any } | string | Uint8Array, proof: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [FramenodeRuntimeOpaqueSessionKeys, Bytes]>;
     };
+    soratopia: {
+      /**
+       * Soratopia on-chain check in.
+       * Transfers XOR from caller to admin account.
+       **/
+      checkIn: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
+    };
     staking: {
       /**
        * Take the origin account as a stash and lock up `value` of its balance. `controller` will
