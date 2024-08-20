@@ -1619,7 +1619,32 @@ declare module '@polkadot/types/lookup' {
       readonly stablecoinAssetId: CommonPrimitivesAssetId32;
       readonly newStablecoinParameters: KensetsuStablecoinParameters;
     } & Struct;
-    readonly type: 'CdpCreated' | 'CdpClosed' | 'CollateralDeposit' | 'DebtIncreased' | 'DebtPayment' | 'Liquidated' | 'CollateralRiskParametersUpdated' | 'BorrowTaxUpdated' | 'LiquidationPenaltyUpdated' | 'ProfitWithdrawn' | 'Donation' | 'StablecoinRegistered';
+    readonly isHardCapUpdated: boolean;
+    readonly asHardCapUpdated: {
+      readonly oldHardCap: u128;
+      readonly newHardCap: u128;
+    } & Struct;
+    readonly isLiquidationRatioUpdated: boolean;
+    readonly asLiquidationRatioUpdated: {
+      readonly oldLiquidationRatio: Perbill;
+      readonly newLiquidationRatio: Perbill;
+    } & Struct;
+    readonly isMaxLiquidationLotUpdated: boolean;
+    readonly asMaxLiquidationLotUpdated: {
+      readonly oldMaxLiquidationLot: u128;
+      readonly newMaxLiquidationLot: u128;
+    } & Struct;
+    readonly isStabilityFeeRateUpdated: boolean;
+    readonly asStabilityFeeRateUpdated: {
+      readonly oldStabilityFeeRate: u128;
+      readonly newStabilityFeeRate: u128;
+    } & Struct;
+    readonly isMinimalCollateralDepositUpdated: boolean;
+    readonly asMinimalCollateralDepositUpdated: {
+      readonly oldMinimalCollateralDeposit: u128;
+      readonly newMinimalCollateralDeposit: u128;
+    } & Struct;
+    readonly type: 'CdpCreated' | 'CdpClosed' | 'CollateralDeposit' | 'DebtIncreased' | 'DebtPayment' | 'Liquidated' | 'CollateralRiskParametersUpdated' | 'BorrowTaxUpdated' | 'LiquidationPenaltyUpdated' | 'ProfitWithdrawn' | 'Donation' | 'StablecoinRegistered' | 'HardCapUpdated' | 'LiquidationRatioUpdated' | 'MaxLiquidationLotUpdated' | 'StabilityFeeRateUpdated' | 'MinimalCollateralDepositUpdated';
   }
 
   /** @name KensetsuCdpType (159) */
@@ -4914,7 +4939,37 @@ declare module '@polkadot/types/lookup' {
     readonly asRegisterStablecoin: {
       readonly newStablecoinParameters: KensetsuStablecoinParameters;
     } & Struct;
-    readonly type: 'CreateCdp' | 'CloseCdp' | 'DepositCollateral' | 'Borrow' | 'RepayDebt' | 'Liquidate' | 'Accrue' | 'UpdateCollateralRiskParameters' | 'UpdateBorrowTax' | 'UpdateLiquidationPenalty' | 'WithdrawProfit' | 'Donate' | 'RegisterStablecoin';
+    readonly isUpdateHardCap: boolean;
+    readonly asUpdateHardCap: {
+      readonly collateralAssetId: CommonPrimitivesAssetId32;
+      readonly stablecoinAssetId: CommonPrimitivesAssetId32;
+      readonly hardCap: u128;
+    } & Struct;
+    readonly isUpdateLiquidationRatio: boolean;
+    readonly asUpdateLiquidationRatio: {
+      readonly collateralAssetId: CommonPrimitivesAssetId32;
+      readonly stablecoinAssetId: CommonPrimitivesAssetId32;
+      readonly liquidationRatio: Perbill;
+    } & Struct;
+    readonly isUpdateMaxLiquidationLot: boolean;
+    readonly asUpdateMaxLiquidationLot: {
+      readonly collateralAssetId: CommonPrimitivesAssetId32;
+      readonly stablecoinAssetId: CommonPrimitivesAssetId32;
+      readonly maxLiquidationLot: u128;
+    } & Struct;
+    readonly isUpdateStabilityFeeRate: boolean;
+    readonly asUpdateStabilityFeeRate: {
+      readonly collateralAssetId: CommonPrimitivesAssetId32;
+      readonly stablecoinAssetId: CommonPrimitivesAssetId32;
+      readonly stabilityFeeRate: u128;
+    } & Struct;
+    readonly isUpdateMinimalCollateralDeposit: boolean;
+    readonly asUpdateMinimalCollateralDeposit: {
+      readonly collateralAssetId: CommonPrimitivesAssetId32;
+      readonly stablecoinAssetId: CommonPrimitivesAssetId32;
+      readonly minimalCollateralDeposit: u128;
+    } & Struct;
+    readonly type: 'CreateCdp' | 'CloseCdp' | 'DepositCollateral' | 'Borrow' | 'RepayDebt' | 'Liquidate' | 'Accrue' | 'UpdateCollateralRiskParameters' | 'UpdateBorrowTax' | 'UpdateLiquidationPenalty' | 'WithdrawProfit' | 'Donate' | 'RegisterStablecoin' | 'UpdateHardCap' | 'UpdateLiquidationRatio' | 'UpdateMaxLiquidationLot' | 'UpdateStabilityFeeRate' | 'UpdateMinimalCollateralDeposit';
   }
 
   /** @name BridgeProxyCall (581) */

@@ -1433,7 +1433,27 @@ export default {
       },
       StablecoinRegistered: {
         stablecoinAssetId: 'CommonPrimitivesAssetId32',
-        newStablecoinParameters: 'KensetsuStablecoinParameters'
+        newStablecoinParameters: 'KensetsuStablecoinParameters',
+      },
+      HardCapUpdated: {
+        oldHardCap: 'u128',
+        newHardCap: 'u128',
+      },
+      LiquidationRatioUpdated: {
+        oldLiquidationRatio: 'Perbill',
+        newLiquidationRatio: 'Perbill',
+      },
+      MaxLiquidationLotUpdated: {
+        oldMaxLiquidationLot: 'u128',
+        newMaxLiquidationLot: 'u128',
+      },
+      StabilityFeeRateUpdated: {
+        oldStabilityFeeRate: 'u128',
+        newStabilityFeeRate: 'u128',
+      },
+      MinimalCollateralDepositUpdated: {
+        oldMinimalCollateralDeposit: 'u128',
+        newMinimalCollateralDeposit: 'u128'
       }
     }
   },
@@ -4669,7 +4689,32 @@ export default {
         amount: 'u128',
       },
       register_stablecoin: {
-        newStablecoinParameters: 'KensetsuStablecoinParameters'
+        newStablecoinParameters: 'KensetsuStablecoinParameters',
+      },
+      update_hard_cap: {
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        stablecoinAssetId: 'CommonPrimitivesAssetId32',
+        hardCap: 'u128',
+      },
+      update_liquidation_ratio: {
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        stablecoinAssetId: 'CommonPrimitivesAssetId32',
+        liquidationRatio: 'Perbill',
+      },
+      update_max_liquidation_lot: {
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        stablecoinAssetId: 'CommonPrimitivesAssetId32',
+        maxLiquidationLot: 'u128',
+      },
+      update_stability_fee_rate: {
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        stablecoinAssetId: 'CommonPrimitivesAssetId32',
+        stabilityFeeRate: 'u128',
+      },
+      update_minimal_collateral_deposit: {
+        collateralAssetId: 'CommonPrimitivesAssetId32',
+        stablecoinAssetId: 'CommonPrimitivesAssetId32',
+        minimalCollateralDeposit: 'u128'
       }
     }
   },

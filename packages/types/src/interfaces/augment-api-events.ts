@@ -753,9 +753,14 @@ declare module '@polkadot/api-base/types/events' {
       DebtIncreased: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
       DebtPayment: AugmentedEvent<ApiType, [cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128], { cdpId: u128, owner: AccountId32, debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
       Donation: AugmentedEvent<ApiType, [debtAssetId: CommonPrimitivesAssetId32, amount: u128], { debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      HardCapUpdated: AugmentedEvent<ApiType, [oldHardCap: u128, newHardCap: u128], { oldHardCap: u128, newHardCap: u128 }>;
       Liquidated: AugmentedEvent<ApiType, [cdpId: u128, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, debtAssetId: CommonPrimitivesAssetId32, proceeds: u128, penalty: u128], { cdpId: u128, collateralAssetId: CommonPrimitivesAssetId32, collateralAmount: u128, debtAssetId: CommonPrimitivesAssetId32, proceeds: u128, penalty: u128 }>;
       LiquidationPenaltyUpdated: AugmentedEvent<ApiType, [newLiquidationPenalty: Percent, oldLiquidationPenalty: Percent], { newLiquidationPenalty: Percent, oldLiquidationPenalty: Percent }>;
+      LiquidationRatioUpdated: AugmentedEvent<ApiType, [oldLiquidationRatio: Perbill, newLiquidationRatio: Perbill], { oldLiquidationRatio: Perbill, newLiquidationRatio: Perbill }>;
+      MaxLiquidationLotUpdated: AugmentedEvent<ApiType, [oldMaxLiquidationLot: u128, newMaxLiquidationLot: u128], { oldMaxLiquidationLot: u128, newMaxLiquidationLot: u128 }>;
+      MinimalCollateralDepositUpdated: AugmentedEvent<ApiType, [oldMinimalCollateralDeposit: u128, newMinimalCollateralDeposit: u128], { oldMinimalCollateralDeposit: u128, newMinimalCollateralDeposit: u128 }>;
       ProfitWithdrawn: AugmentedEvent<ApiType, [debtAssetId: CommonPrimitivesAssetId32, amount: u128], { debtAssetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      StabilityFeeRateUpdated: AugmentedEvent<ApiType, [oldStabilityFeeRate: u128, newStabilityFeeRate: u128], { oldStabilityFeeRate: u128, newStabilityFeeRate: u128 }>;
       StablecoinRegistered: AugmentedEvent<ApiType, [stablecoinAssetId: CommonPrimitivesAssetId32, newStablecoinParameters: KensetsuStablecoinParameters], { stablecoinAssetId: CommonPrimitivesAssetId32, newStablecoinParameters: KensetsuStablecoinParameters }>;
     };
     leafProvider: {
