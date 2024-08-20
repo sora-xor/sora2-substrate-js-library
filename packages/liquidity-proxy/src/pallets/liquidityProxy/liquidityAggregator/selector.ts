@@ -82,7 +82,7 @@ export class Selector {
    * If there are several best chunks, we select the source that already was selected before.
    * If the source has the precision limit and `amount` is less than precision - this source is used only if there are no other candidates even if it has the best price.
    */
-  public selectСhunk(amount: FPNumber, aggregation: Aggregation): [LiquiditySourceTypes, SwapChunk] {
+  public selectChunk(amount: FPNumber, aggregation: Aggregation): [LiquiditySourceTypes, SwapChunk] {
     let candidates = [];
     let delayed = null;
     let max = FPNumber.ZERO;

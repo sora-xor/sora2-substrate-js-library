@@ -372,7 +372,7 @@ const decideStepBuyAmounts = (
     const [stepInput, stepOutput, stepFee] = decideBuyAmounts(
       mainAssetId,
       collateralAssetId,
-      amount,
+      stepAmount,
       isDesiredInput,
       payload,
       deduceFee
