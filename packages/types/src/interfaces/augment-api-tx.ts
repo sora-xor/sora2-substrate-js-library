@@ -1992,6 +1992,14 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       updateCollateralRiskParameters: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newRiskParameters: KensetsuCollateralRiskParameters | { hardCap?: any; liquidationRatio?: any; maxLiquidationLot?: any; stabilityFeeRate?: any; minimalCollateralDeposit?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, KensetsuCollateralRiskParameters]>;
       /**
+       * Updates risk parameter `hard_cap`.
+       * 
+       * ##Parameters
+       * - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+       * - `hard_cap` - new value.
+       **/
+      updateHardCap: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, hardCap: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
+      /**
        * Updates the liquidation penalty applied during CDP liquidation.
        * 
        * ## Parameters
@@ -2000,6 +2008,38 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `new_liquidation_penalty`: The new liquidation penalty percentage to be set.
        **/
       updateLiquidationPenalty: AugmentedSubmittable<(newLiquidationPenalty: Percent | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Percent]>;
+      /**
+       * Updates risk parameter `liquidation_ratio`.
+       * 
+       * ##Parameters
+       * - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+       * - `liquidation_ratio` - new value.
+       **/
+      updateLiquidationRatio: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, liquidationRatio: Perbill | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, Perbill]>;
+      /**
+       * Updates risk parameter `max_liquidation_lot`.
+       * 
+       * ##Parameters
+       * - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+       * - `max_liquidation_lot` - new value.
+       **/
+      updateMaxLiquidationLot: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, maxLiquidationLot: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Updates risk parameter `minimal_collateral_deposit`.
+       * 
+       * ##Parameters
+       * - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+       * - `minimal_collateral_deposit` - new value.
+       **/
+      updateMinimalCollateralDeposit: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, minimalCollateralDeposit: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Updates risk parameter `stability_fee_rate`.
+       * 
+       * ##Parameters
+       * - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+       * - `stability_fee_rate` - new value.
+       **/
+      updateStabilityFeeRate: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, stabilityFeeRate: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
       /**
        * Withdraws protocol profit in the form of stablecoin.
        * 
@@ -2654,6 +2694,13 @@ declare module '@polkadot/api-base/types/submittable' {
        * # </weight>
        **/
       setKeys: AugmentedSubmittable<(keys: FramenodeRuntimeOpaqueSessionKeys | { babe?: any; grandpa?: any; imOnline?: any; beefy?: any } | string | Uint8Array, proof: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [FramenodeRuntimeOpaqueSessionKeys, Bytes]>;
+    };
+    soratopia: {
+      /**
+       * Soratopia on-chain check in.
+       * Transfers XOR from caller to admin account.
+       **/
+      checkIn: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
     };
     staking: {
       /**
