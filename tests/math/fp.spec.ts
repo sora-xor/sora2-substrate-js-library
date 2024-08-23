@@ -992,6 +992,30 @@ describe('FPNumber', () => {
   });
 
   it.each([
+    [2, 18, '2'],
+    [-2, 18, '2'],
+    [0, 18, '0'],
+    [-0, 18, '0'],
+    [0.123456, 18, '0.123456'],
+    [-0.123456, 18, '0.123456'],
+    [Number.POSITIVE_INFINITY, 18, 'Infinity'],
+    [Number.NEGATIVE_INFINITY, 18, 'Infinity'],
+    [Number.NaN, 18, 'NaN'],
+    ['Infinity', 18, 'Infinity'],
+    ['-Infinity', 18, 'Infinity'],
+    ['NaN', 18, 'NaN'],
+    [1.23456789123456789, 18, '1.234567891234568'],
+    [-1.23456789123456789, 18, '1.234567891234568'],
+    ['123456789123456789', 18, '123456789123456789'],
+    ['-123456789123456789', 18, '123456789123456789'],
+    ['1.23456789123456789', 18, '1.23456789123456789'],
+    ['-1.23456789123456789', 18, '1.23456789123456789'],
+  ])('[abs] |(value "%s", precision "%s")| = "%s"', (value, precision, result) => {
+    const instance = new FPNumber(value, precision);
+    expect(instance.abs().toString()).toBe(result);
+  });
+
+  it.each([
     [4, 17, '2'],
     [-4, 17, 'NaN'],
     [0, 17, '0'],
