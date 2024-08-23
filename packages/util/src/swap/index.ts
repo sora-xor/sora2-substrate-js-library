@@ -373,7 +373,7 @@ export class SwapModule<T> {
     dexId = DexId.XOR
   ): Observable<QuotePayload> | null {
     const isXorDex = dexId === DexId.XOR;
-    const isKusdDex = dexId === DexId.KSUD;
+    const isKusdDex = dexId === DexId.KUSD;
     const xor = XOR.address;
     const dai = DAI.address;
     const xstusd = XSTUSD.address;

@@ -1,5 +1,5 @@
 export enum DexId {
   XOR = 0,
   XSTUSD = 1,
-  KSUD = 2,
+  KUSD = 2,
 }
