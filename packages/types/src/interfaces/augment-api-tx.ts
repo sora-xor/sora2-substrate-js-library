@@ -2032,6 +2032,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `minimal_collateral_deposit` - new value.
        **/
       updateMinimalCollateralDeposit: AugmentedSubmittable<(collateralAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, minimalCollateralDeposit: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, u128]>;
+      updateMinimalStabilityFeeAccrue: AugmentedSubmittable<(stablecoinAssetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, newMinimalStabilityFeeAccrue: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, u128]>;
       /**
        * Updates risk parameter `stability_fee_rate`.
        * 
