@@ -51,7 +51,7 @@ export class LiquidityAggregator {
   /** Aggregates the liquidity until it reaches the target `amount`. */
   public aggregateAmount(amount: FPNumber) {
     while (FPNumber.isGreaterThan(amount, FPNumber.ZERO)) {
-      const [source, selectedChunk] = this.selector.selectСhunk(amount, this.aggregation);
+      const [source, selectedChunk] = this.selector.selectChunk(amount, this.aggregation);
 
       const [chunk, newAmount] = this.fitChunk(selectedChunk, source, amount);
 

@@ -63,6 +63,7 @@
 - [bridgeOutboundChannel](#bridgeoutboundchannel-pallet)
 - [dispatch](#dispatch-pallet)
 - [evmFungibleApp](#evmfungibleapp-pallet)
+- [jettonApp](#jettonapp-pallet)
 - [beefyLightClient](#beefylightclient-pallet)
 - [substrateBridgeInboundChannel](#substratebridgeinboundchannel-pallet)
 - [substrateBridgeOutboundChannel](#substratebridgeoutboundchannel-pallet)
@@ -76,7 +77,8 @@
 - [mmrLeaf](#mmrleaf-pallet)
 - [sudo](#sudo-pallet)
 - [apolloPlatform](#apolloplatform-pallet)
-- [regulatedAssets](#regulatedassets-pallet)
+- [extendedAssets](#extendedassets-pallet)
+- [soratopia](#soratopia-pallet)
 - [utility](#utility-pallet)
 - [liquidityProxy](#liquidityproxy-pallet)
 - [faucet](#faucet-pallet)
@@ -1412,6 +1414,28 @@ returns: `u16`
 
 <hr>
 
+#### **api.query.xorFee.smallReferenceAmount**
+
+> Small fee value should be `SmallReferenceAmount` in reference asset id
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.xorFee.updatePeriod**
+
+> Next block number to update multiplier
+> If it is necessary to stop updating the multiplier,
+> set 0 value
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
 #### **api.query.xorFee.xorToVal**
 
 > The amount of XOR to be reminted and exchanged for VAL at the end of the session
@@ -1439,6 +1463,26 @@ returns: `u128`
 arguments:
 
 - newMultiplier: `u128`
+<hr>
+
+#### **api.tx.xorFee.setFeeUpdatePeriod**
+
+> Set new update period for `xor_fee::Multiplier` updating
+> Set 0 to stop updating
+
+arguments:
+
+- newPeriod: `u32`
+<hr>
+
+#### **api.tx.xorFee.setSmallReferenceAmount**
+
+> Set new small reference amount `xor_fee::SmallReferenceAmount`
+> Small fee should tend to the amount value
+
+arguments:
+
+- newReferenceAmount: `u128`
 <hr>
 
 ## BridgeMultisig pallet
@@ -3510,6 +3554,18 @@ arguments:
 - key: `CommonPrimitivesAssetId32`
 
 returns: `(Bytes,Bytes,u8,bool,Option<Bytes>,Option<Bytes>)`
+
+<hr>
+
+#### **api.query.assets.assetInfosV2**
+
+> Asset Id -> AssetInfo
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `CommonPrimitivesAssetInfo`
 
 <hr>
 
@@ -10330,6 +10386,16 @@ returns: `H160`
 
 <hr>
 
+#### **api.query.bridgeInboundChannel.tonChannelAddresses**
+
+arguments:
+
+- key: `BridgeTypesTonTonNetworkId`
+
+returns: `BridgeTypesTonTonAddress`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.bridgeInboundChannel.submit**
@@ -10347,6 +10413,14 @@ arguments:
 
 - networkId: `H256`
 - channelAddress: `H160`
+<hr>
+
+#### **api.tx.bridgeInboundChannel.registerTonChannel**
+
+arguments:
+
+- networkId: `BridgeTypesTonTonNetworkId`
+- channelAddress: `BridgeTypesTonTonAddress`
 <hr>
 
 ## BridgeOutboundChannel pallet
@@ -10627,6 +10701,152 @@ arguments:
 - networkId: `H256`
 - relayer: `H160`
 - signature: `SpCoreEcdsaSignature`
+<hr>
+
+## JettonApp pallet
+
+### _State Queries_
+
+#### **api.query.jettonApp.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.jettonApp.appInfo**
+
+arguments: -
+
+returns: `(BridgeTypesTonTonNetworkId,BridgeTypesTonTonAddress)`
+
+<hr>
+
+#### **api.query.jettonApp.assetKinds**
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `BridgeTypesAssetKind`
+
+<hr>
+
+#### **api.query.jettonApp.tokenAddresses**
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `BridgeTypesTonTonAddress`
+
+<hr>
+
+#### **api.query.jettonApp.assetsByAddresses**
+
+arguments:
+
+- key: `BridgeTypesTonTonAddress`
+
+returns: `CommonPrimitivesAssetId32`
+
+<hr>
+
+#### **api.query.jettonApp.sidechainPrecision**
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `u8`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.jettonApp.mint**
+
+> Mint bridged tokens to user account
+>
+> Arguments:
+>
+> - `origin`: Bridge origin with information about network, source contract and etc.
+> - `token`: Jetton master contract address, or 0:00..00 with prefix 0 for native TON asset
+> - `sender`: Sender address on TON side
+> - `recipient`: User account to mint tokens
+> - `amount`: Amount of tokens to mint with TON network encoding and precision, so real amount could be different
+>
+> Fails if:
+>
+> - Origin network is not registered
+> - Source contract (Jetton app) is not registered
+> - Token is not registered
+> - Sender or token address is wrong (for now we support only standart internal TON addresses)
+> - Amount precision could not be adjusted to thischain
+> - Failed to mint tokens for some reason
+
+arguments:
+
+- token: `BridgeTypesTonTonAddressWithPrefix`
+- sender: `BridgeTypesTonTonAddressWithPrefix`
+- recipient: `AccountId32`
+- amount: `H128`
+<hr>
+
+#### **api.tx.jettonApp.registerNetwork**
+
+> Register network with the new asset for native TON
+>
+> Arguments:
+>
+> - `origin`: Only root can call this extrinsic
+> - `network_id`: TON network id
+> - `contract`: Jetton App contract address
+> - `symbol`: Asset symbol
+> - `name`: Asset name
+> - `decimals`: Sidechain precision of native TON
+>
+> Fails if:
+>
+> - Origin is not root
+> - Network already registered
+> - Can't register asset
+
+arguments:
+
+- networkId: `BridgeTypesTonTonNetworkId`
+- contract: `BridgeTypesTonTonAddress`
+- symbol: `Bytes`
+- name: `Bytes`
+- decimals: `u8`
+<hr>
+
+#### **api.tx.jettonApp.registerNetworkWithExistingAsset**
+
+> Register network with the new asset for native TON
+>
+> Arguments:
+>
+> - `origin`: Only root can call this extrinsic
+> - `network_id`: TON network id
+> - `contract`: Jetton App contract address
+> - `asset_id`: Existing TON asset id
+> - `decimals`: Sidechain precision of native TON
+>
+> Fails if:
+>
+> - Origin is not root
+> - Network already registered
+
+arguments:
+
+- networkId: `BridgeTypesTonTonNetworkId`
+- contract: `BridgeTypesTonTonAddress`
+- assetId: `CommonPrimitivesAssetId32`
+- decimals: `u8`
 <hr>
 
 ## BeefyLightClient pallet
@@ -11693,6 +11913,7 @@ arguments:
 - collateralAsset: `CommonPrimitivesAssetId32`
 - borrowingAsset: `CommonPrimitivesAssetId32`
 - borrowingAmount: `u128`
+- loanToValue: `u128`
 <hr>
 
 #### **api.tx.apolloPlatform.getRewards**
@@ -11779,13 +12000,27 @@ arguments:
 - newSlopeRate1: `u128`
 - newSlopeRate2: `u128`
 - newReserveFactor: `u128`
+- newTl: `u128`
+- newTb: `u128`
+- newTc: `u128`
 <hr>
 
-## RegulatedAssets pallet
+#### **api.tx.apolloPlatform.addCollateral**
+
+> Add more collateral to borrowing position
+
+arguments:
+
+- collateralAsset: `CommonPrimitivesAssetId32`
+- collateralAmount: `u128`
+- borrowingAsset: `CommonPrimitivesAssetId32`
+<hr>
+
+## ExtendedAssets pallet
 
 ### _State Queries_
 
-#### **api.query.regulatedAssets.palletVersion**
+#### **api.query.extendedAssets.palletVersion**
 
 > Returns the current pallet version from storage
 
@@ -11795,19 +12030,7 @@ returns: `u16`
 
 <hr>
 
-#### **api.query.regulatedAssets.regulatedAsset**
-
-> Mapping from asset id to whether it is regulated or not
-
-arguments:
-
-- key: `CommonPrimitivesAssetId32`
-
-returns: `bool`
-
-<hr>
-
-#### **api.query.regulatedAssets.soulboundAsset**
+#### **api.query.extendedAssets.soulboundAsset**
 
 > Mapping from SBT (asset_id) to its metadata
 
@@ -11815,25 +12038,125 @@ arguments:
 
 - key: `CommonPrimitivesAssetId32`
 
-returns: `RegulatedAssetsSoulboundTokenMetadata`
+returns: `ExtendedAssetsSoulboundTokenMetadata`
 
 <hr>
 
-#### **api.query.regulatedAssets.sbTsByAsset**
+#### **api.query.extendedAssets.regulatedAssetToSoulboundAsset**
 
-> Mapping from `asset_id` to its SBTs which grant permission to transfer, mint, and burn the `asset_id`
+> Mapping from Regulated asset id to SBT asset id
 
 arguments:
 
 - key: `CommonPrimitivesAssetId32`
 
-returns: `BTreeSet<CommonPrimitivesAssetId32>`
+returns: `CommonPrimitivesAssetId32`
+
+<hr>
+
+#### **api.query.extendedAssets.sbtExpiration**
+
+> Mapping from SBT asset id to its expiration per account
+
+arguments:
+
+- key: `(AccountId32,CommonPrimitivesAssetId32)`
+
+returns: `u64`
 
 <hr>
 
 ### _Extrinsics_
 
-#### **api.tx.regulatedAssets.regulateAsset**
+#### **api.tx.extendedAssets.registerRegulatedAsset**
+
+> Registers a new regulated asset, representing that the asset will only operate between KYC-verified wallets.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `symbol`: AssetSymbol should represent string with only uppercase latin chars with max length of 7.
+> - `name`: AssetName should represent string with only uppercase or lowercase latin chars or numbers or spaces, with max length of 33.
+> - `initial_supply`: Balance type representing the total amount of the asset to be issued initially.
+> - `is_indivisible`: A boolean flag indicating whether the asset can be divided into smaller units or not.
+> - `opt_content_src`: An optional parameter of type `ContentSource`, which can include a URI or a reference to a content source that provides more details about the asset.
+> - `opt_desc`: An optional parameter of type `Description`, which is a string providing a short description or commentary about the asset.
+>
+> ## Events
+>
+> Emits `RegulatedAssetRegistered` event when the asset is successfully registered.
+
+arguments:
+
+- symbol: `Bytes`
+- name: `Bytes`
+- initialSupply: `u128`
+- isMintable: `bool`
+- isIndivisible: `bool`
+- optContentSrc: `Option<Bytes>`
+- optDesc: `Option<Bytes>`
+<hr>
+
+#### **api.tx.extendedAssets.issueSbt**
+
+> Issues a new Soulbound Token (SBT).
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `symbol`: The symbol of the SBT which should represent a string with only uppercase Latin characters with a maximum length of 7.
+> - `name`: The name of the SBT which should represent a string with only uppercase or lowercase Latin characters, numbers, or spaces, with a maximum length of 33.
+> - `description`: The description of the SBT. (Optional)
+> - `image`: The URL or identifier for the image associated with the SBT. (Optional)
+> - `external_url`: The URL pointing to an external resource related to the SBT. (Optional)
+
+arguments:
+
+- symbol: `Bytes`
+- name: `Bytes`
+- description: `Option<Bytes>`
+- image: `Option<Bytes>`
+- externalUrl: `Option<Bytes>`
+<hr>
+
+#### **api.tx.extendedAssets.setSbtExpiration**
+
+> Sets the expiration date of a Soulbound Token (SBT) for the given account.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `asset_id`: The ID of the SBT to update.
+> - `account_id`: The ID of the account to set the expiration for.
+> - `new_expires_at`: The new expiration timestamp for the SBT.
+
+arguments:
+
+- accountId: `AccountId32`
+- sbtAssetId: `CommonPrimitivesAssetId32`
+- newExpiresAt: `Option<u64>`
+<hr>
+
+#### **api.tx.extendedAssets.bindRegulatedAssetToSbt**
+
+> Binds a regulated asset to a Soulbound Token (SBT).
+>
+> This function binds a regulated asset to a specified SBT, ensuring the asset and
+> the SBT meet the required criteria.
+>
+> ## Parameters
+>
+> - `origin`: The origin of the transaction.
+> - `sbt_asset_id`: The ID of the SBT to bind the regulated asset to.
+> - `regulated_asset_id`: The ID of the regulated asset to bind.
+
+arguments:
+
+- sbtAssetId: `CommonPrimitivesAssetId32`
+- regulatedAssetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.extendedAssets.regulateAsset**
 
 > Marks an asset as regulated, representing that the asset will only operate between KYC-verified wallets.
 >
@@ -11847,24 +12170,29 @@ arguments:
 - assetId: `CommonPrimitivesAssetId32`
 <hr>
 
-#### **api.tx.regulatedAssets.issueSbt**
+## Soratopia pallet
 
-> Issues a new Soulbound Token (SBT).
->
-> ## Parameters
->
-> - `origin`: The origin of the transaction.
-> - `symbol`: The symbol of the SBT which should represent string with only uppercase latin chars with max length of 7.
-> - `name`: The name of the SBT should represent string with only uppercase or lowercase latin chars or numbers or spaces, with max length of 33.
-> - `allowed_assets`: TThe list of assets allowed to be operated with by holding the SBT.
-> - `description`: The description of the SBT. (Optional)
+### _State Queries_
 
-arguments:
+#### **api.query.soratopia.palletVersion**
 
-- symbol: `Bytes`
-- name: `Bytes`
-- allowedAssets: `Vec<CommonPrimitivesAssetId32>`
-- description: `Option<Bytes>`
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.soratopia.checkIn**
+
+> Soratopia on-chain check in.
+> Transfers XOR from caller to admin account.
+
+arguments: -
+
 <hr>
 
 ## Utility pallet
@@ -14237,7 +14565,6 @@ returns: `Option<SwapOutcomeInfo>`
         "KUSD",
         "KGOLD",
         "KXOR",
-        "SB",
         "KARMA"
     ]
 }

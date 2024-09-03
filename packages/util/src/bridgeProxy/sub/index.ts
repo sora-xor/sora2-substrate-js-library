@@ -78,6 +78,7 @@ export class SubBridgeApi<T> extends ApiAccount<T> {
     [SubNetworkId.KusamaAssetHub]: 1000,
     [SubNetworkId.KusamaSora]: 2011,
     [SubNetworkId.KusamaShiden]: 2007,
+    [SubNetworkId.KusamaCurio]: 3339,
     [SubNetworkId.AlphanetMoonbase]: 1000,
     [SubNetworkId.AlphanetSora]: 2011,
   };
