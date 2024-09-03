@@ -69,13 +69,16 @@ export class ExtendedAssetsModule<T> {
   public async givePrivilege(accountId: string, sbtAsset: Asset, timestamp?: number): Promise<T> {
     // if provided, account has some determined lifespan to operate, otherwise, it is indefinite
     if (timestamp) {
-      setTimeout(() => {
-        this.root.submitExtrinsic(
-          this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAsset.address, timestamp),
-          this.root.account.pair,
-          { type: Operation.SetAccessExpiration, assetAddress: sbtAsset.address, to: accountId, endTime: timestamp }
-        );
-      }, 1000);
+      const transactions = [
+        this.root.api.tx.assets.mint(sbtAsset.address, accountId, '1'),
+        this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAsset.address, timestamp),
+      ];
+
+      return this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
+        type: Operation.SetAccessExpiration,
+        assetAddress: sbtAsset.address,
+        endTime: timestamp,
+      });
     }
 
     return this.root.assets.mint(sbtAsset, '1', accountId);
@@ -93,7 +96,7 @@ export class ExtendedAssetsModule<T> {
     return this.root.submitExtrinsic(
       this.root.api.tx.extendedAssets.setSbtExpiration(accountId, sbtAssetId, currentTimestamp),
       this.root.account.pair,
-      { type: Operation.SetAccessExpiration, assetAddress: sbtAssetId, to: accountId, endTime: currentTimestamp }
+      { type: Operation.SetAccessExpiration, assetAddress: sbtAssetId, endTime: currentTimestamp }
     );
   }
 
@@ -119,6 +122,7 @@ export class ExtendedAssetsModule<T> {
    * @param nonDivisible `false` by default
    * @param content content string (image url)
    * @param description description of token
+   * @param sbtAddress SBT address. If provided, it will bind regulated asset to SBT immediately
    *
    */
   public async registerRegulatedAsset(
@@ -128,9 +132,33 @@ export class ExtendedAssetsModule<T> {
     isMintable = false,
     isIndivisible = false,
     content = null,
-    description = null
+    description = null,
+    sbtAssetId?: string
   ): Promise<T> {
     const supply = new FPNumber(initialSupply, isIndivisible ? 0 : FPNumber.DEFAULT_PRECISION);
+
+    // if provided, attachement to SBT will be immediate
+    if (sbtAssetId) {
+      const regulatedAssetId = await this.root.assets.getNextRegisteredAssetId();
+
+      const transactions = [
+        this.root.api.tx.extendedAssets.registerRegulatedAsset(
+          symbol,
+          name,
+          supply.toCodecString(),
+          isMintable,
+          isIndivisible,
+          content,
+          description
+        ),
+        this.root.api.tx.extendedAssets.bindRegulatedAssetToSbt(sbtAssetId, regulatedAssetId),
+      ];
+
+      return this.root.submitExtrinsic(this.root.api.tx.utility.batchAll(transactions), this.root.account.pair, {
+        type: Operation.RegisterAndRegulateAsset,
+        symbol,
+      });
+    }
 
     return this.root.submitExtrinsic(
       this.root.api.tx.extendedAssets.registerRegulatedAsset(
