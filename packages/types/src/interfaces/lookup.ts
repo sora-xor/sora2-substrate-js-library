@@ -1453,7 +1453,11 @@ export default {
       },
       MinimalCollateralDepositUpdated: {
         oldMinimalCollateralDeposit: 'u128',
-        newMinimalCollateralDeposit: 'u128'
+        newMinimalCollateralDeposit: 'u128',
+      },
+      MinimalStabilityFeeAccrueUpdated: {
+        oldMinimalStabilityFeeAccrue: 'u128',
+        newMinimalStabilityFeeAccrue: 'u128'
       }
     }
   },
@@ -4714,7 +4718,11 @@ export default {
       update_minimal_collateral_deposit: {
         collateralAssetId: 'CommonPrimitivesAssetId32',
         stablecoinAssetId: 'CommonPrimitivesAssetId32',
-        minimalCollateralDeposit: 'u128'
+        minimalCollateralDeposit: 'u128',
+      },
+      update_minimal_stability_fee_accrue: {
+        stablecoinAssetId: 'CommonPrimitivesAssetId32',
+        newMinimalStabilityFeeAccrue: 'u128'
       }
     }
   },

@@ -1644,7 +1644,12 @@ declare module '@polkadot/types/lookup' {
       readonly oldMinimalCollateralDeposit: u128;
       readonly newMinimalCollateralDeposit: u128;
     } & Struct;
-    readonly type: 'CdpCreated' | 'CdpClosed' | 'CollateralDeposit' | 'DebtIncreased' | 'DebtPayment' | 'Liquidated' | 'CollateralRiskParametersUpdated' | 'BorrowTaxUpdated' | 'LiquidationPenaltyUpdated' | 'ProfitWithdrawn' | 'Donation' | 'StablecoinRegistered' | 'HardCapUpdated' | 'LiquidationRatioUpdated' | 'MaxLiquidationLotUpdated' | 'StabilityFeeRateUpdated' | 'MinimalCollateralDepositUpdated';
+    readonly isMinimalStabilityFeeAccrueUpdated: boolean;
+    readonly asMinimalStabilityFeeAccrueUpdated: {
+      readonly oldMinimalStabilityFeeAccrue: u128;
+      readonly newMinimalStabilityFeeAccrue: u128;
+    } & Struct;
+    readonly type: 'CdpCreated' | 'CdpClosed' | 'CollateralDeposit' | 'DebtIncreased' | 'DebtPayment' | 'Liquidated' | 'CollateralRiskParametersUpdated' | 'BorrowTaxUpdated' | 'LiquidationPenaltyUpdated' | 'ProfitWithdrawn' | 'Donation' | 'StablecoinRegistered' | 'HardCapUpdated' | 'LiquidationRatioUpdated' | 'MaxLiquidationLotUpdated' | 'StabilityFeeRateUpdated' | 'MinimalCollateralDepositUpdated' | 'MinimalStabilityFeeAccrueUpdated';
   }
 
   /** @name KensetsuCdpType (159) */
@@ -4969,7 +4974,12 @@ declare module '@polkadot/types/lookup' {
       readonly stablecoinAssetId: CommonPrimitivesAssetId32;
       readonly minimalCollateralDeposit: u128;
     } & Struct;
-    readonly type: 'CreateCdp' | 'CloseCdp' | 'DepositCollateral' | 'Borrow' | 'RepayDebt' | 'Liquidate' | 'Accrue' | 'UpdateCollateralRiskParameters' | 'UpdateBorrowTax' | 'UpdateLiquidationPenalty' | 'WithdrawProfit' | 'Donate' | 'RegisterStablecoin' | 'UpdateHardCap' | 'UpdateLiquidationRatio' | 'UpdateMaxLiquidationLot' | 'UpdateStabilityFeeRate' | 'UpdateMinimalCollateralDeposit';
+    readonly isUpdateMinimalStabilityFeeAccrue: boolean;
+    readonly asUpdateMinimalStabilityFeeAccrue: {
+      readonly stablecoinAssetId: CommonPrimitivesAssetId32;
+      readonly newMinimalStabilityFeeAccrue: u128;
+    } & Struct;
+    readonly type: 'CreateCdp' | 'CloseCdp' | 'DepositCollateral' | 'Borrow' | 'RepayDebt' | 'Liquidate' | 'Accrue' | 'UpdateCollateralRiskParameters' | 'UpdateBorrowTax' | 'UpdateLiquidationPenalty' | 'WithdrawProfit' | 'Donate' | 'RegisterStablecoin' | 'UpdateHardCap' | 'UpdateLiquidationRatio' | 'UpdateMaxLiquidationLot' | 'UpdateStabilityFeeRate' | 'UpdateMinimalCollateralDeposit' | 'UpdateMinimalStabilityFeeAccrue';
   }
 
   /** @name BridgeProxyCall (581) */
