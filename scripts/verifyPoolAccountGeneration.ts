@@ -1,5 +1,5 @@
-import { api, connection } from '@sora-substrate/util';
-import { poolAccountIdFromAssetPair } from '@sora-substrate/util/poolXyk/account';
+import { api, connection } from '@sora-substrate/sdk';
+import { poolAccountIdFromAssetPair } from '@sora-substrate/sdk/poolXyk/account';
 
 async function main(): Promise<void> {
   await connection.open('wss://ws.mof.sora.org');

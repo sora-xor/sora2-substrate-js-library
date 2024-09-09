@@ -1,7 +1,7 @@
 import { mnemonicGenerate } from '@polkadot/util-crypto';
 
-import { Api, BaseApi, FPNumber, connection } from '@sora-substrate/util';
-import { XOR } from '@sora-substrate/util/assets/consts';
+import { Api, BaseApi, FPNumber, connection } from '@sora-substrate/sdk';
+import { XOR } from '@sora-substrate/sdk/assets/consts';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 import { delay } from './util';

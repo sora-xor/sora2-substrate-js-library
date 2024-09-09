@@ -1,4 +1,4 @@
-import { FPNumber, api } from '@sora-substrate/util';
+import { FPNumber, api } from '@sora-substrate/sdk';
 
 import { delay, withConnectedAccount } from './util';
 

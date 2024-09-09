@@ -1,5 +1,5 @@
-import { FPNumber, api } from '@sora-substrate/util';
-import { VAL } from '@sora-substrate/util/assets/consts';
+import { FPNumber, api } from '@sora-substrate/sdk';
+import { VAL } from '@sora-substrate/sdk/assets/consts';
 import { withConnectedAccount } from './util';
 
 async function main(): Promise<void> {

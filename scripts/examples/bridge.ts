@@ -1,4 +1,4 @@
-import { api } from '@sora-substrate/util';
+import { api } from '@sora-substrate/sdk';
 
 import { withConnectedAccount } from './util';
 

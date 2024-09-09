@@ -1,6 +1,6 @@
-import { FPNumber, api } from '@sora-substrate/util';
+import { FPNumber, api } from '@sora-substrate/sdk';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
-import { DAI, KUSD, XOR } from '@sora-substrate/util/assets/consts';
+import { DAI, KUSD, XOR } from '@sora-substrate/sdk/assets/consts';
 
 import { withConnectedAccount, delay } from './util';
 

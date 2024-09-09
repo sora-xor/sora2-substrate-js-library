@@ -1,4 +1,4 @@
-import { api } from '@sora-substrate/util';
+import { api } from '@sora-substrate/sdk';
 import { PriceVariant } from '@sora-substrate/liquidity-proxy';
 
 import { delay, withConnectedAccount } from './util';

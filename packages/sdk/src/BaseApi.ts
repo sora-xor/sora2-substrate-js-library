@@ -126,7 +126,7 @@ export class BaseApi<T = void> extends ApiAccount<T> {
           try {
             return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled', null);
           } catch {
-            // TODO: Should be removed in @sora-substrate/util v.1.33.
+            // TODO: Should be removed in @sora-substrate/sdk v.1.33.
             return (this.api.tx.liquidityProxy as any).swapTransferBatch([], '', '', [], 'Disabled');
           }
         case Operation.ClaimVestedRewards:

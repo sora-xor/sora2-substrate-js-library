@@ -87,7 +87,7 @@ export default {
     },
   },
   types: {
-    OutcomeFee: 'Json', // TODO [v.1.33]: BTreeMap<AssetId, Balance> after @sora-substrate/util v.1.33
+    OutcomeFee: 'Json', // TODO [v.1.33]: BTreeMap<AssetId, Balance> after @sora-substrate/sdk v.1.33
     LPSwapOutcomeInfo: {
       amount: 'Balance',
       amountWithoutImpact: 'Balance',

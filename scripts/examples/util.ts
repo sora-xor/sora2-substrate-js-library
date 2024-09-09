@@ -1,4 +1,4 @@
-import { api, connection } from '@sora-substrate/util';
+import { api, connection } from '@sora-substrate/sdk';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 // import { mnemonicGenerate } from '@polkadot/util-crypto'; // TODO: use it within the faucet
 

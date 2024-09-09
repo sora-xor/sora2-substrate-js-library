@@ -7,7 +7,7 @@ module.exports = {
     '<rootDir>/packages/math/build',
     '<rootDir>/packages/types/build',
     '<rootDir>/packages/type-definitions/build',
-    '<rootDir>/packages/util/build',
+    '<rootDir>/packages/sdk/build',
     '<rootDir>/packages/liquidity-proxy/build',
     '<rootDir>/packages/connection/build',
   ],
