@@ -17,10 +17,9 @@ import type {
   OracleRate,
   OrderBookAggregated,
   LPRewardsInfo,
-  SwapResultV2,
   LiquidityProviderFee,
 } from '@sora-substrate/liquidity-proxy';
-import type { Balance, LPSwapOutcomeInfo, LiquiditySourceType, OutcomeFee } from '@sora-substrate/types';
+import type { Balance, LPSwapOutcomeInfo, LiquiditySourceType } from '@sora-substrate/types';
 import { Codec } from '@polkadot/types/types';
 import type {
   CommonPrimitivesAssetId32,
@@ -179,10 +178,10 @@ const combineValuesWithKeys = <T>(values: Array<T>, keys: Array<string>): { [key
     {}
   );
 
-type DexSwapResult = SwapResult | SwapResultV2;
-type DexesSwapResults<T extends DexSwapResult> = Record<number, T>;
+type DexSwapResult = SwapResult;
+type DexesSwapResults = Record<number, DexSwapResult>;
 
-export const getBestResult = <T extends DexSwapResult>(isExchangeB: boolean, results: DexesSwapResults<T>) => {
+export const getBestResult = (isExchangeB: boolean, results: DexesSwapResults) => {
   let bestDexId: number = DexId.XOR;
 
   for (const currentDexId in results) {
@@ -907,7 +906,7 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true,
     dexId = DexId.XOR
-  ): Promise<SwapResultV2> {
+  ): Promise<SwapResult> {
     const [assetA, assetB] = await Promise.all([
       this.root.assets.getAssetInfo(assetAAddress),
       this.root.assets.getAssetInfo(assetBAddress),
@@ -927,21 +926,10 @@ export class SwapModule<T> {
     );
     const value = result.unwrapOr(emptySwapResult) as LPSwapOutcomeInfo;
 
-    let fee: LiquidityProviderFee[] = [];
-    // TODO [v.1.33]: Should be removed in @sora-substrate/util v.1.33.
-    // value.fee.forEach((value: string, key: string) => {
-    //   fee.push({ assetId: key.toString(), value: value.toString() });
-    // });
-    const resultFee = Array.isArray(value.fee) ? value.fee : (value.fee as OutcomeFee).toJSON();
-    if ((resultFee as any[])[0]) {
-      // old format represented as object - join string values to CodecString
-      fee = [{ assetId: XOR.address, value: Object.values(resultFee).join('') }];
-    } else {
-      fee = Object.entries(resultFee).reduce<LiquidityProviderFee[]>((arr, [assetId, codec]) => {
-        arr.push({ assetId, value: codec?.toString() ?? '0' });
-        return arr;
-      }, []);
-    }
+    const fee: LiquidityProviderFee[] = [];
+    value.fee.forEach((value, key) => {
+      fee.push({ assetId: key.toString(), value: value.toString() });
+    });
 
     return {
       amount: toParamCodecString(value.amount, assetA, assetB, isExchangeB),
@@ -949,7 +937,7 @@ export class SwapModule<T> {
       fee,
       rewards: ('toJSON' in value.rewards ? value.rewards.toJSON() : value.rewards) as unknown as LPRewardsInfo[],
       route: 'toJSON' in value.route ? value.route.toJSON() : value.route,
-    } as SwapResultV2;
+    } as SwapResult;
   }
 
   /**
@@ -975,7 +963,7 @@ export class SwapModule<T> {
     liquiditySource = LiquiditySourceTypes.Default,
     allowSelectedSorce = true
   ): Promise<SwapResultWithDexIdV2> {
-    const results: DexesSwapResults<SwapResultV2> = {};
+    const results: DexesSwapResults = {};
 
     await Promise.all(
       this.root.dex.publicDexes.map(({ dexId }) =>

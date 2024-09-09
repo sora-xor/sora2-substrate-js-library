@@ -48,7 +48,7 @@ export type QuoteIntermediate = {
 
 export interface SwapResult {
   amount: CodecString;
-  fee: CodecString;
+  fee: CodecString | LiquidityProviderFee[];
   rewards: LPRewardsInfo[];
   route?: string[];
   amountWithoutImpact?: CodecString;
@@ -56,8 +56,6 @@ export interface SwapResult {
 }
 
 export type LiquidityProviderFee = { assetId: string; value: CodecString };
-
-export type SwapResultV2 = Omit<SwapResult, 'fee'> & { fee: LiquidityProviderFee[] };
 
 export type SwapQuote = (
   inputAssetAddress: string,
