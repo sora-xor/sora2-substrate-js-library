@@ -104,6 +104,16 @@ describe('FPNumber', () => {
   });
 
   it.each([
+    ['0.123', 2, '0.12'],
+    ['0.456', 2, '0.45'],
+    ['0.003', 2, '0.003'],
+    ['0.1', 4, '0.1'],
+  ])('[toLocaleString] instance of "%s" with dp="%s" should display "%s"', (value, dp, result) => {
+    const instance = new FPNumber(value);
+    expect(instance.toLocaleString(dp)).toBe(result);
+  });
+
+  it.each([
     ['0', 18, 2, '0.00'], // Edge case: zero
     ['-0', 18, 2, '0.00'], // Edge case: negative zero
     [0, 18, 2, '0.00'], // Edge case: zero
