@@ -5171,6 +5171,15 @@
                     ]
                 }
             }
+        },
+        {
+            "runtime_range": [
+                93,
+                null
+            ],
+            "types": {
+                "OutcomeFee": "BTreeMap<AssetId, Balance>"
+            }
         }
     ]
 }
