@@ -7,8 +7,7 @@ import {
   PriceVariant,
   newTrivial,
   getAssetsLiquiditySources,
-  getChameleonPool,
-  getChameleonPoolBaseAssetId,
+  getChameleonPools,
 } from '@sora-substrate/liquidity-proxy';
 import type {
   PrimaryMarketsEnabledAssets,
@@ -110,7 +109,6 @@ const getAssetAveragePrice = <T>(
 
 const toPoolReserves = <T>(
   baseAssetId: string,
-  baseChameleonAssetId: string | null,
   targetAssetId: string,
   root: Api<T>
 ): Observable<{ base: string; target: string; chameleon: string }> => {
@@ -125,7 +123,9 @@ const toPoolReserves = <T>(
 
   let observableChameleonReserve!: Observable<string>;
 
-  if (baseChameleonAssetId && getChameleonPool({ baseAssetId, targetAssetId })) {
+  const [baseChameleonAssetId, chameleonTargets] = getChameleonPools(baseAssetId);
+
+  if (baseChameleonAssetId && chameleonTargets.includes(targetAssetId)) {
     const poolAccountId = poolAccountIdFromAssetPair(root, baseAssetId, targetAssetId).toString();
 
     observableChameleonReserve = root.assets.subscribeOnAssetTransferableBalance(baseChameleonAssetId, poolAccountId);
@@ -378,7 +378,6 @@ export class SwapModule<T> {
     const dai = DAI.address;
     const xstusd = XSTUSD.address;
     const baseAssetId = this.root.dex.getBaseAssetId(dexId);
-    const baseChameleonAssetId = getChameleonPoolBaseAssetId(baseAssetId);
     const syntheticBaseAssetId = this.root.dex.getSyntheticBaseAssetId(dexId);
     const enabledSources = [...this.root.dex.enabledSources];
     const lockedSources = [...this.root.dex.lockedSources];
@@ -429,7 +428,7 @@ export class SwapModule<T> {
     }, []);
 
     const xykReserves = xykUsed
-      ? assetsWithXykReserves.map((address) => toPoolReserves(baseAssetId, baseChameleonAssetId, address, this.root))
+      ? assetsWithXykReserves.map((address) => toPoolReserves(baseAssetId, address, this.root))
       : [];
 
     const orderBookReserves = orderBookUsed
