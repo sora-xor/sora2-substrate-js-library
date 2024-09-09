@@ -3,7 +3,7 @@ import { LiquiditySourceTypes, Consts, Errors, AssetType } from '../../consts';
 import { LiquidityRegistry } from './liquidityRegistry';
 import { smartSplit, newSmartSplit } from './smartSplit';
 import { listLiquiditySources } from '../dexApi';
-import { getChameleonPool, getChameleonPoolBaseAssetId } from '../../runtime';
+import { getChameleonPools } from '../../runtime';
 
 import { intersection, matchType, safeDivide } from '../../utils';
 
@@ -126,7 +126,7 @@ const determine = (
   syntheticAssets: string[],
   assetId: string
 ): AssetType => {
-  const baseChameleonAssetId = getChameleonPoolBaseAssetId(baseAssetId);
+  const [baseChameleonAssetId, chameleonTargets] = getChameleonPools(baseAssetId);
 
   if (assetId === baseAssetId) {
     return AssetType.Base;
@@ -137,7 +137,7 @@ const determine = (
   } else if (baseChameleonAssetId) {
     if (assetId === baseChameleonAssetId) {
       return AssetType.ChameleonBase;
-    } else if (getChameleonPool({ baseAssetId, targetAssetId: assetId })) {
+    } else if (chameleonTargets.includes(assetId)) {
       return AssetType.ChameleonPoolAsset;
     } else {
       return AssetType.Basic;
@@ -166,7 +166,7 @@ export const newTrivial = (
 
   const iType = determine(baseAssetId, syntheticBaseAssetId, syntheticAssets, inputAssetId);
   const oType = determine(baseAssetId, syntheticBaseAssetId, syntheticAssets, outputAssetId);
-  const baseChameleonAssetId = getChameleonPoolBaseAssetId(baseAssetId);
+  const [baseChameleonAssetId] = getChameleonPools(baseAssetId);
 
   const pathBuilder = new PathBuilder(
     inputAssetId,
@@ -254,7 +254,7 @@ const getAssetLiquiditySources = (
   xykReserves: QuotePayload['reserves']['xyk'],
   orderBookReserves: QuotePayload['reserves']['orderBook']
 ): Array<LiquiditySourceTypes> => {
-  const baseChameleonAssetId = getChameleonPoolBaseAssetId(baseAssetId);
+  const [baseChameleonAssetId] = getChameleonPools(baseAssetId);
 
   const rules = {
     [LiquiditySourceTypes.XYKPool]: () =>
