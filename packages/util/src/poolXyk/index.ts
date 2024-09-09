@@ -1,6 +1,7 @@
 import { assert } from '@polkadot/util';
 import { Subject, combineLatest, map } from 'rxjs';
 import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
+import { getChameleonPools } from '@sora-substrate/liquidity-proxy';
 import type { Observable } from '@polkadot/types/types';
 import type { ITuple } from '@polkadot/types-codec/types';
 import type { u128 } from '@polkadot/types-codec';
@@ -11,7 +12,7 @@ import { DexId } from '../dex/consts';
 import { Messages } from '../logger';
 import { Operation } from '../types';
 import { toAssetId } from '../assets';
-import { ETH, KXOR, XOR } from '../assets/consts';
+import { XOR } from '../assets/consts';
 import type { Api } from '../api';
 import type { AccountLiquidity } from './types';
 import type { Asset, AccountAsset } from '../assets/types';
@@ -20,8 +21,13 @@ function isBaseAssetId<T>(root: Api<T>, address: string) {
   return root.dex.baseAssetsIds.includes(address);
 }
 
-const isChameleon = (first: string, second: string, isCreateOperation = false) =>
-  !isCreateOperation && first === KXOR.address && second === ETH.address;
+const isChameleon = (first: string, second: string, isCreateOperation = false) => {
+  if (isCreateOperation) return false;
+  // chameleons exists only in XOR dex
+  const [baseChameleonAssetId, chameleonTargets] = getChameleonPools(XOR.address);
+
+  return first === baseChameleonAssetId && chameleonTargets.includes(second);
+};
 
 function serializeLPKey(liquidity: Partial<AccountLiquidity>): string {
   if (!(liquidity.firstAddress && liquidity.secondAddress)) {
