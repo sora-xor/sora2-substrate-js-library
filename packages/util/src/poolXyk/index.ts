@@ -3,7 +3,6 @@ import { Subject, combineLatest, map } from 'rxjs';
 import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 import type { u128 } from '@polkadot/types-codec';
 import type { Subscription } from 'rxjs';
 

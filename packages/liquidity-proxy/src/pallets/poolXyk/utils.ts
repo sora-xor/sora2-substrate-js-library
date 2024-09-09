@@ -1,5 +1,5 @@
 import { Errors } from '../../consts';
-import { getChameleonPoolBaseAssetId, getChameleonPool } from '../../runtime';
+import { getChameleonPools } from '../../runtime';
 
 import type { TradingPair } from '../../types';
 
@@ -12,18 +12,20 @@ export const getPairInfo = (
 ): [TradingPair, string | null, boolean] => {
   if (assetA === assetB) throw new Error(Errors.AssetsMustNotBeSame);
 
-  const baseChameleonAssetId = getChameleonPoolBaseAssetId(baseAssetId);
+  const [baseChameleonAssetId, chameleonTargets] = getChameleonPools(baseAssetId);
 
-  const [ta, isChameleonPool] = (() => {
+  const ta = (() => {
     if (baseAssetId === assetA) {
-      return [assetB, false];
+      return assetB;
     } else if (baseAssetId === assetB) {
-      return [assetA, false];
+      return assetA;
     } else if (baseChameleonAssetId) {
       if (baseChameleonAssetId === assetA) {
-        return [assetB, true];
+        if (!chameleonTargets.includes(assetB)) throw new Error(Errors.RestrictedChameleonPool);
+        return assetB;
       } else if (baseChameleonAssetId === assetB) {
-        return [assetA, true];
+        if (!chameleonTargets.includes(assetA)) throw new Error(Errors.RestrictedChameleonPool);
+        return assetA;
       } else {
         throw new Error(Errors.BaseAssetIsNotMatchedWithAnyAssetArguments);
       }
@@ -32,12 +34,9 @@ export const getPairInfo = (
     }
   })();
 
-  const tPair: TradingPair = { baseAssetId, targetAssetId: ta };
-  const isAllowedChameleonPool = getChameleonPool(tPair);
+  const isAllowedChameleonPool = chameleonTargets.includes(ta);
 
-  if (isChameleonPool && !isAllowedChameleonPool) {
-    throw new Error(Errors.RestrictedChameleonPool);
-  }
+  const tPair: TradingPair = { baseAssetId, targetAssetId: ta };
 
   return [tPair, baseChameleonAssetId, isAllowedChameleonPool];
 };
