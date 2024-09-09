@@ -10154,6 +10154,94 @@ arguments:
 - newStablecoinParameters: `KensetsuStablecoinParameters`
 <hr>
 
+#### **api.tx.kensetsu.updateHardCap**
+
+> Updates risk parameter `hard_cap`.
+>
+> ##Parameters
+>
+> - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+> - `hard_cap` - new value.
+
+arguments:
+
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
+- hardCap: `u128`
+<hr>
+
+#### **api.tx.kensetsu.updateLiquidationRatio**
+
+> Updates risk parameter `liquidation_ratio`.
+>
+> ##Parameters
+>
+> - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+> - `liquidation_ratio` - new value.
+
+arguments:
+
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
+- liquidationRatio: `Perbill`
+<hr>
+
+#### **api.tx.kensetsu.updateMaxLiquidationLot**
+
+> Updates risk parameter `max_liquidation_lot`.
+>
+> ##Parameters
+>
+> - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+> - `max_liquidation_lot` - new value.
+
+arguments:
+
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
+- maxLiquidationLot: `u128`
+<hr>
+
+#### **api.tx.kensetsu.updateStabilityFeeRate**
+
+> Updates risk parameter `stability_fee_rate`.
+>
+> ##Parameters
+>
+> - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+> - `stability_fee_rate` - new value.
+
+arguments:
+
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
+- stabilityFeeRate: `u128`
+<hr>
+
+#### **api.tx.kensetsu.updateMinimalCollateralDeposit**
+
+> Updates risk parameter `minimal_collateral_deposit`.
+>
+> ##Parameters
+>
+> - `collateral_asset_id` and `stablecoin_asset_id` - composite key for collateral_info;
+> - `minimal_collateral_deposit` - new value.
+
+arguments:
+
+- collateralAssetId: `CommonPrimitivesAssetId32`
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
+- minimalCollateralDeposit: `u128`
+<hr>
+
+#### **api.tx.kensetsu.updateMinimalStabilityFeeAccrue**
+
+arguments:
+
+- stablecoinAssetId: `CommonPrimitivesAssetId32`
+- newMinimalStabilityFeeAccrue: `u128`
+<hr>
+
 ## LeafProvider pallet
 
 ### _State Queries_
@@ -14231,7 +14319,7 @@ returns: `Option<SwapOutcomeInfo>`
 ### OutcomeFee
 
 ```
-"Json"
+"BTreeMap<AssetId, Balance>"
 ```
 
 ### OutgoingAddAsset
