@@ -1,7 +1,7 @@
-import { FPNumber, api, axiosInstance } from '@sora-substrate/util';
+import { FPNumber, api, axiosInstance } from '@sora-substrate/sdk';
 
 import { delay, withConnectedAccount } from './util';
-import { PSWAP, VAL, XOR } from '@sora-substrate/util/assets/consts';
+import { PSWAP, VAL, XOR } from '@sora-substrate/sdk/assets/consts';
 
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {

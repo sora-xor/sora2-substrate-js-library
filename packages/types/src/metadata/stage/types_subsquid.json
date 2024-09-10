@@ -1748,7 +1748,7 @@
         {
             "minmax": [
                 86,
-                null
+                93
             ],
             "types": {
                 "PredefinedAssetId": {
@@ -1771,6 +1771,15 @@
                         "KARMA"
                     ]
                 }
+            }
+        },
+        {
+            "minmax": [
+                94,
+                null
+            ],
+            "types": {
+                "OutcomeFee": "BTreeMap<AssetId, Balance>"
             }
         }
     ],
@@ -2231,7 +2240,7 @@
             }
         },
         "OracleKey": "AssetId",
-        "OutcomeFee": "Json",
+        "OutcomeFee": "BTreeMap<AssetId, Balance>",
         "OutgoingAddAsset": {
             "author": "AccountId",
             "assetId": "AssetId",

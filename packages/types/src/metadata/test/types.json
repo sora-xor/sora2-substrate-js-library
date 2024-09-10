@@ -455,7 +455,7 @@
         }
     },
     "OracleKey": "AssetId",
-    "OutcomeFee": "Json",
+    "OutcomeFee": "BTreeMap<AssetId, Balance>",
     "OutgoingAddAsset": {
         "author": "AccountId",
         "assetId": "AssetId",

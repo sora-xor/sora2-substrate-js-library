@@ -123,12 +123,7 @@ export class BaseApi<T = void> extends ApiAccount<T> {
             'Disabled'
           );
         case Operation.SwapTransferBatch:
-          try {
-            return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled', null);
-          } catch {
-            // TODO: Should be removed in @sora-substrate/util v.1.33.
-            return (this.api.tx.liquidityProxy as any).swapTransferBatch([], '', '', [], 'Disabled');
-          }
+          return this.api.tx.liquidityProxy.swapTransferBatch([], '', '', [], 'Disabled', null);
         case Operation.ClaimVestedRewards:
           return this.api.tx.vestedRewards.claimRewards();
         case Operation.ClaimCrowdloanRewards:

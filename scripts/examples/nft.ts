@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { api } from '@sora-substrate/util';
+import { api } from '@sora-substrate/sdk';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 import { withConnectedAccount, delay } from './util';

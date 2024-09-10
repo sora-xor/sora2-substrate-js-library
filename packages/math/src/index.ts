@@ -569,6 +569,13 @@ export class FPNumber {
   }
 
   /**
+   * Return the absolute number
+   */
+  public abs(): FPNumber {
+    return new FPNumber(this.value.abs());
+  }
+
+  /**
    * Return the sqrt number
    */
   public sqrt(): FPNumber {

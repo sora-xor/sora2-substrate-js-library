@@ -1,5 +1,5 @@
 import { Subscription, firstValueFrom } from 'rxjs';
-import { api } from '@sora-substrate/util';
+import { api } from '@sora-substrate/sdk';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 import { disconnect, connectAndImportAccount } from './util';
 

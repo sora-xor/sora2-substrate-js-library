@@ -1,5 +1,5 @@
 import { FPNumber } from '@sora-substrate/math';
-import { connection } from '@sora-substrate/util';
+import { connection } from '@sora-substrate/sdk';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 import BigNumber from 'bignumber.js';
 
@@ -101,6 +101,16 @@ describe('FPNumber', () => {
   ])('[toLocaleString] instance of "%s" with precision "%s" should display "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.toLocaleString()).toBe(result);
+  });
+
+  it.each([
+    ['0.123', 2, '0.12'],
+    ['0.456', 2, '0.45'],
+    ['0.003', 2, '0.003'],
+    ['0.1', 4, '0.1'],
+  ])('[toLocaleString] instance of "%s" with dp="%s" should display "%s"', (value, dp, result) => {
+    const instance = new FPNumber(value);
+    expect(instance.toLocaleString(dp)).toBe(result);
   });
 
   it.each([
@@ -989,6 +999,30 @@ describe('FPNumber', () => {
   ])('[negative] !(value "%s", precision "%s") = "%s"', (value, precision, result) => {
     const instance = new FPNumber(value, precision);
     expect(instance.negative().toString()).toBe(result);
+  });
+
+  it.each([
+    [2, 18, '2'],
+    [-2, 18, '2'],
+    [0, 18, '0'],
+    [-0, 18, '0'],
+    [0.123456, 18, '0.123456'],
+    [-0.123456, 18, '0.123456'],
+    [Number.POSITIVE_INFINITY, 18, 'Infinity'],
+    [Number.NEGATIVE_INFINITY, 18, 'Infinity'],
+    [Number.NaN, 18, 'NaN'],
+    ['Infinity', 18, 'Infinity'],
+    ['-Infinity', 18, 'Infinity'],
+    ['NaN', 18, 'NaN'],
+    [1.23456789123456789, 18, '1.234567891234568'],
+    [-1.23456789123456789, 18, '1.234567891234568'],
+    ['123456789123456789', 18, '123456789123456789'],
+    ['-123456789123456789', 18, '123456789123456789'],
+    ['1.23456789123456789', 18, '1.23456789123456789'],
+    ['-1.23456789123456789', 18, '1.23456789123456789'],
+  ])('[abs] |(value "%s", precision "%s")| = "%s"', (value, precision, result) => {
+    const instance = new FPNumber(value, precision);
+    expect(instance.abs().toString()).toBe(result);
   });
 
   it.each([

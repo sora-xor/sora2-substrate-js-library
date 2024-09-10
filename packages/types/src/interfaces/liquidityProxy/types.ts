@@ -1,7 +1,7 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Json, Struct, Vec } from '@polkadot/types-codec';
+import type { BTreeMap, Struct, Vec } from '@polkadot/types-codec';
 import type { AssetId, Balance, DEXId, LiquiditySourceType, RewardReason } from '@sora-substrate/types/interfaces/runtime';
 
 /** @name LiquiditySourceIdOf */
@@ -27,6 +27,6 @@ export interface LPSwapOutcomeInfo extends Struct {
 }
 
 /** @name OutcomeFee */
-export interface OutcomeFee extends Json {}
+export interface OutcomeFee extends BTreeMap<AssetId, Balance> {}
 
 export type PHANTOM_LIQUIDITYPROXY = 'liquidityProxy';
