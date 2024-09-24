@@ -5415,7 +5415,16 @@ declare module '@polkadot/types/lookup' {
       readonly assetId: CommonPrimitivesAssetId32;
       readonly minimalXcmAmount: u128;
     } & Struct;
-    readonly type: 'Mint' | 'FinalizeAssetRegistration' | 'Burn' | 'RegisterThischainAsset' | 'RegisterSidechainAsset' | 'AddAssetidParaid' | 'RemoveAssetidParaid' | 'UpdateTransactionStatus' | 'SetMinimumXcmIncomingAssetCount';
+    readonly isBindSidechainAsset: boolean;
+    readonly asBindSidechainAsset: {
+      readonly networkId: BridgeTypesSubNetworkId;
+      readonly assetId: CommonPrimitivesAssetId32;
+      readonly sidechainAsset: XcmV3MultiassetAssetId;
+      readonly sidechainPrecision: u8;
+      readonly allowedParachains: Vec<u32>;
+      readonly minimalXcmAmount: u128;
+    } & Struct;
+    readonly type: 'Mint' | 'FinalizeAssetRegistration' | 'Burn' | 'RegisterThischainAsset' | 'RegisterSidechainAsset' | 'AddAssetidParaid' | 'RemoveAssetidParaid' | 'UpdateTransactionStatus' | 'SetMinimumXcmIncomingAssetCount' | 'BindSidechainAsset';
   }
 
   /** @name BridgeTypesAssetKind (635) */

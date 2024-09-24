@@ -7852,6 +7852,16 @@ returns: `PriceToolsAggregatedPriceInfo`
 
 <hr>
 
+#### **api.query.priceTools.fastPriceInfos**
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `PriceToolsAggregatedPriceInfo`
+
+<hr>
+
 ## CeresStaking pallet
 
 ### _State Queries_
@@ -11287,6 +11297,18 @@ arguments:
 
 - networkId: `BridgeTypesSubNetworkId`
 - assetId: `CommonPrimitivesAssetId32`
+- minimalXcmAmount: `u128`
+<hr>
+
+#### **api.tx.parachainBridgeApp.bindSidechainAsset**
+
+arguments:
+
+- networkId: `BridgeTypesSubNetworkId`
+- assetId: `CommonPrimitivesAssetId32`
+- sidechainAsset: `XcmV3MultiassetAssetId`
+- sidechainPrecision: `u8`
+- allowedParachains: `Vec<u32>`
 - minimalXcmAmount: `u128`
 <hr>
 

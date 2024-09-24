@@ -1199,6 +1199,7 @@ declare module '@polkadot/api-base/types/storage' {
       statusFor: AugmentedQuery<ApiType, (arg: H256 | string | Uint8Array) => Observable<Option<PalletPreimageRequestStatus>>, [H256]>;
     };
     priceTools: {
+      fastPriceInfos: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<PriceToolsAggregatedPriceInfo>>, [CommonPrimitivesAssetId32]>;
       priceInfos: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<Option<PriceToolsAggregatedPriceInfo>>, [CommonPrimitivesAssetId32]>;
     };
     pswapDistribution: {
