@@ -33,7 +33,7 @@ export class KensetsuModule<T> {
   }
 
   private getPricesObservable(...assets: Array<string>): Observable<Record<string, AveragePrice>> {
-    const observables = assets.map((id) => this.root.apiRx.query.priceTools.priceInfos(id));
+    const observables = assets.map((id) => this.root.apiRx.query.priceTools.fastPriceInfos(id));
     return combineLatest(observables).pipe(
       map((prices) => {
         return prices.reduce<Record<string, AveragePrice>>((acc, codec, index) => {

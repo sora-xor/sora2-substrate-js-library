@@ -112,7 +112,7 @@ export class PoolXykModule<T> {
    */
   public async check(firstAssetAddress: string, secondAssetAddress: string): Promise<boolean> {
     const props = await this.root.api.query.poolXYK.properties(firstAssetAddress, secondAssetAddress);
-    if (!props || !props.isSome) {
+    if (!props?.isSome) {
       return false;
     }
     return true;
@@ -125,7 +125,7 @@ export class PoolXykModule<T> {
 
     return this.root.apiRx.query.poolXYK.poolProviders(poolAccount, this.root.account.pair.address).pipe(
       map((result) => {
-        if (!result || !result.isSome) return null;
+        if (!result?.isSome) return null;
 
         return toReserve(result.value);
       })
@@ -137,7 +137,7 @@ export class PoolXykModule<T> {
 
     return this.root.apiRx.query.poolXYK.totalIssuances(poolAccount).pipe(
       map((result) => {
-        if (!result || !result.isSome) return null;
+        if (!result?.isSome) return null;
 
         return toReserve(result.value);
       })
@@ -165,7 +165,7 @@ export class PoolXykModule<T> {
   ): Observable<string[] | null> {
     return this.root.apiRx.query.poolXYK.properties(firstAssetAddress, secondAssetAddress).pipe(
       map((result) => {
-        if (!result || !result.isSome) return null;
+        if (!result?.isSome) return null;
 
         return result.value.map((accountId) => accountId.toString());
       })
@@ -655,10 +655,10 @@ export class PoolXykModule<T> {
 
     const params = await this.calcCreateTxParams(firstAsset, secondAsset, firstAmount, secondAmount, slippageTolerance);
     const [dexId, baseAddress, targetAddress] = params.pairCreationArgs;
-    const isPairAlreadyCreated = (await this.root.api.rpc.tradingPair.isPairEnabled(dexId, baseAddress, targetAddress))
-      .isTrue as boolean;
+    const isPairAlreadyCreated = await this.root.api.rpc.tradingPair.isPairEnabled(dexId, baseAddress, targetAddress);
+
     const transactions: Array<any> = [];
-    if (!isPairAlreadyCreated) {
+    if (!isPairAlreadyCreated.isTrue) {
       transactions.push((this.root.api.tx.tradingPair as any).register(...params.pairCreationArgs));
     }
     transactions.push(
