@@ -5162,6 +5162,14 @@ export default {
       set_minimum_xcm_incoming_asset_count: {
         networkId: 'BridgeTypesSubNetworkId',
         assetId: 'CommonPrimitivesAssetId32',
+        minimalXcmAmount: 'u128',
+      },
+      bind_sidechain_asset: {
+        networkId: 'BridgeTypesSubNetworkId',
+        assetId: 'CommonPrimitivesAssetId32',
+        sidechainAsset: 'XcmV3MultiassetAssetId',
+        sidechainPrecision: 'u8',
+        allowedParachains: 'Vec<u32>',
         minimalXcmAmount: 'u128'
       }
     }
