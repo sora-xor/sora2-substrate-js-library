@@ -465,10 +465,11 @@ export class AssetsModule<T> {
 
   /**
    * Get account ORML tokens list with any non zero balance
+   * @param account Account ID
+   * @returns Array of asset addresses
    */
-  public async getAccountTokensAddressesList(): Promise<string[]> {
-    assert(this.root.account, Messages.connectWallet);
-    const data = await this.root.api.query.tokens.accounts.entries(this.root.account.pair.address);
+  public async getTokensAddressesList(account: string): Promise<string[]> {
+    const data = await this.root.api.query.tokens.accounts.entries(account);
     const list: string[] = [];
 
     for (const [key, { free, reserved, frozen }] of data) {
@@ -481,6 +482,14 @@ export class AssetsModule<T> {
     }
 
     return list;
+  }
+
+  /**
+   * Get account ORML tokens list with any non zero balance
+   */
+  public async getAccountTokensAddressesList(): Promise<string[]> {
+    assert(this.root.account, Messages.connectWallet);
+    return this.getTokensAddressesList(this.root.account.pair.address);
   }
 
   // # Account assets addresses
