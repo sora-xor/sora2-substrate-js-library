@@ -673,6 +673,10 @@ declare module '@polkadot/api-base/types/consts' {
        * Accounts holding PSWAP dedicated for rewards.
        **/
       getMarketMakerRewardsAccountId: AccountId32 & AugmentedConst<ApiType>;
+      /**
+       * The minimum amount transferred to call `vested_transfer`.
+       **/
+      minVestedTransfer: u128 & AugmentedConst<ApiType>;
     };
     xstPool: {
       /**
