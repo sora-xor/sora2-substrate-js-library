@@ -1446,6 +1446,16 @@ returns: `u128`
 
 <hr>
 
+#### **api.query.xorFee.xorToVXor**
+
+> The amount of XOR to be reminted and exchanged for VXOR at the end of the session
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
 #### **api.query.xorFee.multiplier**
 
 arguments: -
@@ -7049,6 +7059,20 @@ returns: `u16`
 
 <hr>
 
+#### **api.query.vestedRewards.vestingSchedules**
+
+> Vesting schedules of an account.
+>
+> VestingSchedules: map AccountId => Vec<VestingSchedule>
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `Vec<VestedRewardsVestingCurrenciesVestingScheduleVariant>`
+
+<hr>
+
 #### **api.query.vestedRewards.rewards**
 
 > Reserved for future use
@@ -7130,6 +7154,46 @@ arguments:
 - length: `u32`
 - rewards: `Vec<(CommonPrimitivesAssetId32,u128)>`
 - contributions: `Vec<(AccountId32,u128)>`
+<hr>
+
+#### **api.tx.vestedRewards.claimUnlocked**
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.vestedRewards.vestedTransfer**
+
+arguments:
+
+- dest: `AccountId32`
+- schedule: `VestedRewardsVestingCurrenciesVestingScheduleVariant`
+<hr>
+
+#### **api.tx.vestedRewards.updateVestingSchedules**
+
+arguments:
+
+- who: `AccountId32`
+- vestingSchedules: `Vec<VestedRewardsVestingCurrenciesVestingScheduleVariant>`
+<hr>
+
+#### **api.tx.vestedRewards.claimFor**
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+- dest: `AccountId32`
+<hr>
+
+#### **api.tx.vestedRewards.unlockPendingScheduleByManager**
+
+arguments:
+
+- dest: `AccountId32`
+- start: `Option<u32>`
+- filterSchedule: `VestedRewardsVestingCurrenciesVestingScheduleVariant`
 <hr>
 
 ### _Custom RPCs_
