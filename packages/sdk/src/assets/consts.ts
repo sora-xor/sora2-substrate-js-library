@@ -1,6 +1,6 @@
 import { FPNumber } from '@sora-substrate/math';
 
-import type { AccountBalance, Asset, KnownSymbol, NativeSymbol } from './types';
+import { AssetTypes, type AccountBalance, type Asset, type KnownSymbol, type NativeSymbol } from './types';
 
 export const MaxRustNumber = '170141183460469231731.687303715884105727';
 export const MaxTotalSupply = '100000000000000000000'; // It's better to round it for UX
@@ -78,6 +78,7 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     name: 'SORA',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x0200040000000000000000000000000000000000000000000000000000000000',
@@ -85,6 +86,7 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     name: 'SORA Validator Token',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x0200050000000000000000000000000000000000000000000000000000000000',
@@ -92,6 +94,7 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     name: 'Polkaswap',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x02000c0000000000000000000000000000000000000000000000000000000000',
@@ -99,6 +102,7 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     name: 'Kensetsu Dollar',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x02000a0000000000000000000000000000000000000000000000000000000000',
@@ -106,6 +110,7 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     name: 'SORA TBC Dollar',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x0200080000000000000000000000000000000000000000000000000000000000',
@@ -113,6 +118,7 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     name: 'SORA Synthetic USD',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x0200090000000000000000000000000000000000000000000000000000000000',
@@ -120,6 +126,7 @@ export const NativeAssets = new ArrayLike<Asset, NativeSymbol>([
     name: 'SORA Synthetics',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
 ]);
 
@@ -131,6 +138,7 @@ export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
     name: 'Dai Stablecoin',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x0200070000000000000000000000000000000000000000000000000000000000',
@@ -138,6 +146,7 @@ export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
     name: 'Ether',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x02000b0000000000000000000000000000000000000000000000000000000000',
@@ -145,6 +154,7 @@ export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
     name: 'Kensetsu',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x02000d0000000000000000000000000000000000000000000000000000000000',
@@ -152,6 +162,7 @@ export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
     name: 'Kensetsu Gold',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x02000e0000000000000000000000000000000000000000000000000000000000',
@@ -159,6 +170,7 @@ export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
     name: 'Kensetsu XOR',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
   {
     address: '0x02000f0000000000000000000000000000000000000000000000000000000000',
@@ -166,6 +178,7 @@ export const KnownAssets = new ArrayLike<Asset, KnownSymbol>([
     name: 'Chameleon',
     decimals: FPNumber.DEFAULT_PRECISION,
     isMintable: true,
+    type: AssetTypes.Regular,
   },
 ]);
 
