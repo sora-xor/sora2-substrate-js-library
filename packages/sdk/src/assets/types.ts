@@ -60,6 +60,7 @@ export type Asset = {
   isMintable: boolean;
   content?: string;
   description?: string;
+  type?: AssetType;
 };
 
 export type AccountAsset = Asset & {
@@ -95,3 +96,5 @@ export enum AssetTypes {
   Soulbound = 'Soulbound',
   Regulated = 'Regulated',
 }
+
+export type AssetType = keyof typeof AssetTypes;

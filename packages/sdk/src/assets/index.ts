@@ -74,12 +74,21 @@ export function formatBalance(
   };
 }
 
-async function getAssetInfo(api: ApiPromise, address: string): Promise<Asset> {
-  const [symbol, name, decimals, isMintable, content, description] = (
-    await api.query.assets.assetInfos({ code: address })
+async function getAssetInfo(api: ApiPromise, assetId: string): Promise<Asset> {
+  const { symbol, name, precision, isMintable, assetType, contentSource, description } = (
+    await api.query.assets.assetInfosV2({ code: assetId })
   ).toHuman() as any;
 
-  return { address, symbol, name, decimals: +decimals, isMintable: !!isMintable, content, description } as Asset;
+  return {
+    address: assetId,
+    symbol,
+    name,
+    decimals: +precision,
+    isMintable: !!isMintable,
+    type: assetType,
+    content: contentSource,
+    description,
+  } as Asset;
 }
 
 /**
@@ -171,11 +180,21 @@ const sort = (a: Asset, b: Asset, whitelist: Whitelist) => {
 };
 
 export async function getAssets(api: ApiPromise, whitelist?: Whitelist, blacklist?: Blacklist): Promise<Array<Asset>> {
-  const allAssets = (await api.query.assets.assetInfos.entries()).map<Asset>(([key, codec]) => {
+  const allAssets = (await api.query.assets.assetInfosV2.entries()).map<Asset>(([key, codec]) => {
     const address = toAssetId(key.args[0]);
-    const [symbol, name, decimals, isMintable, content, description] = codec.toHuman() as any;
 
-    return { address, symbol, name, decimals: +decimals, isMintable: !!isMintable, content, description };
+    const { symbol, name, precision, isMintable, assetType, contentSource, description } = codec.toHuman() as any;
+
+    return {
+      address,
+      symbol,
+      name,
+      decimals: +precision,
+      isMintable: !!isMintable,
+      type: assetType,
+      content: contentSource,
+      description,
+    };
   });
 
   const assets = blacklist?.length ? getLegalAssets(allAssets, blacklist) : allAssets;
@@ -441,8 +460,10 @@ export class AssetsModule<T> {
         decimals: existingAsset.decimals,
         symbol: existingAsset.symbol,
         name: existingAsset.name,
-        content: (existingAsset as AccountAsset).content, // will be undefined,
-        description: (existingAsset as AccountAsset).description, // if there are no such props
+        // will be empty if coming from pookXyk
+        type: (existingAsset as AccountAsset).type,
+        content: (existingAsset as AccountAsset).content,
+        description: (existingAsset as AccountAsset).description,
       } as Asset;
     }
     return await getAssetInfo(this.root.api, address);
@@ -455,8 +476,8 @@ export class AssetsModule<T> {
    */
   public async getAccountAsset(address: string): Promise<AccountAsset> {
     assert(this.root.account, Messages.connectWallet);
-    const { decimals, symbol, name, content, description } = await this.getAssetInfo(address);
-    const asset = { address, decimals, symbol, name, content, description } as AccountAsset;
+    const { decimals, symbol, name, type, content, description } = await this.getAssetInfo(address);
+    const asset = { address, decimals, symbol, name, type, content, description } as AccountAsset;
     const result = await getAssetBalance(this.root.api, this.root.account.pair.address, address, decimals);
     asset.balance = result;
 
@@ -465,10 +486,11 @@ export class AssetsModule<T> {
 
   /**
    * Get account ORML tokens list with any non zero balance
+   * @param account Account ID
+   * @returns Array of asset addresses
    */
-  public async getAccountTokensAddressesList(): Promise<string[]> {
-    assert(this.root.account, Messages.connectWallet);
-    const data = await this.root.api.query.tokens.accounts.entries(this.root.account.pair.address);
+  public async getTokensAddressesList(account: string): Promise<string[]> {
+    const data = await this.root.api.query.tokens.accounts.entries(account);
     const list: string[] = [];
 
     for (const [key, { free, reserved, frozen }] of data) {
@@ -481,6 +503,14 @@ export class AssetsModule<T> {
     }
 
     return list;
+  }
+
+  /**
+   * Get account ORML tokens list with any non zero balance
+   */
+  public async getAccountTokensAddressesList(): Promise<string[]> {
+    assert(this.root.account, Messages.connectWallet);
+    return this.getTokensAddressesList(this.root.account.pair.address);
   }
 
   // # Account assets addresses

@@ -1,14 +1,6 @@
-import { AssetTypes } from '../assets/types';
+import { Asset } from '../assets/types';
 
-export type AssetType = keyof typeof AssetTypes;
-
-export type SoulBoundToken = {
-  address: string;
-  symbol?: string;
-  name?: string;
-  assetType?: AssetType;
-  contentSource?: string;
-  description?: string;
+export type SoulBoundToken = Asset & {
   externalUrl?: string;
   issuedAt?: string;
   regulatedAssets: string[] | { code: string }[];

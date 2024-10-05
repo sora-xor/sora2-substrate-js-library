@@ -1,8 +1,10 @@
 import { FPNumber, NumberLike } from '@sora-substrate/math';
-import type { Api } from '../api';
-import { Asset } from '../assets/types';
+import { assert } from '@polkadot/util';
 import { Operation } from '../types';
-import { SoulBoundToken } from './types';
+import type { Asset } from '../assets/types';
+import type { SoulBoundToken } from './types';
+import type { Api } from '../api';
+import { Messages } from '../logger';
 
 export class ExtendedAssetsModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -17,7 +19,7 @@ export class ExtendedAssetsModule<T> {
     const sbtCommonInfo = await this.root.api.query.assets.assetInfosV2(assetId);
 
     const { externalUrl, issuedAt, regulatedAssets } = sbtSpecificInfo.unwrapOrDefault();
-    const { symbol, name, assetType, contentSource, description } = sbtCommonInfo.toHuman() as Partial<SoulBoundToken>;
+    const { symbol, name, assetType: type, contentSource: content, description } = sbtCommonInfo.toHuman();
 
     const regulatedAssetsList: Array<string> = [];
     regulatedAssets.forEach((assetAddressEncoded) => {
@@ -28,13 +30,13 @@ export class ExtendedAssetsModule<T> {
       address: assetId,
       symbol,
       name,
-      assetType,
-      contentSource,
+      type,
+      content,
       description,
       externalUrl: externalUrl.toHuman() as string,
       issuedAt: issuedAt.toHuman(),
       regulatedAssets: regulatedAssetsList,
-    };
+    } as SoulBoundToken;
   }
 
   /**
@@ -67,6 +69,7 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async givePrivilege(accountId: string, sbtAsset: Asset, timestamp?: number): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
     // if provided, account has some determined lifespan to operate, otherwise, it is indefinite
     if (timestamp) {
       const transactions = [
@@ -91,6 +94,8 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async revokePrivilege(accountId: string, sbtAssetId: string): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     const currentTimestamp = Math.round(Date.now() / 1000);
 
     return this.root.submitExtrinsic(
@@ -107,6 +112,8 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async regulateAsset(assetId: string): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     return this.root.submitExtrinsic(this.root.api.tx.extendedAssets.regulateAsset(assetId), this.root.account.pair, {
       type: Operation.RegulateAsset,
       assetAddress: assetId,
@@ -135,6 +142,8 @@ export class ExtendedAssetsModule<T> {
     description = null,
     sbtAssetId?: string
   ): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     const supply = new FPNumber(initialSupply, isIndivisible ? 0 : FPNumber.DEFAULT_PRECISION);
 
     // if provided, attachement to SBT will be immediate
@@ -185,6 +194,8 @@ export class ExtendedAssetsModule<T> {
    *
    */
   public async bindRegulatedAssetToSBT(sbtAssetId: string, regulatedAssetIds: Array<string>): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     if (regulatedAssetIds.length === 1) {
       return this.root.submitExtrinsic(
         this.root.api.tx.extendedAssets.bindRegulatedAssetToSbt(sbtAssetId, regulatedAssetIds[0]),
@@ -227,6 +238,8 @@ export class ExtendedAssetsModule<T> {
     extendedUrl = '',
     regulatedAssetIds?: Array<string>
   ): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
     if (regulatedAssetIds?.length) {
       const sbtAssetId = await this.root.assets.getNextRegisteredAssetId();
 
