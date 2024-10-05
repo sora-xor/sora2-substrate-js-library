@@ -19,7 +19,7 @@ export class ExtendedAssetsModule<T> {
     const sbtCommonInfo = await this.root.api.query.assets.assetInfosV2(assetId);
 
     const { externalUrl, issuedAt, regulatedAssets } = sbtSpecificInfo.unwrapOrDefault();
-    const { symbol, name, assetType, contentSource, description } = sbtCommonInfo.toHuman() as Partial<SoulBoundToken>;
+    const { symbol, name, assetType: type, contentSource: content, description } = sbtCommonInfo.toHuman();
 
     const regulatedAssetsList: Array<string> = [];
     regulatedAssets.forEach((assetAddressEncoded) => {
@@ -30,13 +30,13 @@ export class ExtendedAssetsModule<T> {
       address: assetId,
       symbol,
       name,
-      assetType,
-      contentSource,
+      type,
+      content,
       description,
       externalUrl: externalUrl.toHuman() as string,
       issuedAt: issuedAt.toHuman(),
       regulatedAssets: regulatedAssetsList,
-    };
+    } as SoulBoundToken;
   }
 
   /**
