@@ -3252,6 +3252,10 @@ declare module '@polkadot/api-base/types/errors' {
     };
     vestedRewards: {
       /**
+       * The vested transfer amount is too low
+       **/
+      AmountLow: AugmentedError<ApiType>;
+      /**
        * Something is wrong with arithmetic - overflow happened, for example.
        **/
       ArithmeticError: AugmentedError<ApiType>;
@@ -3284,6 +3288,14 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       IncRefError: AugmentedError<ApiType>;
       /**
+       * Insufficient amount of balance to lock
+       **/
+      InsufficientBalanceToLock: AugmentedError<ApiType>;
+      /**
+       * Failed because the maximum vesting schedules was exceeded
+       **/
+      MaxVestingSchedulesExceeded: AugmentedError<ApiType>;
+      /**
        * There are no rewards for the asset ID.
        **/
       NoRewardsForAsset: AugmentedError<ApiType>;
@@ -3299,6 +3311,10 @@ declare module '@polkadot/api-base/types/errors' {
        * This error appears on wrong conversion of a number into another type.
        **/
       NumberConversionError: AugmentedError<ApiType>;
+      /**
+       * Failed because the Schedule to unlock not exist
+       **/
+      PendingScheduleNotExist: AugmentedError<ApiType>;
       /**
        * Account holding dedicated reward reserves is empty. This likely means that some of
        * reward programmes have finished.
@@ -3316,6 +3332,18 @@ declare module '@polkadot/api-base/types/errors' {
        * Wrong crowdloan data passed
        **/
       WrongCrowdloanInfo: AugmentedError<ApiType>;
+      /**
+       * Failed because used not correct Schedule Variant
+       **/
+      WrongScheduleVariant: AugmentedError<ApiType>;
+      /**
+       * Vesting period is zero
+       **/
+      ZeroVestingPeriod: AugmentedError<ApiType>;
+      /**
+       * Number of vests is zero
+       **/
+      ZeroVestingPeriodCount: AugmentedError<ApiType>;
     };
     xorFee: {
       /**
