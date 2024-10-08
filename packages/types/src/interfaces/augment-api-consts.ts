@@ -674,6 +674,10 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       getMarketMakerRewardsAccountId: AccountId32 & AugmentedConst<ApiType>;
       /**
+       * The maximum amount of auto claims per block.
+       **/
+      maxWeightForAutoClaim: SpWeightsWeightV2Weight & AugmentedConst<ApiType>;
+      /**
        * The minimum amount transferred to call `vested_transfer`.
        **/
       minVestedTransfer: u128 & AugmentedConst<ApiType>;
