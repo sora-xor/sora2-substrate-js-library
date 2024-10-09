@@ -5,6 +5,7 @@ import type { Asset } from '../assets/types';
 import type { SoulBoundToken } from './types';
 import type { Api } from '../api';
 import { Messages } from '../logger';
+import { toAssetId } from '../assets';
 
 export class ExtendedAssetsModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -59,6 +60,16 @@ export class ExtendedAssetsModule<T> {
     return (await this.root.api.query.extendedAssets.sbtExpiration(accountId, sbtAssetId))
       .unwrapOr(Infinity)
       .toString();
+  }
+
+  /**
+   * Get SBT address based on regulated asset id
+   * @param regulatedAssetId asset ID
+   *
+   */
+  public async getSbtAddress(regulatedAssetId: string): Promise<string> {
+    const address = await this.root.api.query.extendedAssets.regulatedAssetToSoulboundAsset(regulatedAssetId);
+    return toAssetId(address);
   }
 
   /**
