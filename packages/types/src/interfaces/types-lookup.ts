@@ -1117,6 +1117,7 @@ declare module '@polkadot/types/lookup' {
     readonly period: u32;
     readonly periodCount: u32;
     readonly perPeriod: Compact<u128>;
+    readonly remainderAmount: Compact<u128>;
   }
 
   /** @name VestedRewardsVestingCurrenciesLinearPendingVestingSchedule (123) */
@@ -1127,6 +1128,7 @@ declare module '@polkadot/types/lookup' {
     readonly period: u32;
     readonly periodCount: u32;
     readonly perPeriod: Compact<u128>;
+    readonly remainderAmount: Compact<u128>;
   }
 
   /** @name PalletIdentityEvent (126) */
@@ -6852,13 +6854,13 @@ declare module '@polkadot/types/lookup' {
     readonly isCrowdloanDoesNotExists: boolean;
     readonly isNotCrowdloanParticipant: boolean;
     readonly isZeroVestingPeriod: boolean;
-    readonly isZeroVestingPeriodCount: boolean;
+    readonly isWrongVestingPeriodCount: boolean;
     readonly isInsufficientBalanceToLock: boolean;
     readonly isAmountLow: boolean;
     readonly isMaxVestingSchedulesExceeded: boolean;
     readonly isPendingScheduleNotExist: boolean;
     readonly isWrongScheduleVariant: boolean;
-    readonly type: 'NothingToClaim' | 'ClaimLimitExceeded' | 'UnhandledRewardType' | 'RewardsSupplyShortage' | 'IncRefError' | 'CantSubtractSnapshot' | 'CantCalculateReward' | 'NoRewardsForAsset' | 'ArithmeticError' | 'NumberConversionError' | 'UnableToGetBaseAssetPrice' | 'CrowdloanAlreadyExists' | 'WrongCrowdloanInfo' | 'CrowdloanRewardsDistributionNotStarted' | 'CrowdloanDoesNotExists' | 'NotCrowdloanParticipant' | 'ZeroVestingPeriod' | 'ZeroVestingPeriodCount' | 'InsufficientBalanceToLock' | 'AmountLow' | 'MaxVestingSchedulesExceeded' | 'PendingScheduleNotExist' | 'WrongScheduleVariant';
+    readonly type: 'NothingToClaim' | 'ClaimLimitExceeded' | 'UnhandledRewardType' | 'RewardsSupplyShortage' | 'IncRefError' | 'CantSubtractSnapshot' | 'CantCalculateReward' | 'NoRewardsForAsset' | 'ArithmeticError' | 'NumberConversionError' | 'UnableToGetBaseAssetPrice' | 'CrowdloanAlreadyExists' | 'WrongCrowdloanInfo' | 'CrowdloanRewardsDistributionNotStarted' | 'CrowdloanDoesNotExists' | 'NotCrowdloanParticipant' | 'ZeroVestingPeriod' | 'WrongVestingPeriodCount' | 'InsufficientBalanceToLock' | 'AmountLow' | 'MaxVestingSchedulesExceeded' | 'PendingScheduleNotExist' | 'WrongScheduleVariant';
   }
 
   /** @name PalletIdentityRegistration (821) */

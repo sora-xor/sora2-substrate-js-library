@@ -987,7 +987,8 @@ export default {
     start: 'u32',
     period: 'u32',
     periodCount: 'u32',
-    perPeriod: 'Compact<u128>'
+    perPeriod: 'Compact<u128>',
+    remainderAmount: 'Compact<u128>'
   },
   /**
    * Lookup123: vested_rewards::vesting_currencies::LinearPendingVestingSchedule<BlockNumber, common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>, sp_core::crypto::AccountId32>
@@ -998,7 +999,8 @@ export default {
     start: 'Option<u32>',
     period: 'u32',
     periodCount: 'u32',
-    perPeriod: 'Compact<u128>'
+    perPeriod: 'Compact<u128>',
+    remainderAmount: 'Compact<u128>'
   },
   /**
    * Lookup126: pallet_identity::pallet::Event<T>
@@ -6222,7 +6224,7 @@ export default {
    * Lookup820: vested_rewards::pallet::Error<T>
    **/
   VestedRewardsError: {
-    _enum: ['NothingToClaim', 'ClaimLimitExceeded', 'UnhandledRewardType', 'RewardsSupplyShortage', 'IncRefError', 'CantSubtractSnapshot', 'CantCalculateReward', 'NoRewardsForAsset', 'ArithmeticError', 'NumberConversionError', 'UnableToGetBaseAssetPrice', 'CrowdloanAlreadyExists', 'WrongCrowdloanInfo', 'CrowdloanRewardsDistributionNotStarted', 'CrowdloanDoesNotExists', 'NotCrowdloanParticipant', 'ZeroVestingPeriod', 'ZeroVestingPeriodCount', 'InsufficientBalanceToLock', 'AmountLow', 'MaxVestingSchedulesExceeded', 'PendingScheduleNotExist', 'WrongScheduleVariant']
+    _enum: ['NothingToClaim', 'ClaimLimitExceeded', 'UnhandledRewardType', 'RewardsSupplyShortage', 'IncRefError', 'CantSubtractSnapshot', 'CantCalculateReward', 'NoRewardsForAsset', 'ArithmeticError', 'NumberConversionError', 'UnableToGetBaseAssetPrice', 'CrowdloanAlreadyExists', 'WrongCrowdloanInfo', 'CrowdloanRewardsDistributionNotStarted', 'CrowdloanDoesNotExists', 'NotCrowdloanParticipant', 'ZeroVestingPeriod', 'WrongVestingPeriodCount', 'InsufficientBalanceToLock', 'AmountLow', 'MaxVestingSchedulesExceeded', 'PendingScheduleNotExist', 'WrongScheduleVariant']
   },
   /**
    * Lookup821: pallet_identity::types::Registration<Balance, MaxJudgements, MaxAdditionalFields>
