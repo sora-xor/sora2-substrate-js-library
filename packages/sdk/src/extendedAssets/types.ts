@@ -1,4 +1,4 @@
-import { Asset } from '../assets/types';
+import type { Asset } from '../assets/types';
 
 export type SoulBoundToken = Asset & {
   externalUrl?: string;

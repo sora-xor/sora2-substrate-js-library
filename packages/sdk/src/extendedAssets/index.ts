@@ -1,11 +1,11 @@
-import { FPNumber, NumberLike } from '@sora-substrate/math';
+import { FPNumber, type NumberLike } from '@sora-substrate/math';
 import { assert } from '@polkadot/util';
 import { Operation } from '../types';
+import { Messages } from '../logger';
+import { toAssetId } from '../assets';
 import type { Asset } from '../assets/types';
 import type { SoulBoundToken } from './types';
 import type { Api } from '../api';
-import { Messages } from '../logger';
-import { toAssetId } from '../assets';
 
 export class ExtendedAssetsModule<T> {
   constructor(private readonly root: Api<T>) {}
