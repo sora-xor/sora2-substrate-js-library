@@ -373,6 +373,7 @@ export class SwapModule<T> {
   ): Observable<QuotePayload> | null {
     const isXorDex = dexId === DexId.XOR;
     const isKusdDex = dexId === DexId.KUSD;
+    const isVxorDex = dexId === DexId.VXOR;
     const xor = XOR.address;
     const dai = DAI.address;
     const xstusd = XSTUSD.address;
@@ -392,7 +393,7 @@ export class SwapModule<T> {
     const xykUsed = isSourceUsed(LiquiditySourceTypes.XYKPool);
     const tbcUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.MulticollateralBondingCurvePool);
     const xstUsed = isXorDex && isSourceUsed(LiquiditySourceTypes.XSTPool);
-    const orderBookUsed = (isXorDex || isKusdDex) && isSourceUsed(LiquiditySourceTypes.OrderBook);
+    const orderBookUsed = (isXorDex || isKusdDex || isVxorDex) && isSourceUsed(LiquiditySourceTypes.OrderBook);
 
     if ([xykUsed, tbcUsed, xstUsed, orderBookUsed].every((isUsed) => !isUsed)) {
       return null;
