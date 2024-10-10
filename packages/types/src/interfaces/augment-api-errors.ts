@@ -3337,13 +3337,13 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongScheduleVariant: AugmentedError<ApiType>;
       /**
+       * Number of vests is zero or less than claims
+       **/
+      WrongVestingPeriodCount: AugmentedError<ApiType>;
+      /**
        * Vesting period is zero
        **/
       ZeroVestingPeriod: AugmentedError<ApiType>;
-      /**
-       * Number of vests is zero
-       **/
-      ZeroVestingPeriodCount: AugmentedError<ApiType>;
     };
     xorFee: {
       /**
