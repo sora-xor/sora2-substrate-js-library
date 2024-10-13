@@ -83,6 +83,7 @@ export enum Operation {
   /** Asset management */
   RegisterAsset = 'RegisterAsset',
   Transfer = 'Transfer',
+  VestedTransfer = 'VestedTransfer',
   XorlessTransfer = 'XorlessTransfer',
   Mint = 'Mint',
   Burn = 'Burn',
