@@ -7059,6 +7059,30 @@ returns: `u16`
 
 <hr>
 
+#### **api.query.vestedRewards.pendingClaims**
+
+> Claims was not processed.
+
+arguments: -
+
+returns: `Vec<VestedRewardsClaim>`
+
+<hr>
+
+#### **api.query.vestedRewards.claimSchedules**
+
+> Vesting claims of a block.
+>
+> VestingSchedules: map AccountId => Vec<VestingSchedule>
+
+arguments:
+
+- key: `u32`
+
+returns: `Vec<VestedRewardsClaim>`
+
+<hr>
+
 #### **api.query.vestedRewards.vestingSchedules**
 
 > Vesting schedules of an account.

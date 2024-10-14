@@ -8,6 +8,8 @@ export const MaxTotalSupply = '100000000000000000000'; // It's better to round i
 export const VAL_CIRCULATING_DIFF = new FPNumber('33449609.3779');
 /** PSWAP supply difference between circulating and total supply */
 export const PSWAP_CIRCULATING_DIFF = new FPNumber('6345014420.6195');
+/** Day in blocks (600 blocks per hour | 1 block per 6 seconds) */
+export const DAY_IN_BLOCKS = 24 * 600;
 
 export enum KnownSymbols {
   XOR = 'XOR',

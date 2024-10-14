@@ -12,7 +12,7 @@ import type {
 } from '@polkadot/types/lookup';
 import type { Option, u128 } from '@polkadot/types-codec';
 
-import { KnownAssets, NativeAssets, XOR } from './consts';
+import { DAY_IN_BLOCKS, KnownAssets, NativeAssets, XOR } from './consts';
 import { DexId } from '../dex/consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
@@ -23,6 +23,7 @@ import type {
   Asset,
   Blacklist,
   TransferOptions,
+  UnlockPeriodDays,
   Whitelist,
   WhitelistArrayItem,
   WhitelistIdsBySymbol,
@@ -775,5 +776,92 @@ export class AssetsModule<T> {
       this.root.account.pair,
       { type: Operation.Burn, amount: `${amount}`, assetAddress, symbol: asset.symbol }
     );
+  }
+
+  /**
+   * Get vesting schedule for VestedTransfer feature
+   * @param asset Asset object
+   * @param amount Amount value
+   * @param currentBlockNumber Current block number (from the blockchain)
+   * @param vestingPercent Vesting percent value (0-100)
+   * @param unlockPeriodInDays Unlock period in days (1, 7, 30, 60, 90)
+   */
+  private getVestingSchedule(
+    asset: Asset | AccountAsset,
+    amount: NumberLike,
+    currentBlockNumber: number,
+    vestingPercent: number,
+    unlockPeriodInDays: UnlockPeriodDays
+  ) {
+    const percent = vestingPercent / 100;
+    const periodInBlocks = unlockPeriodInDays * DAY_IN_BLOCKS;
+    const amountFp = new FPNumber(amount, asset.decimals ?? FPNumber.DEFAULT_PRECISION);
+    const perPeriod = amountFp.mul(percent); // amount * percent
+    const div = amountFp.div(perPeriod);
+    const remainderAmount = amountFp.mod(perPeriod);
+    const periodCount = (remainderAmount.isZero() ? div : div.add(1)).toNumber(0); // if there is a remainder, add 1 period
+
+    return {
+      LinearVestingSchedule: {
+        start: currentBlockNumber,
+        assetId: asset.address,
+        period: periodInBlocks,
+        periodCount,
+        perPeriod: perPeriod.toCodecString(),
+        remainderAmount: remainderAmount.toCodecString(),
+      },
+    };
+  }
+
+  /**
+   * Vested transfer of tokens for the selected account.
+   * @param asset Asset object
+   * @param toAddress Account address who will receive tokens
+   * @param amount Amount value
+   * @param currentBlockNumber Current block number (from the blockchain)
+   * @param vestingPercent Vesting percent value (0-100)
+   * @param unlockPeriodInDays Unlock period in days (1, 7, 30, 60, 90)
+   */
+  public vestedTransfer(
+    asset: Asset | AccountAsset,
+    toAddress: string,
+    amount: NumberLike,
+    currentBlockNumber: number,
+    vestingPercent: number,
+    unlockPeriodInDays: UnlockPeriodDays
+  ): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+    const assetAddress = asset.address;
+    const schedule = this.getVestingSchedule(asset, amount, currentBlockNumber, vestingPercent, unlockPeriodInDays);
+    // TODO: need to think about vesting parameters for history
+    return this.root.submitExtrinsic(
+      this.root.api.tx.vestedRewards.vestedTransfer(toAddress, schedule),
+      this.root.account.pair,
+      { type: Operation.VestedTransfer, amount: `${amount}`, assetAddress, symbol: asset.symbol }
+    );
+  }
+
+  /**
+   * Get vested transfer network fee for the selected account.
+   *
+   * The fee is calculated based on the vesting schedule so it cannot be calculated using the static data.
+   * @param asset Asset object
+   * @param amount Amount value
+   * @param currentBlockNumber Current block number (from the blockchain)
+   * @param vestingPercent Vesting percent value (0-100)
+   * @param unlockPeriodInDays Unlock period in days (1, 7, 30, 60, 90)
+   */
+  public async getVestedTransferFee(
+    asset: Asset | AccountAsset,
+    amount: NumberLike,
+    currentBlockNumber: number,
+    vestingPercent: number,
+    unlockPeriodInDays: UnlockPeriodDays
+  ): Promise<FPNumber> {
+    const schedule = this.getVestingSchedule(asset, amount, currentBlockNumber, vestingPercent, unlockPeriodInDays);
+
+    const fee = await this.root.getTransactionFee(this.root.api.tx.vestedRewards.vestedTransfer('', schedule));
+
+    return FPNumber.fromCodecValue(fee);
   }
 }

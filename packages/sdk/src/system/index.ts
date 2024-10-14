@@ -65,13 +65,31 @@ export class SystemModule<T> {
     return (await api.rpc.chain.getBlockHash(blockNumber)).toString();
   }
 
-  public async getBlockNumber(blockHash: string, api = this.root.api): Promise<number> {
-    const apiInstanceAtBlock = await api.at(blockHash);
+  /**
+   * Returns the block number.
+   *
+   * If `blockHash` is provided, the block number of the block with the given hash is returned.
+   *
+   * Otherwise, the block number of the latest block is returned.
+   *
+   * @param blockHash - The hash of the block for which the block number is requested.
+   * @param api - The API instance to use.
+   */
+  public async getBlockNumber(blockHash?: string, api = this.root.api): Promise<number> {
+    const apiInstanceAtBlock = !blockHash ? api : await api.at(blockHash);
     return (await apiInstanceAtBlock.query.system.number()).toNumber();
   }
 
+  /**
+   * Returns the timestamp of the block with the given hash.
+   *
+   * If `blockHash` is not provided, the timestamp of the latest block is returned.
+   *
+   * @param blockHash - The hash of the block for which the timestamp is requested.
+   * @param api - The API instance to use.
+   */
   public async getBlockTimestamp(blockHash: string, api = this.root.api): Promise<number> {
-    const apiInstanceAtBlock = await api.at(blockHash);
+    const apiInstanceAtBlock = !blockHash ? api : await api.at(blockHash);
     return (await apiInstanceAtBlock.query.timestamp.now()).toNumber();
   }
 
