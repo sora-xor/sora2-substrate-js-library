@@ -21,6 +21,8 @@ export class Consts {
   static readonly TBCD = '0x02000a0000000000000000000000000000000000000000000000000000000000';
   /** KUSD token */
   static readonly KUSD = '0x02000c0000000000000000000000000000000000000000000000000000000000';
+  /** VXOR token */
+  static readonly VXOR = '0x006a271832f44c93bd8692584d85415f0f3dccef9748fecd129442c8edcb4361';
 
   /** XYK, TBC fees the same */
   static readonly XYK_FEE = new FPNumber(0.003);
@@ -46,6 +48,7 @@ export const DexIdByBaseAsset: Record<string, number> = {
   [Consts.XOR]: 0,
   [Consts.XSTUSD]: 1,
   [Consts.KUSD]: 2,
+  [Consts.VXOR]: 3,
 };
 
 export enum Errors {
