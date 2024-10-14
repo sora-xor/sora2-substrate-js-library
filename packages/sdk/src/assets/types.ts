@@ -98,3 +98,5 @@ export enum AssetTypes {
 }
 
 export type AssetType = keyof typeof AssetTypes;
+
+export type UnlockPeriodDays = 1 | 7 | 30 | 60 | 90;

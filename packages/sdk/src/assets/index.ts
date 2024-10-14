@@ -12,7 +12,7 @@ import type {
 } from '@polkadot/types/lookup';
 import type { Option, u128 } from '@polkadot/types-codec';
 
-import { KnownAssets, NativeAssets, XOR } from './consts';
+import { DAY_IN_BLOCKS, KnownAssets, NativeAssets, XOR } from './consts';
 import { DexId } from '../dex/consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
@@ -23,6 +23,7 @@ import type {
   Asset,
   Blacklist,
   TransferOptions,
+  UnlockPeriodDays,
   Whitelist,
   WhitelistArrayItem,
   WhitelistIdsBySymbol,
@@ -790,10 +791,10 @@ export class AssetsModule<T> {
     amount: NumberLike,
     currentBlockNumber: number,
     vestingPercent: number,
-    unlockPeriodInDays: 1 | 7 | 30 | 60 | 90
+    unlockPeriodInDays: UnlockPeriodDays
   ) {
     const percent = vestingPercent / 100;
-    const periodInBlocks = unlockPeriodInDays * 24 * 600; // 1 day in blocks (600 blocks per hour | 1 block per 6 seconds)
+    const periodInBlocks = unlockPeriodInDays * DAY_IN_BLOCKS;
     const amountFp = new FPNumber(amount, asset.decimals ?? FPNumber.DEFAULT_PRECISION);
     const perPeriod = amountFp.mul(percent); // amount * percent
     const div = amountFp.div(perPeriod);
@@ -827,7 +828,7 @@ export class AssetsModule<T> {
     amount: NumberLike,
     currentBlockNumber: number,
     vestingPercent: number,
-    unlockPeriodInDays: 1 | 7 | 30 | 60 | 90
+    unlockPeriodInDays: UnlockPeriodDays
   ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     const assetAddress = asset.address;
@@ -855,7 +856,7 @@ export class AssetsModule<T> {
     amount: NumberLike,
     currentBlockNumber: number,
     vestingPercent: number,
-    unlockPeriodInDays: 1 | 7 | 30 | 60 | 90
+    unlockPeriodInDays: UnlockPeriodDays
   ): Promise<FPNumber> {
     const schedule = this.getVestingSchedule(asset, amount, currentBlockNumber, vestingPercent, unlockPeriodInDays);
 
