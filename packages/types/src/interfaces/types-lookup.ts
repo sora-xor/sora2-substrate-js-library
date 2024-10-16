@@ -1123,7 +1123,7 @@ declare module '@polkadot/types/lookup' {
   /** @name VestedRewardsVestingCurrenciesLinearPendingVestingSchedule (123) */
   interface VestedRewardsVestingCurrenciesLinearPendingVestingSchedule extends Struct {
     readonly assetId: CommonPrimitivesAssetId32;
-    readonly managerId: Option<AccountId32>;
+    readonly managerId: AccountId32;
     readonly start: Option<u32>;
     readonly period: u32;
     readonly periodCount: u32;
@@ -1131,7 +1131,7 @@ declare module '@polkadot/types/lookup' {
     readonly remainderAmount: Compact<u128>;
   }
 
-  /** @name PalletIdentityEvent (126) */
+  /** @name PalletIdentityEvent (125) */
   interface PalletIdentityEvent extends Enum {
     readonly isIdentitySet: boolean;
     readonly asIdentitySet: {
@@ -1187,7 +1187,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'IdentitySet' | 'IdentityCleared' | 'IdentityKilled' | 'JudgementRequested' | 'JudgementUnrequested' | 'JudgementGiven' | 'RegistrarAdded' | 'SubIdentityAdded' | 'SubIdentityRemoved' | 'SubIdentityRevoked';
   }
 
-  /** @name FarmingEvent (127) */
+  /** @name FarmingEvent (126) */
   interface FarmingEvent extends Enum {
     readonly isLpMinXorForBonusRewardUpdated: boolean;
     readonly asLpMinXorForBonusRewardUpdated: {
@@ -1197,7 +1197,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'LpMinXorForBonusRewardUpdated';
   }
 
-  /** @name XstEvent (128) */
+  /** @name XstEvent (127) */
   interface XstEvent extends Enum {
     readonly isReferenceAssetChanged: boolean;
     readonly asReferenceAssetChanged: CommonPrimitivesAssetId32;
@@ -1214,10 +1214,10 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'ReferenceAssetChanged' | 'SyntheticAssetEnabled' | 'SyntheticAssetDisabled' | 'SyntheticAssetFeeChanged' | 'SyntheticBaseAssetFloorPriceChanged' | 'SyntheticAssetRemoved';
   }
 
-  /** @name PriceToolsEvent (130) */
+  /** @name PriceToolsEvent (129) */
   type PriceToolsEvent = Null;
 
-  /** @name CeresStakingEvent (131) */
+  /** @name CeresStakingEvent (130) */
   interface CeresStakingEvent extends Enum {
     readonly isDeposited: boolean;
     readonly asDeposited: ITuple<[AccountId32, u128]>;
@@ -1228,14 +1228,14 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Deposited' | 'Withdrawn' | 'RewardsChanged';
   }
 
-  /** @name CeresLiquidityLockerEvent (132) */
+  /** @name CeresLiquidityLockerEvent (131) */
   interface CeresLiquidityLockerEvent extends Enum {
     readonly isLocked: boolean;
     readonly asLocked: ITuple<[AccountId32, u128, u64]>;
     readonly type: 'Locked';
   }
 
-  /** @name CeresTokenLockerEvent (133) */
+  /** @name CeresTokenLockerEvent (132) */
   interface CeresTokenLockerEvent extends Enum {
     readonly isLocked: boolean;
     readonly asLocked: ITuple<[AccountId32, u128, CommonPrimitivesAssetId32]>;
@@ -1246,7 +1246,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Locked' | 'Withdrawn' | 'FeeChanged';
   }
 
-  /** @name CeresGovernancePlatformEvent (134) */
+  /** @name CeresGovernancePlatformEvent (133) */
   interface CeresGovernancePlatformEvent extends Enum {
     readonly isVoted: boolean;
     readonly asVoted: ITuple<[AccountId32, H256, u32, CommonPrimitivesAssetId32, u128]>;
@@ -1257,7 +1257,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Voted' | 'Created' | 'Withdrawn';
   }
 
-  /** @name CeresLaunchpadEvent (137) */
+  /** @name CeresLaunchpadEvent (136) */
   interface CeresLaunchpadEvent extends Enum {
     readonly isIloCreated: boolean;
     readonly asIloCreated: ITuple<[AccountId32, CommonPrimitivesAssetId32]>;
@@ -1285,7 +1285,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'IloCreated' | 'Contributed' | 'EmergencyWithdrawn' | 'IloFinished' | 'ClaimedLP' | 'Claimed' | 'FeeChanged' | 'ClaimedPSWAP' | 'WhitelistedContributor' | 'WhitelistedIloOrganizer' | 'RemovedWhitelistedContributor' | 'RemovedWhitelistedIloOrganizer';
   }
 
-  /** @name DemeterFarmingPlatformEvent (138) */
+  /** @name DemeterFarmingPlatformEvent (137) */
   interface DemeterFarmingPlatformEvent extends Enum {
     readonly isTokenRegistered: boolean;
     readonly asTokenRegistered: ITuple<[AccountId32, CommonPrimitivesAssetId32]>;
@@ -1312,7 +1312,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'TokenRegistered' | 'PoolAdded' | 'RewardWithdrawn' | 'Withdrawn' | 'PoolRemoved' | 'Deposited' | 'MultiplierChanged' | 'DepositFeeChanged' | 'TokenInfoChanged' | 'TotalTokensChanged' | 'InfoChanged';
   }
 
-  /** @name PalletBagsListEvent (139) */
+  /** @name PalletBagsListEvent (138) */
   interface PalletBagsListEvent extends Enum {
     readonly isRebagged: boolean;
     readonly asRebagged: {
@@ -1328,7 +1328,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Rebagged' | 'ScoreUpdated';
   }
 
-  /** @name PalletElectionProviderMultiPhaseEvent (140) */
+  /** @name PalletElectionProviderMultiPhaseEvent (139) */
   interface PalletElectionProviderMultiPhaseEvent extends Enum {
     readonly isSolutionStored: boolean;
     readonly asSolutionStored: {
@@ -1361,7 +1361,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'SolutionStored' | 'ElectionFinalized' | 'ElectionFailed' | 'Rewarded' | 'Slashed' | 'PhaseTransitioned';
   }
 
-  /** @name PalletElectionProviderMultiPhaseElectionCompute (141) */
+  /** @name PalletElectionProviderMultiPhaseElectionCompute (140) */
   interface PalletElectionProviderMultiPhaseElectionCompute extends Enum {
     readonly isOnChain: boolean;
     readonly isSigned: boolean;
@@ -4283,7 +4283,6 @@ declare module '@polkadot/types/lookup' {
     readonly isUnlockPendingScheduleByManager: boolean;
     readonly asUnlockPendingScheduleByManager: {
       readonly dest: AccountId32;
-      readonly start: Option<u32>;
       readonly filterSchedule: VestedRewardsVestingCurrenciesVestingScheduleVariant;
     } & Struct;
     readonly type: 'ClaimRewards' | 'ClaimCrowdloanRewards' | 'UpdateRewards' | 'RegisterCrowdloan' | 'ClaimUnlocked' | 'VestedTransfer' | 'UpdateVestingSchedules' | 'ClaimFor' | 'UnlockPendingScheduleByManager';
