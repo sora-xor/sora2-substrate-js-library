@@ -995,7 +995,7 @@ export default {
    **/
   VestedRewardsVestingCurrenciesLinearPendingVestingSchedule: {
     assetId: 'CommonPrimitivesAssetId32',
-    managerId: 'Option<AccountId32>',
+    managerId: 'AccountId32',
     start: 'Option<u32>',
     period: 'u32',
     periodCount: 'u32',
@@ -1003,7 +1003,7 @@ export default {
     remainderAmount: 'Compact<u128>'
   },
   /**
-   * Lookup126: pallet_identity::pallet::Event<T>
+   * Lookup125: pallet_identity::pallet::Event<T>
    **/
   PalletIdentityEvent: {
     _enum: {
@@ -1051,7 +1051,7 @@ export default {
     }
   },
   /**
-   * Lookup127: farming::pallet::Event<T>
+   * Lookup126: farming::pallet::Event<T>
    **/
   FarmingEvent: {
     _enum: {
@@ -1062,7 +1062,7 @@ export default {
     }
   },
   /**
-   * Lookup128: xst::pallet::Event<T>
+   * Lookup127: xst::pallet::Event<T>
    **/
   XstEvent: {
     _enum: {
@@ -1075,11 +1075,11 @@ export default {
     }
   },
   /**
-   * Lookup130: price_tools::pallet::Event<T>
+   * Lookup129: price_tools::pallet::Event<T>
    **/
   PriceToolsEvent: 'Null',
   /**
-   * Lookup131: ceres_staking::pallet::Event<T>
+   * Lookup130: ceres_staking::pallet::Event<T>
    **/
   CeresStakingEvent: {
     _enum: {
@@ -1089,7 +1089,7 @@ export default {
     }
   },
   /**
-   * Lookup132: ceres_liquidity_locker::pallet::Event<T>
+   * Lookup131: ceres_liquidity_locker::pallet::Event<T>
    **/
   CeresLiquidityLockerEvent: {
     _enum: {
@@ -1097,7 +1097,7 @@ export default {
     }
   },
   /**
-   * Lookup133: ceres_token_locker::pallet::Event<T>
+   * Lookup132: ceres_token_locker::pallet::Event<T>
    **/
   CeresTokenLockerEvent: {
     _enum: {
@@ -1107,7 +1107,7 @@ export default {
     }
   },
   /**
-   * Lookup134: ceres_governance_platform::pallet::Event<T>
+   * Lookup133: ceres_governance_platform::pallet::Event<T>
    **/
   CeresGovernancePlatformEvent: {
     _enum: {
@@ -1117,7 +1117,7 @@ export default {
     }
   },
   /**
-   * Lookup137: ceres_launchpad::pallet::Event<T>
+   * Lookup136: ceres_launchpad::pallet::Event<T>
    **/
   CeresLaunchpadEvent: {
     _enum: {
@@ -1136,7 +1136,7 @@ export default {
     }
   },
   /**
-   * Lookup138: demeter_farming_platform::pallet::Event<T>
+   * Lookup137: demeter_farming_platform::pallet::Event<T>
    **/
   DemeterFarmingPlatformEvent: {
     _enum: {
@@ -1154,7 +1154,7 @@ export default {
     }
   },
   /**
-   * Lookup139: pallet_bags_list::pallet::Event<T, I>
+   * Lookup138: pallet_bags_list::pallet::Event<T, I>
    **/
   PalletBagsListEvent: {
     _enum: {
@@ -1170,7 +1170,7 @@ export default {
     }
   },
   /**
-   * Lookup140: pallet_election_provider_multi_phase::pallet::Event<T>
+   * Lookup139: pallet_election_provider_multi_phase::pallet::Event<T>
    **/
   PalletElectionProviderMultiPhaseEvent: {
     _enum: {
@@ -1200,7 +1200,7 @@ export default {
     }
   },
   /**
-   * Lookup141: pallet_election_provider_multi_phase::ElectionCompute
+   * Lookup140: pallet_election_provider_multi_phase::ElectionCompute
    **/
   PalletElectionProviderMultiPhaseElectionCompute: {
     _enum: ['OnChain', 'Signed', 'Unsigned', 'Fallback', 'Emergency']
@@ -4079,7 +4079,6 @@ export default {
       },
       unlock_pending_schedule_by_manager: {
         dest: 'AccountId32',
-        start: 'Option<u32>',
         filterSchedule: 'VestedRewardsVestingCurrenciesVestingScheduleVariant'
       }
     }
