@@ -90,6 +90,13 @@ export interface HistoryElementTransfer extends History {
   comment?: string;
 }
 
+export interface VestedTransferHistory extends History {
+  /* Period in blocks */
+  period: number;
+  /* vesting percent (0 - 100) */
+  percent: number;
+}
+
 export enum AssetTypes {
   Regular = 'Regular',
   NFT = 'NFT',

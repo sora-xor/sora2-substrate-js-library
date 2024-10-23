@@ -16,7 +16,7 @@ import { DAY_IN_BLOCKS, KnownAssets, NativeAssets, XOR } from './consts';
 import { DexId } from '../dex/consts';
 import { PoolTokens } from '../poolXyk/consts';
 import { Messages } from '../logger';
-import { Operation } from '../types';
+import { Operation, History } from '../types';
 import type {
   AccountAsset,
   AccountBalance,
@@ -27,6 +27,8 @@ import type {
   Whitelist,
   WhitelistArrayItem,
   WhitelistIdsBySymbol,
+  HistoryElementTransfer,
+  VestedTransferHistory,
 } from './types';
 import type { Api } from '../api';
 
@@ -667,10 +669,16 @@ export class AssetsModule<T> {
     const supply = new FPNumber(totalSupply, nonDivisible ? 0 : FPNumber.DEFAULT_PRECISION);
     const args = [symbol, name, supply.toCodecString(), extensibleSupply, nonDivisible, nft.content, nft.description];
 
-    return this.root.submitExtrinsic((this.root.api.tx.assets.register as any)(...args), this.root.account.pair, {
+    const historyItem: History = {
       symbol,
       type: Operation.RegisterAsset,
-    });
+    };
+
+    return this.root.submitExtrinsic(
+      (this.root.api.tx.assets.register as any)(...args),
+      this.root.account.pair,
+      historyItem
+    );
   }
 
   /**
@@ -687,10 +695,18 @@ export class AssetsModule<T> {
     const assetAddress = asset.address;
     const formattedToAddress = toAddress.startsWith('cn') ? toAddress : this.root.formatAddress(toAddress);
 
+    const historyItem: History = {
+      type: Operation.Transfer,
+      symbol: asset.symbol,
+      to: formattedToAddress,
+      amount: `${amount}`,
+      assetAddress,
+    };
+
     return this.root.submitExtrinsic(
       this.root.api.tx.assets.transfer(assetAddress, toAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.root.account.pair,
-      { symbol: asset.symbol, to: formattedToAddress, amount: `${amount}`, assetAddress, type: Operation.Transfer }
+      historyItem
     );
   }
 
@@ -718,6 +734,16 @@ export class AssetsModule<T> {
     const formattedToAddress = toAddress.startsWith('cn') ? toAddress : this.root.formatAddress(toAddress);
     const desiredXorAmount = feeType === 'xor' ? 0 : assetFeeParam; // Set it later to have real XOR less transfers
     const maxAmountIn = feeType === 'xor' ? 0 : assetFeeParam; // Set it later to have real XOR less transfers
+
+    const historyItem: HistoryElementTransfer = {
+      symbol: asset.symbol,
+      to: formattedToAddress,
+      amount: `${amount}`,
+      assetAddress,
+      type: Operation.XorlessTransfer,
+      comment,
+    };
+
     return this.root.submitExtrinsic(
       this.root.api.tx.liquidityProxy.xorlessTransfer(
         DexId.XOR,
@@ -731,14 +757,7 @@ export class AssetsModule<T> {
         commentStr
       ),
       this.root.account.pair,
-      {
-        symbol: asset.symbol,
-        to: formattedToAddress,
-        amount: `${amount}`,
-        assetAddress,
-        type: Operation.XorlessTransfer,
-        comment,
-      }
+      historyItem
     );
   }
 
@@ -754,11 +773,18 @@ export class AssetsModule<T> {
     const assetAddress = asset.address;
     const address = toAddress || this.root.account.pair.address;
     const formattedAddress = address.startsWith('cn') ? address : this.root.formatAddress(address);
+    const historyItem: History = {
+      type: Operation.Mint,
+      to: formattedAddress,
+      amount: `${amount}`,
+      assetAddress,
+      symbol: asset.symbol,
+    };
 
     return this.root.submitExtrinsic(
       this.root.api.tx.assets.mint(assetAddress, address, new FPNumber(amount, asset.decimals).toCodecString()),
       this.root.account.pair,
-      { type: Operation.Mint, to: formattedAddress, amount: `${amount}`, assetAddress, symbol: asset.symbol }
+      historyItem
     );
   }
 
@@ -770,11 +796,17 @@ export class AssetsModule<T> {
   public burn(asset: Asset | AccountAsset, amount: NumberLike): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     const assetAddress = asset.address;
+    const historyItem: History = {
+      type: Operation.Burn,
+      amount: `${amount}`,
+      assetAddress,
+      symbol: asset.symbol,
+    };
 
     return this.root.submitExtrinsic(
       this.root.api.tx.assets.burn(assetAddress, new FPNumber(amount, asset.decimals).toCodecString()),
       this.root.account.pair,
-      { type: Operation.Burn, amount: `${amount}`, assetAddress, symbol: asset.symbol }
+      historyItem
     );
   }
 
@@ -833,11 +865,19 @@ export class AssetsModule<T> {
     assert(this.root.account, Messages.connectWallet);
     const assetAddress = asset.address;
     const schedule = this.getVestingSchedule(asset, amount, currentBlockNumber, vestingPercent, unlockPeriodInDays);
-    // TODO: need to think about vesting parameters for history
+    const historyItem: VestedTransferHistory = {
+      type: Operation.VestedTransfer,
+      amount: `${amount}`,
+      assetAddress,
+      symbol: asset.symbol,
+      period: schedule.LinearVestingSchedule.period,
+      percent: vestingPercent,
+    };
+
     return this.root.submitExtrinsic(
       this.root.api.tx.vestedRewards.vestedTransfer(toAddress, schedule),
       this.root.account.pair,
-      { type: Operation.VestedTransfer, amount: `${amount}`, assetAddress, symbol: asset.symbol }
+      historyItem
     );
   }
 

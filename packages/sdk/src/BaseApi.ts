@@ -93,12 +93,6 @@ export class BaseApi<T = void> extends ApiAccount<T> {
             this.api.tx.poolXYK.initializePool(DexId.XOR, '', ''),
             this.api.tx.poolXYK.depositLiquidity(DexId.XOR, '', '', 0, 0, 0, 0),
           ]);
-        case Operation.EthBridgeIncoming:
-        case Operation.EvmIncoming:
-        case Operation.SubstrateIncoming:
-        case Operation.EvmOutgoing:
-        case Operation.SubstrateOutgoing:
-          return null;
         case Operation.EthBridgeOutgoing:
           return this.api.tx.ethBridge.transferToSidechain('', '', 0, 0);
         case Operation.RemoveLiquidity:

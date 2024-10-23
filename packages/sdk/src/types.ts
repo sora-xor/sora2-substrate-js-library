@@ -12,7 +12,7 @@ import type { SubHistory } from './bridgeProxy/sub/types';
 import type { RewardClaimHistory } from './rewards/types';
 import type { OriginalIdentity, StakingHistory } from './staking/types';
 import type { LimitOrderHistory } from './orderBook/types';
-import type { HistoryElementTransfer } from './assets/types';
+import type { HistoryElementTransfer, VestedTransferHistory } from './assets/types';
 import type { VaultHistory } from './kensetsu/types';
 
 export enum TransactionStatus {
@@ -168,7 +168,8 @@ export type HistoryItem =
   | StakingHistory
   | LimitOrderHistory
   | VaultHistory
-  | HistoryElementTransfer;
+  | HistoryElementTransfer
+  | VestedTransferHistory;
 
 export type CombinedHistoryItem = History &
   IBridgeTransaction &
@@ -176,7 +177,8 @@ export type CombinedHistoryItem = History &
   StakingHistory &
   LimitOrderHistory &
   VaultHistory &
-  HistoryElementTransfer;
+  HistoryElementTransfer &
+  VestedTransferHistory;
 
 export type FnResult = void | Observable<ExtrinsicEvent>;
 
