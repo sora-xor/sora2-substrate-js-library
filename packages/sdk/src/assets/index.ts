@@ -870,6 +870,7 @@ export class AssetsModule<T> {
       amount: `${amount}`,
       assetAddress,
       symbol: asset.symbol,
+      to: toAddress,
       period: schedule.LinearVestingSchedule.period,
       percent: vestingPercent,
     };
