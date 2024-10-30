@@ -813,4 +813,52 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
       return '0';
     }
   }
+
+  public createMST(accounts: string[], threshold: number, name: string): string {
+    const result = keyring.addMultisig(accounts, threshold, { name });
+    const addressMST = this.formatAddress(result.pair.address);
+    this.accountStorage?.set('MSTAddress', addressMST);
+    return addressMST;
+  }
+
+  public getMstAccount(address: string): KeyringAddress | undefined {
+    const multisigAccounts = keyring.getAccounts().filter(({ meta }) => meta.isMultisig);
+    const multisigAccount = multisigAccounts.find((account) => {
+      const accountAddress = this.formatAddress(account.address, false);
+      const targetAddress = this.formatAddress(address, false);
+      return accountAddress === targetAddress;
+    });
+    return multisigAccount;
+  }
+
+  public updateMultisigName(newName: string): void {
+    const addressMST = this.accountStorage?.get('MSTAddress') ?? '';
+    const multisigAccount = this.getMstAccount(addressMST);
+    if (multisigAccount) {
+      const pair = keyring.getPair(multisigAccount.address);
+      const currentMeta = pair.meta || {};
+
+      // Only update the name field in the metadata
+      const updatedMeta = { ...currentMeta, name: newName };
+
+      keyring.saveAccountMeta(pair, updatedMeta);
+    } else {
+      console.error(`Multisig account with address ${addressMST} not found among multisig accounts.`);
+    }
+  }
+
+  public getMSTName(): string {
+    const addressMST = this.accountStorage?.get('MSTAddress') ?? '';
+    const multisigAccount = this.getMstAccount(addressMST);
+    return multisigAccount?.meta.name ?? '';
+  }
+
+  public getMSTAddress(): string {
+    const addressMST = this.accountStorage?.get('MSTAddress') ?? '';
+    return addressMST;
+  }
+
+  public forgetMSTAccount(): void {
+    this.accountStorage?.set('MSTAddress', '');
+  }
 }
