@@ -833,7 +833,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
   public getMstAccount(address: string): KeyringAddress | undefined {
     const multisigAccounts = keyring.getAddresses().filter(({ meta }) => meta.isMultisig);
     const multisigAccount = multisigAccounts.find((account) => {
-      // Normalize both addresses before comparison
       const accountAddress = this.formatAddress(account.address, false);
       const targetAddress = this.formatAddress(address, false);
       return accountAddress === targetAddress;
@@ -847,10 +846,7 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     if (multisigAccount) {
       const pair = keyring.getPair(multisigAccount.address);
       const currentMeta = pair.meta || {};
-
-      // Only update the name field in the metadata
       const updatedMeta = { ...currentMeta, name: newName };
-
       keyring.saveAccountMeta(pair, updatedMeta);
     } else {
       console.error(`Multisig account with address ${addressMST} not found among multisig accounts.`);
@@ -864,7 +860,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
   }
 
   public getMSTAddress(): string {
-    console.info('we are in getMSTAddress');
     /* We taking previousAccountAddress because for now we are in MST,
     and we have MST address stored onle in default account
     previousAccountAddress have only MST*/
@@ -911,8 +906,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
 
       // Get MSTAddress from default account's storage
       const MSTAddress = this.accountStorage?.get('MSTAddress');
-      console.info('here is mst address', MSTAddress);
-      console.info(this.accountStorage);
 
       if (MSTAddress) {
         // Store current account address as previousAccountAddress
@@ -920,11 +913,7 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
 
         // Login to MST account
         const MSTAccountPair = this.getAccountPair(MSTAddress);
-        console.info('here is MSTAccountPair');
-        console.info(MSTAccountPair);
         const meta = MSTAccountPair.meta as KeyringPair$Meta;
-        console.info('here is meta');
-        console.info(meta);
         this.loginAccount(
           MSTAccountPair.address,
           meta.name as string,
