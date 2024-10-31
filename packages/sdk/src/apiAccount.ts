@@ -859,13 +859,13 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     return multisigAccount?.meta.name ?? '';
   }
 
-  public getMSTAddress(): string {
+  public isMstAddressExist(): boolean {
     /* We taking previousAccountAddress because for now we are in MST,
     and we have MST address stored onle in default account
     previousAccountAddress have only MST*/
     const addressMST =
       (this.accountStorage?.get('previousAccountAddress') || this.accountStorage?.get('MSTAddress')) ?? '';
-    return addressMST;
+    return addressMST !== '';
   }
 
   public isMST(): boolean {
