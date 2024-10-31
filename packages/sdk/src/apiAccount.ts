@@ -880,7 +880,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     const meta = previousAccountPair.meta as KeyringPair$Meta;
     const mstAddress = this.address;
 
-    // Remove 'previousAccountAddress' from MST account storage
     this.accountStorage?.remove('previousAccountAddress');
     this.accountStorage?.remove('assetsAddresses');
     // Login to the default account
@@ -890,66 +889,28 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
       meta.source as string,
       meta.isExternal as boolean
     );
-
-    // After switching, remove 'MSTAddress' from default account storage
-
     this.accountStorage?.remove('MSTAddress');
-
-    // Remove MST account from keyring addresses
     this.forgetAccount(mstAddress);
   }
 
   public switchAccount(switchToMST: boolean): void {
+    const currentAccountAddress = this.account?.pair?.address ?? '';
+    let targetAddress: string | undefined;
+    let storePreviousAccountAddress = false;
+
     if (switchToMST) {
-      // Switching to MST account
-      // We are currently in default account
-
-      // Get MSTAddress from default account's storage
-      const MSTAddress = this.accountStorage?.get('MSTAddress');
-
-      if (MSTAddress) {
-        // Store current account address as previousAccountAddress
-        const previousAccountAddress = this.account?.pair?.address;
-
-        // Login to MST account
-        const MSTAccountPair = this.getAccountPair(MSTAddress);
-        const meta = MSTAccountPair.meta as KeyringPair$Meta;
-        this.loginAccount(
-          MSTAccountPair.address,
-          meta.name as string,
-          meta.source as string,
-          meta.isExternal as boolean
-        );
-
-        // After login, accountStorage is now for MST account
-        // Store previousAccountAddress in MST account's storage
-        this.accountStorage?.set('previousAccountAddress', previousAccountAddress ?? '');
-      } else {
-        console.error('MST Address not found in default account storage.');
-      }
+      targetAddress = this.accountStorage?.get('MSTAddress');
+      storePreviousAccountAddress = true;
     } else {
-      // Switching back to default account
-      // We are currently in MST account
+      targetAddress = this.accountStorage?.get('previousAccountAddress');
+    }
 
-      // Get previousAccountAddress from MST account's storage
-      const previousAccountAddress = this.accountStorage?.get('previousAccountAddress');
+    const accountPair = this.getAccountPair(targetAddress ?? '');
+    const meta = accountPair.meta as KeyringPair$Meta;
+    this.loginAccount(accountPair.address, meta.name as string, meta.source as string, meta.isExternal as boolean);
 
-      if (previousAccountAddress) {
-        // Login to default account
-        const defaultAccountPair = this.getAccountPair(previousAccountAddress);
-        const meta = defaultAccountPair.meta as KeyringPair$Meta;
-        this.loginAccount(
-          defaultAccountPair.address,
-          meta.name as string,
-          meta.source as string,
-          meta.isExternal as boolean
-        );
-
-        // After login, accountStorage is now for default account
-        // Optionally, you can keep MSTAddress in storage for future switches
-      } else {
-        console.error('Previous account address not found in MST account storage.');
-      }
+    if (storePreviousAccountAddress) {
+      this.accountStorage?.set('previousAccountAddress', currentAccountAddress);
     }
   }
 }
