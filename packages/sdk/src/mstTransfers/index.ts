@@ -4,7 +4,6 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 
 import { Messages } from '../logger';
 import { Operation } from '../types';
-import type { KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Api } from '../api';
 
 /**
@@ -105,7 +104,7 @@ export class MstTransfersModule<T> {
     // We will be always in MST before delete it
     const previousAccountAddress = this.root.accountStorage?.get('previousAccountAddress');
     const previousAccountPair = this.root.getAccountPair(previousAccountAddress ?? '');
-    const meta = previousAccountPair.meta as KeyringPair$Meta;
+    const meta = previousAccountPair.meta;
     const mstAddress = this.root.address;
 
     this.root.accountStorage?.remove('previousAccountAddress');
@@ -134,7 +133,7 @@ export class MstTransfersModule<T> {
     }
 
     const accountPair = this.root.getAccountPair(targetAddress ?? '');
-    const meta = accountPair.meta as KeyringPair$Meta;
+    const meta = accountPair.meta;
     this.root.loginAccount(accountPair.address, meta.name as string, meta.source as string, meta.isExternal as boolean);
 
     if (storePreviousAccountAddress) {
