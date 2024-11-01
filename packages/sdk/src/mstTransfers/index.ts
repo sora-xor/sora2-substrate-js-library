@@ -4,6 +4,7 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 
 import { Messages } from '../logger';
 import { Operation } from '../types';
+import type { KeyringPair$Meta } from '@polkadot/keyring/types';
 import type { Api } from '../api';
 
 /**
@@ -77,6 +78,67 @@ export class MstTransfersModule<T> {
       return pendingData.map(([item, _]) => item.args[1].toString())[0];
     } catch {
       return null;
+    }
+  }
+
+  getMSTName(): string {
+    const addressMST = this.root.account?.pair?.address ?? '';
+    const multisigAccount = this.root.getMstAccount(addressMST);
+    return multisigAccount?.meta.name ?? '';
+  }
+
+  public isMstAddressExist(): boolean {
+    /* We taking previousAccountAddress because for now we are in MST,
+    and we have MST address stored onle in default account
+    previousAccountAddress have only MST*/
+    const addressMST =
+      (this.root.accountStorage?.get('previousAccountAddress') || this.root.accountStorage?.get('MSTAddress')) ?? '';
+    return addressMST !== '';
+  }
+
+  public isMST(): boolean {
+    const addressMST = this.root.accountStorage?.get('previousAccountAddress');
+    return addressMST !== '';
+  }
+
+  public forgetMSTAccount(): void {
+    // We will be always in MST before delete it
+    const previousAccountAddress = this.root.accountStorage?.get('previousAccountAddress');
+    const previousAccountPair = this.root.getAccountPair(previousAccountAddress ?? '');
+    const meta = previousAccountPair.meta as KeyringPair$Meta;
+    const mstAddress = this.root.address;
+
+    this.root.accountStorage?.remove('previousAccountAddress');
+    this.root.accountStorage?.remove('assetsAddresses');
+    // Login to the default account
+    this.root.loginAccount(
+      previousAccountPair.address,
+      meta.name as string,
+      meta.source as string,
+      meta.isExternal as boolean
+    );
+    this.root.accountStorage?.remove('MSTAddress');
+    this.root.forgetAccount(mstAddress);
+  }
+
+  public switchAccount(switchToMST: boolean): void {
+    const currentAccountAddress = this.root.account?.pair?.address ?? '';
+    let targetAddress: string | undefined;
+    let storePreviousAccountAddress = false;
+
+    if (switchToMST) {
+      targetAddress = this.root.accountStorage?.get('MSTAddress');
+      storePreviousAccountAddress = true;
+    } else {
+      targetAddress = this.root.accountStorage?.get('previousAccountAddress');
+    }
+
+    const accountPair = this.root.getAccountPair(targetAddress ?? '');
+    const meta = accountPair.meta as KeyringPair$Meta;
+    this.root.loginAccount(accountPair.address, meta.name as string, meta.source as string, meta.isExternal as boolean);
+
+    if (storePreviousAccountAddress) {
+      this.root.accountStorage?.set('previousAccountAddress', currentAccountAddress);
     }
   }
 }
