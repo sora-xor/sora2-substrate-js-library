@@ -14,7 +14,7 @@ import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
 import { ExtendedAssetsModule } from './extendedAssets';
 import { OrderBookModule } from './orderBook';
-import { MstTransfersModule } from './mstTransfers';
+import { MstModule } from './mst';
 import { SystemModule } from './system';
 import { StakingModule } from './staking';
 import { DemeterFarmingModule } from './demeterFarming';
@@ -41,7 +41,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly extendedAssets = new ExtendedAssetsModule<T>(this);
   public readonly orderBook = new OrderBookModule<T>(this);
   /** This module is used for internal needs */
-  public readonly mstTransfers = new MstTransfersModule<T>(this);
+  public readonly mst = new MstModule<T>(this);
   public readonly system = new SystemModule<T>(this);
   public readonly staking = new StakingModule<T>(this);
   public readonly demeterFarming = new DemeterFarmingModule<T>(this);

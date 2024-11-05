@@ -2,7 +2,7 @@ import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { Keyring } from '@polkadot/ui-keyring';
-import { assert, isHex } from '@polkadot/util';
+import { assert, BN, isHex } from '@polkadot/util';
 import { Observable, Subscriber, Subject } from 'rxjs';
 import {
   base58Decode,
@@ -39,6 +39,7 @@ import type {
 } from './types';
 import type { OriginalIdentity } from './staking/types';
 import type { CommonPrimitivesAssetId32Override } from './typeOverrides';
+import { api } from './api';
 
 // We don't need to know real account address for checking network fees
 const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
@@ -636,6 +637,10 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
   /** If `true` you might subscribe on extrinsic statuses (`false` by default) */
   public shouldObservableBeUsed = false;
 
+  public get keyring(): Keyring {
+    return keyring;
+  }
+
   // prettier-ignore
   public async submitApiExtrinsic( // NOSONAR
     api: ApiPromise,
@@ -675,7 +680,131 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    return await this.submitApiExtrinsic(this.api, extrinsic, accountPair, this.signer, historyData, unsigned);
+    console.info(accountPair);
+    console.info('we are in just submitExtrinsic');
+
+    // Check if the account is a multisig account
+    const isMultisig = api.mst.getMstAccount(accountPair.address) !== undefined;
+    console.info('ismultisg', isMultisig);
+
+    if (isMultisig) {
+      // Retrieve the main account's keyring pair from storage
+      let mainAccountPair: KeyringPair | null = null;
+      if (this.accountStorage?.get('previousAccountAddress')) {
+        console.info('this.accountStorage?.get previousAccountAddress exists');
+        const previousAccountAddress = this.accountStorage?.get('previousAccountAddress');
+        mainAccountPair = keyring.getPair(previousAccountAddress);
+        console.info('mainAccountPair', mainAccountPair);
+      } else {
+        throw new Error('Main account not found in accountStorage');
+      }
+
+      if (!historyData) {
+        throw new Error('historyData is required for multisig transactions');
+      }
+
+      // Ensure we have a KeyringPair to pass in
+      if (!mainAccountPair) {
+        throw new Error('Main account keyring pair not found');
+      }
+
+      // Call submitMultisigExtrinsic with multisig account and main account key pairs
+      return await this.submitMultisigExtrinsic(
+        extrinsic,
+        accountPair, // Multisig account pair
+        mainAccountPair, // Main account pair for signing
+        historyData,
+        unsigned
+      );
+    } else {
+      // Existing logic for non-multisig accounts
+      return await this.submitApiExtrinsic(this.api, extrinsic, accountPair, this.signer, historyData, unsigned);
+    }
+  }
+
+  public async submitMultisigExtrinsic(
+    call: SubmittableExtrinsic<'promise'>,
+    multisigAccountPair: KeyringPair,
+    signerAccountPair: KeyringPair,
+    historyData: HistoryItem,
+    unsigned = false
+  ): Promise<T> {
+    console.info('we are in submitMultisigExtrinsic');
+
+    // Generate the call hash
+    const callHash = call.method.hash;
+
+    // Get multisig account and meta data
+    const multisigAccount = api.mst.getMstAccount(multisigAccountPair.address);
+    if (!multisigAccount) {
+      throw new Error(`Multisig account with address ${multisigAccountPair.address} not found.`);
+    }
+
+    // Cast meta to MultisigMeta
+    const meta = multisigAccount.meta as unknown as any;
+    if (!meta) {
+      throw new Error(`Meta data for multisig account ${multisigAccountPair.address} is missing.`);
+    }
+
+    console.info('the meta is');
+    console.info(meta);
+
+    // Get all signatories and other signatories
+    const allSignatories = meta.who ? [...meta.who] : [];
+    if (!Array.isArray(allSignatories)) {
+      throw new Error(`Signatories for multisig account ${multisigAccountPair.address} are invalid.`);
+    }
+
+    console.info('allSignatories');
+    console.info(allSignatories);
+
+    const otherSignatories = allSignatories.filter((address: string) => address !== signerAccountPair.address);
+
+    console.info('otherSignatories');
+    console.info(otherSignatories);
+
+    const threshold = meta.threshold;
+
+    console.info('the threshold', threshold);
+
+    // Check for existing approvals
+    const multisigAddress = multisigAccountPair.address;
+    const info = await this.api.query.multisig.multisigs(multisigAddress, callHash);
+    console.info('here is the info');
+    console.info(info);
+    let maybeTimepoint = null;
+
+    if (info.isSome) {
+      const { when } = info.unwrap();
+      maybeTimepoint = when;
+    }
+
+    const MAX_WEIGHT = new BN('640000000');
+    const maxWeight = this.api.registry.createType('Weight', {
+      refTime: MAX_WEIGHT,
+      proofSize: new BN(0),
+    });
+
+    const approveExtrinsic = this.api.tx.multisig.approveAsMulti(
+      threshold,
+      otherSignatories,
+      maybeTimepoint,
+      callHash,
+      maxWeight
+    );
+
+    // Prepare history data with 'from' address as the multisig account
+    const updatedHistoryData = { ...historyData, from: multisigAccountPair.address };
+
+    // Sign and submit the approveAsMulti extrinsic using the main account's key pair
+    return await this.submitApiExtrinsic(
+      this.api,
+      approveExtrinsic,
+      signerAccountPair, // Use main account for signing
+      this.signer,
+      updatedHistoryData,
+      unsigned
+    );
   }
 
   public async signExtrinsic(
@@ -811,45 +940,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     } catch {
       // extrinsic is not supported in chain
       return '0';
-    }
-  }
-
-  public createMST(accounts: string[], threshold: number, name: string): string {
-    const result = keyring.addMultisig(accounts, threshold, { name });
-    const addressMST = this.formatAddress(result.pair.address);
-    keyring.saveAddress(addressMST, {
-      name,
-      isMultisig: true,
-      whenCreated: Date.now(),
-      threshold,
-      who: accounts,
-    });
-    // In default account set MST Address account
-    this.accountStorage?.set('MSTAddress', addressMST);
-
-    return addressMST;
-  }
-
-  public getMstAccount(address: string): KeyringAddress | undefined {
-    const multisigAccounts = keyring.getAddresses().filter(({ meta }) => meta.isMultisig);
-    const multisigAccount = multisigAccounts.find((account) => {
-      const accountAddress = this.formatAddress(account.address, false);
-      const targetAddress = this.formatAddress(address, false);
-      return accountAddress === targetAddress;
-    });
-    return multisigAccount;
-  }
-
-  public updateMultisigName(newName: string): void {
-    const addressMST = this.formatAddress(this.account?.pair?.address) ?? '';
-    const multisigAccount = this.getMstAccount(addressMST);
-    if (multisigAccount) {
-      const pair = keyring.getPair(multisigAccount.address);
-      const currentMeta = pair.meta || {};
-      const updatedMeta = { ...currentMeta, name: newName };
-      keyring.saveAccountMeta(pair, updatedMeta);
-    } else {
-      console.error(`Multisig account with address ${addressMST} not found among multisig accounts.`);
     }
   }
 }

@@ -5,11 +5,12 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 import { Messages } from '../logger';
 import { Operation } from '../types';
 import type { Api } from '../api';
+import { KeyringAddress } from '@polkadot/ui-keyring/types';
 
 /**
  * This module is used for internal needs
  */
-export class MstTransfersModule<T> {
+export class MstModule<T> {
   constructor(private readonly root: Api<T>) {}
 
   /**
@@ -82,8 +83,59 @@ export class MstTransfersModule<T> {
 
   getMSTName(): string {
     const addressMST = this.root.account?.pair?.address ?? '';
-    const multisigAccount = this.root.getMstAccount(addressMST);
+    const multisigAccount = this.getMstAccount(addressMST);
     return multisigAccount?.meta.name ?? '';
+  }
+
+  public createMST(accounts: string[], threshold: number, name: string): string {
+    const keyring = this.root.keyring; // Access keyring via the getter
+
+    const result = keyring.addMultisig(accounts, threshold, { name });
+    const addressMST = this.root.formatAddress(result.pair.address);
+    keyring.saveAddress(addressMST, {
+      name,
+      isMultisig: true,
+      whenCreated: Date.now(),
+      threshold,
+      who: accounts,
+    });
+    // In default account set MST Address account
+    this.root.accountStorage?.set('MSTAddress', addressMST);
+
+    return addressMST;
+  }
+
+  /**
+   * Get Multisig Account
+   */
+  public getMstAccount(address: string): KeyringAddress | undefined {
+    const keyring = this.root.keyring; // Access keyring via the getter
+
+    const multisigAccounts = keyring.getAddresses().filter(({ meta }) => meta.isMultisig);
+    const multisigAccount = multisigAccounts.find((account) => {
+      const accountAddress = this.root.formatAddress(account.address, false);
+      const targetAddress = this.root.formatAddress(address, false);
+      return accountAddress === targetAddress;
+    });
+    return multisigAccount;
+  }
+
+  /**
+   * Update Multisig Account Name
+   */
+  public updateMultisigName(newName: string): void {
+    const keyring = this.root.keyring; // Access keyring via the getter
+
+    const addressMST = this.root.formatAddress(this.root.account?.pair?.address) ?? '';
+    const multisigAccount = this.getMstAccount(addressMST);
+    if (multisigAccount) {
+      const pair = keyring.getPair(multisigAccount.address);
+      const currentMeta = pair.meta || {};
+      const updatedMeta = { ...currentMeta, name: newName };
+      keyring.saveAccountMeta(pair, updatedMeta);
+    } else {
+      console.error(`Multisig account with address ${addressMST} not found among multisig accounts.`);
+    }
   }
 
   public isMstAddressExist(): boolean {
@@ -93,6 +145,13 @@ export class MstTransfersModule<T> {
     const addressMST =
       (this.root.accountStorage?.get('previousAccountAddress') || this.root.accountStorage?.get('MSTAddress')) ?? '';
     return addressMST !== '';
+  }
+
+  public getMstAddress(): string {
+    console.info('we are in getMstAddress');
+    console.info('first', this.root.accountStorage?.get('MSTAddress'));
+    console.info('second', this.root.account?.pair?.address);
+    return this.root.accountStorage?.get('MSTAddress') || this.root.account?.pair?.address || '';
   }
 
   public isMST(): boolean {
@@ -138,6 +197,41 @@ export class MstTransfersModule<T> {
 
     if (storePreviousAccountAddress) {
       this.root.accountStorage?.set('previousAccountAddress', currentAccountAddress);
+    }
+  }
+
+  public async subscribeOnPendingTxs(mstAccount: string): Promise<string | null> {
+    // Observable
+    // Stefan + Rustem + Nikita -> MST (public address)
+    // 1. All member should generate the same MST account using parameters (all co-signer addresses + treshold)
+
+    try {
+      // 1. TODO: subscribe to block
+      const pendingData = await this.root.api.query.multisig.multisigs.entries(mstAccount);
+      console.info(pendingData);
+      const pendingDataFormatAddress = await this.root.api.query.multisig.multisigs.entries(
+        this.root.formatAddress(mstAccount)
+      );
+      console.info('formatted pendingDataFormatAddress');
+      console.info(pendingDataFormatAddress);
+      return pendingData.map(([item, _]) => item.args[1].toString())[0];
+      // 2. [AccountId32, U8aFixed] - 2nd (U8aFixed) is callHash
+      // 3. 'someData' below contains block number where this TX was created
+      // 4. request extrinsics from this block (system.getExtrinsicsFromBlock)
+      // 5. find needed extrinsic (with tx.system.remark event + multisig.approveAsMulti event)
+      // 6. get the data from system.remark, decrypt it. it'll be represented as callData
+      // 6.1 ensure that hash(callData) is the same as callHash
+      // Other methods
+      // 7. show it to the user (getHistoryByCallData)
+      // 8. user approves or declines:
+      // 8.1. if the TX was not the last from threshold - approveAsMulti(callHash)
+      // 8.2. if the TX was the last from threshold - asMulti(callData)
+
+      // !!!! Users should have an ability to see callData in UI in case they don't use Fearless Wallet
+      // !!!! We should block the flow where user doesn't use Fearless Wallet | Desktop
+      return pendingData.map(([item, someData]) => item.args[1].toString())[0];
+    } catch {
+      return null;
     }
   }
 }
