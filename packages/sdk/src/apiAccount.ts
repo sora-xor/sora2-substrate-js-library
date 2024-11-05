@@ -688,7 +688,7 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     console.info('ismultisg', isMultisig);
 
     if (isMultisig) {
-      // Retrieve the main account's keyring pair from storage
+      // get main account
       let mainAccountPair: KeyringPair | null = null;
       if (this.accountStorage?.get('previousAccountAddress')) {
         console.info('this.accountStorage?.get previousAccountAddress exists');
@@ -703,12 +703,10 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
         throw new Error('historyData is required for multisig transactions');
       }
 
-      // Ensure we have a KeyringPair to pass in
       if (!mainAccountPair) {
         throw new Error('Main account keyring pair not found');
       }
 
-      // Call submitMultisigExtrinsic with multisig account and main account key pairs
       return await this.submitMultisigExtrinsic(
         extrinsic,
         accountPair, // Multisig account pair
@@ -717,7 +715,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
         unsigned
       );
     } else {
-      // Existing logic for non-multisig accounts
       return await this.submitApiExtrinsic(this.api, extrinsic, accountPair, this.signer, historyData, unsigned);
     }
   }
@@ -729,18 +726,13 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     historyData: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    console.info('we are in submitMultisigExtrinsic');
-
-    // Generate the call hash
     const callHash = call.method.hash;
 
-    // Get multisig account and meta data
     const multisigAccount = api.mst.getMstAccount(multisigAccountPair.address);
     if (!multisigAccount) {
       throw new Error(`Multisig account with address ${multisigAccountPair.address} not found.`);
     }
 
-    // Cast meta to MultisigMeta
     const meta = multisigAccount.meta as unknown as any;
     if (!meta) {
       throw new Error(`Meta data for multisig account ${multisigAccountPair.address} is missing.`);
@@ -749,7 +741,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     console.info('the meta is');
     console.info(meta);
 
-    // Get all signatories and other signatories
     const allSignatories = meta.who ? [...meta.who] : [];
     if (!Array.isArray(allSignatories)) {
       throw new Error(`Signatories for multisig account ${multisigAccountPair.address} are invalid.`);
@@ -758,16 +749,17 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     console.info('allSignatories');
     console.info(allSignatories);
 
-    const otherSignatories = allSignatories.filter((address: string) => address !== signerAccountPair.address);
-
-    console.info('otherSignatories');
-    console.info(otherSignatories);
+    console.info('here is signerAccountPair', signerAccountPair);
+    console.info('formatted address', this.formatAddress(signerAccountPair.address));
+    const otherSignatories = allSignatories.filter(
+      (address) => address !== this.formatAddress(signerAccountPair.address)
+    );
+    otherSignatories.sort();
 
     const threshold = meta.threshold;
 
     console.info('the threshold', threshold);
 
-    // Check for existing approvals
     const multisigAddress = multisigAccountPair.address;
     const info = await this.api.query.multisig.multisigs(multisigAddress, callHash);
     console.info('here is the info');
@@ -792,11 +784,9 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
       callHash,
       maxWeight
     );
-
-    // Prepare history data with 'from' address as the multisig account
     const updatedHistoryData = { ...historyData, from: multisigAccountPair.address };
 
-    // Sign and submit the approveAsMulti extrinsic using the main account's key pair
+    // Sign and submit the approveAsMulti from main account
     return await this.submitApiExtrinsic(
       this.api,
       approveExtrinsic,

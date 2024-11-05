@@ -204,16 +204,10 @@ export class MstModule<T> {
     // Observable
     // Stefan + Rustem + Nikita -> MST (public address)
     // 1. All member should generate the same MST account using parameters (all co-signer addresses + treshold)
-
     try {
       // 1. TODO: subscribe to block
       const pendingData = await this.root.api.query.multisig.multisigs.entries(mstAccount);
       console.info(pendingData);
-      const pendingDataFormatAddress = await this.root.api.query.multisig.multisigs.entries(
-        this.root.formatAddress(mstAccount)
-      );
-      console.info('formatted pendingDataFormatAddress');
-      console.info(pendingDataFormatAddress);
       return pendingData.map(([item, _]) => item.args[1].toString())[0];
       // 2. [AccountId32, U8aFixed] - 2nd (U8aFixed) is callHash
       // 3. 'someData' below contains block number where this TX was created
