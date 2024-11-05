@@ -24,6 +24,9 @@ import { KensetsuModule } from './kensetsu';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
+import { SubmittableExtrinsic } from '@polkadot/api-base/types/submittable';
+import { KeyringPair } from '@polkadot/keyring/types';
+import { HistoryItem } from './types';
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
@@ -146,6 +149,54 @@ export class Api<T = void> extends BaseApi<T> {
 
     super.logout();
     this.bridgeProxy.logout();
+  }
+
+  public override async submitExtrinsic(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    accountPair: KeyringPair,
+    historyData?: HistoryItem,
+    unsigned?: boolean
+  ): Promise<T> {
+    console.info(accountPair);
+    console.info('we are in just submitExtrinsic');
+
+    // Check if the account is a multisig account
+    const isMultisig = api.mst.getMstAccount(accountPair.address) !== undefined;
+    console.info('ismultisg', isMultisig);
+
+    if (isMultisig) {
+      // Retrieve the main account's keyring pair from storage
+      let mainAccountPair: KeyringPair | null = null;
+      if (this.accountStorage?.get('previousAccountAddress')) {
+        console.info('this.accountStorage?.get previousAccountAddress exists');
+        const previousAccountAddress = this.accountStorage?.get('previousAccountAddress');
+        mainAccountPair = this.keyring.getPair(previousAccountAddress);
+        console.info('mainAccountPair', mainAccountPair);
+      } else {
+        throw new Error('Main account not found in accountStorage');
+      }
+
+      if (!historyData) {
+        throw new Error('historyData is required for multisig transactions');
+      }
+
+      // Ensure we have a KeyringPair to pass in
+      if (!mainAccountPair) {
+        throw new Error('Main account keyring pair not found');
+      }
+
+      // Call submitMultisigExtrinsic with multisig account and main account key pairs
+      return (await this.mst.submitMultisigExtrinsic(
+        extrinsic,
+        accountPair, // Multisig account pair
+        mainAccountPair, // Main account pair for signing
+        historyData,
+        unsigned
+      )) as unknown as Promise<T>;
+    } else {
+      // Existing logic for non-multisig accounts
+      return await super.submitExtrinsic(extrinsic, accountPair, historyData, unsigned);
+    }
   }
 
   // # Formatter methods

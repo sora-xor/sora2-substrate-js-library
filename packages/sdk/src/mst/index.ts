@@ -1,6 +1,7 @@
-import { assert } from '@polkadot/util';
+import { assert, BN } from '@polkadot/util';
 import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
+import type { KeyringPair } from '@polkadot/keyring/types';
 
 import { Messages } from '../logger';
 import { HistoryItem, Operation } from '../types';
@@ -196,6 +197,62 @@ export class MstModule<T> {
     if (storePreviousAccountAddress) {
       this.root.accountStorage?.set('previousAccountAddress', currentAccountAddress);
     }
+  }
+
+  public async submitMultisigExtrinsic(
+    call: SubmittableExtrinsic,
+    multisigAccountPair: KeyringPair,
+    signerAccountPair: KeyringPair,
+    historyData: HistoryItem,
+    unsigned = false
+  ): Promise<T> {
+    console.info('Submitting multisig extrinsic');
+
+    const callHash = call.method.hash;
+    const multisigAccount = this.getMstAccount(multisigAccountPair.address);
+    if (!multisigAccount) {
+      throw new Error(`Multisig account with address ${multisigAccountPair.address} not found.`);
+    }
+
+    const meta = multisigAccount.meta as unknown as any;
+    if (!meta) {
+      throw new Error(`Metadata for multisig account ${multisigAccountPair.address} is missing.`);
+    }
+
+    const allSignatories = meta.who ? [...meta.who] : [];
+    const otherSignatories = allSignatories.filter(
+      (address) => address !== this.root.formatAddress(signerAccountPair.address)
+    );
+    otherSignatories.sort();
+    const threshold = meta.threshold;
+
+    const multisigAddress = multisigAccountPair.address;
+    const info = await this.root.api.query.multisig.multisigs(multisigAddress, callHash);
+    let maybeTimepoint = null;
+    if (info.isSome) {
+      const { when } = info.unwrap();
+      maybeTimepoint = when;
+    }
+
+    const MAX_WEIGHT = new BN('640000000');
+    const maxWeight = this.root.api.registry.createType('Weight', {
+      refTime: MAX_WEIGHT,
+      proofSize: new BN(0),
+    });
+
+    const approveExtrinsic = this.root.api.tx.multisig.asMulti(
+      threshold,
+      otherSignatories,
+      maybeTimepoint,
+      call,
+      maxWeight
+    );
+
+    // Prepare updated history data
+    const updatedHistoryData = { ...historyData, from: multisigAccountPair.address };
+
+    // Use root's `submitExtrinsic` method for submission
+    return await this.root.submitExtrinsic(approveExtrinsic, signerAccountPair, updatedHistoryData, unsigned);
   }
 
   public async subscribeOnPendingTxs(mstAccount: string): Promise<string | null> {
