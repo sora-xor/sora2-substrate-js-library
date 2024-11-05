@@ -124,15 +124,13 @@ export class MstModule<T> {
    * Update Multisig Account Name
    */
   public updateMultisigName(newName: string): void {
-    const keyring = this.root.keyring; // Access keyring via the getter
+    const addressMST =
+      this.root.formatAddress(this.root.accountStorage?.get('MSTAddress')) ||
+      this.root.formatAddress(this.root.account?.pair?.address);
 
-    const addressMST = this.root.formatAddress(this.root.account?.pair?.address) ?? '';
     const multisigAccount = this.getMstAccount(addressMST);
     if (multisigAccount) {
-      const pair = keyring.getPair(multisigAccount.address);
-      const currentMeta = pair.meta || {};
-      const updatedMeta = { ...currentMeta, name: newName };
-      keyring.saveAccountMeta(pair, updatedMeta);
+      this.root.changeAccountName(multisigAccount.address, newName);
     } else {
       console.error(`Multisig account with address ${addressMST} not found among multisig accounts.`);
     }
@@ -209,6 +207,7 @@ export class MstModule<T> {
       const pendingData = await this.root.api.query.multisig.multisigs.entries(mstAccount);
       console.info(pendingData);
       return pendingData.map(([item, _]) => item.args[1].toString())[0];
+      // callData преобразование в historyItem
       // 2. [AccountId32, U8aFixed] - 2nd (U8aFixed) is callHash
       // 3. 'someData' below contains block number where this TX was created
       // 4. request extrinsics from this block (system.getExtrinsicsFromBlock)
