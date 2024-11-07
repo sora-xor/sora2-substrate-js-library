@@ -4,7 +4,7 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
 
 import { Messages } from '../logger';
-import { HistoryItem, Operation } from '../types';
+import { HistoryItem, Operation, TransactionStatus } from '../types';
 import type { Api } from '../api';
 import { KeyringAddress } from '@polkadot/ui-keyring/types';
 
@@ -255,7 +255,7 @@ export class MstModule<T> {
     return await this.root.submitExtrinsic(approveExtrinsic, signerAccountPair, updatedHistoryData, unsigned);
   }
 
-  public async subscribeOnPendingTxs(mstAccount: string): Promise<string | null> {
+  public async subscribeOnPendingTxs(mstAccount: string): Promise<HistoryItem[] | null> {
     // callData преобразование в historyItem
     // 2. [AccountId32, U8aFixed] - 2nd (U8aFixed) is callHash
     // 3. 'someData' below contains block number where this TX was created
@@ -272,92 +272,164 @@ export class MstModule<T> {
     // !!!! Users should have an ability to see callData in UI in case they don't use Fearless Wallet
     // !!!! We should block the flow where user doesn't use Fearless Wallet | Desktop
     try {
-      const pendingData = await this.root.api.query.multisig.multisigs.entries(mstAccount);
-      console.info('Pending multisig entries:', pendingData);
+      const pendingData = await this.getPendingMultisigTransactions(mstAccount);
+      const pendingTransactions: HistoryItem[] = [];
 
       for (const [key, multisigInfo] of pendingData) {
-        const callHash = key.args[1].toHex();
-        const info = multisigInfo.unwrap();
-        const { when } = info;
-        const blockNumber = when.height.toNumber();
-        const extrinsicIndex = when.index.toNumber();
-
-        console.info('Call Hash:', callHash);
-        console.info('Block Number:', blockNumber);
-        console.info('Extrinsic Index:', extrinsicIndex);
-
-        // Fetch the block and extrinsics
-        const blockHash = await this.root.api.rpc.chain.getBlockHash(blockNumber);
-        const signedBlock = await this.root.api.rpc.chain.getBlock(blockHash);
-        const extrinsics = signedBlock.block.extrinsics;
-
-        console.info(`Fetched block ${blockNumber} with hash ${blockHash.toHex()}`);
-        console.info(`Extrinsics in block: ${extrinsics.length}`);
-
-        // Retrieve the extrinsic at the specified index
-        const extrinsic = extrinsics[extrinsicIndex];
-        console.info('Extrinsic Method:', extrinsic.method.section, extrinsic.method.method);
-
-        // Check if the extrinsic is `asMulti` (which contains `callData`) and process it
-        if (extrinsic.method.section === 'multisig' && extrinsic.method.method === 'asMulti') {
-          console.info('Found `asMulti` extrinsic containing the original call data.');
-
-          // Retrieve call data and threshold information
-          const threshold = Number(extrinsic.method.args[0].toString());
-          const otherSignatories = extrinsic.method.args[1].toHuman();
-          const callData = extrinsic.method.args[3]; // Call data is at index 3 in `asMulti`
-          const computedCallHash = this.root.api.registry.hash(callData.toU8a()).toHex();
-
-          console.info('Threshold:', threshold);
-          console.info('Other Signatories:', otherSignatories);
-          console.info('Computed Call Hash from Call Data:', computedCallHash);
-          console.info('Stored Call Hash:', callHash);
-
-          // Verify that the computed call hash matches the stored call hash
-          if (computedCallHash === callHash) {
-            console.info('Computed call hash matches stored call hash.');
-            console.info('Decoding call data to extract method details...');
-
-            // Decode the `callData` to retrieve transaction details
-            const decodedCall = this.root.api.registry.createType('Call', callData);
-            const method = decodedCall.method;
-            const section = decodedCall.section;
-            // Decode and interpret the transfer arguments
-            const args = decodedCall.args;
-
-            // Extract the asset ID (assumes it can be converted to human-readable format)
-            const assetId = args[0].toHuman(); // Decodes asset ID, if human-readable is available
-            console.info('Asset ID:', assetId);
-
-            // Decode recipient address (formatted address)
-            const recipientAddress = this.root.api.registry.createType('AccountId', args[1]).toString();
-            console.info('Recipient Address:', recipientAddress);
-
-            // Decode amount (convert to main denomination if needed)
-            const amountRaw = args[2].toString();
-            const amountFormatted = new FPNumber(amountRaw, this.root.chainDecimals).toString();
-            console.info('Amount:', amountFormatted);
-
-            // Output final information
-            console.info(`Pending multisig transaction details: ${amountFormatted} ${assetId} to ${recipientAddress}`);
-
-            console.info(`Pending multisig transaction: ${section}.${method}`);
-            console.info('Arguments:', args);
-
-            // You can now process the decoded call data (e.g., transfer amount, recipient)
-          } else {
-            console.warn('Computed call hash does not match the stored call hash');
-          }
-        } else {
-          console.warn('Extrinsic at specified index is not multisig.asMulti');
+        const historyItem = await this.processPendingTransaction(mstAccount, key, multisigInfo);
+        if (historyItem) {
+          pendingTransactions.push(historyItem);
         }
       }
-
-      // Return the first call hash (or adjust as needed)
-      return pendingData.length > 0 ? pendingData[0][0].args[1].toHex() : null;
+      console.info('here are pendingTransactions');
+      console.info(pendingTransactions);
+      return pendingTransactions.length > 0 ? pendingTransactions : null;
     } catch (error) {
       console.error('Error in subscribeOnPendingTxs:', error);
       return null;
     }
+  }
+  private async getPendingMultisigTransactions(mstAccount: string) {
+    return await this.root.api.query.multisig.multisigs.entries(mstAccount);
+  }
+  private verifyCallHash(callData: any, storedCallHash: string): boolean {
+    const computedCallHash = this.root.api.registry.hash(callData.toU8a()).toHex();
+    return computedCallHash === storedCallHash;
+  }
+  private async parseCallDataToHistoryItem(
+    callData: any,
+    multisigInfo: { threshold: number; signatories: string[] },
+    blockNumber: number,
+    blockHash: string,
+    blockTimestamp: number,
+    mstAccount: string
+  ): Promise<HistoryItem> {
+    const decodedCall = this.root.api.registry.createType('Call', callData);
+    const method = decodedCall.method;
+    const section = decodedCall.section;
+    const args = decodedCall.args;
+    console.info('the args are');
+    console.info(args);
+    let historyItem: HistoryItem = {
+      id: '',
+      from: this.root.formatAddress(mstAccount),
+      type: Operation.Transfer,
+      multisig: {
+        threshold: multisigInfo.threshold,
+        signatories: multisigInfo.signatories,
+      },
+      blockId: blockHash,
+      blockHeight: blockNumber,
+      startTime: blockTimestamp,
+    };
+
+    const operationKey = `${section}.${method}`;
+    const operationMap: { [key: string]: Operation } = {
+      'assets.transfer': Operation.Transfer,
+      'assets.register': Operation.RegisterAsset,
+      // Add other mappings here
+    };
+
+    historyItem.type = operationMap[operationKey]; // Default to Transfer if not found
+
+    switch (historyItem.type) {
+      case Operation.Transfer:
+        // Extract assetAddress
+        const assetId = args[0];
+        let assetAddress: string = '';
+
+        const assetIdHuman = assetId.toHuman();
+
+        if (typeof assetIdHuman === 'object' && assetIdHuman !== null && 'code' in assetIdHuman) {
+          assetAddress = assetIdHuman.code != null ? assetIdHuman.code.toString() : '';
+        } else if (typeof assetIdHuman === 'string') {
+          assetAddress = assetIdHuman;
+        } else {
+          assetAddress = assetId.toString();
+        }
+
+        historyItem.assetAddress = assetAddress;
+
+        // Extract recipient address
+        const recipientAddress = this.root.formatAddress(args[1].toString());
+        historyItem.to = recipientAddress;
+
+        // Extract amount
+        const amountRaw = args[2].toString();
+        historyItem.amount = new FPNumber(amountRaw, this.root.chainDecimals).toString();
+        const assetInfo = await this.root.assets.getAssetInfo(assetAddress);
+        historyItem.symbol = assetInfo?.symbol;
+        historyItem.decimals = assetInfo?.decimals;
+
+        break;
+      // Handle other operations
+      default:
+        console.warn(`Unhandled operation for ${operationKey}`);
+        break;
+    }
+
+    return historyItem;
+  }
+  private async processPendingTransaction(
+    mstAccount: string,
+    key: any,
+    multisigInfo: any
+  ): Promise<HistoryItem | null> {
+    const callHash = key.args[1].toHex();
+    const info = multisigInfo.unwrap();
+    const { when } = info;
+    const blockNumber = when.height.toNumber();
+    const extrinsicIndex = when.index.toNumber();
+    const blockHash = await this.root.api.rpc.chain.getBlockHash(blockNumber);
+    const signedBlock = await this.root.api.rpc.chain.getBlock(blockHash);
+    const extrinsics = signedBlock.block.extrinsics;
+
+    // const extrinsic = await this.fetchExtrinsic(blockNumber, extrinsicIndex);
+    if (extrinsicIndex >= extrinsics.length) {
+      throw new Error(`Extrinsic index ${extrinsicIndex} out of bounds for block ${blockNumber}`);
+    }
+    const extrinsic = extrinsics[extrinsicIndex];
+
+    if (extrinsic.method.section === 'multisig' && extrinsic.method.method === 'asMulti') {
+      const callData = extrinsic.method.args[3];
+
+      // Extract multisig info
+      const threshold = Number(extrinsic.method.args[0].toString());
+      const otherSignatories = extrinsic.method.args[1].toHuman() as string[];
+      const signerAddress = extrinsic.signer.toString();
+      const allSignatories = [signerAddress, ...otherSignatories].map((s) => this.root.formatAddress(s));
+
+      const multisigInfo = {
+        threshold: threshold,
+        signatories: allSignatories,
+      };
+
+      if (this.verifyCallHash(callData, callHash)) {
+        const blockTimestamp = await this.getBlockTimestamp(blockHash);
+        const historyItem = this.parseCallDataToHistoryItem(
+          callData,
+          multisigInfo,
+          blockNumber,
+          blockHash.toHex(),
+          blockTimestamp,
+          mstAccount
+        );
+        (await historyItem).id = callHash; // Assign callHash as the history ID or generate a unique ID
+        // Additional processing if needed
+        return historyItem;
+      } else {
+        console.warn('Computed call hash does not match the stored call hash');
+        return null;
+      }
+    } else {
+      console.warn('Extrinsic at specified index is not multisig.asMulti');
+      return null;
+    }
+  }
+
+  private async getBlockTimestamp(blockHash: any): Promise<number> {
+    const atApi = await this.root.api.at(blockHash); // Use api.at() with the blockHash
+    const timestamp = await atApi.query.timestamp.now();
+    return Number(timestamp.toBigInt()); // Convert u64 to BigInt, then to number
   }
 }

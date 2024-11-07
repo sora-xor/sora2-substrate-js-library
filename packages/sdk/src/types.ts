@@ -163,6 +163,7 @@ export type IBridgeTransaction = EvmHistory | SubHistory | EthHistory;
 
 export type HistoryItem =
   | History
+  | HistoryWithMultisig
   | IBridgeTransaction
   | RewardClaimHistory
   | StakingHistory
@@ -196,3 +197,12 @@ export interface ISubmitExtrinsic<T> {
 export type AccountHistory<T> = {
   [key: string]: T;
 };
+
+interface MultisigInfo {
+  threshold: number;
+  signatories: string[]; // Adjust type if signatories aren't strings
+}
+
+interface HistoryWithMultisig extends History {
+  multisig?: MultisigInfo;
+}
