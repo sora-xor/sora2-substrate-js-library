@@ -113,31 +113,31 @@ ______________________________________________________________\n`
   console.log('______________________________________________________________');
   console.log(`Your Multisig Address: ${multisig}\n`);
   // Display network fee & MST TX preparation
-  const call = api.mst.prepareCall(transferParams);
-  const extrinsic = api.mst.prepareExtrinsic(call, threshold, coSigners);
-  const fee = await api.mst.getNetworkFee(extrinsic);
-  console.log(`Network fee is ${FPNumber.fromCodecValue(fee).toLocaleString()} XOR\n`);
-  await question(
-    rl,
-    `
-  \n\nPLEASE CHECK ALL DATA AND YOUR XOR AMOUNT FOR FEE.\n
-If everything is OK, just press "Enter"\n
-______________________________________________________________\n`
-  );
-  // Submit transfers
-  await api.mst.submit(extrinsic);
-  await delay();
-  const historyItem = Object.values(api.history)[0];
-  const lastPendingTx = await api.mst.getLastPendingTx(multisig);
-  if (historyItem.status === TransactionStatus.Error || !lastPendingTx) {
-    throw new Error('Something went wrong\n\n' + historyItem.errorMessage);
-  }
-  console.log('______________________________________________________________\nIMPORTANT!');
-  console.log('Pending TX which co-signers should sign:\n', lastPendingTx, '\n');
-  console.log('Call data which you should send for all co-signers:\n', call.method.toHex());
-  console.log('______________________________________________________________');
-  await connection.close();
-  console.log('\nDone!');
+  //   const call = api.mst.prepareCall(transferParams);
+  //   const extrinsic = api.mst.prepareExtrinsic(call, threshold, coSigners);
+  //   const fee = await api.mst.getNetworkFee(extrinsic);
+  //   console.log(`Network fee is ${FPNumber.fromCodecValue(fee).toLocaleString()} XOR\n`);
+  //   await question(
+  //     rl,
+  //     `
+  //   \n\nPLEASE CHECK ALL DATA AND YOUR XOR AMOUNT FOR FEE.\n
+  // If everything is OK, just press "Enter"\n
+  // ______________________________________________________________\n`
+  //   );
+  //   // Submit transfers
+  //   await api.mst.submit(extrinsic);
+  //   await delay();
+  //   const historyItem = Object.values(api.history)[0];
+  //   const lastPendingTx = await api.mst.getLastPendingTx(multisig);
+  //   if (historyItem.status === TransactionStatus.Error || !lastPendingTx) {
+  //     throw new Error('Something went wrong\n\n' + historyItem.errorMessage);
+  //   }
+  //   console.log('______________________________________________________________\nIMPORTANT!');
+  //   console.log('Pending TX which co-signers should sign:\n', lastPendingTx, '\n');
+  //   console.log('Call data which you should send for all co-signers:\n', call.method.toHex());
+  //   console.log('______________________________________________________________');
+  //   await connection.close();
+  //   console.log('\nDone!');
 }
 
 main()

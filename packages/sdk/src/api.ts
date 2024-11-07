@@ -157,35 +157,25 @@ export class Api<T = void> extends BaseApi<T> {
     historyData?: HistoryItem,
     unsigned?: boolean
   ): Promise<T> {
-    console.info(accountPair);
-    console.info('we are in just submitExtrinsic');
-
     // Check if the account is a multisig account
     const isMultisig = api.mst.getMstAccount(accountPair.address) !== undefined;
-    console.info('ismultisg', isMultisig);
 
     if (isMultisig) {
-      // Retrieve the main account's keyring pair from storage
       let mainAccountPair: KeyringPair | null = null;
       if (this.accountStorage?.get('previousAccountAddress')) {
         console.info('this.accountStorage?.get previousAccountAddress exists');
         const previousAccountAddress = this.accountStorage?.get('previousAccountAddress');
         mainAccountPair = this.keyring.getPair(previousAccountAddress);
-        console.info('mainAccountPair', mainAccountPair);
       } else {
-        throw new Error('Main account not found in accountStorage');
+        mainAccountPair = this.previousAccount?.pair ?? null;
       }
 
       if (!historyData) {
         throw new Error('historyData is required for multisig transactions');
       }
-
-      // Ensure we have a KeyringPair to pass in
       if (!mainAccountPair) {
         throw new Error('Main account keyring pair not found');
       }
-
-      // Call submitMultisigExtrinsic with multisig account and main account key pairs
       return (await this.mst.submitMultisigExtrinsic(
         extrinsic,
         accountPair, // Multisig account pair
@@ -199,7 +189,6 @@ export class Api<T = void> extends BaseApi<T> {
     }
   }
 
-  // # Formatter methods
   public hasEnoughXor(asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
     const xorDecimals = XOR.decimals;
     const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals);

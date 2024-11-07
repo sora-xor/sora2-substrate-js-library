@@ -173,6 +173,10 @@ export class WithAccountPair extends WithConnectionApi {
   public account?: CreateResult;
   public signer?: Signer;
 
+  public mstAccount?: CreateResult;
+  public mstActive: boolean = false;
+  public previousAccount?: CreateResult;
+
   public get accountPair(): KeyringPair | null {
     return this.account?.pair ?? null;
   }
@@ -236,6 +240,20 @@ export class WithAccountPair extends WithConnectionApi {
   public logout(): void {
     this.signer = undefined;
     this.account = undefined;
+  }
+
+  public setMstAccount(account: CreateResult): void {
+    this.mstAccount = account;
+  }
+
+  public switchToMstAccount(): void {
+    this.previousAccount = this.account;
+    this.mstActive = true;
+  }
+
+  public switchToMainAccount(): void {
+    this.previousAccount = undefined;
+    this.mstActive = false;
   }
 }
 
