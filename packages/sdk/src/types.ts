@@ -102,6 +102,7 @@ export enum Operation {
 }
 
 export interface OnChainIdentity {
+  displayName: string;
   legalName: string;
   approved: boolean;
   identity: OriginalIdentity;
