@@ -2452,7 +2452,11 @@ declare module '@polkadot/types/lookup' {
   }
 
   /** @name SoratopiaEvent (238) */
-  type SoratopiaEvent = Null;
+  interface SoratopiaEvent extends Enum {
+    readonly isCheckIn: boolean;
+    readonly asCheckIn: AccountId32;
+    readonly type: 'CheckIn';
+  }
 
   /** @name FrameSystemPhase (239) */
   interface FrameSystemPhase extends Enum {
