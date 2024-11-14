@@ -3,9 +3,10 @@ import { FPNumber } from '@sora-substrate/math';
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
 
-import { HistoryItem, Operation } from '../types';
+import { HistoryItem, Operation, TransactionStatus } from '../types';
 import type { Api } from '../api';
 import { KeyringAddress } from '@polkadot/ui-keyring/types';
+import { blake2AsHex } from '@polkadot/util-crypto';
 
 /**
  * This module is used for internal needs
@@ -180,7 +181,11 @@ export class MstModule<T> {
       proofSize: new BN(0),
     });
 
-    const approveExtrinsic = this.root.api.tx.multisig.asMulti(
+    const callData = call.method.toHex();
+
+    const systemRemarkCall = this.root.api.tx.system.remark(callData);
+
+    const multisigCall = this.root.api.tx.multisig.asMulti(
       threshold,
       otherSignatories,
       maybeTimepoint,
@@ -188,8 +193,172 @@ export class MstModule<T> {
       maxWeight
     );
 
+    // Create batch call
+    const batchCall = this.root.api.tx.utility.batch([systemRemarkCall, multisigCall]);
+
+    // Prepare updated history data
     const updatedHistoryData = { ...historyData, from: multisigAccountPair.address };
-    return await this.root.submitExtrinsic(approveExtrinsic, signerAccountPair, updatedHistoryData, unsigned);
+
+    // Use root's `submitExtrinsic` method for submission
+    return await this.root.submitExtrinsic(batchCall, signerAccountPair, updatedHistoryData, unsigned);
+  }
+
+  public async approveMultisigExtrinsic(callHash: string, multisigAccountAddress: string): Promise<T> {
+    const signerAddress = this.root.formatAddress(this.root.accountStorage?.get('previousAccountAddress'));
+    const signerAccountPair = this.root.getAccountPair(signerAddress);
+
+    // Get the multisig account info
+    const multisigAccount = this.getMstAccount(multisigAccountAddress);
+
+    if (!multisigAccount) {
+      throw new Error(`Multisig account with address ${multisigAccountAddress} not found.`);
+    }
+
+    const meta = multisigAccount.meta as any;
+    if (!meta) {
+      throw new Error(`Metadata for multisig account ${multisigAccountAddress} is missing.`);
+    }
+
+    const allSignatories = meta.who ? [...meta.who] : [];
+    const otherSignatories = allSignatories.filter((address) => address !== this.root.formatAddress(signerAddress));
+    otherSignatories.sort();
+    const threshold = meta.threshold;
+
+    const info = await this.root.api.query.multisig.multisigs(multisigAccountAddress, callHash);
+
+    if (info.isNone) {
+      throw new Error('No pending multisig transaction found for the given callHash');
+    }
+
+    const { when, approvals } = info.unwrap();
+    const maybeTimepoint = when;
+
+    // Check if this approval will meet the threshold
+    const numApprovals = approvals.length;
+    const willReachThreshold = numApprovals + 1 >= threshold; // +1 for the current signer
+
+    if (willReachThreshold) {
+      // Retrieve callData from the original batch transaction
+      const blockNumber = when.height.toNumber();
+      const extrinsicIndex = when.index.toNumber();
+      const blockHash = await this.root.api.rpc.chain.getBlockHash(blockNumber);
+      const signedBlock = await this.root.api.rpc.chain.getBlock(blockHash);
+      const extrinsics = signedBlock.block.extrinsics;
+      const extrinsic = extrinsics[extrinsicIndex];
+
+      if (extrinsic.method.section === 'utility' && extrinsic.method.method === 'batch') {
+        const calls = extrinsic.method.args[0] as any;
+
+        let systemRemarkCall: any = null;
+
+        for (const call of calls) {
+          if (call.section === 'system' && call.method === 'remark') {
+            systemRemarkCall = call;
+            break;
+          }
+        }
+
+        if (!systemRemarkCall) {
+          throw new Error('No system.remark call found in the batch');
+        }
+
+        const callDataHex = systemRemarkCall.args[0].toString();
+
+        // Ensure callData is a Call type
+        const callData = this.root.api.registry.createType('Call', callDataHex);
+
+        // Compute the hash by converting callData to hex and then hashing it
+        // Ensure callData is a Call type
+
+        // Compute the hash using blake2_256
+        const computedCallHash = blake2AsHex(callData.toU8a());
+
+        console.info('computedCallHash', computedCallHash);
+        console.info('callHash', callHash);
+        if (computedCallHash !== callHash) {
+          throw new Error('Computed call hash does not match the provided callHash');
+        }
+
+        const callArgs = Array.from(callData.args); // Convert to array
+        const dummyExtrinsic = this.root.api.tx[callData.section][callData.method].apply(null, callArgs);
+
+        // Log dummyExtrinsic for further inspection
+        console.log('Dummy Extrinsic:', dummyExtrinsic);
+
+        const paymentInfo = await dummyExtrinsic.paymentInfo(signerAddress);
+        const callWeight = paymentInfo.weight;
+
+        // Log payment info and weight for debugging
+        console.log('Payment Info:', paymentInfo.toHuman());
+        console.log('Call Weight (refTime):', callWeight.refTime.toString());
+        console.log('Call Weight (proofSize):', callWeight.proofSize.toString());
+
+        // Step 2: Calculate the Length of the Call (Z)
+        const callLength = callData.encodedLength;
+        console.log('Call Length (Z):', callLength);
+
+        // Step 3: Compute the Total Weight
+        const callRefTime = callWeight.refTime.toBn();
+        const callProofSize = callWeight.proofSize.toBn();
+        const totalProofSize = callProofSize.addn(callLength);
+
+        // Add a buffer (e.g., 10%)
+        const adjustedRefTime = callRefTime.muln(110).divn(100);
+        const adjustedProofSize = totalProofSize.muln(110).divn(100);
+
+        // Log adjusted weights with buffer for verification
+        console.log('Adjusted RefTime:', adjustedRefTime.toString());
+        console.log('Adjusted ProofSize:', adjustedProofSize.toString());
+
+        // Ensure weights do not exceed chain maximums
+        const maxBlockWeights = this.root.api.consts.system.blockWeights;
+        const maxBlockRefTime = maxBlockWeights.maxBlock.refTime.toBn();
+        const maxBlockProofSize = maxBlockWeights.maxBlock.proofSize.toBn();
+
+        const finalRefTime = BN.min(adjustedRefTime, maxBlockRefTime);
+        const finalProofSize = BN.min(adjustedProofSize, maxBlockProofSize);
+
+        // Log final refTime and proofSize before creating MAX_WEIGHT
+        console.log('Final RefTime:', finalRefTime.toString());
+        console.log('Final ProofSize:', finalProofSize.toString());
+
+        // Create MAX_WEIGHT with adjusted values
+        const MAX_WEIGHT = this.root.api.registry.createType('WeightV2', {
+          refTime: finalRefTime,
+          proofSize: finalProofSize,
+        });
+        console.log('MAX_WEIGHT:', MAX_WEIGHT.toHuman());
+
+        // Step 4: Use the Correct MAX_WEIGHT in asMulti Call
+        const asMultiExtrinsic = this.root.api.tx.multisig.asMulti(
+          threshold,
+          otherSignatories,
+          maybeTimepoint,
+          callData,
+          MAX_WEIGHT
+        );
+
+        console.log('asMultiExtrinsic:', asMultiExtrinsic);
+
+        // Submit the extrinsic
+        return await this.root.submitExtrinsic(asMultiExtrinsic, signerAccountPair);
+      } else {
+        throw new Error('Extrinsic at specified index is not utility.batch');
+      }
+    } else {
+      const MAX_WEIGHT = this.root.api.registry.createType('Weight', { refTime: new BN('640000000'), proofSize: 0 });
+
+      const approveExtrinsic = this.root.api.tx.multisig.approveAsMulti(
+        threshold,
+        otherSignatories,
+        maybeTimepoint,
+        callHash,
+        MAX_WEIGHT
+      );
+
+      // Submit the extrinsic
+      return await this.root.submitExtrinsic(approveExtrinsic, signerAccountPair);
+    }
   }
 
   public async subscribeOnPendingTxs(mstAccount: string): Promise<HistoryItem[] | null> {
@@ -216,6 +385,7 @@ export class MstModule<T> {
         const historyItem = await this.processPendingTransaction(mstAccount, key, multisigInfo);
         if (historyItem) {
           pendingTransactions.push(historyItem);
+          this.root.saveHistory(historyItem);
         }
       }
       console.info('here are pendingTransactions');
@@ -241,8 +411,6 @@ export class MstModule<T> {
     const method = decodedCall.method;
     const section = decodedCall.section;
     const args = decodedCall.args;
-    console.info('the args are');
-    console.info(args);
     let historyItem: HistoryItem = {
       id: '',
       from: this.root.formatAddress(mstAccount),
@@ -288,10 +456,16 @@ export class MstModule<T> {
 
         // Extract amount
         const amountRaw = args[2].toString();
-        historyItem.amount = new FPNumber(amountRaw, this.root.chainDecimals).toString();
         const assetInfo = await this.root.assets.getAssetInfo(assetAddress);
+        const decimals = assetInfo?.decimals ?? this.root.chainDecimals; // Use asset-specific decimals if available
+
+        // Divide the raw amount by 10 ** decimals and convert to string
+        historyItem.amount = new FPNumber(amountRaw, this.root.chainDecimals)
+          .div(new FPNumber(10 ** decimals, this.root.chainDecimals))
+          .toString();
+
         historyItem.symbol = assetInfo?.symbol;
-        historyItem.decimals = assetInfo?.decimals;
+        historyItem.decimals = decimals;
 
         break;
       default:
@@ -301,6 +475,7 @@ export class MstModule<T> {
 
     return historyItem;
   }
+
   private async processPendingTransaction(
     mstAccount: string,
     key: any,
@@ -308,7 +483,7 @@ export class MstModule<T> {
   ): Promise<HistoryItem | null> {
     const callHash = key.args[1].toHex();
     const info = multisigInfo.unwrap();
-    const { when } = info;
+    const { when, approvals } = info;
     const blockNumber = when.height.toNumber();
     const extrinsicIndex = when.index.toNumber();
     const blockHash = await this.root.api.rpc.chain.getBlockHash(blockNumber);
@@ -317,33 +492,76 @@ export class MstModule<T> {
 
     const extrinsic = extrinsics[extrinsicIndex];
 
-    if (extrinsic.method.section === 'multisig' && extrinsic.method.method === 'asMulti') {
-      const callData = extrinsic.method.args[3];
+    console.info('extrinsic.method.section', extrinsic.method.section);
+    console.info('extrinsic.method.method', extrinsic.method.method);
 
-      // Extract multisig info
-      const threshold = Number(extrinsic.method.args[0].toString());
-      const otherSignatories = extrinsic.method.args[1].toHuman() as string[];
+    if (extrinsic.method.section === 'utility' && extrinsic.method.method === 'batch') {
+      const calls = extrinsic.method.args[0] as any;
+      console.info('we are inside extrinsic.method.section === utility && extrinsic.method.method ===batch');
+      console.info('the calls are ', calls);
+
+      let systemRemarkCall: any = null;
+      let asMultiCall: any = null;
+
+      for (const call of calls) {
+        if (call.section === 'system' && call.method === 'remark') {
+          systemRemarkCall = call;
+        } else if (call.section === 'multisig' && call.method === 'asMulti') {
+          asMultiCall = call;
+        }
+      }
+
+      console.info('systemRemarkCall', systemRemarkCall);
+      console.info('asMultiCall', asMultiCall);
+      if (!asMultiCall) {
+        console.warn('No multisig.asMulti call found in the batch');
+        return null;
+      }
+
+      if (!systemRemarkCall) {
+        console.warn('No system.remark call found in the batch');
+        return null;
+      }
+
+      const callDataHex = systemRemarkCall.args[0].toString();
+      const callData = this.root.api.registry.createType('Call', callDataHex);
+
+      // Extract multisig info from asMultiCall
+      const threshold = Number(asMultiCall.args[0].toString());
+      const otherSignatories = asMultiCall.args[1].toHuman() as string[];
       const signerAddress = extrinsic.signer.toString();
       const allSignatories = [signerAddress, ...otherSignatories].map((s) => this.root.formatAddress(s));
 
-      const multisigInfo = {
+      const approvalsArray = approvals.toHuman() as string[]; // Approvals already given
+      const numApprovals = approvalsArray.length; // Number of approvals already given
+      const approvalsNeeded = threshold - numApprovals; // Approvals still needed
+
+      // **Include this information in the multisigInfo**
+      const multisigInfoExtended = {
         threshold: threshold,
         signatories: allSignatories,
+        approvals: approvalsArray.map((s) => this.root.formatAddress(s)),
+        numApprovals: numApprovals,
+        approvalsNeeded: approvalsNeeded,
       };
 
       const blockTimestamp = await this.getBlockTimestamp(blockHash);
-      const historyItem = this.parseCallDataToHistoryItem(
+      const historyItem = await this.parseCallDataToHistoryItem(
         callData,
-        multisigInfo,
+        multisigInfoExtended,
         blockNumber,
         blockHash.toHex(),
         blockTimestamp,
         mstAccount
       );
-      (await historyItem).id = callHash;
+
+      historyItem.id = callHash;
+      historyItem.txId = callHash;
+      historyItem.status = TransactionStatus.Finalized;
+
       return historyItem;
     } else {
-      console.warn('Extrinsic at specified index is not multisig.asMulti');
+      console.warn('Extrinsic at specified index is not utility.batch');
       return null;
     }
   }
