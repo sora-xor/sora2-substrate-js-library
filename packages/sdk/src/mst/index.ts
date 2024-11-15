@@ -81,10 +81,11 @@ export class MstModule<T> {
     return addressMST !== '';
   }
 
+  public getPrevoiusAccount(): string | undefined {
+    return this.root.accountStorage?.get('previousAccountAddress');
+  }
+
   public getMstAddress(): string {
-    console.info('we are in getMstAddress');
-    console.info('first', this.root.accountStorage?.get('MSTAddress'));
-    console.info('second', this.root.account?.pair?.address);
     return this.root.accountStorage?.get('MSTAddress') || this.root.account?.pair?.address || '';
   }
 
@@ -94,7 +95,6 @@ export class MstModule<T> {
   }
 
   public forgetMSTAccount(): void {
-    // We will be always in MST before delete it
     const previousAccountAddress = this.root.accountStorage?.get('previousAccountAddress');
     const previousAccountPair = this.root.getAccountPair(previousAccountAddress ?? '');
     const meta = previousAccountPair.meta;
@@ -139,6 +139,7 @@ export class MstModule<T> {
     }
   }
 
+  // Submitting for the first time
   public async submitMultisigExtrinsic(
     call: SubmittableExtrinsic,
     multisigAccountPair: KeyringPair,
@@ -146,11 +147,8 @@ export class MstModule<T> {
     historyData: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    console.info('Submitting multisig extrinsic');
-
     const callHash = call.method.hash;
     const multisigAccount = this.getMstAccount(multisigAccountPair.address);
-    console.info('the multisigAccount', multisigAccount?.address);
     if (!multisigAccount) {
       throw new Error(`Multisig account with address ${multisigAccountPair.address} not found.`);
     }
@@ -196,18 +194,20 @@ export class MstModule<T> {
     // Create batch call
     const batchCall = this.root.api.tx.utility.batch([systemRemarkCall, multisigCall]);
 
-    // Prepare updated history data
-    const updatedHistoryData = { ...historyData, from: multisigAccountPair.address };
+    const updatedHistoryData = {
+      ...historyData,
+      from: multisigAccountPair.address,
+      ...(threshold === 1 && { status: TransactionStatus.Finalized }),
+    };
 
-    // Use root's `submitExtrinsic` method for submission
     return await this.root.submitExtrinsic(batchCall, signerAccountPair, updatedHistoryData, unsigned);
   }
 
-  public async approveMultisigExtrinsic(callHash: string, multisigAccountAddress: string): Promise<T> {
+  // Approving from another co-signers
+  public async approveMultisigExtrinsic(callHash: string, multisigAccountAddress: string): Promise<void> {
     const signerAddress = this.root.formatAddress(this.root.accountStorage?.get('previousAccountAddress'));
     const signerAccountPair = this.root.getAccountPair(signerAddress);
 
-    // Get the multisig account info
     const multisigAccount = this.getMstAccount(multisigAccountAddress);
 
     if (!multisigAccount) {
@@ -233,12 +233,10 @@ export class MstModule<T> {
     const { when, approvals } = info.unwrap();
     const maybeTimepoint = when;
 
-    // Check if this approval will meet the threshold
     const numApprovals = approvals.length;
-    const willReachThreshold = numApprovals + 1 >= threshold; // +1 for the current signer
+    const willReachThreshold = numApprovals + 1 >= threshold;
 
     if (willReachThreshold) {
-      // Retrieve callData from the original batch transaction
       const blockNumber = when.height.toNumber();
       const extrinsicIndex = when.index.toNumber();
       const blockHash = await this.root.api.rpc.chain.getBlockHash(blockNumber);
@@ -264,53 +262,25 @@ export class MstModule<T> {
 
         const callDataHex = systemRemarkCall.args[0].toString();
 
-        // Ensure callData is a Call type
         const callData = this.root.api.registry.createType('Call', callDataHex);
-
-        // Compute the hash by converting callData to hex and then hashing it
-        // Ensure callData is a Call type
-
-        // Compute the hash using blake2_256
         const computedCallHash = blake2AsHex(callData.toU8a());
 
-        console.info('computedCallHash', computedCallHash);
-        console.info('callHash', callHash);
         if (computedCallHash !== callHash) {
           throw new Error('Computed call hash does not match the provided callHash');
         }
 
-        const callArgs = Array.from(callData.args); // Convert to array
+        const callArgs = Array.from(callData.args);
         const dummyExtrinsic = this.root.api.tx[callData.section][callData.method].apply(null, callArgs);
-
-        // Log dummyExtrinsic for further inspection
-        console.log('Dummy Extrinsic:', dummyExtrinsic);
-
         const paymentInfo = await dummyExtrinsic.paymentInfo(signerAddress);
         const callWeight = paymentInfo.weight;
-
-        // Log payment info and weight for debugging
-        console.log('Payment Info:', paymentInfo.toHuman());
-        console.log('Call Weight (refTime):', callWeight.refTime.toString());
-        console.log('Call Weight (proofSize):', callWeight.proofSize.toString());
-
-        // Step 2: Calculate the Length of the Call (Z)
         const callLength = callData.encodedLength;
-        console.log('Call Length (Z):', callLength);
-
-        // Step 3: Compute the Total Weight
         const callRefTime = callWeight.refTime.toBn();
         const callProofSize = callWeight.proofSize.toBn();
         const totalProofSize = callProofSize.addn(callLength);
 
-        // Add a buffer (e.g., 10%)
         const adjustedRefTime = callRefTime.muln(110).divn(100);
         const adjustedProofSize = totalProofSize.muln(110).divn(100);
 
-        // Log adjusted weights with buffer for verification
-        console.log('Adjusted RefTime:', adjustedRefTime.toString());
-        console.log('Adjusted ProofSize:', adjustedProofSize.toString());
-
-        // Ensure weights do not exceed chain maximums
         const maxBlockWeights = this.root.api.consts.system.blockWeights;
         const maxBlockRefTime = maxBlockWeights.maxBlock.refTime.toBn();
         const maxBlockProofSize = maxBlockWeights.maxBlock.proofSize.toBn();
@@ -318,18 +288,11 @@ export class MstModule<T> {
         const finalRefTime = BN.min(adjustedRefTime, maxBlockRefTime);
         const finalProofSize = BN.min(adjustedProofSize, maxBlockProofSize);
 
-        // Log final refTime and proofSize before creating MAX_WEIGHT
-        console.log('Final RefTime:', finalRefTime.toString());
-        console.log('Final ProofSize:', finalProofSize.toString());
-
-        // Create MAX_WEIGHT with adjusted values
         const MAX_WEIGHT = this.root.api.registry.createType('WeightV2', {
           refTime: finalRefTime,
           proofSize: finalProofSize,
         });
-        console.log('MAX_WEIGHT:', MAX_WEIGHT.toHuman());
 
-        // Step 4: Use the Correct MAX_WEIGHT in asMulti Call
         const asMultiExtrinsic = this.root.api.tx.multisig.asMulti(
           threshold,
           otherSignatories,
@@ -338,10 +301,19 @@ export class MstModule<T> {
           MAX_WEIGHT
         );
 
-        console.log('asMultiExtrinsic:', asMultiExtrinsic);
+        // TODO what if transaction failed
 
-        // Submit the extrinsic
-        return await this.root.submitExtrinsic(asMultiExtrinsic, signerAccountPair);
+        await this.root.submitExtrinsic(asMultiExtrinsic, signerAccountPair);
+        const existingHistoryItem = this.root.getHistory(callHash);
+        if (existingHistoryItem) {
+          existingHistoryItem.status = TransactionStatus.Finalized;
+          if ('multisig' in existingHistoryItem && existingHistoryItem.multisig) {
+            existingHistoryItem.multisig.numApprovals = existingHistoryItem.multisig.numApprovals + 1;
+          }
+          this.root.saveHistory(existingHistoryItem);
+        } else {
+          console.warn(`No history item found for callHash: ${callHash}`);
+        }
       } else {
         throw new Error('Extrinsic at specified index is not utility.batch');
       }
@@ -356,8 +328,7 @@ export class MstModule<T> {
         MAX_WEIGHT
       );
 
-      // Submit the extrinsic
-      return await this.root.submitExtrinsic(approveExtrinsic, signerAccountPair);
+      await this.root.submitExtrinsic(approveExtrinsic, signerAccountPair);
     }
   }
 
@@ -388,8 +359,17 @@ export class MstModule<T> {
           this.root.saveHistory(historyItem);
         }
       }
-      console.info('here are pendingTransactions');
-      console.info(pendingTransactions);
+
+      const pendingTransactionIds = pendingTransactions.map((tx) => tx.id);
+      for (const [id, transaction] of Object.entries(this.root.history)) {
+        if ('multisig' in transaction && transaction.status === TransactionStatus.Pending) {
+          if (!pendingTransactionIds.includes(id)) {
+            transaction.status = TransactionStatus.Finalized;
+            this.root.saveHistory(transaction);
+          }
+        }
+      }
+
       return pendingTransactions.length > 0 ? pendingTransactions : null;
     } catch (error) {
       console.error('Error in subscribeOnPendingTxs:', error);
@@ -401,7 +381,11 @@ export class MstModule<T> {
   }
   private async parseCallDataToHistoryItem(
     callData: any,
-    multisigInfo: { threshold: number; signatories: string[] },
+    multisigInfo: {
+      threshold: number;
+      signatories: string[];
+      numApprovals: number;
+    },
     blockNumber: number,
     blockHash: string,
     blockTimestamp: number,
@@ -418,6 +402,7 @@ export class MstModule<T> {
       multisig: {
         threshold: multisigInfo.threshold,
         signatories: multisigInfo.signatories,
+        numApprovals: multisigInfo.numApprovals,
       },
       blockId: blockHash,
       blockHeight: blockNumber,
@@ -434,7 +419,6 @@ export class MstModule<T> {
 
     switch (historyItem.type) {
       case Operation.Transfer:
-        // Extract assetAddress
         const assetId = args[0];
         let assetAddress: string = '';
 
@@ -450,16 +434,12 @@ export class MstModule<T> {
 
         historyItem.assetAddress = assetAddress;
 
-        // Extract recipient address
         const recipientAddress = this.root.formatAddress(args[1].toString());
         historyItem.to = recipientAddress;
 
-        // Extract amount
         const amountRaw = args[2].toString();
         const assetInfo = await this.root.assets.getAssetInfo(assetAddress);
-        const decimals = assetInfo?.decimals ?? this.root.chainDecimals; // Use asset-specific decimals if available
-
-        // Divide the raw amount by 10 ** decimals and convert to string
+        const decimals = assetInfo?.decimals ?? this.root.chainDecimals;
         historyItem.amount = new FPNumber(amountRaw, this.root.chainDecimals)
           .div(new FPNumber(10 ** decimals, this.root.chainDecimals))
           .toString();
@@ -492,14 +472,18 @@ export class MstModule<T> {
 
     const extrinsic = extrinsics[extrinsicIndex];
 
-    console.info('extrinsic.method.section', extrinsic.method.section);
-    console.info('extrinsic.method.method', extrinsic.method.method);
+    const fullExtrinsicHash = blake2AsHex(extrinsic.toU8a());
+    const historyEntries = Object.entries(this.root.history);
+
+    for (const [id] of historyEntries) {
+      if (id === fullExtrinsicHash) {
+        this.root.removeHistory(id);
+        break;
+      }
+    }
 
     if (extrinsic.method.section === 'utility' && extrinsic.method.method === 'batch') {
       const calls = extrinsic.method.args[0] as any;
-      console.info('we are inside extrinsic.method.section === utility && extrinsic.method.method ===batch');
-      console.info('the calls are ', calls);
-
       let systemRemarkCall: any = null;
       let asMultiCall: any = null;
 
@@ -510,9 +494,6 @@ export class MstModule<T> {
           asMultiCall = call;
         }
       }
-
-      console.info('systemRemarkCall', systemRemarkCall);
-      console.info('asMultiCall', asMultiCall);
       if (!asMultiCall) {
         console.warn('No multisig.asMulti call found in the batch');
         return null;
@@ -526,17 +507,15 @@ export class MstModule<T> {
       const callDataHex = systemRemarkCall.args[0].toString();
       const callData = this.root.api.registry.createType('Call', callDataHex);
 
-      // Extract multisig info from asMultiCall
       const threshold = Number(asMultiCall.args[0].toString());
       const otherSignatories = asMultiCall.args[1].toHuman() as string[];
       const signerAddress = extrinsic.signer.toString();
       const allSignatories = [signerAddress, ...otherSignatories].map((s) => this.root.formatAddress(s));
 
-      const approvalsArray = approvals.toHuman() as string[]; // Approvals already given
-      const numApprovals = approvalsArray.length; // Number of approvals already given
-      const approvalsNeeded = threshold - numApprovals; // Approvals still needed
+      const approvalsArray = approvals.toHuman() as string[];
+      const numApprovals = approvalsArray.length;
+      const approvalsNeeded = threshold - numApprovals;
 
-      // **Include this information in the multisigInfo**
       const multisigInfoExtended = {
         threshold: threshold,
         signatories: allSignatories,
@@ -557,7 +536,7 @@ export class MstModule<T> {
 
       historyItem.id = callHash;
       historyItem.txId = callHash;
-      historyItem.status = TransactionStatus.Finalized;
+      historyItem.status = TransactionStatus.Pending;
 
       return historyItem;
     } else {

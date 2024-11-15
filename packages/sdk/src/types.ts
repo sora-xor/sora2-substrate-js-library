@@ -23,6 +23,7 @@ export enum TransactionStatus {
   Error = 'error',
   Usurped = 'usurped', // When TX is outdated
   Invalid = 'invalid', // When something happened before sending to network
+  Pending = 'pending',
 }
 
 export enum Operation {
@@ -200,7 +201,8 @@ export type AccountHistory<T> = {
 
 interface MultisigInfo {
   threshold: number;
-  signatories: string[]; // Adjust type if signatories aren't strings
+  signatories: string[];
+  numApprovals: number;
 }
 
 interface HistoryWithMultisig extends History {
