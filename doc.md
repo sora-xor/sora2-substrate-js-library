@@ -6205,9 +6205,9 @@ returns: `FixnumFixedPoint`
 
 <hr>
 
-#### **api.query.pswapDistribution.buyBackTBCDFraction**
+#### **api.query.pswapDistribution.buyBackFraction**
 
-> Fraction of PSWAP that could be buy backed to TBCD
+> Fraction of PSWAP that could be buy backed
 
 arguments: -
 
@@ -7216,7 +7216,6 @@ arguments:
 arguments:
 
 - dest: `AccountId32`
-- start: `Option<u32>`
 - filterSchedule: `VestedRewardsVestingCurrenciesVestingScheduleVariant`
 <hr>
 

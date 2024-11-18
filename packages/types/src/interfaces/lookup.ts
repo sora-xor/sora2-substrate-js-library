@@ -2201,7 +2201,11 @@ export default {
   /**
    * Lookup238: soratopia::pallet::Event<T>
    **/
-  SoratopiaEvent: 'Null',
+  SoratopiaEvent: {
+    _enum: {
+      CheckIn: 'AccountId32'
+    }
+  },
   /**
    * Lookup239: frame_system::Phase
    **/

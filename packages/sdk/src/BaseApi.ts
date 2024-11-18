@@ -71,6 +71,7 @@ export class BaseApi<T = void> extends ApiAccount<T> {
     [Operation.RegisterAndRegulateAsset]: '0',
     [Operation.BindRegulatedAsset]: '0',
     [Operation.IssueSoulBoundToken]: '0',
+    [Operation.Checkin]: '0',
   } as NetworkFeesObject;
 
   /**
@@ -207,6 +208,8 @@ export class BaseApi<T = void> extends ApiAccount<T> {
           return this.api.tx.extendedAssets.bindRegulatedAssetToSbt('', '');
         case Operation.IssueSoulBoundToken: 
           return this.api.tx.extendedAssets.issueSbt('', '', '', '', '');
+        case Operation.Checkin:
+          return this.api.tx.soratopia.checkIn();
         default:
           return null;
       }

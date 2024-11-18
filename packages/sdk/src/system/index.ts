@@ -1,3 +1,4 @@
+import { assert } from '@polkadot/util';
 import { map, Subject } from 'rxjs';
 import { FPNumber } from '@sora-substrate/math';
 import type { Observable } from '@polkadot/types/types';
@@ -6,6 +7,8 @@ import type { u32, Vec, u128 } from '@polkadot/types-codec';
 import type { AnyTuple } from '@polkadot/types-codec/types';
 import type { FrameSystemEventRecord, FrameSystemLastRuntimeUpgradeInfo } from '@polkadot/types/lookup';
 
+import { Messages } from '../logger';
+import { Operation } from '../types';
 import type { Api } from '../api';
 
 export class SystemModule<T> {
@@ -119,5 +122,14 @@ export class SystemModule<T> {
   /** NetworkFeeMultiplier is for the SORA network only */
   public getNetworkFeeMultiplierObservable(apiRx = this.root.apiRx): Observable<number> {
     return apiRx.query.xorFee.multiplier().pipe(map<u128, number>((u128Data) => new FPNumber(u128Data).toNumber()));
+  }
+
+  /** Check in for the **SORATOPIA** project */
+  public checkin(): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
+    return this.root.submitExtrinsic(this.root.api.tx.soratopia.checkIn(), this.root.account.pair, {
+      type: Operation.Checkin,
+    });
   }
 }

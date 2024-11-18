@@ -108,6 +108,7 @@ export class WithConnectionApi {
     const result = data.unwrap();
 
     return {
+      displayName: result.info.display.value.toHuman() as string,
       legalName: result.info.legal.value.toHuman() as string,
       approved: Boolean(result.judgements.length),
       identity: result.toHuman() as unknown as OriginalIdentity,
