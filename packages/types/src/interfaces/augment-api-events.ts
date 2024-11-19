@@ -1081,6 +1081,7 @@ declare module '@polkadot/api-base/types/events' {
       NewSession: AugmentedEvent<ApiType, [sessionIndex: u32], { sessionIndex: u32 }>;
     };
     soratopia: {
+      CheckIn: AugmentedEvent<ApiType, [AccountId32]>;
     };
     staking: {
       /**

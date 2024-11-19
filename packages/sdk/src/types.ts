@@ -100,9 +100,12 @@ export enum Operation {
   RegisterAndRegulateAsset = 'RegisterAndRegulateAsset',
   BindRegulatedAsset = 'BindRegulatedAsset',
   IssueSoulBoundToken = 'IssueSoulBoundToken',
+  /** OTHER */
+  Checkin = 'Checkin',
 }
 
 export interface OnChainIdentity {
+  displayName: string;
   legalName: string;
   approved: boolean;
   identity: OriginalIdentity;
