@@ -7,6 +7,7 @@ import { HistoryItem, Operation, TransactionStatus } from '../types';
 import type { Api } from '../api';
 import { KeyringAddress } from '@polkadot/ui-keyring/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
+import { Subject, Subscription } from 'rxjs';
 
 /**
  * This module is used for internal needs
@@ -15,13 +16,17 @@ export class MstModule<T> {
   constructor(private readonly root: Api<T>) {}
 
   private mstAddress?: string;
+  private pendingTxsSubject = new Subject<HistoryItem[]>();
+  public pendingTxsUpdated = this.pendingTxsSubject.asObservable();
+  private lastPendingTxs: HistoryItem[] = [];
+  private pendingTxsSubscription: Subscription | null = null;
   getMSTName(): string {
     const addressMST = this.root.account?.pair?.address ?? '';
     const multisigAccount = this.getMstAccount(addressMST);
     return multisigAccount?.meta.name ?? '';
   }
 
-  public createMST(accounts: string[], threshold: number, name: string): string {
+  public createMST(accounts: string[], threshold: number, name: string, era?: number): string {
     const keyring = this.root.keyring; // Access keyring via the getter
 
     const result = keyring.addMultisig(accounts, threshold, { name });
@@ -32,6 +37,7 @@ export class MstModule<T> {
       whenCreated: Date.now(),
       threshold,
       who: accounts,
+      era,
     });
     this.root.accountStorage?.set('MSTAddress', addressMST);
 
@@ -157,6 +163,7 @@ export class MstModule<T> {
     if (!meta) {
       throw new Error(`Metadata for multisig account ${multisigAccountPair.address} is missing.`);
     }
+    const era = meta.era;
 
     const allSignatories = meta.who ? [...meta.who] : [];
     const otherSignatories = allSignatories.filter(
@@ -200,12 +207,14 @@ export class MstModule<T> {
       ...(threshold === 1 && { status: TransactionStatus.Finalized }),
     };
 
-    return await this.root.submitExtrinsic(batchCall, signerAccountPair, updatedHistoryData, unsigned);
+    return await this.root.submitExtrinsic(batchCall, signerAccountPair, updatedHistoryData, unsigned, { era });
   }
 
   // Approving from another co-signers
   public async approveMultisigExtrinsic(callHash: string, multisigAccountAddress: string): Promise<void> {
-    const signerAddress = this.root.formatAddress(this.root.accountStorage?.get('previousAccountAddress'));
+    const signerAddress =
+      this.root.formatAddress(this.root.accountStorage?.get('previousAccountAddress')) ??
+      this.root.previousAccount?.pair.address;
     const signerAccountPair = this.root.getAccountPair(signerAddress);
 
     const multisigAccount = this.getMstAccount(multisigAccountAddress);
@@ -332,6 +341,36 @@ export class MstModule<T> {
     }
   }
 
+  public async startPendingTxsSubscription(mstAccount: string): Promise<void> {
+    try {
+      // Subscribe to new blocks
+      const unsubscribe = await this.root.api.rpc.chain.subscribeNewHeads(async () => {
+        try {
+          const pendingTxs = await this.subscribeOnPendingTxs(mstAccount);
+
+          // Update the last known pending transactions
+          this.lastPendingTxs = pendingTxs || [];
+
+          // Emit the new pending transactions
+          this.pendingTxsSubject.next(this.lastPendingTxs);
+        } catch (error) {
+          console.error('Error checking pending MST transactions:', error);
+        }
+      });
+
+      // Store the unsubscribe function
+      this.pendingTxsSubscription = new Subscription(unsubscribe);
+    } catch (error) {
+      console.error('Error subscribing to new blocks:', error);
+    }
+  }
+  public stopPendingTxsSubscription(): void {
+    if (this.pendingTxsSubscription) {
+      this.pendingTxsSubscription.unsubscribe();
+      this.pendingTxsSubscription = null;
+    }
+  }
+
   public async subscribeOnPendingTxs(mstAccount: string): Promise<HistoryItem[] | null> {
     // callData преобразование в historyItem
     // 2. [AccountId32, U8aFixed] - 2nd (U8aFixed) is callHash
@@ -385,6 +424,7 @@ export class MstModule<T> {
       threshold: number;
       signatories: string[];
       numApprovals: number;
+      walletsApproved: string[];
     },
     blockNumber: number,
     blockHash: string,
@@ -403,6 +443,7 @@ export class MstModule<T> {
         threshold: multisigInfo.threshold,
         signatories: multisigInfo.signatories,
         numApprovals: multisigInfo.numApprovals,
+        walletsApproved: multisigInfo.walletsApproved,
       },
       blockId: blockHash,
       blockHeight: blockNumber,
@@ -514,14 +555,12 @@ export class MstModule<T> {
 
       const approvalsArray = approvals.toHuman() as string[];
       const numApprovals = approvalsArray.length;
-      const approvalsNeeded = threshold - numApprovals;
 
       const multisigInfoExtended = {
         threshold: threshold,
         signatories: allSignatories,
-        approvals: approvalsArray.map((s) => this.root.formatAddress(s)),
+        walletsApproved: approvalsArray.map((s) => this.root.formatAddress(s)),
         numApprovals: numApprovals,
-        approvalsNeeded: approvalsNeeded,
       };
 
       const blockTimestamp = await this.getBlockTimestamp(blockHash);

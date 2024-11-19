@@ -203,6 +203,7 @@ interface MultisigInfo {
   threshold: number;
   signatories: string[];
   numApprovals: number;
+  walletsApproved: string[];
 }
 
 interface HistoryWithMultisig extends History {

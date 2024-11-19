@@ -666,10 +666,11 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     accountPair: KeyringPair,
     signer?: Signer,
     historyData?: HistoryItem,
-    unsigned = false
+    unsigned = false,
+    signOptions?: { era?: number }
   ): Promise<T> {
     // Signing the transaction
-    const signedTx = await this.signExtrinsic(api, extrinsic, accountPair, signer, unsigned);
+    const signedTx = await this.signExtrinsic(api, extrinsic, accountPair, signer, unsigned, signOptions)
     // we should lock pair, if it's not locked
     this.shouldPairBeLocked && this.lockPair(accountPair);
     // history initial params
@@ -696,17 +697,29 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     extrinsic: SubmittableExtrinsic<'promise'>,
     accountPair: KeyringPair,
     historyData?: HistoryItem,
-    unsigned = false
+    unsigned = false,
+    signOptions?: { era?: number }
   ): Promise<T> {
-    return await this.submitApiExtrinsic(this.api, extrinsic, accountPair, this.signer, historyData, unsigned);
+    return await this.submitApiExtrinsic(
+      this.api,
+      extrinsic,
+      accountPair,
+      this.signer,
+      historyData,
+      unsigned,
+      signOptions
+    );
   }
+
+  // apiAccount.ts
 
   public async signExtrinsic(
     api: ApiPromise,
     extrinsic: SubmittableExtrinsic<'promise'>,
     accountPair: KeyringPair,
     signer?: Signer,
-    unsigned = false
+    unsigned = false,
+    signOptions?: { era?: number }
   ) {
     if (unsigned) return extrinsic;
 
@@ -716,7 +729,15 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
 
     const nonce = await api.rpc.system.accountNextIndex(accountPair.address);
 
-    return await extrinsic.signAsync(account, { ...options, nonce });
+    const signOptionsComplete = { ...options, nonce };
+
+    if (signOptions?.era !== undefined) {
+      const eraPeriod = signOptions.era;
+      const era = api.registry.createType('ExtrinsicEra', { mortal: eraPeriod });
+      signOptionsComplete.era = era;
+    }
+
+    return await extrinsic.signAsync(account, signOptionsComplete);
   }
 
   public async sendExtrinsic(

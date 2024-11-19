@@ -155,7 +155,8 @@ export class Api<T = void> extends BaseApi<T> {
     extrinsic: SubmittableExtrinsic<'promise'>,
     accountPair: KeyringPair,
     historyData?: HistoryItem,
-    unsigned?: boolean
+    unsigned?: boolean,
+    signOptions?: { era?: number } // Include signOptions
   ): Promise<T> {
     // Check if the account is a multisig account
     const isMultisig = api.mst.getMstAccount(accountPair.address) !== undefined;
@@ -176,6 +177,8 @@ export class Api<T = void> extends BaseApi<T> {
       if (!mainAccountPair) {
         throw new Error('Main account keyring pair not found');
       }
+
+      // Pass the signOptions (including era) to submitMultisigExtrinsic
       return (await this.mst.submitMultisigExtrinsic(
         extrinsic,
         accountPair, // Multisig account pair
@@ -184,8 +187,8 @@ export class Api<T = void> extends BaseApi<T> {
         unsigned
       )) as unknown as Promise<T>;
     } else {
-      // Existing logic for non-multisig accounts
-      return await super.submitExtrinsic(extrinsic, accountPair, historyData, unsigned);
+      // Pass the signOptions to the base submitExtrinsic method
+      return await super.submitExtrinsic(extrinsic, accountPair, historyData, unsigned, signOptions);
     }
   }
 
