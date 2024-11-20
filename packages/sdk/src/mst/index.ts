@@ -26,7 +26,7 @@ export class MstModule<T> {
     return multisigAccount?.meta.name ?? '';
   }
 
-  public createMST(accounts: string[], threshold: number, name: string, era?: number): string {
+  public createMST(accounts: string[], threshold: number, name: string, deadlineInBlocks?: number): string {
     const keyring = this.root.keyring; // Access keyring via the getter
 
     const result = keyring.addMultisig(accounts, threshold, { name });
@@ -37,7 +37,7 @@ export class MstModule<T> {
       whenCreated: Date.now(),
       threshold,
       who: accounts,
-      era,
+      deadlineInBlocks,
     });
     this.root.accountStorage?.set('MSTAddress', addressMST);
 
@@ -163,7 +163,6 @@ export class MstModule<T> {
     if (!meta) {
       throw new Error(`Metadata for multisig account ${multisigAccountPair.address} is missing.`);
     }
-    const era = meta.era;
 
     const allSignatories = meta.who ? [...meta.who] : [];
     const otherSignatories = allSignatories.filter(
@@ -207,7 +206,7 @@ export class MstModule<T> {
       ...(threshold === 1 && { status: TransactionStatus.Finalized }),
     };
 
-    return await this.root.submitExtrinsic(batchCall, signerAccountPair, updatedHistoryData, unsigned, { era });
+    return await this.root.submitExtrinsic(batchCall, signerAccountPair, updatedHistoryData, unsigned);
   }
 
   // Approving from another co-signers
@@ -583,25 +582,23 @@ export class MstModule<T> {
         throw new Error(`Metadata for multisig account ${mstAccount} is missing.`);
       }
 
-      const era = meta.era;
-      if (!era) {
-        throw new Error(`Era is not set in the metadata of the multisig account ${mstAccount}.`);
+      const deadlineInBlocks = meta.deadlineInBlocks as number;
+      if (!deadlineInBlocks) {
+        throw new Error(`Deadline is not set in the metadata of the multisig account ${mstAccount}.`);
       }
-
       const creationBlockNumber = when.height.toNumber();
-      const expirationBlockNumber = creationBlockNumber + era;
+      const expirationBlockNumber = creationBlockNumber + deadlineInBlocks;
 
       const currentHeader = await this.root.api.rpc.chain.getHeader();
       const currentBlockNumber = currentHeader.number.toNumber();
 
       const blocksUntilExpiration = expirationBlockNumber - currentBlockNumber;
 
-      const blockTimeInSeconds = 6; // Average block time for the chain
-      const secondsUntilExpiration = blocksUntilExpiration * blockTimeInSeconds;
-
-      if (secondsUntilExpiration <= 0) {
+      if (blocksUntilExpiration <= 0) {
         return null;
       }
+      const blockTimeInSeconds = 6;
+      const secondsUntilExpiration = blocksUntilExpiration * blockTimeInSeconds;
 
       const deadlineTrx = {
         expirationBlock: expirationBlockNumber,

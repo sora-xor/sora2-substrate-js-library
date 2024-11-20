@@ -732,12 +732,6 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
 
     const signOptionsComplete = { ...options, nonce };
 
-    if (signOptions?.era !== undefined) {
-      const eraPeriod = signOptions.era;
-      const era = api.registry.createType('ExtrinsicEra', { mortal: eraPeriod });
-      signOptionsComplete.era = era;
-    }
-
     return await extrinsic.signAsync(account, signOptionsComplete);
   }
 
