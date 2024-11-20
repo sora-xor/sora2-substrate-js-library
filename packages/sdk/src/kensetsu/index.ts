@@ -296,14 +296,14 @@ export class KensetsuModule<T> {
 
   // update_collateral_interest_coefficient
   updateCollateralInterestCoefficient(collateral: Collateral): FPNumber | null {
-    const now = Date.now();
-    if (now <= collateral.lastFeeUpdateTime) return null; // do nothing cuz it's already updated
+    const now = Math.floor(Date.now() / 1000);
+    if (now <= collateral.lastFeeUpdateTimeSecs) return null; // do nothing cuz it's already updated
 
-    const timePassed = now - collateral.lastFeeUpdateTime;
+    const timePassed = now - collateral.lastFeeUpdateTimeSecs;
     const collateralInterestCoeff = collateral.interestCoefficient;
-    const stabilityFeeMs = collateral.riskParams.stabilityFeeMs;
-    // interest_coefficient * ((1 + stability_fee_ms) ^ time_passed)
-    return collateralInterestCoeff.mul(FPNumber.ONE.add(stabilityFeeMs).pow(timePassed));
+    const stabilityFeeSecs = collateral.riskParams.stabilityFeeSecs;
+    // interest_coefficient * ((1 + stability_fee_secs) ^ time_passed)
+    return collateralInterestCoeff.mul(FPNumber.ONE.add(stabilityFeeSecs).pow(timePassed));
   }
 
   // accrue_internal
@@ -328,14 +328,14 @@ export class KensetsuModule<T> {
     // ratioReversed has Perbill type = 1_000_000_000 decimals * 100 because of %, so we set decimals = 9 - 2 = 7
     const ratioReversed = new FPNumber(collateralInfo.riskParameters.liquidationRatio, 7);
     const ratio = FPNumber.ONE.div(ratioReversed).mul(FPNumber.TEN_THOUSANDS);
-    // collateralInfo.riskParameters.stabilityFeeRate is presented in ms
-    const stabilityFeeMs = new FPNumber(collateralInfo.riskParameters.stabilityFeeRate);
-    // stability_fee_annual = (1 + stability_fee_ms) ^ 31_556_952 - 1; 31_556_952 - seconds in a year (an average Gregorian year has 365.2425 days)
-    const stabilityFeeAnnual = FPNumber.ONE.add(stabilityFeeMs).pow(31_556_952).sub(1).mul(100_000).dp(2); // * 100 (to %) * 1000 (ms to seconds)
+    // collateralInfo.riskParameters.stabilityFeeRate is presented in seconds
+    const stabilityFeeSecs = new FPNumber(collateralInfo.riskParameters.stabilityFeeRate);
+    // stability_fee_annual = (1 + stability_fee_in_seconds) ^ 31_556_952 - 1; 31_556_952 - seconds in a year (an average Gregorian year has 365.2425 days)
+    const stabilityFeeAnnual = FPNumber.ONE.add(stabilityFeeSecs).pow(31_556_952).sub(1).mul(100).dp(2); // * 100 (to %)
     const formatted: Collateral = {
       lockedAssetId,
       debtAssetId,
-      lastFeeUpdateTime: collateralInfo.lastFeeUpdateTime.toNumber(),
+      lastFeeUpdateTimeSecs: collateralInfo.lastFeeUpdateTime.toNumber(),
       interestCoefficient: new FPNumber(collateralInfo.interestCoefficient),
       debtSupply: new FPNumber(collateralInfo.stablecoinSupply),
       totalLocked: new FPNumber(collateralInfo.totalCollateral),
@@ -344,7 +344,7 @@ export class KensetsuModule<T> {
         liquidationRatioReversed: ratioReversed.toNumber(2),
         hardCap: new FPNumber(collateralInfo.riskParameters.hardCap),
         maxLiquidationLot: new FPNumber(collateralInfo.riskParameters.maxLiquidationLot),
-        stabilityFeeMs,
+        stabilityFeeSecs,
         stabilityFeeAnnual,
         minDeposit: new FPNumber(collateralInfo.riskParameters.minimalCollateralDeposit),
       },

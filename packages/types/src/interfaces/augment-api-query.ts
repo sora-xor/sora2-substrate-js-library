@@ -1212,10 +1212,6 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       burnUpdateInfo: AugmentedQuery<ApiType, () => Observable<ITuple<[FixnumFixedPoint, FixnumFixedPoint]>>, []>;
       /**
-       * Fraction of PSWAP that could be buy backed
-       **/
-      buyBackFraction: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
-      /**
        * Sum of all shares of incentive token owners.
        **/
       claimableShares: AugmentedQuery<ApiType, () => Observable<FixnumFixedPoint>, []>;
@@ -1825,13 +1821,13 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       updatePeriod: AugmentedQuery<ApiType, () => Observable<u32>, []>;
       /**
+       * The amount of XOR to be reminted and exchanged for KUSD at the end of the session
+       **/
+      xorToBuyBack: AugmentedQuery<ApiType, () => Observable<u128>, []>;
+      /**
        * The amount of XOR to be reminted and exchanged for VAL at the end of the session
        **/
       xorToVal: AugmentedQuery<ApiType, () => Observable<u128>, []>;
-      /**
-       * The amount of XOR to be reminted and exchanged for VXOR at the end of the session
-       **/
-      xorToVXor: AugmentedQuery<ApiType, () => Observable<u128>, []>;
     };
     xstPool: {
       /**
