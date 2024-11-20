@@ -668,10 +668,9 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     signer?: Signer,
     historyData?: HistoryItem,
     unsigned = false,
-    signOptions?: { era?: number }
   ): Promise<T> {
     // Signing the transaction
-    const signedTx = await this.signExtrinsic(api, extrinsic, accountPair, signer, unsigned, signOptions)
+    const signedTx = await this.signExtrinsic(api, extrinsic, accountPair, signer, unsigned)
     // we should lock pair, if it's not locked
     this.shouldPairBeLocked && this.lockPair(accountPair);
     // history initial params
@@ -698,18 +697,9 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     extrinsic: SubmittableExtrinsic<'promise'>,
     accountPair: KeyringPair,
     historyData?: HistoryItem,
-    unsigned = false,
-    signOptions?: { era?: number }
+    unsigned = false
   ): Promise<T> {
-    return await this.submitApiExtrinsic(
-      this.api,
-      extrinsic,
-      accountPair,
-      this.signer,
-      historyData,
-      unsigned,
-      signOptions
-    );
+    return await this.submitApiExtrinsic(this.api, extrinsic, accountPair, this.signer, historyData, unsigned);
   }
 
   // apiAccount.ts
@@ -719,8 +709,7 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     extrinsic: SubmittableExtrinsic<'promise'>,
     accountPair: KeyringPair,
     signer?: Signer,
-    unsigned = false,
-    signOptions?: { era?: number }
+    unsigned = false
   ) {
     if (unsigned) return extrinsic;
 

@@ -153,6 +153,7 @@ export class MstModule<T> {
     historyData: HistoryItem,
     unsigned = false
   ): Promise<T> {
+    console.info('we are in submitMultisigExtrinsic');
     const callHash = call.method.hash;
     const multisigAccount = this.getMstAccount(multisigAccountPair.address);
     if (!multisigAccount) {
@@ -164,10 +165,10 @@ export class MstModule<T> {
       throw new Error(`Metadata for multisig account ${multisigAccountPair.address} is missing.`);
     }
 
-    const allSignatories = meta.who ? [...meta.who] : [];
-    const otherSignatories = allSignatories.filter(
-      (address) => address !== this.root.formatAddress(signerAccountPair.address)
-    );
+    const allSignatories = meta.who ? [...meta.who].map((address) => this.root.formatAddress(address)) : [];
+    const formattedSignerAddress = this.root.formatAddress(signerAccountPair.address);
+
+    const otherSignatories = allSignatories.filter((address) => address !== formattedSignerAddress);
     otherSignatories.sort();
     const threshold = meta.threshold;
 
@@ -227,9 +228,10 @@ export class MstModule<T> {
     if (!meta) {
       throw new Error(`Metadata for multisig account ${multisigAccountAddress} is missing.`);
     }
+    const allSignatories = meta.who ? [...meta.who].map((address) => this.root.formatAddress(address)) : [];
+    const formattedSignerAddress = this.root.formatAddress(signerAccountPair.address);
 
-    const allSignatories = meta.who ? [...meta.who] : [];
-    const otherSignatories = allSignatories.filter((address) => address !== this.root.formatAddress(signerAddress));
+    const otherSignatories = allSignatories.filter((address) => address !== formattedSignerAddress);
     otherSignatories.sort();
     const threshold = meta.threshold;
 

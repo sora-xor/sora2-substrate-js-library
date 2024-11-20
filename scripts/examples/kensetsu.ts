@@ -101,12 +101,14 @@ async function main(): Promise<void> {
 
     console.info('\n\nSwitching to MST Account__________________');
     api.mst.switchAccount(true); // Switch to MST account
-    api.mst.approveMultisigExtrinsic('0x0sd', 'cns');
+    // api.mst.approveMultisigExtrinsic('0x0sd', 'cns');
     // const updateMainAccountSwitchedAfterMST = api.accountPair.address;
     // console.info(`updateMainAccountSwitchedAfterMST`, api.formatAddress(updateMainAccountSwitchedAfterMST));
     // console.info('previous account that is not the mst is', api.formatAddress(api.previousAccount.pair.address));
-    // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
-    // await delay(1_000);
+    await api.kensetsu.createVault(DAI, KUSD, 100, 20);
+    await delay(1_000);
+    await api.mst.approveMultisigExtrinsic('0xcs', mstAddress);
+
     // console.info('History for the mst:', api.historyList[0]);
     // console.info('now we will switch back to the main account');
     // console.info('\n\nSwitching to MAIN Account__________________');
