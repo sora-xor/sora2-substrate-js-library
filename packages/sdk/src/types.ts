@@ -209,6 +209,13 @@ interface MultisigInfo {
   walletsApproved: string[];
 }
 
+interface DeadlineTrx {
+  expirationBlock: number;
+  blocksRemaining: number;
+  secondsRemaining: number;
+}
+
 interface HistoryWithMultisig extends History {
   multisig?: MultisigInfo;
+  deadline?: DeadlineTrx;
 }

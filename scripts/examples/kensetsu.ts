@@ -101,27 +101,28 @@ async function main(): Promise<void> {
 
     console.info('\n\nSwitching to MST Account__________________');
     api.mst.switchAccount(true); // Switch to MST account
-    const updateMainAccountSwitchedAfterMST = api.accountPair.address;
-    console.info(`updateMainAccountSwitchedAfterMST`, api.formatAddress(updateMainAccountSwitchedAfterMST));
-    console.info('previous account that is not the mst is', api.formatAddress(api.previousAccount.pair.address));
-    await api.kensetsu.createVault(DAI, KUSD, 100, 20);
-    await delay(1_000);
-    console.info('History for the mst:', api.historyList[0]);
-    console.info('now we will switch back to the main account');
-    console.info('\n\nSwitching to MAIN Account__________________');
-    api.mst.switchAccount(false);
-    const switchedBackAccountAddress = api.accountPair.address;
-    console.info('switchedBackAccountAddress', api.formatAddress(switchedBackAccountAddress));
-    console.info('\n\nUnlocking Main Account____________________');
-    api.unlockPair('pass');
-    await api.kensetsu.createVault(DAI, KUSD, 100, 20);
-    await delay(1_000);
-    console.info('History for the main acc:', api.historyList[1]);
-    console.info('\n\nSwitching to MST Account again__________________');
-    api.mst.switchAccount(true); // Switch to MST account
-    await api.kensetsu.createVault(DAI, KUSD, 100, 20);
-    await delay();
-    console.info('History for the mst again:', api.historyList[2]);
+    api.mst.approveMultisigExtrinsic('0x0sd', 'cns');
+    // const updateMainAccountSwitchedAfterMST = api.accountPair.address;
+    // console.info(`updateMainAccountSwitchedAfterMST`, api.formatAddress(updateMainAccountSwitchedAfterMST));
+    // console.info('previous account that is not the mst is', api.formatAddress(api.previousAccount.pair.address));
+    // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
+    // await delay(1_000);
+    // console.info('History for the mst:', api.historyList[0]);
+    // console.info('now we will switch back to the main account');
+    // console.info('\n\nSwitching to MAIN Account__________________');
+    // api.mst.switchAccount(false);
+    // const switchedBackAccountAddress = api.accountPair.address;
+    // console.info('switchedBackAccountAddress', api.formatAddress(switchedBackAccountAddress));
+    // console.info('\n\nUnlocking Main Account____________________');
+    // api.unlockPair('pass');
+    // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
+    // await delay(1_000);
+    // console.info('History for the main acc:', api.historyList[1]);
+    // console.info('\n\nSwitching to MST Account again__________________');
+    // api.mst.switchAccount(true); // Switch to MST account
+    // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
+    // await delay();
+    // console.info('History for the mst again:', api.historyList[2]);
   }, SORA_ENV.dev);
 }
 

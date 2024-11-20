@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/api",
-  "version": "1.43.0-betaMST-1.0.1",
+  "version": "1.43.0-betaMST-1.0.2",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -10,6 +10,6 @@
   "dependencies": {
     "@open-web3/orml-api-derive": "1.1.4",
     "@polkadot/api": "9.14.2",
-    "@sora-substrate/types": "1.43.0-betaMST-1.0.1"
+    "@sora-substrate/types": "1.43.0-betaMST-1.0.2"
   }
 }

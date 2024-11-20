@@ -128,7 +128,7 @@ export class MstModule<T> {
       storePreviousAccountAddress = true;
     } else {
       targetAddress =
-        this.root.accountStorage?.get('previousAccountAddress') ?? this.root.previousAccount?.pair.address;
+        this.root.accountStorage?.get('previousAccountAddress') || this.root.previousAccount?.pair.address;
     }
 
     const accountPair = this.root.getAccountPair(this.root.formatAddress(targetAddress) ?? '');
@@ -213,8 +213,9 @@ export class MstModule<T> {
   // Approving from another co-signers
   public async approveMultisigExtrinsic(callHash: string, multisigAccountAddress: string): Promise<void> {
     const signerAddress =
-      this.root.formatAddress(this.root.accountStorage?.get('previousAccountAddress')) ??
-      this.root.previousAccount?.pair.address;
+      this.root.formatAddress(this.root.accountStorage?.get('previousAccountAddress')) ||
+      this.root.formatAddress(this.root.previousAccount?.pair.address) ||
+      '';
     const signerAccountPair = this.root.getAccountPair(signerAddress);
 
     const multisigAccount = this.getMstAccount(multisigAccountAddress);
@@ -234,7 +235,6 @@ export class MstModule<T> {
     const threshold = meta.threshold;
 
     const info = await this.root.api.query.multisig.multisigs(multisigAccountAddress, callHash);
-
     if (info.isNone) {
       throw new Error('No pending multisig transaction found for the given callHash');
     }
@@ -426,6 +426,11 @@ export class MstModule<T> {
       numApprovals: number;
       walletsApproved: string[];
     },
+    deadlineTrx: {
+      expirationBlock: number;
+      blocksRemaining: number;
+      secondsRemaining: number;
+    },
     blockNumber: number,
     blockHash: string,
     blockTimestamp: number,
@@ -444,6 +449,11 @@ export class MstModule<T> {
         signatories: multisigInfo.signatories,
         numApprovals: multisigInfo.numApprovals,
         walletsApproved: multisigInfo.walletsApproved,
+      },
+      deadline: {
+        expirationBlock: deadlineTrx.expirationBlock,
+        blocksRemaining: deadlineTrx.blocksRemaining,
+        secondsRemaining: deadlineTrx.secondsRemaining,
       },
       blockId: blockHash,
       blockHeight: blockNumber,
@@ -563,10 +573,47 @@ export class MstModule<T> {
         numApprovals: numApprovals,
       };
 
+      const multisigAccount = this.getMstAccount(this.root.formatAddress(mstAccount));
+      if (!multisigAccount) {
+        throw new Error(`Multisig account with address ${mstAccount} not found.`);
+      }
+
+      const meta = multisigAccount.meta as any;
+      if (!meta) {
+        throw new Error(`Metadata for multisig account ${mstAccount} is missing.`);
+      }
+
+      const era = meta.era;
+      if (!era) {
+        throw new Error(`Era is not set in the metadata of the multisig account ${mstAccount}.`);
+      }
+
+      const creationBlockNumber = when.height.toNumber();
+      const expirationBlockNumber = creationBlockNumber + era;
+
+      const currentHeader = await this.root.api.rpc.chain.getHeader();
+      const currentBlockNumber = currentHeader.number.toNumber();
+
+      const blocksUntilExpiration = expirationBlockNumber - currentBlockNumber;
+
+      const blockTimeInSeconds = 6; // Average block time for the chain
+      const secondsUntilExpiration = blocksUntilExpiration * blockTimeInSeconds;
+
+      if (secondsUntilExpiration <= 0) {
+        return null;
+      }
+
+      const deadlineTrx = {
+        expirationBlock: expirationBlockNumber,
+        blocksRemaining: blocksUntilExpiration,
+        secondsRemaining: secondsUntilExpiration,
+      };
+
       const blockTimestamp = await this.getBlockTimestamp(blockHash);
       const historyItem = await this.parseCallDataToHistoryItem(
         callData,
         multisigInfoExtended,
+        deadlineTrx,
         blockNumber,
         blockHash.toHex(),
         blockTimestamp,
