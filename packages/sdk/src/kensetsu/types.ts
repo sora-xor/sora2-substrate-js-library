@@ -23,7 +23,7 @@ type RiskParameters = {
   liquidationRatioReversed: number;
   liquidationRatio: number;
   maxLiquidationLot: FPNumber;
-  stabilityFeeMs: FPNumber;
+  stabilityFeeSecs: FPNumber;
   stabilityFeeAnnual: FPNumber;
   minDeposit: FPNumber;
 };
@@ -34,7 +34,7 @@ export type Collateral = {
   riskParams: RiskParameters;
   debtSupply: FPNumber;
   totalLocked: FPNumber;
-  lastFeeUpdateTime: number;
+  lastFeeUpdateTimeSecs: number;
   interestCoefficient: FPNumber;
 };
 

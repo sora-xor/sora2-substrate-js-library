@@ -1446,9 +1446,9 @@ returns: `u128`
 
 <hr>
 
-#### **api.query.xorFee.xorToVXor**
+#### **api.query.xorFee.xorToBuyBack**
 
-> The amount of XOR to be reminted and exchanged for VXOR at the end of the session
+> The amount of XOR to be reminted and exchanged for KUSD at the end of the session
 
 arguments: -
 
@@ -6198,16 +6198,6 @@ returns: `FixnumFixedPoint`
 #### **api.query.pswapDistribution.claimableShares**
 
 > Sum of all shares of incentive token owners.
-
-arguments: -
-
-returns: `FixnumFixedPoint`
-
-<hr>
-
-#### **api.query.pswapDistribution.buyBackFraction**
-
-> Fraction of PSWAP that could be buy backed
 
 arguments: -
 
