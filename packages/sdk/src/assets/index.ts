@@ -814,14 +814,14 @@ export class AssetsModule<T> {
    * Get vesting schedule for VestedTransfer feature
    * @param asset Asset object
    * @param amount Amount value
-   * @param currentBlockNumber Current block number (from the blockchain)
+   * @param startBlockNumber Block number (from the blockchain) when the unlock period starts
    * @param vestingPercent Vesting percent value (0-100)
    * @param unlockPeriodInDays Unlock period in days (1, 7, 30, 60, 90)
    */
   private getVestingSchedule(
     asset: Asset | AccountAsset,
     amount: NumberLike,
-    currentBlockNumber: number,
+    startBlockNumber: number,
     vestingPercent: number,
     unlockPeriodInDays: UnlockPeriodDays
   ) {
@@ -835,7 +835,7 @@ export class AssetsModule<T> {
 
     return {
       LinearVestingSchedule: {
-        start: currentBlockNumber,
+        start: startBlockNumber,
         assetId: asset.address,
         period: periodInBlocks,
         periodCount,
@@ -850,7 +850,7 @@ export class AssetsModule<T> {
    * @param asset Asset object
    * @param toAddress Account address who will receive tokens
    * @param amount Amount value
-   * @param currentBlockNumber Current block number (from the blockchain)
+   * @param startBlockNumber Block number (from the blockchain) when the unlock period starts
    * @param vestingPercent Vesting percent value (0-100)
    * @param unlockPeriodInDays Unlock period in days (1, 7, 30, 60, 90)
    */
@@ -858,13 +858,13 @@ export class AssetsModule<T> {
     asset: Asset | AccountAsset,
     toAddress: string,
     amount: NumberLike,
-    currentBlockNumber: number,
+    startBlockNumber: number,
     vestingPercent: number,
     unlockPeriodInDays: UnlockPeriodDays
   ): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
     const assetAddress = asset.address;
-    const schedule = this.getVestingSchedule(asset, amount, currentBlockNumber, vestingPercent, unlockPeriodInDays);
+    const schedule = this.getVestingSchedule(asset, amount, startBlockNumber, vestingPercent, unlockPeriodInDays);
     const historyItem: VestedTransferHistory = {
       type: Operation.VestedTransfer,
       amount: `${amount}`,
@@ -873,6 +873,7 @@ export class AssetsModule<T> {
       to: toAddress,
       period: schedule.LinearVestingSchedule.period,
       percent: vestingPercent,
+      start: startBlockNumber,
     };
 
     return this.root.submitExtrinsic(
@@ -888,18 +889,18 @@ export class AssetsModule<T> {
    * The fee is calculated based on the vesting schedule so it cannot be calculated using the static data.
    * @param asset Asset object
    * @param amount Amount value
-   * @param currentBlockNumber Current block number (from the blockchain)
+   * @param startBlockNumber Block number (from the blockchain) when the unlock period starts
    * @param vestingPercent Vesting percent value (0-100)
    * @param unlockPeriodInDays Unlock period in days (1, 7, 30, 60, 90)
    */
   public async getVestedTransferFee(
     asset: Asset | AccountAsset,
     amount: NumberLike,
-    currentBlockNumber: number,
+    startBlockNumber: number,
     vestingPercent: number,
     unlockPeriodInDays: UnlockPeriodDays
   ): Promise<FPNumber> {
-    const schedule = this.getVestingSchedule(asset, amount, currentBlockNumber, vestingPercent, unlockPeriodInDays);
+    const schedule = this.getVestingSchedule(asset, amount, startBlockNumber, vestingPercent, unlockPeriodInDays);
 
     const fee = await this.root.getTransactionFee(this.root.api.tx.vestedRewards.vestedTransfer('', schedule));
 
