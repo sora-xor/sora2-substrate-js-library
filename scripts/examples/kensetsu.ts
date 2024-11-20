@@ -45,13 +45,16 @@ async function main(): Promise<void> {
     console.info('collateral.interestCoefficient', collateral.interestCoefficient.toString());
     console.info('collateral.debtSupply (KUSD)', collateral.debtSupply.toString());
     console.info('collateral.totalLocked (XOR)', collateral.totalLocked.toString());
-    console.info('collateral.lastFeeUpdateTime', collateral.lastFeeUpdateTime);
+    console.info('collateral.lastFeeUpdateTimeSecs', collateral.lastFeeUpdateTimeSecs);
     console.info('collateral.riskParams.hardCap', collateral.riskParams.hardCap.toString());
     console.info('collateral.riskParams.maxLiquidationLot', collateral.riskParams.maxLiquidationLot.toString());
     console.info('collateral.riskParams.liquidationRatio (%)', collateral.riskParams.liquidationRatio);
     console.info('collateral.riskParams.liquidationRatioReversed (%)', collateral.riskParams.liquidationRatioReversed);
-    console.info('collateral.riskParams.stabilityFeeMs', collateral.riskParams.stabilityFeeMs.toString());
-    console.info('collateral.riskParams.stabilityFeeMs (%)', collateral.riskParams.stabilityFeeMs.mul(100).toString());
+    console.info('collateral.riskParams.stabilityFeeSecs', collateral.riskParams.stabilityFeeSecs.toString());
+    console.info(
+      'collateral.riskParams.stabilityFeeSecs (%)',
+      collateral.riskParams.stabilityFeeSecs.mul(100).toString()
+    );
     console.info('collateral.riskParams.stabilityFeeAnnual (%)', collateral.riskParams.stabilityFeeAnnual.toString());
     console.info('collateral.riskParams.minDeposit (XOR)', collateral.riskParams.minDeposit.toString());
 
