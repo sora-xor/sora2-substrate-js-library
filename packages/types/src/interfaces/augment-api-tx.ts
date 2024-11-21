@@ -756,6 +756,10 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     demeterFarmingPlatform: {
       /**
+       * Activate removed pool
+       **/
+      activateRemovedPool: AugmentedSubmittable<(baseAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, poolAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, rewardAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, isFarm: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
+      /**
        * Add pool
        **/
       addPool: AugmentedSubmittable<(baseAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, poolAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, rewardAsset: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array, isFarm: bool | boolean | Uint8Array, multiplier: u32 | AnyNumber | Uint8Array, depositFee: u128 | AnyNumber | Uint8Array, isCore: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u32, u128, bool]>;
