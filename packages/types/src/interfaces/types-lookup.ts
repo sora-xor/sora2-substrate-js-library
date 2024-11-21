@@ -1309,7 +1309,9 @@ declare module '@polkadot/types/lookup' {
     readonly asTotalTokensChanged: ITuple<[AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
     readonly isInfoChanged: boolean;
     readonly asInfoChanged: ITuple<[AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool, u128]>;
-    readonly type: 'TokenRegistered' | 'PoolAdded' | 'RewardWithdrawn' | 'Withdrawn' | 'PoolRemoved' | 'Deposited' | 'MultiplierChanged' | 'DepositFeeChanged' | 'TokenInfoChanged' | 'TotalTokensChanged' | 'InfoChanged';
+    readonly isRemovedPoolActivated: boolean;
+    readonly asRemovedPoolActivated: ITuple<[AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
+    readonly type: 'TokenRegistered' | 'PoolAdded' | 'RewardWithdrawn' | 'Withdrawn' | 'PoolRemoved' | 'Deposited' | 'MultiplierChanged' | 'DepositFeeChanged' | 'TokenInfoChanged' | 'TotalTokensChanged' | 'InfoChanged' | 'RemovedPoolActivated';
   }
 
   /** @name PalletBagsListEvent (138) */
@@ -4708,7 +4710,14 @@ declare module '@polkadot/types/lookup' {
       readonly teamAllocation: u128;
       readonly teamAccount: AccountId32;
     } & Struct;
-    readonly type: 'RegisterToken' | 'AddPool' | 'Deposit' | 'GetRewards' | 'Withdraw' | 'RemovePool' | 'ChangePoolMultiplier' | 'ChangeTotalTokens' | 'ChangeInfo' | 'ChangePoolDepositFee' | 'ChangeTokenInfo';
+    readonly isActivateRemovedPool: boolean;
+    readonly asActivateRemovedPool: {
+      readonly baseAsset: CommonPrimitivesAssetId32;
+      readonly poolAsset: CommonPrimitivesAssetId32;
+      readonly rewardAsset: CommonPrimitivesAssetId32;
+      readonly isFarm: bool;
+    } & Struct;
+    readonly type: 'RegisterToken' | 'AddPool' | 'Deposit' | 'GetRewards' | 'Withdraw' | 'RemovePool' | 'ChangePoolMultiplier' | 'ChangeTotalTokens' | 'ChangeInfo' | 'ChangePoolDepositFee' | 'ChangeTokenInfo' | 'ActivateRemovedPool';
   }
 
   /** @name PalletBagsListCall (491) */

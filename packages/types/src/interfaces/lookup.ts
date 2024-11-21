@@ -1150,7 +1150,8 @@ export default {
       DepositFeeChanged: '(AccountId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,bool,u128)',
       TokenInfoChanged: '(AccountId32,CommonPrimitivesAssetId32)',
       TotalTokensChanged: '(AccountId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,bool,u128)',
-      InfoChanged: '(AccountId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,bool,u128)'
+      InfoChanged: '(AccountId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,bool,u128)',
+      RemovedPoolActivated: '(AccountId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,CommonPrimitivesAssetId32,bool)'
     }
   },
   /**
@@ -4465,7 +4466,13 @@ export default {
         farmsAllocation: 'u128',
         stakingAllocation: 'u128',
         teamAllocation: 'u128',
-        teamAccount: 'AccountId32'
+        teamAccount: 'AccountId32',
+      },
+      activate_removed_pool: {
+        baseAsset: 'CommonPrimitivesAssetId32',
+        poolAsset: 'CommonPrimitivesAssetId32',
+        rewardAsset: 'CommonPrimitivesAssetId32',
+        isFarm: 'bool'
       }
     }
   },

@@ -356,6 +356,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       PoolRemoved: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
       /**
+       * Removed pool activated [who, base_asset, pool_asset, reward_asset, is_farm]
+       **/
+      RemovedPoolActivated: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
+      /**
        * Reward Withdrawn [who, amount, base_asset, pool_asset, reward_asset, is_farm]
        **/
       RewardWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, CommonPrimitivesAssetId32, bool]>;
