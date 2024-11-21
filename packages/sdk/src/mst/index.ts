@@ -437,10 +437,15 @@ export class MstModule<T> {
     blockTimestamp: number,
     mstAccount: string
   ): Promise<HistoryItem> {
+    console.info('we are in parseCallDataToHistoryItem');
     const decodedCall = this.root.api.registry.createType('Call', callData);
+    console.info('here is decondedCall', decodedCall);
     const method = decodedCall.method;
+    console.info('here is method', method);
     const section = decodedCall.section;
+    console.info('here is section', section);
     const args = decodedCall.args;
+    console.info('here is args', args);
     let historyItem: HistoryItem = {
       id: '',
       from: this.root.formatAddress(mstAccount),

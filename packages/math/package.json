@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/math",
-  "version": "1.43.0-betaMST-1.0.4",
+  "version": "1.43.0-betaMST-1.0.5",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
