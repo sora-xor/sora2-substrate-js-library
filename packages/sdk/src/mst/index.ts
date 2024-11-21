@@ -8,6 +8,7 @@ import type { Api } from '../api';
 import { KeyringAddress } from '@polkadot/ui-keyring/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { Subject, Subscription } from 'rxjs';
+import { SwapAmount } from '@sora-substrate/types';
 
 /**
  * This module is used for internal needs
@@ -470,6 +471,8 @@ export class MstModule<T> {
     const operationMap: { [key: string]: Operation } = {
       'assets.transfer': Operation.Transfer,
       'assets.register': Operation.RegisterAsset,
+      'liquidityProxy.swap': Operation.Swap,
+      'poolXYK.depositLiquidity': Operation.AddLiquidity,
     };
 
     historyItem.type = operationMap[operationKey];
@@ -503,6 +506,51 @@ export class MstModule<T> {
 
         historyItem.symbol = assetInfo?.symbol;
         historyItem.decimals = decimals;
+
+        break;
+      case Operation.Swap:
+        const inputAssetId = args[1].toString();
+        const outputAssetId = args[2].toString();
+        const swapAmount = args[3] as SwapAmount;
+
+        historyItem.assetAddress = inputAssetId;
+        historyItem.asset2Address = outputAssetId;
+
+        if (swapAmount.isWithDesiredInput) {
+          const amount = swapAmount.asWithDesiredInput!.desiredAmountIn.toString();
+          historyItem.amount = new FPNumber(amount, this.root.chainDecimals).toString();
+        } else if (swapAmount.isWithDesiredOutput) {
+          const amount = swapAmount.asWithDesiredOutput!.desiredAmountOut.toString();
+          historyItem.amount2 = new FPNumber(amount, this.root.chainDecimals).toString();
+        }
+
+        const inputAssetInfo = await this.root.assets.getAssetInfo(inputAssetId);
+        const outputAssetInfo = await this.root.assets.getAssetInfo(outputAssetId);
+
+        historyItem.symbol = inputAssetInfo?.symbol;
+        historyItem.symbol2 = outputAssetInfo?.symbol;
+        historyItem.decimals = inputAssetInfo?.decimals ?? this.root.chainDecimals;
+        historyItem.decimals2 = outputAssetInfo?.decimals ?? this.root.chainDecimals;
+        break;
+
+      case Operation.AddLiquidity:
+        const assetAId = args[1].toString();
+        const assetBId = args[2].toString();
+        const amountA = new FPNumber(args[3].toString(), this.root.chainDecimals).toString();
+        const amountB = new FPNumber(args[4].toString(), this.root.chainDecimals).toString();
+
+        const assetAInfo = await this.root.assets.getAssetInfo(assetAId);
+        const assetBInfo = await this.root.assets.getAssetInfo(assetBId);
+
+        historyItem.assetAddress = assetAId;
+        historyItem.asset2Address = assetBId;
+        historyItem.amount = amountA;
+        historyItem.amount2 = amountB;
+
+        historyItem.symbol = assetAInfo?.symbol;
+        historyItem.symbol2 = assetBInfo?.symbol;
+        historyItem.decimals = assetAInfo?.decimals ?? this.root.chainDecimals;
+        historyItem.decimals2 = assetBInfo?.decimals ?? this.root.chainDecimals;
 
         break;
       default:

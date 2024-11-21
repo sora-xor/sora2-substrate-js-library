@@ -39,7 +39,7 @@ import type {
 } from './types';
 import type { OriginalIdentity } from './staking/types';
 import type { CommonPrimitivesAssetId32Override } from './typeOverrides';
-import { api } from './api';
+import { cloneDeep } from 'lodash/fp';
 
 // We don't need to know real account address for checking network fees
 const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
@@ -244,11 +244,11 @@ export class WithAccountPair extends WithConnectionApi {
   }
 
   public setMstAccount(account: CreateResult): void {
-    this.mstAccount = account;
+    this.mstAccount = cloneDeep(account);
   }
 
   public switchToMstAccount(): void {
-    this.previousAccount = this.account;
+    this.previousAccount = cloneDeep(this.account);
     this.mstActive = true;
   }
 
