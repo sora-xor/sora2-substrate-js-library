@@ -95,6 +95,8 @@ export interface VestedTransferHistory extends History {
   period: number;
   /* vesting percent (0 - 100) */
   percent: number;
+  /* vesting start block */
+  start: number;
 }
 
 export enum AssetTypes {
