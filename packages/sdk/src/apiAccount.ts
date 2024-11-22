@@ -244,19 +244,12 @@ export class WithAccountPair extends WithConnectionApi {
   }
 
   public setMstAccount(account: CreateResult): void {
-    this.mstAccount = { ...account };
+    this.mstAccount = cloneDeep(account);
   }
 
   public switchToMstAccount(): void {
-    if (this.account && this.account.json && this.account.pair) {
-      this.previousAccount = {
-        json: this.account.json,
-        pair: this.account.pair,
-      };
-      this.mstActive = true;
-    } else {
-      throw new Error('Account is not properly defined.');
-    }
+    this.previousAccount = cloneDeep(this.account);
+    this.mstActive = true;
   }
 
   public switchToMainAccount(): void {

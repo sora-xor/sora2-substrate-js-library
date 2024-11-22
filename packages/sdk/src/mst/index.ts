@@ -121,18 +121,18 @@ export class MstModule<T> {
   }
 
   public switchAccount(switchToMST: boolean): void {
-    const currentAccountAddress = this.root.account?.pair?.address ?? '';
+    const currentAccountAddress = this.root.account?.pair?.address || '';
     let targetAddress: string | undefined;
     let storePreviousAccountAddress = false;
     if (switchToMST) {
-      targetAddress = this.root.accountStorage?.get('MSTAddress') ?? this.mstAddress;
+      targetAddress = this.root.accountStorage?.get('MSTAddress') || this.mstAddress;
       storePreviousAccountAddress = true;
     } else {
       targetAddress =
         this.root.accountStorage?.get('previousAccountAddress') || this.root.previousAccount?.pair.address;
     }
 
-    const accountPair = this.root.getAccountPair(this.root.formatAddress(targetAddress) ?? '');
+    const accountPair = this.root.getAccountPair(this.root.formatAddress(targetAddress) || '');
     const meta = accountPair.meta;
 
     if (switchToMST) {
@@ -509,28 +509,36 @@ export class MstModule<T> {
 
         break;
       case Operation.Swap:
-        const inputAssetId = args[1].toString();
-        const outputAssetId = args[2].toString();
-        const swapAmount = args[3] as SwapAmount;
+        try {
+          const inputAssetId = args[1].toString();
+          const outputAssetId = args[2].toString();
+          const swapAmount = args[3] as SwapAmount;
 
-        historyItem.assetAddress = inputAssetId;
-        historyItem.asset2Address = outputAssetId;
+          historyItem.assetAddress = inputAssetId;
+          historyItem.asset2Address = outputAssetId;
 
-        if (swapAmount.isWithDesiredInput) {
-          const amount = swapAmount.asWithDesiredInput!.desiredAmountIn.toString();
-          historyItem.amount = new FPNumber(amount, this.root.chainDecimals).toString();
-        } else if (swapAmount.isWithDesiredOutput) {
-          const amount = swapAmount.asWithDesiredOutput!.desiredAmountOut.toString();
-          historyItem.amount2 = new FPNumber(amount, this.root.chainDecimals).toString();
+          if (swapAmount.isWithDesiredInput) {
+            const amount = swapAmount.asWithDesiredInput!.desiredAmountIn.toString();
+            historyItem.amount = new FPNumber(amount, this.root.chainDecimals).toString();
+          } else if (swapAmount.isWithDesiredOutput) {
+            const amount = swapAmount.asWithDesiredOutput!.desiredAmountOut.toString();
+            historyItem.amount2 = new FPNumber(amount, this.root.chainDecimals).toString();
+          }
+
+          const inputAssetInfo = await this.root.assets.getAssetInfo(inputAssetId);
+          const outputAssetInfo = await this.root.assets.getAssetInfo(outputAssetId);
+
+          if (!inputAssetInfo || !outputAssetInfo) {
+            throw new Error('Failed to fetch asset info');
+          }
+
+          historyItem.symbol = inputAssetInfo.symbol;
+          historyItem.symbol2 = outputAssetInfo.symbol;
+          historyItem.decimals = inputAssetInfo.decimals ?? this.root.chainDecimals;
+          historyItem.decimals2 = outputAssetInfo.decimals ?? this.root.chainDecimals;
+        } catch (error) {
+          console.error('Error processing Swap operation:', error);
         }
-
-        const inputAssetInfo = await this.root.assets.getAssetInfo(inputAssetId);
-        const outputAssetInfo = await this.root.assets.getAssetInfo(outputAssetId);
-
-        historyItem.symbol = inputAssetInfo?.symbol;
-        historyItem.symbol2 = outputAssetInfo?.symbol;
-        historyItem.decimals = inputAssetInfo?.decimals ?? this.root.chainDecimals;
-        historyItem.decimals2 = outputAssetInfo?.decimals ?? this.root.chainDecimals;
         break;
 
       case Operation.AddLiquidity:
