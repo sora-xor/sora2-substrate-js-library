@@ -9,6 +9,9 @@ import { KeyringAddress } from '@polkadot/ui-keyring/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { Subject, Subscription } from 'rxjs';
 import { SwapAmount } from '@sora-substrate/types';
+import { XOR } from '../assets/consts';
+import type { Bytes, Vec } from '@polkadot/types-codec';
+import type { Call } from '@polkadot/types/interfaces';
 
 /**
  * This module is used for internal needs
@@ -447,6 +450,7 @@ export class MstModule<T> {
     console.info('here is section', section);
     const args = decodedCall.args;
     console.info('here is args', args);
+
     let historyItem: HistoryItem = {
       id: '',
       from: this.root.formatAddress(mstAccount),
@@ -473,6 +477,17 @@ export class MstModule<T> {
       'assets.register': Operation.RegisterAsset,
       'liquidityProxy.swap': Operation.Swap,
       'poolXYK.depositLiquidity': Operation.AddLiquidity,
+      'poolXYK.withdrawLiquidity': Operation.RemoveLiquidity,
+      'demeterFarmingPlatform.deposit': Operation.DemeterFarmingDepositLiquidity,
+      'demeterFarmingPlatform.withdraw': Operation.DemeterFarmingWithdrawLiquidity,
+      'demeterFarmingPlatform.getRewards': Operation.DemeterFarmingGetRewards,
+      'staking.bondExtra': Operation.StakingBondExtra,
+      'staking.unbond': Operation.StakingUnbond,
+      'staking.nominate': Operation.StakingNominate,
+      'orderBook.placeLimitOrder': Operation.OrderBookPlaceLimitOrder,
+      'orderBook.cancelLimitOrder': Operation.OrderBookCancelLimitOrder,
+      'orderBook.cancelLimitOrders': Operation.OrderBookCancelLimitOrders,
+      // 'utility.batchAll': Operation.BatchAll,
     };
 
     historyItem.type = operationMap[operationKey];
@@ -509,61 +524,214 @@ export class MstModule<T> {
 
         break;
       case Operation.Swap:
-        try {
-          const inputAssetId = args[1].toString();
-          const outputAssetId = args[2].toString();
-          const swapAmount = args[3] as SwapAmount;
-
-          historyItem.assetAddress = inputAssetId;
-          historyItem.asset2Address = outputAssetId;
-
-          if (swapAmount.isWithDesiredInput) {
-            const amount = swapAmount.asWithDesiredInput!.desiredAmountIn.toString();
-            historyItem.amount = new FPNumber(amount, this.root.chainDecimals).toString();
-          } else if (swapAmount.isWithDesiredOutput) {
-            const amount = swapAmount.asWithDesiredOutput!.desiredAmountOut.toString();
-            historyItem.amount2 = new FPNumber(amount, this.root.chainDecimals).toString();
-          }
-
-          const inputAssetInfo = await this.root.assets.getAssetInfo(inputAssetId);
-          const outputAssetInfo = await this.root.assets.getAssetInfo(outputAssetId);
-
-          if (!inputAssetInfo || !outputAssetInfo) {
-            throw new Error('Failed to fetch asset info');
-          }
-
-          historyItem.symbol = inputAssetInfo.symbol;
-          historyItem.symbol2 = outputAssetInfo.symbol;
-          historyItem.decimals = inputAssetInfo.decimals ?? this.root.chainDecimals;
-          historyItem.decimals2 = outputAssetInfo.decimals ?? this.root.chainDecimals;
-        } catch (error) {
-          console.error('Error processing Swap operation:', error);
+        const inputAssetIdObj = args[1].toHuman() as { code: string };
+        const outputAssetIdObj = args[2].toHuman() as { code: string };
+        const inputAssetId = inputAssetIdObj.code || args[1].toString();
+        const outputAssetId = outputAssetIdObj.code || args[2].toString();
+        const swapAmount = args[3] as SwapAmount;
+        historyItem.assetAddress = inputAssetId;
+        historyItem.asset2Address = outputAssetId;
+        const inputAssetInfo = await this.root.assets.getAssetInfo(inputAssetId);
+        const outputAssetInfo = await this.root.assets.getAssetInfo(outputAssetId);
+        if (!inputAssetInfo || !outputAssetInfo) {
+          throw new Error('Failed to fetch asset info');
         }
+        const inputDecimals = inputAssetInfo.decimals ?? this.root.chainDecimals;
+        const outputDecimals = outputAssetInfo.decimals ?? this.root.chainDecimals;
+        const rawInputAmount = swapAmount.asWithDesiredInput!.desiredAmountIn.toString();
+        const rawOutputAmount = swapAmount.asWithDesiredInput!.minAmountOut.toString();
+        const amount = new FPNumber(rawInputAmount, this.root.chainDecimals)
+          .div(new FPNumber(10 ** inputDecimals, this.root.chainDecimals))
+          .toString();
+        const amount2 = new FPNumber(rawOutputAmount, this.root.chainDecimals)
+          .div(new FPNumber(10 ** outputDecimals, this.root.chainDecimals))
+          .toString();
+        historyItem.amount = amount;
+        historyItem.amount2 = amount2;
+        historyItem.symbol = inputAssetInfo.symbol;
+        historyItem.symbol2 = outputAssetInfo.symbol;
+        historyItem.decimals = inputDecimals;
+        historyItem.decimals2 = outputDecimals;
         break;
-
       case Operation.AddLiquidity:
-        const assetAId = args[1].toString();
-        const assetBId = args[2].toString();
-        const amountA = new FPNumber(args[3].toString(), this.root.chainDecimals).toString();
-        const amountB = new FPNumber(args[4].toString(), this.root.chainDecimals).toString();
-
+      case Operation.RemoveLiquidity: {
+        console.info('we are in AddLiquidity or RemoveLiquidity');
+        const assetAIdObj = args[1].toHuman() as { code: string };
+        const assetBIdObj = args[2].toHuman() as { code: string };
+        const assetAId = assetAIdObj.code || args[1].toString();
+        const assetBId = assetBIdObj.code || args[2].toString();
         const assetAInfo = await this.root.assets.getAssetInfo(assetAId);
         const assetBInfo = await this.root.assets.getAssetInfo(assetBId);
+        if (!assetAInfo || !assetBInfo) {
+          throw new Error('Failed to fetch asset info');
+        }
+        const assetADecimals = assetAInfo.decimals ?? this.root.chainDecimals;
+        const assetBDecimals = assetBInfo.decimals ?? this.root.chainDecimals;
+        const rawAmountA = args[3].toString();
+        const rawAmountB = args[4].toString();
+        const amountA = new FPNumber(rawAmountA, this.root.chainDecimals)
+          .div(new FPNumber(10 ** assetADecimals, this.root.chainDecimals))
+          .toString();
 
+        const amountB = new FPNumber(rawAmountB, this.root.chainDecimals)
+          .div(new FPNumber(10 ** assetBDecimals, this.root.chainDecimals))
+          .toString();
         historyItem.assetAddress = assetAId;
         historyItem.asset2Address = assetBId;
         historyItem.amount = amountA;
         historyItem.amount2 = amountB;
-
-        historyItem.symbol = assetAInfo?.symbol;
-        historyItem.symbol2 = assetBInfo?.symbol;
-        historyItem.decimals = assetAInfo?.decimals ?? this.root.chainDecimals;
-        historyItem.decimals2 = assetBInfo?.decimals ?? this.root.chainDecimals;
-
+        historyItem.symbol = assetAInfo.symbol;
+        historyItem.symbol2 = assetBInfo.symbol;
+        historyItem.decimals = assetADecimals;
+        historyItem.decimals2 = assetBDecimals;
         break;
+      }
+
+      case Operation.DemeterFarmingDepositLiquidity:
+      case Operation.DemeterFarmingWithdrawLiquidity: {
+        console.info('we are in DemeterFarmingDepositLiquidity or DemeterFarmingWithdrawLiquidity');
+        const isDeposit = historyItem.type === Operation.DemeterFarmingDepositLiquidity;
+        const rewardPoolIdObj = args[0].toHuman() as { code: string };
+        const assetIdObj = args[1].toHuman() as { code: string };
+        const rawAmountCodec = isDeposit ? args[4] : args[3];
+        const rawAmount = rawAmountCodec.toString();
+        const rewardPoolId = rewardPoolIdObj.code || args[0].toString();
+        const assetId = assetIdObj.code || args[1].toString();
+        const rewardPoolAssetInfo = await this.root.assets.getAssetInfo(rewardPoolId);
+        const assetInfo = await this.root.assets.getAssetInfo(assetId);
+        if (historyItem.type === Operation.DemeterFarmingWithdrawLiquidity && rewardPoolId === assetId) {
+          historyItem.type = Operation.DemeterFarmingUnstakeToken;
+        }
+        if (historyItem.type === Operation.DemeterFarmingDepositLiquidity && rewardPoolId === assetId) {
+          historyItem.type = Operation.DemeterFarmingStakeToken;
+        }
+        if (!rewardPoolAssetInfo || !assetInfo) {
+          throw new Error('Failed to fetch asset info for farming or reward assets');
+        }
+
+        const decimals = rewardPoolAssetInfo.decimals ?? this.root.chainDecimals;
+        const amount = new FPNumber(rawAmount, this.root.chainDecimals)
+          .div(new FPNumber(10 ** decimals, this.root.chainDecimals))
+          .toString();
+
+        historyItem.assetAddress = rewardPoolId;
+        historyItem.asset2Address = assetId;
+        historyItem.amount = amount;
+        historyItem.symbol = rewardPoolAssetInfo.symbol;
+        historyItem.symbol2 = assetInfo.symbol;
+        historyItem.decimals = rewardPoolAssetInfo.decimals;
+        historyItem.decimals2 = assetInfo.decimals;
+        break;
+      }
+      case Operation.StakingBondExtra:
+      case Operation.StakingUnbond: {
+        const rawAmount = args[0].toString();
+        const stakingTokenAddress = XOR.address;
+        const stakingTokenInfo = await this.root.assets.getAssetInfo(stakingTokenAddress);
+
+        if (!stakingTokenInfo) {
+          throw new Error('Failed to fetch staking token info');
+        }
+        const decimalsBond = stakingTokenInfo.decimals ?? this.root.chainDecimals;
+        const normalizedAmount = new FPNumber(rawAmount, this.root.chainDecimals)
+          .div(new FPNumber(10 ** decimalsBond, this.root.chainDecimals))
+          .toString();
+        historyItem.amount = normalizedAmount;
+        historyItem.symbol = stakingTokenInfo.symbol;
+        historyItem.decimals = decimalsBond;
+        historyItem.assetAddress = stakingTokenAddress;
+        break;
+      }
+      // TODO have problem with amount,can't get it
+      case Operation.DemeterFarmingGetRewards: {
+        const rewardAssetIdObj = args[2].toHuman() as { code: string };
+        const rewardAssetId = rewardAssetIdObj.code || args[2].toString();
+        const rewardAssetInfo = await this.root.assets.getAssetInfo(rewardAssetId);
+        if (!rewardAssetInfo) {
+          throw new Error('Failed to fetch asset info for reward or farming assets');
+        }
+        historyItem.assetAddress = rewardAssetId;
+        historyItem.symbol = rewardAssetInfo.symbol;
+        historyItem.decimals = rewardAssetInfo.decimals;
+        break;
+      }
+      case Operation.OrderBookPlaceLimitOrder: {
+        try {
+          const marketId = args[0];
+          const priceRaw = args[1].toString();
+          const amountRaw = args[2].toString();
+          const marketIdHuman = marketId.toHuman() as { base: { code: string }; quote: { code: string } };
+          const baseAssetId = marketIdHuman.base.code;
+          const quoteAssetId = marketIdHuman.quote.code;
+
+          if (!baseAssetId || !quoteAssetId) {
+            throw new Error('Failed to decode marketId for base or quote assets');
+          }
+
+          const baseAssetInfo = await this.root.assets.getAssetInfo(baseAssetId);
+          const quoteAssetInfo = await this.root.assets.getAssetInfo(quoteAssetId);
+          if (!baseAssetInfo || !quoteAssetInfo) {
+            throw new Error('Failed to fetch asset info for base or quote assets');
+          }
+
+          const baseDecimals = baseAssetInfo.decimals ?? this.root.chainDecimals;
+          const quoteDecimals = quoteAssetInfo.decimals ?? this.root.chainDecimals;
+
+          const baseAmount = new FPNumber(amountRaw, this.root.chainDecimals)
+            .div(new FPNumber(10 ** baseDecimals, this.root.chainDecimals))
+            .toString();
+
+          const quoteAmount = new FPNumber(priceRaw, this.root.chainDecimals)
+            .div(new FPNumber(10 ** quoteDecimals, this.root.chainDecimals))
+            .toString();
+
+          historyItem.assetAddress = baseAssetId;
+          historyItem.asset2Address = quoteAssetId;
+          historyItem.amount = baseAmount;
+          historyItem.amount2 = quoteAmount;
+          historyItem.symbol = baseAssetInfo.symbol;
+          historyItem.symbol2 = quoteAssetInfo.symbol;
+          historyItem.decimals = baseDecimals;
+          historyItem.decimals2 = quoteDecimals;
+        } catch (error) {
+          console.error('Error processing orderBook.placeLimitOrder operation:', error);
+        }
+        break;
+      }
+      case Operation.RegisterAsset: {
+        const rawBytes = args[0] as Bytes;
+        const symbol = Buffer.from(rawBytes.toU8a(true)).toString('utf-8');
+        historyItem.symbol = symbol;
+        break;
+      }
+
+      // TODO add for staking -> xor(sora staking) -> claim rewards
+      // TODO
+      case Operation.BatchAll: {
+        try {
+          // Convert calls to an iterable format
+          const calls = (args[0] as Vec<Call>).toArray();
+
+          for (const call of calls) {
+            const innerCallData = call.toHex();
+            const decodedInnerCall = this.root.api.registry.createType('Call', innerCallData);
+
+            const innerMethod = decodedInnerCall.method;
+            const innerSection = decodedInnerCall.section;
+            const innerArgs = decodedInnerCall.args;
+
+            const innerOperationKey = `${innerSection}.${innerMethod}`;
+            console.info('innerOperationKey', innerOperationKey);
+            console.info('innerArgs', innerArgs);
+          }
+        } catch (error) {
+          console.error('Error processing utility.batchAll operation:', error);
+        }
+        break;
+      }
+
       default:
         console.warn(`Unhandled operation for ${operationKey}`);
-        break;
     }
 
     return historyItem;
