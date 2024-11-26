@@ -14,7 +14,7 @@ const faucetSignerPassword = 'qwaszx';
 
 async function main(): Promise<void> {
   // Open connection & initiate the faucet instance
-  await connection.open(SORA_ENV.dev);
+  await connection.open(SORA_ENV.test);
   console.log('Connected!', connection.endpoint);
   const faucet = new BaseApi();
   faucet.setConnection(connection);

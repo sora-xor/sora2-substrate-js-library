@@ -173,7 +173,7 @@ function capitalizeFirstLetter(string) {
 }
 
 async function main(): Promise<void> {
-  const provider = new WsProvider(SORA_ENV.dev);
+  const provider = new WsProvider(SORA_ENV.test);
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
 
