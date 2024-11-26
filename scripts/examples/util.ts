@@ -29,7 +29,7 @@ export async function disconnect(): Promise<void> {
 
 export async function withConnectedAccount(
   fn: Function,
-  env: SORA_ENV | string = SORA_ENV.dev,
+  env: SORA_ENV | string = SORA_ENV.test,
   mnemonic?: string
 ): Promise<void> {
   await connectAndImportAccount(env, true, mnemonic);

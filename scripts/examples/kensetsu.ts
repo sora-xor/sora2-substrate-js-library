@@ -93,7 +93,7 @@ async function main(): Promise<void> {
     // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
     // await delay();
     // console.info('History:', api.historyList[0]);
-  }, SORA_ENV.dev);
+  }, SORA_ENV.test);
 }
 
 main()
