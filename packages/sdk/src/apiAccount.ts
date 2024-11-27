@@ -377,6 +377,16 @@ export class WithKeyring extends WithAccountPair {
     return JSON.stringify(keyring.backupAccount(pair, pass));
   }
 
+  public createMST(accounts: string[], threshold: number, name: string): string {
+    const result = keyring.addMultisig(accounts, threshold, { name });
+    // TODO: check these methods with supported, looks that anyone can use it
+    // result.pair.encryptMessage
+    // result.pair.decryptMessage
+
+    // return result; or return whole pair here
+    return this.formatAddress(result.pair.address);
+  }
+
   /**
    * Change the account name
    * @param address account address
