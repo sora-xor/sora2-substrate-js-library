@@ -682,7 +682,9 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     // history required params for each update
     const requiredParams: RequiredHistoryParams = { id, from ,type };
 
-    this.saveHistory({ ...historyData, ...requiredParams, txId, startTime });
+    if (historyData !== undefined) {
+      this.saveHistory({ ...historyData, ...requiredParams, txId, startTime });
+    }
 
     if (this.shouldObservableBeUsed) {
       return new Observable<ExtrinsicEvent>((subscriber) => {

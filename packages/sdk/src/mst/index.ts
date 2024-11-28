@@ -4,7 +4,7 @@ import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
 
 import { HistoryItem, Operation, TransactionStatus } from '../types';
-import type { Api } from '../api';
+import { api, type Api } from '../api';
 import { KeyringAddress } from '@polkadot/ui-keyring/types';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { Subject, Subscription } from 'rxjs';
@@ -484,9 +484,15 @@ export class MstModule<T> {
       'staking.bondExtra': Operation.StakingBondExtra,
       'staking.unbond': Operation.StakingUnbond,
       'staking.nominate': Operation.StakingNominate,
+      'staking.withdrawUnbonded': Operation.StakingWithdrawUnbonded,
       'orderBook.placeLimitOrder': Operation.OrderBookPlaceLimitOrder,
       'orderBook.cancelLimitOrder': Operation.OrderBookCancelLimitOrder,
       'orderBook.cancelLimitOrders': Operation.OrderBookCancelLimitOrders,
+      'kensetsu.createCdp': Operation.CreateVault,
+      'kensetsu.depositCollateral': Operation.DepositCollateral,
+      'kensetsu.borrow': Operation.BorrowVaultDebt,
+      'kensetsu.repayDebt': Operation.RepayVaultDebt,
+      'kensetsu.closeCdp': Operation.CloseVault,
       // 'utility.batchAll': Operation.BatchAll,
     };
 
@@ -523,29 +529,47 @@ export class MstModule<T> {
         historyItem.decimals = decimals;
 
         break;
-      case Operation.Swap:
+      case Operation.Swap: {
         const inputAssetIdObj = args[1].toHuman() as { code: string };
         const outputAssetIdObj = args[2].toHuman() as { code: string };
         const inputAssetId = inputAssetIdObj.code || args[1].toString();
         const outputAssetId = outputAssetIdObj.code || args[2].toString();
         const swapAmount = args[3] as SwapAmount;
+
         historyItem.assetAddress = inputAssetId;
         historyItem.asset2Address = outputAssetId;
+
         const inputAssetInfo = await this.root.assets.getAssetInfo(inputAssetId);
         const outputAssetInfo = await this.root.assets.getAssetInfo(outputAssetId);
+
         if (!inputAssetInfo || !outputAssetInfo) {
           throw new Error('Failed to fetch asset info');
         }
+
         const inputDecimals = inputAssetInfo.decimals ?? this.root.chainDecimals;
         const outputDecimals = outputAssetInfo.decimals ?? this.root.chainDecimals;
-        const rawInputAmount = swapAmount.asWithDesiredInput!.desiredAmountIn.toString();
-        const rawOutputAmount = swapAmount.asWithDesiredInput!.minAmountOut.toString();
+
+        let rawInputAmount: string;
+        let rawOutputAmount: string;
+        if (swapAmount.isWithDesiredInput) {
+          console.info('Swap amount type: WithDesiredInput');
+          rawInputAmount = swapAmount.asWithDesiredInput.desiredAmountIn.toString();
+          rawOutputAmount = swapAmount.asWithDesiredInput.minAmountOut.toString();
+        } else if (swapAmount.isWithDesiredOutput) {
+          console.info('Swap amount type: WithDesiredOutput');
+          rawInputAmount = swapAmount.asWithDesiredOutput.maxAmountIn.toString();
+          rawOutputAmount = swapAmount.asWithDesiredOutput.desiredAmountOut.toString();
+        } else {
+          throw new Error('Unknown swap amount type');
+        }
         const amount = new FPNumber(rawInputAmount, this.root.chainDecimals)
           .div(new FPNumber(10 ** inputDecimals, this.root.chainDecimals))
           .toString();
+
         const amount2 = new FPNumber(rawOutputAmount, this.root.chainDecimals)
           .div(new FPNumber(10 ** outputDecimals, this.root.chainDecimals))
           .toString();
+
         historyItem.amount = amount;
         historyItem.amount2 = amount2;
         historyItem.symbol = inputAssetInfo.symbol;
@@ -553,6 +577,7 @@ export class MstModule<T> {
         historyItem.decimals = inputDecimals;
         historyItem.decimals2 = outputDecimals;
         break;
+      }
       case Operation.AddLiquidity:
       case Operation.RemoveLiquidity: {
         console.info('we are in AddLiquidity or RemoveLiquidity');
@@ -623,12 +648,14 @@ export class MstModule<T> {
         historyItem.decimals2 = assetInfo.decimals;
         break;
       }
+
+      // TODO in here for some reason StakingWithdrawUnbonded is 0,but in reality not
       case Operation.StakingBondExtra:
-      case Operation.StakingUnbond: {
+      case Operation.StakingUnbond:
+      case Operation.StakingWithdrawUnbonded: {
         const rawAmount = args[0].toString();
         const stakingTokenAddress = XOR.address;
         const stakingTokenInfo = await this.root.assets.getAssetInfo(stakingTokenAddress);
-
         if (!stakingTokenInfo) {
           throw new Error('Failed to fetch staking token info');
         }
@@ -702,6 +729,95 @@ export class MstModule<T> {
         const rawBytes = args[0] as Bytes;
         const symbol = Buffer.from(rawBytes.toU8a(true)).toString('utf-8');
         historyItem.symbol = symbol;
+        break;
+      }
+      case Operation.CreateVault: {
+        const collateralAssetIdObj = args[0].toHuman() as { code: string };
+        const syntheticAssetIdObj = args[2].toHuman() as { code: string };
+        const collateralAssetId = collateralAssetIdObj.code || args[0].toString();
+        const syntheticAssetId = syntheticAssetIdObj.code || args[2].toString();
+
+        const collateralAmountRaw = args[1].toString();
+        const syntheticAmountRaw = args[3].toString();
+
+        const collateralAssetInfo = await this.root.assets.getAssetInfo(collateralAssetId);
+        const syntheticAssetInfo = await this.root.assets.getAssetInfo(syntheticAssetId);
+
+        if (!collateralAssetInfo || !syntheticAssetInfo) {
+          throw new Error('Failed to fetch asset info for collateral or synthetic assets');
+        }
+
+        const collateralDecimals = collateralAssetInfo.decimals ?? this.root.chainDecimals;
+        const syntheticDecimals = syntheticAssetInfo.decimals ?? this.root.chainDecimals;
+
+        const collateralAmount = new FPNumber(collateralAmountRaw, this.root.chainDecimals)
+          .div(new FPNumber(10 ** collateralDecimals, this.root.chainDecimals))
+          .toString();
+
+        const syntheticAmount = new FPNumber(syntheticAmountRaw, this.root.chainDecimals)
+          .div(new FPNumber(10 ** syntheticDecimals, this.root.chainDecimals))
+          .toString();
+
+        historyItem.assetAddress = collateralAssetId;
+        historyItem.asset2Address = syntheticAssetId;
+        historyItem.amount = collateralAmount;
+        historyItem.amount2 = syntheticAmount;
+        historyItem.symbol = collateralAssetInfo.symbol;
+        historyItem.symbol2 = syntheticAssetInfo.symbol;
+        historyItem.decimals = collateralDecimals;
+        historyItem.decimals2 = syntheticDecimals;
+        break;
+      }
+      case Operation.DepositCollateral:
+      case Operation.BorrowVaultDebt:
+      case Operation.RepayVaultDebt: {
+        const vaultId = args[0];
+        const amountRaw = args[1].toString();
+        const vaultIdNumber = parseInt(vaultId.toString(), 10);
+        const vault = await api.kensetsu.getVault(vaultIdNumber);
+        if (!vault) {
+          throw new Error(`Vault not found for ID: ${vaultIdNumber}`);
+        }
+        const assetId = historyItem.type === Operation.DepositCollateral ? vault.lockedAssetId : vault.debtAssetId;
+        const assetInfo = await this.root.assets.getAssetInfo(assetId);
+        if (!assetInfo) {
+          throw new Error(`Asset info not found for ID: ${assetId}`);
+        }
+        const decimals = assetInfo.decimals ?? this.root.chainDecimals;
+        const normalizedAmount = new FPNumber(amountRaw, this.root.chainDecimals)
+          .div(new FPNumber(10 ** decimals, this.root.chainDecimals))
+          .toString();
+        historyItem.assetAddress = assetId;
+        historyItem.amount = normalizedAmount;
+        historyItem.symbol = assetInfo.symbol;
+        historyItem.decimals = decimals;
+        break;
+      }
+      case Operation.CloseVault: {
+        const vaultId = args[0];
+        const vaultIdNumber = parseInt(vaultId.toString(), 10);
+        const vault = await api.kensetsu.getVault(vaultIdNumber);
+        if (!vault) {
+          throw new Error(`Vault not found for ID: ${vaultIdNumber}`);
+        }
+        const lockedAmount = vault.lockedAmount.toString();
+        const debtAmount = vault.internalDebt.toString();
+        const lockedAssetId = vault.lockedAssetId;
+        const debtAssetId = vault.debtAssetId;
+        const lockedAssetInfo = await this.root.assets.getAssetInfo(lockedAssetId);
+        const debtAssetInfo = await this.root.assets.getAssetInfo(debtAssetId);
+        const decimalsLockedAsset = lockedAssetInfo.decimals ?? this.root.chainDecimals;
+        const decimalsDebstAsset = debtAssetInfo.decimals ?? this.root.chainDecimals;
+        const normalizedAmountLockedAsset = new FPNumber(lockedAmount, this.root.chainDecimals).toString();
+        const normalizedAmountDebtAsset = new FPNumber(debtAmount, this.root.chainDecimals).toString();
+        historyItem.assetAddress = lockedAssetId;
+        historyItem.asset2Address = debtAssetId;
+        historyItem.amount = normalizedAmountLockedAsset;
+        historyItem.amount2 = normalizedAmountDebtAsset;
+        historyItem.symbol = lockedAssetInfo.symbol;
+        historyItem.symbol2 = debtAssetInfo.symbol;
+        historyItem.decimals = decimalsLockedAsset;
+        historyItem.decimals2 = decimalsDebstAsset;
         break;
       }
 
