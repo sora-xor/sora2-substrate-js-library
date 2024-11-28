@@ -128,7 +128,7 @@ async function main(): Promise<void> {
     // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
     // await delay();
     // console.info('History for the mst again:', api.historyList[2]);
-  }, SORA_ENV.dev);
+  });
 }
 
 main()
