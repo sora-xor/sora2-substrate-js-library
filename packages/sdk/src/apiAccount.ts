@@ -249,16 +249,10 @@ export class WithAccountPair extends WithConnectionApi {
 
   public switchToMstAccount(): void {
     this.previousAccount = cloneDeep(this.account);
-    if (this.mstAccount) {
-      this.account = cloneDeep(this.mstAccount);
-    }
     this.mstActive = true;
   }
 
   public switchToMainAccount(): void {
-    if (this.previousAccount) {
-      this.account = cloneDeep(this.previousAccount);
-    }
     this.previousAccount = undefined;
     this.mstActive = false;
   }
