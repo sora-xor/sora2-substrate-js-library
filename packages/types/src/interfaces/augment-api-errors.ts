@@ -2630,6 +2630,60 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       TooBig: AugmentedError<ApiType>;
     };
+    presto: {
+      /**
+       * This account already was added as an auditor before
+       **/
+      AuditorAlreadyAdded: AugmentedError<ApiType>;
+      /**
+       * There is no such auditor
+       **/
+      AuditorNotExists: AugmentedError<ApiType>;
+      /**
+       * Auditors storage has reached its limit
+       **/
+      AuditorsAreOverloaded: AugmentedError<ApiType>;
+      /**
+       * This account is not an auditor
+       **/
+      CallerIsNotAuditor: AugmentedError<ApiType>;
+      /**
+       * This account is not a manager
+       **/
+      CallerIsNotManager: AugmentedError<ApiType>;
+      /**
+       * This account is not an owner of the request
+       **/
+      CallerIsNotRequestOwner: AugmentedError<ApiType>;
+      /**
+       * This account already was added as a manager before
+       **/
+      ManagerAlreadyAdded: AugmentedError<ApiType>;
+      /**
+       * There is no such manager
+       **/
+      ManagerNotExists: AugmentedError<ApiType>;
+      /**
+       * Managers storage has reached its limit
+       **/
+      ManagersAreOverloaded: AugmentedError<ApiType>;
+      /**
+       * This request was already processed by manager
+       **/
+      RequestAlreadyProcessed: AugmentedError<ApiType>;
+      /**
+       * There is no such request
+       **/
+      RequestIsNotExists: AugmentedError<ApiType>;
+      /**
+       * This account has reached the max count of requests
+       **/
+      RequestsCountForUserOverloaded: AugmentedError<ApiType>;
+      /**
+       * The actual request type by provided RequestId is different
+       **/
+      WrongRequestType: AugmentedError<ApiType>;
+    };
     priceTools: {
       /**
        * AssetId has been already registered.

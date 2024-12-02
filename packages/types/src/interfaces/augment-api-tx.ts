@@ -2528,6 +2528,21 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       unrequestPreimage: AugmentedSubmittable<(hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
+    presto: {
+      addPrestoAuditor: AugmentedSubmittable<(auditor: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      addPrestoManager: AugmentedSubmittable<(manager: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      approveDepositRequest: AugmentedSubmittable<(id: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      approveWithdrawRequest: AugmentedSubmittable<(id: u64 | AnyNumber | Uint8Array, paymentReference: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, Bytes]>;
+      burnPrestoUsd: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      cancelRequest: AugmentedSubmittable<(id: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      createDepositRequest: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array, paymentReference: Bytes | string | Uint8Array, details: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [u128, Bytes, Option<Bytes>]>;
+      createWithdrawRequest: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array, details: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [u128, Option<Bytes>]>;
+      declineRequest: AugmentedSubmittable<(id: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      mintPrestoUsd: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      removePrestoAuditor: AugmentedSubmittable<(auditor: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      removePrestoManager: AugmentedSubmittable<(manager: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      sendPrestoUsd: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array, to: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, AccountId32]>;
+    };
     pswapDistribution: {
       claimIncentive: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
     };
@@ -2569,6 +2584,13 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `settings`: Parameters for placing the orders in each order book.
        **/
       orderBookFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookFillInput]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookFillInput | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookFillInput]>>]>;
+      /**
+       * Allows to initialize necessary Presto assets in testnet without migration.
+       * 
+       * Parameters:
+       * - `origin`: Root
+       **/
+      prestoInitializeAssets: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Set prices of an asset in `price_tools` pallet.
        * Ignores pallet restrictions on price speed change.

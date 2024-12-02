@@ -973,6 +973,18 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Requested: AugmentedEvent<ApiType, [hash_: H256], { hash_: H256 }>;
     };
+    presto: {
+      AuditorAdded: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
+      AuditorRemoved: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
+      ManagerAdded: AugmentedEvent<ApiType, [manager: AccountId32], { manager: AccountId32 }>;
+      ManagerRemoved: AugmentedEvent<ApiType, [manager: AccountId32], { manager: AccountId32 }>;
+      PrestoUsdBurned: AugmentedEvent<ApiType, [amount: u128, by: AccountId32], { amount: u128, by: AccountId32 }>;
+      PrestoUsdMinted: AugmentedEvent<ApiType, [amount: u128, by: AccountId32], { amount: u128, by: AccountId32 }>;
+      RequestApproved: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      RequestCancelled: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
+      RequestCreated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      RequestDeclined: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+    };
     priceTools: {
     };
     pswapDistribution: {
