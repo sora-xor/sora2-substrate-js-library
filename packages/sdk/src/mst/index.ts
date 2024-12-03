@@ -259,6 +259,7 @@ export class MstModule<T> {
       const extrinsic = extrinsics[extrinsicIndex];
 
       if (extrinsic.method.section === 'utility' && extrinsic.method.method === 'batch') {
+        const { finalProofSize, details } = await this.calculateFinalProofSize(callHash, signerAddress);
         const calls = extrinsic.method.args[0] as any;
 
         let systemRemarkCall: any = null;
@@ -275,35 +276,9 @@ export class MstModule<T> {
         }
 
         const callDataHex = systemRemarkCall.args[0].toString();
-
         const callData = this.root.api.registry.createType('Call', callDataHex);
-        const computedCallHash = blake2AsHex(callData.toU8a());
-
-        if (computedCallHash !== callHash) {
-          throw new Error('Computed call hash does not match the provided callHash');
-        }
-
-        const callArgs = Array.from(callData.args);
-        const dummyExtrinsic = this.root.api.tx[callData.section][callData.method].apply(null, callArgs);
-        const paymentInfo = await dummyExtrinsic.paymentInfo(signerAddress);
-        const callWeight = paymentInfo.weight;
-        const callLength = callData.encodedLength;
-        const callRefTime = callWeight.refTime.toBn();
-        const callProofSize = callWeight.proofSize.toBn();
-        const totalProofSize = callProofSize.addn(callLength);
-
-        const adjustedRefTime = callRefTime.muln(110).divn(100);
-        const adjustedProofSize = totalProofSize.muln(110).divn(100);
-
-        const maxBlockWeights = this.root.api.consts.system.blockWeights;
-        const maxBlockRefTime = maxBlockWeights.maxBlock.refTime.toBn();
-        const maxBlockProofSize = maxBlockWeights.maxBlock.proofSize.toBn();
-
-        const finalRefTime = BN.min(adjustedRefTime, maxBlockRefTime);
-        const finalProofSize = BN.min(adjustedProofSize, maxBlockProofSize);
-
         const MAX_WEIGHT = this.root.api.registry.createType('WeightV2', {
-          refTime: finalRefTime,
+          refTime: details.finalRefTime,
           proofSize: finalProofSize,
         });
 
@@ -314,9 +289,6 @@ export class MstModule<T> {
           callData,
           MAX_WEIGHT
         );
-
-        // TODO what if transaction failed
-
         await this.root.submitExtrinsic(asMultiExtrinsic, signerAccountPair);
         const existingHistoryItem = this.root.getHistory(callHash);
         if (existingHistoryItem) {
@@ -343,6 +315,107 @@ export class MstModule<T> {
       );
 
       await this.root.submitExtrinsic(approveExtrinsic, signerAccountPair);
+    }
+  }
+
+  public async calculateFinalProofSize(
+    callHash: string,
+    signerAddress: string
+  ): Promise<{ finalProofSize: BN; details: any }> {
+    try {
+      const multisigInfo = await this.getMultisigInfoByCallHash(callHash);
+      if (!multisigInfo) {
+        throw new Error(`No multisig transaction found for callHash: ${callHash}`);
+      }
+
+      const { when } = multisigInfo;
+      const blockNumber = when.height.toNumber();
+      const extrinsicIndex = when.index.toNumber();
+      const blockHash = await this.root.api.rpc.chain.getBlockHash(blockNumber);
+      const signedBlock = await this.root.api.rpc.chain.getBlock(blockHash);
+      const extrinsics = signedBlock.block.extrinsics;
+
+      const extrinsic = extrinsics[extrinsicIndex];
+
+      if (!(extrinsic.method.section === 'utility' && extrinsic.method.method === 'batch')) {
+        throw new Error('Extrinsic at specified index is not utility.batch');
+      }
+
+      const calls = extrinsic.method.args[0] as unknown as any[];
+      let systemRemarkCall: any = null;
+      let multisigCall: any = null;
+
+      for (const call of calls) {
+        if (call.section === 'system' && call.method === 'remark') {
+          systemRemarkCall = call;
+        } else if (call.section === 'multisig' && call.method === 'asMulti') {
+          multisigCall = call;
+        }
+      }
+
+      if (!systemRemarkCall) {
+        throw new Error('No system.remark call found in the batch');
+      }
+
+      if (!multisigCall) {
+        throw new Error('No multisig.asMulti call found in the batch');
+      }
+
+      const callDataHex = systemRemarkCall.args[0].toString();
+      const callData = this.root.api.registry.createType('Call', callDataHex);
+      const callArgs = Array.from(callData.args);
+      const dummyExtrinsic = this.root.api.tx[callData.section][callData.method].apply(null, callArgs);
+      const paymentInfo = await dummyExtrinsic.paymentInfo(signerAddress);
+      const callWeight = paymentInfo.weight;
+      const callLength = callData.encodedLength;
+      const callRefTime = callWeight.refTime.toBn();
+      const callProofSize = callWeight.proofSize.toBn();
+      const totalProofSize = callProofSize.addn(callLength);
+      const adjustedRefTime = callRefTime.muln(110).divn(100);
+      const adjustedProofSize = totalProofSize;
+      const maxBlockWeights = this.root.api.consts.system.blockWeights;
+      const maxBlockRefTime = maxBlockWeights.maxBlock.refTime.toBn();
+      const maxBlockProofSize = maxBlockWeights.maxBlock.proofSize.toBn();
+      const finalRefTime = BN.min(adjustedRefTime, maxBlockRefTime);
+      const finalProofSize = BN.min(adjustedProofSize, maxBlockProofSize);
+      console.info('Final RefTime (after min with maxBlock):', finalRefTime.toString());
+      console.info('Final ProofSize (after min with maxBlock):', finalProofSize.toString());
+
+      return {
+        finalProofSize,
+        details: {
+          callRefTime: callRefTime.toString(),
+          callProofSize: callProofSize.toString(),
+          totalProofSize: totalProofSize.toString(),
+          adjustedRefTime: adjustedRefTime.toString(),
+          adjustedProofSize: adjustedProofSize.toString(),
+          maxBlockRefTime: maxBlockRefTime.toString(),
+          maxBlockProofSize: maxBlockProofSize.toString(),
+          finalRefTime: finalRefTime.toString(),
+          finalProofSize: finalProofSize.toString(),
+        },
+      };
+    } catch (error) {
+      console.error(`Error calculating finalProofSize for callHash ${callHash}:`, error);
+      throw error; // Rethrow after logging
+    }
+  }
+
+  private async getMultisigInfoByCallHash(callHash: string): Promise<any | null> {
+    try {
+      const multisigAccounts = this.root.keyring.getAddresses().filter(({ meta }) => meta.isMultisig);
+
+      for (const account of multisigAccounts) {
+        const multisigAddress = account.address;
+        const info = await this.root.api.query.multisig.multisigs(multisigAddress, callHash);
+        if (info.isSome) {
+          return info.unwrap();
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error(`Error retrieving multisig info for callHash ${callHash}:`, error);
+      return null;
     }
   }
 

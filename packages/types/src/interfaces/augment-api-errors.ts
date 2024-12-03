@@ -2648,6 +2648,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CallerIsNotAuditor: AugmentedError<ApiType>;
       /**
+       * This account is not an owner of the crop receipt
+       **/
+      CallerIsNotCropReceiptOwner: AugmentedError<ApiType>;
+      /**
        * This account is not a manager
        **/
       CallerIsNotManager: AugmentedError<ApiType>;
@@ -2655,6 +2659,26 @@ declare module '@polkadot/api-base/types/errors' {
        * This account is not an owner of the request
        **/
       CallerIsNotRequestOwner: AugmentedError<ApiType>;
+      /**
+       * The crop receipt already has a decision
+       **/
+      CropReceiptAlreadyHasDecision: AugmentedError<ApiType>;
+      /**
+       * The crop receipt already has been rated
+       **/
+      CropReceiptAlreadyRated: AugmentedError<ApiType>;
+      /**
+       * There is no such crop receipt
+       **/
+      CropReceiptIsNotExists: AugmentedError<ApiType>;
+      /**
+       * This account has reached the max count of crop receipts
+       **/
+      CropReceiptsCountForUserOverloaded: AugmentedError<ApiType>;
+      /**
+       * The operation cannot be performed until the crop receipt has been rated
+       **/
+      CropReceiptWaitingForRate: AugmentedError<ApiType>;
       /**
        * This account already was added as a manager before
        **/

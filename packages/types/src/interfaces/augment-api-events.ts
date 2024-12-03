@@ -976,6 +976,10 @@ declare module '@polkadot/api-base/types/events' {
     presto: {
       AuditorAdded: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
       AuditorRemoved: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
+      CropReceiptCreated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      CropReceiptDeclined: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
+      CropReceiptPublished: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
+      CropReceiptRated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
       ManagerAdded: AugmentedEvent<ApiType, [manager: AccountId32], { manager: AccountId32 }>;
       ManagerRemoved: AugmentedEvent<ApiType, [manager: AccountId32], { manager: AccountId32 }>;
       PrestoUsdBurned: AugmentedEvent<ApiType, [amount: u128, by: AccountId32], { amount: u128, by: AccountId32 }>;
