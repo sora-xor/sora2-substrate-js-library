@@ -496,6 +496,18 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       poolAdjustPeriod: u32 & AugmentedConst<ApiType>;
     };
+    presto: {
+      maxCreditorSize: u32 & AugmentedConst<ApiType>;
+      maxCropReceiptContentSize: u32 & AugmentedConst<ApiType>;
+      maxDebtorSize: u32 & AugmentedConst<ApiType>;
+      maxPlaceOfIssueSize: u32 & AugmentedConst<ApiType>;
+      maxPrestoAuditorsCount: u32 & AugmentedConst<ApiType>;
+      maxPrestoManagersCount: u32 & AugmentedConst<ApiType>;
+      maxRequestDetailsSize: u32 & AugmentedConst<ApiType>;
+      maxRequestPaymentReferenceSize: u32 & AugmentedConst<ApiType>;
+      maxUserCropReceiptCount: u32 & AugmentedConst<ApiType>;
+      maxUserRequestCount: u32 & AugmentedConst<ApiType>;
+    };
     scheduler: {
       /**
        * The maximum weight that may be scheduled per block for any dispatchables.

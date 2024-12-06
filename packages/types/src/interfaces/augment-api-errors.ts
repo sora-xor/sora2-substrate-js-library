@@ -2387,6 +2387,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       DestinationTargetBalanceIsNotLargeEnough: AugmentedError<ApiType>;
       /**
+       * It is not allowed to initialize pools in this Dex
+       **/
+      DexIsForbidden: AugmentedError<ApiType>;
+      /**
        * Failure while calculating price ignoring non-linearity of liquidity source.
        **/
       FailedToCalculatePriceWithoutImpact: AugmentedError<ApiType>;
@@ -2629,6 +2633,88 @@ declare module '@polkadot/api-base/types/errors' {
        * Preimage is too large to store on-chain.
        **/
       TooBig: AugmentedError<ApiType>;
+    };
+    presto: {
+      /**
+       * Zero amount doesn't make sense
+       **/
+      AmountIsZero: AugmentedError<ApiType>;
+      /**
+       * This account already was added as an auditor before
+       **/
+      AuditorAlreadyAdded: AugmentedError<ApiType>;
+      /**
+       * There is no such auditor
+       **/
+      AuditorNotExists: AugmentedError<ApiType>;
+      /**
+       * Auditors storage has reached its limit
+       **/
+      AuditorsAreOverloaded: AugmentedError<ApiType>;
+      /**
+       * This account is not an auditor
+       **/
+      CallerIsNotAuditor: AugmentedError<ApiType>;
+      /**
+       * This account is not an owner of the crop receipt
+       **/
+      CallerIsNotCropReceiptOwner: AugmentedError<ApiType>;
+      /**
+       * This account is not a manager
+       **/
+      CallerIsNotManager: AugmentedError<ApiType>;
+      /**
+       * This account is not an owner of the request
+       **/
+      CallerIsNotRequestOwner: AugmentedError<ApiType>;
+      /**
+       * The crop receipt already has a decision
+       **/
+      CropReceiptAlreadyHasDecision: AugmentedError<ApiType>;
+      /**
+       * The crop receipt already has been rated
+       **/
+      CropReceiptAlreadyRated: AugmentedError<ApiType>;
+      /**
+       * There is no such crop receipt
+       **/
+      CropReceiptIsNotExists: AugmentedError<ApiType>;
+      /**
+       * This account has reached the max count of crop receipts
+       **/
+      CropReceiptsCountForUserOverloaded: AugmentedError<ApiType>;
+      /**
+       * The operation cannot be performed until the crop receipt has been rated
+       **/
+      CropReceiptWaitingForRate: AugmentedError<ApiType>;
+      /**
+       * This account already was added as a manager before
+       **/
+      ManagerAlreadyAdded: AugmentedError<ApiType>;
+      /**
+       * There is no such manager
+       **/
+      ManagerNotExists: AugmentedError<ApiType>;
+      /**
+       * Managers storage has reached its limit
+       **/
+      ManagersAreOverloaded: AugmentedError<ApiType>;
+      /**
+       * This request was already processed by manager
+       **/
+      RequestAlreadyProcessed: AugmentedError<ApiType>;
+      /**
+       * There is no such request
+       **/
+      RequestIsNotExists: AugmentedError<ApiType>;
+      /**
+       * This account has reached the max count of requests
+       **/
+      RequestsCountForUserOverloaded: AugmentedError<ApiType>;
+      /**
+       * The actual request type by provided RequestId is different
+       **/
+      WrongRequestType: AugmentedError<ApiType>;
     };
     priceTools: {
       /**
@@ -3347,6 +3433,18 @@ declare module '@polkadot/api-base/types/errors' {
     };
     xorFee: {
       /**
+       * Asset already in white list
+       **/
+      AssetAlreadyWhitelisted: AugmentedError<ApiType>;
+      /**
+       * Asset is not found in white list
+       **/
+      AssetNotFound: AugmentedError<ApiType>;
+      /**
+       * Failed to calculate fee in white listed asset
+       **/
+      FeeCalculationFailed: AugmentedError<ApiType>;
+      /**
        * `SmallReferenceAmount` is unsupported
        **/
       InvalidSmallReferenceAmount: AugmentedError<ApiType>;
@@ -3354,6 +3452,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Failed to calculate new multiplier.
        **/
       MultiplierCalculationFailed: AugmentedError<ApiType>;
+      /**
+       * White list is filled
+       **/
+      WhitelistFull: AugmentedError<ApiType>;
     };
     xstPool: {
       /**
