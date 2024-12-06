@@ -2,7 +2,7 @@ import last from 'lodash/fp/last';
 import first from 'lodash/fp/first';
 import omit from 'lodash/fp/omit';
 import { Keyring } from '@polkadot/ui-keyring';
-import { assert, BN, isHex } from '@polkadot/util';
+import { assert, isHex } from '@polkadot/util';
 import { Observable, Subscriber, Subject } from 'rxjs';
 import {
   base58Decode,
@@ -39,7 +39,6 @@ import type {
 } from './types';
 import type { OriginalIdentity } from './staking/types';
 import type { CommonPrimitivesAssetId32Override } from './typeOverrides';
-import { cloneDeep } from 'lodash/fp';
 
 // We don't need to know real account address for checking network fees
 const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
@@ -244,11 +243,11 @@ export class WithAccountPair extends WithConnectionApi {
   }
 
   public setMstAccount(account: CreateResult): void {
-    this.mstAccount = cloneDeep(account);
+    this.mstAccount = account;
   }
 
   public switchToMstAccount(): void {
-    this.previousAccount = cloneDeep(this.account);
+    this.previousAccount = this.account;
     this.mstActive = true;
   }
 

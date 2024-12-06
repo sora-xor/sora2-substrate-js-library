@@ -10,8 +10,7 @@ import { blake2AsHex } from '@polkadot/util-crypto';
 import { Subject, Subscription } from 'rxjs';
 import { SwapAmount } from '@sora-substrate/types';
 import { XOR } from '../assets/consts';
-import type { Bytes, Vec } from '@polkadot/types-codec';
-import type { Call } from '@polkadot/types/interfaces';
+import type { Bytes } from '@polkadot/types-codec';
 
 /**
  * This module is used for internal needs
@@ -35,10 +34,9 @@ export class MstModule<T> {
 
     const result = keyring.addMultisig(accounts, threshold, { name });
     const addressMST = this.root.formatAddress(result.pair.address);
-    keyring.saveAddress(addressMST, {
+    keyring.addExternal(addressMST, {
       name,
       isMultisig: true,
-      whenCreated: Date.now(),
       threshold,
       who: accounts,
       deadlineInBlocks,
@@ -56,8 +54,11 @@ export class MstModule<T> {
    */
   public getMstAccount(address: string): KeyringAddress | undefined {
     const keyring = this.root.keyring; // Access keyring via the getter
-
+    console.info('we are in getMstAccount');
+    console.info('the keyring', keyring);
     const multisigAccounts = keyring.getAddresses().filter(({ meta }) => meta.isMultisig);
+    console.info('multisigAccounts', multisigAccounts);
+    console.info('just addresses', keyring.getAddresses());
     const multisigAccount = multisigAccounts.find((account) => {
       const accountAddress = this.root.formatAddress(account.address, false);
       const targetAddress = this.root.formatAddress(address, false);
