@@ -566,7 +566,9 @@ export class MstModule<T> {
       'kensetsu.borrow': Operation.BorrowVaultDebt,
       'kensetsu.repayDebt': Operation.RepayVaultDebt,
       'kensetsu.closeCdp': Operation.CloseVault,
-      // 'utility.batchAll': Operation.BatchAll,
+      'referrals.reserve': Operation.ReferralReserveXor,
+      'referrals.unreserve': Operation.ReferralUnreserveXor,
+      'referrals.setReferrer': Operation.ReferralSetInvitedUser,
     };
 
     historyItem.type = operationMap[operationKey];
@@ -665,8 +667,16 @@ export class MstModule<T> {
         }
         const assetADecimals = assetAInfo.decimals ?? this.root.chainDecimals;
         const assetBDecimals = assetBInfo.decimals ?? this.root.chainDecimals;
-        const rawAmountA = args[3].toString();
-        const rawAmountB = args[4].toString();
+        let rawAmountA;
+        let rawAmountB;
+
+        if (historyItem.type === Operation.RemoveLiquidity) {
+          rawAmountA = args[4].toString();
+          rawAmountB = args[5].toString();
+        } else {
+          rawAmountA = args[3].toString();
+          rawAmountB = args[4].toString();
+        }
         const amountA = new FPNumber(rawAmountA, this.root.chainDecimals)
           .div(new FPNumber(10 ** assetADecimals, this.root.chainDecimals))
           .toString();
@@ -722,10 +732,11 @@ export class MstModule<T> {
         break;
       }
 
-      // TODO in here for some reason StakingWithdrawUnbonded is 0,but in reality not
       case Operation.StakingBondExtra:
       case Operation.StakingUnbond:
-      case Operation.StakingWithdrawUnbonded: {
+      case Operation.StakingWithdrawUnbonded:
+      case Operation.ReferralReserveXor:
+      case Operation.ReferralUnreserveXor: {
         const rawAmount = args[0].toString();
         const stakingTokenAddress = XOR.address;
         const stakingTokenInfo = await this.root.assets.getAssetInfo(stakingTokenAddress);
@@ -742,7 +753,6 @@ export class MstModule<T> {
         historyItem.assetAddress = stakingTokenAddress;
         break;
       }
-      // TODO have problem with amount,can't get it
       case Operation.DemeterFarmingGetRewards: {
         const rewardAssetIdObj = args[2].toHuman() as { code: string };
         const rewardAssetId = rewardAssetIdObj.code || args[2].toString();
@@ -894,28 +904,9 @@ export class MstModule<T> {
         break;
       }
 
-      // TODO add for staking -> xor(sora staking) -> claim rewards
-      // TODO
-      case Operation.BatchAll: {
-        try {
-          // Convert calls to an iterable format
-          const calls = (args[0] as Vec<Call>).toArray();
-
-          for (const call of calls) {
-            const innerCallData = call.toHex();
-            const decodedInnerCall = this.root.api.registry.createType('Call', innerCallData);
-
-            const innerMethod = decodedInnerCall.method;
-            const innerSection = decodedInnerCall.section;
-            const innerArgs = decodedInnerCall.args;
-
-            const innerOperationKey = `${innerSection}.${innerMethod}`;
-            console.info('innerOperationKey', innerOperationKey);
-            console.info('innerArgs', innerArgs);
-          }
-        } catch (error) {
-          console.error('Error processing utility.batchAll operation:', error);
-        }
+      case Operation.ReferralSetInvitedUser: {
+        const invitedUserAddress = args[0].toString();
+        historyItem.to = invitedUserAddress;
         break;
       }
 

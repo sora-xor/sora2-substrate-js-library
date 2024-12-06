@@ -2387,6 +2387,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       DestinationTargetBalanceIsNotLargeEnough: AugmentedError<ApiType>;
       /**
+       * It is not allowed to initialize pools in this Dex
+       **/
+      DexIsForbidden: AugmentedError<ApiType>;
+      /**
        * Failure while calculating price ignoring non-linearity of liquidity source.
        **/
       FailedToCalculatePriceWithoutImpact: AugmentedError<ApiType>;
@@ -2631,6 +2635,10 @@ declare module '@polkadot/api-base/types/errors' {
       TooBig: AugmentedError<ApiType>;
     };
     presto: {
+      /**
+       * Zero amount doesn't make sense
+       **/
+      AmountIsZero: AugmentedError<ApiType>;
       /**
        * This account already was added as an auditor before
        **/
@@ -3425,6 +3433,18 @@ declare module '@polkadot/api-base/types/errors' {
     };
     xorFee: {
       /**
+       * Asset already in white list
+       **/
+      AssetAlreadyWhitelisted: AugmentedError<ApiType>;
+      /**
+       * Asset is not found in white list
+       **/
+      AssetNotFound: AugmentedError<ApiType>;
+      /**
+       * Failed to calculate fee in white listed asset
+       **/
+      FeeCalculationFailed: AugmentedError<ApiType>;
+      /**
        * `SmallReferenceAmount` is unsupported
        **/
       InvalidSmallReferenceAmount: AugmentedError<ApiType>;
@@ -3432,6 +3452,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Failed to calculate new multiplier.
        **/
       MultiplierCalculationFailed: AugmentedError<ApiType>;
+      /**
+       * White list is filled
+       **/
+      WhitelistFull: AugmentedError<ApiType>;
     };
     xstPool: {
       /**

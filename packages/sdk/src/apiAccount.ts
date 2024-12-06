@@ -581,7 +581,9 @@ export class WithAccountHistory extends WithAccountStorage {
   }
 
   public saveHistory(historyItem: HistoryItem, options?: SaveHistoryOptions): void {
-    if (!historyItem?.id) return;
+    if (!historyItem?.id || (historyItem.type === undefined && (historyItem as any).status === 'error')) {
+      return;
+    }
 
     let historyCopy: AccountHistory<HistoryItem>;
     let addressStorage: Storage | undefined = undefined;

@@ -1465,17 +1465,25 @@ declare module '@polkadot/api-base/types/events' {
     };
     xorFee: {
       /**
-       * Fee has been withdrawn from user. [Account Id to withdraw from, Fee Amount]
+       * White list updated: [Asset added]
        **/
-      FeeWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      AssetAddedToWhiteList: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      /**
+       * White list updated: [Asset removed]
+       **/
+      AssetRemovedFromWhiteList: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      /**
+       * Fee has been withdrawn from user. [Account Id to withdraw from, Asset Id to withdraw, Fee Amount]
+       **/
+      FeeWithdrawn: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
        * New block number to update multiplier is set. [New value]
        **/
       PeriodUpdated: AugmentedEvent<ApiType, [u32]>;
       /**
-       * The portion of fee is sent to the referrer. [Referral, Referrer, Amount]
+       * The portion of fee is sent to the referrer. [Referral, Referrer, AssetId, Amount]
        **/
-      ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128]>;
+      ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
        * New small reference amount set. [New value]
        **/
