@@ -973,6 +973,22 @@ declare module '@polkadot/api-base/types/events' {
        **/
       Requested: AugmentedEvent<ApiType, [hash_: H256], { hash_: H256 }>;
     };
+    presto: {
+      AuditorAdded: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
+      AuditorRemoved: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
+      CropReceiptCreated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      CropReceiptDeclined: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
+      CropReceiptPublished: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
+      CropReceiptRated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      ManagerAdded: AugmentedEvent<ApiType, [manager: AccountId32], { manager: AccountId32 }>;
+      ManagerRemoved: AugmentedEvent<ApiType, [manager: AccountId32], { manager: AccountId32 }>;
+      PrestoUsdBurned: AugmentedEvent<ApiType, [amount: u128, by: AccountId32], { amount: u128, by: AccountId32 }>;
+      PrestoUsdMinted: AugmentedEvent<ApiType, [amount: u128, by: AccountId32], { amount: u128, by: AccountId32 }>;
+      RequestApproved: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      RequestCancelled: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
+      RequestCreated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      RequestDeclined: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+    };
     priceTools: {
     };
     pswapDistribution: {
@@ -1449,17 +1465,25 @@ declare module '@polkadot/api-base/types/events' {
     };
     xorFee: {
       /**
-       * Fee has been withdrawn from user. [Account Id to withdraw from, Fee Amount]
+       * White list updated: [Asset added]
        **/
-      FeeWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      AssetAddedToWhiteList: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      /**
+       * White list updated: [Asset removed]
+       **/
+      AssetRemovedFromWhiteList: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
+      /**
+       * Fee has been withdrawn from user. [Account Id to withdraw from, Asset Id to withdraw, Fee Amount]
+       **/
+      FeeWithdrawn: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
        * New block number to update multiplier is set. [New value]
        **/
       PeriodUpdated: AugmentedEvent<ApiType, [u32]>;
       /**
-       * The portion of fee is sent to the referrer. [Referral, Referrer, Amount]
+       * The portion of fee is sent to the referrer. [Referral, Referrer, AssetId, Amount]
        **/
-      ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128]>;
+      ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
        * New small reference amount set. [New value]
        **/

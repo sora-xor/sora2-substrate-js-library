@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, Bytes, Compact, Option, Result, Text, U256, U8aFixed, Vec, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H128, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesGenericAccount, BridgeTypesGenericAssetId, BridgeTypesGenericBalance, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, BridgeTypesTonTonAddress, BridgeTypesTonTonAddressWithPrefix, BridgeTypesTonTonNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, QaToolsInputAssetId, QaToolsPalletToolsMcbcBaseSupply, QaToolsPalletToolsMcbcOtherCollateralInput, QaToolsPalletToolsMcbcTbcdCollateralInput, QaToolsPalletToolsOrderBookFillInput, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstBaseInput, QaToolsPalletToolsXstSyntheticInput, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpSessionMembershipProof, SpWeightsWeightV2Weight, VestedRewardsVestingCurrenciesVestingScheduleVariant, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesGenericAccount, BridgeTypesGenericAssetId, BridgeTypesGenericBalance, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, BridgeTypesTonTonAddress, BridgeTypesTonTonAddressWithPrefix, BridgeTypesTonTonNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, PrestoCropReceiptCountry, PrestoCropReceiptRating, QaToolsInputAssetId, QaToolsPalletToolsMcbcBaseSupply, QaToolsPalletToolsMcbcOtherCollateralInput, QaToolsPalletToolsMcbcTbcdCollateralInput, QaToolsPalletToolsOrderBookFillInput, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstBaseInput, QaToolsPalletToolsXstSyntheticInput, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpSessionMembershipProof, SpWeightsWeightV2Weight, VestedRewardsVestingCurrenciesVestingScheduleVariant, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -2528,6 +2528,24 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       unrequestPreimage: AugmentedSubmittable<(hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256]>;
     };
+    presto: {
+      addPrestoAuditor: AugmentedSubmittable<(auditor: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      addPrestoManager: AugmentedSubmittable<(manager: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      approveDepositRequest: AugmentedSubmittable<(requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      approveWithdrawRequest: AugmentedSubmittable<(requestId: u64 | AnyNumber | Uint8Array, paymentReference: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, Bytes]>;
+      burnPrestoUsd: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      cancelRequest: AugmentedSubmittable<(requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      createCropReceipt: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array, country: PrestoCropReceiptCountry | 'Brazil' | 'Indonesia' | 'Nigeria' | 'Ukraine' | 'Usa' | 'Other' | number | Uint8Array, closeInitialPeriod: u64 | AnyNumber | Uint8Array, dateOfIssue: u64 | AnyNumber | Uint8Array, placeOfIssue: Bytes | string | Uint8Array, debtor: Bytes | string | Uint8Array, creditor: Bytes | string | Uint8Array, perfomanceTime: u64 | AnyNumber | Uint8Array, data: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, PrestoCropReceiptCountry, u64, u64, Bytes, Bytes, Bytes, u64, Bytes]>;
+      createDepositRequest: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array, paymentReference: Bytes | string | Uint8Array, details: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [u128, Bytes, Option<Bytes>]>;
+      createWithdrawRequest: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array, details: Option<Bytes> | null | Uint8Array | Bytes | string) => SubmittableExtrinsic<ApiType>, [u128, Option<Bytes>]>;
+      declineCropReceipt: AugmentedSubmittable<(cropReceiptId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      declineRequest: AugmentedSubmittable<(requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
+      mintPrestoUsd: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      rateCropReceipt: AugmentedSubmittable<(cropReceiptId: u64 | AnyNumber | Uint8Array, rating: PrestoCropReceiptRating | 'AAA' | 'AA' | 'A' | 'BBB' | 'BB' | 'B' | 'CCC' | 'CC' | 'C' | 'D' | 'NR' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, PrestoCropReceiptRating]>;
+      removePrestoAuditor: AugmentedSubmittable<(auditor: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      removePrestoManager: AugmentedSubmittable<(manager: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
+      sendPrestoUsd: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array, to: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128, AccountId32]>;
+    };
     pswapDistribution: {
       claimIncentive: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
     };
@@ -2569,6 +2587,13 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `settings`: Parameters for placing the orders in each order book.
        **/
       orderBookFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookFillInput]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookFillInput | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookFillInput]>>]>;
+      /**
+       * Allows to initialize necessary Presto assets in testnet without migration.
+       * 
+       * Parameters:
+       * - `origin`: Root
+       **/
+      prestoInitializeAssets: AugmentedSubmittable<() => SubmittableExtrinsic<ApiType>, []>;
       /**
        * Set prices of an asset in `price_tools` pallet.
        * Ignores pallet restrictions on price speed change.
@@ -3630,6 +3655,8 @@ declare module '@polkadot/api-base/types/submittable' {
       vestedTransfer: AugmentedSubmittable<(dest: AccountId32 | string | Uint8Array, schedule: VestedRewardsVestingCurrenciesVestingScheduleVariant | { LinearVestingSchedule: any } | { LinearPendingVestingSchedule: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, VestedRewardsVestingCurrenciesVestingScheduleVariant]>;
     };
     xorFee: {
+      addAssetToWhiteList: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
+      removeAssetFromWhiteList: AugmentedSubmittable<(assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesAssetId32]>;
       /**
        * Set new update period for `xor_fee::Multiplier` updating
        * Set 0 to stop updating
@@ -3644,6 +3671,14 @@ declare module '@polkadot/api-base/types/submittable' {
        * Update the multiplier for weight -> fee conversion.
        **/
       updateMultiplier: AugmentedSubmittable<(newMultiplier: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      /**
+       * Allow use assets from white list to pay for fee
+       * # Parameters:
+       * - `origin`: caller
+       * - `call`: dispatch call for which pay fee
+       * - `asset_id`: asset in which pay fee, where None - XOR
+       **/
+      xorlessCall: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, assetId: Option<CommonPrimitivesAssetId32> | null | Uint8Array | CommonPrimitivesAssetId32 | { code?: any } | string) => SubmittableExtrinsic<ApiType>, [Call, Option<CommonPrimitivesAssetId32>]>;
     };
     xstPool: {
       /**
