@@ -24,9 +24,10 @@ export class Consts {
   /** VXOR token */
   static readonly VXOR = '0x006a271832f44c93bd8692584d85415f0f3dccef9748fecd129442c8edcb4361';
 
-  /** XYK, TBC fees the same */
-  static readonly XYK_FEE = new FPNumber(0.003);
-  static readonly TBC_FEE = Consts.XYK_FEE;
+  /** XYK fee - 0.6% */
+  static readonly XYK_FEE = new FPNumber(0.006);
+  /** TBC fee - 0.3% */
+  static readonly TBC_FEE = new FPNumber(0.003);
   /** Max `Rust` number value */
   static readonly MAX = new FPNumber('170141183460469231731.687303715884105727');
   /** Manimal significant balance */
