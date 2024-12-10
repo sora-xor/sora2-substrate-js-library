@@ -15,7 +15,7 @@ export class PrestoModule<T> {
     let requests: any = [];
     const data = await this.root.api.query.presto.requests.entries();
 
-    data.map(([idx, chunk]) => {
+    data.forEach(([idx, chunk]) => {
       const type = Object.keys(chunk.toHuman() as Object)[0];
       const meta = Object.values(chunk.toHuman() as Object)[0];
 
@@ -42,7 +42,7 @@ export class PrestoModule<T> {
     let cropReceipts: any = [];
     const data = await this.root.api.query.presto.cropReceipts.entries();
 
-    data.map(([idx, chunk]) => {
+    data.forEach(([idx, chunk]) => {
       const record = {
         crId: (idx.toHuman() as Array<string>)[0],
         ...(chunk.toHuman() as Object),
