@@ -23,8 +23,9 @@ export class MstModule<T> {
   public pendingTxsUpdated = this.pendingTxsSubject.asObservable();
   private lastPendingTxs: HistoryItem[] = [];
   private pendingTxsSubscription: Subscription | null = null;
+
   getMSTName(): string {
-    const addressMST = this.root.account?.pair?.address ?? '';
+    const addressMST = this.root.accountStorage?.get('MSTAddress') || this.root.account?.pair?.address || '';
     const multisigAccount = this.getMstAccount(addressMST);
     return multisigAccount?.meta.name ?? '';
   }
@@ -34,7 +35,7 @@ export class MstModule<T> {
 
     const result = keyring.addMultisig(accounts, threshold, { name });
     const addressMST = this.root.formatAddress(result.pair.address);
-    keyring.addExternal(addressMST, {
+    keyring.saveAddress(addressMST, {
       name,
       isMultisig: true,
       threshold,

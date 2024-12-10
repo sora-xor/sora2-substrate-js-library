@@ -160,10 +160,16 @@ export class WithConnectionApi {
    * @param value
    * @returns
    */
+
+  // calldata + public key cosigner
   public encrypt(value: string): string {
     return encrypt(value);
   }
 
+  // Подстветить ошибку в UI
+  // и еще нужно анлочить пару
+  // зашифрованная calldata, если приватник нашего косайнера совпадает с публичным то все парсим
+  // , если не совпадает,то не распарсится
   public decrypt(value: string): string {
     return decrypt(value);
   }
