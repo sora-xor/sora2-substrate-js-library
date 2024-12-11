@@ -287,6 +287,28 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnauthorizedRelayer: AugmentedError<ApiType>;
     };
+    beefyLightClient: {
+      CannotSwitchOldValidatorSet: AugmentedError<ApiType>;
+      CommitmentNotFoundInDigest: AugmentedError<ApiType>;
+      InvalidDigestHash: AugmentedError<ApiType>;
+      InvalidMMRProof: AugmentedError<ApiType>;
+      InvalidNetworkId: AugmentedError<ApiType>;
+      InvalidNumberOfPositions: AugmentedError<ApiType>;
+      InvalidNumberOfPublicKeys: AugmentedError<ApiType>;
+      InvalidNumberOfSignatures: AugmentedError<ApiType>;
+      InvalidSignature: AugmentedError<ApiType>;
+      InvalidValidatorSetId: AugmentedError<ApiType>;
+      MerklePositionTooHigh: AugmentedError<ApiType>;
+      MerkleProofTooHigh: AugmentedError<ApiType>;
+      MerkleProofTooShort: AugmentedError<ApiType>;
+      MMRPayloadNotFound: AugmentedError<ApiType>;
+      NotEnoughValidatorSignatures: AugmentedError<ApiType>;
+      PalletNotInitialized: AugmentedError<ApiType>;
+      PayloadBlocknumberTooNew: AugmentedError<ApiType>;
+      PayloadBlocknumberTooOld: AugmentedError<ApiType>;
+      ValidatorNotOnceInbitfield: AugmentedError<ApiType>;
+      ValidatorSetIncorrectPosition: AugmentedError<ApiType>;
+    };
     bridgeDataSigner: {
       ApprovalsNotFound: AugmentedError<ApiType>;
       DontHavePendingPeerUpdates: AugmentedError<ApiType>;
@@ -1472,6 +1494,36 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongPendingPeer: AugmentedError<ApiType>;
     };
+    evmFungibleApp: {
+      AppAlreadyRegistered: AugmentedError<ApiType>;
+      AppIsNotRegistered: AugmentedError<ApiType>;
+      BaseFeeIsNotAvailable: AugmentedError<ApiType>;
+      BaseFeeLifetimeExceeded: AugmentedError<ApiType>;
+      /**
+       * Call encoding failed.
+       **/
+      CallEncodeFailed: AugmentedError<ApiType>;
+      InvalidBaseFeeUpdate: AugmentedError<ApiType>;
+      InvalidNetwork: AugmentedError<ApiType>;
+      InvalidSignature: AugmentedError<ApiType>;
+      NotEnoughFeesCollected: AugmentedError<ApiType>;
+      NotEnoughFunds: AugmentedError<ApiType>;
+      NothingToClaim: AugmentedError<ApiType>;
+      TokenAlreadyRegistered: AugmentedError<ApiType>;
+      TokenIsNotRegistered: AugmentedError<ApiType>;
+      /**
+       * Amount must be > 0
+       **/
+      WrongAmount: AugmentedError<ApiType>;
+      /**
+       * Wrong bridge request for refund
+       **/
+      WrongRequest: AugmentedError<ApiType>;
+      /**
+       * Wrong bridge request status, must be Failed
+       **/
+      WrongRequestStatus: AugmentedError<ApiType>;
+    };
     extendedAssets: {
       /**
        * All involved users of a regulated asset operation should hold valid SBT
@@ -2581,6 +2633,100 @@ declare module '@polkadot/api-base/types/errors' {
        * Preimage is too large to store on-chain.
        **/
       TooBig: AugmentedError<ApiType>;
+    };
+    presto: {
+      /**
+       * Zero amount doesn't make sense
+       **/
+      AmountIsZero: AugmentedError<ApiType>;
+      /**
+       * This account already was added as an auditor before
+       **/
+      AuditorAlreadyAdded: AugmentedError<ApiType>;
+      /**
+       * There is no such auditor
+       **/
+      AuditorNotExists: AugmentedError<ApiType>;
+      /**
+       * Auditors storage has reached its limit
+       **/
+      AuditorsAreOverloaded: AugmentedError<ApiType>;
+      /**
+       * Error during calculations
+       **/
+      CalculationError: AugmentedError<ApiType>;
+      /**
+       * This account is not an auditor
+       **/
+      CallerIsNotAuditor: AugmentedError<ApiType>;
+      /**
+       * This account is not an owner of the crop receipt
+       **/
+      CallerIsNotCropReceiptOwner: AugmentedError<ApiType>;
+      /**
+       * This account is not a manager
+       **/
+      CallerIsNotManager: AugmentedError<ApiType>;
+      /**
+       * This account is not an owner of the request
+       **/
+      CallerIsNotRequestOwner: AugmentedError<ApiType>;
+      /**
+       * Fail of coupon public offering
+       **/
+      CouponOfferingFail: AugmentedError<ApiType>;
+      /**
+       * The crop receipt already has a decision
+       **/
+      CropReceiptAlreadyHasDecision: AugmentedError<ApiType>;
+      /**
+       * The crop receipt already has been rated
+       **/
+      CropReceiptAlreadyRated: AugmentedError<ApiType>;
+      /**
+       * There is no such crop receipt
+       **/
+      CropReceiptIsNotExists: AugmentedError<ApiType>;
+      /**
+       * This account has reached the max count of crop receipts
+       **/
+      CropReceiptsCountForUserOverloaded: AugmentedError<ApiType>;
+      /**
+       * The operation cannot be performed until the crop receipt has been rated
+       **/
+      CropReceiptWaitingForRate: AugmentedError<ApiType>;
+      /**
+       * This account already was added as a manager before
+       **/
+      ManagerAlreadyAdded: AugmentedError<ApiType>;
+      /**
+       * There is no such manager
+       **/
+      ManagerNotExists: AugmentedError<ApiType>;
+      /**
+       * Managers storage has reached its limit
+       **/
+      ManagersAreOverloaded: AugmentedError<ApiType>;
+      /**
+       * This request was already processed by manager
+       **/
+      RequestAlreadyProcessed: AugmentedError<ApiType>;
+      /**
+       * There is no such request
+       **/
+      RequestIsNotExists: AugmentedError<ApiType>;
+      /**
+       * This account has reached the max count of requests
+       **/
+      RequestsCountForUserOverloaded: AugmentedError<ApiType>;
+      /**
+       * Coupon supply cannot be bigger than requested amount in crop receipt
+       **/
+      TooBigCouponSupply: AugmentedError<ApiType>;
+      /**
+       * The actual request type by provided RequestId is different
+       **/
+      WrongRequestType: AugmentedError<ApiType>;
     };
     priceTools: {
       /**
