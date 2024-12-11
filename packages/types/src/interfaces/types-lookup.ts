@@ -1459,25 +1459,25 @@ declare module '@polkadot/types/lookup' {
   interface OrderBookEvent extends Enum {
     readonly isOrderBookCreated: boolean;
     readonly asOrderBookCreated: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly creator: Option<AccountId32>;
     } & Struct;
     readonly isOrderBookDeleted: boolean;
     readonly asOrderBookDeleted: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
     } & Struct;
     readonly isOrderBookStatusChanged: boolean;
     readonly asOrderBookStatusChanged: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly newStatus: OrderBookOrderBookStatus;
     } & Struct;
     readonly isOrderBookUpdated: boolean;
     readonly asOrderBookUpdated: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
     } & Struct;
     readonly isLimitOrderPlaced: boolean;
     readonly asLimitOrderPlaced: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly orderId: u128;
       readonly ownerId: AccountId32;
       readonly side: CommonPrimitivesPriceVariant;
@@ -1487,7 +1487,7 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isLimitOrderConvertedToMarketOrder: boolean;
     readonly asLimitOrderConvertedToMarketOrder: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly ownerId: AccountId32;
       readonly direction: CommonPrimitivesPriceVariant;
       readonly amount: OrderBookOrderAmount;
@@ -1495,7 +1495,7 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isLimitOrderIsSplitIntoMarketOrderAndLimitOrder: boolean;
     readonly asLimitOrderIsSplitIntoMarketOrderAndLimitOrder: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly ownerId: AccountId32;
       readonly marketOrderDirection: CommonPrimitivesPriceVariant;
       readonly marketOrderAmount: OrderBookOrderAmount;
@@ -1504,14 +1504,14 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isLimitOrderCanceled: boolean;
     readonly asLimitOrderCanceled: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly orderId: u128;
       readonly ownerId: AccountId32;
       readonly reason: OrderBookCancelReason;
     } & Struct;
     readonly isLimitOrderExecuted: boolean;
     readonly asLimitOrderExecuted: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly orderId: u128;
       readonly ownerId: AccountId32;
       readonly side: CommonPrimitivesPriceVariant;
@@ -1520,20 +1520,20 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isLimitOrderFilled: boolean;
     readonly asLimitOrderFilled: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly orderId: u128;
       readonly ownerId: AccountId32;
     } & Struct;
     readonly isLimitOrderUpdated: boolean;
     readonly asLimitOrderUpdated: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly orderId: u128;
       readonly ownerId: AccountId32;
       readonly newAmount: CommonBalanceUnit;
     } & Struct;
     readonly isMarketOrderExecuted: boolean;
     readonly asMarketOrderExecuted: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly ownerId: AccountId32;
       readonly direction: CommonPrimitivesPriceVariant;
       readonly amount: OrderBookOrderAmount;
@@ -1542,20 +1542,20 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isExpirationFailure: boolean;
     readonly asExpirationFailure: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly orderId: u128;
       readonly error: SpRuntimeDispatchError;
     } & Struct;
     readonly isAlignmentFailure: boolean;
     readonly asAlignmentFailure: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly error: SpRuntimeDispatchError;
     } & Struct;
     readonly type: 'OrderBookCreated' | 'OrderBookDeleted' | 'OrderBookStatusChanged' | 'OrderBookUpdated' | 'LimitOrderPlaced' | 'LimitOrderConvertedToMarketOrder' | 'LimitOrderIsSplitIntoMarketOrderAndLimitOrder' | 'LimitOrderCanceled' | 'LimitOrderExecuted' | 'LimitOrderFilled' | 'LimitOrderUpdated' | 'MarketOrderExecuted' | 'ExpirationFailure' | 'AlignmentFailure';
   }
 
-  /** @name OrderBookOrderBookId (156) */
-  interface OrderBookOrderBookId extends Struct {
+  /** @name CommonPrimitivesOrderBookId (156) */
+  interface CommonPrimitivesOrderBookId extends Struct {
     readonly dexId: u32;
     readonly base: CommonPrimitivesAssetId32;
     readonly quote: CommonPrimitivesAssetId32;
@@ -1812,6 +1812,7 @@ declare module '@polkadot/types/lookup' {
     readonly isCropReceiptPublished: boolean;
     readonly asCropReceiptPublished: {
       readonly id: u64;
+      readonly couponAssetId: CommonPrimitivesAssetId32;
     } & Struct;
     readonly type: 'ManagerAdded' | 'ManagerRemoved' | 'AuditorAdded' | 'AuditorRemoved' | 'PrestoUsdMinted' | 'PrestoUsdBurned' | 'RequestCreated' | 'RequestCancelled' | 'RequestApproved' | 'RequestDeclined' | 'CropReceiptCreated' | 'CropReceiptRated' | 'CropReceiptDeclined' | 'CropReceiptPublished';
   }
@@ -4986,7 +4987,7 @@ declare module '@polkadot/types/lookup' {
   interface OrderBookCall extends Enum {
     readonly isCreateOrderbook: boolean;
     readonly asCreateOrderbook: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly tickSize: u128;
       readonly stepLotSize: u128;
       readonly minLotSize: u128;
@@ -4994,11 +4995,11 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isDeleteOrderbook: boolean;
     readonly asDeleteOrderbook: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
     } & Struct;
     readonly isUpdateOrderbook: boolean;
     readonly asUpdateOrderbook: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly tickSize: u128;
       readonly stepLotSize: u128;
       readonly minLotSize: u128;
@@ -5006,12 +5007,12 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isChangeOrderbookStatus: boolean;
     readonly asChangeOrderbookStatus: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly status: OrderBookOrderBookStatus;
     } & Struct;
     readonly isPlaceLimitOrder: boolean;
     readonly asPlaceLimitOrder: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly price: u128;
       readonly amount: u128;
       readonly side: CommonPrimitivesPriceVariant;
@@ -5019,16 +5020,16 @@ declare module '@polkadot/types/lookup' {
     } & Struct;
     readonly isCancelLimitOrder: boolean;
     readonly asCancelLimitOrder: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly orderId: u128;
     } & Struct;
     readonly isCancelLimitOrdersBatch: boolean;
     readonly asCancelLimitOrdersBatch: {
-      readonly limitOrdersToCancel: Vec<ITuple<[OrderBookOrderBookId, Vec<u128>]>>;
+      readonly limitOrdersToCancel: Vec<ITuple<[CommonPrimitivesOrderBookId, Vec<u128>]>>;
     } & Struct;
     readonly isExecuteMarketOrder: boolean;
     readonly asExecuteMarketOrder: {
-      readonly orderBookId: OrderBookOrderBookId;
+      readonly orderBookId: CommonPrimitivesOrderBookId;
       readonly direction: CommonPrimitivesPriceVariant;
       readonly amount: u128;
     } & Struct;
@@ -5221,7 +5222,12 @@ declare module '@polkadot/types/lookup' {
     readonly asDeclineCropReceipt: {
       readonly cropReceiptId: u64;
     } & Struct;
-    readonly type: 'AddPrestoManager' | 'RemovePrestoManager' | 'AddPrestoAuditor' | 'RemovePrestoAuditor' | 'MintPrestoUsd' | 'BurnPrestoUsd' | 'SendPrestoUsd' | 'CreateDepositRequest' | 'CreateWithdrawRequest' | 'CancelRequest' | 'ApproveDepositRequest' | 'ApproveWithdrawRequest' | 'DeclineRequest' | 'CreateCropReceipt' | 'RateCropReceipt' | 'DeclineCropReceipt';
+    readonly isPublishCropReceipt: boolean;
+    readonly asPublishCropReceipt: {
+      readonly cropReceiptId: u64;
+      readonly supply: u128;
+    } & Struct;
+    readonly type: 'AddPrestoManager' | 'RemovePrestoManager' | 'AddPrestoAuditor' | 'RemovePrestoAuditor' | 'MintPrestoUsd' | 'BurnPrestoUsd' | 'SendPrestoUsd' | 'CreateDepositRequest' | 'CreateWithdrawRequest' | 'CancelRequest' | 'ApproveDepositRequest' | 'ApproveWithdrawRequest' | 'DeclineRequest' | 'CreateCropReceipt' | 'RateCropReceipt' | 'DeclineCropReceipt' | 'PublishCropReceipt';
   }
 
   /** @name PrestoCropReceiptCountry (590) */
@@ -5891,13 +5897,13 @@ declare module '@polkadot/types/lookup' {
     readonly asOrderBookCreateAndFillBatch: {
       readonly bidsOwner: AccountId32;
       readonly asksOwner: AccountId32;
-      readonly settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsOrderBookFillInput]>>;
+      readonly settings: Vec<ITuple<[CommonPrimitivesOrderBookId, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsOrderBookFillInput]>>;
     } & Struct;
     readonly isOrderBookFillBatch: boolean;
     readonly asOrderBookFillBatch: {
       readonly bidsOwner: AccountId32;
       readonly asksOwner: AccountId32;
-      readonly settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookFillInput]>>;
+      readonly settings: Vec<ITuple<[CommonPrimitivesOrderBookId, QaToolsPalletToolsOrderBookFillInput]>>;
     } & Struct;
     readonly isXykInitialize: boolean;
     readonly asXykInitialize: {
@@ -7629,7 +7635,7 @@ declare module '@polkadot/types/lookup' {
 
   /** @name OrderBook (915) */
   interface OrderBook extends Struct {
-    readonly orderBookId: OrderBookOrderBookId;
+    readonly orderBookId: CommonPrimitivesOrderBookId;
     readonly status: OrderBookOrderBookStatus;
     readonly lastOrderId: u128;
     readonly tickSize: CommonBalanceUnit;
@@ -7867,7 +7873,10 @@ declare module '@polkadot/types/lookup' {
     readonly isCallerIsNotCropReceiptOwner: boolean;
     readonly isCropReceiptWaitingForRate: boolean;
     readonly isCropReceiptAlreadyHasDecision: boolean;
-    readonly type: 'ManagerAlreadyAdded' | 'ManagersAreOverloaded' | 'ManagerNotExists' | 'AuditorAlreadyAdded' | 'AuditorsAreOverloaded' | 'AuditorNotExists' | 'CallerIsNotManager' | 'CallerIsNotAuditor' | 'AmountIsZero' | 'RequestsCountForUserOverloaded' | 'RequestIsNotExists' | 'CallerIsNotRequestOwner' | 'RequestAlreadyProcessed' | 'WrongRequestType' | 'CropReceiptsCountForUserOverloaded' | 'CropReceiptIsNotExists' | 'CropReceiptAlreadyRated' | 'CallerIsNotCropReceiptOwner' | 'CropReceiptWaitingForRate' | 'CropReceiptAlreadyHasDecision';
+    readonly isTooBigCouponSupply: boolean;
+    readonly isCouponOfferingFail: boolean;
+    readonly isCalculationError: boolean;
+    readonly type: 'ManagerAlreadyAdded' | 'ManagersAreOverloaded' | 'ManagerNotExists' | 'AuditorAlreadyAdded' | 'AuditorsAreOverloaded' | 'AuditorNotExists' | 'CallerIsNotManager' | 'CallerIsNotAuditor' | 'AmountIsZero' | 'RequestsCountForUserOverloaded' | 'RequestIsNotExists' | 'CallerIsNotRequestOwner' | 'RequestAlreadyProcessed' | 'WrongRequestType' | 'CropReceiptsCountForUserOverloaded' | 'CropReceiptIsNotExists' | 'CropReceiptAlreadyRated' | 'CallerIsNotCropReceiptOwner' | 'CropReceiptWaitingForRate' | 'CropReceiptAlreadyHasDecision' | 'TooBigCouponSupply' | 'CouponOfferingFail' | 'CalculationError';
   }
 
   /** @name BridgeProxyBridgeRequest (950) */
