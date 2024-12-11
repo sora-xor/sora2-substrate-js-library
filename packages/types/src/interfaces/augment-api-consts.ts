@@ -359,10 +359,6 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       votingBondFactor: u128 & AugmentedConst<ApiType>;
     };
-    evmFungibleApp: {
-      baseFeeLifetime: u32 & AugmentedConst<ApiType>;
-      priorityFee: u128 & AugmentedConst<ApiType>;
-    };
     extendedAssets: {
       /**
        * Max number of regulated assets per one Soulbound Token
@@ -495,18 +491,6 @@ declare module '@polkadot/api-base/types/consts' {
        * How often to check and adjust Chameleon pool issuance
        **/
       poolAdjustPeriod: u32 & AugmentedConst<ApiType>;
-    };
-    presto: {
-      maxCreditorSize: u32 & AugmentedConst<ApiType>;
-      maxCropReceiptContentSize: u32 & AugmentedConst<ApiType>;
-      maxDebtorSize: u32 & AugmentedConst<ApiType>;
-      maxPlaceOfIssueSize: u32 & AugmentedConst<ApiType>;
-      maxPrestoAuditorsCount: u32 & AugmentedConst<ApiType>;
-      maxPrestoManagersCount: u32 & AugmentedConst<ApiType>;
-      maxRequestDetailsSize: u32 & AugmentedConst<ApiType>;
-      maxRequestPaymentReferenceSize: u32 & AugmentedConst<ApiType>;
-      maxUserCropReceiptCount: u32 & AugmentedConst<ApiType>;
-      maxUserRequestCount: u32 & AugmentedConst<ApiType>;
     };
     scheduler: {
       /**
