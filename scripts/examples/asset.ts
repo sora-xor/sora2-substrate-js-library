@@ -1,9 +1,9 @@
 import { FPNumber, api } from '@sora-substrate/sdk';
 
-import { delay, withConnectedAccount } from './util';
+import { delay, withConnectedAccount, withImportedFromJsonAccount } from './util';
 
 async function main(): Promise<void> {
-  await withConnectedAccount(async () => {
+  await withImportedFromJsonAccount(async () => {
     console.info('RegisterAsset fee', FPNumber.fromCodecValue(api.NetworkFee.RegisterAsset).toString());
     console.info('Transfer fee', FPNumber.fromCodecValue(api.NetworkFee.Transfer).toString());
     console.info('XorlessTransfer fee', FPNumber.fromCodecValue(api.NetworkFee.XorlessTransfer).toString());
