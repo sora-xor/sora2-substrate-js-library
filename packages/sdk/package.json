@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/sdk",
-  "version": "1.43.0-betaMST-1.0.15",
+  "version": "1.43.0-betaMST-1.0.16",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -9,11 +9,11 @@
   },
   "dependencies": {
     "@polkadot/ui-keyring": "2.12.1",
-    "@sora-substrate/api": "1.43.0-betaMST-1.0.15",
-    "@sora-substrate/connection": "1.43.0-betaMST-1.0.15",
-    "@sora-substrate/liquidity-proxy": "1.43.0-betaMST-1.0.15",
-    "@sora-substrate/math": "1.43.0-betaMST-1.0.15",
-    "@sora-substrate/types": "1.43.0-betaMST-1.0.15",
+    "@sora-substrate/api": "1.43.0-betaMST-1.0.16",
+    "@sora-substrate/connection": "1.43.0-betaMST-1.0.16",
+    "@sora-substrate/liquidity-proxy": "1.43.0-betaMST-1.0.16",
+    "@sora-substrate/math": "1.43.0-betaMST-1.0.16",
+    "@sora-substrate/types": "1.43.0-betaMST-1.0.16",
     "axios": "^1.7.7",
     "crypto-js": "^4.2.0",
     "lodash": "^4.17.21"
