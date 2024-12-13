@@ -477,11 +477,12 @@ export class AssetsModule<T> {
    * You can just check balance of any asset
    * @param address asset address
    */
-  public async getAccountAsset(address: string): Promise<AccountAsset> {
+  public async getAccountAsset(address: string, accountAddress?: string): Promise<AccountAsset> {
     assert(this.root.account, Messages.connectWallet);
+    const targetAddress = accountAddress || this.root.account.pair.address;
     const { decimals, symbol, name, type, content, description } = await this.getAssetInfo(address);
     const asset = { address, decimals, symbol, name, type, content, description } as AccountAsset;
-    const result = await getAssetBalance(this.root.api, this.root.account.pair.address, address, decimals);
+    const result = await getAssetBalance(this.root.api, targetAddress, address, decimals);
     asset.balance = result;
 
     return asset;

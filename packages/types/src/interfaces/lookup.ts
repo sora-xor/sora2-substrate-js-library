@@ -1296,21 +1296,21 @@ export default {
   OrderBookEvent: {
     _enum: {
       OrderBookCreated: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         creator: 'Option<AccountId32>',
       },
       OrderBookDeleted: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
       },
       OrderBookStatusChanged: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         newStatus: 'OrderBookOrderBookStatus',
       },
       OrderBookUpdated: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
       },
       LimitOrderPlaced: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         orderId: 'u128',
         ownerId: 'AccountId32',
         side: 'CommonPrimitivesPriceVariant',
@@ -1319,14 +1319,14 @@ export default {
         lifetime: 'u64',
       },
       LimitOrderConvertedToMarketOrder: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         ownerId: 'AccountId32',
         direction: 'CommonPrimitivesPriceVariant',
         amount: 'OrderBookOrderAmount',
         averagePrice: 'CommonBalanceUnit',
       },
       LimitOrderIsSplitIntoMarketOrderAndLimitOrder: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         ownerId: 'AccountId32',
         marketOrderDirection: 'CommonPrimitivesPriceVariant',
         marketOrderAmount: 'OrderBookOrderAmount',
@@ -1334,13 +1334,13 @@ export default {
         limitOrderId: 'u128',
       },
       LimitOrderCanceled: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         orderId: 'u128',
         ownerId: 'AccountId32',
         reason: 'OrderBookCancelReason',
       },
       LimitOrderExecuted: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         orderId: 'u128',
         ownerId: 'AccountId32',
         side: 'CommonPrimitivesPriceVariant',
@@ -1348,18 +1348,18 @@ export default {
         amount: 'OrderBookOrderAmount',
       },
       LimitOrderFilled: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         orderId: 'u128',
         ownerId: 'AccountId32',
       },
       LimitOrderUpdated: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         orderId: 'u128',
         ownerId: 'AccountId32',
         newAmount: 'CommonBalanceUnit',
       },
       MarketOrderExecuted: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         ownerId: 'AccountId32',
         direction: 'CommonPrimitivesPriceVariant',
         amount: 'OrderBookOrderAmount',
@@ -1367,20 +1367,20 @@ export default {
         to: 'Option<AccountId32>',
       },
       ExpirationFailure: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         orderId: 'u128',
         error: 'SpRuntimeDispatchError',
       },
       AlignmentFailure: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         error: 'SpRuntimeDispatchError'
       }
     }
   },
   /**
-   * Lookup156: order_book::types::OrderBookId<common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>, DEXId>
+   * Lookup156: common::primitives::OrderBookId<common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>, DEXId>
    **/
-  OrderBookOrderBookId: {
+  CommonPrimitivesOrderBookId: {
     dexId: 'u32',
     base: 'CommonPrimitivesAssetId32',
     quote: 'CommonPrimitivesAssetId32'
@@ -1605,7 +1605,8 @@ export default {
         id: 'u64',
       },
       CropReceiptPublished: {
-        id: 'u64'
+        id: 'u64',
+        couponAssetId: 'CommonPrimitivesAssetId32'
       }
     }
   },
@@ -4728,42 +4729,42 @@ export default {
   OrderBookCall: {
     _enum: {
       create_orderbook: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         tickSize: 'u128',
         stepLotSize: 'u128',
         minLotSize: 'u128',
         maxLotSize: 'u128',
       },
       delete_orderbook: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
       },
       update_orderbook: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         tickSize: 'u128',
         stepLotSize: 'u128',
         minLotSize: 'u128',
         maxLotSize: 'u128',
       },
       change_orderbook_status: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         status: 'OrderBookOrderBookStatus',
       },
       place_limit_order: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         price: 'u128',
         amount: 'u128',
         side: 'CommonPrimitivesPriceVariant',
         lifespan: 'Option<u64>',
       },
       cancel_limit_order: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         orderId: 'u128',
       },
       cancel_limit_orders_batch: {
-        limitOrdersToCancel: 'Vec<(OrderBookOrderBookId,Vec<u128>)>',
+        limitOrdersToCancel: 'Vec<(CommonPrimitivesOrderBookId,Vec<u128>)>',
       },
       execute_market_order: {
-        orderBookId: 'OrderBookOrderBookId',
+        orderBookId: 'CommonPrimitivesOrderBookId',
         direction: 'CommonPrimitivesPriceVariant',
         amount: 'u128'
       }
@@ -4923,7 +4924,11 @@ export default {
         rating: 'PrestoCropReceiptRating',
       },
       decline_crop_receipt: {
-        cropReceiptId: 'u64'
+        cropReceiptId: 'u64',
+      },
+      publish_crop_receipt: {
+        cropReceiptId: 'u64',
+        supply: 'u128'
       }
     }
   },
@@ -5572,12 +5577,12 @@ export default {
       order_book_create_and_fill_batch: {
         bidsOwner: 'AccountId32',
         asksOwner: 'AccountId32',
-        settings: 'Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookOrderBookAttributes,QaToolsPalletToolsOrderBookFillInput)>',
+        settings: 'Vec<(CommonPrimitivesOrderBookId,QaToolsPalletToolsOrderBookOrderBookAttributes,QaToolsPalletToolsOrderBookFillInput)>',
       },
       order_book_fill_batch: {
         bidsOwner: 'AccountId32',
         asksOwner: 'AccountId32',
-        settings: 'Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookFillInput)>',
+        settings: 'Vec<(CommonPrimitivesOrderBookId,QaToolsPalletToolsOrderBookFillInput)>',
       },
       xyk_initialize: {
         account: 'AccountId32',
@@ -6803,7 +6808,7 @@ export default {
    * Lookup915: order_book::order_book::OrderBook<T>
    **/
   OrderBook: {
-    orderBookId: 'OrderBookOrderBookId',
+    orderBookId: 'CommonPrimitivesOrderBookId',
     status: 'OrderBookOrderBookStatus',
     lastOrderId: 'u128',
     tickSize: 'CommonBalanceUnit',
@@ -6967,7 +6972,7 @@ export default {
    * Lookup947: presto::pallet::Error<T>
    **/
   PrestoError: {
-    _enum: ['ManagerAlreadyAdded', 'ManagersAreOverloaded', 'ManagerNotExists', 'AuditorAlreadyAdded', 'AuditorsAreOverloaded', 'AuditorNotExists', 'CallerIsNotManager', 'CallerIsNotAuditor', 'AmountIsZero', 'RequestsCountForUserOverloaded', 'RequestIsNotExists', 'CallerIsNotRequestOwner', 'RequestAlreadyProcessed', 'WrongRequestType', 'CropReceiptsCountForUserOverloaded', 'CropReceiptIsNotExists', 'CropReceiptAlreadyRated', 'CallerIsNotCropReceiptOwner', 'CropReceiptWaitingForRate', 'CropReceiptAlreadyHasDecision']
+    _enum: ['ManagerAlreadyAdded', 'ManagersAreOverloaded', 'ManagerNotExists', 'AuditorAlreadyAdded', 'AuditorsAreOverloaded', 'AuditorNotExists', 'CallerIsNotManager', 'CallerIsNotAuditor', 'AmountIsZero', 'RequestsCountForUserOverloaded', 'RequestIsNotExists', 'CallerIsNotRequestOwner', 'RequestAlreadyProcessed', 'WrongRequestType', 'CropReceiptsCountForUserOverloaded', 'CropReceiptIsNotExists', 'CropReceiptAlreadyRated', 'CallerIsNotCropReceiptOwner', 'CropReceiptWaitingForRate', 'CropReceiptAlreadyHasDecision', 'TooBigCouponSupply', 'CouponOfferingFail', 'CalculationError']
   },
   /**
    * Lookup950: bridge_proxy::BridgeRequest<common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>>

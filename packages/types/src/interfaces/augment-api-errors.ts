@@ -2652,6 +2652,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       AuditorsAreOverloaded: AugmentedError<ApiType>;
       /**
+       * Error during calculations
+       **/
+      CalculationError: AugmentedError<ApiType>;
+      /**
        * This account is not an auditor
        **/
       CallerIsNotAuditor: AugmentedError<ApiType>;
@@ -2667,6 +2671,10 @@ declare module '@polkadot/api-base/types/errors' {
        * This account is not an owner of the request
        **/
       CallerIsNotRequestOwner: AugmentedError<ApiType>;
+      /**
+       * Fail of coupon public offering
+       **/
+      CouponOfferingFail: AugmentedError<ApiType>;
       /**
        * The crop receipt already has a decision
        **/
@@ -2711,6 +2719,10 @@ declare module '@polkadot/api-base/types/errors' {
        * This account has reached the max count of requests
        **/
       RequestsCountForUserOverloaded: AugmentedError<ApiType>;
+      /**
+       * Coupon supply cannot be bigger than requested amount in crop receipt
+       **/
+      TooBigCouponSupply: AugmentedError<ApiType>;
       /**
        * The actual request type by provided RequestId is different
        **/

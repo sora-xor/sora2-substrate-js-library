@@ -10,7 +10,7 @@ import type { Data } from '@polkadot/types';
 import type { BTreeMap, Bytes, Compact, Option, Result, Text, U256, U8aFixed, Vec, bool, i128, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, H128, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
-import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesGenericAccount, BridgeTypesGenericAssetId, BridgeTypesGenericBalance, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, BridgeTypesTonTonAddress, BridgeTypesTonTonAddressWithPrefix, BridgeTypesTonTonNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookId, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, PrestoCropReceiptCountry, PrestoCropReceiptRating, QaToolsInputAssetId, QaToolsPalletToolsMcbcBaseSupply, QaToolsPalletToolsMcbcOtherCollateralInput, QaToolsPalletToolsMcbcTbcdCollateralInput, QaToolsPalletToolsOrderBookFillInput, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstBaseInput, QaToolsPalletToolsXstSyntheticInput, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpSessionMembershipProof, SpWeightsWeightV2Weight, VestedRewardsVestingCurrenciesVestingScheduleVariant, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
+import type { BandFeeCalculationParameters, BridgeCommonBeefyTypesValidatorProof, BridgeCommonSimplifiedProofProof, BridgeProxyTransferLimitSettings, BridgeTypesAssetKind, BridgeTypesGenericAccount, BridgeTypesGenericAssetId, BridgeTypesGenericBalance, BridgeTypesGenericCommitment, BridgeTypesGenericNetworkId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesSubstrateXcmAppTransferStatus, BridgeTypesTonTonAddress, BridgeTypesTonTonAddressWithPrefix, BridgeTypesTonTonNetworkId, CommonPrimitivesAssetId32, CommonPrimitivesFilterMode, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesOrderBookId, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonSwapAmount, EthBridgeBridgeSignatureVersion, EthBridgeOffchainSignatureParams, EthBridgeRequestsIncomingRequest, EthBridgeRequestsIncomingRequestKind, EthBridgeRequestsLoadIncomingRequest, FixnumFixedPoint, FrameSupportPreimagesBounded, FramenodeRuntimeMultiProof, FramenodeRuntimeOpaqueSessionKeys, FramenodeRuntimeOriginCaller, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, LiquidityProxySwapBatchInfo, OrderBookOrderBookStatus, PalletDemocracyConviction, PalletDemocracyVoteAccountVote, PalletElectionProviderMultiPhaseRawSolution, PalletElectionProviderMultiPhaseSolutionOrSnapshotSize, PalletElectionsPhragmenRenouncing, PalletIdentityBitFlags, PalletIdentityIdentityInfo, PalletIdentityJudgement, PalletImOnlineHeartbeat, PalletImOnlineSr25519AppSr25519Signature, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingPalletConfigOpPerbill, PalletStakingPalletConfigOpPercent, PalletStakingPalletConfigOpU128, PalletStakingPalletConfigOpU32, PalletStakingRewardDestination, PalletStakingValidatorPrefs, PrestoCropReceiptCountry, PrestoCropReceiptRating, QaToolsInputAssetId, QaToolsPalletToolsMcbcBaseSupply, QaToolsPalletToolsMcbcOtherCollateralInput, QaToolsPalletToolsMcbcTbcdCollateralInput, QaToolsPalletToolsOrderBookFillInput, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstBaseInput, QaToolsPalletToolsXstSyntheticInput, SpBeefyCommitment, SpBeefyMmrBeefyAuthoritySet, SpBeefyMmrMmrLeaf, SpConsensusBabeDigestsNextConfigDescriptor, SpConsensusSlotsEquivocationProof, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaEquivocationProof, SpNposElectionsElectionScore, SpNposElectionsSupport, SpRuntimeDispatchError, SpSessionMembershipProof, SpWeightsWeightV2Weight, VestedRewardsVestingCurrenciesVestingScheduleVariant, XcmV3MultiassetAssetId, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedSubmittable = AugmentedSubmittable<() => unknown>;
 export type __SubmittableExtrinsic<ApiType extends ApiTypes> = SubmittableExtrinsic<ApiType>;
@@ -2321,7 +2321,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * # Note:
        * Network fee isn't charged if the order is successfully cancelled by the owner
        **/
-      cancelLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, orderId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128]>;
+      cancelLimitOrder: AugmentedSubmittable<(orderBookId: CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, orderId: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOrderBookId, u128]>;
       /**
        * Cancels the list of limit orders
        * 
@@ -2335,7 +2335,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * # Note:
        * Network fee isn't charged if orders are successfully cancelled by the owner
        **/
-      cancelLimitOrdersBatch: AugmentedSubmittable<(limitOrdersToCancel: Vec<ITuple<[OrderBookOrderBookId, Vec<u128>]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, Vec<u128> | (u128 | AnyNumber | Uint8Array)[]])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[OrderBookOrderBookId, Vec<u128>]>>]>;
+      cancelLimitOrdersBatch: AugmentedSubmittable<(limitOrdersToCancel: Vec<ITuple<[CommonPrimitivesOrderBookId, Vec<u128>]>> | ([CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, Vec<u128> | (u128 | AnyNumber | Uint8Array)[]])[]) => SubmittableExtrinsic<ApiType>, [Vec<ITuple<[CommonPrimitivesOrderBookId, Vec<u128>]>>]>;
       /**
        * Sets the order book status
        * 
@@ -2350,7 +2350,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - [`OnlyCancel`](OrderBookStatus::OnlyCancel)
        * - [`Stop`](OrderBookStatus::Stop)
        **/
-      changeOrderbookStatus: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, status: OrderBookOrderBookStatus | 'Trade' | 'PlaceAndCancel' | 'OnlyCancel' | 'Stop' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, OrderBookOrderBookStatus]>;
+      changeOrderbookStatus: AugmentedSubmittable<(orderBookId: CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, status: OrderBookOrderBookStatus | 'Trade' | 'PlaceAndCancel' | 'OnlyCancel' | 'Stop' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOrderBookId, OrderBookOrderBookStatus]>;
       /**
        * Creates a new order book for the pair of assets.
        * 
@@ -2376,7 +2376,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `max_lot_size` <= total supply of `base` asset
        * - precision of `tick_size` * `step_lot_size` must not overflow **18 digits**
        **/
-      createOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, u128, u128]>;
+      createOrderbook: AugmentedSubmittable<(orderBookId: CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOrderBookId, u128, u128, u128, u128]>;
       /**
        * Deletes the order book
        * 
@@ -2395,7 +2395,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * 3. Wait until users cancel their orders or their lifetime just expires (maximum 1 month).
        * 4. Delete the empty order book.
        **/
-      deleteOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId]>;
+      deleteOrderbook: AugmentedSubmittable<(orderBookId: CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOrderBookId]>;
       /**
        * Executes the market order
        * 
@@ -2411,7 +2411,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `amount` <= [`OrderBook::max_lot_size`]
        * - `amount` must be a multiple of [`OrderBook::step_lot_size`]
        **/
-      executeMarketOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, direction: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, CommonPrimitivesPriceVariant, u128]>;
+      executeMarketOrder: AugmentedSubmittable<(orderBookId: CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, direction: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOrderBookId, CommonPrimitivesPriceVariant, u128]>;
       /**
        * Places the limit order into the order book
        * 
@@ -2432,7 +2432,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - if [`OrderBook::status`] allows to trade - the limit order is converted into market order and the exchange occurs
        * - if [`OrderBook::status`] doesn't allow to trade - transaction fails
        **/
-      placeLimitOrder: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, price: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array, side: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, lifespan: Option<u64> | null | Uint8Array | u64 | AnyNumber) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, CommonPrimitivesPriceVariant, Option<u64>]>;
+      placeLimitOrder: AugmentedSubmittable<(orderBookId: CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, price: u128 | AnyNumber | Uint8Array, amount: u128 | AnyNumber | Uint8Array, side: CommonPrimitivesPriceVariant | 'Buy' | 'Sell' | number | Uint8Array, lifespan: Option<u64> | null | Uint8Array | u64 | AnyNumber) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOrderBookId, u128, u128, CommonPrimitivesPriceVariant, Option<u64>]>;
       /**
        * Updates the attributes of the order book
        * 
@@ -2476,7 +2476,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * 
        * It is also not recommended to batch these updates, because the tech status of the order book can be changed after the 1st update and the 2nd update will be declined in this case.
        **/
-      updateOrderbook: AugmentedSubmittable<(orderBookId: OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [OrderBookOrderBookId, u128, u128, u128, u128]>;
+      updateOrderbook: AugmentedSubmittable<(orderBookId: CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, tickSize: u128 | AnyNumber | Uint8Array, stepLotSize: u128 | AnyNumber | Uint8Array, minLotSize: u128 | AnyNumber | Uint8Array, maxLotSize: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [CommonPrimitivesOrderBookId, u128, u128, u128, u128]>;
     };
     parachainBridgeApp: {
       addAssetidParaid: AugmentedSubmittable<(networkId: BridgeTypesSubNetworkId | 'Mainnet' | 'Kusama' | 'Polkadot' | 'Rococo' | 'Alphanet' | 'Liberland' | number | Uint8Array, paraId: u32 | AnyNumber | Uint8Array, assetId: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [BridgeTypesSubNetworkId, u32, CommonPrimitivesAssetId32]>;
@@ -2541,6 +2541,7 @@ declare module '@polkadot/api-base/types/submittable' {
       declineCropReceipt: AugmentedSubmittable<(cropReceiptId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
       declineRequest: AugmentedSubmittable<(requestId: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64]>;
       mintPrestoUsd: AugmentedSubmittable<(amount: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u128]>;
+      publishCropReceipt: AugmentedSubmittable<(cropReceiptId: u64 | AnyNumber | Uint8Array, supply: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, u128]>;
       rateCropReceipt: AugmentedSubmittable<(cropReceiptId: u64 | AnyNumber | Uint8Array, rating: PrestoCropReceiptRating | 'AAA' | 'AA' | 'A' | 'BBB' | 'BB' | 'B' | 'CCC' | 'CC' | 'C' | 'D' | 'NR' | number | Uint8Array) => SubmittableExtrinsic<ApiType>, [u64, PrestoCropReceiptRating]>;
       removePrestoAuditor: AugmentedSubmittable<(auditor: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
       removePrestoManager: AugmentedSubmittable<(manager: AccountId32 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32]>;
@@ -2574,7 +2575,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `asks_owner`: Creator of the sell orders placed on the order books,
        * - `settings`: Parameters for creation of the order book and placing the orders in each order book.
        **/
-      orderBookCreateAndFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsOrderBookFillInput]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookOrderBookAttributes | { tickSize?: any; stepLotSize?: any; minLotSize?: any; maxLotSize?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookFillInput | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsOrderBookFillInput]>>]>;
+      orderBookCreateAndFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[CommonPrimitivesOrderBookId, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsOrderBookFillInput]>> | ([CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookOrderBookAttributes | { tickSize?: any; stepLotSize?: any; minLotSize?: any; maxLotSize?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookFillInput | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[CommonPrimitivesOrderBookId, QaToolsPalletToolsOrderBookOrderBookAttributes, QaToolsPalletToolsOrderBookFillInput]>>]>;
       /**
        * Fill the order books according to given parameters.
        * 
@@ -2586,7 +2587,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `asks_owner`: Creator of the sell orders placed on the order books,
        * - `settings`: Parameters for placing the orders in each order book.
        **/
-      orderBookFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookFillInput]>> | ([OrderBookOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookFillInput | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[OrderBookOrderBookId, QaToolsPalletToolsOrderBookFillInput]>>]>;
+      orderBookFillBatch: AugmentedSubmittable<(bidsOwner: AccountId32 | string | Uint8Array, asksOwner: AccountId32 | string | Uint8Array, settings: Vec<ITuple<[CommonPrimitivesOrderBookId, QaToolsPalletToolsOrderBookFillInput]>> | ([CommonPrimitivesOrderBookId | { dexId?: any; base?: any; quote?: any } | string | Uint8Array, QaToolsPalletToolsOrderBookFillInput | { asks?: any; bids?: any; randomSeed?: any } | string | Uint8Array])[]) => SubmittableExtrinsic<ApiType>, [AccountId32, AccountId32, Vec<ITuple<[CommonPrimitivesOrderBookId, QaToolsPalletToolsOrderBookFillInput]>>]>;
       /**
        * Allows to initialize necessary Presto assets in testnet without migration.
        * 
