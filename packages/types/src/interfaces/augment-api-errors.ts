@@ -287,28 +287,6 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       UnauthorizedRelayer: AugmentedError<ApiType>;
     };
-    beefyLightClient: {
-      CannotSwitchOldValidatorSet: AugmentedError<ApiType>;
-      CommitmentNotFoundInDigest: AugmentedError<ApiType>;
-      InvalidDigestHash: AugmentedError<ApiType>;
-      InvalidMMRProof: AugmentedError<ApiType>;
-      InvalidNetworkId: AugmentedError<ApiType>;
-      InvalidNumberOfPositions: AugmentedError<ApiType>;
-      InvalidNumberOfPublicKeys: AugmentedError<ApiType>;
-      InvalidNumberOfSignatures: AugmentedError<ApiType>;
-      InvalidSignature: AugmentedError<ApiType>;
-      InvalidValidatorSetId: AugmentedError<ApiType>;
-      MerklePositionTooHigh: AugmentedError<ApiType>;
-      MerkleProofTooHigh: AugmentedError<ApiType>;
-      MerkleProofTooShort: AugmentedError<ApiType>;
-      MMRPayloadNotFound: AugmentedError<ApiType>;
-      NotEnoughValidatorSignatures: AugmentedError<ApiType>;
-      PalletNotInitialized: AugmentedError<ApiType>;
-      PayloadBlocknumberTooNew: AugmentedError<ApiType>;
-      PayloadBlocknumberTooOld: AugmentedError<ApiType>;
-      ValidatorNotOnceInbitfield: AugmentedError<ApiType>;
-      ValidatorSetIncorrectPosition: AugmentedError<ApiType>;
-    };
     bridgeDataSigner: {
       ApprovalsNotFound: AugmentedError<ApiType>;
       DontHavePendingPeerUpdates: AugmentedError<ApiType>;
@@ -1493,36 +1471,6 @@ declare module '@polkadot/api-base/types/errors' {
        * Wrong pending peer.
        **/
       WrongPendingPeer: AugmentedError<ApiType>;
-    };
-    evmFungibleApp: {
-      AppAlreadyRegistered: AugmentedError<ApiType>;
-      AppIsNotRegistered: AugmentedError<ApiType>;
-      BaseFeeIsNotAvailable: AugmentedError<ApiType>;
-      BaseFeeLifetimeExceeded: AugmentedError<ApiType>;
-      /**
-       * Call encoding failed.
-       **/
-      CallEncodeFailed: AugmentedError<ApiType>;
-      InvalidBaseFeeUpdate: AugmentedError<ApiType>;
-      InvalidNetwork: AugmentedError<ApiType>;
-      InvalidSignature: AugmentedError<ApiType>;
-      NotEnoughFeesCollected: AugmentedError<ApiType>;
-      NotEnoughFunds: AugmentedError<ApiType>;
-      NothingToClaim: AugmentedError<ApiType>;
-      TokenAlreadyRegistered: AugmentedError<ApiType>;
-      TokenIsNotRegistered: AugmentedError<ApiType>;
-      /**
-       * Amount must be > 0
-       **/
-      WrongAmount: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request for refund
-       **/
-      WrongRequest: AugmentedError<ApiType>;
-      /**
-       * Wrong bridge request status, must be Failed
-       **/
-      WrongRequestStatus: AugmentedError<ApiType>;
     };
     extendedAssets: {
       /**

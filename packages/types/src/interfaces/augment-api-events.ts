@@ -157,11 +157,6 @@ declare module '@polkadot/api-base/types/events' {
        **/
       SymbolsRelayed: AugmentedEvent<ApiType, [Vec<ITuple<[Bytes, u128]>>]>;
     };
-    beefyLightClient: {
-      NewMMRRoot: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u64]>;
-      ValidatorRegistryUpdated: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u32, u64]>;
-      VerificationSuccessful: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, AccountId32, u32]>;
-    };
     bridgeDataSigner: {
       AddedPeer: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic], { networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic }>;
       ApprovalAccepted: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, data: H256, signature: SpCoreEcdsaSignature], { networkId: BridgeTypesGenericNetworkId, data: H256, signature: SpCoreEcdsaSignature }>;
@@ -568,28 +563,6 @@ declare module '@polkadot/api-base/types/events' {
        * New request has been registered. [Request Hash]
        **/
       RequestRegistered: AugmentedEvent<ApiType, [H256]>;
-    };
-    evmFungibleApp: {
-      /**
-       * New asset registered.
-       **/
-      AssetRegistered: AugmentedEvent<ApiType, [networkId: H256, assetId: CommonPrimitivesAssetId32], { networkId: H256, assetId: CommonPrimitivesAssetId32 }>;
-      /**
-       * Transfer to sidechain.
-       **/
-      Burned: AugmentedEvent<ApiType, [networkId: H256, assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: H160, amount: u128], { networkId: H256, assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: H160, amount: u128 }>;
-      /**
-       * Fees paid by relayer in EVM was claimed.
-       **/
-      FeesClaimed: AugmentedEvent<ApiType, [recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128], { recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128 }>;
-      /**
-       * Transfer from sidechain.
-       **/
-      Minted: AugmentedEvent<ApiType, [networkId: H256, assetId: CommonPrimitivesAssetId32, sender: H160, recipient: AccountId32, amount: u128], { networkId: H256, assetId: CommonPrimitivesAssetId32, sender: H160, recipient: AccountId32, amount: u128 }>;
-      /**
-       * Transfer failed, tokens refunded.
-       **/
-      Refunded: AugmentedEvent<ApiType, [networkId: H256, recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128], { networkId: H256, recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128 }>;
     };
     extendedAssets: {
       /**
@@ -1473,21 +1446,13 @@ declare module '@polkadot/api-base/types/events' {
        **/
       AssetRemovedFromWhiteList: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
       /**
-       * Fee has been withdrawn from user. [Account Id to withdraw from, Asset Id to withdraw, Fee Amount]
+       * Fee has been withdrawn from user. [Account Id to withdraw from, Fee Amount]
        **/
-      FeeWithdrawn: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
+      FeeWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
       /**
-       * New block number to update multiplier is set. [New value]
+       * The portion of fee is sent to the referrer. [Referral, Referrer, Amount]
        **/
-      PeriodUpdated: AugmentedEvent<ApiType, [u32]>;
-      /**
-       * The portion of fee is sent to the referrer. [Referral, Referrer, AssetId, Amount]
-       **/
-      ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, CommonPrimitivesAssetId32, u128]>;
-      /**
-       * New small reference amount set. [New value]
-       **/
-      SmallReferenceAmountUpdated: AugmentedEvent<ApiType, [u128]>;
+      ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128]>;
       /**
        * New multiplier for weight to fee conversion is set
        * (*1_000_000_000_000_000_000). [New value]

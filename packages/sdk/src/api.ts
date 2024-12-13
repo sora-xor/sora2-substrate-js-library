@@ -13,6 +13,7 @@ import { PoolXykModule } from './poolXyk';
 import { ReferralSystemModule } from './referralSystem';
 import { AssetsModule } from './assets';
 import { ExtendedAssetsModule } from './extendedAssets';
+import { PrestoModule } from './presto';
 import { OrderBookModule } from './orderBook';
 import { MstModule } from './mst';
 import { SystemModule } from './system';
@@ -42,6 +43,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly referralSystem = new ReferralSystemModule<T>(this);
   public readonly assets = new AssetsModule<T>(this);
   public readonly extendedAssets = new ExtendedAssetsModule<T>(this);
+  public readonly presto = new PrestoModule<T>(this);
   public readonly orderBook = new OrderBookModule<T>(this);
   /** This module is used for internal needs */
   public readonly mst = new MstModule<T>(this);
