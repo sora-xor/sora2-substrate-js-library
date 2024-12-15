@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/connection",
-  "version": "1.44.7",
+  "version": "1.44.8",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
