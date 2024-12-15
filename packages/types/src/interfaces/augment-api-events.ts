@@ -8,7 +8,7 @@ import '@polkadot/api-base/types/events';
 import type { ApiTypes, AugmentedEvent } from '@polkadot/api-base/types';
 import type { Bytes, Null, Option, Result, Text, U8aFixed, Vec, bool, u128, u32, u64 } from '@polkadot/types-codec';
 import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
+import type { AccountId32, H160, H256, Perbill, Percent } from '@polkadot/types/interfaces/runtime';
 import type { BridgeTypesGenericAccount, BridgeTypesGenericNetworkId, BridgeTypesMessageId, BridgeTypesMessageStatus, BridgeTypesSubNetworkId, BridgeTypesTonTonAddress, CommonBalanceUnit, CommonOutcomeFee, CommonPrimitivesAssetId32, CommonPrimitivesLiquiditySourceId, CommonPrimitivesLiquiditySourceType, CommonPrimitivesOracle, CommonPrimitivesOrderBookId, CommonPrimitivesPriceVariant, CommonPrimitivesRewardReason, CommonPrimitivesTechAccountId, CommonPrimitivesTechAssetId, CommonPrimitivesTradingPairAssetId32, FixnumFixedPoint, FrameSupportDispatchDispatchInfo, FrameSupportTokensMiscBalanceStatus, KensetsuBorrowTaxes, KensetsuCdpType, KensetsuCollateralRiskParameters, KensetsuStablecoinParameters, OrderBookCancelReason, OrderBookOrderAmount, OrderBookOrderBookStatus, PalletDemocracyVoteAccountVote, PalletDemocracyVoteThreshold, PalletElectionProviderMultiPhaseElectionCompute, PalletElectionProviderMultiPhasePhase, PalletImOnlineSr25519AppSr25519Public, PalletMultisigBridgeTimepoint, PalletMultisigTimepoint, PalletStakingExposure, PalletStakingForcing, PalletStakingValidatorPrefs, QaToolsPalletToolsPoolXykAssetPairInput, QaToolsPalletToolsPriceToolsAssetPrices, QaToolsPalletToolsXstSyntheticOutput, SpCoreEcdsaPublic, SpCoreEcdsaSignature, SpFinalityGrandpaAppPublic, SpNposElectionsElectionScore, SpRuntimeDispatchError, VestedRewardsVestingCurrenciesVestingScheduleVariant, XcmVersionedMultiLocation } from '@polkadot/types/lookup';
 
 export type __AugmentedEvent<ApiType extends ApiTypes> = AugmentedEvent<ApiType>;
@@ -156,6 +156,11 @@ declare module '@polkadot/api-base/types/events' {
        * New symbol rates were successfully relayed. [symbols]
        **/
       SymbolsRelayed: AugmentedEvent<ApiType, [Vec<ITuple<[Bytes, u128]>>]>;
+    };
+    beefyLightClient: {
+      NewMMRRoot: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u64]>;
+      ValidatorRegistryUpdated: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, H256, u32, u64]>;
+      VerificationSuccessful: AugmentedEvent<ApiType, [BridgeTypesSubNetworkId, AccountId32, u32]>;
     };
     bridgeDataSigner: {
       AddedPeer: AugmentedEvent<ApiType, [networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic], { networkId: BridgeTypesGenericNetworkId, peer: SpCoreEcdsaPublic }>;
@@ -564,6 +569,28 @@ declare module '@polkadot/api-base/types/events' {
        **/
       RequestRegistered: AugmentedEvent<ApiType, [H256]>;
     };
+    evmFungibleApp: {
+      /**
+       * New asset registered.
+       **/
+      AssetRegistered: AugmentedEvent<ApiType, [networkId: H256, assetId: CommonPrimitivesAssetId32], { networkId: H256, assetId: CommonPrimitivesAssetId32 }>;
+      /**
+       * Transfer to sidechain.
+       **/
+      Burned: AugmentedEvent<ApiType, [networkId: H256, assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: H160, amount: u128], { networkId: H256, assetId: CommonPrimitivesAssetId32, sender: AccountId32, recipient: H160, amount: u128 }>;
+      /**
+       * Fees paid by relayer in EVM was claimed.
+       **/
+      FeesClaimed: AugmentedEvent<ApiType, [recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128], { recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128 }>;
+      /**
+       * Transfer from sidechain.
+       **/
+      Minted: AugmentedEvent<ApiType, [networkId: H256, assetId: CommonPrimitivesAssetId32, sender: H160, recipient: AccountId32, amount: u128], { networkId: H256, assetId: CommonPrimitivesAssetId32, sender: H160, recipient: AccountId32, amount: u128 }>;
+      /**
+       * Transfer failed, tokens refunded.
+       **/
+      Refunded: AugmentedEvent<ApiType, [networkId: H256, recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128], { networkId: H256, recipient: AccountId32, assetId: CommonPrimitivesAssetId32, amount: u128 }>;
+    };
     extendedAssets: {
       /**
        * Emits When an asset is regulated
@@ -945,6 +972,22 @@ declare module '@polkadot/api-base/types/events' {
        * A preimage has been requested.
        **/
       Requested: AugmentedEvent<ApiType, [hash_: H256], { hash_: H256 }>;
+    };
+    presto: {
+      AuditorAdded: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
+      AuditorRemoved: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
+      CropReceiptCreated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      CropReceiptDeclined: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
+      CropReceiptPublished: AugmentedEvent<ApiType, [id: u64, couponAssetId: CommonPrimitivesAssetId32], { id: u64, couponAssetId: CommonPrimitivesAssetId32 }>;
+      CropReceiptRated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      ManagerAdded: AugmentedEvent<ApiType, [manager: AccountId32], { manager: AccountId32 }>;
+      ManagerRemoved: AugmentedEvent<ApiType, [manager: AccountId32], { manager: AccountId32 }>;
+      PrestoUsdBurned: AugmentedEvent<ApiType, [amount: u128, by: AccountId32], { amount: u128, by: AccountId32 }>;
+      PrestoUsdMinted: AugmentedEvent<ApiType, [amount: u128, by: AccountId32], { amount: u128, by: AccountId32 }>;
+      RequestApproved: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      RequestCancelled: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
+      RequestCreated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
+      RequestDeclined: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
     };
     priceTools: {
     };
@@ -1430,13 +1473,21 @@ declare module '@polkadot/api-base/types/events' {
        **/
       AssetRemovedFromWhiteList: AugmentedEvent<ApiType, [CommonPrimitivesAssetId32]>;
       /**
-       * Fee has been withdrawn from user. [Account Id to withdraw from, Fee Amount]
+       * Fee has been withdrawn from user. [Account Id to withdraw from, Asset Id to withdraw, Fee Amount]
        **/
-      FeeWithdrawn: AugmentedEvent<ApiType, [AccountId32, u128]>;
+      FeeWithdrawn: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
-       * The portion of fee is sent to the referrer. [Referral, Referrer, Amount]
+       * New block number to update multiplier is set. [New value]
        **/
-      ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, u128]>;
+      PeriodUpdated: AugmentedEvent<ApiType, [u32]>;
+      /**
+       * The portion of fee is sent to the referrer. [Referral, Referrer, AssetId, Amount]
+       **/
+      ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * New small reference amount set. [New value]
+       **/
+      SmallReferenceAmountUpdated: AugmentedEvent<ApiType, [u128]>;
       /**
        * New multiplier for weight to fee conversion is set
        * (*1_000_000_000_000_000_000). [New value]
