@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/types",
-  "version": "1.43.0-betaMST-1.0.16",
+  "version": "1.43.0-betaMST-1.0.17",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -13,6 +13,6 @@
     "@polkadot/api": "9.14.2",
     "@polkadot/typegen": "9.14.2",
     "@polkadot/types": "9.14.2",
-    "@sora-substrate/type-definitions": "1.43.0-betaMST-1.0.16"
+    "@sora-substrate/type-definitions": "1.43.0-betaMST-1.0.17"
   }
 }

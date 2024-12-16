@@ -202,6 +202,20 @@ export type AccountHistory<T> = {
   [key: string]: T;
 };
 
+export interface EncryptedKeyForCosigner {
+  ephemeralPubHex: string;
+  encryptedKey: string;
+  iv: string;
+}
+
+export interface FinalEncryptedStructure {
+  encryptedData: string;
+  dataIv: string;
+  encryptedKeys: {
+    [cosignerName: string]: EncryptedKeyForCosigner;
+  };
+}
+
 interface MultisigInfo {
   threshold: number;
   signatories: string[];

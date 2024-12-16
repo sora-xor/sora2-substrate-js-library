@@ -22,6 +22,7 @@ import { DemeterFarmingModule } from './demeterFarming';
 import { DexModule } from './dex';
 import { CeresLiquidityLockerModule } from './ceresLiquidityLocker';
 import { KensetsuModule } from './kensetsu';
+import { CryptoModule } from './crypto';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
@@ -45,6 +46,7 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly extendedAssets = new ExtendedAssetsModule<T>(this);
   public readonly presto = new PrestoModule<T>(this);
   public readonly orderBook = new OrderBookModule<T>(this);
+  public readonly crypto = new CryptoModule();
   /** This module is used for internal needs */
   public readonly mst = new MstModule<T>(this);
   public readonly system = new SystemModule<T>(this);
