@@ -139,4 +139,26 @@ export class PrestoModule<T> {
       this.root.account.pair
     );
   }
+
+  /**
+   * Publish crop receipt.
+   * @param crId Crop receipt id
+   * @param supply supply that is used in deal
+   */
+  public async publishCropReceipt(crId: number, supply: NumberLike): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
+    return this.root.submitExtrinsic(this.root.api.tx.presto.publishCropReceipt(crId, supply), this.root.account.pair);
+  }
+
+  /**
+   * Decline crop receipt.
+   * @param crId Crop receipt id
+   *
+   */
+  public async declineCropReceipt(crId: number): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
+    return this.root.submitExtrinsic(this.root.api.tx.presto.declineCropReceipt(crId), this.root.account.pair);
+  }
 }
