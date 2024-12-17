@@ -216,6 +216,11 @@ export interface FinalEncryptedStructure {
   };
 }
 
+export interface CosignerKeyPair {
+  publicKey: Uint8Array;
+  secretKey: Uint8Array;
+}
+
 interface MultisigInfo {
   threshold: number;
   signatories: string[];
