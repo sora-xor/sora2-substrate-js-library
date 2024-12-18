@@ -160,10 +160,16 @@ export class WithConnectionApi {
    * @param value
    * @returns
    */
+
+  // calldata + public key cosigner
   public encrypt(value: string): string {
     return encrypt(value);
   }
 
+  // Подстветить ошибку в UI
+  // и еще нужно анлочить пару
+  // зашифрованная calldata, если приватник нашего косайнера совпадает с публичным то все парсим
+  // , если не совпадает,то не распарсится
   public decrypt(value: string): string {
     return decrypt(value);
   }
@@ -172,6 +178,10 @@ export class WithConnectionApi {
 export class WithAccountPair extends WithConnectionApi {
   public account?: CreateResult;
   public signer?: Signer;
+
+  public mstAccount?: CreateResult;
+  public mstActive: boolean = false;
+  public previousAccount?: CreateResult;
 
   public get accountPair(): KeyringPair | null {
     return this.account?.pair ?? null;
@@ -236,6 +246,20 @@ export class WithAccountPair extends WithConnectionApi {
   public logout(): void {
     this.signer = undefined;
     this.account = undefined;
+  }
+
+  public setMstAccount(account: CreateResult): void {
+    this.mstAccount = account;
+  }
+
+  public switchToMstAccount(): void {
+    this.previousAccount = this.account;
+    this.mstActive = true;
+  }
+
+  public switchToMainAccount(): void {
+    this.previousAccount = undefined;
+    this.mstActive = false;
   }
 }
 
@@ -562,7 +586,9 @@ export class WithAccountHistory extends WithAccountStorage {
   }
 
   public saveHistory(historyItem: HistoryItem, options?: SaveHistoryOptions): void {
-    if (!historyItem?.id) return;
+    if (!historyItem?.id || (historyItem.type === undefined && (historyItem as any).status === 'error')) {
+      return;
+    }
 
     let historyCopy: AccountHistory<HistoryItem>;
     let addressStorage: Storage | undefined = undefined;
@@ -637,6 +663,10 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
   /** If `true` you might subscribe on extrinsic statuses (`false` by default) */
   public shouldObservableBeUsed = false;
 
+  public get keyring(): Keyring {
+    return keyring;
+  }
+
   // prettier-ignore
   public async submitApiExtrinsic( // NOSONAR
     api: ApiPromise,
@@ -644,10 +674,10 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     accountPair: KeyringPair,
     signer?: Signer,
     historyData?: HistoryItem,
-    unsigned = false
+    unsigned = false,
   ): Promise<T> {
     // Signing the transaction
-    const signedTx = await this.signExtrinsic(api, extrinsic, accountPair, signer, unsigned);
+    const signedTx = await this.signExtrinsic(api, extrinsic, accountPair, signer, unsigned)
     // we should lock pair, if it's not locked
     this.shouldPairBeLocked && this.lockPair(accountPair);
     // history initial params
@@ -659,7 +689,9 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     // history required params for each update
     const requiredParams: RequiredHistoryParams = { id, from ,type };
 
-    this.saveHistory({ ...historyData, ...requiredParams, txId, startTime });
+    if (historyData !== undefined) {
+      this.saveHistory({ ...historyData, ...requiredParams, txId, startTime });
+    }
 
     if (this.shouldObservableBeUsed) {
       return new Observable<ExtrinsicEvent>((subscriber) => {
@@ -679,6 +711,8 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     return await this.submitApiExtrinsic(this.api, extrinsic, accountPair, this.signer, historyData, unsigned);
   }
 
+  // apiAccount.ts
+
   public async signExtrinsic(
     api: ApiPromise,
     extrinsic: SubmittableExtrinsic<'promise'>,
@@ -694,7 +728,9 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
 
     const nonce = await api.rpc.system.accountNextIndex(accountPair.address);
 
-    return await extrinsic.signAsync(account, { ...options, nonce });
+    const signOptionsComplete = { ...options, nonce };
+
+    return await extrinsic.signAsync(account, signOptionsComplete);
   }
 
   public async sendExtrinsic(
