@@ -95,6 +95,7 @@ async function main(): Promise<void> {
       };
     }
 
+    // Эти данные уйдут в блокчейн через system.remark при вызове транзакии от MST
     const finalEncrypted: FinalEncryptedStructure = {
       encryptedData: encryptedCallData,
       dataIv: dataIv,
