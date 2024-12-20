@@ -261,7 +261,8 @@ export default {
       PeriodUpdated: 'u32',
       SmallReferenceAmountUpdated: 'u128',
       AssetRemovedFromWhiteList: 'CommonPrimitivesAssetId32',
-      AssetAddedToWhiteList: 'CommonPrimitivesAssetId32'
+      AssetAddedToWhiteList: 'CommonPrimitivesAssetId32',
+      RemintPeriodUpdated: 'u32'
     }
   },
   /**
@@ -2642,7 +2643,10 @@ export default {
         assetId: 'CommonPrimitivesAssetId32',
       },
       remove_asset_from_white_list: {
-        assetId: 'CommonPrimitivesAssetId32'
+        assetId: 'CommonPrimitivesAssetId32',
+      },
+      set_random_remint_period: {
+        period: 'u32'
       }
     }
   },
@@ -5825,7 +5829,7 @@ export default {
    * Lookup690: xor_fee::pallet::Error<T>
    **/
   XorFeeError: {
-    _enum: ['MultiplierCalculationFailed', 'InvalidSmallReferenceAmount', 'AssetNotFound', 'AssetAlreadyWhitelisted', 'WhitelistFull', 'FeeCalculationFailed']
+    _enum: ['MultiplierCalculationFailed', 'InvalidSmallReferenceAmount', 'AssetNotFound', 'AssetAlreadyWhitelisted', 'WhitelistFull', 'FeeCalculationFailed', 'WrongRemintPeriod']
   },
   /**
    * Lookup691: pallet_multisig::MultisigAccount<sp_core::crypto::AccountId32>
