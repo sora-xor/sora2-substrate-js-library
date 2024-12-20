@@ -1860,6 +1860,7 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       burntForFee: AugmentedQuery<ApiType, (arg: CommonPrimitivesAssetId32 | { code?: any } | string | Uint8Array) => Observable<XorFeeAssetFee>, [CommonPrimitivesAssetId32]>;
       multiplier: AugmentedQuery<ApiType, () => Observable<u128>, []>;
+      remintPeriod: AugmentedQuery<ApiType, () => Observable<u32>, []>;
       /**
        * Small fee value should be `SmallReferenceAmount` in reference asset id
        **/

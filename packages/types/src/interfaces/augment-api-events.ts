@@ -1485,6 +1485,10 @@ declare module '@polkadot/api-base/types/events' {
        **/
       ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, CommonPrimitivesAssetId32, u128]>;
       /**
+       * Average remint period updated: [Period]
+       **/
+      RemintPeriodUpdated: AugmentedEvent<ApiType, [u32]>;
+      /**
        * New small reference amount set. [New value]
        **/
       SmallReferenceAmountUpdated: AugmentedEvent<ApiType, [u128]>;
