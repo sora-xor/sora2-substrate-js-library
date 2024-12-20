@@ -289,7 +289,9 @@ declare module '@polkadot/types/lookup' {
     readonly asAssetRemovedFromWhiteList: CommonPrimitivesAssetId32;
     readonly isAssetAddedToWhiteList: boolean;
     readonly asAssetAddedToWhiteList: CommonPrimitivesAssetId32;
-    readonly type: 'FeeWithdrawn' | 'ReferrerRewarded' | 'WeightToFeeMultiplierUpdated' | 'PeriodUpdated' | 'SmallReferenceAmountUpdated' | 'AssetRemovedFromWhiteList' | 'AssetAddedToWhiteList';
+    readonly isRemintPeriodUpdated: boolean;
+    readonly asRemintPeriodUpdated: u32;
+    readonly type: 'FeeWithdrawn' | 'ReferrerRewarded' | 'WeightToFeeMultiplierUpdated' | 'PeriodUpdated' | 'SmallReferenceAmountUpdated' | 'AssetRemovedFromWhiteList' | 'AssetAddedToWhiteList' | 'RemintPeriodUpdated';
   }
 
   /** @name CommonPrimitivesAssetId32 (35) */
@@ -2923,7 +2925,11 @@ declare module '@polkadot/types/lookup' {
     readonly asRemoveAssetFromWhiteList: {
       readonly assetId: CommonPrimitivesAssetId32;
     } & Struct;
-    readonly type: 'UpdateMultiplier' | 'SetFeeUpdatePeriod' | 'SetSmallReferenceAmount' | 'XorlessCall' | 'AddAssetToWhiteList' | 'RemoveAssetFromWhiteList';
+    readonly isSetRandomRemintPeriod: boolean;
+    readonly asSetRandomRemintPeriod: {
+      readonly period: u32;
+    } & Struct;
+    readonly type: 'UpdateMultiplier' | 'SetFeeUpdatePeriod' | 'SetSmallReferenceAmount' | 'XorlessCall' | 'AddAssetToWhiteList' | 'RemoveAssetFromWhiteList' | 'SetRandomRemintPeriod';
   }
 
   /** @name PalletMultisigCall (314) */
@@ -6156,7 +6162,8 @@ declare module '@polkadot/types/lookup' {
     readonly isAssetAlreadyWhitelisted: boolean;
     readonly isWhitelistFull: boolean;
     readonly isFeeCalculationFailed: boolean;
-    readonly type: 'MultiplierCalculationFailed' | 'InvalidSmallReferenceAmount' | 'AssetNotFound' | 'AssetAlreadyWhitelisted' | 'WhitelistFull' | 'FeeCalculationFailed';
+    readonly isWrongRemintPeriod: boolean;
+    readonly type: 'MultiplierCalculationFailed' | 'InvalidSmallReferenceAmount' | 'AssetNotFound' | 'AssetAlreadyWhitelisted' | 'WhitelistFull' | 'FeeCalculationFailed' | 'WrongRemintPeriod';
   }
 
   /** @name PalletMultisigMultisigAccount (691) */
