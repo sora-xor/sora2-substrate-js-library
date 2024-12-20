@@ -203,7 +203,7 @@ export type AccountHistory<T> = {
 };
 
 export interface Cosigners {
-  [name: string]: Uint8Array;
+  [address: string]: Uint8Array;
 }
 
 export interface EncryptedKeyForCosigner {

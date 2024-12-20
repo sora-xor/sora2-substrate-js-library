@@ -47,13 +47,13 @@ export class CryptoModule {
     // Encrypt callData with symmetricKey
     const { encryptedData: encryptedCallData, iv: dataIv } = this._encryptMessage(symmetricKey, callDataStr);
     const encryptedKeys: { [cosignerAddress: string]: EncryptedKeyForCosigner } = {};
-    for (const [name, cosignerPublicKey] of Object.entries(cosigners)) {
+    for (const [address, cosignerPublicKey] of Object.entries(cosigners)) {
       const sharedSecret = this.combineSharedSecret(cosignerPublicKey, secretKeyOfSigner);
       const sharedSecretHex = u8aToHex(sharedSecret).replace(/^0x/, '');
 
       const { encryptedData: encryptedSymKey, iv: symKeyIv } = this._encryptMessage(sharedSecretHex, symmetricKey);
 
-      encryptedKeys[name] = {
+      encryptedKeys[address] = {
         encryptedKey: encryptedSymKey,
         iv: symKeyIv,
       };
