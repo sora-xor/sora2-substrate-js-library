@@ -1,9 +1,8 @@
 import { AES, HmacSHA256, enc } from 'crypto-js';
 import crypto from 'crypto-js';
-import { EncryptedKeyForCosigner, FinalEncryptedStructure } from '@sora-substrate/sdk';
+import { Cosigners, EncryptedKeyForCosigner, FinalEncryptedStructure } from '@sora-substrate/sdk';
 import { u8aToHex } from '@polkadot/util';
 import { sr25519Agreement } from '@polkadot/util-crypto';
-import { Keypair } from '@polkadot/util-crypto/types';
 
 // TODO: add random generator and think how to store it
 const key = 'U2FsdGVkX18ZUVvShFSES21qHsQEqZXMxQ9zgHy';
@@ -42,14 +41,14 @@ export class CryptoModule {
     return decrypted.toString(crypto.enc.Utf8);
   }
 
-  encryptBySigner(callDataStr: string, cosigners: { [name: string]: Keypair }, secretKeyOfSigner: Uint8Array) {
+  encryptBySigner(callDataStr: string, cosigners: Cosigners, secretKeyOfSigner: Uint8Array) {
     const symmetricKey = crypto.lib.WordArray.random(32).toString(crypto.enc.Hex);
 
     // Encrypt callData with symmetricKey
     const { encryptedData: encryptedCallData, iv: dataIv } = this._encryptMessage(symmetricKey, callDataStr);
     const encryptedKeys: { [cosignerAddress: string]: EncryptedKeyForCosigner } = {};
-    for (const [name, cosignerPair] of Object.entries(cosigners)) {
-      const sharedSecret = this.combineSharedSecret(cosignerPair.publicKey, secretKeyOfSigner);
+    for (const [name, cosignerPublicKey] of Object.entries(cosigners)) {
+      const sharedSecret = this.combineSharedSecret(cosignerPublicKey, secretKeyOfSigner);
       const sharedSecretHex = u8aToHex(sharedSecret).replace(/^0x/, '');
 
       const { encryptedData: encryptedSymKey, iv: symKeyIv } = this._encryptMessage(sharedSecretHex, symmetricKey);

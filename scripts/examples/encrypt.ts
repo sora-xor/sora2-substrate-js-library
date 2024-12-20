@@ -1,6 +1,6 @@
-import { mnemonicGenerate, mnemonicToMiniSecret, sr25519PairFromSeed, sr25519Agreement } from '@polkadot/util-crypto';
+import { mnemonicGenerate, mnemonicToMiniSecret, sr25519PairFromSeed } from '@polkadot/util-crypto';
 import { withConnectedAccount } from './util';
-import { api } from '@sora-substrate/sdk';
+import { api, Cosigners } from '@sora-substrate/sdk';
 
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {
@@ -18,7 +18,11 @@ async function main(): Promise<void> {
 
     const callData = { foo: 'bar', number: 42 };
     const callDataStr = JSON.stringify(callData);
-    const cosigners = { alice, bob, charlie };
+    const cosigners: Cosigners = {
+      alice: alice.publicKey,
+      bob: bob.publicKey,
+      charlie: charlie.publicKey,
+    };
 
     const finalEncrypted = api.crypto.encryptBySigner(callDataStr, cosigners, alice.secretKey);
 

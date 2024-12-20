@@ -202,6 +202,10 @@ export type AccountHistory<T> = {
   [key: string]: T;
 };
 
+export interface Cosigners {
+  [name: string]: Uint8Array;
+}
+
 export interface EncryptedKeyForCosigner {
   encryptedKey: string;
   iv: string;
