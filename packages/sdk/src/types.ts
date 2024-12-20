@@ -203,7 +203,6 @@ export type AccountHistory<T> = {
 };
 
 export interface EncryptedKeyForCosigner {
-  ephemeralPubHex: string;
   encryptedKey: string;
   iv: string;
 }
