@@ -23,6 +23,7 @@ export enum TransactionStatus {
   Error = 'error',
   Usurped = 'usurped', // When TX is outdated
   Invalid = 'invalid', // When something happened before sending to network
+  Pending = 'pending',
 }
 
 export enum Operation {
@@ -166,6 +167,7 @@ export type IBridgeTransaction = EvmHistory | SubHistory | EthHistory;
 
 export type HistoryItem =
   | History
+  | HistoryWithMultisig
   | IBridgeTransaction
   | RewardClaimHistory
   | StakingHistory
@@ -199,3 +201,43 @@ export interface ISubmitExtrinsic<T> {
 export type AccountHistory<T> = {
   [key: string]: T;
 };
+
+export interface Cosigners {
+  [address: string]: Uint8Array;
+}
+
+export interface EncryptedKeyForCosigner {
+  encryptedKey: string;
+  iv: string;
+}
+
+export interface FinalEncryptedStructure {
+  encryptedData: string;
+  dataIv: string;
+  encryptedKeys: {
+    [cosignerName: string]: EncryptedKeyForCosigner;
+  };
+}
+
+export interface CosignerKeyPair {
+  publicKey: Uint8Array;
+  secretKey: Uint8Array;
+}
+
+interface MultisigInfo {
+  threshold: number;
+  signatories: string[];
+  numApprovals: number;
+  walletsApproved: string[];
+}
+
+interface DeadlineTrx {
+  expirationBlock: number;
+  blocksRemaining: number;
+  secondsRemaining: number;
+}
+
+interface HistoryWithMultisig extends History {
+  multisig?: MultisigInfo;
+  deadline?: DeadlineTrx;
+}

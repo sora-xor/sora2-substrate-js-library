@@ -3468,6 +3468,10 @@ declare module '@polkadot/api-base/types/errors' {
        * White list is filled
        **/
       WhitelistFull: AugmentedError<ApiType>;
+      /**
+       * Remint period should not be 0 or to be greater than 600
+       **/
+      WrongRemintPeriod: AugmentedError<ApiType>;
     };
     xstPool: {
       /**

@@ -3663,6 +3663,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * Set 0 to stop updating
        **/
       setFeeUpdatePeriod: AugmentedSubmittable<(newPeriod: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
+      setRandomRemintPeriod: AugmentedSubmittable<(period: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
       /**
        * Set new small reference amount `xor_fee::SmallReferenceAmount`
        * Small fee should tend to the amount value

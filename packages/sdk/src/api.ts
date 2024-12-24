@@ -15,16 +15,20 @@ import { AssetsModule } from './assets';
 import { ExtendedAssetsModule } from './extendedAssets';
 import { PrestoModule } from './presto';
 import { OrderBookModule } from './orderBook';
-import { MstTransfersModule } from './mstTransfers';
+import { MstModule } from './mst';
 import { SystemModule } from './system';
 import { StakingModule } from './staking';
 import { DemeterFarmingModule } from './demeterFarming';
 import { DexModule } from './dex';
 import { CeresLiquidityLockerModule } from './ceresLiquidityLocker';
 import { KensetsuModule } from './kensetsu';
+import { CryptoModule } from './crypto';
 import { XOR } from './assets/consts';
 import type { Storage } from './storage';
 import type { AccountAsset, Asset } from './assets/types';
+import { SubmittableExtrinsic } from '@polkadot/api-base/types/submittable';
+import { KeyringPair } from '@polkadot/keyring/types';
+import { HistoryItem } from './types';
 
 /**
  * Contains all necessary data and functions for the wallet & polkaswap client
@@ -42,8 +46,9 @@ export class Api<T = void> extends BaseApi<T> {
   public readonly extendedAssets = new ExtendedAssetsModule<T>(this);
   public readonly presto = new PrestoModule<T>(this);
   public readonly orderBook = new OrderBookModule<T>(this);
+  public readonly crypto = new CryptoModule();
   /** This module is used for internal needs */
-  public readonly mstTransfers = new MstTransfersModule<T>(this);
+  public readonly mst = new MstModule<T>(this);
   public readonly system = new SystemModule<T>(this);
   public readonly staking = new StakingModule<T>(this);
   public readonly demeterFarming = new DemeterFarmingModule<T>(this);
@@ -150,7 +155,42 @@ export class Api<T = void> extends BaseApi<T> {
     this.bridgeProxy.logout();
   }
 
-  // # Formatter methods
+  public override async submitExtrinsic(
+    extrinsic: SubmittableExtrinsic<'promise'>,
+    accountPair: KeyringPair,
+    historyData?: HistoryItem,
+    unsigned?: boolean
+  ): Promise<T> {
+    const isMultisig = api.mst.getMstAccount(accountPair.address) !== undefined;
+
+    if (isMultisig) {
+      let mainAccountPair: KeyringPair | null = null;
+      if (this.accountStorage?.get('previousAccountAddress')) {
+        console.info('this.accountStorage?.get previousAccountAddress exists');
+        const previousAccountAddress = this.accountStorage?.get('previousAccountAddress');
+        mainAccountPair = this.keyring.getPair(previousAccountAddress);
+      } else {
+        mainAccountPair = this.previousAccount?.pair ?? null;
+      }
+
+      if (!historyData) {
+        throw new Error('historyData is required for multisig transactions');
+      }
+      if (!mainAccountPair) {
+        throw new Error('Main account keyring pair not found');
+      }
+      return (await this.mst.submitMultisigExtrinsic(
+        extrinsic,
+        accountPair, // Multisig account pair
+        mainAccountPair, // Main account pair for signing
+        historyData,
+        unsigned
+      )) as unknown as Promise<T>;
+    } else {
+      return await super.submitExtrinsic(extrinsic, accountPair, historyData, unsigned);
+    }
+  }
+
   public hasEnoughXor(asset: AccountAsset, amount: string | number, fee: FPNumber | CodecString): boolean {
     const xorDecimals = XOR.decimals;
     const fpFee = fee instanceof FPNumber ? fee : FPNumber.fromCodecValue(fee, xorDecimals);
