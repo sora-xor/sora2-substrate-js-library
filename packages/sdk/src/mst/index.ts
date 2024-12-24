@@ -1,4 +1,4 @@
-import { BN } from '@polkadot/util';
+import { BN, hexToU8a, u8aToHex } from '@polkadot/util';
 import { FPNumber } from '@sora-substrate/math';
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 import type { KeyringPair } from '@polkadot/keyring/types';
@@ -94,7 +94,7 @@ export class MstModule<T> {
   }
 
   public getPrevoiusAccount(): string | undefined {
-    return this.root.accountStorage?.get('previousAccountAddress');
+    return this.root.accountStorage?.get('previousAccountAddress') || this.root.previousAccount?.pair.address;
   }
 
   public getMstAddress(): string {
@@ -192,9 +192,22 @@ export class MstModule<T> {
       proofSize: new BN(0),
     });
 
-    const callData = call.method.toHex();
+    const callDataHex = call.method.toHex();
+    const dataStringify = JSON.stringify(callDataHex);
+    const cosignersForEncrypt: Record<string, string> = {};
+    for (const address of allSignatories) {
+      const pubKey = this.root.getPublicKeyByAddress(address);
+      cosignersForEncrypt[address] = `0x${pubKey}`;
+    }
 
-    const systemRemarkCall = this.root.api.tx.system.remark(callData);
+    const encryptParams = {
+      address: this.root.formatAddress(signerAccountPair.address),
+      data: dataStringify,
+      cosigners: cosignersForEncrypt,
+    };
+    const finalEncryptedObj = await (window as any).injectedWeb3['fearless-wallet'].encryptByCosigner(encryptParams);
+    const finalEncryptedStr = JSON.stringify(finalEncryptedObj);
+    const systemRemarkCall = this.root.api.tx.system.remark(finalEncryptedStr);
 
     const multisigCall = this.root.api.tx.multisig.asMulti(
       threshold,
@@ -277,7 +290,19 @@ export class MstModule<T> {
           throw new Error('No system.remark call found in the batch');
         }
 
-        const callDataHex = systemRemarkCall.args[0].toString();
+        const finalEncryptedStr = systemRemarkCall.args[0].toUtf8();
+        let finalEncryptedObj = JSON.parse(finalEncryptedStr);
+        const myAddress = api.formatAddress(this.getPrevoiusAccount() || this.root.account?.pair.address);
+        const pubKeyHex = this.root.getPublicKeyByAddress(extrinsic.signer.toString());
+        const pubKey = hexToU8a(pubKeyHex);
+
+        const decryptedParams = {
+          address: myAddress,
+          data: finalEncryptedObj,
+          encryptorPublicKey: u8aToHex(pubKey),
+        };
+        const callDataHex = await (window as any).injectedWeb3['fearless-wallet'].decryptForCosigner(decryptedParams);
+
         const callData = this.root.api.registry.createType('Call', callDataHex);
         const MAX_WEIGHT = this.root.api.registry.createType('WeightV2', {
           refTime: details.finalRefTime,
@@ -363,7 +388,19 @@ export class MstModule<T> {
         throw new Error('No multisig.asMulti call found in the batch');
       }
 
-      const callDataHex = systemRemarkCall.args[0].toString();
+      const finalEncryptedStr = systemRemarkCall.args[0].toUtf8();
+      let finalEncryptedObj = JSON.parse(finalEncryptedStr);
+      const myAddress = api.formatAddress(this.getPrevoiusAccount() || this.root.account?.pair.address);
+      const pubKeyHex = this.root.getPublicKeyByAddress(extrinsic.signer.toString());
+      const pubKey = hexToU8a(pubKeyHex);
+
+      const decryptedParams = {
+        address: myAddress,
+        data: finalEncryptedObj,
+        encryptorPublicKey: u8aToHex(pubKey),
+      };
+      const callDataHex = await (window as any).injectedWeb3['fearless-wallet'].decryptForCosigner(decryptedParams);
+
       const callData = this.root.api.registry.createType('Call', callDataHex);
       const callArgs = Array.from(callData.args);
       const dummyExtrinsic = this.root.api.tx[callData.section][callData.method].apply(null, callArgs);
@@ -399,7 +436,7 @@ export class MstModule<T> {
       };
     } catch (error) {
       console.error(`Error calculating finalProofSize for callHash ${callHash}:`, error);
-      throw error; // Rethrow after logging
+      throw error;
     }
   }
 
@@ -423,22 +460,18 @@ export class MstModule<T> {
 
   public async startPendingTxsSubscription(mstAccount: string): Promise<void> {
     try {
-      // Subscribe to new blocks
       const unsubscribe = await this.root.api.rpc.chain.subscribeNewHeads(async () => {
         try {
           const pendingTxs = await this.subscribeOnPendingTxs(mstAccount);
 
-          // Update the last known pending transactions
           this.lastPendingTxs = pendingTxs || [];
 
-          // Emit the new pending transactions
           this.pendingTxsSubject.next(this.lastPendingTxs);
         } catch (error) {
           console.error('Error checking pending MST transactions:', error);
         }
       });
 
-      // Store the unsubscribe function
       this.pendingTxsSubscription = new Subscription(unsubscribe);
     } catch (error) {
       console.error('Error subscribing to new blocks:', error);
@@ -469,6 +502,7 @@ export class MstModule<T> {
     // !!!! We should block the flow where user doesn't use Fearless Wallet | Desktop
     try {
       const pendingData = await this.getPendingMultisigTransactions(mstAccount);
+      console.info('here is pendingData', pendingData);
       const pendingTransactions: HistoryItem[] = [];
 
       for (const [key, multisigInfo] of pendingData) {
@@ -967,9 +1001,18 @@ export class MstModule<T> {
         return null;
       }
 
-      const callDataHex = systemRemarkCall.args[0].toString();
-      const callData = this.root.api.registry.createType('Call', callDataHex);
+      const finalEncryptedStr = systemRemarkCall.args[0].toUtf8();
+      let finalEncryptedObj = JSON.parse(finalEncryptedStr);
+      const myAddress = api.formatAddress(this.getPrevoiusAccount() || this.root.account?.pair.address);
+      const pubKeyHex = this.root.getPublicKeyByAddress(extrinsic.signer.toString());
+      const pubKey = hexToU8a(pubKeyHex);
 
+      const decryptedParams = {
+        address: myAddress,
+        data: finalEncryptedObj,
+        encryptorPublicKey: u8aToHex(pubKey),
+      };
+      const callDataHex = await (window as any).injectedWeb3['fearless-wallet'].decryptForCosigner(decryptedParams);
       const threshold = Number(asMultiCall.args[0].toString());
       const otherSignatories = asMultiCall.args[1].toHuman() as string[];
       const signerAddress = extrinsic.signer.toString();
@@ -1021,7 +1064,7 @@ export class MstModule<T> {
 
       const blockTimestamp = await this.getBlockTimestamp(blockHash);
       const historyItem = await this.parseCallDataToHistoryItem(
-        callData,
+        callDataHex,
         multisigInfoExtended,
         deadlineTrx,
         blockNumber,

@@ -44,8 +44,8 @@ async function main(): Promise<void> {
     const finalEncrypted = api.crypto.encryptBySigner(callDataStr, cosigners, mySelf.secretKey);
 
     console.log('Final Encrypted Structure:', JSON.stringify(finalEncrypted, null, 2));
-    // const decryptedCallDataBob = api.crypto.decryptForCosigner('bob', mySelf.publicKey, finalEncrypted, bob.secretKey);
-    // console.log('Bob decrypted callData:', decryptedCallDataBob);
+    const decryptedCallDataBob = api.crypto.decryptForCosigner('bob', mySelf.publicKey, finalEncrypted, bob.secretKey);
+    console.log('Bob decrypted callData:', decryptedCallDataBob);
     // const decryptedCallDataCharlie = api.crypto.decryptForCosigner(
     //   'charlie',
     //   mySelf.publicKey,

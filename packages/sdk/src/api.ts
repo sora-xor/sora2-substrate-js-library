@@ -161,15 +161,6 @@ export class Api<T = void> extends BaseApi<T> {
     historyData?: HistoryItem,
     unsigned?: boolean
   ): Promise<T> {
-    // if (
-    //   (window as any).injectedWeb3 &&
-    //   (window as any).injectedWeb3['fearless-wallet'] &&
-    //   typeof (window as any).injectedWeb3['fearless-wallet'].saveSoraCardToken === 'function'
-    // ) {
-    //   console.info('we have sora card');
-    //   (window as any).injectedWeb3['fearless-wallet'].saveSoraCardToken('YOUR_TOKEN_VALUE_HERE');
-    // }
-    // Check if the account is a multisig account
     const isMultisig = api.mst.getMstAccount(accountPair.address) !== undefined;
 
     if (isMultisig) {
