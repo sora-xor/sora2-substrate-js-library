@@ -2636,6 +2636,10 @@ declare module '@polkadot/api-base/types/errors' {
     };
     presto: {
       /**
+       * Account has any Presto asset
+       **/
+      AccountHasPrestoAssets: AugmentedError<ApiType>;
+      /**
        * Zero amount doesn't make sense
        **/
       AmountIsZero: AugmentedError<ApiType>;
@@ -2676,6 +2680,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CouponOfferingFail: AugmentedError<ApiType>;
       /**
+       * Account not passed KYC as creditor
+       **/
+      CreditorKycNotPassed: AugmentedError<ApiType>;
+      /**
        * The crop receipt already has a decision
        **/
       CropReceiptAlreadyHasDecision: AugmentedError<ApiType>;
@@ -2683,6 +2691,18 @@ declare module '@polkadot/api-base/types/errors' {
        * The crop receipt already has been rated
        **/
       CropReceiptAlreadyRated: AugmentedError<ApiType>;
+      /**
+       * The crop receipt cannot be closed
+       **/
+      CropReceiptCannotBeClosed: AugmentedError<ApiType>;
+      /**
+       * The crop receipt has been closed
+       **/
+      CropReceiptHasBeenClosed: AugmentedError<ApiType>;
+      /**
+       * The crop receipt is not closed yet
+       **/
+      CropReceiptIsNotClosedYet: AugmentedError<ApiType>;
       /**
        * There is no such crop receipt
        **/
@@ -2696,6 +2716,18 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CropReceiptWaitingForRate: AugmentedError<ApiType>;
       /**
+       * Account not passed KYC as investor
+       **/
+      InvestorKycNotPassed: AugmentedError<ApiType>;
+      /**
+       * Account already passed KYC
+       **/
+      KycAlreadyPassed: AugmentedError<ApiType>;
+      /**
+       * Account not passed KYC
+       **/
+      KycNotPassed: AugmentedError<ApiType>;
+      /**
        * This account already was added as a manager before
        **/
       ManagerAlreadyAdded: AugmentedError<ApiType>;
@@ -2707,6 +2739,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Managers storage has reached its limit
        **/
       ManagersAreOverloaded: AugmentedError<ApiType>;
+      /**
+       * There is no data about emitted coupon for the crop receipt
+       **/
+      NoCouponData: AugmentedError<ApiType>;
       /**
        * This request was already processed by manager
        **/
@@ -2810,6 +2846,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Provided range is incorrect, check that lower bound is less or equal than the upper one.
        **/
       EmptyRandomRange: AugmentedError<ApiType>;
+      /**
+       * Cannot initialize SBT metadata with the list of regulated assets
+       **/
+      FailToInitializeRegulatedAssets: AugmentedError<ApiType>;
       /**
        * TBCD must be initialized using different field/function (see `tbcd_collateral` and `TbcdCollateralInput`).
        **/
@@ -3468,6 +3508,10 @@ declare module '@polkadot/api-base/types/errors' {
        * White list is filled
        **/
       WhitelistFull: AugmentedError<ApiType>;
+      /**
+       * Remint period should not be 0 or to be greater than 600
+       **/
+      WrongRemintPeriod: AugmentedError<ApiType>;
     };
     xstPool: {
       /**

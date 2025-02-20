@@ -7,9 +7,10 @@ async function main(): Promise<void> {
   await withConnectedAccount(async () => {
     await api.presto.createCropReceipt(
       '1',
+      3,
       Country.BR,
-      1733291615,
-      1733291615,
+      1740048517,
+      1740048517,
       'Place of issuer',
       'Debitor and some important information',
       'Creditor and some important information',

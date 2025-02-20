@@ -113,6 +113,7 @@ export class PrestoModule<T> {
    */
   public async createCropReceipt(
     amount: string,
+    profit: number,
     country: Country,
     closeInitialPeriod: number,
     dateOfIssue: number,
@@ -127,6 +128,7 @@ export class PrestoModule<T> {
     return this.root.submitExtrinsic(
       this.root.api.tx.presto.createCropReceipt(
         amount,
+        profit,
         country,
         closeInitialPeriod,
         dateOfIssue,
