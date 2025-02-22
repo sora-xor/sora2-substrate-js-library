@@ -19,12 +19,15 @@ async function main(): Promise<void> {
     );
 
     const cropReceipts = await api.presto.getCropReceipts('cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm');
-    console.log('result', cropReceipts);
+    console.info('result', cropReceipts);
 
     await api.presto.createDepositRequest('1', 'invoice 1234', 'important details to know fiat reference');
 
     const requests = await api.presto.getRequests('cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm');
-    console.log('requests', requests);
+    console.info('requests', requests);
+
+    const role = await api.presto.getRole('cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm');
+    console.info('role', role);
 
     await delay(100000);
   });

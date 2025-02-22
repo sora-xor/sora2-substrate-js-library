@@ -50,7 +50,7 @@ export enum BalanceType {
   Transferable = 'transferable',
 }
 
-class ArrayLike<T, U> extends Array<T> {
+export class ArrayLike<T, U> extends Array<T> {
   constructor(items?: Array<T>) {
     super();
     items && this.addItems(items);

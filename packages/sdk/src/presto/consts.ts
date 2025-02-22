@@ -1,3 +1,4 @@
+import { ArrayLike } from '../assets/consts';
 import { AssetTypes } from '../assets/types';
 
 /** SBT name symbols to distinguish accounts for access
@@ -9,7 +10,13 @@ export enum PrestoSymbols {
   PRINVST = 'PRINVST', // for investors
 }
 
-export const PrestoAssets = [
+export enum Role {
+  Manager = 'Manager',
+  Investor = 'Investor',
+  Creditor = 'Creditor',
+}
+
+export const PrestoAssets = new ArrayLike([
   {
     address: '0x0600000000000000000000000000000000000000000000000000000000000000',
     symbol: PrestoSymbols.PRACS,
@@ -28,4 +35,4 @@ export const PrestoAssets = [
     name: 'Presto Creditor',
     type: AssetTypes.Soulbound,
   },
-];
+]);

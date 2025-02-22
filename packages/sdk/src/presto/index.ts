@@ -3,6 +3,7 @@ import { Messages } from '../logger';
 import type { Api } from '../api';
 import { Country } from './types';
 import { NumberLike } from '@sora-substrate/math';
+import { PrestoAssets, PrestoSymbols, Role } from './consts';
 
 export class PrestoModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -162,5 +163,31 @@ export class PrestoModule<T> {
     assert(this.root.account, Messages.connectWallet);
 
     return this.root.submitExtrinsic(this.root.api.tx.presto.declineCropReceipt(crId), this.root.account.pair);
+  }
+
+  /**
+   * Get role of an account.
+   * @param address provided account address
+   */
+  public async getRole(address: string): Promise<Role> {
+    assert(this.root.account, Messages.connectWallet);
+
+    let role = Role.Manager;
+
+    const addresses = await this.root.assets.getTokensAddressesList(address);
+
+    for (const address of addresses) {
+      if (address === PrestoAssets.get(PrestoSymbols.PRCRDT).address) {
+        role = Role.Creditor;
+        break;
+      }
+
+      if (address === PrestoAssets.get(PrestoSymbols.PRINVST).address) {
+        role = Role.Investor;
+        break;
+      }
+    }
+
+    return role;
   }
 }
