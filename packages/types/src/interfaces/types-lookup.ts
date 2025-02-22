@@ -8279,11 +8279,12 @@ declare module '@polkadot/types/lookup' {
     readonly isCanNotTransferBorrowingRewards: boolean;
     readonly isCanNotTransferAmountToRepay: boolean;
     readonly isCanNotTransferAmountToDevelopers: boolean;
+    readonly isCanNotTransferAmountToTreasury: boolean;
     readonly isInvalidLiquidation: boolean;
     readonly isPoolIsRemoved: boolean;
     readonly isInvalidBorrowingAmount: boolean;
     readonly isInvalidLoanToValue: boolean;
-    readonly type: 'Unauthorized' | 'AssetAlreadyListed' | 'InvalidPoolParameters' | 'PoolDoesNotExist' | 'InvalidLendingAmount' | 'CollateralTokenDoesNotExist' | 'NoLendingAmountToBorrow' | 'SameCollateralAndBorrowingAssets' | 'NoLiquidityForBorrowingAsset' | 'NothingLent' | 'InvalidCollateralAmount' | 'CanNotTransferBorrowingAmount' | 'CanNotTransferCollateralAmount' | 'NoRewardsToClaim' | 'UnableToTransferRewards' | 'InsufficientLendingAmount' | 'LendingAmountExceeded' | 'CanNotTransferLendingAmount' | 'NothingBorrowed' | 'NonexistentBorrowingPosition' | 'NothingToRepay' | 'CanNotTransferLendingInterest' | 'UnableToTransferCollateral' | 'UnableToTransferAmountToRepay' | 'CanNotWithdrawLendingAmount' | 'CanNotTransferBorrowingRewards' | 'CanNotTransferAmountToRepay' | 'CanNotTransferAmountToDevelopers' | 'InvalidLiquidation' | 'PoolIsRemoved' | 'InvalidBorrowingAmount' | 'InvalidLoanToValue';
+    readonly type: 'Unauthorized' | 'AssetAlreadyListed' | 'InvalidPoolParameters' | 'PoolDoesNotExist' | 'InvalidLendingAmount' | 'CollateralTokenDoesNotExist' | 'NoLendingAmountToBorrow' | 'SameCollateralAndBorrowingAssets' | 'NoLiquidityForBorrowingAsset' | 'NothingLent' | 'InvalidCollateralAmount' | 'CanNotTransferBorrowingAmount' | 'CanNotTransferCollateralAmount' | 'NoRewardsToClaim' | 'UnableToTransferRewards' | 'InsufficientLendingAmount' | 'LendingAmountExceeded' | 'CanNotTransferLendingAmount' | 'NothingBorrowed' | 'NonexistentBorrowingPosition' | 'NothingToRepay' | 'CanNotTransferLendingInterest' | 'UnableToTransferCollateral' | 'UnableToTransferAmountToRepay' | 'CanNotWithdrawLendingAmount' | 'CanNotTransferBorrowingRewards' | 'CanNotTransferAmountToRepay' | 'CanNotTransferAmountToDevelopers' | 'CanNotTransferAmountToTreasury' | 'InvalidLiquidation' | 'PoolIsRemoved' | 'InvalidBorrowingAmount' | 'InvalidLoanToValue';
   }
 
   /** @name ExtendedAssetsSoulboundTokenMetadata (996) */

@@ -25,6 +25,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CanNotTransferAmountToRepay: AugmentedError<ApiType>;
       /**
+       * Can not transfer amount to treasury
+       **/
+      CanNotTransferAmountToTreasury: AugmentedError<ApiType>;
+      /**
        * Can not transfer borrowing amount
        **/
       CanNotTransferBorrowingAmount: AugmentedError<ApiType>;
