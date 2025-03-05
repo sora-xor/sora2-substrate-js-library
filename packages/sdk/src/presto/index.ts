@@ -168,26 +168,34 @@ export class PrestoModule<T> {
   /**
    * Get role of an account.
    * @param address provided account address
+   *
    */
   public async getRole(address: string): Promise<Role> {
     assert(this.root.account, Messages.connectWallet);
 
-    let role = Role.Manager;
+    const getAddress = (symbol: PrestoSymbols) => PrestoAssets.get(symbol).address;
+
+    const CREDITOR = [getAddress(PrestoSymbols.PRACS), getAddress(PrestoSymbols.PRCRDT)];
+    const INVESTOR = [getAddress(PrestoSymbols.PRACS), getAddress(PrestoSymbols.PRINVST)];
 
     const addresses = await this.root.assets.getTokensAddressesList(address);
 
-    for (const address of addresses) {
-      if (address === PrestoAssets.get(PrestoSymbols.PRCRDT).address) {
-        role = Role.Creditor;
-        break;
-      }
+    const isCreditor = CREDITOR.every((address) => addresses.includes(address));
+    if (isCreditor) return Role.Creditor;
 
-      if (address === PrestoAssets.get(PrestoSymbols.PRINVST).address) {
-        role = Role.Investor;
-        break;
-      }
+    const isInvestor = INVESTOR.every((address) => addresses.includes(address));
+    if (isInvestor) return Role.Investor;
+
+    const managerData = await this.root.api.query.presto.managers();
+    let managers = [];
+
+    for (const chunk of managerData.entries()) {
+      managers.push(chunk[1].toString());
     }
 
-    return role;
+    const isManager = managers.length ? managers.includes(address) : false;
+    if (isManager) return Role.Manager;
+
+    return Role.Unknown;
   }
 }

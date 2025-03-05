@@ -26,7 +26,7 @@ async function main(): Promise<void> {
     const requests = await api.presto.getRequests('cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm');
     console.info('requests', requests);
 
-    const role = await api.presto.getRole('cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm');
+    const role = await api.presto.getRole('cnU8gKMgaQ9xyw2jZapmBCd7sCsv9WySrA3DHQdVLgagqVRXH');
     console.info('role', role);
 
     await delay(100000);

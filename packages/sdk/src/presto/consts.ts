@@ -5,7 +5,7 @@ import { AssetTypes } from '../assets/types';
  * rights and functionalities
  */
 export enum PrestoSymbols {
-  PRACS = 'PRACS', // for managers
+  PRACS = 'PRACS',
   PRCRDT = 'PRCRDT', // for creditors
   PRINVST = 'PRINVST', // for investors
 }
@@ -14,6 +14,7 @@ export enum Role {
   Manager = 'Manager',
   Investor = 'Investor',
   Creditor = 'Creditor',
+  Unknown = 'Unknown',
 }
 
 export const PrestoAssets = new ArrayLike([
