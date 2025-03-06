@@ -7,9 +7,10 @@ async function main(): Promise<void> {
   await withConnectedAccount(async () => {
     await api.presto.createCropReceipt(
       '1',
+      3,
       Country.BR,
-      1733291615,
-      1733291615,
+      1740048517,
+      1740048517,
       'Place of issuer',
       'Debitor and some important information',
       'Creditor and some important information',
@@ -18,12 +19,15 @@ async function main(): Promise<void> {
     );
 
     const cropReceipts = await api.presto.getCropReceipts('cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm');
-    console.log('result', cropReceipts);
+    console.info('result', cropReceipts);
 
     await api.presto.createDepositRequest('1', 'invoice 1234', 'important details to know fiat reference');
 
     const requests = await api.presto.getRequests('cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm');
-    console.log('requests', requests);
+    console.info('requests', requests);
+
+    const role = await api.presto.getRole('cnU8gKMgaQ9xyw2jZapmBCd7sCsv9WySrA3DHQdVLgagqVRXH');
+    console.info('role', role);
 
     await delay(100000);
   });

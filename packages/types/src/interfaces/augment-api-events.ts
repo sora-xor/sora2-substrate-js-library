@@ -20,6 +20,10 @@ declare module '@polkadot/api-base/types/events' {
        * Borrowed [who, collateral_asset, collateral_amount, borrow_asset, borrow_amount]
        **/
       Borrowed: AugmentedEvent<ApiType, [AccountId32, CommonPrimitivesAssetId32, u128, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Changed Borrowing factor [who, amount]
+       **/
+      ChangedCollateralFactorAmount: AugmentedEvent<ApiType, [AccountId32, u128]>;
       ChangedRewardsAmount: AugmentedEvent<ApiType, [AccountId32, bool, u128]>;
       ChangedRewardsAmountPerBlock: AugmentedEvent<ApiType, [AccountId32, bool, u128]>;
       /**
@@ -976,6 +980,7 @@ declare module '@polkadot/api-base/types/events' {
     presto: {
       AuditorAdded: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
       AuditorRemoved: AugmentedEvent<ApiType, [auditor: AccountId32], { auditor: AccountId32 }>;
+      CropReceiptClosed: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
       CropReceiptCreated: AugmentedEvent<ApiType, [id: u64, by: AccountId32], { id: u64, by: AccountId32 }>;
       CropReceiptDeclined: AugmentedEvent<ApiType, [id: u64], { id: u64 }>;
       CropReceiptPublished: AugmentedEvent<ApiType, [id: u64, couponAssetId: CommonPrimitivesAssetId32], { id: u64, couponAssetId: CommonPrimitivesAssetId32 }>;
@@ -1484,6 +1489,10 @@ declare module '@polkadot/api-base/types/events' {
        * The portion of fee is sent to the referrer. [Referral, Referrer, AssetId, Amount]
        **/
       ReferrerRewarded: AugmentedEvent<ApiType, [AccountId32, AccountId32, CommonPrimitivesAssetId32, u128]>;
+      /**
+       * Average remint period updated: [Period]
+       **/
+      RemintPeriodUpdated: AugmentedEvent<ApiType, [u32]>;
       /**
        * New small reference amount set. [New value]
        **/
