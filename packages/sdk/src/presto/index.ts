@@ -205,21 +205,11 @@ export class PrestoModule<T> {
    * @param address provided account address
    *
    */
-  public assignRole(role: Role, accountAddress: string): Promise<T> | undefined {
+  public assignRole(role: Role, accountAddress: string): Promise<T> {
     assert(this.root.account, Messages.connectWallet);
 
-    if (role === Role.Creditor) {
-      return this.root.submitExtrinsic(
-        this.root.api.tx.presto.applyCreditorKyc(accountAddress),
-        this.root.account.pair
-      );
-    } else if (role === Role.Investor) {
-      return this.root.submitExtrinsic(
-        this.root.api.tx.presto.applyInvestorKyc(accountAddress),
-        this.root.account.pair
-      );
-    }
-
-    return undefined;
+    return role === Role.Creditor
+      ? this.root.submitExtrinsic(this.root.api.tx.presto.applyCreditorKyc(accountAddress), this.root.account.pair)
+      : this.root.submitExtrinsic(this.root.api.tx.presto.applyInvestorKyc(accountAddress), this.root.account.pair);
   }
 }
