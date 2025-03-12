@@ -198,4 +198,28 @@ export class PrestoModule<T> {
 
     return Role.Unknown;
   }
+
+  /**
+   * Assign role for provided address.
+   * @param role role to assign
+   * @param address provided account address
+   *
+   */
+  public assignRole(role: Role, accountAddress: string): Promise<T> | undefined {
+    assert(this.root.account, Messages.connectWallet);
+
+    if (role === Role.Creditor) {
+      return this.root.submitExtrinsic(
+        this.root.api.tx.presto.applyCreditorKyc(accountAddress),
+        this.root.account.pair
+      );
+    } else if (role === Role.Investor) {
+      return this.root.submitExtrinsic(
+        this.root.api.tx.presto.applyInvestorKyc(accountAddress),
+        this.root.account.pair
+      );
+    }
+
+    return undefined;
+  }
 }
