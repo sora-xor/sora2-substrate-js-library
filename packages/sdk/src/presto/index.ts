@@ -200,7 +200,7 @@ export class PrestoModule<T> {
   }
 
   /**
-   * Assign role for provided address.
+   * Assign role to provided address.
    * @param role role to assign
    * @param address provided account address
    *
