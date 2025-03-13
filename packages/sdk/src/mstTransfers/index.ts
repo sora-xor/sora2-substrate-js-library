@@ -3,7 +3,7 @@ import { FPNumber, NumberLike, CodecString } from '@sora-substrate/math';
 import type { SubmittableExtrinsic } from '@polkadot/api/promise/types';
 
 import { Messages } from '../logger';
-import { Operation } from '../types';
+import { HistoryItem, Operation } from '../types';
 import type { Api } from '../api';
 
 /**
@@ -67,14 +67,37 @@ export class MstTransfersModule<T> {
     });
   }
 
+  public getHistoryByCallData(callData: string): HistoryItem | null {
+    return null;
+  }
+
   /**
    * Get the last (frist from array of multisigns) pending TX from MST
    * @param mstAccount MST account
    */
-  public async getLastPendingTx(mstAccount: string): Promise<string | null> {
+  public async subscribeOnPendingTxs(mstAccount: string): Promise<string | null> {
+    // Observable
+    // Stefan + Rustem + Nikita -> MST (public address)
+    // 1. All member should generate the same MST account using parameters (all co-signer addresses + treshold)
+
     try {
+      // 1. TODO: subscribe to block
       const pendingData = await this.root.api.query.multisig.multisigs.entries(mstAccount);
-      return pendingData.map(([item, _]) => item.args[1].toString())[0];
+      // 2. [AccountId32, U8aFixed] - 2nd (U8aFixed) is callHash
+      // 3. 'someData' below contains block number where this TX was created
+      // 4. request extrinsics from this block (system.getExtrinsicsFromBlock)
+      // 5. find needed extrinsic (with tx.system.remark event + multisig.approveAsMulti event)
+      // 6. get the data from system.remark, decrypt it. it'll be represented as callData
+      // 6.1 ensure that hash(callData) is the same as callHash
+      // Other methods
+      // 7. show it to the user (getHistoryByCallData)
+      // 8. user approves or declines:
+      // 8.1. if the TX was not the last from threshold - approveAsMulti(callHash)
+      // 8.2. if the TX was the last from threshold - asMulti(callData)
+
+      // !!!! Users should have an ability to see callData in UI in case they don't use Fearless Wallet
+      // !!!! We should block the flow where user doesn't use Fearless Wallet | Desktop
+      return pendingData.map(([item, someData]) => item.args[1].toString())[0];
     } catch {
       return null;
     }
