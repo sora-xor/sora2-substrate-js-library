@@ -2,6 +2,7 @@ import { api } from '@sora-substrate/sdk';
 
 import { delay, withConnectedAccount } from './util';
 import { Country } from '@sora-substrate/sdk/presto/types';
+import { Role } from '@sora-substrate/sdk/presto/consts';
 
 async function main(): Promise<void> {
   await withConnectedAccount(async () => {
@@ -26,7 +27,10 @@ async function main(): Promise<void> {
     const requests = await api.presto.getRequests('cnVkoGs3rEMqLqY27c2nfVXJRGdzNJk2ns78DcqtppaSRe8qm');
     console.info('requests', requests);
 
-    const role = await api.presto.getRole('cnU8gKMgaQ9xyw2jZapmBCd7sCsv9WySrA3DHQdVLgagqVRXH');
+    await api.presto.assignRole(Role.Investor, 'cnUaaC2q8z1SFkZcPNDQ38maLVFhuNeuZeFQnUCRLEM8FvMs4');
+    await delay(1000);
+
+    const role = await api.presto.getRole('cnUaaC2q8z1SFkZcPNDQ38maLVFhuNeuZeFQnUCRLEM8FvMs4');
     console.info('role', role);
 
     await delay(100000);
