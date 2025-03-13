@@ -1,5 +1,7 @@
+import { FPNumber } from '@sora-substrate/math';
 import { PriceVariant } from '@sora-substrate/liquidity-proxy';
 import type { SubmittableExtrinsic } from '@polkadot/api-base/types';
+import { combineLatest, map, distinctUntilChanged, Observable, Subscription } from 'rxjs';
 
 import { ApiAccount } from './apiAccount';
 import { DexId } from './dex/consts';
@@ -13,6 +15,28 @@ import type { NetworkFeesObject } from './types';
 const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
 
 export class BaseApi<T = void> extends ApiAccount<T> {
+  /**
+   * Whitelist assets in which fees are allowable to be calculated.
+   * (will be populated at init)
+   *
+   */
+  public feeAssets = [XOR.address];
+
+  /**
+   * Subscription that keeps track of price of selected fee asset
+   * and updates NetworkFee object.
+   *
+   */
+  // @ts-expect-error cannot find find Nullable
+  private feeRateSubscription: Nullable<Subscription> = null;
+
+  /**
+   * Unchanged network fee object in XOR to calculate fees in any other
+   * token from `this.feeAssets` list
+   *
+   */
+  private _vectorFee = {} as NetworkFeesObject;
+
   /**
    * Network fee values which can be used right after `calcStaticNetworkFees` method.
    *
@@ -230,10 +254,56 @@ export class BaseApi<T = void> extends ApiAccount<T> {
       const extrinsic = this.getEmptyExtrinsic(operation);
 
       if (extrinsic) {
-        this.NetworkFee[operation] = await this.getTransactionFee(extrinsic);
+        // to calculate more precisely
+        const wrappedXorlessExtrinsic = this.api.tx.xorFee.xorlessCall(extrinsic, this.feeAsset);
+        this.NetworkFee[operation] = await this.getTransactionFee(wrappedXorlessExtrinsic);
       }
     });
 
     await Promise.allSettled(operationsPromises);
+    this._vectorFee = Object.freeze({ ...this.NetworkFee });
+  }
+
+  /**
+   * Getting list of allowed fee assets to choose from (used in UI).
+   *
+   */
+  public async fetchAssetsForFee(): Promise<void> {
+    const assetList = [];
+    const data = await this.api.query.xorFee.whitelistTokensForFee();
+
+    for (const record of data) {
+      assetList.push(record.code?.toString());
+    }
+
+    this.feeAssets = [...this.feeAssets, ...assetList];
+  }
+
+  // needs to be called every time new asset fee set (in UI)
+  public updateOnRateForAssetFee(): void {
+    console.log('this.NetworkFee before', this.NetworkFee);
+
+    this.feeRateSubscription?.unsubscribe();
+
+    if (this.feeAsset === XOR.address) {
+      this.NetworkFee = this._vectorFee;
+      return;
+    }
+
+    const operations = Object.keys(this._vectorFee) as Operation[];
+
+    this.feeRateSubscription = this.apiRx.query.priceTools.fastPriceInfos(this.feeAsset).subscribe((value) => {
+      const info = value.unwrapOr(null);
+
+      const averagePrice = info?.buy?.averagePrice.toString() ?? '0';
+
+      operations.map((operation) => {
+        this.NetworkFee[operation] = FPNumber.fromCodecValue(this._vectorFee[operation])
+          .mul(new FPNumber(averagePrice, this.chainDecimals))
+          .toCodecString();
+      });
+
+      console.log('this.NetworkFee after', this.NetworkFee);
+    });
   }
 }

@@ -39,6 +39,7 @@ import type {
 } from './types';
 import type { OriginalIdentity } from './staking/types';
 import type { CommonPrimitivesAssetId32Override } from './typeOverrides';
+import { XOR } from './assets/consts';
 
 // We don't need to know real account address for checking network fees
 const mockAccountAddress = 'cnRuw2R6EVgQW3e4h8XeiFym2iU17fNsms15zRGcg9YEJndAs';
@@ -636,6 +637,8 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
   public shouldPairBeLocked = false;
   /** If `true` you might subscribe on extrinsic statuses (`false` by default) */
   public shouldObservableBeUsed = false;
+  /** Asset in which fees will calculated and deducted (XOR by default) */
+  protected feeAsset = XOR.address;
 
   // prettier-ignore
   public async submitApiExtrinsic( // NOSONAR
@@ -676,7 +679,14 @@ export class ApiAccount<T = void> extends WithAccountHistory implements ISubmitE
     historyData?: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    return await this.submitApiExtrinsic(this.api, extrinsic, accountPair, this.signer, historyData, unsigned);
+    return await this.submitApiExtrinsic(
+      this.api,
+      this.api.tx.xorFee.xorlessCall(extrinsic, this.feeAsset),
+      accountPair,
+      this.signer,
+      historyData,
+      unsigned
+    );
   }
 
   public async signExtrinsic(
