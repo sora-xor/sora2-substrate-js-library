@@ -220,6 +220,9 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       votingPeriod: u32 & AugmentedConst<ApiType>;
     };
+    denomination: {
+      removeReadPerBlock: u64 & AugmentedConst<ApiType>;
+    };
     electionProviderMultiPhase: {
       /**
        * The minimum amount of improvement to the solution score that defines a solution as
