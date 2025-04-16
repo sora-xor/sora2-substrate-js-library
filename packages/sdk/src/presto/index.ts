@@ -3,6 +3,7 @@ import { Messages } from '../logger';
 import type { Api } from '../api';
 import { Country } from './types';
 import { NumberLike } from '@sora-substrate/math';
+import { PrestoAssets, PrestoSymbols, Role } from './consts';
 
 export class PrestoModule<T> {
   constructor(private readonly root: Api<T>) {}
@@ -113,6 +114,7 @@ export class PrestoModule<T> {
    */
   public async createCropReceipt(
     amount: string,
+    profit: number,
     country: Country,
     closeInitialPeriod: number,
     dateOfIssue: number,
@@ -127,6 +129,7 @@ export class PrestoModule<T> {
     return this.root.submitExtrinsic(
       this.root.api.tx.presto.createCropReceipt(
         amount,
+        profit,
         country,
         closeInitialPeriod,
         dateOfIssue,
@@ -160,5 +163,53 @@ export class PrestoModule<T> {
     assert(this.root.account, Messages.connectWallet);
 
     return this.root.submitExtrinsic(this.root.api.tx.presto.declineCropReceipt(crId), this.root.account.pair);
+  }
+
+  /**
+   * Get role of an account.
+   * @param address provided account address
+   *
+   */
+  public async getRole(address: string): Promise<Role> {
+    assert(this.root.account, Messages.connectWallet);
+
+    const getAddress = (symbol: PrestoSymbols) => PrestoAssets.get(symbol).address;
+
+    const CREDITOR = [getAddress(PrestoSymbols.PRACS), getAddress(PrestoSymbols.PRCRDT)];
+    const INVESTOR = [getAddress(PrestoSymbols.PRACS), getAddress(PrestoSymbols.PRINVST)];
+
+    const addresses = await this.root.assets.getTokensAddressesList(address);
+
+    const isCreditor = CREDITOR.every((address) => addresses.includes(address));
+    if (isCreditor) return Role.Creditor;
+
+    const isInvestor = INVESTOR.every((address) => addresses.includes(address));
+    if (isInvestor) return Role.Investor;
+
+    const managerData = await this.root.api.query.presto.managers();
+    let managers = [];
+
+    for (const chunk of managerData.entries()) {
+      managers.push(chunk[1].toString());
+    }
+
+    const isManager = managers.length ? managers.includes(address) : false;
+    if (isManager) return Role.Manager;
+
+    return Role.Unknown;
+  }
+
+  /**
+   * Assign role to provided address.
+   * @param role role to assign
+   * @param address provided account address
+   *
+   */
+  public assignRole(role: Role, accountAddress: string): Promise<T> {
+    assert(this.root.account, Messages.connectWallet);
+
+    return role === Role.Creditor
+      ? this.root.submitExtrinsic(this.root.api.tx.presto.applyCreditorKyc(accountAddress), this.root.account.pair)
+      : this.root.submitExtrinsic(this.root.api.tx.presto.applyInvestorKyc(accountAddress), this.root.account.pair);
   }
 }
