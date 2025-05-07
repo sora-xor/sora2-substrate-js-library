@@ -132,4 +132,11 @@ export class SystemModule<T> {
       type: Operation.Checkin,
     });
   }
+
+  /** Get the current denomination coefficient */
+  public async getDenominator(): Promise<number> {
+    const api = this.root.api;
+    const denominator = await api.query.denomination.denominator();
+    return denominator.toNumber();
+  }
 }

@@ -90,10 +90,45 @@ async function main(): Promise<void> {
 
     console.info('\n\nVault Creation__________________________');
     console.info(`Network fee: ${FPNumber.fromCodecValue(api.NetworkFee.CreateVault).toString()} XOR`);
+
+    console.info('\n\nCreating MST Account______________________');
+    const secondAccountAddress = 'cnT3RCp1vihUWncRgHvFBz1ior5phHknTnNM3GUPpmtGnWHVW';
+    const mainAccountAddress = api.accountPair.address; // Get main account address
+    console.info(`Main account pair`, api.formatAddress(mainAccountAddress));
+    const accounts = [mainAccountAddress, secondAccountAddress]; // List of signatories
+    const threshold = 2; // Threshold for multisig
+    const mstName = 'My MST Account';
+
+    const mstAddress = api.mst.createMST(accounts, threshold, mstName);
+    console.info('MST Account Address:', mstAddress);
+
+    console.info('\n\nSwitching to MST Account__________________');
+    api.mst.switchAccount(true); // Switch to MST account
+    // api.mst.approveMultisigExtrinsic('0x0sd', 'cns');
+    // const updateMainAccountSwitchedAfterMST = api.accountPair.address;
+    // console.info(`updateMainAccountSwitchedAfterMST`, api.formatAddress(updateMainAccountSwitchedAfterMST));
+    // console.info('previous account that is not the mst is', api.formatAddress(api.previousAccount.pair.address));
+    await api.kensetsu.createVault(DAI, KUSD, 100, 20);
+    await delay(1_000);
+    await api.mst.approveMultisigExtrinsic('0xcs', mstAddress);
+
+    // console.info('History for the mst:', api.historyList[0]);
+    // console.info('now we will switch back to the main account');
+    // console.info('\n\nSwitching to MAIN Account__________________');
+    // api.mst.switchAccount(false);
+    // const switchedBackAccountAddress = api.accountPair.address;
+    // console.info('switchedBackAccountAddress', api.formatAddress(switchedBackAccountAddress));
+    // console.info('\n\nUnlocking Main Account____________________');
+    // api.unlockPair('pass');
+    // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
+    // await delay(1_000);
+    // console.info('History for the main acc:', api.historyList[1]);
+    // console.info('\n\nSwitching to MST Account again__________________');
+    // api.mst.switchAccount(true); // Switch to MST account
     // await api.kensetsu.createVault(DAI, KUSD, 100, 20);
     // await delay();
-    // console.info('History:', api.historyList[0]);
-  }, SORA_ENV.test);
+    // console.info('History for the mst again:', api.historyList[2]);
+  });
 }
 
 main()

@@ -996,6 +996,12 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       WrongUpperBound: AugmentedError<ApiType>;
     };
+    denomination: {
+      /**
+       * This action is not allowed at current stage
+       **/
+      WrongMigrationStage: AugmentedError<ApiType>;
+    };
     dexapi: {
       /**
        * Liquidity source is already disabled
@@ -1241,6 +1247,10 @@ declare module '@polkadot/api-base/types/errors' {
        * A transfer of XOR was expected.
        **/
       ExpectedXORTransfer: AugmentedError<ApiType>;
+      /**
+       * Probably denomination factor is too big and we can't apply it
+       **/
+      FailedToApplyDenomination: AugmentedError<ApiType>;
       /**
        * Failed to get an asset by id.
        **/
