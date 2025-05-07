@@ -57,6 +57,8 @@
 - [preimage](#preimage-pallet)
 - [orderBook](#orderbook-pallet)
 - [kensetsu](#kensetsu-pallet)
+- [presto](#presto-pallet)
+- [denomination](#denomination-pallet)
 - [leafProvider](#leafprovider-pallet)
 - [bridgeProxy](#bridgeproxy-pallet)
 - [bridgeInboundChannel](#bridgeinboundchannel-pallet)
@@ -1414,6 +1416,28 @@ returns: `u16`
 
 <hr>
 
+#### **api.query.xorFee.burntForFee**
+
+> AssetId -> Amount to pay for fee
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `XorFeeAssetFee`
+
+<hr>
+
+#### **api.query.xorFee.whitelistTokensForFee**
+
+> Tokens allowed for xorless execution
+
+arguments: -
+
+returns: `Vec<CommonPrimitivesAssetId32>`
+
+<hr>
+
 #### **api.query.xorFee.smallReferenceAmount**
 
 > Small fee value should be `SmallReferenceAmount` in reference asset id
@@ -1464,6 +1488,14 @@ returns: `u128`
 
 <hr>
 
+#### **api.query.xorFee.remintPeriod**
+
+arguments: -
+
+returns: `u32`
+
+<hr>
+
 ### _Extrinsics_
 
 #### **api.tx.xorFee.updateMultiplier**
@@ -1493,6 +1525,53 @@ arguments:
 arguments:
 
 - newReferenceAmount: `u128`
+<hr>
+
+#### **api.tx.xorFee.xorlessCall**
+
+> Allow use assets from white list to pay for fee
+>
+> # Parameters:
+>
+> - `origin`: caller
+> - `call`: dispatch call for which pay fee
+> - `asset_id`: asset in which pay fee, where None - XOR
+
+arguments:
+
+- call: `Call`
+- assetId: `Option<CommonPrimitivesAssetId32>`
+<hr>
+
+#### **api.tx.xorFee.addAssetToWhiteList**
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.xorFee.removeAssetFromWhiteList**
+
+arguments:
+
+- assetId: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.xorFee.setRandomRemintPeriod**
+
+arguments:
+
+- period: `u32`
+<hr>
+
+#### **api.tx.xorFee.scaleMultiplier**
+
+> Scale the multiplier for weight -> fee conversion.
+> multiplier = multiplier \* factor
+
+arguments:
+
+- factor: `u128`
 <hr>
 
 ## BridgeMultisig pallet
@@ -8773,6 +8852,18 @@ arguments:
 - teamAccount: `AccountId32`
 <hr>
 
+#### **api.tx.demeterFarmingPlatform.activateRemovedPool**
+
+> Activate removed pool
+
+arguments:
+
+- baseAsset: `CommonPrimitivesAssetId32`
+- poolAsset: `CommonPrimitivesAssetId32`
+- rewardAsset: `CommonPrimitivesAssetId32`
+- isFarm: `bool`
+<hr>
+
 ## BagsList pallet
 
 ### _State Queries_
@@ -9530,7 +9621,7 @@ returns: `u16`
 
 arguments:
 
-- key: `OrderBookOrderBookId`
+- key: `CommonPrimitivesOrderBookId`
 
 returns: `OrderBook`
 
@@ -9542,7 +9633,7 @@ returns: `OrderBook`
 
 arguments:
 
-- key: `(OrderBookOrderBookId,u128)`
+- key: `(CommonPrimitivesOrderBookId,u128)`
 
 returns: `OrderBookLimitOrder`
 
@@ -9554,7 +9645,7 @@ returns: `OrderBookLimitOrder`
 
 arguments:
 
-- key: `(OrderBookOrderBookId,CommonBalanceUnit)`
+- key: `(CommonPrimitivesOrderBookId,CommonBalanceUnit)`
 
 returns: `Vec<u128>`
 
@@ -9566,7 +9657,7 @@ returns: `Vec<u128>`
 
 arguments:
 
-- key: `(OrderBookOrderBookId,CommonBalanceUnit)`
+- key: `(CommonPrimitivesOrderBookId,CommonBalanceUnit)`
 
 returns: `Vec<u128>`
 
@@ -9578,7 +9669,7 @@ returns: `Vec<u128>`
 
 arguments:
 
-- key: `OrderBookOrderBookId`
+- key: `CommonPrimitivesOrderBookId`
 
 returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 
@@ -9590,7 +9681,7 @@ returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 
 arguments:
 
-- key: `OrderBookOrderBookId`
+- key: `CommonPrimitivesOrderBookId`
 
 returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 
@@ -9602,7 +9693,7 @@ returns: `BTreeMap<CommonBalanceUnit, CommonBalanceUnit>`
 
 arguments:
 
-- key: `(AccountId32,OrderBookOrderBookId)`
+- key: `(AccountId32,CommonPrimitivesOrderBookId)`
 
 returns: `Vec<u128>`
 
@@ -9616,7 +9707,7 @@ arguments:
 
 - key: `u32`
 
-returns: `Vec<(OrderBookOrderBookId,u128)>`
+returns: `Vec<(CommonPrimitivesOrderBookId,u128)>`
 
 <hr>
 
@@ -9626,7 +9717,7 @@ returns: `Vec<(OrderBookOrderBookId,u128)>`
 
 arguments:
 
-- key: `OrderBookOrderBookId`
+- key: `CommonPrimitivesOrderBookId`
 
 returns: `u128`
 
@@ -9677,7 +9768,7 @@ returns: `u32`
 
 arguments:
 
-- orderBookId: `OrderBookOrderBookId`
+- orderBookId: `CommonPrimitivesOrderBookId`
 - tickSize: `u128`
 - stepLotSize: `u128`
 - minLotSize: `u128`
@@ -9708,7 +9799,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `OrderBookOrderBookId`
+- orderBookId: `CommonPrimitivesOrderBookId`
 <hr>
 
 #### **api.tx.orderBook.updateOrderbook**
@@ -9763,7 +9854,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `OrderBookOrderBookId`
+- orderBookId: `CommonPrimitivesOrderBookId`
 - tickSize: `u128`
 - stepLotSize: `u128`
 - minLotSize: `u128`
@@ -9789,7 +9880,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `OrderBookOrderBookId`
+- orderBookId: `CommonPrimitivesOrderBookId`
 - status: `OrderBookOrderBookStatus`
 <hr>
 
@@ -9818,7 +9909,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `OrderBookOrderBookId`
+- orderBookId: `CommonPrimitivesOrderBookId`
 - price: `u128`
 - amount: `u128`
 - side: `CommonPrimitivesPriceVariant`
@@ -9845,7 +9936,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `OrderBookOrderBookId`
+- orderBookId: `CommonPrimitivesOrderBookId`
 - orderId: `u128`
 <hr>
 
@@ -9868,7 +9959,7 @@ arguments:
 
 arguments:
 
-- limitOrdersToCancel: `Vec<(OrderBookOrderBookId,Vec<u128>)>`
+- limitOrdersToCancel: `Vec<(CommonPrimitivesOrderBookId,Vec<u128>)>`
 <hr>
 
 #### **api.tx.orderBook.executeMarketOrder**
@@ -9891,7 +9982,7 @@ arguments:
 
 arguments:
 
-- orderBookId: `OrderBookOrderBookId`
+- orderBookId: `CommonPrimitivesOrderBookId`
 - direction: `CommonPrimitivesPriceVariant`
 - amount: `u128`
 <hr>
@@ -10327,6 +10418,387 @@ arguments:
 
 - stablecoinAssetId: `CommonPrimitivesAssetId32`
 - newMinimalStabilityFeeAccrue: `u128`
+<hr>
+
+## Presto pallet
+
+### _State Queries_
+
+#### **api.query.presto.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.presto.managers**
+
+> Presto managers
+
+arguments: -
+
+returns: `Vec<AccountId32>`
+
+<hr>
+
+#### **api.query.presto.auditors**
+
+> Presto auditors
+
+arguments: -
+
+returns: `Vec<AccountId32>`
+
+<hr>
+
+#### **api.query.presto.lastCropReceiptId**
+
+> Counter to generate new Crop Receipt Ids
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.presto.cropReceipts**
+
+> Crop receipts
+
+arguments:
+
+- key: `u64`
+
+returns: `PrestoCropReceipt`
+
+<hr>
+
+#### **api.query.presto.cropReceiptsContent**
+
+> Crop receipts content
+
+arguments:
+
+- key: `u64`
+
+returns: `PrestoCropReceiptCropReceiptContent`
+
+<hr>
+
+#### **api.query.presto.userCropReceipts**
+
+> Crop receipts index by user
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `Vec<u64>`
+
+<hr>
+
+#### **api.query.presto.lastRequestId**
+
+> Counter to generate new Request Ids
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.presto.requests**
+
+> Requests
+
+arguments:
+
+- key: `u64`
+
+returns: `PrestoRequestsRequest`
+
+<hr>
+
+#### **api.query.presto.userRequests**
+
+> Requests index by users
+
+arguments:
+
+- key: `AccountId32`
+
+returns: `Vec<u64>`
+
+<hr>
+
+#### **api.query.presto.lastCouponId**
+
+> Counter to generate new Coupon Ids
+
+arguments: -
+
+returns: `u64`
+
+<hr>
+
+#### **api.query.presto.coupons**
+
+> Coupons
+
+arguments:
+
+- key: `CommonPrimitivesAssetId32`
+
+returns: `PrestoCouponInfo`
+
+<hr>
+
+#### **api.query.presto.cropReceiptToCoupon**
+
+> Index to map Crop Receipt with emitted Coupon
+
+arguments:
+
+- key: `u64`
+
+returns: `CommonPrimitivesAssetId32`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.presto.addPrestoManager**
+
+arguments:
+
+- manager: `AccountId32`
+<hr>
+
+#### **api.tx.presto.removePrestoManager**
+
+arguments:
+
+- manager: `AccountId32`
+<hr>
+
+#### **api.tx.presto.addPrestoAuditor**
+
+arguments:
+
+- auditor: `AccountId32`
+<hr>
+
+#### **api.tx.presto.removePrestoAuditor**
+
+arguments:
+
+- auditor: `AccountId32`
+<hr>
+
+#### **api.tx.presto.applyInvestorKyc**
+
+arguments:
+
+- investor: `AccountId32`
+<hr>
+
+#### **api.tx.presto.applyCreditorKyc**
+
+arguments:
+
+- creditor: `AccountId32`
+<hr>
+
+#### **api.tx.presto.removeInvestorKyc**
+
+arguments:
+
+- investor: `AccountId32`
+<hr>
+
+#### **api.tx.presto.removeCreditorKyc**
+
+arguments:
+
+- creditor: `AccountId32`
+<hr>
+
+#### **api.tx.presto.mintPrestoUsd**
+
+arguments:
+
+- amount: `u128`
+<hr>
+
+#### **api.tx.presto.burnPrestoUsd**
+
+arguments:
+
+- amount: `u128`
+<hr>
+
+#### **api.tx.presto.sendPrestoUsd**
+
+arguments:
+
+- amount: `u128`
+- to: `AccountId32`
+<hr>
+
+#### **api.tx.presto.createDepositRequest**
+
+arguments:
+
+- amount: `u128`
+- paymentReference: `Bytes`
+- details: `Option<Bytes>`
+<hr>
+
+#### **api.tx.presto.createWithdrawRequest**
+
+arguments:
+
+- amount: `u128`
+- details: `Option<Bytes>`
+<hr>
+
+#### **api.tx.presto.cancelRequest**
+
+arguments:
+
+- requestId: `u64`
+<hr>
+
+#### **api.tx.presto.approveDepositRequest**
+
+arguments:
+
+- requestId: `u64`
+<hr>
+
+#### **api.tx.presto.approveWithdrawRequest**
+
+arguments:
+
+- requestId: `u64`
+- paymentReference: `Bytes`
+<hr>
+
+#### **api.tx.presto.declineRequest**
+
+arguments:
+
+- requestId: `u64`
+<hr>
+
+#### **api.tx.presto.createCropReceipt**
+
+arguments:
+
+- amount: `u128`
+- profit: `Permill`
+- country: `PrestoCropReceiptCountry`
+- closeInitialPeriod: `u64`
+- dateOfIssue: `u64`
+- placeOfIssue: `Bytes`
+- debtor: `Bytes`
+- creditor: `Bytes`
+- perfomanceTime: `u64`
+- data: `Bytes`
+<hr>
+
+#### **api.tx.presto.rateCropReceipt**
+
+arguments:
+
+- cropReceiptId: `u64`
+- rating: `PrestoCropReceiptRating`
+<hr>
+
+#### **api.tx.presto.declineCropReceipt**
+
+arguments:
+
+- cropReceiptId: `u64`
+<hr>
+
+#### **api.tx.presto.publishCropReceipt**
+
+arguments:
+
+- cropReceiptId: `u64`
+- supply: `u128`
+<hr>
+
+#### **api.tx.presto.payOffCropReceipt**
+
+arguments:
+
+- cropReceiptId: `u64`
+<hr>
+
+#### **api.tx.presto.claimRefund**
+
+arguments:
+
+- couponAssetId: `CommonPrimitivesAssetId32`
+- couponAmount: `u128`
+<hr>
+
+## Denomination pallet
+
+### _State Queries_
+
+#### **api.query.denomination.palletVersion**
+
+> Returns the current pallet version from storage
+
+arguments: -
+
+returns: `u16`
+
+<hr>
+
+#### **api.query.denomination.currentMigrationStage**
+
+arguments: -
+
+returns: `DenominationMigrationStage`
+
+<hr>
+
+#### **api.query.denomination.removeAccountsCursor**
+
+arguments: -
+
+returns: `Bytes`
+
+<hr>
+
+#### **api.query.denomination.denominator**
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+### _Extrinsics_
+
+#### **api.tx.denomination.init**
+
+arguments: -
+
+<hr>
+
+#### **api.tx.denomination.startDenomination**
+
+arguments:
+
+- denominator: `u128`
 <hr>
 
 ## LeafProvider pallet
@@ -11985,6 +12457,18 @@ returns: `BTreeMap<CommonPrimitivesAssetId32, ApolloPlatformBorrowingPosition>`
 
 <hr>
 
+#### **api.query.apolloPlatform.userTotalCollateral**
+
+> User AccountId -> Collateral Asset -> Total Collateral Amount
+
+arguments:
+
+- key: `(AccountId32,CommonPrimitivesAssetId32)`
+
+returns: `u128`
+
+<hr>
+
 #### **api.query.apolloPlatform.poolData**
 
 arguments:
@@ -12036,6 +12520,14 @@ returns: `u128`
 #### **api.query.apolloPlatform.borrowingRewards**
 
 > Default borrowing rewards
+
+arguments: -
+
+returns: `u128`
+
+<hr>
+
+#### **api.query.apolloPlatform.collateralFactor**
 
 arguments: -
 
@@ -12201,6 +12693,15 @@ arguments:
 - collateralAsset: `CommonPrimitivesAssetId32`
 - collateralAmount: `u128`
 - borrowingAsset: `CommonPrimitivesAssetId32`
+<hr>
+
+#### **api.tx.apolloPlatform.changeCollateralFactor**
+
+> Change rewards amount
+
+arguments:
+
+- amount: `u128`
 <hr>
 
 ## ExtendedAssets pallet
@@ -12758,7 +13259,7 @@ arguments:
 
 - bidsOwner: `AccountId32`
 - asksOwner: `AccountId32`
-- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookOrderBookAttributes,QaToolsPalletToolsOrderBookFillInput)>`
+- settings: `Vec<(CommonPrimitivesOrderBookId,QaToolsPalletToolsOrderBookOrderBookAttributes,QaToolsPalletToolsOrderBookFillInput)>`
 <hr>
 
 #### **api.tx.qaTools.orderBookFillBatch**
@@ -12778,7 +13279,7 @@ arguments:
 
 - bidsOwner: `AccountId32`
 - asksOwner: `AccountId32`
-- settings: `Vec<(OrderBookOrderBookId,QaToolsPalletToolsOrderBookFillInput)>`
+- settings: `Vec<(CommonPrimitivesOrderBookId,QaToolsPalletToolsOrderBookFillInput)>`
 <hr>
 
 #### **api.tx.qaTools.xykInitialize**
@@ -12853,6 +13354,30 @@ arguments:
 
 - assetPerXor: `QaToolsPalletToolsPriceToolsAssetPrices`
 - assetId: `QaToolsInputAssetId`
+<hr>
+
+#### **api.tx.qaTools.prestoInitialize**
+
+> Allows to initialize necessary Presto data (assets, DEX etc.) in testnet without migration.
+>
+> Parameters:
+>
+> - `origin`: Root
+
+arguments: -
+
+<hr>
+
+#### **api.tx.qaTools.prestoClear**
+
+> Allows to clear all Presto data (assets, DEX etc.) in testnet without migration.
+>
+> Parameters:
+>
+> - `origin`: Root
+
+arguments: -
+
 <hr>
 
 ## Author pallet
