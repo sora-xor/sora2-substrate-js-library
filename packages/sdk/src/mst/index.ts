@@ -55,11 +55,7 @@ export class MstModule<T> {
    */
   public getMstAccount(address: string): KeyringAddress | undefined {
     const keyring = this.root.keyring; // Access keyring via the getter
-    console.info('we are in getMstAccount');
-    console.info('the keyring', keyring);
     const multisigAccounts = keyring.getAddresses().filter(({ meta }) => meta.isMultisig);
-    console.info('multisigAccounts', multisigAccounts);
-    console.info('just addresses', keyring.getAddresses());
     const multisigAccount = multisigAccounts.find((account) => {
       const accountAddress = this.root.formatAddress(account.address, false);
       const targetAddress = this.root.formatAddress(address, false);
@@ -159,7 +155,6 @@ export class MstModule<T> {
     historyData: HistoryItem,
     unsigned = false
   ): Promise<T> {
-    console.info('we are in submitMultisigExtrinsic');
     const callHash = call.method.hash;
     const multisigAccount = this.getMstAccount(multisigAccountPair.address);
     if (!multisigAccount) {
@@ -417,8 +412,6 @@ export class MstModule<T> {
       const maxBlockProofSize = maxBlockWeights.maxBlock.proofSize.toBn();
       const finalRefTime = BN.min(adjustedRefTime, maxBlockRefTime);
       const finalProofSize = BN.min(adjustedProofSize, maxBlockProofSize);
-      console.info('Final RefTime (after min with maxBlock):', finalRefTime.toString());
-      console.info('Final ProofSize (after min with maxBlock):', finalProofSize.toString());
 
       return {
         finalProofSize,
@@ -485,24 +478,8 @@ export class MstModule<T> {
   }
 
   public async subscribeOnPendingTxs(mstAccount: string): Promise<HistoryItem[] | null> {
-    // callData преобразование в historyItem
-    // 2. [AccountId32, U8aFixed] - 2nd (U8aFixed) is callHash
-    // 3. 'someData' below contains block number where this TX was created
-    // 4. request extrinsics from this block (system.getExtrinsicsFromBlock)
-    // 5. find needed extrinsic (with tx.system.remark event + multisig.approveAsMulti event)
-    // 6. get the data from system.remark, decrypt it. it'll be represented as callData
-    // 6.1 ensure that hash(callData) is the same as callHash
-    // Other methods
-    // 7. show it to the user (getHistoryByCallData)
-    // 8. user approves or declines:
-    // 8.1. if the TX was not the last from threshold - approveAsMulti(callHash)
-    // 8.2. if the TX was the last from threshold - asMulti(callData)
-
-    // !!!! Users should have an ability to see callData in UI in case they don't use Fearless Wallet
-    // !!!! We should block the flow where user doesn't use Fearless Wallet | Desktop
     try {
       const pendingData = await this.getPendingMultisigTransactions(mstAccount);
-      console.info('here is pendingData', pendingData);
       const pendingTransactions: HistoryItem[] = [];
 
       for (const [key, multisigInfo] of pendingData) {
@@ -550,15 +527,10 @@ export class MstModule<T> {
     blockTimestamp: number,
     mstAccount: string
   ): Promise<HistoryItem> {
-    console.info('we are in parseCallDataToHistoryItem');
     const decodedCall = this.root.api.registry.createType('Call', callData);
-    console.info('here is decondedCall', decodedCall);
     const method = decodedCall.method;
-    console.info('here is method', method);
     const section = decodedCall.section;
-    console.info('here is section', section);
     const args = decodedCall.args;
-    console.info('here is args', args);
 
     let historyItem: HistoryItem = {
       id: '',
@@ -663,11 +635,9 @@ export class MstModule<T> {
         let rawInputAmount: string;
         let rawOutputAmount: string;
         if (swapAmount.isWithDesiredInput) {
-          console.info('Swap amount type: WithDesiredInput');
           rawInputAmount = swapAmount.asWithDesiredInput.desiredAmountIn.toString();
           rawOutputAmount = swapAmount.asWithDesiredInput.minAmountOut.toString();
         } else if (swapAmount.isWithDesiredOutput) {
-          console.info('Swap amount type: WithDesiredOutput');
           rawInputAmount = swapAmount.asWithDesiredOutput.maxAmountIn.toString();
           rawOutputAmount = swapAmount.asWithDesiredOutput.desiredAmountOut.toString();
         } else {
@@ -691,7 +661,6 @@ export class MstModule<T> {
       }
       case Operation.AddLiquidity:
       case Operation.RemoveLiquidity: {
-        console.info('we are in AddLiquidity or RemoveLiquidity');
         const assetAIdObj = args[1].toHuman() as { code: string };
         const assetBIdObj = args[2].toHuman() as { code: string };
         const assetAId = assetAIdObj.code || args[1].toString();
@@ -733,7 +702,6 @@ export class MstModule<T> {
 
       case Operation.DemeterFarmingDepositLiquidity:
       case Operation.DemeterFarmingWithdrawLiquidity: {
-        console.info('we are in DemeterFarmingDepositLiquidity or DemeterFarmingWithdrawLiquidity');
         const isDeposit = historyItem.type === Operation.DemeterFarmingDepositLiquidity;
         const rewardPoolIdObj = args[0].toHuman() as { code: string };
         const assetIdObj = args[1].toHuman() as { code: string };
