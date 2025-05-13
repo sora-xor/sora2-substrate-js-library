@@ -166,7 +166,6 @@ export class Api<T = void> extends BaseApi<T> {
     if (isMultisig) {
       let mainAccountPair: KeyringPair | null = null;
       if (this.accountStorage?.get('previousAccountAddress')) {
-        console.info('this.accountStorage?.get previousAccountAddress exists');
         const previousAccountAddress = this.accountStorage?.get('previousAccountAddress');
         mainAccountPair = this.keyring.getPair(previousAccountAddress);
       } else {
