@@ -137,6 +137,6 @@ export class SystemModule<T> {
   public async getDenominator(): Promise<FPNumber> {
     const api = this.root.api;
     const denominator = await api.query.denomination.denominator();
-    return new FPNumber(denominator);
+    return new FPNumber(denominator, 1);
   }
 }
