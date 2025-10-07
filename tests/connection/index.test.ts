@@ -1,16 +1,66 @@
-import { ApiPromise, WsProvider } from '@polkadot/api';
 import { Connection, ConnectionRunOptions } from '@sora-substrate/connection';
 import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
+import type { ApiPromise } from '@polkadot/api';
+import type { ApiOptions } from '@polkadot/api/types';
+import type { WsProvider } from '@polkadot/rpc-provider';
+
+class MockWsProvider {
+  public endpoint: string;
+  public autoConnect: number | false;
+
+  constructor(endpoint: string, autoConnect: number | false) {
+    this.endpoint = endpoint;
+    this.autoConnect = autoConnect;
+  }
+}
+
+class MockApiPromise {
+  public static instances: MockApiPromise[] = [];
+
+  public isConnected = false;
+  public readonly provider: MockWsProvider;
+  public readonly options: ApiOptions;
+  public readonly on = jest.fn();
+  public readonly off = jest.fn();
+
+  public readonly isReady: Promise<MockApiPromise>;
+  public readonly isReadyOrError: Promise<MockApiPromise>;
+
+  constructor(options: ApiOptions & { provider: MockWsProvider }) {
+    this.provider = options.provider;
+    this.options = options;
+    this.isReady = Promise.resolve(this);
+    this.isReadyOrError = Promise.resolve(this);
+
+    if (this.provider.autoConnect !== false) {
+      this.isConnected = true;
+    }
+
+    MockApiPromise.instances.push(this);
+  }
+
+  public connect = jest.fn(async () => {
+    this.isConnected = true;
+  });
+
+  public disconnect = jest.fn(async () => {
+    this.isConnected = false;
+  });
+}
+
+const MockApiPromiseCtor = MockApiPromise as unknown as typeof ApiPromise;
+const MockWsProviderCtor = MockWsProvider as unknown as typeof WsProvider;
 
 describe('Connection', () => {
   let connection: Connection;
 
   beforeEach(() => {
-    connection = new Connection(ApiPromise, WsProvider, {});
+    connection = new Connection(MockApiPromiseCtor, MockWsProviderCtor, {} as ApiOptions);
   });
 
   afterEach(async () => {
     await connection.close();
+    MockApiPromise.instances.length = 0;
   });
 
   it('should open connection successfully', async () => {
@@ -27,7 +77,7 @@ describe('Connection', () => {
     expect(connection.loading).toBe(false);
     expect(connection.opened).toBe(true);
     expect(connection.endpoint).toBe(endpoint);
-    expect(connection.api).toBeInstanceOf(ApiPromise);
+    expect(connection.api).toBeInstanceOf(MockApiPromise);
   });
 
   it('should throw an error if endpoint is not set', async () => {
@@ -41,5 +91,6 @@ describe('Connection', () => {
     expect(connection.opened).toBe(false);
     expect(connection.endpoint).toBe('');
     expect(connection.api).toBeNull();
+    expect(MockApiPromise.instances[0]?.disconnect).toHaveBeenCalled();
   });
 });

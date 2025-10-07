@@ -1,13 +1,7 @@
 import type { ApiPromise } from '@polkadot/api';
 import type { WsProvider } from '@polkadot/rpc-provider';
 import type { ApiInterfaceEvents, ApiOptions } from '@polkadot/api/types';
-import type { ProviderInterfaceEmitCb, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
-
-// Non-exported types from `@polkadot/rpc-provider/types`
-interface SubscriptionHandler {
-  callback: ProviderInterfaceCallback;
-  type: string;
-}
+import type { ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
 
 type ConnectionEventListener = [ApiInterfaceEvents, ProviderInterfaceEmitCb];
 

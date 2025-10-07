@@ -1,4 +1,4 @@
 import type { Definitions } from '@polkadot/types/types';
-import ceresTokenLocker from '@sora-substrate/type-definitions/ceresTokenLocker';
+import ceresTokenLocker from '../../../../type-definitions/src/ceresTokenLocker.ts';
 
 export default ceresTokenLocker as Definitions;

@@ -1,4 +1,4 @@
 import type { Definitions } from '@polkadot/types/types';
-import ceresStaking from '@sora-substrate/type-definitions/ceresStaking';
+import ceresStaking from '../../../../type-definitions/src/ceresStaking.ts';
 
 export default ceresStaking as Definitions;

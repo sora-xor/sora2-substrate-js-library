@@ -1,0 +1,44 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./build",
+    "rootDir": "./src",
+    "baseUrl": "../..",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "paths": {
+      "@polkadot/types/lookup": ["packages/types/src/interfaces/types-lookup.ts"],
+      "@sora-substrate/api": ["packages/api/build"],
+      "@sora-substrate/api/*": ["packages/api/build/*"],
+      "@sora-substrate/types": ["packages/types/build"],
+      "@sora-substrate/types/*": ["packages/types/build/*"],
+      "@sora-substrate/type-definitions": ["packages/type-definitions/build"],
+      "@sora-substrate/type-definitions/*": ["packages/type-definitions/build/*"],
+      "@sora-substrate/sdk": ["packages/sdk/src"],
+      "@sora-substrate/sdk/*": ["packages/sdk/src/*"],
+      "@sora-substrate/math": ["packages/math/build"],
+      "@sora-substrate/math/*": ["packages/math/build/*"],
+      "@sora-substrate/liquidity-proxy": ["packages/liquidity-proxy/build"],
+      "@sora-substrate/liquidity-proxy/*": ["packages/liquidity-proxy/build/*"],
+      "@sora-substrate/connection": ["packages/connection/build"],
+      "@sora-substrate/connection/*": ["packages/connection/build/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["**/*.spec.ts", "**/*.test.ts"],
+  "references": [
+    { "path": "../api/tsconfig.build.json" },
+    { "path": "../connection/tsconfig.build.json" },
+    { "path": "../liquidity-proxy/tsconfig.build.json" },
+    { "path": "../math/tsconfig.build.json" },
+    { "path": "../types/tsconfig.build.json" }
+  ]
+}

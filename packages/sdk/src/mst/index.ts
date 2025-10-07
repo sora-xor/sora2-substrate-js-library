@@ -617,7 +617,8 @@ export class MstModule<T> {
         const assetIdHuman = assetId.toHuman();
 
         if (typeof assetIdHuman === 'object' && assetIdHuman !== null && 'code' in assetIdHuman) {
-          assetAddress = assetIdHuman.code != null ? assetIdHuman.code.toString() : '';
+          const code = (assetIdHuman as Record<string, unknown>)['code'];
+          assetAddress = code != null ? code.toString() : '';
         } else if (typeof assetIdHuman === 'string') {
           assetAddress = assetIdHuman;
         } else {
@@ -641,10 +642,10 @@ export class MstModule<T> {
 
         break;
       case Operation.Swap: {
-        const inputAssetIdObj = args[1].toHuman() as { code: string };
-        const outputAssetIdObj = args[2].toHuman() as { code: string };
-        const inputAssetId = inputAssetIdObj.code || args[1].toString();
-        const outputAssetId = outputAssetIdObj.code || args[2].toString();
+        const inputAssetIdObj = args[1].toHuman() as Record<string, unknown>;
+        const outputAssetIdObj = args[2].toHuman() as Record<string, unknown>;
+        const inputAssetId = (inputAssetIdObj['code'] as string) || args[1].toString();
+        const outputAssetId = (outputAssetIdObj['code'] as string) || args[2].toString();
         const swapAmount = args[3] as SwapAmount;
 
         historyItem.assetAddress = inputAssetId;
@@ -692,10 +693,10 @@ export class MstModule<T> {
       case Operation.AddLiquidity:
       case Operation.RemoveLiquidity: {
         console.info('we are in AddLiquidity or RemoveLiquidity');
-        const assetAIdObj = args[1].toHuman() as { code: string };
-        const assetBIdObj = args[2].toHuman() as { code: string };
-        const assetAId = assetAIdObj.code || args[1].toString();
-        const assetBId = assetBIdObj.code || args[2].toString();
+        const assetAIdObj = args[1].toHuman() as Record<string, unknown>;
+        const assetBIdObj = args[2].toHuman() as Record<string, unknown>;
+        const assetAId = (assetAIdObj['code'] as string) || args[1].toString();
+        const assetBId = (assetBIdObj['code'] as string) || args[2].toString();
         const assetAInfo = await this.root.assets.getAssetInfo(assetAId);
         const assetBInfo = await this.root.assets.getAssetInfo(assetBId);
         if (!assetAInfo || !assetBInfo) {
@@ -735,12 +736,12 @@ export class MstModule<T> {
       case Operation.DemeterFarmingWithdrawLiquidity: {
         console.info('we are in DemeterFarmingDepositLiquidity or DemeterFarmingWithdrawLiquidity');
         const isDeposit = historyItem.type === Operation.DemeterFarmingDepositLiquidity;
-        const rewardPoolIdObj = args[0].toHuman() as { code: string };
-        const assetIdObj = args[1].toHuman() as { code: string };
+        const rewardPoolIdObj = args[0].toHuman() as Record<string, unknown>;
+        const assetIdObj = args[1].toHuman() as Record<string, unknown>;
         const rawAmountCodec = isDeposit ? args[4] : args[3];
         const rawAmount = rawAmountCodec.toString();
-        const rewardPoolId = rewardPoolIdObj.code || args[0].toString();
-        const assetId = assetIdObj.code || args[1].toString();
+        const rewardPoolId = (rewardPoolIdObj['code'] as string) || args[0].toString();
+        const assetId = (assetIdObj['code'] as string) || args[1].toString();
         const rewardPoolAssetInfo = await this.root.assets.getAssetInfo(rewardPoolId);
         const assetInfo = await this.root.assets.getAssetInfo(assetId);
         if (historyItem.type === Operation.DemeterFarmingWithdrawLiquidity && rewardPoolId === assetId) {
@@ -790,8 +791,8 @@ export class MstModule<T> {
         break;
       }
       case Operation.DemeterFarmingGetRewards: {
-        const rewardAssetIdObj = args[2].toHuman() as { code: string };
-        const rewardAssetId = rewardAssetIdObj.code || args[2].toString();
+        const rewardAssetIdObj = args[2].toHuman() as Record<string, unknown>;
+        const rewardAssetId = (rewardAssetIdObj['code'] as string) || args[2].toString();
         const rewardAssetInfo = await this.root.assets.getAssetInfo(rewardAssetId);
         if (!rewardAssetInfo) {
           throw new Error('Failed to fetch asset info for reward or farming assets');
@@ -806,9 +807,9 @@ export class MstModule<T> {
           const marketId = args[0];
           const priceRaw = args[1].toString();
           const amountRaw = args[2].toString();
-          const marketIdHuman = marketId.toHuman() as { base: { code: string }; quote: { code: string } };
-          const baseAssetId = marketIdHuman.base.code;
-          const quoteAssetId = marketIdHuman.quote.code;
+          const marketIdHuman = marketId.toHuman() as Record<string, Record<string, unknown>>;
+          const baseAssetId = marketIdHuman['base']?.['code'] as string | undefined;
+          const quoteAssetId = marketIdHuman['quote']?.['code'] as string | undefined;
 
           if (!baseAssetId || !quoteAssetId) {
             throw new Error('Failed to decode marketId for base or quote assets');
@@ -851,10 +852,10 @@ export class MstModule<T> {
         break;
       }
       case Operation.CreateVault: {
-        const collateralAssetIdObj = args[0].toHuman() as { code: string };
-        const syntheticAssetIdObj = args[2].toHuman() as { code: string };
-        const collateralAssetId = collateralAssetIdObj.code || args[0].toString();
-        const syntheticAssetId = syntheticAssetIdObj.code || args[2].toString();
+        const collateralAssetIdObj = args[0].toHuman() as Record<string, unknown>;
+        const syntheticAssetIdObj = args[2].toHuman() as Record<string, unknown>;
+        const collateralAssetId = (collateralAssetIdObj['code'] as string) || args[0].toString();
+        const syntheticAssetId = (syntheticAssetIdObj['code'] as string) || args[2].toString();
 
         const collateralAmountRaw = args[1].toString();
         const syntheticAmountRaw = args[3].toString();

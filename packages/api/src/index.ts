@@ -40,8 +40,8 @@ export const options = ({
     spec: {
       ...typesBundle.spec,
       sora: {
-        ...soraTypesBundle?.spec?.sora,
-        ...typesBundle?.spec?.sora,
+        ...(soraTypesBundle?.spec?.['sora'] ?? {}),
+        ...(typesBundle?.spec?.['sora'] ?? {}),
       },
     },
   },

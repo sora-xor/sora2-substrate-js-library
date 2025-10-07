@@ -7056,7 +7056,7 @@ export default {
    * Lookup952: denomination::pallet::Error<T>
    **/
   DenominationError: {
-    _enum: ['WrongMigrationStage']
+    _enum: ['WrongMigrationStage', 'InvalidDenominator']
   },
   /**
    * Lookup955: bridge_proxy::BridgeRequest<common::primitives::AssetId32<common::primitives::_allowed_deprecated::PredefinedAssetId>>

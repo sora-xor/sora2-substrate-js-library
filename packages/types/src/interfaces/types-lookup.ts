@@ -7986,7 +7986,8 @@ declare module '@polkadot/types/lookup' {
   /** @name DenominationError (952) */
   interface DenominationError extends Enum {
     readonly isWrongMigrationStage: boolean;
-    readonly type: 'WrongMigrationStage';
+    readonly isInvalidDenominator: boolean;
+    readonly type: 'WrongMigrationStage' | 'InvalidDenominator';
   }
 
   /** @name BridgeProxyBridgeRequest (955) */

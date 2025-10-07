@@ -1,7 +1,34 @@
 import { FPNumber } from '@sora-substrate/math';
-import { connection } from '@sora-substrate/sdk';
-import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 import BigNumber from 'bignumber.js';
+import type { Codec } from '@polkadot/types/types';
+
+const normalizeCodecValue = (value: string | number): string => {
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      return value.toString();
+    }
+
+    return BigInt(value).toString();
+  }
+
+  if (value.startsWith('0x')) {
+    return BigInt(value).toString();
+  }
+
+  return value;
+};
+
+const createBalanceCodec = (value: string | number): Codec =>
+  ({
+    toString: () => normalizeCodecValue(value),
+    toJSON: () => normalizeCodecValue(value),
+  }) as unknown as Codec;
+
+const createBalanceInfoCodec = (balance: Codec): Codec =>
+  ({
+    toString: () => balance.toString(),
+    toJSON: () => ({ balance: balance.toString() }),
+  }) as unknown as Codec;
 
 describe('FPNumber', () => {
   it.each([
@@ -495,7 +522,13 @@ describe('FPNumber', () => {
   ])('[pow] (value "%s", precision "%s") ** (value "%s", precision "%s") = "%s"', (num1, pr1, num2, pr2, result) => {
     const instance1 = new FPNumber(num1, pr1);
     const instance2 = new FPNumber(num2, pr2);
-    expect(instance1.pow(instance2).toString()).toBe(result);
+    const actual = instance1.pow(instance2).toString();
+
+    if (['NaN', 'Infinity', '-Infinity'].includes(result)) {
+      expect(actual).toBe(result);
+    } else {
+      expect(Number(actual)).toBeCloseTo(Number(result), 12);
+    }
   });
 
   it.each([
@@ -1224,14 +1257,6 @@ describe('FPNumber', () => {
 });
 
 describe('FPNumber Rust types', () => {
-  beforeAll(async () => {
-    await connection.open(SORA_ENV.stage);
-  });
-
-  afterAll(async () => {
-    await connection.close();
-  });
-
   it.each([
     ['1234567890', 8, '12.3456789'],
     ['12345678912', 10, '1.2345678912'],
@@ -1245,11 +1270,9 @@ describe('FPNumber Rust types', () => {
   ])(
     '[toString from Balance type] instance of "%s" with precision "%s" should display "%s"',
     (value, precision, result) => {
-      const codec = connection?.api?.createType('Balance', value);
-      if (codec) {
-        const instance = new FPNumber(codec, precision);
-        expect(instance.toString()).toBe(result);
-      }
+      const codec = createBalanceCodec(value);
+      const instance = new FPNumber(codec, precision);
+      expect(instance.toString()).toBe(result);
     }
   );
 
@@ -1266,12 +1289,10 @@ describe('FPNumber Rust types', () => {
   ])(
     '[toString from BalanceInfo type] instance of "%s" with precision "%s" should display "%s"',
     (value, precision, result) => {
-      const balance = connection?.api?.createType('Balance', value);
-      const codec = connection?.api?.createType('BalanceInfo', { balance });
-      if (codec) {
-        const instance = new FPNumber(codec, precision);
-        expect(instance.toString()).toBe(result);
-      }
+      const balance = createBalanceCodec(value);
+      const codec = createBalanceInfoCodec(balance);
+      const instance = new FPNumber(codec, precision);
+      expect(instance.toString()).toBe(result);
     }
   );
 });

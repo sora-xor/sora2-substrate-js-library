@@ -1,4 +1,4 @@
 import type { Definitions } from '@polkadot/types/types';
-import liquidityProxy from '@sora-substrate/type-definitions/liquidityProxy';
+import liquidityProxy from '../../../../type-definitions/src/liquidityProxy.ts';
 
 export default liquidityProxy as Definitions;

@@ -208,7 +208,7 @@ export class WithAccountPair extends WithConnectionApi {
    * Set account data
    * @param account
    */
-  public setAccount(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
+  public setAccount(account: CreateResult, _name?: string, _source?: string, _isExternal?: boolean): void {
     this.account = account;
   }
 
@@ -531,7 +531,7 @@ export class WithAccountStorage extends WithStorage {
     }
   }
 
-  public override setAccount(account: CreateResult, name?: string, source?: string, isExternal?: boolean): void {
+  public override setAccount(account: CreateResult, _name?: string, _source?: string, _isExternal?: boolean): void {
     super.setAccount(account);
     this.initAccountStorage();
   }

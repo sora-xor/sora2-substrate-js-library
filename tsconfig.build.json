@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/api/tsconfig.build.json" },
+    { "path": "./packages/connection/tsconfig.build.json" },
+    { "path": "./packages/liquidity-proxy/tsconfig.build.json" },
+    { "path": "./packages/math/tsconfig.build.json" },
+    { "path": "./packages/sdk/tsconfig.build.json" },
+    { "path": "./packages/type-definitions/tsconfig.build.json" },
+    { "path": "./packages/types/tsconfig.build.json" }
+  ]
+}

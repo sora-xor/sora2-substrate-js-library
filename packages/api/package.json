@@ -8,8 +8,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@open-web3/orml-api-derive": "1.1.4",
-    "@polkadot/api": "9.14.2",
+    "@open-web3/orml-api-derive": "2.0.1",
+    "@polkadot/api": "16.4.8",
     "@sora-substrate/types": "1.46.0"
   }
 }

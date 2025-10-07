@@ -9,7 +9,7 @@ import type { ApiTypes, AugmentedCall, DecoratedCallBase } from '@polkadot/api-b
 import type { Bytes, Null, Option, Result, Vec, u32 } from '@polkadot/types-codec';
 import type { AnyNumber, ITuple } from '@polkadot/types-codec/types';
 import type { BabeEquivocationProof, BabeGenesisConfiguration, Epoch, OpaqueKeyOwnershipProof } from '@polkadot/types/interfaces/babe';
-import type { ValidatorSet } from '@polkadot/types/interfaces/beefy';
+import type { BeefyEquivocationProof, ValidatorSet, ValidatorSetId } from '@polkadot/types/interfaces/beefy';
 import type { CheckInherentsResult, InherentData } from '@polkadot/types/interfaces/blockbuilder';
 import type { BlockHash } from '@polkadot/types/interfaces/chain';
 import type { AuthorityId } from '@polkadot/types/interfaces/consensus';
@@ -18,7 +18,7 @@ import type { AuthorityList, GrandpaEquivocationProof, SetId } from '@polkadot/t
 import type { OpaqueMetadata } from '@polkadot/types/interfaces/metadata';
 import type { MmrBatchProof, MmrEncodableOpaqueLeaf, MmrError, MmrLeafIndex, MmrProof } from '@polkadot/types/interfaces/mmr';
 import type { FeeDetails, RuntimeDispatchInfo } from '@polkadot/types/interfaces/payment';
-import type { AccountId, Balance, Block, Hash, Header, Index, KeyTypeId, Slot, Weight } from '@polkadot/types/interfaces/runtime';
+import type { AccountId, Balance, Block, BlockNumber, Hash, Header, Index, KeyTypeId, Slot, Weight } from '@polkadot/types/interfaces/runtime';
 import type { RuntimeVersion } from '@polkadot/types/interfaces/state';
 import type { ApplyExtrinsicResult } from '@polkadot/types/interfaces/system';
 import type { TransactionSource, TransactionValidity } from '@polkadot/types/interfaces/txqueue';
@@ -65,6 +65,18 @@ declare module '@polkadot/api-base/types/calls' {
     };
     /** 0x49eaaf1b548a0cb0/1 */
     beefyApi: {
+      /**
+       * Return the block number where BEEFY consensus is enabled/started
+       **/
+      beefyGenesis: AugmentedCall<ApiType, () => Observable<Option<BlockNumber>>>;
+      /**
+       * Generates a proof of key ownership for the given authority in the given set.
+       **/
+      generateKeyOwnershipProof: AugmentedCall<ApiType, (setId: ValidatorSetId | AnyNumber | Uint8Array, authorityId: AuthorityId | string | Uint8Array) => Observable<Option<OpaqueKeyOwnershipProof>>>;
+      /**
+       * Submits an unsigned extrinsic to report an equivocation.
+       **/
+      submitReportEquivocationUnsignedExtrinsic: AugmentedCall<ApiType, (equivocationProof: BeefyEquivocationProof | { first?: any; second?: any } | string | Uint8Array, keyOwnerProof: OpaqueKeyOwnershipProof | string | Uint8Array) => Observable<Option<Null>>>;
       /**
        * Return the current active BEEFY validator set
        **/

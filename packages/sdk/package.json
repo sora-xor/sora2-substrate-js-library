@@ -8,18 +8,23 @@
     "access": "public"
   },
   "dependencies": {
-    "@polkadot/ui-keyring": "2.12.1",
+    "@polkadot/keyring": "^13.5.6",
+    "@polkadot/networks": "^13.5.6",
+    "@polkadot/ui-keyring": "3.16.1",
+    "@polkadot/ui-settings": "3.16.1",
+    "@polkadot/util": "^13.5.6",
+    "@polkadot/util-crypto": "^13.5.6",
     "@sora-substrate/api": "1.46.0",
     "@sora-substrate/connection": "1.46.0",
     "@sora-substrate/liquidity-proxy": "1.46.0",
     "@sora-substrate/math": "1.46.0",
     "@sora-substrate/types": "1.46.0",
-    "axios": "^1.7.7",
+    "axios": "^1.12.2",
     "crypto-js": "^4.2.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
-    "@types/lodash": "^4.17.13"
+    "@types/lodash": "^4.17.20"
   }
 }

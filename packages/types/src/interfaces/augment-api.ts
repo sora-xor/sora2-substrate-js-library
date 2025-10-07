@@ -1,10 +1,10 @@
 // Auto-generated via `yarn polkadot-types-from-chain`, do not edit
 /* eslint-disable */
 
-import './augment-api-consts';
-import './augment-api-errors';
-import './augment-api-events';
-import './augment-api-query';
-import './augment-api-tx';
-import './augment-api-rpc';
-import './augment-api-runtime';
+import './augment-api-consts.ts';
+import './augment-api-errors.ts';
+import './augment-api-events.ts';
+import './augment-api-query.ts';
+import './augment-api-tx.ts';
+import './augment-api-rpc.ts';
+import './augment-api-runtime.ts';

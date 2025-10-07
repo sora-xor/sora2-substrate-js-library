@@ -24,6 +24,26 @@ export * from './apiAccount';
 export * from './BaseApi';
 export * from './storage';
 export * from './http';
-export * from './types';
+export { TransactionStatus, Operation } from './types';
+export type {
+  OnChainIdentity,
+  AccountWithOptions,
+  SaveHistoryOptions,
+  ErrorMessageFields,
+  NetworkFeesObject,
+  History,
+  IBridgeTransaction,
+  HistoryItem,
+  CombinedHistoryItem,
+  FnResult,
+  ExtrinsicEvent,
+  ISubmitExtrinsic,
+  AccountHistory,
+  Cosigners,
+  EncryptedKeyForCosigner,
+  FinalEncryptedStructure,
+  CosignerKeyPair,
+} from './types';
 
-export { FPNumber, CodecString } from '@sora-substrate/math';
+export { FPNumber } from '@sora-substrate/math';
+export type { CodecString } from '@sora-substrate/math';

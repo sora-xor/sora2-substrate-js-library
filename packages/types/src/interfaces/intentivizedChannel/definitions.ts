@@ -1,4 +1,4 @@
 import type { Definitions } from '@polkadot/types/types';
-import intentivizedChannel from '@sora-substrate/type-definitions/intentivizedChannel';
+import intentivizedChannel from '../../../../type-definitions/src/intentivizedChannel.ts';
 
 export default intentivizedChannel as Definitions;

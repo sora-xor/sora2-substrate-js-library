@@ -1,4 +1,4 @@
 import type { Definitions } from '@polkadot/types/types';
-import basicChannel from '@sora-substrate/type-definitions/basicChannel';
+import basicChannel from '../../../../type-definitions/src/basicChannel.ts';
 
 export default basicChannel as Definitions;

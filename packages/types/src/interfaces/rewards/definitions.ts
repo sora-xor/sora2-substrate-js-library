@@ -1,4 +1,4 @@
 import type { Definitions } from '@polkadot/types/types';
-import rewards from '@sora-substrate/type-definitions/rewards';
+import rewards from '../../../../type-definitions/src/rewards.ts';
 
 export default rewards as Definitions;

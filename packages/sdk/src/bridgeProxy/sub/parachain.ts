@@ -10,20 +10,20 @@ import type { Asset } from '../../assets/types';
 
 export class SoraParachainApi {
   public async getParachainId(api: ApiPromise): Promise<number> {
-    const id = (await api.query.parachainInfo.parachainId()) as u32;
+    const id = (await api.query['parachainInfo']['parachainId']()) as u32;
 
     return id.toNumber();
   }
 
   public async getRelayChainBlockNumber(blockHash: string, api: ApiPromise): Promise<number> {
     const apiInstanceAtBlock = await api.at(blockHash);
-    const blockNumber = (await apiInstanceAtBlock.query.parachainSystem.lastRelayChainBlockNumber()) as u32;
+    const blockNumber = (await apiInstanceAtBlock.query['parachainSystem']['lastRelayChainBlockNumber']()) as u32;
 
     return blockNumber.toNumber();
   }
 
   public async getAssetMulilocation(assetId: string, api: ApiPromise): Promise<XcmV3MultiLocation | null> {
-    const multilocation = (await api.query.xcmApp.assetIdToMultilocation(assetId)) as Option<XcmV3MultiLocation>;
+    const multilocation = (await api.query['xcmApp']['assetIdToMultilocation'](assetId)) as Option<XcmV3MultiLocation>;
 
     return multilocation.isSome ? multilocation.unwrap() : null;
   }
@@ -33,7 +33,7 @@ export class SoraParachainApi {
 
     if (!multilocation) return '0';
 
-    const amount = (await api.query.xcmApp.assetMinimumAmount(multilocation)) as Option<u128>;
+    const amount = (await api.query['xcmApp']['assetMinimumAmount'](multilocation)) as Option<u128>;
 
     return amount.isSome ? amount.unwrap().toString() : '0';
   }
@@ -42,6 +42,6 @@ export class SoraParachainApi {
     const account = api.createType('AccountId32', recipient);
     const value = new FPNumber(amount, asset.decimals).toCodecString();
 
-    return api.tx.xcmApp.sendXorToMainnet(account, value);
+    return api.tx['xcmApp']['sendXorToMainnet'](account, value);
   }
 }

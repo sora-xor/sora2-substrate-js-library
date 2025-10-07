@@ -1,4 +1,4 @@
 import type { Definitions } from '@polkadot/types/types';
-import ceresGovernancePlatform from '@sora-substrate/type-definitions/ceresGovernancePlatform';
+import ceresGovernancePlatform from '../../../../type-definitions/src/ceresGovernancePlatform.ts';
 
 export default ceresGovernancePlatform as Definitions;

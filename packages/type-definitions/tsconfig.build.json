@@ -1,19 +1,19 @@
 {
-  "extends": "./node_modules/@polkadot/dev/config/tsconfig.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "strict": false,
-    "noImplicitOverride": false,
-    "noImplicitThis": false,
-    "alwaysStrict": false,
-    "noFallthroughCasesInSwitch": false,
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
     "emitDeclarationOnly": true,
-    "noImplicitAny": false,
-    "noUnusedLocals": false,
-    "allowImportingTsExtensions": true,
-    "baseUrl": ".",
-    "verbatimModuleSyntax": false,
+    "outDir": "./build",
+    "rootDir": "./src",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "baseUrl": "../..",
     "paths": {
       "@polkadot/types/lookup": ["packages/types/src/interfaces/types-lookup.ts"],
       "@sora-substrate/api": ["packages/api/src"],
@@ -30,9 +30,8 @@
       "@sora-substrate/liquidity-proxy/*": ["packages/liquidity-proxy/src/*"],
       "@sora-substrate/connection": ["packages/connection/src"],
       "@sora-substrate/connection/*": ["packages/connection/src/*"]
-    },
-    "skipLibCheck": true,
-    "typeRoots": ["./node_modules/@polkadot/ts", "./node_modules/@types"]
+    }
   },
-  "exclude": ["build/**/*", "**/build/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }

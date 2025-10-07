@@ -998,6 +998,10 @@ declare module '@polkadot/api-base/types/errors' {
     };
     denomination: {
       /**
+       * Resulting denominator is too large
+       **/
+      InvalidDenominator: AugmentedError<ApiType>;
+      /**
        * This action is not allowed at current stage
        **/
       WrongMigrationStage: AugmentedError<ApiType>;
