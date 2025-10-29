@@ -1,8 +1,8 @@
 {
   "extends": "./node_modules/@polkadot/dev/config/tsconfig",
   "compilerOptions": {
-    "module": "none",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "strict": false,
     "noImplicitOverride": false,
     "noImplicitThis": false,
@@ -31,6 +31,7 @@
       "@sora-substrate/connection/*": ["packages/connection/src/*"]
     },
     "skipLibCheck": true,
+    "verbatimModuleSyntax": false,
     "typeRoots": ["./node_modules/@polkadot/ts", "./node_modules/@types"]
   },
   "exclude": ["build/**/*", "**/build/**/*"]

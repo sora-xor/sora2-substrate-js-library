@@ -998,6 +998,10 @@ declare module '@polkadot/api-base/types/errors' {
     };
     denomination: {
       /**
+       * Resulting denominator is too large
+       **/
+      InvalidDenominator: AugmentedError<ApiType>;
+      /**
        * This action is not allowed at current stage
        **/
       WrongMigrationStage: AugmentedError<ApiType>;
@@ -1423,6 +1427,14 @@ declare module '@polkadot/api-base/types/errors' {
        * Request is not finalized on Sidechain.
        **/
       RequestNotFinalizedOnSidechain: AugmentedError<ApiType>;
+      /**
+       * Too many requests queued for the network.
+       **/
+      RequestsQueueFull: AugmentedError<ApiType>;
+      /**
+       * Signatures can only be reset when a request failed or is broken.
+       **/
+      RequestStatusNotResettable: AugmentedError<ApiType>;
       /**
        * The sidechain asset is alredy registered.
        **/

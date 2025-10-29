@@ -1,7 +1,7 @@
 import { FPNumber } from '@sora-substrate/math';
 
 import { isAssetAddress, safeQuoteResult, safeDivide } from '../../utils';
-import { LiquiditySourceTypes, Errors, Consts, PriceVariant, SwapVariant, DexIdByBaseAsset } from '../../consts';
+import { LiquiditySourceTypes, Errors, PriceVariant, SwapVariant, DexIdByBaseAsset } from '../../consts';
 import { SwapChunk, DiscreteQuotation, SideAmount } from '../../common/primitives';
 import { OrderBookStatus } from './consts';
 

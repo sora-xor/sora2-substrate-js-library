@@ -617,7 +617,8 @@ export class MstModule<T> {
         const assetIdHuman = assetId.toHuman();
 
         if (typeof assetIdHuman === 'object' && assetIdHuman !== null && 'code' in assetIdHuman) {
-          assetAddress = assetIdHuman.code != null ? assetIdHuman.code.toString() : '';
+          const codeValue = assetIdHuman['code'];
+          assetAddress = codeValue != null ? codeValue.toString() : '';
         } else if (typeof assetIdHuman === 'string') {
           assetAddress = assetIdHuman;
         } else {

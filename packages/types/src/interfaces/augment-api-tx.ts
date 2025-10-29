@@ -1376,6 +1376,13 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       requestFromSidechain: AugmentedSubmittable<(ethTxHash: H256 | string | Uint8Array, kind: EthBridgeRequestsIncomingRequestKind | { Transaction: any } | { Meta: any } | string | Uint8Array, networkId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [H256, EthBridgeRequestsIncomingRequestKind, u32]>;
       /**
+       * Explicitly clear collected signatures for a request.
+       * 
+       * Used by operators to recover from failed finalization without implicitly wiping
+       * approvals on-chain.
+       **/
+      resetRequestSignatures: AugmentedSubmittable<(networkId: u32 | AnyNumber | Uint8Array, hash: H256 | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, H256]>;
+      /**
        * Transfer some amount of the given asset to Sidechain address.
        * 
        * Note: if the asset kind is `Sidechain`, the amount should fit in the asset's precision

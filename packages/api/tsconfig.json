@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "composite": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true
+  },
+  "references": [{ "path": "../types/tsconfig.json" }],
+  "include": ["src/**/*.ts"],
+  "exclude": ["build/**/*"]
+}

@@ -1,11 +1,19 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
+    "composite": true,
     "strict": true,
     "noImplicitOverride": true,
     "noImplicitThis": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noUnusedLocals": true
-  }
+  },
+  "references": [
+    { "path": "../types/tsconfig.json" },
+    { "path": "../api/tsconfig.json" },
+    { "path": "../math/tsconfig.json" },
+    { "path": "../connection/tsconfig.json" },
+    { "path": "../liquidity-proxy/tsconfig.json" }
+  ]
 }

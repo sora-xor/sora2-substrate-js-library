@@ -15,7 +15,15 @@ module.exports = {
   transform: {
     '^.+\\.js$': 'babel-jest',
   },
-  transformIgnorePatterns: ['node_modules/?!(@polkadot/util)'],
+  transformIgnorePatterns: ['node_modules/(?!(?:@polkadot/(?:util|types|types-codec|types-create))/)'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  resolver: '<rootDir>/jest.resolver.cjs',
+  moduleNameMapper: {
+    '^@sora-substrate/types/scripts/(.*)$': '<rootDir>/packages/types/scripts/$1',
+    '^@sora-substrate/([a-z-]+)/src/(.*)$': '<rootDir>/packages/$1/src/$2',
+    '^@sora-substrate/([a-z-]+)/scripts/(.*)$': '<rootDir>/packages/$1/scripts/$2',
+    '^@sora-substrate/([a-z-]+)/?(.*)$': '<rootDir>/packages/$1/src/$2',
+  },
   collectCoverage: true,
   collectCoverageFrom: ['packages/**/*.{js,jsx,ts,tsx,vue}'],
   coverageReporters: ['lcov'],

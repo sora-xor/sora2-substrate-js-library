@@ -26,4 +26,5 @@ export * from './storage';
 export * from './http';
 export * from './types';
 
-export { FPNumber, CodecString } from '@sora-substrate/math';
+export { FPNumber } from '@sora-substrate/math';
+export type { CodecString } from '@sora-substrate/math';

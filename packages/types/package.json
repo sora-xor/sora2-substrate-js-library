@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/types",
-  "version": "1.46.0",
+  "version": "1.46.3",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -8,11 +8,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@open-web3/api-mobx": "0.9.4-26",
-    "@open-web3/orml-types": "1.1.4",
-    "@polkadot/api": "9.14.2",
-    "@polkadot/typegen": "9.14.2",
-    "@polkadot/types": "9.14.2",
-    "@sora-substrate/type-definitions": "1.46.0"
+    "@open-web3/api-mobx": "1.1.4",
+    "@open-web3/orml-types": "2.0.1",
+    "@polkadot/api": "16.4.9",
+    "@polkadot/typegen": "16.4.9",
+    "@polkadot/types": "16.4.9",
+    "@sora-substrate/type-definitions": "1.46.3"
   }
 }

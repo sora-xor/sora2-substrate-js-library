@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig",
+  "compilerOptions": {
+    "composite": true,
+    "strict": true,
+    "noImplicitOverride": true,
+    "noImplicitThis": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": false
+  },
+  "references": [
+    { "path": "../type-definitions/tsconfig.json" }
+  ],
+  "include": ["src/**/*.ts"],
+  "exclude": ["build/**/*"]
+}

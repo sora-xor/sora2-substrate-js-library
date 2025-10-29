@@ -1,6 +1,6 @@
 {
   "name": "@sora-substrate/math",
-  "version": "1.46.0",
+  "version": "1.46.3",
   "license": "Apache-2.0",
   "main": "./build/index.js",
   "typings": "./build/index.d.ts",
@@ -8,11 +8,11 @@
     "access": "public"
   },
   "dependencies": {
-    "bignumber.js": "^9.1.2",
+    "bignumber.js": "^9.3.1",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@polkadot/types": "9.14.2",
-    "@types/lodash": "^4.17.13"
+    "@polkadot/types": "16.4.9",
+    "@types/lodash": "^4.17.20"
   }
 }

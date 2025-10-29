@@ -577,6 +577,10 @@ declare module '@polkadot/api-base/types/events' {
        * New request has been registered. [Request Hash]
        **/
       RequestRegistered: AugmentedEvent<ApiType, [H256]>;
+      /**
+       * Operators cleared stored signatures for a request. [Request Hash]
+       **/
+      RequestSignaturesCleared: AugmentedEvent<ApiType, [H256]>;
     };
     evmFungibleApp: {
       /**

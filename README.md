@@ -48,14 +48,20 @@ cargo build --release
 yarn test:all
 ```
 
-### Demo
+### Demo & Examples
+
+Examples live under `scripts/examples`. They connect to the public test network by default; override via env vars when you need a different cluster or account.
 
 ```
 yarn example <fileName from scripts/examples>
+SORA_ENV=stage yarn example swap
+SORA_WS_PROVIDER=wss://sora.api.onfinality.io/public-ws yarn demo
 ```
 
-or
+### Maintenance
 
 ```
-yarn demo
+yarn health:deps
 ```
+
+Runs the automated dependency audit; the command exits non-zero when major upgrades are available so CI can alert the team early.

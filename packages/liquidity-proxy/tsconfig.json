@@ -1,11 +1,13 @@
 {
   "extends": "../../tsconfig",
   "compilerOptions": {
+    "composite": true,
     "strict": true,
     "noImplicitOverride": true,
     "noImplicitThis": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noUnusedLocals": true
-  }
+  },
+  "references": [{ "path": "../math/tsconfig.json" }]
 }

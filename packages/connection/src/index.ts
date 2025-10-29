@@ -1,13 +1,7 @@
 import type { ApiPromise } from '@polkadot/api';
 import type { WsProvider } from '@polkadot/rpc-provider';
 import type { ApiInterfaceEvents, ApiOptions } from '@polkadot/api/types';
-import type { ProviderInterfaceEmitCb, ProviderInterfaceCallback } from '@polkadot/rpc-provider/types';
-
-// Non-exported types from `@polkadot/rpc-provider/types`
-interface SubscriptionHandler {
-  callback: ProviderInterfaceCallback;
-  type: string;
-}
+import type { ProviderInterfaceEmitCb } from '@polkadot/rpc-provider/types';
 
 type ConnectionEventListener = [ApiInterfaceEvents, ProviderInterfaceEmitCb];
 
@@ -38,9 +32,13 @@ const disconnectApi = async (api: ApiPromise, eventListeners: ConnectionEventLis
   }
 };
 
-const createConnectionTimeout = (timeout: number): Promise<void> => {
+const createConnectionTimeout = (
+  timeout: number,
+  register: (handle: ReturnType<typeof setTimeout>) => void
+): Promise<void> => {
   return new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Connection Timeout')), timeout);
+    const handle = setTimeout(() => reject(new Error('Connection Timeout')), timeout);
+    register(handle);
   });
 };
 
@@ -54,11 +52,19 @@ class Connection {
   private readonly apiOptions!: ApiOptions;
 
   private eventListeners: Array<[ApiInterfaceEvents, ProviderInterfaceEmitCb]> = [];
+  private connectionTimeoutHandle: ReturnType<typeof setTimeout> | null = null;
 
   constructor(apiPromise: typeof ApiPromise, wsProvider: typeof WsProvider, apiOptions: ApiOptions) {
     this.ApiPromise = apiPromise;
     this.WsProvider = wsProvider;
     this.apiOptions = apiOptions;
+  }
+
+  private clearConnectionTimeout(): void {
+    if (this.connectionTimeoutHandle) {
+      clearTimeout(this.connectionTimeoutHandle);
+      this.connectionTimeoutHandle = null;
+    }
   }
 
   private async withLoading(func: Function): Promise<any> {
@@ -90,7 +96,14 @@ class Connection {
 
     const connectionRequests: Array<Promise<any>> = [this.api[apiConnectionPromise]];
 
-    if (timeout) connectionRequests.push(createConnectionTimeout(timeout));
+    if (timeout) {
+      this.clearConnectionTimeout();
+      connectionRequests.push(
+        createConnectionTimeout(timeout, (handle) => {
+          this.connectionTimeoutHandle = handle;
+        })
+      );
+    }
 
     try {
       eventListeners.forEach(([eventName, eventHandler]) => {
@@ -104,12 +117,16 @@ class Connection {
 
       await Promise.race(connectionRequests);
     } catch (error) {
-      this.stop();
+      await this.stop();
       throw error;
+    } finally {
+      this.clearConnectionTimeout();
     }
   }
 
   private async stop(): Promise<void> {
+    this.clearConnectionTimeout();
+
     if (this.api) {
       await disconnectApi(this.api, this.eventListeners);
     }

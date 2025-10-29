@@ -6,8 +6,10 @@ import { CommonPrimitivesAssetId32 } from '@polkadot/types/lookup';
 async function demo(): Promise<void> {
   console.log('INITIALIZING API');
 
+  const endpoint = process.env.SORA_WS_PROVIDER ?? 'ws://localhost:9944/';
+  console.log(`Connecting to ${endpoint}`);
   // NOTE: replace to use relevant endpoint: 'ws://localhost:9944/' for local, wss://ws.address.of.chain:9944/ for testnet
-  const provider = new WsProvider('ws://localhost:9944/');
+  const provider = new WsProvider(endpoint);
   const api = new ApiPromise(options({ provider }));
   await api.isReady;
 

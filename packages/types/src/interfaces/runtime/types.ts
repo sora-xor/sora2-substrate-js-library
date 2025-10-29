@@ -205,6 +205,13 @@ export interface Duration extends Null {}
 /** @name EncodedJustification */
 export interface EncodedJustification extends Bytes {}
 
+/** @name ExtrinsicInclusionMode */
+export interface ExtrinsicInclusionMode extends Enum {
+  readonly isAllExtrinsics: boolean;
+  readonly isOnlyInherents: boolean;
+  readonly type: 'AllExtrinsics' | 'OnlyInherents';
+}
+
 /** @name ExtrinsicsWeight */
 export interface ExtrinsicsWeight extends Struct {
   readonly normal: Weight;

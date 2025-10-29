@@ -31,7 +31,12 @@ import type { AssetKind, BridgeNetworkId, BridgeSignatureVersion, BridgeStatus, 
 import type { PoolFarmer } from '@sora-substrate/types/interfaces/farming';
 import type { PendingMultisigAccount } from '@sora-substrate/types/interfaces/irohaMigration';
 import type { AccountId, AccountIdOf, AssetId, AssetIdOf, AssetName, AssetSymbol, Balance, BalanceOf, BalancePrecision, BlockNumber, ContentSource, CrowdloanReward, CurrencyId, DEXId, DEXInfo, Description, DistributionAccounts, Duration, Fixed, FixedU128, H256, Hash, HolderId, KeyTypeId, LiquiditySourceType, MarketMakerInfo, Moment, MultiCurrencyBalanceOf, MultisigAccount, OpaqueCall, OwnerId, Perbill, PermissionId, PriceInfo, Releases, RewardInfo, Scope, Slot, StorageVersion, TechAccountId, TradingPair, ValidatorId } from '@sora-substrate/types/interfaces/runtime';
-import type { BaseStorageType, StorageDoubleMap, StorageMap } from '@open-web3/api-mobx';
+import type { BaseStorageType, StorageMap } from '@open-web3/api-mobx';
+
+type StorageDoubleMap<Key1, Key2, T> = {
+  (key1: Key1, key2: Key2): T | null;
+  entries: StorageMap<Key1, T>['entries'];
+};
 
 export interface StorageType extends BaseStorageType {
   assets: {    /**

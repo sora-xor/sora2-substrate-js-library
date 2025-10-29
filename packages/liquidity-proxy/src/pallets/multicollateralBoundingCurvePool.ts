@@ -212,7 +212,7 @@ const calculateBuyReward = (
   mainAssetId: string,
   collateralAssetId: string,
   mainAssetAmount: FPNumber,
-  collateralAssetAmount: FPNumber,
+  _collateralAssetAmount: FPNumber,
   payload: QuotePayload
 ): FPNumber => {
   if (!collateralIsIncentivised(collateralAssetId)) {

@@ -4,21 +4,36 @@ import { SORA_ENV } from '@sora-substrate/types/scripts/consts';
 
 const TST_MNEMONIC = 'street firm worth record skin taste legend lobster magnet stove drive side';
 
+const mapEnvOverride = (value?: string): string | undefined => {
+  if (!value) return undefined;
+
+  const lowerCased = value.toLowerCase();
+
+  if (Object.prototype.hasOwnProperty.call(SORA_ENV, lowerCased)) {
+    return SORA_ENV[lowerCased as keyof typeof SORA_ENV];
+  }
+
+  return value;
+};
+
+const ENV_OVERRIDE = mapEnvOverride(process.env['SORA_ENV']);
+const MNEMONIC_OVERRIDE = process.env['SORA_MNEMONIC'];
+
 export async function delay(ms = 40_000): Promise<void> {
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function connectAndImportAccount(
-  env: SORA_ENV | string = SORA_ENV.stage,
+  env: SORA_ENV | string = ENV_OVERRIDE ?? SORA_ENV.stage,
   withKeyringLoading = true,
-  mnemonic?: string
+  mnemonic: string = MNEMONIC_OVERRIDE ?? TST_MNEMONIC
 ): Promise<void> {
   await connection.open(env);
   console.info('Connected: ' + env);
   await api.initialize(withKeyringLoading);
   await api.calcStaticNetworkFees();
 
-  api.importAccount(mnemonic ?? TST_MNEMONIC, 'name', 'pass');
+  api.importAccount(mnemonic, 'name', 'pass');
 }
 
 export async function disconnect(): Promise<void> {
@@ -29,8 +44,8 @@ export async function disconnect(): Promise<void> {
 
 export async function withConnectedAccount(
   fn: Function,
-  env: SORA_ENV | string = SORA_ENV.test,
-  mnemonic?: string
+  env: SORA_ENV | string = ENV_OVERRIDE ?? SORA_ENV.test,
+  mnemonic: string = MNEMONIC_OVERRIDE ?? TST_MNEMONIC
 ): Promise<void> {
   await connectAndImportAccount(env, true, mnemonic);
   await fn();

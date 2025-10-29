@@ -5,7 +5,7 @@ def pipeline = new org.js.LibPipeline(
     test: false,
     dockerImageName: 'soramitsu/substrate-js-library',
     buildDockerImage: 'build-tools/node:20-alpine',
-    buildCmds: ['yarn', 'NODE_ENV=production yarn build'],
+    buildCmds: ['yarn', 'NODE_ENV=production yarn build', 'yarn test:all --runInBand', 'yarn health:deps'],
     pushCmds: ['yarn publish-workspaces --no-verify-access'],
     sonarProjectName: 'sora2-substrate-js-library',
     sonarProjectKey: 'sora2:sora2-substrate-js-library',

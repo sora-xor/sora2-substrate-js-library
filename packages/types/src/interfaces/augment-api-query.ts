@@ -733,6 +733,10 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       requestApprovals: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<BTreeSet<EthBridgeOffchainSignatureParams>>, [u32, H256]>;
       /**
+       * Outgoing request approval authors.
+       **/
+      requestApprovers: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<BTreeSet<AccountId32>>, [u32, H256]>;
+      /**
        * Registered requests.
        **/
       requests: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: H256 | string | Uint8Array) => Observable<Option<EthBridgeRequestsOffchainRequest>>, [u32, H256]>;

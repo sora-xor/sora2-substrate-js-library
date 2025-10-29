@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": false,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true,
+    "outDir": "./build"
+  },
+  "include": ["packages/*/src/**/*.ts"],
+  "exclude": ["**/*.test.ts", "tests/**/*"],
+  "references": [
+    { "path": "./packages/type-definitions/tsconfig.json" },
+    { "path": "./packages/types/tsconfig.json" },
+    { "path": "./packages/api/tsconfig.json" },
+    { "path": "./packages/connection/tsconfig.json" },
+    { "path": "./packages/liquidity-proxy/tsconfig.json" },
+    { "path": "./packages/math/tsconfig.json" },
+    { "path": "./packages/sdk/tsconfig.json" }
+  ]
+}

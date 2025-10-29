@@ -6,7 +6,7 @@ def pipeline = new org.js.CheckTypes(
     dockerImageName: 'soramitsu/substrate-js-library',
     buildDockerImage: 'build-tools/node:20-alpine',
     preBuildCmds: ['yarn'],
-    buildCmds: ['yarn build', 'yarn export-types:all'],
+    buildCmds: ['yarn build', 'yarn export-types:all', 'yarn health:deps'],
     sonarProjectName: 'sora2-substrate-js-library',
     sonarProjectKey: 'sora2:sora2-substrate-js-library',
     npmLoginEmail:'admin@soramitsu.co.jp',
